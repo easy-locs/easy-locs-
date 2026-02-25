@@ -12,9 +12,11 @@ export interface UserProfile {
 export interface GeneratedDocument {
   id: string;
   userId: string;
-  type: "rent-receipt" | "lease" | "sworn-statement" | "termination" | "formal-notice" | "gdpr";
+  type: string;
   country: string;
   title: string;
+  templateId?: string;
+  templateVersion?: string;
   dataJson: Record<string, unknown>;
   pdfDataUri?: string;
   createdAt: string;
@@ -111,54 +113,24 @@ export const seedDemoData = () => {
 
   const docs: GeneratedDocument[] = [
     {
-      id: "demo-doc-1",
-      userId: "demo-user-1",
-      type: "rent-receipt",
-      country: "FR",
+      id: "demo-doc-1", userId: "demo-user-1", type: "rent-receipt", country: "FR",
       title: "Quittance de loyer — Février 2026",
-      dataJson: {
-        landlordName: "Jean Martin",
-        tenantName: "Marie Dupont",
-        propertyAddress: "12 rue de la Paix, 75011 Paris",
-        rentAmount: 850,
-        chargesAmount: 100,
-        periodStart: "2026-02-01",
-        periodEnd: "2026-02-28",
-        paymentDate: "2026-02-05",
-      },
+      templateId: "fr-rent-receipt", templateVersion: "1.0.0",
+      dataJson: { landlordName: "Jean Martin", tenantName: "Marie Dupont", propertyAddress: "12 rue de la Paix, 75011 Paris", rentAmount: 850, chargesAmount: 100, periodStart: "2026-02-01", periodEnd: "2026-02-28", paymentDate: "2026-02-05" },
       createdAt: "2026-02-05T14:30:00Z",
     },
     {
-      id: "demo-doc-2",
-      userId: "demo-user-1",
-      type: "rent-receipt",
-      country: "FR",
+      id: "demo-doc-2", userId: "demo-user-1", type: "rent-receipt", country: "FR",
       title: "Quittance de loyer — Janvier 2026",
-      dataJson: {
-        landlordName: "Jean Martin",
-        tenantName: "Marie Dupont",
-        propertyAddress: "12 rue de la Paix, 75011 Paris",
-        rentAmount: 850,
-        chargesAmount: 100,
-        periodStart: "2026-01-01",
-        periodEnd: "2026-01-31",
-        paymentDate: "2026-01-03",
-      },
+      templateId: "fr-rent-receipt", templateVersion: "1.0.0",
+      dataJson: { landlordName: "Jean Martin", tenantName: "Marie Dupont", propertyAddress: "12 rue de la Paix, 75011 Paris", rentAmount: 850, chargesAmount: 100, periodStart: "2026-01-01", periodEnd: "2026-01-31", paymentDate: "2026-01-03" },
       createdAt: "2026-01-03T10:00:00Z",
     },
     {
-      id: "demo-doc-3",
-      userId: "demo-user-1",
-      type: "sworn-statement",
-      country: "FR",
+      id: "demo-doc-3", userId: "demo-user-1", type: "sworn-statement", country: "FR",
       title: "Attestation sur l'honneur — Domicile",
-      dataJson: {
-        fullName: "Jean Martin",
-        birthDate: "1985-06-15",
-        birthPlace: "Lyon",
-        address: "45 avenue Victor Hugo, 75016 Paris",
-        statement: "Je soussigné certifie sur l'honneur résider à l'adresse indiquée ci-dessus.",
-      },
+      templateId: "fr-sworn-statement", templateVersion: "1.0.0",
+      dataJson: { fullName: "Jean Martin", birthDate: "1985-06-15", birthPlace: "Lyon", address: "45 avenue Victor Hugo, 75016 Paris", statement: "Je soussigné certifie sur l'honneur résider à l'adresse indiquée ci-dessus." },
       createdAt: "2026-01-20T09:00:00Z",
     },
   ];

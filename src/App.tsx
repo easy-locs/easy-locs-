@@ -16,6 +16,9 @@ import AIAssistant from "./pages/AIAssistant";
 import Leases from "./pages/Leases";
 import Company from "./pages/Company";
 import Sharing from "./pages/Sharing";
+import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +49,9 @@ const App = () => (
             <Route path="/dashboard/leases" element={<Leases />} />
             <Route path="/dashboard/company" element={<Company />} />
             <Route path="/dashboard/sharing" element={<Sharing />} />
+            <Route path="/dashboard/billing" element={<Billing />} />
+            <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppInit>
