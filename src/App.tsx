@@ -3,9 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
-import { seedDemoData } from "@/lib/store";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import VerifyEmail from "./pages/VerifyEmail";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Receipts from "./pages/Receipts";
@@ -23,38 +26,37 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const AppInit = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {
-    seedDemoData();
-  }, []);
-  return <>{children}</>;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppInit>
+        <AuthProvider>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/receipts" element={<Receipts />} />
-            <Route path="/dashboard/reminders" element={<Reminders />} />
-            <Route path="/dashboard/vault" element={<Vault />} />
-            <Route path="/dashboard/documents" element={<Documents />} />
-            <Route path="/dashboard/assistant" element={<AIAssistant />} />
-            <Route path="/dashboard/leases" element={<Leases />} />
-            <Route path="/dashboard/company" element={<Company />} />
-            <Route path="/dashboard/sharing" element={<Sharing />} />
-            <Route path="/dashboard/billing" element={<Billing />} />
-            <Route path="/dashboard/settings" element={<Settings />} />
-            <Route path="/dashboard/admin" element={<Admin />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+
+            {/* Protected routes */}
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
+            <Route path="/dashboard/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
+            <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
+            <Route path="/dashboard/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+            <Route path="/dashboard/assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
+            <Route path="/dashboard/leases" element={<ProtectedRoute><Leases /></ProtectedRoute>} />
+            <Route path="/dashboard/company" element={<ProtectedRoute><Company /></ProtectedRoute>} />
+            <Route path="/dashboard/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
+            <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+            <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AppInit>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
