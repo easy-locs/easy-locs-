@@ -1,0 +1,36 @@
+import type { DocumentTemplate } from "../types";
+
+export const frLeaseCommercial: DocumentTemplate = {
+  id: "fr-lease-commercial",
+  version: "1.0.0",
+  country: "FR",
+  category: "rental",
+  docType: "lease-commercial",
+  label: "Bail commercial simple",
+  description: "Bail commercial (3-6-9) conforme au Code de commerce.",
+  legalBasis: "Code de commerce, art. L145-1 et suivants",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Nom du bailleur", type: "text", required: true },
+    { key: "landlordAddress", label: "Adresse du bailleur", type: "text", required: true },
+    { key: "landlordSiret", label: "SIRET du bailleur (si applicable)", type: "text", required: false },
+    { key: "tenantName", label: "Nom / raison sociale du preneur", type: "text", required: true },
+    { key: "tenantSiret", label: "SIRET du preneur", type: "text", required: true, validation: { pattern: /^\d{14}$/, patternMessage: "Le SIRET doit contenir 14 chiffres." } },
+    { key: "propertyAddress", label: "Adresse du local", type: "text", required: true },
+    { key: "activity", label: "Activité autorisée (destination)", type: "text", required: true },
+    { key: "surface", label: "Surface (m²)", type: "number", required: true, validation: { min: 1 } },
+    { key: "rentAmount", label: "Loyer annuel HT (€)", type: "number", required: true, validation: { min: 1 } },
+    { key: "chargesAmount", label: "Charges annuelles (€)", type: "number", required: true, validation: { min: 0 }, defaultValue: 0 },
+    { key: "depositAmount", label: "Dépôt de garantie (€)", type: "number", required: true, validation: { min: 0 } },
+    { key: "startDate", label: "Date d'effet", type: "date", required: true },
+  ],
+  clauses: [
+    { id: "parties", label: "Article 1 — Parties", required: true, text: "Entre {landlordName} (bailleur) et {tenantName}, SIRET {tenantSiret} (preneur)." },
+    { id: "premises", label: "Article 2 — Locaux", required: true, text: "Local situé au {propertyAddress}, d'une surface de {surface} m², destiné à l'activité de {activity}." },
+    { id: "duration", label: "Article 3 — Durée", required: true, text: "Le bail est consenti pour une durée de 9 ans à compter du {startDate}, avec faculté de résiliation triennale." },
+    { id: "rent", label: "Article 4 — Loyer", required: true, text: "Le loyer annuel HT est de {rentAmount} €, payable trimestriellement d'avance." },
+    { id: "charges", label: "Article 5 — Charges", required: true, text: "Les charges annuelles s'élèvent à {chargesAmount} €, révisables selon la répartition légale." },
+    { id: "deposit", label: "Article 6 — Dépôt", required: true, text: "Un dépôt de garantie de {depositAmount} € est versé à la signature." },
+  ],
+};

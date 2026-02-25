@@ -1,0 +1,91 @@
+import type { DocumentTemplate } from "../types";
+
+export const frCompanySAS: DocumentTemplate = {
+  id: "fr-company-sas",
+  version: "1.0.0",
+  country: "FR",
+  category: "company",
+  docType: "company-sas",
+  label: "Création SAS — Projet de statuts",
+  description: "Projet de statuts pour une Société par Actions Simplifiée (SAS).",
+  legalBasis: "Code de commerce, art. L227-1 et suivants",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "companyName", label: "Dénomination sociale", type: "text", required: true },
+    { key: "companyObject", label: "Objet social", type: "textarea", required: true, validation: { minLength: 10, maxLength: 2000 } },
+    { key: "registeredOffice", label: "Siège social", type: "text", required: true },
+    { key: "capital", label: "Capital social (€)", type: "number", required: true, validation: { min: 1 } },
+    { key: "presidentName", label: "Nom du Président", type: "text", required: true },
+    { key: "presidentAddress", label: "Adresse du Président", type: "text", required: true },
+    { key: "duration", label: "Durée (années)", type: "number", required: true, validation: { min: 1, max: 99 }, defaultValue: 99 },
+    { key: "fiscalYearEnd", label: "Clôture exercice (JJ/MM)", type: "text", required: true, defaultValue: "31/12" },
+  ],
+  clauses: [
+    { id: "form", label: "Article 1 — Forme", required: true, text: "Il est constitué une Société par Actions Simplifiée (SAS) régie par les articles L227-1 et suivants du Code de commerce." },
+    { id: "name", label: "Article 2 — Dénomination", required: true, text: "La société prend la dénomination : {companyName}." },
+    { id: "object", label: "Article 3 — Objet", required: true, text: "La société a pour objet : {companyObject}." },
+    { id: "office", label: "Article 4 — Siège", required: true, text: "Le siège social est fixé au {registeredOffice}." },
+    { id: "duration-clause", label: "Article 5 — Durée", required: true, text: "La durée de la société est fixée à {duration} ans." },
+    { id: "capital-clause", label: "Article 6 — Capital", required: true, text: "Le capital social est fixé à {capital} €." },
+    { id: "president", label: "Article 7 — Président", required: true, text: "Est nommé(e) Président(e) : {presidentName}, demeurant au {presidentAddress}." },
+  ],
+};
+
+export const frCompanySARL: DocumentTemplate = {
+  id: "fr-company-sarl",
+  version: "1.0.0",
+  country: "FR",
+  category: "company",
+  docType: "company-sarl",
+  label: "Création SARL — Projet de statuts",
+  description: "Projet de statuts pour une Société à Responsabilité Limitée (SARL).",
+  legalBasis: "Code de commerce, art. L223-1 et suivants",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "companyName", label: "Dénomination sociale", type: "text", required: true },
+    { key: "companyObject", label: "Objet social", type: "textarea", required: true, validation: { minLength: 10 } },
+    { key: "registeredOffice", label: "Siège social", type: "text", required: true },
+    { key: "capital", label: "Capital social (€)", type: "number", required: true, validation: { min: 1 } },
+    { key: "managerName", label: "Nom du Gérant", type: "text", required: true },
+    { key: "managerAddress", label: "Adresse du Gérant", type: "text", required: true },
+    { key: "duration", label: "Durée (années)", type: "number", required: true, validation: { min: 1, max: 99 }, defaultValue: 99 },
+    { key: "associatesCount", label: "Nombre d'associés", type: "number", required: true, validation: { min: 1, max: 100 } },
+  ],
+  clauses: [
+    { id: "form", label: "Article 1 — Forme", required: true, text: "Il est constitué une Société à Responsabilité Limitée (SARL) régie par les articles L223-1 et suivants du Code de commerce." },
+    { id: "name", label: "Article 2 — Dénomination", required: true, text: "La société prend la dénomination : {companyName}." },
+    { id: "object", label: "Article 3 — Objet", required: true, text: "La société a pour objet : {companyObject}." },
+    { id: "office", label: "Article 4 — Siège", required: true, text: "Le siège social est fixé au {registeredOffice}." },
+    { id: "capital-clause", label: "Article 5 — Capital", required: true, text: "Le capital social est fixé à {capital} €, réparti entre {associatesCount} associé(s)." },
+    { id: "manager", label: "Article 6 — Gérant", required: true, text: "Est nommé(e) Gérant(e) : {managerName}, demeurant au {managerAddress}." },
+  ],
+};
+
+export const frMicroEntrepreneur: DocumentTemplate = {
+  id: "fr-micro-entrepreneur",
+  version: "1.0.0",
+  country: "FR",
+  category: "company",
+  docType: "micro-entrepreneur",
+  label: "Micro-entrepreneur — Checklist de création",
+  description: "Guide et checklist pour la déclaration d'activité en micro-entreprise.",
+  legalBasis: "Code de commerce ; Code général des impôts, art. 293 B",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "fullName", label: "Nom complet", type: "text", required: true },
+    { key: "address", label: "Adresse du siège", type: "text", required: true },
+    { key: "activity", label: "Description de l'activité", type: "textarea", required: true },
+    { key: "activityCategory", label: "Catégorie", type: "select", required: true, options: [
+      { value: "commerciale", label: "Commerciale (BIC)" },
+      { value: "artisanale", label: "Artisanale (BIC)" },
+      { value: "liberale", label: "Libérale (BNC)" },
+    ] },
+    { key: "startDate", label: "Date de début d'activité", type: "date", required: true },
+  ],
+  clauses: [
+    { id: "checklist", label: "Checklist", required: true, text: "1. Inscription sur le guichet unique (formalites.entreprises.gouv.fr)\n2. Choix du régime fiscal (versement libératoire ou non)\n3. Ouverture d'un compte bancaire dédié\n4. Souscription assurance RC Pro si nécessaire\n5. Déclaration de chiffre d'affaires (mensuelle ou trimestrielle)" },
+  ],
+};

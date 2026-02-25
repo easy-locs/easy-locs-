@@ -15,7 +15,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight,
+  CreditCard,
+  ShieldCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -27,6 +28,7 @@ const navItems = [
   { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
   { icon: FolderLock, label: "Coffre-fort", path: "/dashboard/vault" },
   { icon: Share2, label: "Partages", path: "/dashboard/sharing" },
+  { icon: CreditCard, label: "Abonnement", path: "/dashboard/billing" },
 ];
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -83,7 +85,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
         <div className="p-3 border-t border-sidebar-border">
           <Link
-            to="/dashboard"
+            to="/dashboard/admin"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+          >
+            <ShieldCheck className="h-5 w-5" />
+            Admin
+          </Link>
+          <Link
+            to="/dashboard/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
             <Settings className="h-5 w-5" />
