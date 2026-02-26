@@ -46,6 +46,10 @@ const Onboarding = () => {
   const [country, setCountry] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [rentalMode, setRentalMode] = useState<RentalMode | null>(null);
+  const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null);
+  const [icalUrls, setIcalUrls] = useState<Record<string, string>>({ airbnb: "", booking: "" });
+  const [icalSyncing, setIcalSyncing] = useState<string | null>(null);
+  const [icalResults, setIcalResults] = useState<Record<string, number>>({});
 
   // Owner profile
   const [ownerForm, setOwnerForm] = useState({
@@ -133,12 +137,23 @@ const Onboarding = () => {
     setSaving(true);
     const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
     if (!orgData) { setSaving(false); return; }
-    const { error } = await supabase.from("properties").insert({
+    const { data: propData, error } = await supabase.from("properties").insert({
       org_id: orgData.org_id, user_id: user.id, ...propertyForm,
       rental_mode: rentalMode || "long_term",
-    });
+    }).select("id").single();
     setSaving(false);
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+
+    // Save property ID and auto-fill tenant financial fields
+    if (propData) {
+      setSavedPropertyId(propData.id);
+      setTenantForm(f => ({
+        ...f,
+        rent_amount: propertyForm.monthly_rent,
+        charges_amount: propertyForm.monthly_charges,
+        deposit_amount: propertyForm.deposit_amount,
+      }));
+    }
 
     const nextStep = rentalMode === "short_term" ? 3 : rentalMode === "mixed" ? 3 : 4;
     setStep(nextStep); saveStep(nextStep);
@@ -150,8 +165,7 @@ const Onboarding = () => {
     const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
     if (!orgData) { setSaving(false); return; }
 
-    const { data: props } = await supabase.from("properties").select("id").eq("org_id", orgData.org_id).limit(1);
-    const propertyId = props?.[0]?.id || null;
+    const propertyId = savedPropertyId || null;
 
     const { error } = await supabase.from("tenants").insert({
       org_id: orgData.org_id, user_id: user.id, property_id: propertyId,
@@ -192,6 +206,36 @@ const Onboarding = () => {
       postal_code: result.postcode || f.postal_code,
       city: result.city || f.city,
     }));
+  };
+
+  /* iCal sync handler */
+  const handleIcalSync = async (provider: string) => {
+    const url = icalUrls[provider];
+    if (!url || !user || !savedPropertyId) return;
+    setIcalSyncing(provider);
+    try {
+      const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
+      if (!orgData) throw new Error("No org");
+
+      // Save OTA connection
+      await supabase.from("ota_connections").upsert({
+        org_id: orgData.org_id,
+        user_id: user.id,
+        provider,
+        status: "active",
+        linked_properties: [savedPropertyId],
+      }, { onConflict: "id" });
+
+      const { data, error } = await supabase.functions.invoke("sync-ical", {
+        body: { ical_url: url, property_id: savedPropertyId, provider, org_id: orgData.org_id },
+      });
+      if (error) throw error;
+      setIcalResults(prev => ({ ...prev, [provider]: data.inserted || 0 }));
+      toast({ title: "✅ " + (data.inserted || 0) + " " + t("ob.ical_success") });
+    } catch (err: any) {
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+    }
+    setIcalSyncing(null);
   };
 
   const renderInput = (label: string, value: string | number, onChange: (v: string) => void, type = "text", required = false) => (
@@ -385,28 +429,46 @@ const Onboarding = () => {
               <h2 className="text-2xl font-bold text-foreground mb-2">{t("onboarding.step3")}</h2>
               <p className="text-muted-foreground mb-6">{t("ob.connect_ota")}</p>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
-                  { name: "Airbnb", color: "bg-[hsl(350,80%,55%)]", descKey: "ob.airbnb_desc" },
-                  { name: "Booking.com", color: "bg-[hsl(220,80%,45%)]", descKey: "ob.booking_desc" },
+                  { key: "airbnb", name: "Airbnb", color: "bg-[hsl(350,80%,55%)]", descKey: "ob.airbnb_desc" },
+                  { key: "booking", name: "Booking.com", color: "bg-[hsl(220,80%,45%)]", descKey: "ob.booking_desc" },
                 ].map(ota => (
-                  <div key={ota.name} className="flex items-center gap-4 p-4 rounded-xl border border-border">
-                    <div className={`w-10 h-10 rounded-lg ${ota.color} flex items-center justify-center text-white font-bold text-sm`}>
-                      {ota.name[0]}
+                  <div key={ota.key} className="p-4 rounded-xl border border-border space-y-3">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-lg ${ota.color} flex items-center justify-center text-white font-bold text-sm`}>
+                        {ota.name[0]}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-foreground text-sm">{ota.name}</div>
+                        <div className="text-xs text-muted-foreground">{t(ota.descKey)}</div>
+                      </div>
+                      {icalResults[ota.key] != null && (
+                        <span className="text-xs font-medium text-accent">✅ {icalResults[ota.key]} {t("ob.ical_success")}</span>
+                      )}
                     </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground text-sm">{ota.name}</div>
-                      <div className="text-xs text-muted-foreground">{t(ota.descKey)}</div>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder={t("ob.ical_placeholder")}
+                        value={icalUrls[ota.key]}
+                        onChange={e => setIcalUrls(prev => ({ ...prev, [ota.key]: e.target.value }))}
+                        className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-accent focus:border-accent outline-none"
+                      />
+                      <button
+                        disabled={!icalUrls[ota.key] || icalSyncing === ota.key || !savedPropertyId}
+                        onClick={() => handleIcalSync(ota.key)}
+                        className="px-4 py-2 rounded-lg bg-gradient-gold text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {icalSyncing === ota.key ? <Loader2 className="h-4 w-4 animate-spin" /> : t("ob.sync_ical")}
+                      </button>
                     </div>
-                    <button className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                      {t("ob.connect")}
-                    </button>
                   </div>
                 ))}
               </div>
 
               <p className="text-xs text-muted-foreground mt-4 text-center">
-                {t("ob.ota_coming_soon")}
+                {t("ob.ical_info")}
               </p>
 
               <div className="flex gap-3 mt-6">
