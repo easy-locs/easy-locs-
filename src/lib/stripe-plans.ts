@@ -1,4 +1,4 @@
-export type PlanKey = "individual" | "landlord" | "freelancer" | "business";
+export type PlanKey = "monthly" | "annual";
 
 export interface PlanConfig {
   key: PlanKey;
@@ -6,46 +6,49 @@ export interface PlanConfig {
   price: number;
   priceId: string;
   productId: string;
+  interval: "mois" | "an";
   features: string[];
   highlight: boolean;
+  savings?: string;
 }
 
 export const PLANS: PlanConfig[] = [
   {
-    key: "individual",
-    name: "Individual",
-    price: 12,
-    priceId: "price_1T4sOOKcrlZX0EnnaYSiUqcD",
-    productId: "prod_U2yLnEYKPa8yLG",
-    features: ["2 PDF/mois", "Coffre-fort 100 Mo", "Quittances"],
-    highlight: false,
-  },
-  {
-    key: "landlord",
-    name: "Landlord",
+    key: "monthly",
+    name: "Mensuel",
     price: 29,
     priceId: "price_1T4sOdKcrlZX0EnnHIgwXcq9",
     productId: "prod_U2yLjzJN4Y7LYb",
-    features: ["PDF illimités", "Baux & quittances", "Rappels", "Coffre-fort 1 Go"],
+    interval: "mois",
+    features: [
+      "PDF & documents illimités",
+      "Baux, quittances, états des lieux",
+      "Gestion locative complète",
+      "Rappels automatiques",
+      "Coffre-fort numérique",
+      "Assistant IA",
+      "Support prioritaire",
+    ],
+    highlight: false,
+  },
+  {
+    key: "annual",
+    name: "Annuel",
+    price: 199,
+    priceId: "price_1T4tliKcrlZX0EnnxHeOxHIO",
+    productId: "prod_U2zlUjPtdVVjIw",
+    interval: "an",
+    features: [
+      "PDF & documents illimités",
+      "Baux, quittances, états des lieux",
+      "Gestion locative complète",
+      "Rappels automatiques",
+      "Coffre-fort numérique",
+      "Assistant IA",
+      "Support prioritaire",
+    ],
     highlight: true,
-  },
-  {
-    key: "freelancer",
-    name: "Freelancer",
-    price: 39,
-    priceId: "price_1T4sOzKcrlZX0EnnH2SfaaGA",
-    productId: "prod_U2yLaqf6FPXuJ7",
-    features: ["PDF illimités", "Documents entreprise", "Partages", "Coffre-fort 5 Go"],
-    highlight: false,
-  },
-  {
-    key: "business",
-    name: "Business",
-    price: 69,
-    priceId: "price_1T4sPHKcrlZX0EnnUtweGNuE",
-    productId: "prod_U2yLSNT98adKHF",
-    features: ["Tout inclus", "Multi-utilisateurs", "API accès", "Support prioritaire"],
-    highlight: false,
+    savings: "Économisez 149€/an",
   },
 ];
 
