@@ -3,15 +3,15 @@ import { motion } from "framer-motion";
 import {
   FileText, Home, Bell, FolderLock, BrainCircuit, ArrowRight,
   AlertTriangle, TrendingUp, Clock, Users, Euro, Building,
-  Download, PiggyBank,
+  Download, PiggyBank, Percent,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
-import { exportToCSV } from "@/lib/csv-export";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 const quickActions = [
   { icon: FileText, label: "Générer une quittance", path: "/dashboard/receipts", color: "bg-info/10 text-info" },
@@ -26,6 +26,7 @@ const Dashboard = () => {
     properties: 0, tenants: 0, documents: 0,
     rentCalls: [] as { month: string; paid: boolean; total_amount: number }[],
     reminders: 0, vaultFiles: 0, vaultSize: 0,
+    tenantsList: [] as { property_id: string | null; lease_end: string | null }[],
   });
   const [loading, setLoading] = useState(true);
 
@@ -33,21 +34,23 @@ const Dashboard = () => {
     if (!orgId) return;
     Promise.all([
       supabase.from("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
       supabase.from("reminders").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true),
       supabase.from("vault_files").select("size").eq("org_id", orgId),
-    ]).then(([props, tenants, docs, rc, rem, vault]) => {
+    ]).then(([props, tenantsRes, docs, rc, rem, vault]) => {
       const vaultFiles = vault.data || [];
+      const tenantsList = (tenantsRes.data || []) as any[];
       setStats({
         properties: props.count || 0,
-        tenants: tenants.count || 0,
+        tenants: tenantsList.length,
         documents: docs.count || 0,
         rentCalls: (rc.data || []) as any,
         reminders: rem.count || 0,
         vaultFiles: vaultFiles.length,
         vaultSize: vaultFiles.reduce((s, f) => s + (Number(f.size) || 0), 0),
+        tenantsList,
       });
       setLoading(false);
     });
@@ -58,8 +61,34 @@ const Dashboard = () => {
     const monthCalls = stats.rentCalls.filter(r => r.month === currentMonth);
     const revenueThisMonth = monthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
     const unpaidTotal = stats.rentCalls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-    const totalRevenue = stats.rentCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-    return { revenueThisMonth, unpaidTotal, totalRevenue };
+
+    const today = new Date().toISOString().split("T")[0];
+    const occupiedProperties = new Set(
+      stats.tenantsList.filter(t => t.property_id && (!t.lease_end || t.lease_end >= today)).map(t => t.property_id)
+    ).size;
+    const occupancyRate = stats.properties > 0 ? Math.round((occupiedProperties / stats.properties) * 100) : 0;
+    const vacantCount = stats.properties - occupiedProperties;
+
+    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount };
+  }, [stats]);
+
+  // Revenue chart — last 6 months
+  const revenueChart = useMemo(() => {
+    const now = new Date();
+    const months: { month: string; label: string; paid: number; unpaid: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(now, i);
+      const key = format(d, "yyyy-MM");
+      const label = format(d, "MMM", { locale: fr });
+      const monthCalls = stats.rentCalls.filter(r => r.month === key);
+      months.push({
+        month: key,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        paid: monthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0),
+        unpaid: monthCalls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0),
+      });
+    }
+    return months;
   }, [stats.rentCalls]);
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
@@ -73,6 +102,9 @@ const Dashboard = () => {
     if (unpaidThisMonth > 0) {
       actions.push({ label: `${unpaidThisMonth} loyer(s) impayé(s) ce mois`, date: format(now, "MMMM yyyy", { locale: fr }), urgent: true });
     }
+    if (kpis.vacantCount > 0) {
+      actions.push({ label: `${kpis.vacantCount} bien(s) vacant(s)`, date: "À pourvoir", urgent: kpis.vacantCount > 1 });
+    }
     if (stats.reminders > 0) {
       actions.push({ label: `${stats.reminders} rappel(s) actif(s)`, date: "À traiter", urgent: false });
     }
@@ -80,7 +112,7 @@ const Dashboard = () => {
       actions.push({ label: "Tout est à jour ! 🎉", date: "", urgent: false });
     }
     return actions;
-  }, [stats]);
+  }, [stats, kpis]);
 
   return (
     <DashboardLayout>
@@ -90,12 +122,12 @@ const Dashboard = () => {
           <p className="text-muted-foreground mb-8">Voici un résumé de votre situation.</p>
         </motion.div>
 
-        {/* Stats cards — real data */}
+        {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { icon: Building, label: "Biens", value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} locataire(s)` },
             { icon: Euro, label: "Encaissé ce mois", value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} impayés` : "0 impayé" },
-            { icon: FileText, label: "Documents", value: loading ? "..." : String(stats.documents), sub: "générés" },
+            { icon: Percent, label: "Taux d'occupation", value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} vacant(s)` },
             { icon: FolderLock, label: "Coffre-fort", value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} fichier(s)` },
           ].map((stat, i) => (
             <motion.div
@@ -116,6 +148,30 @@ const Dashboard = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Revenue chart */}
+        {!loading && revenueChart.some(m => m.paid > 0 || m.unpaid > 0) && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-accent" />Tendance revenus (6 mois)
+            </h2>
+            <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={revenueChart} barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
+                    formatter={(value: number, name: string) => [fmt(value), name === "paid" ? "Encaissé" : "Impayé"]}
+                  />
+                  <Bar dataKey="paid" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="paid" />
+                  <Bar dataKey="unpaid" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name="unpaid" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
 
         {/* Quick actions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
