@@ -38,6 +38,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [signatures, setSignatures] = useState<{ landlord: string; tenant: string }>({ landlord: "", tenant: "" });
+  const [stampUrl, setStampUrl] = useState("");
   const [prefilled, setPrefilled] = useState(false);
 
   // Auto-load owner profile data + saved signature
@@ -65,12 +66,14 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         .limit(1)
         .single();
 
-      // Load org info
+      // Load org info + stamp
       const { data: org } = await supabase
         .from("orgs")
-        .select("name, address, postal_code, city, siret, phone, email")
+        .select("name, address, postal_code, city, siret, phone, email, stamp_url")
         .eq("id", orgId)
         .single();
+
+      if ((org as any)?.stamp_url) setStampUrl((org as any).stamp_url);
 
       // Build prefill map
       const prefillMap: Record<string, unknown> = {};
@@ -262,7 +265,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       return;
     }
 
-    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined);
+    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined);
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
 
     await supabase.from("audit_logs").insert({

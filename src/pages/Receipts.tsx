@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
@@ -8,11 +8,31 @@ import { getTemplateById } from "@/lib/templates/registry";
 import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Receipts = () => {
   const { t } = useI18n();
+  const { user, orgId } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [, setRefresh] = useState(0);
+  const [landlordSignature, setLandlordSignature] = useState("");
+  const [stampUrl, setStampUrl] = useState("");
+
+  // Load landlord signature + company stamp on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("signature_url").eq("id", user.id).single().then(({ data }) => {
+      if (data?.signature_url) setLandlordSignature(data.signature_url);
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!orgId) return;
+    supabase.from("orgs").select("stamp_url").eq("id", orgId).single().then(({ data }) => {
+      if ((data as any)?.stamp_url) setStampUrl((data as any).stamp_url);
+    });
+  }, [orgId]);
 
   const receipts = getDocuments().filter((d) => d.type === "rent-receipt");
 
@@ -23,7 +43,8 @@ const Receipts = () => {
       link.download = `${receipt.title.replace(/\s/g, "_")}.pdf`;
       link.click();
     } else {
-      const doc = generateFromTemplate(frRentReceipt, receipt.dataJson);
+      const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
+      const doc = generateFromTemplate(frRentReceipt, receipt.dataJson, signatures, stampUrl || undefined);
       downloadPDF(doc, `${receipt.title.replace(/\s/g, "_")}.pdf`);
     }
   };

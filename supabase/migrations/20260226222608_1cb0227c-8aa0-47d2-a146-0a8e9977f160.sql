@@ -1,0 +1,2 @@
+
+ALTER TABLE public.orgs ADD COLUMN stamp_url TEXT DEFAULT NULL;

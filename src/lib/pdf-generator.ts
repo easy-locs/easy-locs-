@@ -131,7 +131,8 @@ function addParagraph(doc: jsPDF, text: string, y: number): number {
 export function generateFromTemplate(
   template: DocumentTemplate,
   data: Record<string, unknown>,
-  signatures?: { landlord?: string; tenant?: string }
+  signatures?: { landlord?: string; tenant?: string },
+  stamp?: string
 ): jsPDF {
   const doc = new jsPDF();
   let y = addHeader(doc, template.label.toUpperCase());
@@ -187,6 +188,13 @@ export function generateFromTemplate(
     doc.setLineDashPattern([2, 2], 0);
     doc.rect(MARGIN, sigStartY + 10, colWidth, 25);
     doc.setLineDashPattern([], 0);
+  }
+
+  // Company stamp (tampon) next to landlord signature
+  if (stamp) {
+    try {
+      doc.addImage(stamp, "PNG", MARGIN + colWidth - 28, sigStartY + 8, 26, 26);
+    } catch { /* ignore invalid stamp image */ }
   }
 
   // Tenant / Recipient column
