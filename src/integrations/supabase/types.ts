@@ -325,29 +325,50 @@ export type Database = {
       }
       orgs: {
         Row: {
+          address: string | null
+          city: string | null
           country: string
           created_at: string
+          email: string | null
           id: string
+          logo_url: string | null
           name: string
           owner_user_id: string
+          phone: string | null
+          postal_code: string | null
+          siret: string | null
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           country?: string
           created_at?: string
+          email?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           owner_user_id: string
+          phone?: string | null
+          postal_code?: string | null
+          siret?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }
         Update: {
+          address?: string | null
+          city?: string | null
           country?: string
           created_at?: string
+          email?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           owner_user_id?: string
+          phone?: string | null
+          postal_code?: string | null
+          siret?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }

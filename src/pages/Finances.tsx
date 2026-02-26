@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3 } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download } from "lucide-react";
+import { exportToCSV } from "@/lib/csv-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -152,9 +153,37 @@ const Finances = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Finances</h1>
-          <p className="text-muted-foreground mt-1">Suivi des revenus locatifs, charges et paiements en ligne</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Finances</h1>
+            <p className="text-muted-foreground mt-1">Suivi des revenus locatifs, charges et paiements en ligne</p>
+          </div>
+          {rentCalls.length > 0 && (
+            <button
+              onClick={() => exportToCSV(
+                rentCalls.map(r => ({
+                  mois: r.month,
+                  loyer: r.rent_amount,
+                  charges: r.charges_amount,
+                  total: r.total_amount,
+                  payé: r.paid ? "Oui" : "Non",
+                  date_paiement: r.paid_date || "",
+                })),
+                "finances_loyers",
+                [
+                  { key: "mois", label: "Mois" },
+                  { key: "loyer", label: "Loyer (€)" },
+                  { key: "charges", label: "Charges (€)" },
+                  { key: "total", label: "Total (€)" },
+                  { key: "payé", label: "Payé" },
+                  { key: "date_paiement", label: "Date de paiement" },
+                ]
+              )}
+              className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
+            >
+              <Download className="h-4 w-4" /> Export CSV
+            </button>
+          )}
         </div>
 
         {/* Stripe Connect Card */}
