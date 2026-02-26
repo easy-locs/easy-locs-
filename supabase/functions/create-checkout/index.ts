@@ -72,9 +72,6 @@ serve(async (req) => {
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
       allow_promotion_codes: true,
       payment_method_types: ["card", "sepa_debit"],
-      payment_method_options: {
-        card: { setup_future_usage: "off_session" },
-      },
     };
     
     if (!customerId) {
