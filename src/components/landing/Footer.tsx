@@ -1,8 +1,9 @@
+import React from "react";
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const Footer = () => (
-  <footer className="bg-navy-deep text-primary-foreground/60 py-16">
+const Footer = React.forwardRef<HTMLElement>((_, ref) => (
+  <footer ref={ref} className="bg-navy-deep text-primary-foreground/60 py-16">
     <div className="container">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         <div>
@@ -41,6 +42,8 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+));
+
+Footer.displayName = "Footer";
 
 export default Footer;

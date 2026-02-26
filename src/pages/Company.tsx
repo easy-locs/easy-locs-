@@ -3,9 +3,13 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { getTemplatesByCategory } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
+import { JAL_PUBLISHERS, getJALByDepartment, type JALPublisher } from "@/lib/jal-publishers";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   Building2, FileText, ChevronRight, Plus, Users, Briefcase, XCircle,
-  ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList
+  ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList,
+  Newspaper, CreditCard, ExternalLink, Loader2, Search
 } from "lucide-react";
 
 // Entity types for wizard
@@ -73,10 +77,15 @@ const sections = [
 ];
 
 const Company = () => {
+  const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [wizardMode, setWizardMode] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [selectedEntityType, setSelectedEntityType] = useState<string | null>(null);
+  const [showJALPanel, setShowJALPanel] = useState(false);
+  const [jalDepartment, setJalDepartment] = useState("");
+  const [selectedJAL, setSelectedJAL] = useState<JALPublisher | null>(null);
+  const [payingJAL, setPayingJAL] = useState(false);
   const companyTemplates = getTemplatesByCategory("company", "FR");
 
   const resetWizard = () => {
@@ -84,6 +93,28 @@ const Company = () => {
     setWizardMode(false);
     setWizardStep(0);
     setSelectedEntityType(null);
+    setShowJALPanel(false);
+    setSelectedJAL(null);
+  };
+
+  const filteredJALs = jalDepartment.length >= 2
+    ? getJALByDepartment(jalDepartment)
+    : JAL_PUBLISHERS.slice(0, 15);
+
+  const handlePayLegalNotice = async () => {
+    if (!selectedJAL) return;
+    setPayingJAL(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-legal-notice-payment", {
+        body: { jalName: selectedJAL.name },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Erreur de paiement", variant: "destructive" });
+    } finally {
+      setPayingJAL(false);
+    }
   };
 
   // Document builder view
@@ -97,6 +128,119 @@ const Company = () => {
         }}
         onGenerated={resetWizard}
       />
+    );
+  }
+
+  // JAL selection panel
+  if (showJALPanel) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto">
+          <button onClick={() => setShowJALPanel(false)} className="text-sm text-accent hover:underline mb-6 flex items-center gap-1">
+            ← Retour aux documents
+          </button>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+              <Newspaper className="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Publication d'annonce légale</h1>
+              <p className="text-sm text-muted-foreground">Choisissez un journal habilité (JAL) pour publier votre annonce.</p>
+            </div>
+          </div>
+
+          {/* Price banner */}
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-5 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-foreground">Publication annonce légale</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Tout compris : rédaction + publication JAL + attestation</div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-foreground">249 €</div>
+                <div className="text-xs text-muted-foreground">TTC</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Department search */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Rechercher par département
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                value={jalDepartment}
+                onChange={(e) => setJalDepartment(e.target.value)}
+                placeholder="Ex: 75, 69, 13..."
+                className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          </div>
+
+          {/* JAL list */}
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {filteredJALs.map((jal) => (
+              <button
+                key={jal.name}
+                onClick={() => setSelectedJAL(jal)}
+                className={`w-full flex items-center gap-4 bg-card rounded-xl p-4 border transition-all text-left ${
+                  selectedJAL?.name === jal.name
+                    ? "border-accent ring-2 ring-accent/20 shadow-card-hover"
+                    : "border-border/50 shadow-card hover:shadow-card-hover"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                  selectedJAL?.name === jal.name ? "bg-accent/20" : "bg-muted"
+                }`}>
+                  <Newspaper className={`h-4 w-4 ${selectedJAL?.name === jal.name ? "text-accent" : "text-muted-foreground"}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-foreground text-sm">{jal.name}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    Dép. : {jal.departments.join(", ")}
+                  </div>
+                </div>
+                {jal.website && (
+                  <a href={jal.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                    className="text-muted-foreground hover:text-accent">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
+                {selectedJAL?.name === jal.name && <CheckCircle className="h-5 w-5 text-accent shrink-0" />}
+              </button>
+            ))}
+          </div>
+
+          {jalDepartment.length >= 2 && filteredJALs.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              Aucun JAL trouvé pour le département {jalDepartment}. Essayez un autre département.
+            </p>
+          )}
+
+          {/* Pay button */}
+          <button
+            onClick={handlePayLegalNotice}
+            disabled={!selectedJAL || payingJAL}
+            className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {payingJAL ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Payer 249 € — Publier l'annonce
+              </>
+            )}
+          </button>
+
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            Paiement sécurisé par Stripe. L'attestation de parution vous sera envoyée sous 48h.
+          </p>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -180,26 +324,42 @@ const Company = () => {
                   const template = companyTemplates.find(t => t.docType === doc.docType);
                   if (!template) return null;
                   const DocIcon = doc.icon;
+                  const isLegalNotice = doc.docType === "legal-notice";
                   return (
-                    <button
-                      key={doc.docType}
-                      onClick={() => setSelectedTemplate(template)}
-                      className="w-full flex items-center gap-4 bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover transition-all text-left group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
-                        <DocIcon className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground text-sm">{doc.label}</span>
-                          {i === 0 && (
-                            <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Principal</span>
-                          )}
+                    <div key={doc.docType}>
+                      <button
+                        onClick={() => setSelectedTemplate(template)}
+                        className="w-full flex items-center gap-4 bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover transition-all text-left group"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+                          <DocIcon className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                    </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground text-sm">{doc.label}</span>
+                            {i === 0 && (
+                              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Principal</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                      </button>
+                      {/* Legal notice → pay to publish */}
+                      {isLegalNotice && (
+                        <button
+                          onClick={() => setShowJALPanel(true)}
+                          className="w-full mt-2 flex items-center gap-3 bg-accent/5 border border-accent/20 rounded-lg px-5 py-3 text-left hover:bg-accent/10 transition-colors"
+                        >
+                          <Newspaper className="h-4 w-4 text-accent shrink-0" />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-foreground">Publier dans un journal (JAL)</span>
+                            <span className="text-xs text-muted-foreground ml-2">249 € TTC</span>
+                          </div>
+                          <CreditCard className="h-4 w-4 text-accent shrink-0" />
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -237,13 +397,22 @@ const Company = () => {
               Créez, gérez et modifiez votre société — SAS, SARL, EURL ou micro-entreprise.
             </p>
           </div>
-          <button
-            onClick={() => setWizardMode(true)}
-            className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
-          >
-            <Rocket className="h-4 w-4" />
-            Créer ma société
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowJALPanel(true)}
+              className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Newspaper className="h-4 w-4" />
+              Annonce légale
+            </button>
+            <button
+              onClick={() => setWizardMode(true)}
+              className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
+            >
+              <Rocket className="h-4 w-4" />
+              Créer ma société
+            </button>
+          </div>
         </div>
 
         {sections.map((section) => {
