@@ -10,6 +10,8 @@ import { frCompanySAS, frCompanySARL, frCompanyEURL, frMicroEntrepreneur, frLega
 import { frChangeDirector, frChangeOffice, frChangeActivity } from "./fr/company-changes";
 import { frPVAGO, frAccountsApproval, frShareTransfer, frCapitalIncrease, frDissolution, frPVAGE, frActeCession, frRapportGestion } from "./fr/company-admin";
 import { frInventory, frRentRevision, frChargesRegularization, frUnpaidNotice } from "./fr/rental-extras";
+import { frCongesBailleur, frCongesLocataire, frCautionSolidaire, frAttestationHebergement, frCommandementPayer, frRestitutionDepot } from "./fr/rental-legal";
+import { frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC } from "./fr/company-legal";
 import { allEuropeTemplates } from "./europe-packs";
 
 const allTemplates: DocumentTemplate[] = [
@@ -22,6 +24,13 @@ const allTemplates: DocumentTemplate[] = [
   frRentRevision,
   frChargesRegularization,
   frUnpaidNotice,
+  // France — Rental legal
+  frCongesBailleur,
+  frCongesLocataire,
+  frCautionSolidaire,
+  frAttestationHebergement,
+  frCommandementPayer,
+  frRestitutionDepot,
   // France — Administrative
   frSwornStatement,
   frFormalNotice,
@@ -45,10 +54,14 @@ const allTemplates: DocumentTemplate[] = [
   frShareTransfer,
   frCapitalIncrease,
   frDissolution,
-  // France — Company admin (new)
   frPVAGE,
   frActeCession,
   frRapportGestion,
+  // France — Company legal
+  frStatutsSAS,
+  frStatutsSARL,
+  frPacteAssocies,
+  frNominationCAC,
   // Europe packs — stubs
   ...allEuropeTemplates,
 ];
