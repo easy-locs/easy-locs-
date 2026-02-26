@@ -110,6 +110,57 @@ export type Database = {
           },
         ]
       }
+      document_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          org_id: string
+          period: string | null
+          request_type: string
+          resolved_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          period?: string | null
+          request_type?: string
+          resolved_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          period?: string | null
+          request_type?: string
+          resolved_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           country: string
@@ -532,6 +583,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          org_id: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          org_id?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          org_id?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
@@ -690,6 +777,7 @@ export type Database = {
           id: string
           locale: string | null
           name: string | null
+          signature_url: string | null
           updated_at: string
           user_type: string
         }
@@ -700,6 +788,7 @@ export type Database = {
           id: string
           locale?: string | null
           name?: string | null
+          signature_url?: string | null
           updated_at?: string
           user_type?: string
         }
@@ -710,6 +799,7 @@ export type Database = {
           id?: string
           locale?: string | null
           name?: string | null
+          signature_url?: string | null
           updated_at?: string
           user_type?: string
         }

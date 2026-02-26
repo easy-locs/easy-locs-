@@ -1,22 +1,23 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, AlertTriangle, Building2, Upload, Loader2 } from "lucide-react";
+import { User, Shield, AlertTriangle, Building2, Upload, Loader2, PenTool } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import SignaturePad from "@/components/ui/SignaturePad";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
-  const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr" });
+  const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
   const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "" });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("name, email, country, locale").eq("id", user.id).single().then(({ data }) => {
-      if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: data.locale || "fr" });
+    supabase.from("profiles").select("name, email, country, locale, signature_url").eq("id", user.id).single().then(({ data }) => {
+      if (data) setProfile({ name: data.name || "", email: data.email || "", country: data.country || "FR", locale: data.locale || "fr", signature_url: (data as any)?.signature_url || "" });
     });
   }, [user]);
 
@@ -34,7 +35,7 @@ const Settings = () => {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("profiles").update({ name: profile.name, country: profile.country, locale: profile.locale }).eq("id", user.id);
+    await supabase.from("profiles").update({ name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url } as any).eq("id", user.id);
     toast({ title: "Profil mis à jour" });
     setSaving(false);
   };
@@ -183,6 +184,26 @@ const Settings = () => {
               {saving ? "Enregistrement..." : "Enregistrer l'organisation"}
             </button>
           </div>
+        </div>
+
+        {/* Signature */}
+        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <PenTool className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Ma signature</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Votre signature sera automatiquement pré-remplie lors de la génération de documents.
+          </p>
+          <SignaturePad
+            label="Signature enregistrée"
+            value={profile.signature_url}
+            onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))}
+          />
+          <button onClick={saveProfile} disabled={saving}
+            className="mt-4 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            {saving ? "Enregistrement..." : "Enregistrer la signature"}
+          </button>
         </div>
 
         {/* GDPR */}

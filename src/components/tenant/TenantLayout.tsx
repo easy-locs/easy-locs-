@@ -4,13 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import logoAdminia from "@/assets/logo-adminia.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X,
+  CreditCard, Settings, LogOut, Menu, X, ClipboardList,
 } from "lucide-react";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Mon espace", path: "/tenant" },
   { icon: Receipt, label: "Mes quittances", path: "/tenant/receipts" },
   { icon: FileText, label: "Mes documents", path: "/tenant/documents" },
+  { icon: ClipboardList, label: "Demandes", path: "/tenant/requests" },
   { icon: MessageCircle, label: "Messages", path: "/tenant/messages" },
   { icon: CreditCard, label: "Payer mon loyer", path: "/tenant/pay" },
 ];
@@ -92,6 +94,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <NotificationBell />
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>

@@ -44,6 +44,7 @@ import TenantDocuments from "./pages/tenant/TenantDocuments";
 import TenantMessages from "./pages/tenant/TenantMessages";
 import TenantPay from "./pages/tenant/TenantPay";
 import TenantSettings from "./pages/tenant/TenantSettings";
+import TenantRequests from "./pages/tenant/TenantRequests";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ const App = () => (
             <Route path="/tenant/messages" element={<ProtectedRoute><TenantMessages /></ProtectedRoute>} />
             <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
             <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
+            <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logoAdminia from "@/assets/logo-adminia.png";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import {
   LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck,
   Wallet, FileText, Contact, Wrench, CheckSquare, StickyNote, MessageCircle,
@@ -133,6 +134,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <NotificationBell />
           <Link to="/dashboard/assistant" className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
             <BrainCircuit className="h-4 w-4" />
             <span className="hidden sm:inline">Que dois-je faire ?</span>
