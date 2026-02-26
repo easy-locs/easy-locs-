@@ -4,6 +4,28 @@ import type { DocumentTemplate } from "./templates/types";
 const MARGIN = 20;
 const PAGE_WIDTH = 210;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
+const LINE_HEIGHT = 5.5;
+const FONT_BODY = 10;
+const FONT_LABEL = 8.5;
+const FONT_SECTION = 12;
+const FONT_TITLE = 16;
+const COLOR_PRIMARY: [number, number, number] = [26, 39, 68];
+const COLOR_GOLD: [number, number, number] = [212, 163, 74];
+const COLOR_BODY: [number, number, number] = [40, 40, 40];
+const COLOR_MUTED: [number, number, number] = [110, 110, 110];
+
+/** Sanitize text: normalize unicode, replace smart quotes & special chars */
+function sanitize(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[\u2018\u2019\u201A]/g, "'")
+    .replace(/[\u201C\u201D\u201E]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/\u00A0/g, " ")
+    .replace(/\u202F/g, " ")
+    .replace(/\t/g, "    ");
+}
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return "";
@@ -29,68 +51,80 @@ function interpolate(text: string, data: Record<string, unknown>): string {
   });
 }
 
+function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, color: [number, number, number]) {
+  doc.setFont("helvetica", style);
+  doc.setFontSize(size);
+  doc.setTextColor(color[0], color[1], color[2]);
+}
+
+function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
+  if (y + needed > 275) { doc.addPage(); return 25; }
+  return y;
+}
+
 function addHeader(doc: jsPDF, title: string): number {
-  doc.setFillColor(212, 163, 74);
+  doc.setFillColor(...COLOR_GOLD);
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(26, 39, 68);
+
+  setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
   doc.text("Easyloc", MARGIN, 22);
-  doc.setFontSize(11);
-  doc.setTextColor(100, 100, 100);
-  doc.text(title, MARGIN, 30);
-  doc.setDrawColor(212, 163, 74);
+
+  setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
+  const titleClean = sanitize(title);
+  doc.text(titleClean, MARGIN, 30);
+
+  doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
   doc.line(MARGIN, 34, PAGE_WIDTH - MARGIN, 34);
-  return 40;
+  return 42;
 }
 
 function addFooter(doc: jsPDF) {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
-    doc.setTextColor(140, 140, 140);
+    setFont(doc, "italic", 7, COLOR_MUTED);
     doc.text(
-      "Ce document est généré à titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable.",
+      sanitize("Ce document est genere a titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable."),
       MARGIN, 287
     );
-    doc.text(`Easyloc — Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
-    doc.setFillColor(26, 39, 68);
+    setFont(doc, "normal", 7, COLOR_MUTED);
+    doc.text(`Easyloc - Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
+    doc.setFillColor(...COLOR_PRIMARY);
     doc.rect(0, 290, PAGE_WIDTH, 7, "F");
   }
 }
 
 function addSection(doc: jsPDF, title: string, y: number): number {
-  if (y > 250) { doc.addPage(); y = 20; }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(26, 39, 68);
-  doc.text(title, MARGIN, y);
-  return y + 8;
+  y = checkPageBreak(doc, y, 20);
+  setFont(doc, "bold", FONT_SECTION, COLOR_PRIMARY);
+  doc.text(sanitize(title), MARGIN, y);
+  doc.setDrawColor(...COLOR_GOLD);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
+  return y + 9;
 }
 
 function addField(doc: jsPDF, label: string, value: string, y: number): number {
-  if (y > 265) { doc.addPage(); y = 20; }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(label, MARGIN, y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(30, 30, 30);
-  doc.text(value || "—", MARGIN, y + 5);
-  return y + 13;
+  y = checkPageBreak(doc, y, 16);
+  setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
+  doc.text(sanitize(label), MARGIN, y);
+  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+  doc.text(sanitize(value || "\u2014"), MARGIN, y + 5);
+  return y + 14;
 }
 
 function addParagraph(doc: jsPDF, text: string, y: number): number {
-  if (y > 250) { doc.addPage(); y = 20; }
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(50, 50, 50);
-  const lines = doc.splitTextToSize(text, CONTENT_WIDTH);
-  doc.text(lines, MARGIN, y);
-  return y + lines.length * 5 + 4;
+  y = checkPageBreak(doc, y, 15);
+  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+  const cleanText = sanitize(text);
+  const lines: string[] = doc.splitTextToSize(cleanText, CONTENT_WIDTH);
+  for (const line of lines) {
+    y = checkPageBreak(doc, y, LINE_HEIGHT + 2);
+    doc.text(line, MARGIN, y);
+    y += LINE_HEIGHT;
+  }
+  return y + 3;
 }
 
 // ====== UNIVERSAL TEMPLATE-BASED GENERATOR ======
@@ -104,11 +138,9 @@ export function generateFromTemplate(
 
   // Legal basis
   if (template.legalBasis) {
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "italic");
-    doc.text(`Base légale : ${template.legalBasis}`, MARGIN, y);
-    y += 8;
+    setFont(doc, "italic", 8, COLOR_MUTED);
+    doc.text(sanitize(`Base legale : ${template.legalBasis}`), MARGIN, y);
+    y += 9;
   }
 
   // Compute total for rental docs
@@ -127,13 +159,12 @@ export function generateFromTemplate(
   }
 
   // Signature block
-  y += 10;
-  if (y > 220) { doc.addPage(); y = 20; }
+  y += 8;
+  y = checkPageBreak(doc, y, 55);
   y = addParagraph(doc, "Fait en deux exemplaires originaux.", y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(50, 50, 50);
-  doc.text(`Fait à ________________, le ${new Date().toLocaleDateString("fr-FR")}`, MARGIN, y);
+
+  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+  doc.text(sanitize(`Fait a ________________, le ${new Date().toLocaleDateString("fr-FR")}`), MARGIN, y);
   y += 14;
 
   // Dual signature columns
@@ -141,14 +172,10 @@ export function generateFromTemplate(
   const sigStartY = y;
 
   // Landlord / Sender column
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text("Le bailleur / L'expéditeur", MARGIN, sigStartY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(30, 30, 30);
-  const landlordName = String(data.landlordName || data.senderName || data.hostName || data.presidentName || data.gerantName || "");
+  setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
+  doc.text("Le bailleur / L'expediteur", MARGIN, sigStartY);
+  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+  const landlordName = sanitize(String(data.landlordName || data.senderName || data.hostName || data.presidentName || data.gerantName || ""));
   if (landlordName) doc.text(landlordName, MARGIN, sigStartY + 6);
 
   if (signatures?.landlord) {
@@ -164,14 +191,10 @@ export function generateFromTemplate(
 
   // Tenant / Recipient column
   const col2X = MARGIN + colWidth + 10;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
+  setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
   doc.text("Le locataire / Le destinataire", col2X, sigStartY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(30, 30, 30);
-  const tenantName = String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || "");
+  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+  const tenantName = sanitize(String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || ""));
   if (tenantName) doc.text(tenantName, col2X, sigStartY + 6);
 
   if (signatures?.tenant) {
