@@ -7,9 +7,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData, type Property, type Tenant, type RentCall } from "@/hooks/useRentalData";
 import { getDocuments, type GeneratedDocument } from "@/lib/store";
-import { getTemplatesByCategory } from "@/lib/templates/registry";
+import { getTemplatesByCategory, getTemplateById } from "@/lib/templates/registry";
 import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
-import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
+import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
+import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
+import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -158,7 +161,138 @@ const RentalManagement = () => {
         const newTenant = { ...tenantForm, id: result as string } as Tenant;
         await sendTenantInvite(newTenant);
       }
+
+      // Auto-generate lease PDF for new tenants
+      if (!editingTenantId && tenantForm.lease_type && tenantForm.property_id) {
+        await autoGenerateLease(result as string, tenantForm);
+      }
+
       resetTenantForm();
+    }
+  };
+
+  /* ─── Auto-generate lease PDF ─── */
+  const autoGenerateLease = async (tenantId: string, form: typeof defaultTenantForm) => {
+    const leaseTemplateMap: Record<string, DocumentTemplate> = {
+      empty: frLeaseEmpty,
+      furnished: frLeaseFurnished,
+      commercial: frLeaseCommercial,
+    };
+    const template = leaseTemplateMap[form.lease_type];
+    if (!template) return;
+
+    const prop = properties.find(p => p.id === form.property_id);
+    if (!prop) return;
+
+    // Fetch landlord profile
+    let landlordName = user?.user_metadata?.name || "Propriétaire";
+    let landlordEmail = user?.email || "";
+    try {
+      const { data: profile } = await supabase.from("profiles").select("name, email").eq("id", user!.id).single();
+      if (profile?.name) landlordName = profile.name;
+      if (profile?.email) landlordEmail = profile.email;
+    } catch { /* use defaults */ }
+
+    const propertyTypeMap: Record<string, string> = {
+      apartment: "Appartement", house: "Maison", studio: "Studio",
+      commercial: "Local commercial", parking: "Parking / Garage",
+    };
+
+    const heatingMap: Record<string, string> = {
+      "individual-gas": "individuel-gaz", "individual-electric": "individuel-electrique",
+      "collective": "collectif", "heat-pump": "pompe-chaleur", "other": "autre",
+    };
+
+    // Build data payload matching template fields
+    const leaseData: Record<string, unknown> = {
+      // Bailleur
+      landlordName,
+      landlordAddress: prop.address ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
+      landlordEmail,
+      // Locataire
+      tenantName: form.name,
+      tenantBirthDate: form.birth_date || "",
+      tenantBirthPlace: form.birth_place || "",
+      tenantEmail: form.email || "",
+      tenantPhone: form.phone || "",
+      // Bien
+      propertyAddress: `${prop.address}, ${prop.postal_code} ${prop.city}`,
+      propertyType: propertyTypeMap[prop.property_type] || prop.property_type,
+      surface: prop.surface,
+      rooms: prop.rooms,
+      floor: prop.floor ?? "",
+      heating: heatingMap[prop.heating] || prop.heating,
+      hotWater: "individuel",
+      annexes: "",
+      equipments: "",
+      // Financier
+      rentAmount: form.rent_amount || prop.monthly_rent,
+      chargesAmount: form.charges_amount || prop.monthly_charges,
+      chargesMode: "provisions",
+      depositAmount: form.deposit_amount || prop.deposit_amount,
+      paymentDay: 5,
+      paymentMethod: "virement",
+      // Zone tendue
+      zoneTendue: "non",
+      // DPE
+      dpeLetter: "D",
+      gesLetter: "D",
+      // Dates
+      startDate: form.lease_start || new Date().toISOString().split("T")[0],
+      duration: form.lease_type === "furnished" ? "1" : form.lease_type === "commercial" ? "9" : "3",
+    };
+
+    // Commercial-specific fields
+    if (form.lease_type === "commercial") {
+      leaseData.tenantSiret = "";
+      leaseData.tenantRCS = "";
+      leaseData.tenantRepresentant = form.name;
+      leaseData.activity = "Toutes activités commerciales";
+      leaseData.allActivities = "oui";
+      leaseData.localDescription = "";
+      leaseData.parkingSpaces = 0;
+      leaseData.taxeFonciere = 0;
+      leaseData.indexationType = "ILC";
+      leaseData.paymentFrequency = "mensuel";
+      leaseData.tva = "non";
+      leaseData.droitBail = 0;
+      // Commercial: rentAmount = annual
+      leaseData.rentAmount = (form.rent_amount || prop.monthly_rent) * 12;
+      leaseData.chargesAmount = (form.charges_amount || prop.monthly_charges) * 12;
+    }
+
+    // Furnished-specific
+    if (form.lease_type === "furnished") {
+      leaseData.furnitureList = "Literie avec couette/couverture\nVolets ou rideaux occultants\nPlaques de cuisson\nFour ou micro-ondes\nRéfrigérateur\nVaisselle et ustensiles\nTable et chaises\nÉtagères de rangement\nLuminaires\nMatériel d'entretien ménager";
+    }
+
+    try {
+      const doc = generateFromTemplate(template, leaseData);
+      const pdfUri = pdfToDataUri(doc);
+      const leaseLabel = form.lease_type === "furnished" ? "Bail meublé" : form.lease_type === "commercial" ? "Bail commercial" : "Bail d'habitation vide";
+      const title = `${leaseLabel} — ${form.name}`;
+
+      // Save to documents table
+      if (orgId) {
+        await supabase.from("documents").insert({
+          org_id: orgId,
+          user_id: user!.id,
+          title,
+          doc_type: template.docType,
+          template_id: template.id,
+          template_version: template.version,
+          data_json: leaseData as any,
+          status: "draft",
+          country: "FR",
+        } as any);
+      }
+
+      // Auto-download
+      downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
+      toast({ title: "Bail généré automatiquement", description: `${leaseLabel} téléchargé pour ${form.name}` });
+    } catch (err) {
+      console.error("Auto-lease generation failed:", err);
+      toast({ title: "Info", description: "Le locataire a été créé, mais la génération du bail a échoué. Vous pouvez le générer manuellement.", variant: "destructive" });
     }
   };
 
