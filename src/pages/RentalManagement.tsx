@@ -252,10 +252,12 @@ const RentalManagement = () => {
 
     let landlordName = user?.user_metadata?.name || "Propriétaire";
     let landlordEmail = user?.email || "";
+    let landlordSignature = "";
     try {
-      const { data: profile } = await supabase.from("profiles").select("name, email").eq("id", user!.id).single();
+      const { data: profile } = await supabase.from("profiles").select("name, email, signature_url").eq("id", user!.id).single();
       if (profile?.name) landlordName = profile.name;
       if (profile?.email) landlordEmail = profile.email;
+      if (profile?.signature_url) landlordSignature = profile.signature_url;
     } catch { /* use defaults */ }
 
     const propertyTypeMap: Record<string, string> = { apartment: "Appartement", house: "Maison", studio: "Studio", commercial: "Local commercial", parking: "Parking / Garage" };
@@ -281,7 +283,8 @@ const RentalManagement = () => {
     }
 
     try {
-      const doc = generateFromTemplate(template, leaseData);
+      const signatures = landlordSignature ? { landlord: landlordSignature, tenant: "" } : undefined;
+      const doc = generateFromTemplate(template, leaseData, signatures);
       const leaseLabel = form.lease_type === "furnished" ? "Bail meublé" : form.lease_type === "commercial" ? "Bail commercial" : "Bail d'habitation vide";
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {
