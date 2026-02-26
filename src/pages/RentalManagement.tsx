@@ -357,7 +357,7 @@ const RentalManagement = () => {
       paymentDate: payment.paid_date || new Date().toISOString().split("T")[0],
     };
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-    const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined);
+    const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
     downloadPDF(doc, `Quittance_${tenant.name}_${payment.month}.pdf`);
     toast({ title: "Quittance PDF téléchargée" });
   };

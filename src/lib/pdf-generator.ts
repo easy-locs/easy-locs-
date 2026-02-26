@@ -132,7 +132,8 @@ export function generateFromTemplate(
   template: DocumentTemplate,
   data: Record<string, unknown>,
   signatures?: { landlord?: string; tenant?: string },
-  stamp?: string
+  stamp?: string,
+  options?: { skipTenantSignature?: boolean }
 ): jsPDF {
   const doc = new jsPDF();
   let y = addHeader(doc, template.label.toUpperCase());
@@ -197,23 +198,25 @@ export function generateFromTemplate(
     } catch { /* ignore invalid stamp image */ }
   }
 
-  // Tenant / Recipient column
-  const col2X = MARGIN + colWidth + 10;
-  setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
-  doc.text("Le locataire / Le destinataire", col2X, sigStartY);
-  setFont(doc, "normal", FONT_BODY, COLOR_BODY);
-  const tenantName = sanitize(String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || ""));
-  if (tenantName) doc.text(tenantName, col2X, sigStartY + 6);
+  // Tenant / Recipient column (only if not skipped)
+  if (!options?.skipTenantSignature) {
+    const col2X = MARGIN + colWidth + 10;
+    setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
+    doc.text("Le locataire / Le destinataire", col2X, sigStartY);
+    setFont(doc, "normal", FONT_BODY, COLOR_BODY);
+    const tenantName = sanitize(String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || ""));
+    if (tenantName) doc.text(tenantName, col2X, sigStartY + 6);
 
-  if (signatures?.tenant) {
-    try {
-      doc.addImage(signatures.tenant, "PNG", col2X, sigStartY + 10, colWidth, 25);
-    } catch { /* ignore invalid image */ }
-  } else {
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineDashPattern([2, 2], 0);
-    doc.rect(col2X, sigStartY + 10, colWidth, 25);
-    doc.setLineDashPattern([], 0);
+    if (signatures?.tenant) {
+      try {
+        doc.addImage(signatures.tenant, "PNG", col2X, sigStartY + 10, colWidth, 25);
+      } catch { /* ignore invalid image */ }
+    } else {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineDashPattern([2, 2], 0);
+      doc.rect(col2X, sigStartY + 10, colWidth, 25);
+      doc.setLineDashPattern([], 0);
+    }
   }
 
   addFooter(doc);
