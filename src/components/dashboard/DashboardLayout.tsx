@@ -5,7 +5,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import logoEasyloc from "@/assets/logo-easyloc.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import {
-  LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck,
+  LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck, Building,
   Wallet, FileText, Contact, Wrench, CheckSquare, StickyNote, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe,
@@ -28,6 +28,7 @@ const navSections: NavSection[] = [
     title: "L'ESSENTIEL",
     items: [
       { icon: LayoutDashboard, label: "Bureau", path: "/dashboard" },
+      { icon: Building, label: "Immeubles", path: "/dashboard/buildings" },
       { icon: Home, label: "Biens", path: "/dashboard/rental" },
       { icon: Users, label: "Locataires", path: "/dashboard/rental?tab=tenants" },
       { icon: KeyRound, label: "Locations", path: "/dashboard/leases" },
