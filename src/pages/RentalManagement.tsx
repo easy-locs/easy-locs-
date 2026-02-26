@@ -857,18 +857,19 @@ const RentalManagement = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: "Biens", value: properties.length, icon: Home },
-                { label: "Occupés", value: occupiedProperties, icon: Key },
-                { label: "Revenus/mois", value: fmt(totalRent + totalCharges), icon: Euro },
-                { label: "Impayés", value: unpaidCount, icon: AlertTriangle, danger: unpaidCount > 0 },
+                { label: "Biens", value: properties.length, icon: Home, tab: "properties" as Tab },
+                { label: "Occupés", value: occupiedProperties, icon: Key, tab: "properties" as Tab },
+                { label: "Revenus/mois", value: fmt(totalRent + totalCharges), icon: Euro, tab: "payments" as Tab },
+                { label: "Impayés", value: unpaidCount, icon: AlertTriangle, danger: unpaidCount > 0, tab: "payments" as Tab },
               ].map((kpi) => (
-                <div key={kpi.label} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                <button key={kpi.label} onClick={() => setActiveTab(kpi.tab)} className="bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
                   <div className="flex items-center gap-2 mb-1">
                     <kpi.icon className={`h-4 w-4 ${kpi.danger ? "text-destructive" : "text-muted-foreground"}`} />
                     <span className="text-xs text-muted-foreground">{kpi.label}</span>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors ml-auto" />
                   </div>
                   <div className={`text-2xl font-bold ${kpi.danger ? "text-destructive" : "text-foreground"}`}>{kpi.value}</div>
-                </div>
+                </button>
               ))}
             </div>
 
