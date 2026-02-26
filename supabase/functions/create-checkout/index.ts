@@ -44,13 +44,14 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard/billing?success=true`,
-      cancel_url: `${req.headers.get("origin")}/dashboard/billing?canceled=true`,
+      success_url: `${origin}/dashboard/billing?success=true`,
+      cancel_url: `${origin}/dashboard/billing?canceled=true`,
     });
 
     logStep("Checkout session created", { sessionId: session.id });
