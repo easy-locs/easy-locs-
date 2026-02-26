@@ -82,8 +82,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={logoAdminia} alt="Adminia" className="h-7 w-7 rounded" />
-              <span className="text-lg font-bold text-sidebar-foreground">Adminia</span>
+              <img src={logoAdminia} alt="Easyloc" className="h-7 w-7 rounded" />
+              <span className="text-lg font-bold text-sidebar-foreground">Easyloc</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground">
               <X className="h-5 w-5" />

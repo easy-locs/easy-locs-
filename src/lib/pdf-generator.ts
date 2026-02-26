@@ -35,7 +35,7 @@ function addHeader(doc: jsPDF, title: string): number {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(26, 39, 68);
-  doc.text("Adminia", MARGIN, 22);
+  doc.text("Easyloc", MARGIN, 22);
   doc.setFontSize(11);
   doc.setTextColor(100, 100, 100);
   doc.text(title, MARGIN, 30);
@@ -55,7 +55,7 @@ function addFooter(doc: jsPDF) {
       "Ce document est généré à titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable.",
       MARGIN, 287
     );
-    doc.text(`Adminia — Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
+    doc.text(`Easyloc — Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
     doc.setFillColor(26, 39, 68);
     doc.rect(0, 290, PAGE_WIDTH, 7, "F");
   }

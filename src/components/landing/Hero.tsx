@@ -42,7 +42,7 @@ const Hero = () => {
             className="text-lg sm:text-xl text-primary-foreground/70 mb-10 max-w-2xl leading-relaxed"
           >
             Quittances de loyer, baux, documents juridiques, rappels…
-            Adminia automatise votre administratif pour que vous puissiez vous concentrer sur l'essentiel.
+            Easyloc automatise votre gestion locative pour que vous puissiez vous concentrer sur l'essentiel.
           </motion.p>
 
           <motion.div

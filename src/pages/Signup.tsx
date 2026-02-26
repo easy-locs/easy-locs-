@@ -41,14 +41,14 @@ const Signup = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoAdminia} alt="Adminia" className="h-8 w-8 rounded" />
-          <span className="text-xl font-bold text-primary-foreground">Adminia</span>
+          <img src={logoAdminia} alt="Easyloc" className="h-8 w-8 rounded" />
+          <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
         </Link>
       </div>
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
         <h1 className="text-2xl font-bold text-foreground mb-1">Créer un compte</h1>
-        <p className="text-muted-foreground text-sm mb-8">Rejoignez Adminia gratuitement.</p>
+        <p className="text-muted-foreground text-sm mb-8">Rejoignez Easyloc gratuitement.</p>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
