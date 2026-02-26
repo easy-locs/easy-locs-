@@ -5,28 +5,52 @@ import { getTemplatesByCategory } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import {
   Building2, FileText, ChevronRight, Plus, Users, Briefcase, XCircle,
-  ArrowRight, ArrowLeft, CheckCircle, Rocket, MapPin, User
+  ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList
 } from "lucide-react";
 
-// Wizard steps
+// Entity types for wizard
 const entityTypes = [
   { key: "company-sas", label: "SAS", description: "Société par Actions Simplifiée — flexible, idéale pour startups et PME" },
   { key: "company-sarl", label: "SARL", description: "Société à Responsabilité Limitée — structure classique, encadrée" },
+  { key: "company-eurl", label: "EURL", description: "Entreprise Unipersonnelle à Responsabilité Limitée — SARL à associé unique" },
   { key: "micro-entrepreneur", label: "Micro-entreprise", description: "Statut simplifié pour activité individuelle" },
 ];
 
+// Map entity → related docs to generate
+const entityDocuments: Record<string, { docType: string; label: string; icon: typeof FileText }[]> = {
+  "company-sas": [
+    { docType: "company-sas", label: "Statuts SAS", icon: ScrollText },
+    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
+    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
+  ],
+  "company-sarl": [
+    { docType: "company-sarl", label: "Statuts SARL", icon: ScrollText },
+    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
+    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
+  ],
+  "company-eurl": [
+    { docType: "company-eurl", label: "Statuts EURL", icon: ScrollText },
+    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
+    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
+  ],
+  "micro-entrepreneur": [
+    { docType: "micro-entrepreneur", label: "Déclaration d'activité", icon: ScrollText },
+    { docType: "form-p0", label: "Formulaire P0 (Cerfa 15253)", icon: ClipboardList },
+  ],
+};
+
 const wizardSteps = [
-  { title: "Type de société", description: "Choisissez la forme juridique" },
-  { title: "Informations", description: "Renseignez les détails" },
-  { title: "Génération", description: "Créez vos documents" },
+  { title: "Type", description: "Forme juridique" },
+  { title: "Documents", description: "Choisir le document" },
+  { title: "Remplir", description: "Compléter et générer" },
 ];
 
 const sections = [
   {
     title: "Création d'entreprise",
-    description: "Statuts et formalités de constitution",
+    description: "Statuts, annonces légales et formalités",
     icon: Plus,
-    filter: (t: DocumentTemplate) => ["company-sas", "company-sarl", "micro-entrepreneur"].includes(t.docType),
+    filter: (t: DocumentTemplate) => ["company-sas", "company-sarl", "company-eurl", "micro-entrepreneur", "legal-notice", "form-m0", "form-p0"].includes(t.docType),
   },
   {
     title: "Modifications statutaires",
@@ -55,23 +79,36 @@ const Company = () => {
   const [selectedEntityType, setSelectedEntityType] = useState<string | null>(null);
   const companyTemplates = getTemplatesByCategory("company", "FR");
 
+  const resetWizard = () => {
+    setSelectedTemplate(null);
+    setWizardMode(false);
+    setWizardStep(0);
+    setSelectedEntityType(null);
+  };
+
+  // Document builder view
   if (selectedTemplate) {
     return (
       <DocumentBuilder
         template={selectedTemplate}
-        onBack={() => { setSelectedTemplate(null); setWizardMode(false); setWizardStep(0); }}
-        onGenerated={() => { setSelectedTemplate(null); setWizardMode(false); setWizardStep(0); }}
+        onBack={() => {
+          setSelectedTemplate(null);
+          if (wizardMode) setWizardStep(1);
+        }}
+        onGenerated={resetWizard}
       />
     );
   }
 
   // Wizard mode
   if (wizardMode) {
+    const docs = selectedEntityType ? entityDocuments[selectedEntityType] ?? [] : [];
+
     return (
       <DashboardLayout>
         <div className="max-w-2xl mx-auto">
-          <button onClick={() => { setWizardMode(false); setWizardStep(0); }} className="text-sm text-accent hover:underline mb-6 flex items-center gap-1">
-            ← Retour
+          <button onClick={resetWizard} className="text-sm text-accent hover:underline mb-6 flex items-center gap-1">
+            ← Retour à l'accueil
           </button>
 
           {/* Progress */}
@@ -128,50 +165,60 @@ const Company = () => {
             </div>
           )}
 
-          {/* Step 1: Info summary */}
+          {/* Step 1: Document selection */}
           {wizardStep === 1 && (
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Récapitulatif</h2>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Documents pour votre {entityTypes.find(e => e.key === selectedEntityType)?.label}
+              </h2>
               <p className="text-sm text-muted-foreground mb-6">
-                Vous allez créer les documents pour une <strong>{entityTypes.find(e => e.key === selectedEntityType)?.label}</strong>.
+                Sélectionnez le document à générer. Vous pourrez revenir ici pour les autres.
               </p>
-              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-accent" />
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Forme juridique</div>
-                    <div className="text-xs text-muted-foreground">{entityTypes.find(e => e.key === selectedEntityType)?.label}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-accent" />
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Documents générés</div>
-                    <div className="text-xs text-muted-foreground">Statuts, formulaires de constitution, annonce légale</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Rocket className="h-5 w-5 text-accent" />
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Prochaines étapes</div>
-                    <div className="text-xs text-muted-foreground">Remplir le formulaire, générer le PDF, déposer au greffe</div>
-                  </div>
+
+              <div className="space-y-3">
+                {docs.map((doc, i) => {
+                  const template = companyTemplates.find(t => t.docType === doc.docType);
+                  if (!template) return null;
+                  const DocIcon = doc.icon;
+                  return (
+                    <button
+                      key={doc.docType}
+                      onClick={() => setSelectedTemplate(template)}
+                      className="w-full flex items-center gap-4 bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover transition-all text-left group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+                        <DocIcon className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-foreground text-sm">{doc.label}</span>
+                          {i === 0 && (
+                            <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Principal</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
+                <Rocket className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                <div className="text-xs text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">Étapes après génération :</strong>
+                  {selectedEntityType === "micro-entrepreneur" ? (
+                    <span> Déclarez sur le guichet unique (formalites.entreprises.gouv.fr) avec votre formulaire P0.</span>
+                  ) : (
+                    <span> Signez les statuts → Déposez le capital → Publiez l'annonce légale → Déposez le dossier M0 au greffe.</span>
+                  )}
                 </div>
               </div>
-              <div className="flex gap-3 mt-6">
-                <button onClick={() => setWizardStep(0)} className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors">
-                  <ArrowLeft className="h-4 w-4" /> Retour
-                </button>
-                <button
-                  onClick={() => {
-                    const template = companyTemplates.find(t => t.docType === selectedEntityType);
-                    if (template) setSelectedTemplate(template);
-                  }}
-                  className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-6 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
-                >
-                  Créer les documents <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
+
+              <button onClick={() => setWizardStep(0)} className="mt-4 flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors">
+                <ArrowLeft className="h-4 w-4" /> Retour
+              </button>
             </div>
           )}
         </div>
@@ -179,6 +226,7 @@ const Company = () => {
     );
   }
 
+  // Main view
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
@@ -186,7 +234,7 @@ const Company = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Entreprise</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Créez, gérez et modifiez votre société — comme sur LegalStart, directement depuis Adminia.
+              Créez, gérez et modifiez votre société — SAS, SARL, EURL ou micro-entreprise.
             </p>
           </div>
           <button
