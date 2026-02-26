@@ -36,10 +36,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Subscription check only for landlords
-  if (userType === "landlord" && !subscription.loading && !subscription.subscribed && !isBillingPage && !isOnboarding) {
-    return <Navigate to="/dashboard/billing" replace />;
-  }
+  // Stripe disabled — skip subscription check
+  // if (userType === "landlord" && !subscription.loading && !subscription.subscribed && !isBillingPage && !isOnboarding) {
+  //   return <Navigate to="/dashboard/billing" replace />;
+  // }
 
   return <>{children}</>;
 };

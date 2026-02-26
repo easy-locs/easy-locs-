@@ -27,10 +27,10 @@ interface AuthContextType {
 }
 
 const defaultSubscription: SubscriptionState = {
-  subscribed: false,
-  plan: "free",
+  subscribed: true,
+  plan: "unlimited",
   subscriptionEnd: null,
-  loading: true,
+  loading: false,
   isTrial: false,
   trialDaysLeft: null,
 };
@@ -80,31 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const refreshSubscription = useCallback(async () => {
-    try {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) {
-        setSubscription((prev) => ({ ...prev, loading: false }));
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      const isTrial = data.plan === "trial";
-      let trialDaysLeft: number | null = null;
-      if (isTrial && data.subscription_end) {
-        trialDaysLeft = Math.max(0, Math.ceil((new Date(data.subscription_end).getTime() - Date.now()) / 86400000));
-      }
-      const plan = data.plan ?? "free";
-      setSubscription({
-        subscribed: data.subscribed ?? false,
-        plan,
-        subscriptionEnd: data.subscription_end ?? null,
-        loading: false,
-        isTrial,
-        trialDaysLeft,
-      });
-    } catch {
-      setSubscription((prev) => ({ ...prev, loading: false }));
-    }
+    // Stripe disabled — open access for now
   }, []);
 
   useEffect(() => {
