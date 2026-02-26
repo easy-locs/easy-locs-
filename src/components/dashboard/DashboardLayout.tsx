@@ -12,13 +12,14 @@ import {
   BrainCircuit,
   Send,
   Building2,
-  Share2,
+  Users,
   Settings,
   LogOut,
   Menu,
   X,
   CreditCard,
   ShieldCheck,
+  Globe,
 } from "lucide-react";
 
 const navItems = [
@@ -29,7 +30,8 @@ const navItems = [
   { icon: Building2, label: "Entreprise", path: "/dashboard/company" },
   { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
   { icon: FolderLock, label: "Coffre-fort", path: "/dashboard/vault" },
-  { icon: Share2, label: "Partages", path: "/dashboard/sharing" },
+  { icon: Users, label: "Locataires", path: "/dashboard/tenants" },
+  { icon: Globe, label: "Services", path: "/dashboard/services" },
   { icon: CreditCard, label: "Abonnement", path: "/dashboard/billing" },
 ];
 
