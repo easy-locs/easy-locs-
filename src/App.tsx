@@ -27,6 +27,11 @@ import Admin from "./pages/Admin";
 import Services from "./pages/Services";
 import Tenants from "./pages/Tenants";
 import RentalManagement from "./pages/RentalManagement";
+import Finances from "./pages/Finances";
+import Interventions from "./pages/Interventions";
+import Tasks from "./pages/Tasks";
+import Notes from "./pages/Notes";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +67,11 @@ const App = () => (
             <Route path="/dashboard/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
             <Route path="/dashboard/tenants" element={<ProtectedRoute><Tenants /></ProtectedRoute>} />
             <Route path="/dashboard/rental" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
+            <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
+            <Route path="/dashboard/interventions" element={<ProtectedRoute><Interventions /></ProtectedRoute>} />
+            <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+            <Route path="/dashboard/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+            <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

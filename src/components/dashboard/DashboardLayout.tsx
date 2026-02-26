@@ -4,34 +4,71 @@ import { useAuth } from "@/contexts/AuthContext";
 import logoAdminia from "@/assets/logo-adminia.png";
 import { Clock } from "lucide-react";
 import {
-  Shield,
   LayoutDashboard,
-  FileText,
   Home,
-  Bell,
-  FolderLock,
-  BrainCircuit,
-  Send,
-  Building2,
+  ChevronDown,
   Users,
+  KeyRound,
+  CalendarRange,
+  ClipboardList,
+  FileCheck,
+  Wallet,
+  FileText,
+  Contact,
+  Wrench,
+  CheckSquare,
+  StickyNote,
+  MessageCircle,
+  BrainCircuit,
   Settings,
   LogOut,
   Menu,
   X,
   CreditCard,
   ShieldCheck,
+  Building2,
+  Bell,
+  FolderLock,
   Globe,
 } from "lucide-react";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
-  { icon: Home, label: "Gestion locative", path: "/dashboard/rental" },
-  { icon: Send, label: "Documents", path: "/dashboard/documents" },
-  { icon: Building2, label: "Entreprise", path: "/dashboard/company" },
-  { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
-  { icon: FolderLock, label: "Coffre-fort", path: "/dashboard/vault" },
-  { icon: Globe, label: "Services", path: "/dashboard/services" },
-  { icon: CreditCard, label: "Abonnement", path: "/dashboard/billing" },
+interface NavItem {
+  icon: typeof LayoutDashboard;
+  label: string;
+  path: string;
+  badge?: number;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: "L'ESSENTIEL",
+    items: [
+      { icon: LayoutDashboard, label: "Bureau", path: "/dashboard" },
+      { icon: Home, label: "Biens", path: "/dashboard/rental" },
+      { icon: Users, label: "Locataires", path: "/dashboard/tenants" },
+      { icon: KeyRound, label: "Locations", path: "/dashboard/leases" },
+      { icon: ClipboardList, label: "Inventaires", path: "/dashboard/vault" },
+      { icon: FileCheck, label: "État des lieux", path: "/dashboard/receipts" },
+      { icon: Wallet, label: "Finances", path: "/dashboard/finances" },
+      { icon: FileText, label: "Documents", path: "/dashboard/documents" },
+    ],
+  },
+  {
+    title: "LE PLUS",
+    items: [
+      { icon: Contact, label: "Carnet", path: "/dashboard/company" },
+      { icon: Wrench, label: "Interventions", path: "/dashboard/interventions" },
+      { icon: CheckSquare, label: "Tâches", path: "/dashboard/tasks" },
+      { icon: StickyNote, label: "Notes", path: "/dashboard/notes" },
+      { icon: MessageCircle, label: "Messages", path: "/dashboard/messages" },
+      { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
+    ],
+  },
 ];
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -61,58 +98,94 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="flex items-center gap-2 px-6 h-16 border-b border-sidebar-border">
-          <img src={logoAdminia} alt="Adminia" className="h-7 w-7 rounded" />
-          <span className="text-lg font-bold text-sidebar-foreground">Adminia</span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        {/* Header with user info */}
+        <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img src={logoAdminia} alt="Adminia" className="h-7 w-7 rounded" />
+              <span className="text-lg font-bold text-sidebar-foreground">Adminia</span>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {user && (
+            <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>
+          )}
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-sidebar-accent text-sidebar-primary"
-                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 py-2 px-3 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.title} className="mb-3">
+              <p className="px-3 py-2 text-[11px] font-bold tracking-wider text-sidebar-foreground/40 uppercase">
+                {section.title}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const active = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        active
+                          ? "bg-sidebar-accent text-sidebar-primary"
+                          : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.label}</span>
+                      {item.badge && (
+                        <span className="bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border space-y-0.5">
+          <Link
+            to="/dashboard/billing"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+          >
+            <CreditCard className="h-4 w-4" />
+            Abonnement
+          </Link>
+          <Link
+            to="/dashboard/services"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+          >
+            <Globe className="h-4 w-4" />
+            Services
+          </Link>
           <Link
             to="/dashboard/admin"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <ShieldCheck className="h-5 w-5" />
+            <ShieldCheck className="h-4 w-4" />
             Admin
           </Link>
           <Link
             to="/dashboard/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-4 w-4" />
             Paramètres
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4 w-4" />
             Déconnexion
           </button>
         </div>
@@ -128,7 +201,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
-          {/* AI Assistant button */}
           <Link
             to="/dashboard/assistant"
             className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
