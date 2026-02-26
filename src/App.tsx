@@ -38,6 +38,7 @@ import PaymentNotices from "./pages/PaymentNotices";
 import DunningLetters from "./pages/DunningLetters";
 import FurnitureInventory from "./pages/FurnitureInventory";
 import Buildings from "./pages/Buildings";
+import Vault from "./pages/Vault";
 import NotFound from "./pages/NotFound";
 // Tenant portal
 import TenantDashboard from "./pages/tenant/TenantDashboard";
@@ -96,6 +97,7 @@ const App = () => (
             <Route path="/dashboard/furniture" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
             <Route path="/dashboard/buildings" element={<ProtectedRoute><Buildings /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
 
             {/* Protected — Tenant portal */}
             <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
