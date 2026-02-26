@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import logoAdminia from "@/assets/logo-adminia.png";
 import { Clock } from "lucide-react";
 import {
   Shield,
@@ -63,7 +64,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         }`}
       >
         <div className="flex items-center gap-2 px-6 h-16 border-b border-sidebar-border">
-          <Shield className="h-6 w-6 text-sidebar-primary" />
+          <img src={logoAdminia} alt="Adminia" className="h-7 w-7 rounded" />
           <span className="text-lg font-bold text-sidebar-foreground">Adminia</span>
           <button
             onClick={() => setSidebarOpen(false)}
