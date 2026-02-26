@@ -850,6 +850,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           siret: string | null
+          stamp_url: string | null
           stripe_account_id: string | null
           stripe_onboarding_complete: boolean
         }
@@ -866,6 +867,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           siret?: string | null
+          stamp_url?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }
@@ -882,6 +884,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           siret?: string | null
+          stamp_url?: string | null
           stripe_account_id?: string | null
           stripe_onboarding_complete?: boolean
         }

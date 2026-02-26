@@ -329,10 +329,25 @@ const RentalManagement = () => {
   };
 
   /* ─── Receipt generation ─── */
-  const generateReceiptForPayment = (payment: RentCall) => {
+  const generateReceiptForPayment = async (payment: RentCall) => {
     const tenant = tenants.find(t => t.id === payment.tenant_id);
-    if (!tenant) return;
+    if (!tenant || !user) return;
     const prop = properties.find(p => p.id === tenant.property_id);
+
+    // Fetch landlord signature + company stamp
+    let landlordSignature = "";
+    let stampUrl = "";
+    try {
+      const { data: profile } = await supabase.from("profiles").select("signature_url").eq("id", user.id).single();
+      if (profile?.signature_url) landlordSignature = profile.signature_url;
+    } catch { /* ignore */ }
+    if (orgId) {
+      try {
+        const { data: orgData } = await supabase.from("orgs").select("stamp_url").eq("id", orgId).single();
+        if ((orgData as any)?.stamp_url) stampUrl = (orgData as any).stamp_url;
+      } catch { /* ignore */ }
+    }
+
     const data: Record<string, unknown> = {
       ownerName: user?.user_metadata?.name || "Propriétaire", ownerAddress: prop?.address || "",
       tenantName: tenant.name, tenantAddress: prop ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
@@ -341,7 +356,8 @@ const RentalManagement = () => {
       periodStart: `${payment.month}-01`, periodEnd: `${payment.month}-${new Date(+payment.month.split("-")[0], +payment.month.split("-")[1], 0).getDate()}`,
       paymentDate: payment.paid_date || new Date().toISOString().split("T")[0],
     };
-    const doc = generateFromTemplate(frRentReceipt, data);
+    const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
+    const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined);
     downloadPDF(doc, `Quittance_${tenant.name}_${payment.month}.pdf`);
     toast({ title: "Quittance PDF téléchargée" });
   };

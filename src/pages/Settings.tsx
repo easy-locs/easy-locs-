@@ -10,9 +10,10 @@ const Settings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
-  const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "" });
+  const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "" });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingStamp, setUploadingStamp] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -23,11 +24,11 @@ const Settings = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url").eq("id", orgId).single().then(({ data }) => {
+    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url").eq("id", orgId).single().then(({ data }) => {
       if (data) setOrg({
         name: data.name || "", address: (data as any).address || "", postal_code: (data as any).postal_code || "",
         city: (data as any).city || "", phone: (data as any).phone || "", siret: (data as any).siret || "",
-        email: (data as any).email || "", logo_url: (data as any).logo_url || "",
+        email: (data as any).email || "", logo_url: (data as any).logo_url || "", stamp_url: (data as any).stamp_url || "",
       });
     });
   }, [orgId]);
@@ -135,6 +136,49 @@ const Settings = () => {
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Changer le logo"}
                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 </label>
+              </div>
+            </div>
+
+            {/* Company Stamp / Tampon */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Tampon de société</label>
+              <p className="text-xs text-muted-foreground mb-2">Apparaîtra automatiquement sur vos quittances et documents.</p>
+              <div className="flex items-center gap-4">
+                {org.stamp_url ? (
+                  <img src={org.stamp_url} alt="Tampon" className="h-16 w-16 object-contain rounded-lg border border-border" />
+                ) : (
+                  <div className="h-16 w-16 rounded-lg border border-dashed border-border flex items-center justify-center">
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+                <label className="cursor-pointer bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted/80">
+                  {uploadingStamp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ajouter un tampon"}
+                  <input type="file" accept="image/*" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !orgId) return;
+                    setUploadingStamp(true);
+                    const path = `${orgId}/stamp-${Date.now()}.${file.name.split(".").pop()}`;
+                    const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
+                    if (error) {
+                      toast({ title: "Erreur upload", description: error.message, variant: "destructive" });
+                    } else {
+                      const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
+                      const stampUrl = urlData.publicUrl;
+                      await supabase.from("orgs").update({ stamp_url: stampUrl } as any).eq("id", orgId);
+                      setOrg(prev => ({ ...prev, stamp_url: stampUrl }));
+                      toast({ title: "Tampon mis à jour" });
+                    }
+                    setUploadingStamp(false);
+                  }} className="hidden" />
+                </label>
+                {org.stamp_url && (
+                  <button onClick={async () => {
+                    if (!orgId) return;
+                    await supabase.from("orgs").update({ stamp_url: null } as any).eq("id", orgId);
+                    setOrg(prev => ({ ...prev, stamp_url: "" }));
+                    toast({ title: "Tampon supprimé" });
+                  }} className="text-xs text-destructive hover:underline">Supprimer</button>
+                )}
               </div>
             </div>
 
