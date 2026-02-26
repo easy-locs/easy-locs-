@@ -8,7 +8,7 @@ import { frFormalNotice } from "./fr/formal-notice";
 import { frTermination } from "./fr/termination";
 import { frCompanySAS, frCompanySARL, frCompanyEURL, frMicroEntrepreneur, frLegalNotice, frFormM0, frFormP0 } from "./fr/company-creation";
 import { frChangeDirector, frChangeOffice, frChangeActivity } from "./fr/company-changes";
-import { frPVAGO, frAccountsApproval, frShareTransfer, frCapitalIncrease, frDissolution } from "./fr/company-admin";
+import { frPVAGO, frAccountsApproval, frShareTransfer, frCapitalIncrease, frDissolution, frPVAGE, frActeCession, frRapportGestion } from "./fr/company-admin";
 import { frInventory, frRentRevision, frChargesRegularization, frUnpaidNotice } from "./fr/rental-extras";
 import { allEuropeTemplates } from "./europe-packs";
 
@@ -45,6 +45,10 @@ const allTemplates: DocumentTemplate[] = [
   frShareTransfer,
   frCapitalIncrease,
   frDissolution,
+  // France — Company admin (new)
+  frPVAGE,
+  frActeCession,
+  frRapportGestion,
   // Europe packs — stubs
   ...allEuropeTemplates,
 ];
