@@ -244,19 +244,38 @@ export function useRentalData() {
     await loadRentCalls();
   };
 
-  /* ─── Send tenant invite (magic link) ─── */
+  /* ─── Send tenant invite (invitation link) ─── */
   const sendTenantInvite = async (tenant: Tenant) => {
     if (!tenant.email) {
       toast({ title: "Erreur", description: "Le locataire n'a pas d'email", variant: "destructive" });
       return;
     }
+    if (!orgId || !user) return;
+
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      // Generate unique token
+      const token = crypto.randomUUID() + "-" + crypto.randomUUID();
+
+      // Create invitation record
+      const { error: invError } = await supabase.from("tenant_invitations").insert({
+        org_id: orgId,
+        tenant_id: tenant.id,
+        token,
         email: tenant.email,
-        options: { shouldCreateUser: true, data: { name: tenant.name, role: "tenant" } },
+        invited_by: user.id,
       });
-      if (error) throw error;
-      toast({ title: "Invitation envoyée", description: `Un lien de connexion a été envoyé à ${tenant.email}` });
+      if (invError) throw invError;
+
+      // Build invitation URL
+      const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
+
+      // Copy to clipboard for the landlord to share
+      await navigator.clipboard.writeText(inviteUrl);
+
+      toast({
+        title: "Lien d'invitation copié !",
+        description: `Envoyez ce lien à ${tenant.name} pour qu'il crée son compte locataire. Le lien expire dans 7 jours.`,
+      });
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     }

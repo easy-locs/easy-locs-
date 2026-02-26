@@ -1081,7 +1081,14 @@ const RentalManagement = () => {
                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${active ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
                             {active ? "Actif" : "Résilié"}
                           </span>
-                          {t.tenant_user_id && <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full">Compte</span>}
+                          {t.tenant_user_id ? (
+                            <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />Connecté</span>
+                          ) : t.email ? (
+                            <button onClick={(e) => { e.stopPropagation(); handleInviteTenant(t); }} disabled={invitingTenantId === t.id}
+                              className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full flex items-center gap-0.5 hover:bg-accent/20 disabled:opacity-50">
+                              <Link2 className="h-2.5 w-2.5" />{invitingTenantId === t.id ? "Copie…" : "Inviter"}
+                            </button>
+                          ) : null}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
                           {prop && <span className="flex items-center gap-1"><Home className="h-3 w-3" />{prop.label}</span>}

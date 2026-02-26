@@ -47,6 +47,7 @@ import TenantMessages from "./pages/tenant/TenantMessages";
 import TenantPay from "./pages/tenant/TenantPay";
 import TenantSettings from "./pages/tenant/TenantSettings";
 import TenantRequests from "./pages/tenant/TenantRequests";
+import TenantSignup from "./pages/TenantSignup";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/tenant-signup" element={<TenantSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
