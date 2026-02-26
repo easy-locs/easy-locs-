@@ -32,6 +32,8 @@ import Interventions from "./pages/Interventions";
 import Tasks from "./pages/Tasks";
 import Notes from "./pages/Notes";
 import Messages from "./pages/Messages";
+import ChargesRegularization from "./pages/ChargesRegularization";
+import FiscalReport from "./pages/FiscalReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +74,8 @@ const App = () => (
             <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
             <Route path="/dashboard/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
             <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/dashboard/charges" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
+            <Route path="/dashboard/fiscal" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

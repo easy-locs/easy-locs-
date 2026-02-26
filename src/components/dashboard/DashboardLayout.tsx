@@ -55,6 +55,8 @@ const navSections: NavSection[] = [
       { icon: ClipboardList, label: "Inventaires", path: "/dashboard/vault" },
       { icon: FileCheck, label: "État des lieux", path: "/dashboard/receipts" },
       { icon: Wallet, label: "Finances", path: "/dashboard/finances" },
+      { icon: CalendarRange, label: "Régul. charges", path: "/dashboard/charges" },
+      { icon: FileCheck, label: "Bilan fiscal", path: "/dashboard/fiscal" },
       { icon: FileText, label: "Documents", path: "/dashboard/documents" },
     ],
   },
