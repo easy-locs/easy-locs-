@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -29,6 +30,7 @@ const fileIcon = (name: string) => {
 
 const Vault = () => {
   const { user, orgId } = useAuth();
+  const { t, locale } = useI18n();
   const { toast } = useToast();
   const [files, setFiles] = useState<VaultFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,11 +62,9 @@ const Vault = () => {
         .upload(path, file);
 
       if (uploadError) {
-        toast({ title: "Erreur d'upload", description: uploadError.message, variant: "destructive" });
+        toast({ title: t("page.vault.upload_error"), description: uploadError.message, variant: "destructive" });
         continue;
       }
-
-      const { data: urlData } = supabase.storage.from("vault").getPublicUrl(path);
 
       await supabase.from("vault_files").insert({
         org_id: orgId,
@@ -75,7 +75,7 @@ const Vault = () => {
       });
     }
 
-    toast({ title: "Fichier(s) ajouté(s) au coffre-fort" });
+    toast({ title: t("page.vault.uploaded") });
     await loadFiles();
     setUploading(false);
     e.target.value = "";
@@ -87,7 +87,7 @@ const Vault = () => {
       .download(file.file_url);
 
     if (error || !data) {
-      toast({ title: "Erreur", description: "Impossible de télécharger le fichier", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("page.vault.download_error"), variant: "destructive" });
       return;
     }
 
@@ -100,11 +100,11 @@ const Vault = () => {
   };
 
   const handleDelete = async (file: VaultFile) => {
-    if (!confirm(`Supprimer "${file.filename}" ?`)) return;
+    if (!confirm(`${t("page.vault.delete_confirm")} "${file.filename}" ?`)) return;
 
     await supabase.storage.from("vault").remove([file.file_url]);
     await supabase.from("vault_files").delete().eq("id", file.id);
-    toast({ title: "Fichier supprimé" });
+    toast({ title: t("page.vault.deleted") });
     await loadFiles();
   };
 
@@ -121,15 +121,15 @@ const Vault = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <FolderLock className="h-6 w-6 text-accent" />
-              Coffre-fort
+              {t("page.vault.title")}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {files.length} fichier{files.length !== 1 ? "s" : ""} · {fmtSize(totalSize)}
+              {files.length} {t("dashboard.files")} · {fmtSize(totalSize)}
             </p>
           </div>
           <label className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {uploading ? "Envoi…" : "Ajouter"}
+            {uploading ? t("page.vault.uploading") : t("page.vault.add")}
             <input type="file" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
         </div>
@@ -141,7 +141,7 @@ const Vault = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un fichier…"
+            placeholder={t("page.vault.search")}
             className="w-full bg-muted/50 border border-border/50 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
           {search && (
@@ -159,8 +159,8 @@ const Vault = () => {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             <FolderLock className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">{search ? "Aucun fichier trouvé" : "Votre coffre-fort est vide"}</p>
-            <p className="text-sm mt-1">Ajoutez des fichiers pour les stocker en toute sécurité.</p>
+            <p className="font-medium">{search ? t("page.vault.empty_search") : t("page.vault.empty")}</p>
+            <p className="text-sm mt-1">{t("page.vault.empty_hint")}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -177,21 +177,21 @@ const Vault = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{file.filename}</p>
                     <p className="text-xs text-muted-foreground">
-                      {file.size ? fmtSize(file.size) : "—"} · {new Date(file.created_at).toLocaleDateString("fr-FR")}
+                      {file.size ? fmtSize(file.size) : "—"} · {new Date(file.created_at).toLocaleDateString(locale === "en" ? "en-US" : locale)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleDownload(file)}
                       className="text-muted-foreground hover:text-foreground"
-                      title="Télécharger"
+                      title={t("page.vault.download")}
                     >
                       <Download className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(file)}
                       className="text-muted-foreground/40 hover:text-destructive transition-colors"
-                      title="Supprimer"
+                      title={t("page.vault.delete_confirm")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
