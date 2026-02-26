@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@17.7.0?target=deno&deno-std=0.190.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -82,10 +82,10 @@ serve(async (req) => {
       throw new Error("Le propriétaire n'a pas encore configuré son compte de paiement Stripe Connect");
     }
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
     
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
     const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
 
     const currency = COUNTRY_CURRENCY[org.country || "FR"] || "eur";
