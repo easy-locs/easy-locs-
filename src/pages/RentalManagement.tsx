@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import InventoryBuilder from "@/components/rental/InventoryBuilder";
 import TenantDocuments from "@/components/rental/TenantDocuments";
+import InventoryTab from "@/components/rental/InventoryTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData, type Property, type Tenant, type RentCall } from "@/hooks/useRentalData";
@@ -1031,71 +1032,16 @@ const RentalManagement = () => {
 
         {/* ─── Inventory Tab ─── */}
         {activeTab === "inventory" && (
-          <div>
-            <h2 className="font-semibold text-foreground mb-4">États des lieux</h2>
-            {properties.length === 0 ? (
-              <div className="text-center py-16">
-                <ClipboardCheck className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground">Ajoutez d'abord un bien.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {properties.map(p => {
-                  const propTenants = tenants.filter(t => t.property_id === p.id);
-                  return (
-                    <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <span className="font-semibold text-foreground text-sm">{p.label}</span>
-                          <span className="text-xs text-muted-foreground ml-2">{p.address}, {p.city}</span>
-                        </div>
-                      </div>
-                      {propTenants.length > 0 && (
-                        <div className="mb-3">
-                          <p className="text-xs text-muted-foreground mb-1">Locataire(s) :</p>
-                          <div className="flex flex-wrap gap-1">
-                            {propTenants.map(t => (
-                              <span key={t.id} className={`text-xs px-2 py-0.5 rounded-full ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                                {t.name} {!isLeaseActive(t) && "(résilié)"}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex gap-2 flex-wrap">
-                        {propTenants.filter(isLeaseActive).length > 0 ? (
-                          propTenants.filter(isLeaseActive).map(t => (
-                            <div key={t.id} className="flex gap-2">
-                              <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: t.id, reportType: "entry", propertyLabel: p.label })}
-                                className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                                <ClipboardCheck className="h-4 w-4" />Entrée ({t.name})
-                              </button>
-                              <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: t.id, reportType: "exit", propertyLabel: p.label })}
-                                className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                                <ClipboardCheck className="h-4 w-4" />Sortie ({t.name})
-                              </button>
-                            </div>
-                          ))
-                        ) : (
-                          <>
-                            <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "entry", propertyLabel: p.label })}
-                              className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                              <ClipboardCheck className="h-4 w-4" />Entrée
-                            </button>
-                            <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "exit", propertyLabel: p.label })}
-                              className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                              <ClipboardCheck className="h-4 w-4" />Sortie
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <InventoryTab
+            properties={properties}
+            tenants={tenants}
+            orgId={orgId}
+            isLeaseActive={isLeaseActive}
+            setInventoryMode={setInventoryMode}
+          />
         )}
+
+
 
         {/* ─── Documents Tab ─── */}
         {activeTab === "documents" && (

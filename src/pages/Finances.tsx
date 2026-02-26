@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, startOfMonth, subMonths } from "date-fns";
+import { format, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface ConnectStatus {
@@ -29,7 +29,28 @@ interface RentCall {
   paid: boolean | null;
   paid_date: string | null;
   tenant_id: string;
+  property_id: string | null;
 }
+
+interface Expense {
+  id: string;
+  label: string;
+  amount: number;
+  category: string;
+  expense_date: string;
+  property_id: string | null;
+}
+
+interface Property {
+  id: string;
+  label: string;
+}
+
+const EXPENSE_CATEGORIES: Record<string, string> = {
+  travaux: "Travaux", assurance: "Assurance", taxe_fonciere: "Taxe foncière",
+  charges_copro: "Charges copro", interet_emprunt: "Intérêts emprunt",
+  frais_gestion: "Frais gestion", diagnostics: "Diagnostics", honoraires: "Honoraires", other: "Autre",
+};
 
 const COLORS = ["hsl(var(--accent))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
 
@@ -41,7 +62,10 @@ const Finances = () => {
   const [connectLoading, setConnectLoading] = useState(true);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [propertyFilter, setPropertyFilter] = useState("");
 
   const checkConnectStatus = async () => {
     try {
@@ -55,30 +79,27 @@ const Finances = () => {
     }
   };
 
-  const fetchRentCalls = async () => {
+  const fetchData = async () => {
     if (!orgId) return;
     try {
-      const { data, error } = await supabase
-        .from("rent_calls")
-        .select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id")
-        .eq("org_id", orgId)
-        .order("month", { ascending: true });
-      if (error) throw error;
-      setRentCalls(data || []);
+      const [{ data: rc }, { data: exp }, { data: props }] = await Promise.all([
+        supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id").eq("org_id", orgId).order("month", { ascending: true }),
+        supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
+        supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
+      ]);
+      setRentCalls(rc || []);
+      setExpenses(exp || []);
+      setProperties(props || []);
     } catch {
       setRentCalls([]);
+      setExpenses([]);
     } finally {
       setDataLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (user) checkConnectStatus();
-  }, [user]);
-
-  useEffect(() => {
-    if (orgId) fetchRentCalls();
-  }, [orgId]);
+  useEffect(() => { if (user) checkConnectStatus(); }, [user]);
+  useEffect(() => { if (orgId) fetchData(); }, [orgId]);
 
   useEffect(() => {
     if (searchParams.get("connect") === "success") {
@@ -100,55 +121,76 @@ const Finances = () => {
     }
   };
 
+  // Filter by property
+  const filteredRentCalls = propertyFilter ? rentCalls.filter(r => r.property_id === propertyFilter) : rentCalls;
+  const filteredExpenses = propertyFilter ? expenses.filter(e => e.property_id === propertyFilter) : expenses;
+
   // KPIs
   const kpis = useMemo(() => {
     const currentMonth = format(new Date(), "yyyy-MM");
-    const currentMonthCalls = rentCalls.filter(r => r.month === currentMonth);
-    const allPaid = rentCalls.filter(r => r.paid);
-    const allUnpaid = rentCalls.filter(r => !r.paid);
+    const currentMonthCalls = filteredRentCalls.filter(r => r.month === currentMonth);
+    const allPaid = filteredRentCalls.filter(r => r.paid);
+    const allUnpaid = filteredRentCalls.filter(r => !r.paid);
 
     const revenueThisMonth = currentMonthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
     const expectedThisMonth = currentMonthCalls.reduce((s, r) => s + Number(r.total_amount), 0);
     const totalRevenue = allPaid.reduce((s, r) => s + Number(r.total_amount), 0);
     const totalUnpaid = allUnpaid.reduce((s, r) => s + Number(r.total_amount), 0);
+    const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    const netResult = totalRevenue - totalExpenses;
     const occupancyRate = currentMonthCalls.length > 0
       ? Math.round((currentMonthCalls.filter(r => r.paid).length / currentMonthCalls.length) * 100)
       : 0;
 
-    return { revenueThisMonth, expectedThisMonth, totalRevenue, totalUnpaid, occupancyRate };
-  }, [rentCalls]);
+    return { revenueThisMonth, expectedThisMonth, totalRevenue, totalUnpaid, totalExpenses, netResult, occupancyRate };
+  }, [filteredRentCalls, filteredExpenses]);
 
   // Monthly bar chart data (last 12 months)
   const monthlyData = useMemo(() => {
-    const months: { month: string; label: string; encaissé: number; impayé: number }[] = [];
+    const months: { month: string; label: string; encaissé: number; impayé: number; dépenses: number }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = subMonths(new Date(), i);
       const key = format(d, "yyyy-MM");
       const label = format(d, "MMM yy", { locale: fr });
-      const calls = rentCalls.filter(r => r.month === key);
+      const calls = filteredRentCalls.filter(r => r.month === key);
       const paid = calls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
       const unpaid = calls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-      months.push({ month: key, label, encaissé: paid, impayé: unpaid });
+      const exp = filteredExpenses.filter(e => e.expense_date.startsWith(key)).reduce((s, e) => s + Number(e.amount), 0);
+      months.push({ month: key, label, encaissé: paid, impayé: unpaid, dépenses: exp });
     }
     return months;
-  }, [rentCalls]);
+  }, [filteredRentCalls, filteredExpenses]);
 
   // Pie chart
   const pieData = useMemo(() => {
-    const paid = rentCalls.filter(r => r.paid).length;
-    const unpaid = rentCalls.filter(r => !r.paid).length;
+    const paid = filteredRentCalls.filter(r => r.paid).length;
+    const unpaid = filteredRentCalls.filter(r => !r.paid).length;
     return [
       { name: "Payés", value: paid },
       { name: "Impayés", value: unpaid },
     ].filter(d => d.value > 0);
-  }, [rentCalls]);
+  }, [filteredRentCalls]);
+
+  // Expenses by category
+  const expensesByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredExpenses.forEach(e => {
+      map[e.category] = (map[e.category] || 0) + Number(e.amount);
+    });
+    return Object.entries(map).map(([cat, amount]) => ({
+      name: EXPENSE_CATEGORIES[cat] || cat,
+      value: amount,
+    })).sort((a, b) => b.value - a.value);
+  }, [filteredExpenses]);
 
   const chartConfig = {
     encaissé: { label: "Encaissé", color: "hsl(var(--accent))" },
     impayé: { label: "Impayé", color: "hsl(var(--destructive))" },
+    dépenses: { label: "Dépenses", color: "hsl(var(--muted-foreground))" },
   };
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
 
   return (
     <DashboardLayout>
@@ -156,34 +198,42 @@ const Finances = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Finances</h1>
-            <p className="text-muted-foreground mt-1">Suivi des revenus locatifs, charges et paiements en ligne</p>
+            <p className="text-muted-foreground mt-1">Revenus locatifs, dépenses et résultat net</p>
           </div>
-          {rentCalls.length > 0 && (
-            <button
-              onClick={() => exportToCSV(
-                rentCalls.map(r => ({
-                  mois: r.month,
-                  loyer: r.rent_amount,
-                  charges: r.charges_amount,
-                  total: r.total_amount,
-                  payé: r.paid ? "Oui" : "Non",
-                  date_paiement: r.paid_date || "",
-                })),
-                "finances_loyers",
-                [
-                  { key: "mois", label: "Mois" },
-                  { key: "loyer", label: "Loyer (€)" },
-                  { key: "charges", label: "Charges (€)" },
-                  { key: "total", label: "Total (€)" },
-                  { key: "payé", label: "Payé" },
-                  { key: "date_paiement", label: "Date de paiement" },
-                ]
-              )}
-              className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
-            >
-              <Download className="h-4 w-4" /> Export CSV
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Property filter */}
+            <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
+              className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              <option value="">Tous les biens</option>
+              {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+            {rentCalls.length > 0 && (
+              <button
+                onClick={() => exportToCSV(
+                  filteredRentCalls.map(r => ({
+                    mois: r.month,
+                    loyer: r.rent_amount,
+                    charges: r.charges_amount,
+                    total: r.total_amount,
+                    payé: r.paid ? "Oui" : "Non",
+                    date_paiement: r.paid_date || "",
+                  })),
+                  "finances_loyers",
+                  [
+                    { key: "mois", label: "Mois" },
+                    { key: "loyer", label: "Loyer (€)" },
+                    { key: "charges", label: "Charges (€)" },
+                    { key: "total", label: "Total (€)" },
+                    { key: "payé", label: "Payé" },
+                    { key: "date_paiement", label: "Date de paiement" },
+                  ]
+                )}
+                className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
+              >
+                <Download className="h-4 w-4" /> Export CSV
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stripe Connect Card */}
@@ -219,7 +269,7 @@ const Finances = () => {
               ) : connectStatus?.connected ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-yellow-600 text-sm">
-                    <AlertTriangle className="h-4 w-4" /> Onboarding en cours — complétez la vérification pour recevoir les paiements
+                    <AlertTriangle className="h-4 w-4" /> Onboarding en cours — complétez la vérification
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
                     {onboardingLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
@@ -242,44 +292,64 @@ const Finances = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                <span className="text-xs text-muted-foreground">Encaissé ce mois</span>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                <span className="text-[10px] text-muted-foreground">Encaissé ce mois</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.revenueThisMonth)}</p>
-              <p className="text-xs text-muted-foreground mt-1">sur {fmt(kpis.expectedThisMonth)} attendu</p>
+              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.revenueThisMonth)}</p>
+              <p className="text-[10px] text-muted-foreground">sur {fmt(kpis.expectedThisMonth)}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <TrendingDown className="h-5 w-5 text-destructive" />
-                <span className="text-xs text-muted-foreground">Total impayés</span>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingDown className="h-4 w-4 text-destructive" />
+                <span className="text-[10px] text-muted-foreground">Impayés</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalUnpaid)}</p>
-              <p className="text-xs text-muted-foreground mt-1">{rentCalls.filter(r => !r.paid).length} appel(s)</p>
+              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalUnpaid)}</p>
+              <p className="text-[10px] text-muted-foreground">{filteredRentCalls.filter(r => !r.paid).length} appel(s)</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <PiggyBank className="h-5 w-5 text-accent" />
-                <span className="text-xs text-muted-foreground">Total encaissé</span>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <PiggyBank className="h-4 w-4 text-accent" />
+                <span className="text-[10px] text-muted-foreground">Total encaissé</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalRevenue)}</p>
+              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalRevenue)}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <BarChart3 className="h-5 w-5 text-accent" />
-                <span className="text-xs text-muted-foreground">Taux d'encaissement</span>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Wallet className="h-4 w-4 text-destructive" />
+                <span className="text-[10px] text-muted-foreground">Total dépenses</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{dataLoading ? "..." : `${kpis.occupancyRate}%`}</p>
-              <p className="text-xs text-muted-foreground mt-1">ce mois-ci</p>
+              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalExpenses)}</p>
+              <p className="text-[10px] text-muted-foreground">{filteredExpenses.length} dépense(s)</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="h-4 w-4 text-accent" />
+                <span className="text-[10px] text-muted-foreground">Résultat net</span>
+              </div>
+              <p className={`text-lg font-bold ${kpis.netResult >= 0 ? "text-green-600" : "text-destructive"}`}>
+                {dataLoading ? "..." : fmt(kpis.netResult)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="h-4 w-4 text-accent" />
+                <span className="text-[10px] text-muted-foreground">Taux encaissement</span>
+              </div>
+              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : `${kpis.occupancyRate}%`}</p>
             </CardContent>
           </Card>
         </div>
@@ -287,20 +357,22 @@ const Finances = () => {
         {/* Charts */}
         <Tabs defaultValue="bar" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="bar">Revenus mensuels</TabsTrigger>
-            <TabsTrigger value="pie">Répartition</TabsTrigger>
+            <TabsTrigger value="bar">Revenus & Dépenses</TabsTrigger>
+            <TabsTrigger value="pie">Paiements</TabsTrigger>
+            <TabsTrigger value="expenses">Dépenses par catégorie</TabsTrigger>
+            <TabsTrigger value="detail">Détail dépenses</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bar">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Revenus des 12 derniers mois</CardTitle>
+                <CardTitle className="text-base">Revenus vs Dépenses — 12 derniers mois</CardTitle>
               </CardHeader>
               <CardContent>
-                {rentCalls.length === 0 ? (
+                {filteredRentCalls.length === 0 && filteredExpenses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Wallet className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Aucun appel de loyer — les graphiques apparaîtront automatiquement.</p>
+                    <p className="text-sm">Aucune donnée — les graphiques apparaîtront automatiquement.</p>
                   </div>
                 ) : (
                   <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -311,6 +383,7 @@ const Finances = () => {
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="encaissé" fill="var(--color-encaissé)" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="impayé" fill="var(--color-impayé)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="dépenses" fill="var(--color-dépenses)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ChartContainer>
                 )}
@@ -341,6 +414,64 @@ const Finances = () => {
                         <ChartTooltip />
                       </PieChart>
                     </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="expenses">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Dépenses par catégorie</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {expensesByCategory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Wallet className="h-10 w-10 mb-2 opacity-30" />
+                    <p className="text-sm">Aucune dépense enregistrée.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {expensesByCategory.map((cat, i) => (
+                      <div key={cat.name} className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <span className="text-sm text-foreground flex-1">{cat.name}</span>
+                        <span className="text-sm font-semibold text-foreground">{fmt(cat.value)}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-border pt-2 mt-2 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-foreground">Total</span>
+                      <span className="text-sm font-bold text-foreground">{fmt(kpis.totalExpenses)}</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="detail">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Dernières dépenses</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredExpenses.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Wallet className="h-10 w-10 mb-2 opacity-30" />
+                    <p className="text-sm">Aucune dépense enregistrée.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredExpenses.slice(0, 20).map(e => (
+                      <div key={e.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{e.label}</p>
+                          <p className="text-xs text-muted-foreground">{e.expense_date} · {EXPENSE_CATEGORIES[e.category] || e.category} · {propName(e.property_id)}</p>
+                        </div>
+                        <span className="text-sm font-semibold text-foreground">{fmt(Number(e.amount))}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
