@@ -16,6 +16,7 @@ const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", e
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription } = useAuth();
@@ -133,19 +134,24 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
           <div className="flex-1" />
           {/* Language selector */}
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <div className="relative">
+            <button onClick={() => setLangOpen(!langOpen)} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
               <Globe className="h-4 w-4" />
               <span>{LOCALE_FLAGS[locale]}</span>
             </button>
-            <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 hidden group-hover:block z-50 min-w-[140px]">
-              {availableLocales.map(l => (
-                <button key={l.value} onClick={() => setLocale(l.value)}
-                  className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors ${locale === l.value ? "text-accent font-medium" : "text-foreground"}`}>
-                  <span>{LOCALE_FLAGS[l.value]}</span>{l.label}
-                </button>
-              ))}
-            </div>
+            {langOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
+                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 z-50 min-w-[140px]">
+                  {availableLocales.map(l => (
+                    <button key={l.value} onClick={() => { setLocale(l.value); setLangOpen(false); }}
+                      className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors ${locale === l.value ? "text-accent font-medium" : "text-foreground"}`}>
+                      <span>{LOCALE_FLAGS[l.value]}</span>{l.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           <NotificationBell />
           <Link to="/dashboard/assistant" className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
