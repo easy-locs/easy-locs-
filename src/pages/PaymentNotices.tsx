@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Loader2 } from "lucide-react";
 import jsPDF from "jspdf";
 import logoEasyloc from "@/assets/logo-easyloc.png";
+import { useI18n } from "@/lib/i18n";
 
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
 interface Property { id: string; label: string; address: string; city: string; }
@@ -16,6 +17,7 @@ interface RentCall { id: string; tenant_id: string; month: string; total_amount:
 const PaymentNotices = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [notices, setNotices] = useState<Notice[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -52,10 +54,10 @@ const PaymentNotices = () => {
         total_amount: Number(t.rent_amount) + Number(t.charges_amount),
         due_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`,
       }));
-    if (newNotices.length === 0) { toast({ title: "Tous les avis du mois sont déjà créés" }); return; }
+    if (newNotices.length === 0) { toast({ title: t("page.notices.all_created") }); return; }
     const { error } = await supabase.from("payment_notices").insert(newNotices);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: `${newNotices.length} avis d'échéance généré(s)` });
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: `${newNotices.length} ${t("page.notices.generated")}` });
     await load();
   };
 
@@ -122,15 +124,15 @@ const PaymentNotices = () => {
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="unlimited_tenants" featureLabel="Avis d'échéance">
+       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.notices.title")}>
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Avis d'échéance</h1>
-            <p className="text-sm text-muted-foreground">Générés automatiquement le 25 de chaque mois</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.notices.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("page.notices.subtitle")}</p>
           </div>
           <button onClick={generateNotices} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
-            <Plus className="h-4 w-4" /> Générer le mois
+            <Plus className="h-4 w-4" /> {t("page.notices.generate")}
           </button>
         </div>
 
@@ -141,7 +143,7 @@ const PaymentNotices = () => {
               <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  {rentCalls.length} loyer{rentCalls.length > 1 ? "s" : ""} impayé{rentCalls.length > 1 ? "s" : ""} — {fmt(unpaidTotal)}
+                  {rentCalls.length} {t("page.notices.unpaid_alert")} — {fmt(unpaidTotal)}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {rentCalls.slice(0, 5).map(c => (
@@ -150,7 +152,7 @@ const PaymentNotices = () => {
                     </span>
                   ))}
                   {rentCalls.length > 5 && (
-                    <span className="text-xs text-muted-foreground">+{rentCalls.length - 5} autres</span>
+                    <span className="text-xs text-muted-foreground">+{rentCalls.length - 5} {t("page.notices.others")}</span>
                   )}
                 </div>
               </div>
@@ -160,16 +162,16 @@ const PaymentNotices = () => {
 
         <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Mois</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Locataire</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Statut</th>
+             <thead><tr className="border-b border-border/50 bg-muted/30">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.month")}</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.tenant")}</th>
+              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.notices.total")}</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.status")}</th>
               <th className="px-4 py-3"></th>
             </tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Chargement…</td></tr> :
-                notices.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Aucun avis</td></tr> :
+               {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
+                notices.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.notices.no_notice")}</td></tr> :
                   notices.map(n => {
                     const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
                     return (
@@ -180,11 +182,11 @@ const PaymentNotices = () => {
                         <td className="px-4 py-3">
                           {isPaid ? (
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
-                              <CheckCircle className="h-3 w-3" /> Payé
+                              <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                              <Clock className="h-3 w-3" /> Impayé
+                              <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
                             </span>
                           )}
                         </td>

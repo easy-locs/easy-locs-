@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 const STATUSES = [
   { value: "new", label: "Nouveau", icon: Clock, color: "text-blue-500" },
@@ -23,6 +24,7 @@ interface Property { id: string; label: string; }
 const Candidates = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,8 +53,8 @@ const Candidates = () => {
       monthly_income: form.monthly_income, guarantor_info: form.guarantor_info,
       notes: form.notes, score: form.score,
     });
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Candidat ajouté" });
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("page.candidates.added") });
     setShowForm(false);
     setForm({ property_id: "", name: "", email: "", phone: "", profession: "", monthly_income: 0, guarantor_info: "", notes: "", score: 0 });
     await load();
@@ -60,13 +62,13 @@ const Candidates = () => {
 
   const updateStatus = async (id: string, status: string) => {
     await supabase.from("candidates").update({ status }).eq("id", id);
-    toast({ title: `Statut mis à jour : ${STATUSES.find(s => s.value === status)?.label}` });
+    toast({ title: t("page.candidates.status_updated") });
     await load();
   };
 
   const remove = async (id: string) => {
     await supabase.from("candidates").delete().eq("id", id);
-    toast({ title: "Candidat supprimé" });
+    toast({ title: t("page.candidates.deleted") });
     await load();
   };
 
@@ -78,11 +80,11 @@ const Candidates = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Candidats</h1>
-            <p className="text-sm text-muted-foreground">Gestion des candidatures locataires</p>
+             <h1 className="text-2xl font-bold text-foreground">{t("page.candidates.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("page.candidates.subtitle")}</p>
           </div>
           <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
-            <Plus className="h-4 w-4" /> Ajouter
+            <Plus className="h-4 w-4" /> {t("page.candidates.add")}
           </button>
         </div>
 
@@ -104,7 +106,7 @@ const Candidates = () => {
         {/* Form */}
         {showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
-            <h3 className="font-semibold text-foreground">Nouveau candidat</h3>
+            <h3 className="font-semibold text-foreground">{t("page.candidates.new_candidate")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div><label className="block text-sm font-medium text-foreground mb-1">Nom *</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
@@ -117,16 +119,16 @@ const Candidates = () => {
             </div>
             <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm resize-none" /></div>
             <div className="flex gap-3">
-              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">Enregistrer</button>
-              <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">Annuler</button>
+               <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{t("page.common.save")}</button>
+               <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">{t("page.common.cancel")}</button>
             </div>
           </div>
         )}
 
         {/* List */}
         <div className="space-y-3">
-          {loading ? <p className="text-center text-muted-foreground py-8">Chargement…</p> :
-            filtered.length === 0 ? <p className="text-center text-muted-foreground py-8">Aucun candidat</p> :
+          {loading ? <p className="text-center text-muted-foreground py-8">{t("page.common.loading")}</p> :
+            filtered.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.candidates.no_candidate")}</p> :
               filtered.map(c => {
                 const st = STATUSES.find(s => s.value === c.status) || STATUSES[0];
                 return (

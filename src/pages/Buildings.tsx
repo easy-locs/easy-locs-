@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData } from "@/hooks/useRentalData";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import { useI18n } from "@/lib/i18n";
 
 interface BuildingRecord {
   id: string;
@@ -32,6 +33,7 @@ const Buildings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { properties } = useRentalData();
+  const { t } = useI18n();
   const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -57,21 +59,21 @@ const Buildings = () => {
     const record = { org_id: orgId, user_id: user.id, ...form };
     if (editId) {
       const { error } = await supabase.from("buildings").update(record).eq("id", editId);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Immeuble modifié" });
+      if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+      toast({ title: t("page.buildings.modified") });
     } else {
       const { error } = await supabase.from("buildings").insert(record);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Immeuble ajouté" });
+      if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+      toast({ title: t("page.buildings.added") });
     }
     setForm(defaultForm); setShowForm(false); setEditId(null);
     await load();
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer cet immeuble ?")) return;
+    if (!confirm(t("page.buildings.delete_confirm"))) return;
     await supabase.from("buildings").delete().eq("id", id);
-    toast({ title: "Supprimé" });
+    toast({ title: t("page.buildings.deleted") });
     load();
   };
 
@@ -94,12 +96,12 @@ const Buildings = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Immeubles & Lots</h1>
-            <p className="text-sm text-muted-foreground mt-1">Gérez vos immeubles et regroupez vos biens par lot.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.buildings.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.buildings.subtitle")}</p>
           </div>
           <button onClick={() => { setShowForm(true); setEditId(null); setForm(defaultForm); }}
             className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
-            <Plus className="h-4 w-4" /> Ajouter
+            <Plus className="h-4 w-4" /> {t("page.buildings.add")}
           </button>
         </div>
 
@@ -107,24 +109,24 @@ const Buildings = () => {
         {showForm && (
           <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-foreground">{editId ? "Modifier" : "Nouvel immeuble"}</h2>
+              <h2 className="font-semibold text-foreground">{editId ? t("page.buildings.edit") : t("page.buildings.new")}</h2>
               <button onClick={() => { setShowForm(false); setEditId(null); setForm(defaultForm); }}><X className="h-5 w-5 text-muted-foreground" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Nom *</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.name")} *</label>
                 <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                   placeholder="Résidence Les Lilas" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Type</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
                 <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
                   {BUILDING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">Adresse</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.address")}</label>
                 <AddressAutocomplete
                   value={form.address}
                   onSelect={handleAddressSelect}
@@ -133,41 +135,41 @@ const Buildings = () => {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Code postal</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.postal")}</label>
                 <input value={form.postal_code} onChange={e => setForm(p => ({ ...p, postal_code: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Ville</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.city")}</label>
                 <input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Nombre de lots</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.units")}</label>
                 <input type="number" value={form.total_units} onChange={e => setForm(p => ({ ...p, total_units: +e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Notes</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.notes")}</label>
                 <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
             </div>
             <button onClick={handleSave}
               className="mt-4 w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
-              {editId ? "Modifier" : "Ajouter l'immeuble"}
+              {editId ? t("page.buildings.edit") : t("page.buildings.add_building")}
             </button>
           </div>
         )}
 
         {/* List */}
         {loading ? (
-          <div className="text-center py-16 text-muted-foreground">Chargement…</div>
+          <div className="text-center py-16 text-muted-foreground">{t("page.common.loading")}</div>
         ) : buildings.length === 0 ? (
           <div className="text-center py-16">
             <Building className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-foreground mb-1">Aucun immeuble</h2>
-            <p className="text-sm text-muted-foreground">Ajoutez un immeuble pour regrouper vos biens par lot.</p>
+            <h2 className="text-lg font-semibold text-foreground mb-1">{t("page.buildings.empty")}</h2>
+            <p className="text-sm text-muted-foreground">{t("page.buildings.empty_hint")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -187,7 +189,7 @@ const Buildings = () => {
                           {BUILDING_TYPES.find(t => t.value === b.building_type)?.label || b.building_type}
                         </span>
                         <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
-                          {linked.length} bien{linked.length > 1 ? "s" : ""} lié{linked.length > 1 ? "s" : ""}
+                          {linked.length} {t("page.buildings.linked")}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
@@ -203,14 +205,14 @@ const Buildings = () => {
                   {expanded && (
                     <div className="border-t border-border/50 px-5 py-3 bg-muted/30">
                       {linked.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Aucun bien rattaché. Allez dans Gestion locative → Biens pour associer un bien à cet immeuble.</p>
+                        <p className="text-xs text-muted-foreground">{t("page.buildings.no_linked")}</p>
                       ) : (
                         <div className="space-y-2">
                           {linked.map((p: any) => (
                             <div key={p.id} className="flex items-center gap-3 text-sm">
                               <Home className="h-4 w-4 text-muted-foreground" />
                               <span className="text-foreground font-medium">{p.label}</span>
-                              <span className="text-xs text-muted-foreground">Lot {p.lot_number || "—"}</span>
+                              <span className="text-xs text-muted-foreground">{t("page.buildings.lot")} {p.lot_number || "—"}</span>
                             </div>
                           ))}
                         </div>

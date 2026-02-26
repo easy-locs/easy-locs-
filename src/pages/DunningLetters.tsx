@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Download, Plus } from "lucide-react";
 import jsPDF from "jspdf";
+import { useI18n } from "@/lib/i18n";
 
 const LEVELS = [
   { value: 1, label: "1re relance", tone: "Nous vous rappelons que le loyer reste dû." },
@@ -21,6 +22,7 @@ interface RentCall { id: string; tenant_id: string; month: string; total_amount:
 const DunningLetters = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [letters, setLetters] = useState<DunningLetter[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -51,8 +53,8 @@ const DunningLetters = () => {
       org_id: orgId, tenant_id: tenantId, property_id: tenant?.property_id || null,
       level, month, amount_due: amount,
     });
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: `Relance niveau ${level} créée` });
+    if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("page.dunning.created").replace("{level}", String(level)) });
     await load();
   };
 
@@ -113,12 +115,12 @@ const DunningLetters = () => {
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="unlimited_tenants" featureLabel="Lettres de relance">
+      <FeatureGate feature="unlimited_tenants" featureLabel={t("page.dunning.title")}>
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Relances impayés</h1>
-            <p className="text-sm text-muted-foreground">Lettres de relance graduées (1re, 2e, mise en demeure)</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.dunning.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("page.dunning.subtitle")}</p>
           </div>
         </div>
 
@@ -127,7 +129,7 @@ const DunningLetters = () => {
           <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              <h3 className="font-semibold text-foreground">Loyers impayés</h3>
+              <h3 className="font-semibold text-foreground">{t("page.dunning.unpaid_rents")}</h3>
             </div>
             <div className="space-y-2">
               {[...unpaidByTenant.entries()].map(([tenantId, calls]) => {
@@ -139,7 +141,7 @@ const DunningLetters = () => {
                   <div key={tenantId} className="flex items-center justify-between bg-card rounded-lg p-3">
                     <div>
                       <p className="font-medium text-foreground">{tenantName(tenantId)}</p>
-                      <p className="text-xs text-muted-foreground">{calls.length} mois impayé(s) · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(totalDue)}</p>
+                      <p className="text-xs text-muted-foreground">{calls.length} {t("page.dunning.months_unpaid")} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(totalDue)}</p>
                     </div>
                     <button onClick={() => createLetter(tenantId, calls[0].month, totalDue, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
                       <Plus className="h-3 w-3" /> {LEVELS.find(l => l.value === nextLevel)?.label}
@@ -154,17 +156,17 @@ const DunningLetters = () => {
         {/* Letters history */}
         <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Date</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Locataire</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Niveau</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Mois</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">Montant</th>
+             <thead><tr className="border-b border-border/50 bg-muted/30">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.date")}</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.tenant")}</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.level")}</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.month")}</th>
+              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.amount")}</th>
               <th className="px-4 py-3"></th>
             </tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Chargement…</td></tr> :
-                letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Aucune relance</td></tr> :
+               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
+                letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.dunning.no_letter")}</td></tr> :
                   letters.map(l => (
                     <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
                       <td className="px-4 py-3 text-muted-foreground">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>

@@ -7,8 +7,10 @@ import { getDocuments, type GeneratedDocument } from "@/lib/store";
 import { getTemplateById } from "@/lib/templates/registry";
 import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { useI18n } from "@/lib/i18n";
 
 const Receipts = () => {
+  const { t } = useI18n();
   const [showForm, setShowForm] = useState(false);
   const [, setRefresh] = useState(0);
 
@@ -38,15 +40,15 @@ const Receipts = () => {
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="receipts" featureLabel="Quittances de loyer">
+       <FeatureGate feature="receipts" featureLabel={t("page.receipts.title")}>
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Quittances de loyer</h1>
-            <p className="text-muted-foreground text-sm mt-1">Générez et téléchargez vos quittances conformes.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.receipts.title")}</h1>
+            <p className="text-muted-foreground text-sm mt-1">{t("page.receipts.subtitle")}</p>
           </div>
           <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
-            <Plus className="h-4 w-4" /> Nouvelle quittance
+            <Plus className="h-4 w-4" /> {t("page.receipts.new")}
           </button>
         </div>
 
@@ -56,10 +58,10 @@ const Receipts = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Locataire</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Période</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Montant</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
+                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.tenant")}</th>
+                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.period")}</th>
+                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.amount")}</th>
+                     <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -86,7 +88,7 @@ const Receipts = () => {
         ) : (
           <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
             <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-muted-foreground">Aucune quittance pour le moment.</p>
+            <p className="text-muted-foreground">{t("page.receipts.empty")}</p>
           </div>
         )}
       </div>
