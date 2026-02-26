@@ -78,9 +78,8 @@ serve(async (req) => {
       .eq("id", rentCall.org_id)
       .single();
 
-    if (!org?.stripe_account_id || !org.stripe_onboarding_complete) {
-      throw new Error("Le propriétaire n'a pas encore configuré son compte de paiement Stripe Connect");
-    }
+    const hasConnect = org?.stripe_account_id && org.stripe_onboarding_complete;
+    logStep("Stripe Connect status", { hasConnect, accountId: org?.stripe_account_id || "none" });
 
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
@@ -88,7 +87,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
     const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
 
-    const currency = COUNTRY_CURRENCY[org.country || "FR"] || "eur";
+    const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
     const paymentMethods: string[] = ["card"];
@@ -96,7 +95,8 @@ serve(async (req) => {
       paymentMethods.push("sepa_debit");
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Build session config - with or without Connect transfer
+    const sessionConfig: any = {
       mode: "payment",
       customer_email: user.email,
       line_items: [
@@ -112,7 +112,18 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      payment_intent_data: {
+      payment_method_types: paymentMethods,
+      success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
+      cancel_url: `${origin}/tenant/pay?payment=cancel`,
+      metadata: {
+        rent_call_id: rentCallId,
+        org_id: rentCall.org_id,
+      },
+    };
+
+    // Only add transfer_data if Connect is configured
+    if (hasConnect) {
+      sessionConfig.payment_intent_data = {
         transfer_data: {
           destination: org.stripe_account_id,
         },
@@ -121,15 +132,18 @@ serve(async (req) => {
           tenant_name: tenantName,
           month: rentCall.month || "",
         },
-      },
-      payment_method_types: paymentMethods as any,
-      success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
-      cancel_url: `${origin}/tenant/pay?payment=cancel`,
-      metadata: {
-        rent_call_id: rentCallId,
-        org_id: rentCall.org_id,
-      },
-    });
+      };
+    } else {
+      sessionConfig.payment_intent_data = {
+        metadata: {
+          rent_call_id: rentCallId,
+          tenant_name: tenantName,
+          month: rentCall.month || "",
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id, currency, amount });
 
