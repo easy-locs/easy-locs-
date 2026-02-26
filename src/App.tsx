@@ -34,6 +34,12 @@ import Notes from "./pages/Notes";
 import Messages from "./pages/Messages";
 import ChargesRegularization from "./pages/ChargesRegularization";
 import FiscalReport from "./pages/FiscalReport";
+import Expenses from "./pages/Expenses";
+import Candidates from "./pages/Candidates";
+import SeasonalRentals from "./pages/SeasonalRentals";
+import PaymentNotices from "./pages/PaymentNotices";
+import DunningLetters from "./pages/DunningLetters";
+import FurnitureInventory from "./pages/FurnitureInventory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +82,12 @@ const App = () => (
             <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/dashboard/charges" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
             <Route path="/dashboard/fiscal" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
+            <Route path="/dashboard/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+            <Route path="/dashboard/candidates" element={<ProtectedRoute><Candidates /></ProtectedRoute>} />
+            <Route path="/dashboard/seasonal" element={<ProtectedRoute><SeasonalRentals /></ProtectedRoute>} />
+            <Route path="/dashboard/notices" element={<ProtectedRoute><PaymentNotices /></ProtectedRoute>} />
+            <Route path="/dashboard/dunning" element={<ProtectedRoute><DunningLetters /></ProtectedRoute>} />
+            <Route path="/dashboard/furniture" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
