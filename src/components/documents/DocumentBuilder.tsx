@@ -25,10 +25,23 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
   const defaults: Record<string, unknown> = {};
   const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+
+  const autoDateKeys = ["date", "documentDate", "signatureDate", "receiptDate", "noticeDate", "statementDate", "paymentDate"];
+
   for (const f of template.fields) {
-    // Auto-fill date fields with today's date
-    if (f.type === "date" && !f.defaultValue && ["date", "documentDate", "signatureDate", "receiptDate", "noticeDate", "statementDate"].includes(f.key)) {
-      defaults[f.key] = today;
+    if (f.type === "date" && !f.defaultValue) {
+      if (autoDateKeys.includes(f.key)) {
+        defaults[f.key] = today;
+      } else if (f.key === "periodStart" || f.key === "startDate" || f.key === "dateDebut") {
+        defaults[f.key] = monthStart;
+      } else if (f.key === "periodEnd" || f.key === "endDate" || f.key === "dateFin") {
+        defaults[f.key] = monthEnd;
+      } else {
+        defaults[f.key] = "";
+      }
     } else {
       defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
     }
