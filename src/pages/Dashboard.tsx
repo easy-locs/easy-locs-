@@ -229,14 +229,6 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* Legal disclaimer */}
-        <div className="mt-10 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
-          <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Cette application fournit une assistance administrative uniquement.
-            Les documents générés sont à titre informatif et ne remplacent pas un avocat, un notaire ou un expert-comptable.
-          </p>
-        </div>
       </div>
     </DashboardLayout>
   );
