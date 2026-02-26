@@ -135,7 +135,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     loadOwnerData();
   }, [user, orgId, prefilled, template.fields]);
 
-  // Auto-fill from tenant/property selection
+  // Auto-fill from tenant/property selection + load tenant signature
   useEffect(() => {
     const tenantId = data.tenantId as string;
     if (!tenantId || tenants.length === 0) return;
@@ -144,6 +144,20 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     if (!tenant) return;
 
     const property = tenant.property_id ? properties.find((p) => p.id === tenant.property_id) : null;
+
+    // Load tenant's saved signature if they have a user account
+    if (tenant.tenant_user_id) {
+      supabase
+        .from("profiles")
+        .select("signature_url")
+        .eq("id", tenant.tenant_user_id)
+        .single()
+        .then(({ data: tenantProfile }) => {
+          if (tenantProfile?.signature_url) {
+            setSignatures((s) => ({ ...s, tenant: tenantProfile.signature_url! }));
+          }
+        });
+    }
 
     setData((prev) => {
       const merged = { ...prev };
