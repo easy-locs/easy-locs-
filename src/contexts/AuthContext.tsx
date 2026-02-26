@@ -20,6 +20,7 @@ interface AuthContextType {
   emailVerified: boolean;
   orgId: string | null;
   userType: UserType;
+  onboardingCompleted: boolean;
   subscription: SubscriptionState;
   refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -41,6 +42,7 @@ const AuthContext = createContext<AuthContextType>({
   emailVerified: false,
   orgId: null,
   userType: "landlord",
+  onboardingCompleted: false,
   subscription: defaultSubscription,
   refreshSubscription: async () => {},
   signOut: async () => {},
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>("landlord");
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
 
   const fetchOrgId = useCallback(async (userId: string) => {
@@ -69,10 +72,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserType = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("user_type")
+      .select("user_type, onboarding_completed")
       .eq("id", userId)
       .single();
     setUserType((data?.user_type as UserType) ?? "landlord");
+    setOnboardingCompleted(data?.onboarding_completed ?? false);
   }, []);
 
   const refreshSubscription = useCallback(async () => {
@@ -114,6 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setOrgId(null);
           setUserType("landlord");
+          setOnboardingCompleted(false);
           setSubscription({ ...defaultSubscription, loading: false });
         }
         setLoading(false);
@@ -150,11 +155,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSession(null);
     setOrgId(null);
     setUserType("landlord");
+    setOnboardingCompleted(false);
     setSubscription({ ...defaultSubscription, loading: false });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, subscription, refreshSubscription, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, onboardingCompleted, subscription, refreshSubscription, signOut }}>
       {children}
     </AuthContext.Provider>
   );
