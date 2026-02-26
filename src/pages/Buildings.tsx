@@ -1,0 +1,230 @@
+import { useState, useEffect, useCallback } from "react";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useRentalData } from "@/hooks/useRentalData";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+
+interface BuildingRecord {
+  id: string;
+  name: string;
+  address: string;
+  postal_code: string;
+  city: string;
+  building_type: string;
+  total_units: number;
+  notes: string;
+}
+
+const BUILDING_TYPES = [
+  { value: "immeuble", label: "Immeuble" },
+  { value: "residence", label: "Résidence" },
+  { value: "copropriete", label: "Copropriété" },
+  { value: "lotissement", label: "Lotissement" },
+  { value: "parking", label: "Parking / Garage" },
+];
+
+const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "" };
+
+const Buildings = () => {
+  const { user, orgId } = useAuth();
+  const { toast } = useToast();
+  const { properties } = useRentalData();
+  const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState(defaultForm);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!orgId) return;
+    setLoading(true);
+    const { data } = await supabase.from("buildings").select("*").eq("org_id", orgId).order("name");
+    setBuildings((data || []).map(b => ({
+      id: b.id, name: b.name, address: b.address, postal_code: b.postal_code,
+      city: b.city, building_type: b.building_type, total_units: b.total_units ?? 0, notes: b.notes ?? "",
+    })));
+    setLoading(false);
+  }, [orgId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !orgId || !user) return;
+    const record = { org_id: orgId, user_id: user.id, ...form };
+    if (editId) {
+      const { error } = await supabase.from("buildings").update(record).eq("id", editId);
+      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Immeuble modifié" });
+    } else {
+      const { error } = await supabase.from("buildings").insert(record);
+      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Immeuble ajouté" });
+    }
+    setForm(defaultForm); setShowForm(false); setEditId(null);
+    await load();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer cet immeuble ?")) return;
+    await supabase.from("buildings").delete().eq("id", id);
+    toast({ title: "Supprimé" });
+    load();
+  };
+
+  const startEdit = (b: BuildingRecord) => {
+    setEditId(b.id);
+    setForm({ name: b.name, address: b.address, postal_code: b.postal_code, city: b.city, building_type: b.building_type, total_units: b.total_units, notes: b.notes });
+    setShowForm(true);
+  };
+
+  const handleAddressSelect = (result: AddressResult) => {
+    setForm(prev => ({ ...prev, address: result.label, postal_code: result.postcode || "", city: result.city || "" }));
+  };
+
+  // Properties linked to a building
+  const getLinkedProperties = (buildingId: string) =>
+    properties.filter((p: any) => p.building_id === buildingId);
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Immeubles & Lots</h1>
+            <p className="text-sm text-muted-foreground mt-1">Gérez vos immeubles et regroupez vos biens par lot.</p>
+          </div>
+          <button onClick={() => { setShowForm(true); setEditId(null); setForm(defaultForm); }}
+            className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Plus className="h-4 w-4" /> Ajouter
+          </button>
+        </div>
+
+        {/* Form */}
+        {showForm && (
+          <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground">{editId ? "Modifier" : "Nouvel immeuble"}</h2>
+              <button onClick={() => { setShowForm(false); setEditId(null); setForm(defaultForm); }}><X className="h-5 w-5 text-muted-foreground" /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Nom *</label>
+                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Résidence Les Lilas" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Type</label>
+                <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
+                  {BUILDING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">Adresse</label>
+                <AddressAutocomplete
+                  value={form.address}
+                  onSelect={handleAddressSelect}
+                  onChange={val => setForm(p => ({ ...p, address: val }))}
+                  placeholder="Adresse de l'immeuble"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Code postal</label>
+                <input value={form.postal_code} onChange={e => setForm(p => ({ ...p, postal_code: e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Ville</label>
+                <input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Nombre de lots</label>
+                <input type="number" value={form.total_units} onChange={e => setForm(p => ({ ...p, total_units: +e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Notes</label>
+                <input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
+            </div>
+            <button onClick={handleSave}
+              className="mt-4 w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+              {editId ? "Modifier" : "Ajouter l'immeuble"}
+            </button>
+          </div>
+        )}
+
+        {/* List */}
+        {loading ? (
+          <div className="text-center py-16 text-muted-foreground">Chargement…</div>
+        ) : buildings.length === 0 ? (
+          <div className="text-center py-16">
+            <Building className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-foreground mb-1">Aucun immeuble</h2>
+            <p className="text-sm text-muted-foreground">Ajoutez un immeuble pour regrouper vos biens par lot.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {buildings.map(b => {
+              const linked = getLinkedProperties(b.id);
+              const expanded = expandedId === b.id;
+              return (
+                <div key={b.id} className="bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
+                  <div className="p-5 flex items-start gap-4 cursor-pointer" onClick={() => setExpandedId(expanded ? null : b.id)}>
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <Building className="h-5 w-5 text-accent" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground text-sm">{b.name}</span>
+                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                          {BUILDING_TYPES.find(t => t.value === b.building_type)?.label || b.building_type}
+                        </span>
+                        <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
+                          {linked.length} bien{linked.length > 1 ? "s" : ""} lié{linked.length > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {b.address}, {b.postal_code} {b.city}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={e => { e.stopPropagation(); startEdit(b); }} className="p-1.5 rounded-lg hover:bg-muted"><Edit className="h-4 w-4 text-muted-foreground" /></button>
+                      <button onClick={e => { e.stopPropagation(); handleDelete(b.id); }} className="p-1.5 rounded-lg hover:bg-destructive/10"><Trash2 className="h-4 w-4 text-destructive" /></button>
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? "rotate-90" : ""}`} />
+                    </div>
+                  </div>
+                  {expanded && (
+                    <div className="border-t border-border/50 px-5 py-3 bg-muted/30">
+                      {linked.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Aucun bien rattaché. Allez dans Gestion locative → Biens pour associer un bien à cet immeuble.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {linked.map((p: any) => (
+                            <div key={p.id} className="flex items-center gap-3 text-sm">
+                              <Home className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-foreground font-medium">{p.label}</span>
+                              <span className="text-xs text-muted-foreground">Lot {p.lot_number || "—"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Buildings;

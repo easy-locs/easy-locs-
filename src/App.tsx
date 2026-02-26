@@ -37,6 +37,7 @@ import SeasonalRentals from "./pages/SeasonalRentals";
 import PaymentNotices from "./pages/PaymentNotices";
 import DunningLetters from "./pages/DunningLetters";
 import FurnitureInventory from "./pages/FurnitureInventory";
+import Buildings from "./pages/Buildings";
 import NotFound from "./pages/NotFound";
 // Tenant portal
 import TenantDashboard from "./pages/tenant/TenantDashboard";
@@ -91,6 +92,7 @@ const App = () => (
             <Route path="/dashboard/notices" element={<ProtectedRoute><PaymentNotices /></ProtectedRoute>} />
             <Route path="/dashboard/dunning" element={<ProtectedRoute><DunningLetters /></ProtectedRoute>} />
             <Route path="/dashboard/furniture" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
+            <Route path="/dashboard/buildings" element={<ProtectedRoute><Buildings /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
             {/* Protected — Tenant portal */}

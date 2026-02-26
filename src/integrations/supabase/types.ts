@@ -41,6 +41,59 @@ export type Database = {
         }
         Relationships: []
       }
+      buildings: {
+        Row: {
+          address: string
+          building_type: string
+          city: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          org_id: string
+          postal_code: string
+          total_units: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          building_type?: string
+          city?: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          org_id: string
+          postal_code?: string
+          total_units?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          building_type?: string
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          org_id?: string
+          postal_code?: string
+          total_units?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buildings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidates: {
         Row: {
           applied_at: string
@@ -808,6 +861,7 @@ export type Database = {
       properties: {
         Row: {
           address: string
+          building_id: string | null
           building_name: string | null
           city: string
           created_at: string
@@ -831,6 +885,7 @@ export type Database = {
         }
         Insert: {
           address?: string
+          building_id?: string | null
           building_name?: string | null
           city?: string
           created_at?: string
@@ -854,6 +909,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          building_id?: string | null
           building_name?: string | null
           city?: string
           created_at?: string
@@ -876,6 +932,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "properties_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "properties_org_id_fkey"
             columns: ["org_id"]
