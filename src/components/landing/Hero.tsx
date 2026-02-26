@@ -7,10 +7,10 @@ const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-hero">
       <div
-        className="absolute inset-0 opacity-20 bg-cover bg-center"
+        className="absolute inset-0 opacity-[0.05] bg-cover bg-center"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-navy-deep/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy-deep/70 via-navy-deep/50 to-navy-deep/95" />
 
       <div className="container relative z-10 py-20">
         <div className="max-w-3xl">
