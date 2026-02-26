@@ -16,8 +16,8 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast({ title: "Mot de passe trop court", description: "6 caractères minimum.", variant: "destructive" });
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+      toast({ title: "Mot de passe faible", description: "8 caractères min., 1 majuscule, 1 chiffre.", variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -80,7 +80,7 @@ const Signup = () => {
               <input
                 type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="6 caractères minimum"
+                placeholder="8 caractères min., 1 majuscule, 1 chiffre"
               />
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
