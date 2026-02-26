@@ -83,6 +83,7 @@ const RentalManagement = () => {
     saveProperty, deleteProperty,
     saveTenant, deleteTenant, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
+    assignTenantToProperty,
   } = useRentalData();
 
   const { requiresUpgrade } = useSubscriptionGating();
@@ -129,6 +130,8 @@ const RentalManagement = () => {
   // Postal code lookup
   const [postalSuggestions, setPostalSuggestions] = useState<{ city: string; code: string }[]>([]);
   const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
+  const [assignPropertyId, setAssignPropertyId] = useState<string | null>(null);
+  const [assignSearch, setAssignSearch] = useState("");
 
   // Property detail linked data
   const [propertyExpenses, setPropertyExpenses] = useState<any[]>([]);
@@ -735,7 +738,14 @@ const RentalManagement = () => {
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {propTenants.length > 0 ? "Occupé" : "Vacant"}
+                {propTenants.length > 0 ? "Occupé" : (
+                  <span
+                    className="cursor-pointer hover:underline"
+                    onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
+                  >
+                    Vacant — Assigner
+                  </span>
+                )}
               </span>
               {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Meublé</span>}
               {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} impayé(s)</span>}
@@ -753,6 +763,45 @@ const RentalManagement = () => {
                     {t.name} {!isLeaseActive(t) && "(résilié)"}
                   </span>
                 ))}
+              </div>
+            )}
+            {assignPropertyId === p.id && (
+              <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-foreground">Assigner un locataire existant</span>
+                  <button onClick={(e) => { e.stopPropagation(); setAssignPropertyId(null); }} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                </div>
+                <input
+                  type="text"
+                  value={assignSearch}
+                  onChange={(e) => setAssignSearch(e.target.value)}
+                  placeholder="Rechercher un locataire…"
+                  className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="max-h-32 overflow-y-auto space-y-1">
+                  {tenants
+                    .filter(t => !t.property_id || t.property_id === null)
+                    .filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase()))
+                    .map(t => (
+                      <button
+                        key={t.id}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const ok = await assignTenantToProperty(t.id, p.id);
+                          if (ok) setAssignPropertyId(null);
+                        }}
+                        className="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-accent/10 transition-colors flex items-center gap-2"
+                      >
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-foreground">{t.name}</span>
+                        {t.email && <span className="text-muted-foreground ml-auto">{t.email}</span>}
+                      </button>
+                    ))}
+                  {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-2">Aucun locataire sans bien</p>
+                  )}
+                </div>
               </div>
             )}
           </button>
