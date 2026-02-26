@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 import SignaturePad from "@/components/ui/SignaturePad";
+import { useRentalData } from "@/hooks/useRentalData";
 
 interface Props {
   template: DocumentTemplate;
@@ -18,8 +19,10 @@ interface Props {
 }
 
 const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, userType } = useAuth();
   const { toast } = useToast();
+  const { properties, tenants } = useRentalData();
+
   const defaults: Record<string, unknown> = {};
   for (const f of template.fields) {
     defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
@@ -29,17 +32,161 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [signatures, setSignatures] = useState<{ landlord: string; tenant: string }>({ landlord: "", tenant: "" });
+  const [prefilled, setPrefilled] = useState(false);
 
-  // Auto-load saved signature from profile
+  // Auto-load owner profile data + saved signature
   useEffect(() => {
-    if (!user) return;
-    supabase.from("profiles").select("signature_url").eq("id", user.id).single().then(({ data: profile }) => {
-      const savedSig = (profile as any)?.signature_url;
-      if (savedSig) {
-        setSignatures((s) => ({ ...s, landlord: savedSig }));
+    if (!user || prefilled) return;
+
+    const loadOwnerData = async () => {
+      // Load profile (signature)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("signature_url, name, email")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.signature_url) {
+        setSignatures((s) => ({ ...s, landlord: profile.signature_url! }));
       }
+
+      // Load owner profile (identity, address, bank)
+      if (!orgId) return;
+      const { data: ownerProfile } = await supabase
+        .from("owner_profiles")
+        .select("*")
+        .eq("org_id", orgId)
+        .limit(1)
+        .single();
+
+      // Load org info
+      const { data: org } = await supabase
+        .from("orgs")
+        .select("name, address, postal_code, city, siret, phone, email")
+        .eq("id", orgId)
+        .single();
+
+      // Build prefill map
+      const prefillMap: Record<string, unknown> = {};
+
+      // Owner / landlord fields
+      if (ownerProfile) {
+        const ownerFields: Record<string, unknown> = {
+          landlordName: ownerProfile.full_name,
+          senderName: ownerProfile.full_name,
+          hostName: ownerProfile.full_name,
+          landlordAddress: [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", "),
+          senderAddress: [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", "),
+          landlordEmail: ownerProfile.email,
+          landlordPhone: ownerProfile.phone,
+          bankName: ownerProfile.bank_name,
+          bankIban: ownerProfile.bank_iban,
+          bankBic: ownerProfile.bank_bic,
+          taxId: ownerProfile.tax_id,
+          companyName: ownerProfile.company_name,
+        };
+        for (const [key, val] of Object.entries(ownerFields)) {
+          if (val && template.fields.some((f) => f.key === key)) {
+            prefillMap[key] = val;
+          }
+        }
+      } else if (profile) {
+        // Fallback to profile
+        if (template.fields.some((f) => f.key === "landlordName")) prefillMap.landlordName = profile.name;
+        if (template.fields.some((f) => f.key === "senderName")) prefillMap.senderName = profile.name;
+      }
+
+      // Org fields
+      if (org) {
+        const orgFields: Record<string, unknown> = {
+          companyName: org.name,
+          registeredOffice: [org.address, org.postal_code, org.city].filter(Boolean).join(", "),
+          siret: org.siret,
+        };
+        for (const [key, val] of Object.entries(orgFields)) {
+          if (val && template.fields.some((f) => f.key === key) && !prefillMap[key]) {
+            prefillMap[key] = val;
+          }
+        }
+      }
+
+      // Apply prefill (only for empty fields)
+      if (Object.keys(prefillMap).length > 0) {
+        setData((prev) => {
+          const merged = { ...prev };
+          for (const [key, val] of Object.entries(prefillMap)) {
+            if (!merged[key] || merged[key] === "" || merged[key] === 0) {
+              merged[key] = val;
+            }
+          }
+          return merged;
+        });
+      }
+
+      setPrefilled(true);
+    };
+
+    loadOwnerData();
+  }, [user, orgId, prefilled, template.fields]);
+
+  // Auto-fill from tenant/property selection
+  useEffect(() => {
+    const tenantId = data.tenantId as string;
+    if (!tenantId || tenants.length === 0) return;
+
+    const tenant = tenants.find((t) => t.id === tenantId);
+    if (!tenant) return;
+
+    const property = tenant.property_id ? properties.find((p) => p.id === tenant.property_id) : null;
+
+    setData((prev) => {
+      const merged = { ...prev };
+      const tenantFields: Record<string, unknown> = {
+        tenantName: tenant.name,
+        recipientName: tenant.name,
+        guestName: tenant.name,
+        tenantEmail: tenant.email,
+        tenantPhone: tenant.phone,
+        tenantBirthDate: tenant.birth_date,
+        tenantBirthPlace: tenant.birth_place,
+        tenantNationality: tenant.nationality,
+        tenantProfession: tenant.profession,
+        guarantorName: tenant.guarantor_name,
+        guarantorPhone: tenant.guarantor_phone,
+        leaseStart: tenant.lease_start,
+        leaseEnd: tenant.lease_end,
+        leaseType: tenant.lease_type,
+        rentAmount: tenant.rent_amount,
+        chargesAmount: tenant.charges_amount,
+        depositAmount: tenant.deposit_amount,
+      };
+
+      for (const [key, val] of Object.entries(tenantFields)) {
+        if (val && template.fields.some((f) => f.key === key)) {
+          merged[key] = val;
+        }
+      }
+
+      if (property) {
+        const propFields: Record<string, unknown> = {
+          propertyAddress: `${property.address}, ${property.postal_code} ${property.city}`,
+          fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
+          propertyLabel: property.label,
+          propertySurface: property.surface,
+          propertyRooms: property.rooms,
+          propertyType: property.property_type,
+        };
+        for (const [key, val] of Object.entries(propFields)) {
+          if (val && template.fields.some((f) => f.key === key)) {
+            merged[key] = val;
+          }
+        }
+      }
+
+      return merged;
     });
-  }, [user]);
+  }, [data.tenantId, tenants, properties, template.fields]);
+
   const updateField = (key: string, value: unknown) => {
     setData((prev) => ({ ...prev, [key]: value }));
     setValidation(null);
@@ -65,7 +212,6 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     setSaving(true);
     const title = `${template.label} — ${String(data.tenantName || data.fullName || data.companyName || data.senderName || "")}`.trim();
 
-    // Save to Supabase
     const { error } = await supabase.from("documents").insert({
       org_id: orgId,
       user_id: user.id,
@@ -84,11 +230,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       return;
     }
 
-    // Generate and download PDF with signatures
     const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined);
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
 
-    // Audit log
     await supabase.from("audit_logs").insert({
       org_id: orgId,
       user_id: user.id,
@@ -113,6 +257,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
   const fieldErrors = new Set(validation?.errors.map((e) => e.field) ?? []);
 
+  // Determine which signature pad to show based on user type
+  const isLandlord = userType === "landlord";
+  const isTenant = userType === "tenant";
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
@@ -133,6 +281,25 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               <p className="text-sm font-medium text-foreground">Révision juridique requise</p>
               <p className="text-xs text-muted-foreground">Ce modèle nécessite une validation juridique avant utilisation en production.</p>
             </div>
+          </div>
+        )}
+
+        {/* Tenant selector for auto-fill */}
+        {isLandlord && tenants.length > 0 && template.fields.some((f) => f.key === "tenantName" || f.key === "recipientName") && (
+          <div className="bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Pré-remplir à partir d'un locataire
+            </label>
+            <select
+              value={String(data.tenantId ?? "")}
+              onChange={(e) => updateField("tenantId", e.target.value)}
+              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">— Sélectionner un locataire —</option>
+              {tenants.map((t) => (
+                <option key={t.id} value={t.id}>{t.name} {t.email ? `(${t.email})` : ""}</option>
+              ))}
+            </select>
           </div>
         )}
 
@@ -178,21 +345,47 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             </div>
           ))}
 
-          {/* Signature pads */}
+          {/* Signature — chaque utilisateur signe uniquement de son côté */}
           <div className="border-t border-border/50 pt-5 mt-2">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Signatures</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <SignaturePad
-                label="Signature du bailleur / expéditeur"
-                value={signatures.landlord}
-                onChange={(v) => setSignatures((s) => ({ ...s, landlord: v }))}
-              />
-              <SignaturePad
-                label="Signature du locataire / destinataire"
-                value={signatures.tenant}
-                onChange={(v) => setSignatures((s) => ({ ...s, tenant: v }))}
-              />
-            </div>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Signature</h3>
+            {isLandlord && (
+              <div>
+                <SignaturePad
+                  label="Votre signature (bailleur / expéditeur)"
+                  value={signatures.landlord}
+                  onChange={(v) => setSignatures((s) => ({ ...s, landlord: v }))}
+                />
+                {signatures.tenant ? (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle className="h-3.5 w-3.5 text-success" />
+                    Le locataire a signé ce document
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    La signature du locataire sera ajoutée depuis son espace personnel.
+                  </p>
+                )}
+              </div>
+            )}
+            {isTenant && (
+              <div>
+                <SignaturePad
+                  label="Votre signature (locataire / destinataire)"
+                  value={signatures.tenant}
+                  onChange={(v) => setSignatures((s) => ({ ...s, tenant: v }))}
+                />
+                {signatures.landlord ? (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle className="h-3.5 w-3.5 text-success" />
+                    Le bailleur a signé ce document
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    La signature du bailleur sera ajoutée depuis son interface.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {validation && (
@@ -240,13 +433,6 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Générer le PDF"}
             </button>
           </div>
-        </div>
-
-        <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
-          <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Ce document est généré à titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable.
-          </p>
         </div>
       </div>
     </DashboardLayout>
