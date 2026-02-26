@@ -3,12 +3,14 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Plus, Download } from "lucide-react";
+import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Loader2 } from "lucide-react";
 import jsPDF from "jspdf";
+import logoEasyloc from "@/assets/logo-easyloc.png";
 
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
 interface Property { id: string; label: string; address: string; city: string; }
 interface Notice { id: string; tenant_id: string; property_id: string | null; month: string; rent_amount: number; charges_amount: number; total_amount: number; due_date: string; sent: boolean; }
+interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; }
 
 const PaymentNotices = () => {
   const { user, orgId } = useAuth();
@@ -16,18 +18,21 @@ const PaymentNotices = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: n }, { data: t }, { data: p }] = await Promise.all([
+    const [{ data: n }, { data: t }, { data: p }, { data: rc }] = await Promise.all([
       supabase.from("payment_notices").select("*").eq("org_id", orgId).order("due_date", { ascending: false }),
       supabase.from("tenants").select("id, name, property_id, rent_amount, charges_amount").eq("org_id", orgId),
       supabase.from("properties").select("id, label, address, city").eq("org_id", orgId),
+      supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false),
     ]);
     if (n) setNotices(n as Notice[]);
     if (t) setTenants(t as Tenant[]);
     if (p) setProperties(p as Property[]);
+    if (rc) setRentCalls(rc as RentCall[]);
     setLoading(false);
   }, [orgId]);
 
@@ -111,6 +116,8 @@ const PaymentNotices = () => {
   };
 
   const tenantName = (id: string) => tenants.find(t => t.id === id)?.name || "—";
+  const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+  const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount || 0), 0);
 
   return (
     <DashboardLayout>
@@ -118,12 +125,36 @@ const PaymentNotices = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Avis d'échéance</h1>
-            <p className="text-sm text-muted-foreground">Générez les avis de paiement mensuels</p>
+            <p className="text-sm text-muted-foreground">Générés automatiquement le 25 de chaque mois</p>
           </div>
           <button onClick={generateNotices} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
             <Plus className="h-4 w-4" /> Générer le mois
           </button>
         </div>
+
+        {/* Unpaid alerts */}
+        {rentCalls.length > 0 && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {rentCalls.length} loyer{rentCalls.length > 1 ? "s" : ""} impayé{rentCalls.length > 1 ? "s" : ""} — {fmt(unpaidTotal)}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {rentCalls.slice(0, 5).map(c => (
+                    <span key={c.id} className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded-full font-medium">
+                      {tenantName(c.tenant_id)} · {c.month}
+                    </span>
+                  ))}
+                  {rentCalls.length > 5 && (
+                    <span className="text-xs text-muted-foreground">+{rentCalls.length - 5} autres</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
           <table className="w-full text-sm">
@@ -131,21 +162,34 @@ const PaymentNotices = () => {
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Mois</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Locataire</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Échéance</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Statut</th>
               <th className="px-4 py-3"></th>
             </tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Chargement…</td></tr> :
                 notices.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Aucun avis</td></tr> :
-                  notices.map(n => (
-                    <tr key={n.id} className="border-b border-border/30 hover:bg-muted/20">
-                      <td className="px-4 py-3 text-foreground">{n.month}</td>
-                      <td className="px-4 py-3 text-foreground font-medium">{tenantName(n.tenant_id)}</td>
-                      <td className="px-4 py-3 text-right text-foreground font-semibold">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n.total_amount)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{n.due_date}</td>
-                      <td className="px-4 py-3"><button onClick={() => downloadNoticePDF(n)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
-                    </tr>
-                  ))}
+                  notices.map(n => {
+                    const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                    return (
+                      <tr key={n.id} className="border-b border-border/30 hover:bg-muted/20">
+                        <td className="px-4 py-3 text-foreground">{n.month}</td>
+                        <td className="px-4 py-3 text-foreground font-medium">{tenantName(n.tenant_id)}</td>
+                        <td className="px-4 py-3 text-right text-foreground font-semibold">{fmt(n.total_amount)}</td>
+                        <td className="px-4 py-3">
+                          {isPaid ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
+                              <CheckCircle className="h-3 w-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                              <Clock className="h-3 w-3" /> Impayé
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3"><button onClick={() => downloadNoticePDF(n)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
+                      </tr>
+                    );
+                  })}
             </tbody>
           </table>
         </div>
