@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { ArrowLeft, AlertCircle, AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
@@ -29,6 +29,17 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [signatures, setSignatures] = useState<{ landlord: string; tenant: string }>({ landlord: "", tenant: "" });
+
+  // Auto-load saved signature from profile
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("signature_url").eq("id", user.id).single().then(({ data: profile }) => {
+      const savedSig = (profile as any)?.signature_url;
+      if (savedSig) {
+        setSignatures((s) => ({ ...s, landlord: savedSig }));
+      }
+    });
+  }, [user]);
   const updateField = (key: string, value: unknown) => {
     setData((prev) => ({ ...prev, [key]: value }));
     setValidation(null);
