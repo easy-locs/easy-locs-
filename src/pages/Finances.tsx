@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home, ArrowRight } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import { exportToCSV } from "@/lib/csv-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -295,65 +295,33 @@ const Finances = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-[10px] text-muted-foreground">Encaissé ce mois</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.revenueThisMonth)}</p>
-              <p className="text-[10px] text-muted-foreground">sur {fmt(kpis.expectedThisMonth)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingDown className="h-4 w-4 text-destructive" />
-                <span className="text-[10px] text-muted-foreground">Impayés</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalUnpaid)}</p>
-              <p className="text-[10px] text-muted-foreground">{filteredRentCalls.filter(r => !r.paid).length} appel(s)</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <PiggyBank className="h-4 w-4 text-accent" />
-                <span className="text-[10px] text-muted-foreground">Total encaissé</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalRevenue)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Wallet className="h-4 w-4 text-destructive" />
-                <span className="text-[10px] text-muted-foreground">Total dépenses</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : fmt(kpis.totalExpenses)}</p>
-              <p className="text-[10px] text-muted-foreground">{filteredExpenses.length} dépense(s)</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <BarChart3 className="h-4 w-4 text-accent" />
-                <span className="text-[10px] text-muted-foreground">Résultat net</span>
-              </div>
-              <p className={`text-lg font-bold ${kpis.netResult >= 0 ? "text-green-600" : "text-destructive"}`}>
-                {dataLoading ? "..." : fmt(kpis.netResult)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <CheckCircle className="h-4 w-4 text-accent" />
-                <span className="text-[10px] text-muted-foreground">Taux encaissement</span>
-              </div>
-              <p className="text-lg font-bold text-foreground">{dataLoading ? "..." : `${kpis.occupancyRate}%`}</p>
-            </CardContent>
-          </Card>
+          {[
+            { icon: TrendingUp, label: "Encaissé ce mois", value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `sur ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
+            { icon: TrendingDown, label: "Impayés", value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} appel(s)`, path: "/dashboard/dunning", iconColor: "text-destructive" },
+            { icon: PiggyBank, label: "Total encaissé", value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+            { icon: Wallet, label: "Total dépenses", value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} dépense(s)`, path: "/dashboard/expenses", iconColor: "text-destructive" },
+            { icon: BarChart3, label: "Résultat net", value: dataLoading ? "..." : fmt(kpis.netResult), sub: "", path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: CheckCircle, label: "Taux encaissement", value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+          ].map(kpi => {
+            const content = (
+              <Card className={`${kpi.path ? "hover:shadow-card-hover transition-all cursor-pointer" : ""} group`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <kpi.icon className={`h-4 w-4 ${kpi.iconColor}`} />
+                    <span className="text-[10px] text-muted-foreground">{kpi.label}</span>
+                    {kpi.path && <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors ml-auto" />}
+                  </div>
+                  <p className={`text-lg font-bold ${(kpi as any).valueColor || "text-foreground"}`}>{kpi.value}</p>
+                  {kpi.sub && <p className="text-[10px] text-muted-foreground">{kpi.sub}</p>}
+                </CardContent>
+              </Card>
+            );
+            return kpi.path ? (
+              <Link key={kpi.label} to={kpi.path}>{content}</Link>
+            ) : (
+              <div key={kpi.label}>{content}</div>
+            );
+          })}
         </div>
 
         {/* Charts */}

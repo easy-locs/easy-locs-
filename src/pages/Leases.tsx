@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
-import { Home, FileText, ChevronRight, Users, Calendar, Euro, MapPin, Plus, Download, Building, ExternalLink, CheckCircle, XCircle, Search, ClipboardCheck, AlertTriangle } from "lucide-react";
+import { Home, FileText, ChevronRight, Users, Calendar, Euro, MapPin, Plus, Download, Building, ExternalLink, CheckCircle, XCircle, Search, ClipboardCheck, AlertTriangle, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getTemplatesByCategory } from "@/lib/templates/registry";
 import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
 import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
@@ -209,26 +210,20 @@ const Leases = () => {
 
             {/* KPI */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <div className="bg-card rounded-xl p-4 border border-border/50">
-                <p className="text-xs text-muted-foreground">Locations actives</p>
-                <p className="text-2xl font-bold text-foreground">{activeCount}</p>
-              </div>
-              <div className="bg-card rounded-xl p-4 border border-border/50">
-                <p className="text-xs text-muted-foreground">Baux résiliés</p>
-                <p className="text-2xl font-bold text-foreground">{terminatedCount}</p>
-              </div>
-              <div className="bg-card rounded-xl p-4 border border-border/50">
-                <p className="text-xs text-muted-foreground">Revenus actifs/mois</p>
-                <p className="text-lg font-bold text-foreground">
-                  {fmt(tenants.filter(t => t.property_id && isActive(t)).reduce((s, t) => s + t.rent_amount + t.charges_amount, 0))}
-                </p>
-              </div>
-              <div className="bg-card rounded-xl p-4 border border-border/50">
-                <p className="text-xs text-muted-foreground">Biens loués</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {new Set(tenants.filter(t => t.property_id && isActive(t)).map(t => t.property_id)).size} / {properties.length}
-                </p>
-              </div>
+              {[
+                { label: "Locations actives", value: activeCount, path: "/dashboard/rental?tab=tenants" },
+                { label: "Baux résiliés", value: terminatedCount, path: "/dashboard/rental?tab=tenants" },
+                { label: "Revenus actifs/mois", value: fmt(tenants.filter(t => t.property_id && isActive(t)).reduce((s, t) => s + t.rent_amount + t.charges_amount, 0)), path: "/dashboard/finances" },
+                { label: "Biens loués", value: `${new Set(tenants.filter(t => t.property_id && isActive(t)).map(t => t.property_id)).size} / ${properties.length}`, path: "/dashboard/rental?tab=properties" },
+              ].map(kpi => (
+                <Link key={kpi.label} to={kpi.path} className="bg-card rounded-xl p-4 border border-border/50 hover:shadow-card-hover transition-all group">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
+                </Link>
+              ))}
             </div>
 
             {/* Saved leases (documents) */}
@@ -276,7 +271,7 @@ const Leases = () => {
                   const prop = properties.find(p => p.id === t.property_id);
                   const active = isActive(t);
                   return (
-                    <div key={t.id} className={`bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all ${!active ? "opacity-70" : ""}`}>
+                    <Link to={`/dashboard/rental?tab=tenants`} key={t.id} className={`block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all ${!active ? "opacity-70" : ""}`}>
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${active ? "bg-gradient-gold" : "bg-muted"}`}>
                           <span className={`text-sm font-bold ${active ? "text-accent-foreground" : "text-muted-foreground"}`}>{t.name[0]?.toUpperCase()}</span>
@@ -303,8 +298,9 @@ const Leases = () => {
                             <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(t.rent_amount)} + {fmt(t.charges_amount)}/mois</span>
                           </div>
                         </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 shrink-0 mt-3" />
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
