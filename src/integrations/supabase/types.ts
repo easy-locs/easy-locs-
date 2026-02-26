@@ -41,6 +41,75 @@ export type Database = {
         }
         Relationships: []
       }
+      candidates: {
+        Row: {
+          applied_at: string
+          created_at: string
+          email: string | null
+          guarantor_info: string | null
+          id: string
+          monthly_income: number | null
+          name: string
+          notes: string | null
+          org_id: string
+          phone: string | null
+          profession: string | null
+          property_id: string | null
+          score: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string
+          created_at?: string
+          email?: string | null
+          guarantor_info?: string | null
+          id?: string
+          monthly_income?: number | null
+          name: string
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          profession?: string | null
+          property_id?: string | null
+          score?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string
+          created_at?: string
+          email?: string | null
+          guarantor_info?: string | null
+          id?: string
+          monthly_income?: number | null
+          name?: string
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          profession?: string | null
+          property_id?: string | null
+          score?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidates_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           country: string
@@ -90,6 +159,178 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dunning_letters: {
+        Row: {
+          amount_due: number
+          created_at: string
+          id: string
+          level: number
+          month: string
+          org_id: string
+          pdf_url: string | null
+          property_id: string | null
+          sent_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount_due?: number
+          created_at?: string
+          id?: string
+          level?: number
+          month: string
+          org_id: string
+          pdf_url?: string | null
+          property_id?: string | null
+          sent_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount_due?: number
+          created_at?: string
+          id?: string
+          level?: number
+          month?: string
+          org_id?: string
+          pdf_url?: string | null
+          property_id?: string | null
+          sent_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dunning_letters_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dunning_letters_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dunning_letters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          expense_date: string
+          id: string
+          invoice_url: string | null
+          label: string
+          notes: string | null
+          org_id: string
+          property_id: string | null
+          supplier: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          invoice_url?: string | null
+          label: string
+          notes?: string | null
+          org_id: string
+          property_id?: string | null
+          supplier?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          invoice_url?: string | null
+          label?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string | null
+          supplier?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      furniture_items: {
+        Row: {
+          condition: string
+          created_at: string
+          id: string
+          item_name: string
+          notes: string | null
+          org_id: string
+          property_id: string
+          quantity: number
+          room_name: string
+        }
+        Insert: {
+          condition?: string
+          created_at?: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          org_id: string
+          property_id: string
+          quantity?: number
+          room_name?: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string
+          quantity?: number
+          room_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "furniture_items_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "furniture_items_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -373,6 +614,73 @@ export type Database = {
           stripe_onboarding_complete?: boolean
         }
         Relationships: []
+      }
+      payment_notices: {
+        Row: {
+          charges_amount: number
+          created_at: string
+          due_date: string
+          id: string
+          month: string
+          org_id: string
+          pdf_url: string | null
+          property_id: string | null
+          rent_amount: number
+          sent: boolean | null
+          tenant_id: string
+          total_amount: number
+        }
+        Insert: {
+          charges_amount?: number
+          created_at?: string
+          due_date: string
+          id?: string
+          month: string
+          org_id: string
+          pdf_url?: string | null
+          property_id?: string | null
+          rent_amount?: number
+          sent?: boolean | null
+          tenant_id: string
+          total_amount?: number
+        }
+        Update: {
+          charges_amount?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          month?: string
+          org_id?: string
+          pdf_url?: string | null
+          property_id?: string | null
+          rent_amount?: number
+          sent?: boolean | null
+          tenant_id?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_notices_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_notices_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_notices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -658,6 +966,75 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasonal_bookings: {
+        Row: {
+          check_in: string
+          check_out: string
+          cleaning_fee: number | null
+          created_at: string
+          deposit_amount: number | null
+          guest_email: string | null
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          property_id: string
+          status: string
+          total_price: number
+          user_id: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          cleaning_fee?: number | null
+          created_at?: string
+          deposit_amount?: number | null
+          guest_email?: string | null
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          property_id: string
+          status?: string
+          total_price?: number
+          user_id: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          cleaning_fee?: number | null
+          created_at?: string
+          deposit_amount?: number | null
+          guest_email?: string | null
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string
+          status?: string
+          total_price?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seasonal_bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]

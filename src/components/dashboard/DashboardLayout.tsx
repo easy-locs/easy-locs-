@@ -2,34 +2,11 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import logoAdminia from "@/assets/logo-adminia.png";
-import { Clock } from "lucide-react";
 import {
-  LayoutDashboard,
-  Home,
-  ChevronDown,
-  Users,
-  KeyRound,
-  CalendarRange,
-  ClipboardList,
-  FileCheck,
-  Wallet,
-  FileText,
-  Contact,
-  Wrench,
-  CheckSquare,
-  StickyNote,
-  MessageCircle,
-  BrainCircuit,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  CreditCard,
-  ShieldCheck,
-  Building2,
-  Bell,
-  FolderLock,
-  Globe,
+  LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck,
+  Wallet, FileText, Contact, Wrench, CheckSquare, StickyNote, MessageCircle,
+  BrainCircuit, Settings, LogOut, Menu, X, CreditCard, ShieldCheck, Globe, Bell,
+  FolderLock, Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock,
 } from "lucide-react";
 
 interface NavItem {
@@ -54,10 +31,21 @@ const navSections: NavSection[] = [
       { icon: KeyRound, label: "Locations", path: "/dashboard/leases" },
       { icon: ClipboardList, label: "Inventaires", path: "/dashboard/vault" },
       { icon: FileCheck, label: "État des lieux", path: "/dashboard/receipts" },
+      { icon: Sofa, label: "Mobilier", path: "/dashboard/furniture" },
       { icon: Wallet, label: "Finances", path: "/dashboard/finances" },
+      { icon: Receipt, label: "Dépenses", path: "/dashboard/expenses" },
       { icon: CalendarRange, label: "Régul. charges", path: "/dashboard/charges" },
       { icon: FileCheck, label: "Bilan fiscal", path: "/dashboard/fiscal" },
       { icon: FileText, label: "Documents", path: "/dashboard/documents" },
+    ],
+  },
+  {
+    title: "LOCATION",
+    items: [
+      { icon: Calendar, label: "Saisonnier", path: "/dashboard/seasonal" },
+      { icon: UserSearch, label: "Candidats", path: "/dashboard/candidates" },
+      { icon: Receipt, label: "Avis d'échéance", path: "/dashboard/notices" },
+      { icon: AlertTriangle, label: "Relances", path: "/dashboard/dunning" },
     ],
   },
   {
