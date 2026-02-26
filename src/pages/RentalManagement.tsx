@@ -470,8 +470,65 @@ const RentalManagement = () => {
 
           {/* Locataires */}
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Users className="h-4 w-4 text-accent" />Locataires</h3>
-            {propTenants.length === 0 ? <p className="text-sm text-muted-foreground">Aucun locataire affecté.</p> : (
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><Users className="h-4 w-4 text-accent" />Locataires</h3>
+              {propTenants.length === 0 && (
+                <button
+                  onClick={() => setAssignPropertyId(assignPropertyId === selectedProperty.id ? null : selectedProperty.id)}
+                  className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 flex items-center gap-1"
+                >
+                  <UserPlus className="h-3 w-3" /> Assigner un locataire
+                </button>
+              )}
+            </div>
+            {propTenants.length === 0 ? (
+              <>
+                <p className="text-sm text-muted-foreground">Aucun locataire affecté.</p>
+                {assignPropertyId === selectedProperty.id && (
+                  <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-foreground">Assigner un locataire existant</span>
+                      <button onClick={() => setAssignPropertyId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                    </div>
+                    <input
+                      type="text"
+                      value={assignSearch}
+                      onChange={(e) => setAssignSearch(e.target.value)}
+                      placeholder="Rechercher un locataire…"
+                      className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                    <div className="max-h-32 overflow-y-auto space-y-1">
+                      {tenants
+                        .filter(t => !t.property_id || t.property_id === null)
+                        .filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase()))
+                        .map(t => (
+                          <button
+                            key={t.id}
+                            onClick={async () => {
+                              const ok = await assignTenantToProperty(t.id, selectedProperty.id);
+                              if (ok) { setAssignPropertyId(null); setSelectedProperty(null); }
+                            }}
+                            className="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-accent/10 transition-colors flex items-center gap-2"
+                          >
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-foreground">{t.name}</span>
+                            {t.email && <span className="text-muted-foreground ml-auto">{t.email}</span>}
+                          </button>
+                        ))}
+                      {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-2">Aucun locataire sans bien</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => { setActiveTab("tenants"); setShowTenantForm(true); setSelectedProperty(null); }}
+                      className="w-full mt-2 text-xs text-accent hover:underline flex items-center justify-center gap-1 py-1"
+                    >
+                      <Plus className="h-3 w-3" /> Créer un nouveau locataire
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
               <div className="space-y-2">
                 {propTenants.map(t => (
                   <button key={t.id} onClick={() => { setSelectedTenant(t); setTenantTab("info"); setSelectedProperty(null); }}
