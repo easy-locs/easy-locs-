@@ -1,8 +1,8 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles } from "lucide-react";
+import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Globe, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
-import { PLANS } from "@/lib/stripe-plans";
+import { PLANS, type PlanTier } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -13,6 +13,7 @@ const Billing = () => {
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "annual">("annual");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -25,14 +26,9 @@ const Billing = () => {
   const handleCheckout = async (priceId: string) => {
     setLoadingPriceId(priceId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
-      });
+      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
       if (error) throw error;
-      if (data?.url) {
-        // Redirect directly instead of popup to avoid blockers
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
       setLoadingPriceId(null);
@@ -55,11 +51,21 @@ const Billing = () => {
   const currentPlan = subscription.plan;
   const isSubscribed = subscription.subscribed && !subscription.isTrial;
 
+  const tiers: { tier: PlanTier; icon: any; label: string }[] = [
+    { tier: "local", icon: MapPin, label: "Local — 1 pays" },
+    { tier: "global", icon: Globe, label: "Global — Tous les pays" },
+  ];
+
+  const filteredPlans = PLANS.filter((p) => p.interval === (billingInterval === "monthly" ? "mois" : "an"));
+
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-1">Abonnement</h1>
-        <p className="text-muted-foreground text-sm mb-8">Gérez votre abonnement et votre facturation.</p>
+        <p className="text-muted-foreground text-sm mb-2">Choisissez l'abonnement adapté à votre activité locative.</p>
+        <p className="text-muted-foreground text-xs mb-8">
+          Une seule plateforme pour gérer vos locations longue durée, Airbnb et Booking, avec des documents juridiques adaptés à chaque pays.
+        </p>
 
         {/* Trial banner */}
         {subscription.isTrial && (
@@ -73,7 +79,7 @@ const Billing = () => {
             </div>
             <Progress value={subscription.trialDaysLeft != null ? ((3 - subscription.trialDaysLeft) / 3) * 100 : 0} className="h-2 mb-3" />
             <p className="text-sm text-muted-foreground">
-              Accès complet à toutes les fonctionnalités. Choisissez un plan ci-dessous pour continuer après l'essai. Renouvellement automatique.
+              Accès complet à toutes les fonctionnalités. Choisissez un plan ci-dessous pour continuer après l'essai.
             </p>
           </div>
         )}
@@ -84,28 +90,41 @@ const Billing = () => {
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-5 w-5 text-success" />
               <h2 className="font-semibold text-foreground">Abonnement actif</h2>
-              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full capitalize">{currentPlan}</span>
+              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full capitalize">{currentPlan?.replace("_", " ")}</span>
             </div>
             {subscription.subscriptionEnd && (
               <p className="text-sm text-muted-foreground mb-4">
-                Prochain renouvellement automatique : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
+                Prochain renouvellement : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
               </p>
             )}
-            <button
-              onClick={handlePortal}
-              disabled={portalLoading}
-              className="flex items-center gap-2 text-sm font-medium text-accent hover:underline"
-            >
+            <button onClick={handlePortal} disabled={portalLoading} className="flex items-center gap-2 text-sm font-medium text-accent hover:underline">
               {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
               Gérer mon abonnement
             </button>
           </div>
         )}
 
+        {/* Billing interval toggle */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <button
+            onClick={() => setBillingInterval("monthly")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "monthly" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
+          >
+            Mensuel
+          </button>
+          <button
+            onClick={() => setBillingInterval("annual")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
+          >
+            Annuel
+          </button>
+        </div>
+
         {/* Plans grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {PLANS.map((plan) => {
+          {filteredPlans.map((plan) => {
             const isCurrent = currentPlan === plan.key;
+            const TierIcon = plan.tier === "global" ? Globe : MapPin;
             return (
               <div
                 key={plan.key}
@@ -120,19 +139,18 @@ const Billing = () => {
                   </span>
                 )}
                 {isCurrent && (
-                  <span className="inline-block bg-success/20 text-success text-xs font-semibold px-2 py-0.5 rounded-full mb-3">
-                    Votre plan
-                  </span>
+                  <span className="inline-block bg-success/20 text-success text-xs font-semibold px-2 py-0.5 rounded-full mb-3">Votre plan</span>
                 )}
-                <h3 className="font-semibold text-foreground text-lg">{plan.name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <TierIcon className="h-5 w-5 text-accent" />
+                  <h3 className="font-semibold text-foreground text-lg">{plan.name}</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">{plan.subtitle}</p>
                 <div className="mt-2 mb-4">
                   <span className="text-4xl font-bold text-foreground">{plan.price}€</span>
                   <span className="text-sm text-muted-foreground">/{plan.interval}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-4">
-                  {plan.interval === "mois" ? "Renouvellement mensuel automatique" : "Renouvellement annuel automatique"}
-                  {" • Résiliable à tout moment"}
-                </p>
+                <p className="text-xs text-muted-foreground mb-4">{plan.description}</p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -142,20 +160,13 @@ const Billing = () => {
                   ))}
                 </ul>
                 {isCurrent ? (
-                  <button
-                    disabled
-                    className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default"
-                  >
-                    Plan actuel
-                  </button>
+                  <button disabled className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default">Plan actuel</button>
                 ) : (
                   <button
                     onClick={() => handleCheckout(plan.priceId)}
                     disabled={!!loadingPriceId}
                     className={`w-full py-3 rounded-lg text-sm font-semibold transition-all ${
-                      plan.highlight
-                        ? "bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90"
-                        : "bg-foreground text-background hover:opacity-90"
+                      plan.highlight ? "bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90" : "bg-foreground text-background hover:opacity-90"
                     } disabled:opacity-50`}
                   >
                     {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "S'abonner"}
@@ -166,9 +177,28 @@ const Billing = () => {
           })}
         </div>
 
-        <p className="text-xs text-center text-muted-foreground mt-6">
-          3 jours d'essai gratuit inclus. Si vous ne résiliez pas, l'abonnement se renouvelle automatiquement.
+        {/* Payment methods info */}
+        <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
+          <span>💳 Carte bancaire</span>
+          <span> Apple Pay</span>
+          <span>📱 Google Pay</span>
+          <span>🏦 SEPA</span>
+        </div>
+
+        <p className="text-xs text-center text-muted-foreground mt-4">
+          Aucun engagement – Annulation à tout moment. 3 jours d'essai gratuit inclus.
         </p>
+
+        {/* Legal disclaimer */}
+        <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground space-y-2">
+          <p>
+            La plateforme fournit des modèles de documents juridiques automatisés basés sur la législation généralement applicable.
+            Elle ne fournit pas de conseil juridique personnalisé et ne se substitue pas à un professionnel du droit.
+          </p>
+          <p>
+            Les abonnements sont reconduits automatiquement jusqu'à résiliation. La résiliation prend effet à la fin de la période en cours. Aucun remboursement partiel.
+          </p>
+        </div>
 
         {!subscription.subscribed && !subscription.loading && !subscription.isTrial && (
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">

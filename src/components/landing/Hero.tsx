@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Shield } from "lucide-react";
+import { ArrowRight, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-hero">
-      {/* Background image overlay */}
       <div
         className="absolute inset-0 opacity-20 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroBg})` }}
@@ -21,8 +20,8 @@ const Hero = () => {
             transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 text-sm text-gold-light mb-6"
           >
-            <Shield className="h-4 w-4" />
-            <span>Assistant administratif propulsé par l'IA</span>
+            <Globe className="h-4 w-4" />
+            <span>Longue durée • Airbnb • Booking • Multi-pays</span>
           </motion.div>
 
           <motion.h1
@@ -31,8 +30,8 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary-foreground leading-tight mb-6"
           >
-            Gérez vos démarches administratives{" "}
-            <span className="text-gradient-gold">en toute simplicité</span>
+            La première plateforme mondiale{" "}
+            <span className="text-gradient-gold">de gestion locative</span>
           </motion.h1>
 
           <motion.p
@@ -41,8 +40,8 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg sm:text-xl text-primary-foreground/70 mb-10 max-w-2xl leading-relaxed"
           >
-            Quittances de loyer, baux, documents juridiques, rappels…
-            Easyloc automatise votre gestion locative pour que vous puissiez vous concentrer sur l'essentiel.
+            Documents juridiques automatisés de qualité professionnelle, adaptés à chaque pays.
+            Gérez vos locations longue durée, Airbnb et Booking depuis une seule plateforme.
           </motion.p>
 
           <motion.div
