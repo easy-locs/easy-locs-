@@ -43,11 +43,11 @@ export interface VaultFile {
 }
 
 const KEYS = {
-  user: "adminia_user",
-  documents: "adminia_documents",
-  reminders: "adminia_reminders",
-  vault: "adminia_vault",
-  seeded: "adminia_seeded",
+  user: "easyloc_user",
+  documents: "easyloc_documents",
+  reminders: "easyloc_reminders",
+  vault: "easyloc_vault",
+  seeded: "easyloc_seeded",
 };
 
 function get<T>(key: string, fallback: T): T {
@@ -67,7 +67,7 @@ function set(key: string, value: unknown) {
 export const getUser = (): UserProfile =>
   get<UserProfile>(KEYS.user, {
     id: "demo-user-1",
-    email: "demo@adminia.fr",
+    email: "demo@easyloc.fr",
     name: "Jean Martin",
     role: "landlord",
     country: "FR",

@@ -105,7 +105,7 @@ const PaymentNotices = () => {
     doc.rect(0, 290, 210, 7, "F");
     doc.setFontSize(7);
     doc.setTextColor(140, 140, 140);
-    doc.text("Adminia — Avis d'échéance", 20, 287);
+    doc.text("Easyloc — Avis d'échéance", 20, 287);
 
     doc.save(`avis_echeance_${notice.month}_${tenant?.name || ""}.pdf`);
   };

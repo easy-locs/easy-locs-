@@ -50,8 +50,8 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoAdminia} alt="Adminia" className="h-8 w-8 rounded" />
-          <span className="text-xl font-bold text-primary-foreground">Adminia</span>
+          <img src={logoAdminia} alt="Easyloc" className="h-8 w-8 rounded" />
+          <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
         </Link>
       </div>
 

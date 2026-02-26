@@ -43,8 +43,8 @@ const Tenants = () => {
   const [newMessage, setNewMessage] = useState("");
 
   // Local storage for tenants (MVP without DB migration)
-  const storageKey = `adminia_tenants_${orgId}`;
-  const messagesKey = (tenantId: string) => `adminia_tenant_msgs_${orgId}_${tenantId}`;
+  const storageKey = `easyloc_tenants_${orgId}`;
+  const messagesKey = (tenantId: string) => `easyloc_tenant_msgs_${orgId}_${tenantId}`;
 
   useEffect(() => {
     if (!orgId) return;

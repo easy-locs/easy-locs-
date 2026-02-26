@@ -50,7 +50,7 @@ const Onboarding = () => {
       <div className="absolute top-6 left-6">
         <div className="flex items-center gap-2">
           <Shield className="h-7 w-7 text-gold" />
-          <span className="text-xl font-bold text-primary-foreground">Adminia</span>
+          <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ const Onboarding = () => {
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Bienvenue sur Adminia</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Bienvenue sur Easyloc</h2>
               <p className="text-muted-foreground mb-8">Vous êtes…</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {userTypes.map((p) => (

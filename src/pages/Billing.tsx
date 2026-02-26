@@ -174,7 +174,7 @@ const Billing = () => {
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              Votre essai est terminé. Choisissez un abonnement pour continuer à utiliser Adminia.
+              Votre essai est terminé. Choisissez un abonnement pour continuer à utiliser Easyloc.
             </p>
           </div>
         )}

@@ -9,10 +9,10 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => (
         <div>
           <Link to="/" className="flex items-center gap-2 mb-4">
             <Shield className="h-6 w-6 text-gold" />
-            <span className="text-lg font-bold text-primary-foreground">Adminia</span>
+            <span className="text-lg font-bold text-primary-foreground">Easyloc</span>
           </Link>
           <p className="text-sm leading-relaxed">
-            Votre assistant administratif intelligent, conforme et sécurisé.
+            Votre assistant de gestion locative intelligent, conforme et sécurisé.
           </p>
         </div>
         <div>
@@ -33,12 +33,12 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => (
         <div>
           <h4 className="font-semibold text-primary-foreground text-sm mb-3">Contact</h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="mailto:contact@adminia.fr" className="hover:text-primary-foreground transition-colors">contact@adminia.fr</a></li>
+            <li><a href="mailto:contact@easyloc.fr" className="hover:text-primary-foreground transition-colors">contact@easyloc.fr</a></li>
           </ul>
         </div>
       </div>
       <div className="border-t border-primary-foreground/10 pt-8 text-sm text-center">
-        © {new Date().getFullYear()} Adminia. Tous droits réservés.
+        © {new Date().getFullYear()} Easyloc. Tous droits réservés.
       </div>
     </div>
   </footer>
