@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Clock } from "lucide-react";
 import {
   Shield,
   LayoutDashboard,
@@ -36,7 +37,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
@@ -135,6 +136,27 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <span className="hidden sm:inline">Que dois-je faire ?</span>
           </Link>
         </header>
+
+        {/* Trial banner */}
+        {subscription.isTrial && (
+          <div className="mx-6 mt-4 flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5">
+            <Clock className="h-4 w-4 text-accent shrink-0" />
+            <p className="text-sm text-foreground">
+              <span className="font-semibold">Essai gratuit</span>
+              {subscription.trialDaysLeft != null && (
+                <span className="text-muted-foreground">
+                  {" — "}{subscription.trialDaysLeft} jour{subscription.trialDaysLeft > 1 ? "s" : ""} restant{subscription.trialDaysLeft > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+            <Link
+              to="/dashboard/billing"
+              className="ml-auto text-xs font-semibold text-accent hover:underline whitespace-nowrap"
+            >
+              Choisir un plan
+            </Link>
+          </div>
+        )}
 
         <main className="flex-1 p-6">{children}</main>
       </div>
