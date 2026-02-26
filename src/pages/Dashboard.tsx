@@ -125,26 +125,31 @@ const Dashboard = () => {
         {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Building, label: "Biens", value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} locataire(s)` },
-            { icon: Euro, label: "Encaissé ce mois", value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} impayés` : "0 impayé" },
-            { icon: Percent, label: "Taux d'occupation", value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} vacant(s)` },
-            { icon: FolderLock, label: "Coffre-fort", value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} fichier(s)` },
+            { icon: Building, label: "Biens", value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} locataire(s)`, path: "/dashboard/rental?tab=properties" },
+            { icon: Euro, label: "Encaissé ce mois", value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} impayés` : "0 impayé", path: "/dashboard/rental?tab=payments" },
+            { icon: Percent, label: "Taux d'occupation", value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} vacant(s)`, path: "/dashboard/rental?tab=properties" },
+            { icon: FolderLock, label: "Coffre-fort", value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} fichier(s)`, path: "/dashboard/vault" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.05 }}
-              className="bg-card rounded-xl p-5 shadow-card border border-border/50"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <Link
+                to={stat.path}
+                className="block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                    <stat.icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">{stat.label}</span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors ml-auto" />
                 </div>
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <div className="text-xs text-muted-foreground">{stat.sub}</div>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-xs text-muted-foreground">{stat.sub}</div>
+              </Link>
             </motion.div>
           ))}
         </div>
