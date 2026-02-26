@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Mail, RefreshCw, Loader2 } from "lucide-react";
+import { Mail, RefreshCw, Loader2 } from "lucide-react";
+import logoAdminia from "@/assets/logo-adminia.png";
 import { useToast } from "@/hooks/use-toast";
 
 const VerifyEmail = () => {
@@ -49,7 +50,7 @@ const VerifyEmail = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <Shield className="h-7 w-7 text-gold" />
+          <img src={logoAdminia} alt="Adminia" className="h-8 w-8 rounded" />
           <span className="text-xl font-bold text-primary-foreground">Adminia</span>
         </Link>
       </div>
