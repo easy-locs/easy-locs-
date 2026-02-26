@@ -11,6 +11,12 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+// Valid price IDs
+const VALID_PRICES = [
+  "price_1T4sOdKcrlZX0EnnHIgwXcq9", // monthly 29€
+  "price_1T4tliKcrlZX0EnnxHeOxHIO", // annual 199€
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,27 +40,49 @@ serve(async (req) => {
     logStep("User authenticated", { email: user.email });
 
     const { priceId } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
+    if (!priceId || !VALID_PRICES.includes(priceId)) {
+      throw new Error(`Invalid priceId: ${priceId}`);
+    }
     logStep("Price ID", { priceId });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+    
+    // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      logStep("Existing customer", { customerId });
+      
+      // Check if already has active subscription
+      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+      if (existingSubs.data.length > 0) {
+        logStep("Customer already has active subscription, proceeding anyway");
+      }
     }
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
-    const session = await stripe.checkout.sessions.create({
+    
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/dashboard/billing?success=true`,
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
-    });
-
-    logStep("Checkout session created", { sessionId: session.id });
+      allow_promotion_codes: true,
+    };
+    
+    // Add 3-day trial for new subscribers only
+    if (!customerId) {
+      sessionParams.subscription_data = {
+        trial_period_days: 3,
+      };
+      logStep("Adding 3-day trial for new customer");
+    }
+    
+    const session = await stripe.checkout.sessions.create(sessionParams);
+    logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

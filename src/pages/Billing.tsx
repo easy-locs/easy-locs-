@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
 import { PLANS } from "@/lib/stripe-plans";
@@ -15,7 +15,6 @@ const Billing = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  // Refresh subscription on success callback
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       toast({ title: "Abonnement activé !", description: "Merci pour votre confiance." });
@@ -30,10 +29,12 @@ const Billing = () => {
         body: { priceId },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) {
+        // Redirect directly instead of popup to avoid blockers
+        window.location.href = data.url;
+      }
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally {
       setLoadingPriceId(null);
     }
   };
@@ -43,7 +44,7 @@ const Billing = () => {
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     } finally {
@@ -52,10 +53,11 @@ const Billing = () => {
   };
 
   const currentPlan = subscription.plan;
+  const isSubscribed = subscription.subscribed && !subscription.isTrial;
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-1">Abonnement</h1>
         <p className="text-muted-foreground text-sm mb-8">Gérez votre abonnement et votre facturation.</p>
 
@@ -64,63 +66,59 @@ const Billing = () => {
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-6 mb-8">
             <div className="flex items-center gap-3 mb-3">
               <Clock className="h-5 w-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Essai gratuit</h2>
+              <h2 className="font-semibold text-foreground">Essai gratuit — 3 jours</h2>
               <span className="bg-accent/20 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
                 {subscription.trialDaysLeft != null ? `${subscription.trialDaysLeft} jour${subscription.trialDaysLeft > 1 ? 's' : ''} restant${subscription.trialDaysLeft > 1 ? 's' : ''}` : ''}
               </span>
             </div>
             <Progress value={subscription.trialDaysLeft != null ? ((3 - subscription.trialDaysLeft) / 3) * 100 : 0} className="h-2 mb-3" />
             <p className="text-sm text-muted-foreground">
-              Profitez de toutes les fonctionnalités pendant votre essai. Choisissez un abonnement ci-dessous pour continuer après la période d'essai.
+              Accès complet à toutes les fonctionnalités. Choisissez un plan ci-dessous pour continuer après l'essai. Renouvellement automatique.
             </p>
           </div>
         )}
 
-        {/* Current plan */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6 mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">Plan actuel</h2>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-foreground capitalize">
-              {subscription.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : subscription.isTrial ? "Essai gratuit" : currentPlan === "free" ? "Aucun abonnement" : currentPlan}
-            </span>
-            {subscription.subscribed && !subscription.isTrial && (
-              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Actif</span>
+        {/* Current plan info */}
+        {isSubscribed && (
+          <div className="bg-card rounded-xl shadow-card border border-success/30 p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle className="h-5 w-5 text-success" />
+              <h2 className="font-semibold text-foreground">Abonnement actif</h2>
+              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full capitalize">{currentPlan}</span>
+            </div>
+            {subscription.subscriptionEnd && (
+              <p className="text-sm text-muted-foreground mb-4">
+                Prochain renouvellement automatique : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
+              </p>
             )}
-            {!subscription.subscribed && !subscription.loading && (
-              <span className="bg-warning/20 text-warning text-xs font-medium px-2 py-0.5 rounded-full">Inactif</span>
-            )}
-          </div>
-          {subscription.subscriptionEnd && !subscription.isTrial && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Renouvellement : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
-            </p>
-          )}
-          {subscription.subscribed && !subscription.isTrial && (
             <button
               onClick={handlePortal}
               disabled={portalLoading}
-              className="mt-4 flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+              className="flex items-center gap-2 text-sm font-medium text-accent hover:underline"
             >
               {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
               Gérer mon abonnement
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Plans */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Plans grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {PLANS.map((plan) => {
             const isCurrent = currentPlan === plan.key;
             return (
               <div
                 key={plan.key}
-                className={`bg-card rounded-xl p-6 shadow-card border transition-all ${
+                className={`relative bg-card rounded-xl p-6 shadow-card border transition-all ${
                   isCurrent ? "border-success ring-2 ring-success/20" : plan.highlight ? "border-accent ring-2 ring-accent/20" : "border-border/50"
                 }`}
               >
+                {plan.savings && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    {plan.savings}
+                  </span>
+                )}
                 {isCurrent && (
                   <span className="inline-block bg-success/20 text-success text-xs font-semibold px-2 py-0.5 rounded-full mb-3">
                     Votre plan
@@ -128,9 +126,13 @@ const Billing = () => {
                 )}
                 <h3 className="font-semibold text-foreground text-lg">{plan.name}</h3>
                 <div className="mt-2 mb-4">
-                  <span className="text-3xl font-bold text-foreground">{plan.price}€</span>
-                  <span className="text-sm text-muted-foreground">/mois</span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}€</span>
+                  <span className="text-sm text-muted-foreground">/{plan.interval}</span>
                 </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {plan.interval === "mois" ? "Renouvellement mensuel automatique" : "Renouvellement annuel automatique"}
+                  {" • Résiliable à tout moment"}
+                </p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -142,7 +144,7 @@ const Billing = () => {
                 {isCurrent ? (
                   <button
                     disabled
-                    className="w-full py-2.5 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default"
+                    className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default"
                   >
                     Plan actuel
                   </button>
@@ -150,13 +152,13 @@ const Billing = () => {
                   <button
                     onClick={() => handleCheckout(plan.priceId)}
                     disabled={!!loadingPriceId}
-                    className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    className={`w-full py-3 rounded-lg text-sm font-semibold transition-all ${
                       plan.highlight
                         ? "bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90"
-                        : "border border-border text-foreground hover:bg-muted"
+                        : "bg-foreground text-background hover:opacity-90"
                     } disabled:opacity-50`}
                   >
-                    {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Choisir"}
+                    {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "S'abonner"}
                   </button>
                 )}
               </div>
@@ -164,11 +166,15 @@ const Billing = () => {
           })}
         </div>
 
-        {!subscription.subscribed && !subscription.loading && (
+        <p className="text-xs text-center text-muted-foreground mt-6">
+          3 jours d'essai gratuit inclus. Si vous ne résiliez pas, l'abonnement se renouvelle automatiquement.
+        </p>
+
+        {!subscription.subscribed && !subscription.loading && !subscription.isTrial && (
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              Choisissez un abonnement pour accéder à toutes les fonctionnalités d'Adminia.
+              Votre essai est terminé. Choisissez un abonnement pour continuer à utiliser Adminia.
             </p>
           </div>
         )}

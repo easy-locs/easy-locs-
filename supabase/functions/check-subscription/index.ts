@@ -11,6 +11,11 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+const PRODUCT_MAP: Record<string, string> = {
+  "prod_U2yLjzJN4Y7LYb": "monthly",
+  "prod_U2zlUjPtdVVjIw": "annual",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -41,7 +46,6 @@ serve(async (req) => {
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found, checking trial");
-      // Check trial status
       const trialResult = await checkTrial(supabaseClient, user.id);
       return new Response(JSON.stringify(trialResult), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -49,42 +53,36 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
+    
+    // Check active subscriptions
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-    const hasActive = subscriptions.data.length > 0;
-
-    let plan = "free";
-    let productId: string | null = null;
-    let subscriptionEnd: string | null = null;
-    let stripeSubId: string | null = null;
-
-    if (hasActive) {
-      const sub = subscriptions.data[0];
-      stripeSubId = sub.id;
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
-      productId = sub.items.data[0].price.product as string;
-
-      const productMap: Record<string, string> = {
-        "prod_U2yLnEYKPa8yLG": "individual",
-        "prod_U2yLjzJN4Y7LYb": "landlord",
-        "prod_U2yLaqf6FPXuJ7": "freelancer",
-        "prod_U2yLSNT98adKHF": "business",
-      };
-      plan = productMap[productId] || "unknown";
-      logStep("Active subscription", { plan, subscriptionEnd });
+    
+    // Also check trialing subscriptions (Stripe native trial)
+    const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
+    
+    const activeSub = subscriptions.data[0] || trialingSubs.data[0];
+    
+    if (activeSub) {
+      const subscriptionEnd = new Date(activeSub.current_period_end * 1000).toISOString();
+      const productId = activeSub.items.data[0].price.product as string;
+      const plan = PRODUCT_MAP[productId] || "unknown";
+      const isStripeTrial = activeSub.status === "trialing";
+      
+      logStep("Active subscription", { plan, subscriptionEnd, status: activeSub.status });
 
       // Upsert subscription record
       await supabaseClient.from("subscriptions").upsert({
         user_id: user.id,
         stripe_customer_id: customerId,
-        stripe_subscription_id: stripeSubId,
+        stripe_subscription_id: activeSub.id,
         plan,
-        status: "active",
+        status: isStripeTrial ? "trialing" : "active",
         current_period_end: subscriptionEnd,
       }, { onConflict: "user_id" });
 
       return new Response(JSON.stringify({
         subscribed: true,
-        plan,
+        plan: isStripeTrial ? "trial" : plan,
         product_id: productId,
         subscription_end: subscriptionEnd,
       }), {
@@ -92,7 +90,7 @@ serve(async (req) => {
       });
     }
 
-    // No active Stripe subscription — check trial
+    // No active Stripe subscription — check local trial
     logStep("No active Stripe sub, checking trial");
     const trialResult = await checkTrial(supabaseClient, user.id, customerId);
     return new Response(JSON.stringify(trialResult), {
@@ -125,14 +123,12 @@ async function checkTrial(supabaseClient: any, userId: string, stripeCustomerId?
         subscription_end: sub.trial_ends_at,
       };
     }
-    // Trial expired
     logStep("Trial expired, setting inactive");
     await supabaseClient.from("subscriptions").update({
       status: "inactive",
       plan: "free",
     }).eq("user_id", userId);
   } else if (!sub) {
-    // No subscription row at all — create free
     await supabaseClient.from("subscriptions").upsert({
       user_id: userId,
       plan: "free",

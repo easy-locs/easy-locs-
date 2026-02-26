@@ -1,59 +1,38 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const plans = [
   {
-    name: "Particulier",
-    price: "12",
-    description: "Pour gérer vos documents personnels",
-    features: [
-      "Documents administratifs illimités",
-      "Coffre-fort sécurisé (1 Go)",
-      "Rappels basiques",
-      "Assistant IA (50 requêtes/mois)",
-      "Export PDF",
-    ],
-  },
-  {
-    name: "Bailleur",
+    name: "Mensuel",
     price: "29",
-    popular: true,
-    description: "Idéal pour les propriétaires bailleurs",
+    interval: "mois",
+    description: "Flexibilité maximale, résiliable à tout moment",
     features: [
-      "Tout le plan Particulier",
-      "Quittances de loyer automatiques",
-      "Générateur de baux",
-      "Rappels avancés (IRL, assurances)",
-      "Envoi par email intégré",
-      "Coffre-fort (5 Go)",
-      "Partage sécurisé",
-    ],
-  },
-  {
-    name: "Freelance",
-    price: "39",
-    description: "Pour les indépendants et auto-entrepreneurs",
-    features: [
-      "Tout le plan Bailleur",
-      "Création d'entreprise guidée",
-      "Modèles contrats & CGV",
-      "Assistant IA illimité",
-      "Coffre-fort (10 Go)",
-      "Templates RGPD",
-    ],
-  },
-  {
-    name: "Business",
-    price: "69",
-    description: "Pour les PME et équipes",
-    features: [
-      "Tout le plan Freelance",
-      "Multi-utilisateurs (5 inclus)",
-      "Coffre-fort (50 Go)",
-      "Rôles et permissions",
+      "PDF & documents illimités",
+      "Baux, quittances, états des lieux",
+      "Gestion locative complète",
+      "Rappels automatiques",
+      "Coffre-fort numérique",
+      "Assistant IA",
       "Support prioritaire",
-      "API d'intégration",
+    ],
+  },
+  {
+    name: "Annuel",
+    price: "199",
+    interval: "an",
+    popular: true,
+    savings: "Économisez 149€/an",
+    description: "Le meilleur rapport qualité-prix",
+    features: [
+      "PDF & documents illimités",
+      "Baux, quittances, états des lieux",
+      "Gestion locative complète",
+      "Rappels automatiques",
+      "Coffre-fort numérique",
+      "Assistant IA",
+      "Support prioritaire",
     ],
   },
 ];
@@ -69,14 +48,14 @@ const Pricing = () => {
           className="text-center mb-16"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Des tarifs <span className="text-gradient-gold">simples et transparents</span>
+            Un seul plan, <span className="text-gradient-gold">tout illimité</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Choisissez le plan adapté à votre profil. Sans engagement, résiliable à tout moment.
+            3 jours d'essai gratuit. Renouvellement automatique. Résiliable à tout moment.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -91,8 +70,9 @@ const Pricing = () => {
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-full">
-                  Populaire
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  {plan.savings}
                 </div>
               )}
               <div className="mb-6">
@@ -101,7 +81,7 @@ const Pricing = () => {
               </div>
               <div className="mb-6">
                 <span className="text-4xl font-extrabold text-foreground">{plan.price}€</span>
-                <span className="text-muted-foreground text-sm"> / mois</span>
+                <span className="text-muted-foreground text-sm"> / {plan.interval}</span>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
@@ -119,7 +99,7 @@ const Pricing = () => {
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
               >
-                Commencer
+                Essai gratuit 3 jours
               </Link>
             </motion.div>
           ))}
