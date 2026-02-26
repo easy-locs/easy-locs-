@@ -1,12 +1,61 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Property, Tenant } from "@/hooks/useRentalData";
 
+export interface OwnerProfile {
+  id: string;
+  full_name: string;
+  company_name: string | null;
+  person_type: string;
+  address: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string | null;
+  email: string | null;
+  phone: string | null;
+  tax_id: string | null;
+  bank_name: string | null;
+  bank_iban: string | null;
+  bank_bic: string | null;
+}
+
 /**
- * Hook for auto-filling form data from tenant/property selection.
- * When a tenant is selected, all related fields (name, email, phone, property, rent, etc.) are filled.
- * When a property is selected, address and financial fields are filled.
+ * Hook for auto-filling form data from tenant/property/owner selection.
+ * Includes owner profile (landlord) data for complete document generation.
  */
 export function useAutoFill(properties: Property[], tenants: Tenant[]) {
+  const { orgId } = useAuth();
+  const [ownerProfile, setOwnerProfile] = useState<OwnerProfile | null>(null);
+  const [inventoryReports, setInventoryReports] = useState<any[]>([]);
+
+  // Load owner profile
+  useEffect(() => {
+    if (!orgId) return;
+    supabase
+      .from("owner_profiles")
+      .select("*")
+      .eq("org_id", orgId)
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (data) setOwnerProfile(data as OwnerProfile);
+      });
+  }, [orgId]);
+
+  // Load inventory reports
+  useEffect(() => {
+    if (!orgId) return;
+    supabase
+      .from("inventory_reports")
+      .select("id, property_id, tenant_id, report_type, report_date, status")
+      .eq("org_id", orgId)
+      .order("report_date", { ascending: false })
+      .then(({ data }) => {
+        if (data) setInventoryReports(data);
+      });
+  }, [orgId]);
+
   /** Auto-fill from tenant selection → fills name, contact, property, financials */
   const fillFromTenant = useCallback((tenantId: string) => {
     const tenant = tenants.find(t => t.id === tenantId);
@@ -80,10 +129,46 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
     };
   }, [properties]);
 
+  /** Auto-fill owner/landlord data from owner_profiles */
+  const fillFromOwner = useCallback(() => {
+    if (!ownerProfile) return null;
+    const ownerAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city]
+      .filter(Boolean).join(", ");
+    return {
+      landlordName: ownerProfile.person_type === "company"
+        ? ownerProfile.company_name || ownerProfile.full_name
+        : ownerProfile.full_name,
+      landlordAddress: ownerAddress,
+      landlordEmail: ownerProfile.email || "",
+      landlordPhone: ownerProfile.phone || "",
+      landlordTaxId: ownerProfile.tax_id || "",
+      landlordBankName: ownerProfile.bank_name || "",
+      landlordBankIban: ownerProfile.bank_iban || "",
+      landlordBankBic: ownerProfile.bank_bic || "",
+      landlordPersonType: ownerProfile.person_type,
+      landlordCompanyName: ownerProfile.company_name || "",
+    };
+  }, [ownerProfile]);
+
+  /** Get inventory reports for a property/tenant */
+  const getInventoryForProperty = useCallback((propertyId: string, tenantId?: string) => {
+    return inventoryReports.filter(r =>
+      r.property_id === propertyId && (!tenantId || r.tenant_id === tenantId)
+    );
+  }, [inventoryReports]);
+
   /** Get tenants for a specific property */
   const getTenantsForProperty = useCallback((propertyId: string) => {
     return tenants.filter(t => t.property_id === propertyId);
   }, [tenants]);
 
-  return { fillFromTenant, fillFromProperty, getTenantsForProperty };
+  return {
+    fillFromTenant,
+    fillFromProperty,
+    fillFromOwner,
+    getTenantsForProperty,
+    getInventoryForProperty,
+    ownerProfile,
+    inventoryReports,
+  };
 }

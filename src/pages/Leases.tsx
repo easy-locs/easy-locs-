@@ -9,6 +9,7 @@ import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
 import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { useRentalData, type Tenant, type Property } from "@/hooks/useRentalData";
+import { useAutoFill } from "@/hooks/useAutoFill";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +44,7 @@ const Leases = () => {
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [generating, setGenerating] = useState(false);
   const { properties, tenants, loading } = useRentalData();
+  const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
   const { user, orgId } = useAuth();
   const { toast } = useToast();
 
@@ -90,26 +92,45 @@ const Leases = () => {
       const template = leaseTemplateMap[selectedLeaseType];
       if (!template) return;
 
-      let landlordName = user?.user_metadata?.name || "Propriétaire";
-      try {
-        const { data: profile } = await supabase.from("profiles").select("name").eq("id", user!.id).single();
-        if (profile?.name) landlordName = profile.name;
-      } catch { /* default */ }
+      // Auto-fill from owner profile
+      const ownerData = fillFromOwner();
+      let landlordName = ownerData?.landlordName || user?.user_metadata?.name || "Propriétaire";
+      let landlordAddress = ownerData?.landlordAddress || "";
+      let landlordEmail = ownerData?.landlordEmail || user?.email || "";
+      let landlordPhone = ownerData?.landlordPhone || "";
+
+      // Fallback to profiles table if no owner_profiles
+      if (!ownerData) {
+        try {
+          const { data: profile } = await supabase.from("profiles").select("name").eq("id", user!.id).single();
+          if (profile?.name) landlordName = profile.name;
+        } catch { /* default */ }
+      }
+
+      // Get inventory reports for this property/tenant
+      const inventories = getInventoryForProperty(prop.id, tenant.id);
+      const hasEntryInventory = inventories.some(i => i.report_type === "entry" && i.status === "completed");
 
       const heatingMap: Record<string, string> = { "individual-gas": "individuel-gaz", "individual-electric": "individuel-electrique", "collective": "collectif", "heat-pump": "pompe-chaleur", "other": "autre" };
       const propertyTypeMap: Record<string, string> = { apartment: "Appartement", house: "Maison", studio: "Studio", commercial: "Local commercial", parking: "Parking / Garage" };
 
       const leaseData: Record<string, unknown> = {
-        landlordName, landlordAddress: `${prop.address}, ${prop.postal_code} ${prop.city}`, landlordEmail: user?.email || "",
+        landlordName, landlordAddress: landlordAddress || `${prop.address}, ${prop.postal_code} ${prop.city}`,
+        landlordEmail, landlordPhone,
+        landlordBankName: ownerData?.landlordBankName || "",
+        landlordBankIban: ownerData?.landlordBankIban || "",
+        landlordBankBic: ownerData?.landlordBankBic || "",
         tenantName: tenant.name, tenantBirthDate: tenant.birth_date || "", tenantBirthPlace: tenant.birth_place || "", tenantEmail: tenant.email, tenantPhone: tenant.phone,
+        tenantNationality: tenant.nationality || "", tenantProfession: tenant.profession || "",
         propertyAddress: `${prop.address}, ${prop.postal_code} ${prop.city}`, propertyType: propertyTypeMap[prop.property_type] || prop.property_type,
         surface: prop.surface, rooms: prop.rooms, floor: prop.floor ?? "", heating: heatingMap[prop.heating] || prop.heating,
-        hotWater: "individuel", annexes: "", equipments: "",
+        hotWater: "individuel", annexes: hasEntryInventory ? "État des lieux d'entrée réalisé" : "", equipments: "",
         rentAmount: tenant.rent_amount || prop.monthly_rent, chargesAmount: tenant.charges_amount || prop.monthly_charges,
         chargesMode: "provisions", depositAmount: tenant.deposit_amount || prop.deposit_amount, paymentDay: 5, paymentMethod: "virement",
         zoneTendue: "non", dpeLetter: "D", gesLetter: "D",
         startDate: tenant.lease_start || today,
         duration: selectedLeaseType === "furnished" ? "1" : selectedLeaseType === "commercial" ? "9" : "3",
+        inventoryEntryDone: hasEntryInventory,
       };
 
       if (selectedLeaseType === "furnished") {
