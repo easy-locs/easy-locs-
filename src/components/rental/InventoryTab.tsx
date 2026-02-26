@@ -48,7 +48,10 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
 
   return (
     <div>
-      <h2 className="font-semibold text-foreground mb-4">États des lieux</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-foreground">États des lieux par bien</h2>
+        <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} rapport(s) total</span>
+      </div>
       <div className="space-y-4">
         {properties.map(p => {
           const propTenants = tenants.filter(t => t.property_id === p.id);
