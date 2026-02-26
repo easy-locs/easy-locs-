@@ -28,9 +28,9 @@ const navSections: NavSection[] = [
     items: [
       { icon: LayoutDashboard, label: "Bureau", path: "/dashboard" },
       { icon: Home, label: "Biens", path: "/dashboard/rental" },
-      { icon: Users, label: "Locataires", path: "/dashboard/tenants" },
+      { icon: Users, label: "Locataires", path: "/dashboard/rental?tab=tenants" },
       { icon: KeyRound, label: "Locations", path: "/dashboard/leases" },
-      { icon: ClipboardList, label: "État des lieux", path: "/dashboard/receipts" },
+      { icon: ClipboardList, label: "État des lieux", path: "/dashboard/rental?tab=inventory" },
       { icon: Sofa, label: "Mobilier", path: "/dashboard/furniture" },
       { icon: Wallet, label: "Finances", path: "/dashboard/finances" },
       { icon: Receipt, label: "Dépenses", path: "/dashboard/expenses" },
@@ -101,7 +101,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <p className="px-3 py-2 text-[11px] font-bold tracking-wider text-sidebar-foreground/40 uppercase">{section.title}</p>
               <div className="space-y-0.5">
                 {section.items.map((item) => {
-                  const active = location.pathname === item.path;
+                  const active = location.pathname + location.search === item.path || (location.pathname === item.path && !item.path.includes("?"));
                   return (
                     <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
