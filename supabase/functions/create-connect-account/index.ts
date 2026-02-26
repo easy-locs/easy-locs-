@@ -33,7 +33,6 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    // Get user's org
     const { data: orgMember } = await supabaseClient
       .from("org_members")
       .select("org_id")
@@ -44,23 +43,30 @@ serve(async (req) => {
     if (!orgMember) throw new Error("No organization found");
     const orgId = orgMember.org_id;
 
-    // Check if org already has a Stripe account
     const { data: org } = await supabaseClient
       .from("orgs")
-      .select("stripe_account_id, stripe_onboarding_complete")
+      .select("stripe_account_id, stripe_onboarding_complete, country")
       .eq("id", orgId)
       .single();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    
+    // Validate the key format
+    if (stripeKey.startsWith("rk_")) {
+      throw new Error("La clé Stripe configurée est une clé restreinte (rk_*). Stripe Connect nécessite une clé secrète complète (sk_live_* ou sk_test_*). Veuillez mettre à jour votre clé Stripe dans les paramètres.");
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
 
     let accountId = org?.stripe_account_id;
 
     if (!accountId) {
-      // Create a new Connect Express account
       const account = await stripe.accounts.create({
         type: "express",
         email: user.email,
+        country: org?.country || "FR",
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
@@ -71,7 +77,6 @@ serve(async (req) => {
       accountId = account.id;
       logStep("Created Connect account", { accountId });
 
-      // Save to orgs table
       await supabaseClient
         .from("orgs")
         .update({ stripe_account_id: accountId })
@@ -80,7 +85,6 @@ serve(async (req) => {
       logStep("Existing Connect account", { accountId });
     }
 
-    // Create an account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${origin}/dashboard/finances?connect=refresh`,

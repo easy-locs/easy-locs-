@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Loader2, ExternalLink, Home, Banknote, Smartphone, Building } from "lucide-react";
+import { CreditCard, Loader2, ExternalLink, Home, Banknote, Building, CheckCircle } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "react-router-dom";
 
 type PaymentMethod = "card" | "sepa" | "bank_transfer";
 
@@ -16,16 +17,34 @@ const PAYMENT_METHODS = [
 const TenantPay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [orgInfo, setOrgInfo] = useState<any>(null);
   const [unpaidCalls, setUnpaidCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [method, setMethod] = useState<PaymentMethod>("card");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Handle payment return
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const rentCallId = searchParams.get("rent_call_id");
+    if (payment === "success") {
+      setPaymentSuccess(true);
+      toast({ title: "✅ Paiement réussi !", description: "Votre loyer a été payé avec succès." });
+      // Mark as paid in local state
+      if (rentCallId) {
+        setUnpaidCalls(prev => prev.filter(c => c.id !== rentCallId));
+      }
+    } else if (payment === "cancel") {
+      toast({ title: "Paiement annulé", description: "Le paiement a été annulé.", variant: "destructive" });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data: tenant } = await supabase
         .from("tenants")
         .select("id, org_id, rent_amount, charges_amount, properties(label)")
@@ -34,9 +53,11 @@ const TenantPay = () => {
         .single();
       if (!tenant) { setLoading(false); return; }
       setTenantInfo(tenant);
+      
       // Fetch org info for bank transfer
       const { data: org } = await supabase.from("orgs").select("name, email, phone").eq("id", tenant.org_id).single();
       setOrgInfo(org);
+      
       const { data } = await supabase
         .from("rent_calls")
         .select("*")
@@ -46,7 +67,7 @@ const TenantPay = () => {
       setUnpaidCalls(data || []);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [user]);
 
   const handlePay = async (rentCallId: string) => {
@@ -60,9 +81,10 @@ const TenantPay = () => {
         body: { rent_call_id: rentCallId, payment_method: method },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur de paiement", description: err.message, variant: "destructive" });
     } finally {
       setPayingId(null);
     }
@@ -75,6 +97,17 @@ const TenantPay = () => {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-1">Payer mon loyer</h1>
         <p className="text-muted-foreground mb-6">Choisissez votre mode de paiement et réglez votre loyer.</p>
+
+        {/* Payment success banner */}
+        {paymentSuccess && (
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-accent shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Paiement enregistré avec succès !</p>
+              <p className="text-xs text-muted-foreground">Votre quittance sera générée automatiquement.</p>
+            </div>
+          </div>
+        )}
 
         {/* Payment method selector */}
         <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 mb-6">
@@ -100,7 +133,7 @@ const TenantPay = () => {
 
         {/* Bank transfer info */}
         {method === "bank_transfer" && orgInfo && (
-          <div className="bg-info/5 border border-info/20 rounded-xl p-5 mb-6">
+          <div className="bg-accent/5 border border-accent/20 rounded-xl p-5 mb-6">
             <h3 className="text-sm font-semibold text-foreground mb-2">Informations pour le virement</h3>
             <p className="text-sm text-muted-foreground">Bénéficiaire : <span className="font-medium text-foreground">{orgInfo.name}</span></p>
             <p className="text-sm text-muted-foreground mt-1">Contactez votre bailleur pour obtenir le RIB/IBAN :</p>
@@ -119,7 +152,7 @@ const TenantPay = () => {
           </div>
         ) : unpaidCalls.length === 0 ? (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border/50 text-center">
-            <CreditCard className="h-10 w-10 text-success/30 mx-auto mb-3" />
+            <CheckCircle className="h-10 w-10 text-accent/30 mx-auto mb-3" />
             <p className="text-foreground font-medium">Vous êtes à jour !</p>
             <p className="text-sm text-muted-foreground mt-1">Aucun loyer en attente de paiement.</p>
           </div>

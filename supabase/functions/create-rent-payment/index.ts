@@ -11,7 +11,6 @@ const logStep = (step: string, details?: any) => {
   console.log(`[RENT-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-// Map country codes to Stripe currencies
 const COUNTRY_CURRENCY: Record<string, string> = {
   FR: "eur", DE: "eur", ES: "eur", IT: "eur", PT: "eur", BE: "eur", NL: "eur",
   AT: "eur", IE: "eur", FI: "eur", LU: "eur", GR: "eur",
@@ -42,31 +41,58 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { rentCallId, amount, tenantName, month, orgId, payment_method } = await req.json();
-    if (!rentCallId || !amount || !orgId) throw new Error("Missing required fields");
-    logStep("Payment request", { rentCallId, amount, month, payment_method });
+    // Accept both naming conventions from frontend
+    const body = await req.json();
+    const rentCallId = body.rentCallId || body.rent_call_id;
+    const paymentMethod = body.payment_method || "card";
+    
+    if (!rentCallId) throw new Error("Missing rent_call_id");
+    logStep("Payment request", { rentCallId, paymentMethod });
+
+    // Fetch rent call details from DB (no need for client to pass them)
+    const { data: rentCall, error: rcError } = await supabaseClient
+      .from("rent_calls")
+      .select("id, total_amount, rent_amount, charges_amount, month, tenant_id, org_id, property_id")
+      .eq("id", rentCallId)
+      .single();
+
+    if (rcError || !rentCall) throw new Error("Appel de loyer introuvable");
+    if (rentCall.paid) throw new Error("Ce loyer est déjà payé");
+    
+    const amount = Number(rentCall.total_amount);
+    if (!amount || amount <= 0) throw new Error("Montant invalide");
+
+    // Fetch tenant name
+    const { data: tenant } = await supabaseClient
+      .from("tenants")
+      .select("name")
+      .eq("id", rentCall.tenant_id)
+      .single();
+
+    const tenantName = tenant?.name || "Locataire";
 
     // Get the landlord's connected Stripe account and country
     const { data: org } = await supabaseClient
       .from("orgs")
       .select("stripe_account_id, stripe_onboarding_complete, country")
-      .eq("id", orgId)
+      .eq("id", rentCall.org_id)
       .single();
 
     if (!org?.stripe_account_id || !org.stripe_onboarding_complete) {
-      throw new Error("Le propriétaire n'a pas encore configuré son compte de paiement");
+      throw new Error("Le propriétaire n'a pas encore configuré son compte de paiement Stripe Connect");
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
 
-    // Determine currency based on org country
     const currency = COUNTRY_CURRENCY[org.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
-    // Determine payment methods based on currency and user preference
-    const paymentMethods: string[] = ["card"]; // card always includes Apple Pay & Google Pay via Stripe
-    if (currency === "eur" && payment_method !== "card") {
+    const paymentMethods: string[] = ["card"];
+    if (currency === "eur" && paymentMethod !== "card") {
       paymentMethods.push("sepa_debit");
     }
 
@@ -79,8 +105,8 @@ serve(async (req) => {
             currency,
             unit_amount: amountCents,
             product_data: {
-              name: `Loyer ${month || ""}`,
-              description: `Paiement du loyer pour ${tenantName || "locataire"}`,
+              name: `Loyer ${rentCall.month || ""}`,
+              description: `Paiement du loyer pour ${tenantName}`,
             },
           },
           quantity: 1,
@@ -92,8 +118,8 @@ serve(async (req) => {
         },
         metadata: {
           rent_call_id: rentCallId,
-          tenant_name: tenantName || "",
-          month: month || "",
+          tenant_name: tenantName,
+          month: rentCall.month || "",
         },
       },
       payment_method_types: paymentMethods as any,
@@ -101,11 +127,11 @@ serve(async (req) => {
       cancel_url: `${origin}/tenant/pay?payment=cancel`,
       metadata: {
         rent_call_id: rentCallId,
-        org_id: orgId,
+        org_id: rentCall.org_id,
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, currency });
+    logStep("Checkout session created", { sessionId: session.id, currency, amount });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
