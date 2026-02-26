@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { getTemplatesByCategory } from "@/lib/templates/registry";
@@ -6,6 +6,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { JAL_PUBLISHERS, getJALByDepartment, type JALPublisher } from "@/lib/jal-publishers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import {
   Building2, FileText, ChevronRight, Plus, Users, Briefcase, XCircle,
   ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList,
@@ -86,6 +87,8 @@ const Company = () => {
   const [jalDepartment, setJalDepartment] = useState("");
   const [selectedJAL, setSelectedJAL] = useState<JALPublisher | null>(null);
   const [payingJAL, setPayingJAL] = useState(false);
+  const [registeredAddress, setRegisteredAddress] = useState("");
+  const [detectedDepartment, setDetectedDepartment] = useState("");
   const companyTemplates = getTemplatesByCategory("company", "FR");
 
   const resetWizard = () => {
@@ -97,9 +100,22 @@ const Company = () => {
     setSelectedJAL(null);
   };
 
-  const filteredJALs = jalDepartment.length >= 2
-    ? getJALByDepartment(jalDepartment)
+  // Auto-use detected department if user hasn't typed manually
+  const effectiveDept = jalDepartment || detectedDepartment;
+  const filteredJALs = effectiveDept.length >= 2
+    ? getJALByDepartment(effectiveDept)
     : JAL_PUBLISHERS.slice(0, 15);
+
+  const handleAddressSelect = (result: AddressResult) => {
+    setRegisteredAddress(result.label);
+    if (result.department) {
+      setDetectedDepartment(result.department);
+      // Auto-set JAL department for filtering
+      if (!jalDepartment) {
+        // Don't override manual input
+      }
+    }
+  };
 
   const handlePayLegalNotice = async () => {
     if (!selectedJAL) return;
@@ -164,10 +180,27 @@ const Company = () => {
             </div>
           </div>
 
+          {/* Address autocomplete for department auto-detect */}
+          <div className="mb-4">
+            <AddressAutocomplete
+              label="Adresse du siège social"
+              value={registeredAddress}
+              onChange={setRegisteredAddress}
+              onSelect={handleAddressSelect}
+              placeholder="Saisissez l'adresse du siège social…"
+            />
+            {detectedDepartment && !jalDepartment && (
+              <p className="text-xs text-accent mt-1.5 flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                Département {detectedDepartment} détecté — journaux filtrés automatiquement
+              </p>
+            )}
+          </div>
+
           {/* Department search */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              Rechercher par département
+              Ou rechercher par numéro de département
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -214,9 +247,9 @@ const Company = () => {
             ))}
           </div>
 
-          {jalDepartment.length >= 2 && filteredJALs.length === 0 && (
+          {effectiveDept.length >= 2 && filteredJALs.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-6">
-              Aucun JAL trouvé pour le département {jalDepartment}. Essayez un autre département.
+              Aucun JAL trouvé pour le département {effectiveDept}. Essayez un autre département.
             </p>
           )}
 

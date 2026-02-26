@@ -15,6 +15,7 @@ import {
   UserPlus, MessageSquare, Upload, Edit, Search, ArrowLeft,
   CheckCircle, Key, Thermometer, Droplets, Zap, ArrowRight
 } from "lucide-react";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
 /* ─── Types ─── */
 interface Property {
@@ -546,9 +547,21 @@ const RentalManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Adresse</label>
-                    <input value={propertyForm.address} onChange={(e) => setPropertyForm({ ...propertyForm, address: e.target.value })} placeholder="12 rue de la Paix"
-                      className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
+                    <AddressAutocomplete
+                      label="Adresse"
+                      value={propertyForm.address}
+                      onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
+                      onSelect={(result: AddressResult) => {
+                        setPropertyForm(prev => ({
+                          ...prev,
+                          address: result.label,
+                          postalCode: result.postcode || prev.postalCode,
+                          city: result.city || prev.city,
+                        }));
+                        setShowPostalSuggestions(false);
+                      }}
+                      placeholder="12 rue de la Paix, 75002 Paris"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
