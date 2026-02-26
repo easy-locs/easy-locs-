@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, User, Home, Briefcase, Building2, ArrowRight, ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { Shield, Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-type ProfileType = "individual" | "landlord" | "freelancer" | "business";
+type UserType = "landlord" | "tenant";
 
-const profiles: { type: ProfileType; label: string; description: string; icon: typeof User }[] = [
-  { type: "individual", label: "Particulier", description: "Gérez vos documents personnels", icon: User },
-  { type: "landlord", label: "Bailleur", description: "Quittances, baux, gestion locative", icon: Home },
-  { type: "freelancer", label: "Freelance", description: "Auto-entrepreneur ou indépendant", icon: Briefcase },
-  { type: "business", label: "Entreprise", description: "PME, SAS, SARL…", icon: Building2 },
+const userTypes: { type: UserType; label: string; description: string; icon: typeof Home }[] = [
+  { type: "landlord", label: "Bailleur", description: "Gérez vos biens, locataires, finances et documents", icon: Home },
+  { type: "tenant", label: "Locataire", description: "Accédez à vos quittances, documents et payez votre loyer", icon: Users },
 ];
 
 const countries = [
@@ -25,7 +23,7 @@ const countries = [
 
 const Onboarding = () => {
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<ProfileType | null>(null);
+  const [selectedType, setSelectedType] = useState<UserType | null>(null);
   const [country, setCountry] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
@@ -33,17 +31,17 @@ const Onboarding = () => {
   const { toast } = useToast();
 
   const handleFinish = async () => {
-    if (!user || !country) return;
+    if (!user || !country || !selectedType) return;
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ country, locale: country === "FR" ? "fr" : "en" })
+      .update({ country, locale: country === "FR" ? "fr" : "en", user_type: selectedType })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
-      navigate("/dashboard");
+      navigate(selectedType === "tenant" ? "/tenant" : "/dashboard");
     }
   };
 
@@ -72,24 +70,24 @@ const Onboarding = () => {
           {step === 0 && (
             <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
               <h2 className="text-2xl font-bold text-foreground mb-2">Bienvenue sur Adminia</h2>
-              <p className="text-muted-foreground mb-8">Quel est votre profil ?</p>
+              <p className="text-muted-foreground mb-8">Vous êtes…</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {profiles.map((p) => (
+                {userTypes.map((p) => (
                   <button
-                    key={p.type} onClick={() => setProfile(p.type)}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${profile === p.type ? "border-gold bg-gold/5 shadow-gold/20" : "border-border hover:border-gold/40"}`}
+                    key={p.type} onClick={() => setSelectedType(p.type)}
+                    className={`flex items-start gap-4 p-5 rounded-xl border-2 transition-all text-left ${selectedType === p.type ? "border-gold bg-gold/5 shadow-gold/20" : "border-border hover:border-gold/40"}`}
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${profile === p.type ? "bg-gradient-gold" : "bg-muted"}`}>
-                      <p.icon className={`h-5 w-5 ${profile === p.type ? "text-accent-foreground" : "text-muted-foreground"}`} />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${selectedType === p.type ? "bg-gradient-gold" : "bg-muted"}`}>
+                      <p.icon className={`h-6 w-6 ${selectedType === p.type ? "text-accent-foreground" : "text-muted-foreground"}`} />
                     </div>
                     <div>
-                      <div className="font-semibold text-foreground text-sm">{p.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{p.description}</div>
+                      <div className="font-semibold text-foreground">{p.label}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{p.description}</div>
                     </div>
                   </button>
                 ))}
               </div>
-              <button disabled={!profile} onClick={() => setStep(1)}
+              <button disabled={!selectedType} onClick={() => setStep(1)}
                 className="mt-8 w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
                 Continuer <ArrowRight className="h-4 w-4" />
               </button>
@@ -117,7 +115,7 @@ const Onboarding = () => {
                 </button>
                 <button disabled={!country || saving} onClick={handleFinish}
                   className="flex-1 flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Accéder au tableau de bord <ArrowRight className="h-4 w-4" /></>}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Commencer <ArrowRight className="h-4 w-4" /></>}
                 </button>
               </div>
             </motion.div>

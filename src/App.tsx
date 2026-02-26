@@ -15,16 +15,12 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Receipts from "./pages/Receipts";
 import Reminders from "./pages/Reminders";
-import Vault from "./pages/Vault";
 import Documents from "./pages/Documents";
 import AIAssistant from "./pages/AIAssistant";
 import Leases from "./pages/Leases";
 import Company from "./pages/Company";
-import Sharing from "./pages/Sharing";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
-import Admin from "./pages/Admin";
-import Services from "./pages/Services";
 import Tenants from "./pages/Tenants";
 import RentalManagement from "./pages/RentalManagement";
 import Finances from "./pages/Finances";
@@ -41,6 +37,13 @@ import PaymentNotices from "./pages/PaymentNotices";
 import DunningLetters from "./pages/DunningLetters";
 import FurnitureInventory from "./pages/FurnitureInventory";
 import NotFound from "./pages/NotFound";
+// Tenant portal
+import TenantDashboard from "./pages/tenant/TenantDashboard";
+import TenantReceipts from "./pages/tenant/TenantReceipts";
+import TenantDocuments from "./pages/tenant/TenantDocuments";
+import TenantMessages from "./pages/tenant/TenantMessages";
+import TenantPay from "./pages/tenant/TenantPay";
+import TenantSettings from "./pages/tenant/TenantSettings";
 
 const queryClient = new QueryClient();
 
@@ -60,19 +63,16 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
 
-            {/* Protected routes */}
+            {/* Protected — Landlord */}
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
             <Route path="/dashboard/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
-            <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
             <Route path="/dashboard/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/dashboard/assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
             <Route path="/dashboard/leases" element={<ProtectedRoute><Leases /></ProtectedRoute>} />
             <Route path="/dashboard/company" element={<ProtectedRoute><Company /></ProtectedRoute>} />
-            <Route path="/dashboard/sharing" element={<ProtectedRoute><Sharing /></ProtectedRoute>} />
             <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-            <Route path="/dashboard/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
             <Route path="/dashboard/tenants" element={<ProtectedRoute><Tenants /></ProtectedRoute>} />
             <Route path="/dashboard/rental" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
             <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
@@ -89,7 +89,15 @@ const App = () => (
             <Route path="/dashboard/dunning" element={<ProtectedRoute><DunningLetters /></ProtectedRoute>} />
             <Route path="/dashboard/furniture" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/dashboard/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+
+            {/* Protected — Tenant portal */}
+            <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
+            <Route path="/tenant/receipts" element={<ProtectedRoute><TenantReceipts /></ProtectedRoute>} />
+            <Route path="/tenant/documents" element={<ProtectedRoute><TenantDocuments /></ProtectedRoute>} />
+            <Route path="/tenant/messages" element={<ProtectedRoute><TenantMessages /></ProtectedRoute>} />
+            <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
+            <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
