@@ -103,15 +103,10 @@ const DunningLetters = () => {
 
   const tenantName = (id: string) => tenants.find(t => t.id === id)?.name || "—";
 
-  // Group unpaid by tenant
-  const unpaidByTenant = useMemo(() => {
-    const map = new Map<string, RentCall[]>();
-    for (const r of unpaid) {
-      if (!map.has(r.tenant_id)) map.set(r.tenant_id, []);
-      map.get(r.tenant_id)!.push(r);
-    }
-    return map;
-  }, [unpaid]);
+  // Sort unpaid by month desc
+  const sortedUnpaid = useMemo(() => 
+    [...unpaid].sort((a, b) => b.month.localeCompare(a.month)),
+  [unpaid]);
 
   return (
     <DashboardLayout>
@@ -124,26 +119,25 @@ const DunningLetters = () => {
           </div>
         </div>
 
-        {/* Unpaid summary */}
-        {unpaidByTenant.size > 0 && (
+        {/* Unpaid summary — each month shown individually */}
+        {sortedUnpaid.length > 0 && (
           <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-5 w-5 text-destructive" />
               <h3 className="font-semibold text-foreground">{t("page.dunning.unpaid_rents")}</h3>
             </div>
             <div className="space-y-2">
-              {[...unpaidByTenant.entries()].map(([tenantId, calls]) => {
-                const totalDue = calls.reduce((s, c) => s + c.total_amount, 0);
-                const existingLetters = letters.filter(l => l.tenant_id === tenantId);
+              {sortedUnpaid.map((call) => {
+                const existingLetters = letters.filter(l => l.tenant_id === call.tenant_id && l.month === call.month);
                 const maxLevel = existingLetters.length > 0 ? Math.max(...existingLetters.map(l => l.level)) : 0;
                 const nextLevel = Math.min(maxLevel + 1, 3);
                 return (
-                  <div key={tenantId} className="flex items-center justify-between bg-card rounded-lg p-3">
+                  <div key={call.id} className="flex items-center justify-between bg-card rounded-lg p-3">
                     <div>
-                      <p className="font-medium text-foreground">{tenantName(tenantId)}</p>
-                      <p className="text-xs text-muted-foreground">{calls.length} {t("page.dunning.months_unpaid")} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(totalDue)}</p>
+                      <p className="font-medium text-foreground">{tenantName(call.tenant_id)}</p>
+                      <p className="text-xs text-muted-foreground">{call.month} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(call.total_amount)}</p>
                     </div>
-                    <button onClick={() => createLetter(tenantId, calls[0].month, totalDue, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
+                    <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
                       <Plus className="h-3 w-3" /> {LEVELS.find(l => l.value === nextLevel)?.label}
                     </button>
                   </div>
