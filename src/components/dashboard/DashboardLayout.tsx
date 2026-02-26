@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
+import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import logoEasyloc from "@/assets/logo-easyloc.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import {
   LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck, Building,
   Wallet, FileText, Contact, Wrench, CheckSquare, StickyNote, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe,
+  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹" };
@@ -19,6 +20,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, signOut, subscription } = useAuth();
   const { locale, setLocale, t, availableLocales } = useI18n();
+  const { currentTier, isGlobal } = useSubscriptionGating();
 
   const navSections = [
     {
@@ -82,8 +84,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-2">
+          <div className="mt-2 flex items-center gap-2">
             <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.landlord")}</span>
+            <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${currentTier === "global" ? "bg-[hsl(45,90%,50%)]/20 text-[hsl(45,90%,40%)]" : currentTier === "local" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+              {currentTier === "global" ? "Global" : currentTier === "local" ? "Local" : "Free"}
+            </span>
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
