@@ -808,6 +808,7 @@ export type Database = {
       properties: {
         Row: {
           address: string
+          building_name: string | null
           city: string
           created_at: string
           deposit_amount: number | null
@@ -816,6 +817,7 @@ export type Database = {
           heating: string | null
           id: string
           label: string
+          lot_number: string | null
           monthly_charges: number | null
           monthly_rent: number | null
           notes: string | null
@@ -829,6 +831,7 @@ export type Database = {
         }
         Insert: {
           address?: string
+          building_name?: string | null
           city?: string
           created_at?: string
           deposit_amount?: number | null
@@ -837,6 +840,7 @@ export type Database = {
           heating?: string | null
           id?: string
           label: string
+          lot_number?: string | null
           monthly_charges?: number | null
           monthly_rent?: number | null
           notes?: string | null
@@ -850,6 +854,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          building_name?: string | null
           city?: string
           created_at?: string
           deposit_amount?: number | null
@@ -858,6 +863,7 @@ export type Database = {
           heating?: string | null
           id?: string
           label?: string
+          lot_number?: string | null
           monthly_charges?: number | null
           monthly_rent?: number | null
           notes?: string | null

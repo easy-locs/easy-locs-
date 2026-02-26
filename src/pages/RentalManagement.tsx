@@ -51,6 +51,7 @@ const defaultPropertyForm = {
   label: "", address: "", postal_code: "", city: "", property_type: "apartment" as string,
   surface: 0, rooms: 1, heating: "individual-gas", furnished: false,
   monthly_rent: 0, monthly_charges: 0, deposit_amount: 0, notes: "", floor: undefined as number | undefined,
+  building_name: "" as string, lot_number: "" as string,
 };
 
 const defaultTenantForm = {
@@ -197,6 +198,7 @@ const RentalManagement = () => {
       property_type: p.property_type, surface: p.surface, rooms: p.rooms, floor: p.floor ?? undefined,
       heating: p.heating, furnished: p.furnished, monthly_rent: p.monthly_rent,
       monthly_charges: p.monthly_charges, deposit_amount: p.deposit_amount, notes: p.notes,
+      building_name: p.building_name || "", lot_number: p.lot_number || "",
     });
     setShowPropertyForm(true);
   };
@@ -695,6 +697,52 @@ const RentalManagement = () => {
     );
   }
 
+  /* ─── Property card renderer ─── */
+  const renderPropertyCard = (p: Property) => {
+    const propTenants = tenants.filter(t => t.property_id === p.id);
+    const propUnpaid = rentCalls.filter(r => r.property_id === p.id && !r.paid).length;
+    return (
+      <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group">
+        <div className="flex items-start gap-4">
+          <button onClick={() => openPropertyDetail(p)} className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 hover:bg-gradient-gold transition-colors">
+            <Home className="h-5 w-5 text-muted-foreground" />
+          </button>
+          <button onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-foreground text-sm">{p.label}</span>
+              {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
+              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                {propTenants.length > 0 ? "Occupé" : "Vacant"}
+              </span>
+              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Meublé</span>}
+              {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} impayé(s)</span>}
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
+              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
+              {p.surface > 0 && <span>{p.surface} m²</span>}
+              {p.rooms > 0 && <span>{p.rooms} pièce{p.rooms > 1 ? "s" : ""}</span>}
+              <span>{fmt(p.monthly_rent)}/mois</span>
+            </div>
+            {propTenants.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {propTenants.map(t => (
+                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                    {t.name} {!isLeaseActive(t) && "(résilié)"}
+                  </span>
+                ))}
+              </div>
+            )}
+          </button>
+          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title="Voir détails"><Eye className="h-4 w-4" /></button>
+            <button onClick={() => startEditProperty(p)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
+            <button onClick={() => deleteProperty(p.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   /* ─── Tabs bar ─── */
   const tabs: { key: Tab; label: string; icon: typeof Home }[] = [
     { key: "dashboard", label: "Vue d'ensemble", icon: Building },
@@ -796,9 +844,15 @@ const RentalManagement = () => {
                   <button onClick={resetPropertyForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                 </div>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">Nom du bien *</label>
                       <input value={propertyForm.label} onChange={(e) => setPropertyForm({ ...propertyForm, label: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Immeuble / Résidence</label>
+                      <input value={propertyForm.building_name} onChange={(e) => setPropertyForm({ ...propertyForm, building_name: e.target.value })} placeholder="Ex: Résidence Les Lilas" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">N° de lot</label>
+                      <input value={propertyForm.lot_number} onChange={(e) => setPropertyForm({ ...propertyForm, lot_number: e.target.value })} placeholder="Ex: Lot 12" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">Type</label>
                       <select value={propertyForm.property_type} onChange={(e) => setPropertyForm({ ...propertyForm, property_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -862,52 +916,44 @@ const RentalManagement = () => {
               </div>
             )}
 
-            <div className="space-y-3">
-              {properties.map((p) => {
-                const propTenants = tenants.filter(t => t.property_id === p.id);
-                const propPaymentsCount = rentCalls.filter(r => r.property_id === p.id).length;
-                const propUnpaid = rentCalls.filter(r => r.property_id === p.id && !r.paid).length;
-                return (
-                  <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group">
-                    <div className="flex items-start gap-4">
-                      <button onClick={() => openPropertyDetail(p)} className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 hover:bg-gradient-gold transition-colors">
-                        <Home className="h-5 w-5 text-muted-foreground" />
-                      </button>
-                      <button onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground text-sm">{p.label}</span>
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                            {propTenants.length > 0 ? "Occupé" : "Vacant"}
-                          </span>
-                          {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Meublé</span>}
-                          {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} impayé(s)</span>}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
-                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
-                          {p.surface > 0 && <span>{p.surface} m²</span>}
-                          {p.rooms > 0 && <span>{p.rooms} pièce{p.rooms > 1 ? "s" : ""}</span>}
-                          <span>{fmt(p.monthly_rent)}/mois</span>
-                        </div>
-                        {propTenants.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {propTenants.map(t => (
-                              <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                                {t.name} {!isLeaseActive(t) && "(résilié)"}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </button>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title="Voir détails"><Eye className="h-4 w-4" /></button>
-                        <button onClick={() => startEditProperty(p)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
-                        <button onClick={() => deleteProperty(p.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
+            {/* Grouped by building */}
+            {(() => {
+              const buildings: Record<string, Property[]> = {};
+              const standalone: Property[] = [];
+              properties.forEach(p => {
+                if (p.building_name) {
+                  if (!buildings[p.building_name]) buildings[p.building_name] = [];
+                  buildings[p.building_name].push(p);
+                } else {
+                  standalone.push(p);
+                }
+              });
+
+              return (
+                <>
+                  {Object.entries(buildings).map(([bName, bProps]) => (
+                    <div key={bName} className="mb-4">
+                      <div className="flex items-center gap-2 mb-2 px-1">
+                        <Building className="h-4 w-4 text-accent" />
+                        <span className="text-sm font-semibold text-foreground">{bName}</span>
+                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{bProps.length} lot{bProps.length > 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="space-y-2 ml-6 border-l-2 border-accent/20 pl-4">
+                        {bProps.map(p => renderPropertyCard(p))}
                       </div>
                     </div>
+                  ))}
+                  {standalone.length > 0 && Object.keys(buildings).length > 0 && (
+                    <div className="mb-2 px-1">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Biens individuels</span>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {standalone.map(p => renderPropertyCard(p))}
                   </div>
-                );
-              })}
-            </div>
+                </>
+              );
+            })()}
           </div>
         )}
 

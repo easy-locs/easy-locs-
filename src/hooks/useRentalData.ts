@@ -20,6 +20,8 @@ export interface Property {
   monthly_charges: number;
   deposit_amount: number;
   notes: string;
+  building_name?: string | null;
+  lot_number?: string | null;
 }
 
 export interface Tenant {
@@ -80,7 +82,7 @@ export function useRentalData() {
       rooms: p.rooms || 1, floor: p.floor, heating: p.heating || "individual-gas",
       furnished: p.furnished || false, monthly_rent: Number(p.monthly_rent) || 0,
       monthly_charges: Number(p.monthly_charges) || 0, deposit_amount: Number(p.deposit_amount) || 0,
-      notes: p.notes || "",
+      notes: p.notes || "", building_name: (p as any).building_name || null, lot_number: (p as any).lot_number || null,
     })));
   }, [orgId]);
 
@@ -136,6 +138,7 @@ export function useRentalData() {
       surface: form.surface, rooms: form.rooms, floor: form.floor,
       heating: form.heating, furnished: form.furnished, monthly_rent: form.monthly_rent,
       monthly_charges: form.monthly_charges, deposit_amount: form.deposit_amount, notes: form.notes,
+      building_name: form.building_name || null, lot_number: form.lot_number || null,
     };
     if (editId) {
       const { error } = await supabase.from("properties").update(record).eq("id", editId);
