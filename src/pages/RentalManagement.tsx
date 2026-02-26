@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
-type Tab = "dashboard" | "properties" | "tenants" | "documents" | "payments" | "inventory";
+type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
 
@@ -93,7 +93,7 @@ const RentalManagement = () => {
   // Sync tab from URL params
   useEffect(() => {
     const tab = searchParams.get("tab") as Tab;
-    if (tab && ["dashboard", "properties", "tenants", "documents", "payments", "inventory"].includes(tab)) {
+    if (tab && ["dashboard", "properties", "tenants", "payments", "inventory"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -717,7 +717,34 @@ const RentalManagement = () => {
             </div>
           )}
 
-          {tenantTab === "documents" && <TenantDocuments tenantId={selectedTenant.id} tenantName={selectedTenant.name} />}
+          {tenantTab === "documents" && (
+            <div className="space-y-6">
+              <TenantDocuments tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
+
+              {/* Modèles de documents */}
+              <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                <h3 className="font-semibold text-foreground mb-4">Générer un document</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {rentalTemplates.map((t) => {
+                    const Icon = Object.entries(iconMap).find(([k]) => t.docType.includes(k))?.[1] || FileText;
+                    return (
+                      <button key={t.id} onClick={() => setSelectedTemplate(t)}
+                        className="flex items-start gap-3 bg-muted/30 rounded-lg p-4 hover:bg-muted/50 transition-colors text-left group">
+                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
+                          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground text-sm">{t.label}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </DashboardLayout>
     );
@@ -821,7 +848,7 @@ const RentalManagement = () => {
     { key: "properties", label: "Biens", icon: Home },
     { key: "tenants", label: "Locataires", icon: Users },
     { key: "inventory", label: "États des lieux", icon: ClipboardCheck },
-    { key: "documents", label: "Modèles & Docs", icon: FileText },
+    
     { key: "payments", label: "Loyers & Paiements", icon: Euro },
   ];
 
@@ -1169,30 +1196,6 @@ const RentalManagement = () => {
 
 
 
-        {/* ─── Documents Tab ─── */}
-        {activeTab === "documents" && (
-          <div>
-            <h2 className="font-semibold text-foreground mb-4">Modèles de documents locatifs</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {rentalTemplates.map((t) => {
-                const Icon = Object.entries(iconMap).find(([k]) => t.docType.includes(k))?.[1] || FileText;
-                return (
-                  <button key={t.id} onClick={() => setSelectedTemplate(t)}
-                    className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
-                      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-foreground text-sm">{t.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* ─── Payments Tab ─── */}
         {activeTab === "payments" && (
