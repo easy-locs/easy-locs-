@@ -12,8 +12,14 @@ const logStep = (step: string, details?: any) => {
 };
 
 const PRODUCT_MAP: Record<string, string> = {
-  "prod_U2yLjzJN4Y7LYb": "monthly",
-  "prod_U2zlUjPtdVVjIw": "annual",
+  // New plans
+  "prod_U354fxGmmhSvn0": "local_monthly",
+  "prod_U355WIZ1brDxXV": "local_annual",
+  "prod_U355aIW4nePfxQ": "global_monthly",
+  "prod_U355FFHHJ8rgAT": "global_annual",
+  // Legacy plans
+  "prod_U2yLjzJN4Y7LYb": "local_monthly",
+  "prod_U2zlUjPtdVVjIw": "local_annual",
 };
 
 serve(async (req) => {
@@ -53,24 +59,19 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    
-    // Check active subscriptions
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-    
-    // Also check trialing subscriptions (Stripe native trial)
     const trialingSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
-    
     const activeSub = subscriptions.data[0] || trialingSubs.data[0];
-    
+
     if (activeSub) {
       const subscriptionEnd = new Date(activeSub.current_period_end * 1000).toISOString();
       const productId = activeSub.items.data[0].price.product as string;
       const plan = PRODUCT_MAP[productId] || "unknown";
       const isStripeTrial = activeSub.status === "trialing";
-      
-      logStep("Active subscription", { plan, subscriptionEnd, status: activeSub.status });
+      const tier = plan.startsWith("global") ? "global" : "local";
 
-      // Upsert subscription record
+      logStep("Active subscription", { plan, tier, subscriptionEnd, status: activeSub.status });
+
       await supabaseClient.from("subscriptions").upsert({
         user_id: user.id,
         stripe_customer_id: customerId,
@@ -83,6 +84,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         subscribed: true,
         plan: isStripeTrial ? "trial" : plan,
+        tier,
         product_id: productId,
         subscription_end: subscriptionEnd,
       }), {
@@ -90,7 +92,6 @@ serve(async (req) => {
       });
     }
 
-    // No active Stripe subscription — check local trial
     logStep("No active Stripe sub, checking trial");
     const trialResult = await checkTrial(supabaseClient, user.id, customerId);
     return new Response(JSON.stringify(trialResult), {
@@ -117,25 +118,16 @@ async function checkTrial(supabaseClient: any, userId: string, stripeCustomerId?
     const trialEnd = new Date(sub.trial_ends_at);
     if (trialEnd > new Date()) {
       logStep("Trial active", { trial_ends_at: sub.trial_ends_at });
-      return {
-        subscribed: true,
-        plan: "trial",
-        subscription_end: sub.trial_ends_at,
-      };
+      return { subscribed: true, plan: "trial", tier: "local", subscription_end: sub.trial_ends_at };
     }
     logStep("Trial expired, setting inactive");
-    await supabaseClient.from("subscriptions").update({
-      status: "inactive",
-      plan: "free",
-    }).eq("user_id", userId);
+    await supabaseClient.from("subscriptions").update({ status: "inactive", plan: "free" }).eq("user_id", userId);
   } else if (!sub) {
     await supabaseClient.from("subscriptions").upsert({
-      user_id: userId,
-      plan: "free",
-      status: "inactive",
+      user_id: userId, plan: "free", status: "inactive",
       ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
     }, { onConflict: "user_id" });
   }
 
-  return { subscribed: false, plan: "free" };
+  return { subscribed: false, plan: "free", tier: null };
 }

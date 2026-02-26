@@ -11,10 +11,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-// Valid price IDs
+// Valid price IDs — Local & Global plans
 const VALID_PRICES = [
-  "price_1T4sOdKcrlZX0EnnHIgwXcq9", // monthly 29€
-  "price_1T4tliKcrlZX0EnnxHeOxHIO", // annual 199€
+  "price_1T4yukKcrlZX0EnnBHZvH0kN", // local monthly 29€
+  "price_1T4yuyKcrlZX0EnnLJIFwgnQ", // local annual 199€
+  "price_1T4yvUKcrlZX0Enn8RaH9jGK", // global monthly 79€
+  "price_1T4yvmKcrlZX0EnndLXibrTC", // global annual 499€
+  // Legacy prices (still valid for existing subscribers)
+  "price_1T4sOdKcrlZX0EnnHIgwXcq9", // old monthly 29€
+  "price_1T4tliKcrlZX0EnnxHeOxHIO", // old annual 199€
 ];
 
 serve(async (req) => {
@@ -53,12 +58,6 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer", { customerId });
-      
-      // Check if already has active subscription
-      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-      if (existingSubs.data.length > 0) {
-        logStep("Customer already has active subscription, proceeding anyway");
-      }
     }
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
@@ -71,6 +70,13 @@ serve(async (req) => {
       success_url: `${origin}/dashboard/billing?success=true`,
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
       allow_promotion_codes: true,
+      // Enable all major payment methods worldwide
+      payment_method_types: ["card", "sepa_debit"],
+      payment_method_options: {
+        card: {
+          setup_future_usage: "off_session",
+        },
+      },
     };
     
     // Add 3-day trial for new subscribers only

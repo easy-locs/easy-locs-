@@ -11,6 +11,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[RENT-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+// Map country codes to Stripe currencies
+const COUNTRY_CURRENCY: Record<string, string> = {
+  FR: "eur", DE: "eur", ES: "eur", IT: "eur", PT: "eur", BE: "eur", NL: "eur",
+  AT: "eur", IE: "eur", FI: "eur", LU: "eur", GR: "eur",
+  GB: "gbp", US: "usd", CA: "cad", AU: "aud", CH: "chf",
+  JP: "jpy", BR: "brl", MX: "mxn", IN: "inr", AE: "aed",
+  MA: "mad", TN: "tnd", SN: "xof", CI: "xof",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,14 +42,14 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const { rentCallId, amount, tenantName, month, orgId } = await req.json();
+    const { rentCallId, amount, tenantName, month, orgId, payment_method } = await req.json();
     if (!rentCallId || !amount || !orgId) throw new Error("Missing required fields");
-    logStep("Payment request", { rentCallId, amount, month });
+    logStep("Payment request", { rentCallId, amount, month, payment_method });
 
-    // Get the landlord's connected Stripe account
+    // Get the landlord's connected Stripe account and country
     const { data: org } = await supabaseClient
       .from("orgs")
-      .select("stripe_account_id, stripe_onboarding_complete")
+      .select("stripe_account_id, stripe_onboarding_complete, country")
       .eq("id", orgId)
       .single();
 
@@ -51,8 +60,15 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app";
 
-    // Amount in cents
+    // Determine currency based on org country
+    const currency = COUNTRY_CURRENCY[org.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
+
+    // Determine payment methods based on currency and user preference
+    const paymentMethods: string[] = ["card"]; // card always includes Apple Pay & Google Pay via Stripe
+    if (currency === "eur" && payment_method !== "card") {
+      paymentMethods.push("sepa_debit");
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -60,7 +76,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency,
             unit_amount: amountCents,
             product_data: {
               name: `Loyer ${month || ""}`,
@@ -80,16 +96,16 @@ serve(async (req) => {
           month: month || "",
         },
       },
-      payment_method_types: ["card"],
-      success_url: `${origin}/dashboard/rental?payment=success&rent_call_id=${rentCallId}`,
-      cancel_url: `${origin}/dashboard/rental?payment=cancel`,
+      payment_method_types: paymentMethods as any,
+      success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
+      cancel_url: `${origin}/tenant/pay?payment=cancel`,
       metadata: {
         rent_call_id: rentCallId,
         org_id: orgId,
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, currency });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
