@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, subscription } = useAuth();
+  const { user, loading, emailVerified, subscription, userType } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -22,12 +22,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/verify-email" replace />;
   }
 
-  // Allow billing page always so user can subscribe
   const isBillingPage = location.pathname === "/dashboard/billing";
   const isOnboarding = location.pathname === "/onboarding";
+  const isTenantRoute = location.pathname.startsWith("/tenant");
 
-  // If subscription check is done and not active, redirect to billing (except billing & onboarding)
-  if (!subscription.loading && !subscription.subscribed && !isBillingPage && !isOnboarding) {
+  // Tenant users should only access /tenant/* routes
+  if (userType === "tenant" && !isTenantRoute && !isOnboarding) {
+    return <Navigate to="/tenant" replace />;
+  }
+
+  // Landlord users should not access /tenant/* routes
+  if (userType === "landlord" && isTenantRoute) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Subscription check only for landlords
+  if (userType === "landlord" && !subscription.loading && !subscription.subscribed && !isBillingPage && !isOnboarding) {
     return <Navigate to="/dashboard/billing" replace />;
   }
 

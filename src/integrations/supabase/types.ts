@@ -691,6 +691,7 @@ export type Database = {
           locale: string | null
           name: string | null
           updated_at: string
+          user_type: string
         }
         Insert: {
           country?: string | null
@@ -700,6 +701,7 @@ export type Database = {
           locale?: string | null
           name?: string | null
           updated_at?: string
+          user_type?: string
         }
         Update: {
           country?: string | null
@@ -709,6 +711,7 @@ export type Database = {
           locale?: string | null
           name?: string | null
           updated_at?: string
+          user_type?: string
         }
         Relationships: []
       }

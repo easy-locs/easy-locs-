@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+type UserType = "landlord" | "tenant";
+
 interface SubscriptionState {
   subscribed: boolean;
   plan: string;
@@ -17,6 +19,7 @@ interface AuthContextType {
   loading: boolean;
   emailVerified: boolean;
   orgId: string | null;
+  userType: UserType;
   subscription: SubscriptionState;
   refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -37,6 +40,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   emailVerified: false,
   orgId: null,
+  userType: "landlord",
   subscription: defaultSubscription,
   refreshSubscription: async () => {},
   signOut: async () => {},
@@ -49,6 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [userType, setUserType] = useState<UserType>("landlord");
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
 
   const fetchOrgId = useCallback(async (userId: string) => {
@@ -59,6 +64,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .limit(1)
       .single();
     setOrgId(data?.org_id ?? null);
+  }, []);
+
+  const fetchUserType = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_type")
+      .eq("id", userId)
+      .single();
+    setUserType((data?.user_type as UserType) ?? "landlord");
   }, []);
 
   const refreshSubscription = useCallback(async () => {
@@ -95,9 +109,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchOrgId(session.user.id), 0);
+          setTimeout(() => fetchUserType(session.user.id), 0);
           setTimeout(() => refreshSubscription(), 0);
         } else {
           setOrgId(null);
+          setUserType("landlord");
           setSubscription({ ...defaultSubscription, loading: false });
         }
         setLoading(false);
@@ -109,6 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchOrgId(session.user.id);
+        fetchUserType(session.user.id);
         refreshSubscription();
       } else {
         setSubscription((prev) => ({ ...prev, loading: false }));
@@ -117,9 +134,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => authSub.unsubscribe();
-  }, [fetchOrgId, refreshSubscription]);
+  }, [fetchOrgId, fetchUserType, refreshSubscription]);
 
-  // Auto-refresh subscription every 60s
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(refreshSubscription, 60_000);
@@ -133,11 +149,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setSession(null);
     setOrgId(null);
+    setUserType("landlord");
     setSubscription({ ...defaultSubscription, loading: false });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, subscription, refreshSubscription, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, subscription, refreshSubscription, signOut }}>
       {children}
     </AuthContext.Provider>
   );
