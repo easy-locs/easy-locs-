@@ -25,13 +25,11 @@ import {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
-  { icon: FileText, label: "Quittances", path: "/dashboard/receipts" },
-  { icon: Home, label: "Baux", path: "/dashboard/leases" },
+  { icon: Home, label: "Gestion locative", path: "/dashboard/rental" },
   { icon: Send, label: "Documents", path: "/dashboard/documents" },
   { icon: Building2, label: "Entreprise", path: "/dashboard/company" },
   { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
   { icon: FolderLock, label: "Coffre-fort", path: "/dashboard/vault" },
-  { icon: Users, label: "Locataires", path: "/dashboard/tenants" },
   { icon: Globe, label: "Services", path: "/dashboard/services" },
   { icon: CreditCard, label: "Abonnement", path: "/dashboard/billing" },
 ];
