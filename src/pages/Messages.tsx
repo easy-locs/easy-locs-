@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface Tenant {
   id: string;
@@ -29,6 +30,7 @@ interface Message {
 
 const Messages = () => {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -162,7 +164,7 @@ const Messages = () => {
       read: false,
     });
     if (error) {
-      toast.error("Erreur lors de l'envoi du message");
+      toast.error(t("page.messages.send_error"));
     } else {
       setNewMessage("");
     }
@@ -186,8 +188,8 @@ const Messages = () => {
             </Button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Messages</h1>
-            <p className="text-muted-foreground text-sm">Échanges avec vos locataires</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.messages.title")}</h1>
+            <p className="text-muted-foreground text-sm">{t("page.messages.subtitle")}</p>
           </div>
         </div>
 
@@ -195,15 +197,15 @@ const Messages = () => {
           {/* Tenant list */}
           <div className={`w-full md:w-80 border-r border-border/50 flex flex-col ${selectedTenant ? "hidden md:flex" : "flex"}`}>
             <div className="p-3 border-b border-border/50">
-              <p className="text-sm font-semibold text-foreground">Conversations</p>
+              <p className="text-sm font-semibold text-foreground">{t("page.messages.conversations")}</p>
             </div>
             <ScrollArea className="flex-1">
               {loading ? (
-                <div className="p-4 text-center text-muted-foreground text-sm">Chargement…</div>
+                <div className="p-4 text-center text-muted-foreground text-sm">{t("page.common.loading")}</div>
               ) : tenants.length === 0 ? (
                 <div className="p-6 text-center">
                   <User className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-muted-foreground text-sm">Aucun locataire. Ajoutez un locataire pour commencer à échanger.</p>
+                  <p className="text-muted-foreground text-sm">{t("page.messages.no_tenants")}</p>
                 </div>
               ) : (
                 tenants.map(tenant => (
@@ -261,7 +263,7 @@ const Messages = () => {
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
                         <MessageCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                        <p className="text-muted-foreground text-sm">Aucun message. Écrivez le premier !</p>
+                        <p className="text-muted-foreground text-sm">{t("page.messages.no_messages")}</p>
                       </div>
                     </div>
                   ) : (
@@ -291,7 +293,7 @@ const Messages = () => {
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Écrire un message…"
+                    placeholder={t("page.messages.placeholder")}
                     className="flex-1"
                     disabled={sending}
                   />
@@ -304,7 +306,7 @@ const Messages = () => {
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <MessageCircle className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Sélectionnez un locataire pour commencer la conversation</p>
+                  <p className="text-muted-foreground">{t("page.messages.select_tenant")}</p>
                 </div>
               </div>
             )}

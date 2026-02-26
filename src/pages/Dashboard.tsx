@@ -95,21 +95,21 @@ const Dashboard = () => {
   const fmtSize = (bytes: number) => bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} Mo` : `${(bytes / 1024).toFixed(0)} Ko`;
 
   const upcomingActions = useMemo(() => {
-    const actions: { label: string; date: string; urgent: boolean }[] = [];
+    const actions: { label: string; date: string; urgent: boolean; path: string }[] = [];
     const now = new Date();
     const currentMonth = format(now, "yyyy-MM");
     const unpaidThisMonth = stats.rentCalls.filter(r => r.month === currentMonth && !r.paid).length;
     if (unpaidThisMonth > 0) {
-      actions.push({ label: `${unpaidThisMonth} loyer(s) impayé(s) ce mois`, date: format(now, "MMMM yyyy", { locale: fr }), urgent: true });
+      actions.push({ label: `${unpaidThisMonth} loyer(s) impayé(s) ce mois`, date: format(now, "MMMM yyyy", { locale: fr }), urgent: true, path: "/dashboard/dunning" });
     }
     if (kpis.vacantCount > 0) {
-      actions.push({ label: `${kpis.vacantCount} bien(s) vacant(s)`, date: "À pourvoir", urgent: kpis.vacantCount > 1 });
+      actions.push({ label: `${kpis.vacantCount} bien(s) vacant(s)`, date: "À pourvoir", urgent: kpis.vacantCount > 1, path: "/dashboard/rental" });
     }
     if (stats.reminders > 0) {
-      actions.push({ label: `${stats.reminders} rappel(s) actif(s)`, date: "À traiter", urgent: false });
+      actions.push({ label: `${stats.reminders} rappel(s) actif(s)`, date: "À traiter", urgent: false, path: "/dashboard/reminders" });
     }
     if (actions.length === 0) {
-      actions.push({ label: "Tout est à jour ! 🎉", date: "", urgent: false });
+      actions.push({ label: "Tout est à jour ! 🎉", date: "", urgent: false, path: "" });
     }
     return actions;
   }, [stats, kpis]);
@@ -213,19 +213,24 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h2 className="text-lg font-semibold text-foreground mb-4">Alertes & actions</h2>
           <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
-            {upcomingActions.map((r, i) => (
-              <div key={i} className="flex items-center gap-4 p-4">
-                {r.urgent ? (
-                  <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
-                ) : (
-                  <Bell className="h-5 w-5 text-muted-foreground shrink-0" />
-                )}
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-foreground">{r.label}</div>
-                  {r.date && <div className="text-xs text-muted-foreground">{r.date}</div>}
-                </div>
-              </div>
-            ))}
+            {upcomingActions.map((r, i) => {
+              const Wrapper = r.path ? Link : "div" as any;
+              const wrapperProps = r.path ? { to: r.path } : {};
+              return (
+                <Wrapper key={i} {...wrapperProps} className={`flex items-center gap-4 p-4 ${r.path ? "hover:bg-muted/50 cursor-pointer transition-colors" : ""}`}>
+                  {r.urgent ? (
+                    <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+                  ) : (
+                    <Bell className="h-5 w-5 text-muted-foreground shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-foreground">{r.label}</div>
+                    {r.date && <div className="text-xs text-muted-foreground">{r.date}</div>}
+                  </div>
+                  {r.path && <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+                </Wrapper>
+              );
+            })}
           </div>
         </motion.div>
 
