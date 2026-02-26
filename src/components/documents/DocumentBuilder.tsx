@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
+import SignaturePad from "@/components/ui/SignaturePad";
 
 interface Props {
   template: DocumentTemplate;
@@ -27,7 +28,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [validation, setValidation] = useState<ReturnType<typeof validateDocument> | null>(null);
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
-
+  const [signatures, setSignatures] = useState<{ landlord: string; tenant: string }>({ landlord: "", tenant: "" });
   const updateField = (key: string, value: unknown) => {
     setData((prev) => ({ ...prev, [key]: value }));
     setValidation(null);
@@ -72,8 +73,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       return;
     }
 
-    // Generate and download PDF
-    const doc = generateFromTemplate(template, data);
+    // Generate and download PDF with signatures
+    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined);
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
 
     // Audit log
@@ -165,6 +166,23 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               ))}
             </div>
           ))}
+
+          {/* Signature pads */}
+          <div className="border-t border-border/50 pt-5 mt-2">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Signatures</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SignaturePad
+                label="Signature du bailleur / expéditeur"
+                value={signatures.landlord}
+                onChange={(v) => setSignatures((s) => ({ ...s, landlord: v }))}
+              />
+              <SignaturePad
+                label="Signature du locataire / destinataire"
+                value={signatures.tenant}
+                onChange={(v) => setSignatures((s) => ({ ...s, tenant: v }))}
+              />
+            </div>
+          </div>
 
           {validation && (
             <div className="space-y-3">

@@ -96,7 +96,8 @@ function addParagraph(doc: jsPDF, text: string, y: number): number {
 // ====== UNIVERSAL TEMPLATE-BASED GENERATOR ======
 export function generateFromTemplate(
   template: DocumentTemplate,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  signatures?: { landlord?: string; tenant?: string }
 ): jsPDF {
   const doc = new jsPDF();
   let y = addHeader(doc, template.label.toUpperCase());
@@ -127,14 +128,62 @@ export function generateFromTemplate(
 
   // Signature block
   y += 10;
-  if (y > 250) { doc.addPage(); y = 20; }
+  if (y > 220) { doc.addPage(); y = 20; }
   y = addParagraph(doc, "Fait en deux exemplaires originaux.", y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(50, 50, 50);
   doc.text(`Fait à ________________, le ${new Date().toLocaleDateString("fr-FR")}`, MARGIN, y);
   y += 14;
-  doc.text("Signature(s) :", MARGIN, y);
+
+  // Dual signature columns
+  const colWidth = CONTENT_WIDTH / 2 - 5;
+  const sigStartY = y;
+
+  // Landlord / Sender column
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Le bailleur / L'expéditeur", MARGIN, sigStartY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(30, 30, 30);
+  const landlordName = String(data.landlordName || data.senderName || data.hostName || data.presidentName || data.gerantName || "");
+  if (landlordName) doc.text(landlordName, MARGIN, sigStartY + 6);
+
+  if (signatures?.landlord) {
+    try {
+      doc.addImage(signatures.landlord, "PNG", MARGIN, sigStartY + 10, colWidth, 25);
+    } catch { /* ignore invalid image */ }
+  } else {
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.rect(MARGIN, sigStartY + 10, colWidth, 25);
+    doc.setLineDashPattern([], 0);
+  }
+
+  // Tenant / Recipient column
+  const col2X = MARGIN + colWidth + 10;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Le locataire / Le destinataire", col2X, sigStartY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(30, 30, 30);
+  const tenantName = String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || "");
+  if (tenantName) doc.text(tenantName, col2X, sigStartY + 6);
+
+  if (signatures?.tenant) {
+    try {
+      doc.addImage(signatures.tenant, "PNG", col2X, sigStartY + 10, colWidth, 25);
+    } catch { /* ignore invalid image */ }
+  } else {
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.rect(col2X, sigStartY + 10, colWidth, 25);
+    doc.setLineDashPattern([], 0);
+  }
 
   addFooter(doc);
   return doc;
