@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, RefreshCw, Loader2 } from "lucide-react";
-import logoAdminia from "@/assets/logo-adminia.png";
+import logoEasyloc from "@/assets/logo-easyloc.png";
 import { useToast } from "@/hooks/use-toast";
 
 const VerifyEmail = () => {
@@ -50,7 +50,7 @@ const VerifyEmail = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoAdminia} alt="Easyloc" className="h-8 w-8 rounded" />
+          <img src={logoEasyloc} alt="Easyloc" className="h-9 w-9 object-contain" />
           <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
         </Link>
       </div>
