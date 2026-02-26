@@ -1,7 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { FolderLock, Upload, Search, FileText, Trash2, Clock } from "lucide-react";
-import { getVaultFiles, addVaultFile, deleteVaultFile, type VaultFile } from "@/lib/store";
+import { FolderLock, Upload, Search, FileText, Trash2, Clock, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + " o";
@@ -9,49 +12,79 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " Mo";
 }
 
-const Vault = () => {
-  const [, setRefresh] = useState(0);
-  const [search, setSearch] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface VaultRow {
+  id: string;
+  filename: string;
+  file_url: string;
+  tags_json: string[];
+  size: number;
+  created_at: string;
+}
 
-  const vaultFiles = getVaultFiles();
-  const filtered = vaultFiles.filter((f) =>
+const Vault = () => {
+  const [search, setSearch] = useState("");
+  const [files, setFiles] = useState<VaultRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, orgId } = useAuth();
+  const { toast } = useToast();
+
+  const fetchFiles = async () => {
+    if (!orgId) return;
+    const { data } = await supabase
+      .from("vault_files")
+      .select("id, filename, file_url, tags_json, size, created_at")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    setFiles((data as VaultRow[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchFiles(); }, [orgId]);
+
+  const filtered = files.filter((f) =>
     f.filename.toLowerCase().includes(search.toLowerCase()) ||
-    f.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+    (Array.isArray(f.tags_json) && f.tags_json.some((t: string) => t.toLowerCase().includes(search.toLowerCase())))
   );
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || !user || !orgId) return;
+    setUploading(true);
+
+    for (const file of Array.from(fileList)) {
+      // Store as data URI for now (no storage bucket yet)
       const reader = new FileReader();
-      reader.onload = () => {
-        const vf: VaultFile = {
-          id: crypto.randomUUID(),
-          userId: "demo-user-1",
+      reader.onload = async () => {
+        const { error } = await supabase.from("vault_files").insert({
+          org_id: orgId,
+          user_id: user.id,
           filename: file.name,
-          fileUrl: reader.result as string,
-          tags: [file.type.split("/")[1] || "document"],
-          createdAt: new Date().toISOString(),
+          file_url: reader.result as string,
+          tags_json: [file.type.split("/")[1] || "document"] as unknown as Json,
           size: file.size,
-        };
-        addVaultFile(vf);
-        setRefresh((r) => r + 1);
+        });
+        if (error) {
+          toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        }
+        fetchFiles();
       };
       reader.readAsDataURL(file);
-    });
+    }
+    setUploading(false);
     e.target.value = "";
   };
 
-  const handleDelete = (id: string) => {
-    deleteVaultFile(id);
-    setRefresh((r) => r + 1);
+  const handleDelete = async (id: string) => {
+    await supabase.from("vault_files").delete().eq("id", id);
+    fetchFiles();
   };
 
-  const handleDownload = (file: VaultFile) => {
-    if (file.fileUrl) {
+  const handleDownload = (file: VaultRow) => {
+    if (file.file_url) {
       const link = document.createElement("a");
-      link.href = file.fileUrl;
+      link.href = file.file_url;
       link.download = file.filename;
       link.click();
     }
@@ -65,27 +98,23 @@ const Vault = () => {
             <h1 className="text-2xl font-bold text-foreground">Coffre-fort</h1>
             <p className="text-muted-foreground text-sm mt-1">Stockez et classez vos documents en toute sécurité.</p>
           </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm"
-          >
-            <Upload className="h-4 w-4" /> Importer
+          <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+            className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50">
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Importer
           </button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleUpload} />
         </div>
 
         <div className="relative mb-8">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un document…"
-            className="w-full bg-card border border-border rounded-lg pl-11 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+            className="w-full bg-card border border-border rounded-lg pl-11 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
         </div>
 
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">Chargement…</div>
+        ) : filtered.length > 0 ? (
           <div className="space-y-3">
             {filtered.map((file) => (
               <div key={file.id} className="flex items-center gap-4 bg-card rounded-xl p-4 shadow-card border border-border/50">
@@ -96,10 +125,10 @@ const Vault = () => {
                   <div className="text-sm font-medium text-foreground truncate">{file.filename}</div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    {new Date(file.createdAt).toLocaleDateString("fr-FR")}
+                    {new Date(file.created_at).toLocaleDateString("fr-FR")}
                     <span>•</span>
                     <span>{formatFileSize(file.size)}</span>
-                    {file.tags.map((t) => (
+                    {Array.isArray(file.tags_json) && file.tags_json.map((t: string) => (
                       <span key={t} className="bg-muted px-1.5 py-0.5 rounded text-xs">{t}</span>
                     ))}
                   </div>
@@ -123,10 +152,8 @@ const Vault = () => {
               {search ? "Essayez un autre terme de recherche." : "Importez vos premiers documents pour les classer automatiquement."}
             </p>
             {!search && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-6 py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm"
-              >
+              <button onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-6 py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
                 <Upload className="h-4 w-4" /> Importer un document
               </button>
             )}
