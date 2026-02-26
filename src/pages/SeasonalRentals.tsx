@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -253,6 +254,7 @@ const SeasonalRentals = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="ota_sync" featureLabel="Locations saisonnières & OTA">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -399,6 +401,7 @@ const SeasonalRentals = () => {
               ))}
         </div>
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };

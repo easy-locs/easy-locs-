@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { FileText, Download, Clock, ChevronRight, Globe, Building2, Scale, Home, AlertTriangle } from "lucide-react";
@@ -85,6 +86,7 @@ const Documents = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="legal_documents" featureLabel="Documents juridiques">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-1">Documents</h1>
         <p className="text-muted-foreground text-sm mb-6">Générez des documents conformes ou consultez votre historique.</p>
@@ -204,6 +206,7 @@ const Documents = () => {
           </div>
         )}
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };

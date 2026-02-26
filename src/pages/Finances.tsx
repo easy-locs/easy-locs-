@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
@@ -194,6 +195,7 @@ const Finances = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="unlimited_properties" featureLabel="Finances">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -479,6 +481,7 @@ const Finances = () => {
           </TabsContent>
         </Tabs>
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };

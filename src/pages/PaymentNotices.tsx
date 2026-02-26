@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -121,6 +122,7 @@ const PaymentNotices = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="unlimited_tenants" featureLabel="Avis d'échéance">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -194,6 +196,7 @@ const PaymentNotices = () => {
           </table>
         </div>
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };

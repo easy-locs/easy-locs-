@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { Home, FileText, ChevronRight, Users, Calendar, Euro, MapPin, Plus, Download, Building, ExternalLink, CheckCircle, XCircle, Search, ClipboardCheck, AlertTriangle } from "lucide-react";
@@ -140,6 +141,7 @@ const Leases = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="legal_documents" featureLabel="Gestion des baux">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">Baux & Locations</h1>
@@ -403,6 +405,7 @@ const Leases = () => {
           </div>
         )}
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };
