@@ -8,6 +8,7 @@ import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 
 interface Props {
   template: DocumentTemplate;
@@ -145,6 +146,14 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     <textarea rows={4} value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
                       placeholder={f.placeholder}
                       className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
+                  ) : f.key.toLowerCase().includes("address") || f.key.toLowerCase().includes("adresse") || f.key === "registeredOffice" || f.key === "propertyAddress" ? (
+                    <AddressAutocomplete
+                      value={String(data[f.key] ?? "")}
+                      onChange={(val) => updateField(f.key, val)}
+                      onSelect={(result) => updateField(f.key, result.label)}
+                      placeholder={f.placeholder || "Saisissez une adresse…"}
+                      className={fieldErrors.has(f.key) ? "!border-destructive" : ""}
+                    />
                   ) : (
                     <input type={f.type === "postal-code" || f.type === "phone" || f.type === "email" ? "text" : f.type}
                       value={String(data[f.key] ?? "")}
