@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, subscription, userType } = useAuth();
+  const { user, loading, emailVerified, subscription, userType, onboardingCompleted } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -14,17 +14,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!emailVerified) {
-    return <Navigate to="/verify-email" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
   const isBillingPage = location.pathname === "/dashboard/billing";
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
+
+  // Redirect to onboarding if not completed (except billing & onboarding itself)
+  if (!onboardingCompleted && !isOnboarding && !isBillingPage) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   // Tenant users should only access /tenant/* routes
   if (userType === "tenant" && !isTenantRoute && !isOnboarding) {

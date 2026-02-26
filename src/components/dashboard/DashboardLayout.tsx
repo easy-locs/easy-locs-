@@ -11,58 +11,6 @@ import {
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe,
 } from "lucide-react";
 
-interface NavItem {
-  icon: typeof LayoutDashboard;
-  label: string;
-  path: string;
-  badge?: number;
-}
-
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
-const navSections: NavSection[] = [
-  {
-    title: "L'ESSENTIEL",
-    items: [
-      { icon: LayoutDashboard, label: "Bureau", path: "/dashboard" },
-      { icon: Building, label: "Immeubles", path: "/dashboard/buildings" },
-      { icon: Home, label: "Biens", path: "/dashboard/rental" },
-      { icon: Users, label: "Locataires", path: "/dashboard/rental?tab=tenants" },
-      { icon: KeyRound, label: "Locations", path: "/dashboard/leases" },
-      { icon: ClipboardList, label: "État des lieux", path: "/dashboard/rental?tab=inventory" },
-      { icon: Sofa, label: "Mobilier", path: "/dashboard/furniture" },
-      { icon: Wallet, label: "Finances", path: "/dashboard/finances" },
-      { icon: Receipt, label: "Dépenses", path: "/dashboard/expenses" },
-      { icon: CalendarRange, label: "Régul. charges", path: "/dashboard/charges" },
-      { icon: FileCheck, label: "Bilan fiscal", path: "/dashboard/fiscal" },
-      { icon: FileText, label: "Documents", path: "/dashboard/documents" },
-    ],
-  },
-  {
-    title: "LOCATION",
-    items: [
-      { icon: Calendar, label: "Saisonnier", path: "/dashboard/seasonal" },
-      { icon: UserSearch, label: "Candidats", path: "/dashboard/candidates" },
-      { icon: Receipt, label: "Avis d'échéance", path: "/dashboard/notices" },
-      { icon: AlertTriangle, label: "Relances", path: "/dashboard/dunning" },
-    ],
-  },
-  {
-    title: "LE PLUS",
-    items: [
-      { icon: Contact, label: "Carnet", path: "/dashboard/company" },
-      { icon: Wrench, label: "Interventions", path: "/dashboard/interventions" },
-      { icon: CheckSquare, label: "Tâches", path: "/dashboard/tasks" },
-      { icon: StickyNote, label: "Notes", path: "/dashboard/notes" },
-      { icon: MessageCircle, label: "Messages", path: "/dashboard/messages" },
-      { icon: Bell, label: "Rappels", path: "/dashboard/reminders" },
-    ],
-  },
-];
-
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹" };
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -70,7 +18,47 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription } = useAuth();
-  const { locale, setLocale, availableLocales } = useI18n();
+  const { locale, setLocale, t, availableLocales } = useI18n();
+
+  const navSections = [
+    {
+      title: t("section.essential"),
+      items: [
+        { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/dashboard" },
+        { icon: Building, label: t("nav.buildings"), path: "/dashboard/buildings" },
+        { icon: Home, label: t("nav.properties"), path: "/dashboard/rental" },
+        { icon: Users, label: t("nav.tenants"), path: "/dashboard/rental?tab=tenants" },
+        { icon: KeyRound, label: t("nav.leases"), path: "/dashboard/leases" },
+        { icon: ClipboardList, label: t("nav.inventory"), path: "/dashboard/rental?tab=inventory" },
+        { icon: Sofa, label: t("nav.furniture"), path: "/dashboard/furniture" },
+        { icon: Wallet, label: t("nav.finances"), path: "/dashboard/finances" },
+        { icon: Receipt, label: t("nav.expenses"), path: "/dashboard/expenses" },
+        { icon: CalendarRange, label: t("nav.charges"), path: "/dashboard/charges" },
+        { icon: FileCheck, label: t("nav.fiscal"), path: "/dashboard/fiscal" },
+        { icon: FileText, label: t("nav.documents"), path: "/dashboard/documents" },
+      ],
+    },
+    {
+      title: t("section.rental"),
+      items: [
+        { icon: Calendar, label: t("nav.seasonal"), path: "/dashboard/seasonal" },
+        { icon: UserSearch, label: t("nav.candidates"), path: "/dashboard/candidates" },
+        { icon: Receipt, label: t("nav.notices"), path: "/dashboard/notices" },
+        { icon: AlertTriangle, label: t("nav.dunning"), path: "/dashboard/dunning" },
+      ],
+    },
+    {
+      title: t("section.more"),
+      items: [
+        { icon: Contact, label: t("nav.company"), path: "/dashboard/company" },
+        { icon: Wrench, label: t("nav.interventions"), path: "/dashboard/interventions" },
+        { icon: CheckSquare, label: t("nav.tasks"), path: "/dashboard/tasks" },
+        { icon: StickyNote, label: t("nav.notes"), path: "/dashboard/notes" },
+        { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
+        { icon: Bell, label: t("nav.reminders"), path: "/dashboard/reminders" },
+      ],
+    },
+  ];
 
   const handleLogout = async () => {
     await signOut();
@@ -95,7 +83,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </div>
           <div className="mt-2">
-            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">Espace bailleur</span>
+            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.landlord")}</span>
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
@@ -122,13 +110,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
         <div className="p-3 border-t border-sidebar-border space-y-0.5">
           <Link to="/dashboard/billing" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
-            <CreditCard className="h-4 w-4" /> Abonnement
+            <CreditCard className="h-4 w-4" /> {t("nav.billing")}
           </Link>
           <Link to="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
-            <Settings className="h-4 w-4" /> Paramètres
+            <Settings className="h-4 w-4" /> {t("nav.settings")}
           </Link>
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors">
-            <LogOut className="h-4 w-4" /> Déconnexion
+            <LogOut className="h-4 w-4" /> {t("nav.logout")}
           </button>
         </div>
       </aside>
@@ -157,7 +145,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
           <Link to="/dashboard/assistant" className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
             <BrainCircuit className="h-4 w-4" />
-            <span className="hidden sm:inline">Que dois-je faire ?</span>
+            <span className="hidden sm:inline">{t("dashboard.ai_question")}</span>
           </Link>
         </header>
 
@@ -165,14 +153,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="mx-6 mt-4 flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5">
             <Clock className="h-4 w-4 text-accent shrink-0" />
             <p className="text-sm text-foreground">
-              <span className="font-semibold">Essai gratuit</span>
+              <span className="font-semibold">{t("trial.free")}</span>
               {subscription.trialDaysLeft != null && (
                 <span className="text-muted-foreground">
-                  {" — "}{subscription.trialDaysLeft} jour{subscription.trialDaysLeft > 1 ? "s" : ""} restant{subscription.trialDaysLeft > 1 ? "s" : ""}
+                  {" — "}{subscription.trialDaysLeft} {t("trial.days_left")}
                 </span>
               )}
             </p>
-            <Link to="/dashboard/billing" className="ml-auto text-xs font-semibold text-accent hover:underline whitespace-nowrap">Choisir un plan</Link>
+            <Link to="/dashboard/billing" className="ml-auto text-xs font-semibold text-accent hover:underline whitespace-nowrap">{t("trial.choose_plan")}</Link>
           </div>
         )}
 

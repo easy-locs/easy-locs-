@@ -219,10 +219,14 @@ export type Database = {
           country: string
           created_at: string
           data_json: Json
+          doc_hash: string | null
           doc_type: string
           id: string
+          lease_id: string | null
           org_id: string
           pdf_url: string | null
+          qr_verification_url: string | null
+          sent_to_emails: Json | null
           status: string
           template_id: string | null
           template_version: string | null
@@ -233,10 +237,14 @@ export type Database = {
           country?: string
           created_at?: string
           data_json?: Json
+          doc_hash?: string | null
           doc_type: string
           id?: string
+          lease_id?: string | null
           org_id: string
           pdf_url?: string | null
+          qr_verification_url?: string | null
+          sent_to_emails?: Json | null
           status?: string
           template_id?: string | null
           template_version?: string | null
@@ -247,10 +255,14 @@ export type Database = {
           country?: string
           created_at?: string
           data_json?: Json
+          doc_hash?: string | null
           doc_type?: string
           id?: string
+          lease_id?: string | null
           org_id?: string
           pdf_url?: string | null
+          qr_verification_url?: string | null
+          sent_to_emails?: Json | null
           status?: string
           template_id?: string | null
           template_version?: string | null
@@ -258,6 +270,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_org_id_fkey"
             columns: ["org_id"]
@@ -591,6 +610,119 @@ export type Database = {
           },
         ]
       }
+      leases: {
+        Row: {
+          annexes_json: Json | null
+          charges_amount: number
+          clauses_json: Json | null
+          country: string
+          created_at: string
+          deposit_amount: number
+          duration_months: number | null
+          end_date: string | null
+          id: string
+          lease_type: string
+          notice_period_months: number | null
+          org_id: string
+          owner_profile_id: string | null
+          payment_day: number | null
+          pdf_url: string | null
+          property_id: string
+          rent_amount: number
+          signed_at: string | null
+          signed_by_owner: boolean | null
+          signed_by_tenant: boolean | null
+          start_date: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annexes_json?: Json | null
+          charges_amount?: number
+          clauses_json?: Json | null
+          country?: string
+          created_at?: string
+          deposit_amount?: number
+          duration_months?: number | null
+          end_date?: string | null
+          id?: string
+          lease_type?: string
+          notice_period_months?: number | null
+          org_id: string
+          owner_profile_id?: string | null
+          payment_day?: number | null
+          pdf_url?: string | null
+          property_id: string
+          rent_amount?: number
+          signed_at?: string | null
+          signed_by_owner?: boolean | null
+          signed_by_tenant?: boolean | null
+          start_date: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annexes_json?: Json | null
+          charges_amount?: number
+          clauses_json?: Json | null
+          country?: string
+          created_at?: string
+          deposit_amount?: number
+          duration_months?: number | null
+          end_date?: string | null
+          id?: string
+          lease_type?: string
+          notice_period_months?: number | null
+          org_id?: string
+          owner_profile_id?: string | null
+          payment_day?: number | null
+          pdf_url?: string | null
+          property_id?: string
+          rent_amount?: number
+          signed_at?: string | null
+          signed_by_owner?: boolean | null
+          signed_by_tenant?: boolean | null
+          start_date?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leases_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: false
+            referencedRelation: "owner_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -755,6 +887,133 @@ export type Database = {
         }
         Relationships: []
       }
+      ota_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          external_user_id: string | null
+          id: string
+          last_sync_at: string | null
+          linked_properties: Json | null
+          org_id: string
+          provider: string
+          refresh_token: string | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          linked_properties?: Json | null
+          org_id: string
+          provider: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          linked_properties?: Json | null
+          org_id?: string
+          provider?: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ota_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owner_profiles: {
+        Row: {
+          address: string | null
+          bank_bic: string | null
+          bank_iban: string | null
+          bank_name: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          org_id: string
+          person_type: string
+          phone: string | null
+          postal_code: string | null
+          tax_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          org_id: string
+          person_type?: string
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          org_id?: string
+          person_type?: string
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_notices: {
         Row: {
           charges_amount: number
@@ -826,10 +1085,13 @@ export type Database = {
         Row: {
           country: string | null
           created_at: string
+          currency: string | null
           email: string
           id: string
           locale: string | null
           name: string | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           signature_url: string | null
           updated_at: string
           user_type: string
@@ -837,10 +1099,13 @@ export type Database = {
         Insert: {
           country?: string | null
           created_at?: string
+          currency?: string | null
           email: string
           id: string
           locale?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           signature_url?: string | null
           updated_at?: string
           user_type?: string
@@ -848,10 +1113,13 @@ export type Database = {
         Update: {
           country?: string | null
           created_at?: string
+          currency?: string | null
           email?: string
           id?: string
           locale?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           signature_url?: string | null
           updated_at?: string
           user_type?: string
@@ -878,6 +1146,7 @@ export type Database = {
           org_id: string
           postal_code: string
           property_type: string
+          rental_mode: string | null
           rooms: number | null
           surface: number | null
           updated_at: string
@@ -902,6 +1171,7 @@ export type Database = {
           org_id: string
           postal_code?: string
           property_type?: string
+          rental_mode?: string | null
           rooms?: number | null
           surface?: number | null
           updated_at?: string
@@ -926,6 +1196,7 @@ export type Database = {
           org_id?: string
           postal_code?: string
           property_type?: string
+          rental_mode?: string | null
           rooms?: number | null
           surface?: number | null
           updated_at?: string
@@ -1128,6 +1399,100 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservations: {
+        Row: {
+          amount: number
+          check_in: string
+          check_out: string
+          cleaning_fee: number | null
+          created_at: string
+          currency: string | null
+          guest_email: string | null
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          ota_connection_id: string | null
+          ota_listing_id: string | null
+          ota_provider: string | null
+          ota_reservation_id: string | null
+          platform_fee: number | null
+          property_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          check_in: string
+          check_out: string
+          cleaning_fee?: number | null
+          created_at?: string
+          currency?: string | null
+          guest_email?: string | null
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          ota_connection_id?: string | null
+          ota_listing_id?: string | null
+          ota_provider?: string | null
+          ota_reservation_id?: string | null
+          platform_fee?: number | null
+          property_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          check_in?: string
+          check_out?: string
+          cleaning_fee?: number | null
+          created_at?: string
+          currency?: string | null
+          guest_email?: string | null
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          ota_connection_id?: string | null
+          ota_listing_id?: string | null
+          ota_provider?: string | null
+          ota_reservation_id?: string | null
+          platform_fee?: number | null
+          property_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_ota_connection_id_fkey"
+            columns: ["ota_connection_id"]
+            isOneToOne: false
+            referencedRelation: "ota_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -1337,12 +1702,15 @@ export type Database = {
           birth_date: string | null
           birth_place: string | null
           charges_amount: number | null
+          co_tenants_json: Json | null
           created_at: string
+          current_address: string | null
           deposit_amount: number | null
           email: string | null
           guarantor_name: string | null
           guarantor_phone: string | null
           id: string
+          id_document_urls: Json | null
           lease_end: string | null
           lease_start: string | null
           lease_type: string | null
@@ -1362,12 +1730,15 @@ export type Database = {
           birth_date?: string | null
           birth_place?: string | null
           charges_amount?: number | null
+          co_tenants_json?: Json | null
           created_at?: string
+          current_address?: string | null
           deposit_amount?: number | null
           email?: string | null
           guarantor_name?: string | null
           guarantor_phone?: string | null
           id?: string
+          id_document_urls?: Json | null
           lease_end?: string | null
           lease_start?: string | null
           lease_type?: string | null
@@ -1387,12 +1758,15 @@ export type Database = {
           birth_date?: string | null
           birth_place?: string | null
           charges_amount?: number | null
+          co_tenants_json?: Json | null
           created_at?: string
+          current_address?: string | null
           deposit_amount?: number | null
           email?: string | null
           guarantor_name?: string | null
           guarantor_phone?: string | null
           id?: string
+          id_document_urls?: Json | null
           lease_end?: string | null
           lease_start?: string | null
           lease_type?: string | null
