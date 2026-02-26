@@ -281,11 +281,27 @@ export function useRentalData() {
     }
   };
 
+  /* ─── Assign tenant to property ─── */
+  const assignTenantToProperty = async (tenantId: string, propertyId: string) => {
+    const prop = properties.find(p => p.id === propertyId);
+    const { error } = await supabase
+      .from("tenants")
+      .update({ property_id: propertyId })
+      .eq("id", tenantId);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return false;
+    }
+    toast({ title: "Locataire assigné", description: prop ? `Locataire assigné à ${prop.label}` : "Locataire assigné" });
+    await loadTenants();
+    return true;
+  };
+
   return {
     properties, tenants, rentCalls, loading,
     saveProperty, deleteProperty,
     saveTenant, deleteTenant, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
-    loadAll, loadTenants, loadRentCalls,
+    loadAll, loadTenants, loadRentCalls, assignTenantToProperty,
   };
 }
