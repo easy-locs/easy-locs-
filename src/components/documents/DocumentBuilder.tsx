@@ -265,7 +265,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       return;
     }
 
-    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined);
+    const skipTenant = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice"].includes(template.docType);
+    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant });
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
 
     await supabase.from("audit_logs").insert({

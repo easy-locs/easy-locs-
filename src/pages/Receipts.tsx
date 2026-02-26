@@ -44,7 +44,7 @@ const Receipts = () => {
       link.click();
     } else {
       const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-      const doc = generateFromTemplate(frRentReceipt, receipt.dataJson, signatures, stampUrl || undefined);
+      const doc = generateFromTemplate(frRentReceipt, receipt.dataJson, signatures, stampUrl || undefined, { skipTenantSignature: true });
       downloadPDF(doc, `${receipt.title.replace(/\s/g, "_")}.pdf`);
     }
   };
