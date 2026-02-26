@@ -24,8 +24,14 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { properties, tenants } = useRentalData();
 
   const defaults: Record<string, unknown> = {};
+  const today = new Date().toISOString().split("T")[0];
   for (const f of template.fields) {
-    defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
+    // Auto-fill date fields with today's date
+    if (f.type === "date" && !f.defaultValue && ["date", "documentDate", "signatureDate", "receiptDate", "noticeDate", "statementDate"].includes(f.key)) {
+      defaults[f.key] = today;
+    } else {
+      defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
+    }
   }
   const [data, setData] = useState<Record<string, unknown>>(defaults);
   const [validation, setValidation] = useState<ReturnType<typeof validateDocument> | null>(null);
@@ -142,17 +148,29 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     setData((prev) => {
       const merged = { ...prev };
       const tenantFields: Record<string, unknown> = {
+        // Identity
         tenantName: tenant.name,
         recipientName: tenant.name,
         guestName: tenant.name,
         tenantEmail: tenant.email,
         tenantPhone: tenant.phone,
+        // Personal info
         tenantBirthDate: tenant.birth_date,
+        birthDate: tenant.birth_date,
         tenantBirthPlace: tenant.birth_place,
+        birthPlace: tenant.birth_place,
         tenantNationality: tenant.nationality,
+        nationality: tenant.nationality,
         tenantProfession: tenant.profession,
+        profession: tenant.profession,
+        // Address
+        tenantAddress: tenant.current_address,
+        currentAddress: tenant.current_address,
+        recipientAddress: tenant.current_address,
+        // Guarantor
         guarantorName: tenant.guarantor_name,
         guarantorPhone: tenant.guarantor_phone,
+        // Lease & financial
         leaseStart: tenant.lease_start,
         leaseEnd: tenant.lease_end,
         leaseType: tenant.lease_type,
