@@ -1,10 +1,13 @@
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { ArrowLeft, AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { ArrowLeft, AlertCircle, AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
+import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
-import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
-import { addDocument, type GeneratedDocument } from "@/lib/store";
+import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   template: DocumentTemplate;
@@ -13,6 +16,8 @@ interface Props {
 }
 
 const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
+  const { user, orgId } = useAuth();
+  const { toast } = useToast();
   const defaults: Record<string, unknown> = {};
   for (const f of template.fields) {
     defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
@@ -20,6 +25,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [data, setData] = useState<Record<string, unknown>>(defaults);
   const [validation, setValidation] = useState<ReturnType<typeof validateDocument> | null>(null);
   const [generated, setGenerated] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const updateField = (key: string, value: unknown) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -30,35 +36,58 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const handleValidate = () => {
     const dataCopy = { ...data };
     const result = validateDocument(template, dataCopy);
-    setData(dataCopy); // apply corrections
+    setData(dataCopy);
     setValidation(result);
     return result;
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const result = handleValidate();
     if (result.errors.length > 0) return;
+    if (!user || !orgId) {
+      toast({ title: "Erreur", description: "Vous devez être connecté.", variant: "destructive" });
+      return;
+    }
 
-    const doc = generateFromTemplate(template, data);
-    const record: GeneratedDocument = {
-      id: crypto.randomUUID(),
-      userId: "demo-user-1",
-      type: template.docType,
+    setSaving(true);
+    const title = `${template.label} — ${String(data.tenantName || data.fullName || data.companyName || data.senderName || "")}`.trim();
+
+    // Save to Supabase
+    const { error } = await supabase.from("documents").insert({
+      org_id: orgId,
+      user_id: user.id,
       country: template.country,
-      title: `${template.label} — ${String(data.tenantName || data.fullName || data.companyName || data.senderName || "")}`.trim(),
-      templateId: template.id,
-      templateVersion: template.version,
-      dataJson: data,
-      pdfDataUri: pdfToDataUri(doc),
-      createdAt: new Date().toISOString(),
-    };
-    addDocument(record);
+      doc_type: template.docType,
+      template_id: template.id,
+      template_version: template.version,
+      title,
+      data_json: data as unknown as Json,
+      status: "final",
+    });
+
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+
+    // Generate and download PDF
+    const doc = generateFromTemplate(template, data);
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
+
+    // Audit log
+    await supabase.from("audit_logs").insert({
+      org_id: orgId,
+      user_id: user.id,
+      action: "document.created",
+      metadata_json: { template_id: template.id, title } as unknown as Json,
+    });
+
+    setSaving(false);
     setGenerated(true);
     onGenerated();
   };
 
-  // Group fields
   const groups = useMemo(() => {
     const map = new Map<string, typeof template.fields>();
     for (const f of template.fields) {
@@ -107,39 +136,27 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     {f.required && <span className="text-destructive ml-1">*</span>}
                   </label>
                   {f.type === "select" ? (
-                    <select
-                      value={String(data[f.key] ?? "")}
-                      onChange={(e) => updateField(f.key, e.target.value)}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}
-                    >
+                    <select value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}>
                       <option value="">— Sélectionner —</option>
-                      {f.options?.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
+                      {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   ) : f.type === "textarea" ? (
-                    <textarea
-                      rows={4}
-                      value={String(data[f.key] ?? "")}
-                      onChange={(e) => updateField(f.key, e.target.value)}
+                    <textarea rows={4} value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
                       placeholder={f.placeholder}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}
-                    />
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
                   ) : (
-                    <input
-                      type={f.type === "postal-code" || f.type === "phone" || f.type === "email" ? "text" : f.type}
+                    <input type={f.type === "postal-code" || f.type === "phone" || f.type === "email" ? "text" : f.type}
                       value={String(data[f.key] ?? "")}
                       onChange={(e) => updateField(f.key, f.type === "number" ? +e.target.value : e.target.value)}
                       placeholder={f.placeholder}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}
-                    />
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
                   )}
                 </div>
               ))}
             </div>
           ))}
 
-          {/* Validation results */}
           {validation && (
             <div className="space-y-3">
               {validation.corrections.length > 0 && (
@@ -180,17 +197,13 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             <button onClick={handleValidate} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-lg hover:bg-muted transition-colors text-sm">
               Valider
             </button>
-            <button
-              onClick={handleGenerate}
-              disabled={template.needsLegalReview}
-              className="flex-1 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Générer le PDF
+            <button onClick={handleGenerate} disabled={template.needsLegalReview || saving}
+              className="flex-1 flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Générer le PDF"}
             </button>
           </div>
         </div>
 
-        {/* Legal disclaimer */}
         <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground leading-relaxed">
