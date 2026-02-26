@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@17.7.0?target=deno&deno-std=0.190.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -36,8 +36,9 @@ serve(async (req) => {
   );
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    logStep("Key info", { prefix: stripeKey.substring(0, 10), length: stripeKey.length });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
@@ -49,7 +50,18 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    // Test direct fetch to Stripe API first
+    const testRes = await fetch("https://api.stripe.com/v1/customers?limit=1", {
+      headers: { "Authorization": `Bearer ${stripeKey}` },
+    });
+    const testBody = await testRes.text();
+    logStep("Direct Stripe test", { status: testRes.status, bodyPreview: testBody.substring(0, 200) });
+
+    if (!testRes.ok) {
+      throw new Error(`Stripe API error (${testRes.status}): ${testBody.substring(0, 200)}`);
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
