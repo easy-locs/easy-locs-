@@ -44,6 +44,7 @@ export interface Tenant {
   profession?: string | null;
   guarantor_name?: string | null;
   guarantor_phone?: string | null;
+  current_address?: string | null;
   tenant_user_id?: string | null;
 }
 
@@ -103,6 +104,7 @@ export function useRentalData() {
       notes: t.notes || "", birth_date: t.birth_date, birth_place: t.birth_place,
       nationality: t.nationality, profession: t.profession,
       guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
+      current_address: t.current_address,
       tenant_user_id: t.tenant_user_id,
     })));
   }, [orgId]);
