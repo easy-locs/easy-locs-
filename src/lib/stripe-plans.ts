@@ -1,10 +1,5 @@
-export type PlanTier = "local" | "global";
-export type PlanInterval = "monthly" | "annual";
-export type PlanKey = `${PlanTier}_${PlanInterval}`;
-
 export interface PlanConfig {
-  key: PlanKey;
-  tier: PlanTier;
+  key: string;
   name: string;
   subtitle: string;
   price: number;
@@ -19,102 +14,53 @@ export interface PlanConfig {
 
 export const PLANS: PlanConfig[] = [
   {
-    key: "local_monthly",
-    tier: "local",
-    name: "Local",
-    subtitle: "1 pays",
-    price: 29,
-    priceId: "price_1T4yukKcrlZX0EnnBHZvH0kN",
-    productId: "prod_U354fxGmmhSvn0",
+    key: "unlimited_monthly",
+    name: "EasyLoc Illimité",
+    subtitle: "Tout inclus",
+    price: 9.99,
+    priceId: "price_1T50xQKcrlZX0EnnpjDZb41W",
+    productId: "prod_U37B1NPO4TQTnD",
     interval: "mois",
-    description: "Idéal pour les bailleurs et hôtes opérant dans un seul pays.",
-    features: [
-      "1 pays au choix",
-      "Nombre illimité de biens",
-      "Nombre illimité de locataires",
-      "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb & Booking",
-      "Baux conformes au pays sélectionné",
-      "États des lieux, quittances, résiliations",
-      "Archivage sécurisé",
-      "Signature électronique standard",
-    ],
-    highlight: false,
-  },
-  {
-    key: "local_annual",
-    tier: "local",
-    name: "Local",
-    subtitle: "1 pays",
-    price: 199,
-    priceId: "price_1T4yuyKcrlZX0EnnLJIFwgnQ",
-    productId: "prod_U355WIZ1brDxXV",
-    interval: "an",
-    description: "Idéal pour les bailleurs et hôtes opérant dans un seul pays.",
-    features: [
-      "1 pays au choix",
-      "Nombre illimité de biens",
-      "Nombre illimité de locataires",
-      "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb & Booking",
-      "Baux conformes au pays sélectionné",
-      "États des lieux, quittances, résiliations",
-      "Archivage sécurisé",
-      "Signature électronique standard",
-    ],
-    highlight: false,
-    savings: "Économisez 149€/an",
-  },
-  {
-    key: "global_monthly",
-    tier: "global",
-    name: "Global",
-    subtitle: "Tous les pays",
-    price: 79,
-    priceId: "price_1T4yvUKcrlZX0Enn8RaH9jGK",
-    productId: "prod_U355aIW4nePfxQ",
-    interval: "mois",
-    description: "Idéal pour investisseurs et gestionnaires multi-pays.",
+    description: "Accès illimité à toutes les fonctionnalités EasyLoc.",
     features: [
       "Tous les pays du monde",
       "Nombre illimité de biens",
       "Nombre illimité de locataires",
       "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb & Booking + OTA",
+      "Synchronisation Airbnb, Booking & OTA",
       "Documents juridiques multi-pays",
-      "Annexes légales par pays",
-      "Signature électronique internationale",
-      "Archivage longue durée",
+      "Baux, états des lieux, quittances",
+      "Signature électronique",
+      "Archivage sécurisé longue durée",
       "Export juridique PDF",
       "Support prioritaire",
     ],
-    highlight: true,
+    highlight: false,
   },
   {
-    key: "global_annual",
-    tier: "global",
-    name: "Global",
-    subtitle: "Tous les pays",
-    price: 499,
-    priceId: "price_1T4yvmKcrlZX0EnndLXibrTC",
-    productId: "prod_U355FFHHJ8rgAT",
+    key: "unlimited_annual",
+    name: "EasyLoc Illimité",
+    subtitle: "Tout inclus",
+    price: 99,
+    priceId: "price_1T50xgKcrlZX0EnntbHkjEsC",
+    productId: "prod_U37COZzTYiHqG1",
     interval: "an",
-    description: "Idéal pour investisseurs et gestionnaires multi-pays.",
+    description: "Accès illimité à toutes les fonctionnalités EasyLoc.",
     features: [
       "Tous les pays du monde",
       "Nombre illimité de biens",
       "Nombre illimité de locataires",
       "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb & Booking + OTA",
+      "Synchronisation Airbnb, Booking & OTA",
       "Documents juridiques multi-pays",
-      "Annexes légales par pays",
-      "Signature électronique internationale",
-      "Archivage longue durée",
+      "Baux, états des lieux, quittances",
+      "Signature électronique",
+      "Archivage sécurisé longue durée",
       "Export juridique PDF",
       "Support prioritaire",
     ],
     highlight: true,
-    savings: "Économisez 449€/an",
+    savings: "Économisez 20€/an",
   },
 ];
 
@@ -124,8 +70,4 @@ export function getPlanByProductId(productId: string): PlanConfig | undefined {
 
 export function getPlanByKey(key: string): PlanConfig | undefined {
   return PLANS.find((p) => p.key === key);
-}
-
-export function getPlansByTier(tier: PlanTier): PlanConfig[] {
-  return PLANS.filter((p) => p.tier === tier);
 }

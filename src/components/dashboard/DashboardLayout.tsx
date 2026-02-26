@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, signOut, subscription } = useAuth();
   const { locale, setLocale, t, availableLocales } = useI18n();
-  const { currentTier, isGlobal } = useSubscriptionGating();
+  const { currentTier, isSubscribed } = useSubscriptionGating();
 
   const navSections = [
     {

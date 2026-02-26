@@ -7,7 +7,6 @@ type UserType = "landlord" | "tenant";
 interface SubscriptionState {
   subscribed: boolean;
   plan: string;
-  tier: "local" | "global" | "free";
   subscriptionEnd: string | null;
   loading: boolean;
   isTrial: boolean;
@@ -30,7 +29,6 @@ interface AuthContextType {
 const defaultSubscription: SubscriptionState = {
   subscribed: false,
   plan: "free",
-  tier: "free",
   subscriptionEnd: null,
   loading: true,
   isTrial: false,
@@ -96,11 +94,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         trialDaysLeft = Math.max(0, Math.ceil((new Date(data.subscription_end).getTime() - Date.now()) / 86400000));
       }
       const plan = data.plan ?? "free";
-      const tier = plan.startsWith("global") ? "global" as const : (plan.startsWith("local") || plan === "trial") ? "local" as const : "free" as const;
       setSubscription({
         subscribed: data.subscribed ?? false,
         plan,
-        tier,
         subscriptionEnd: data.subscription_end ?? null,
         loading: false,
         isTrial,

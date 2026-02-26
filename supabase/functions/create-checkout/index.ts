@@ -11,15 +11,17 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-// Valid price IDs — Local & Global plans
+// Valid price IDs — single unlimited plan
 const VALID_PRICES = [
-  "price_1T4yukKcrlZX0EnnBHZvH0kN", // local monthly 29€
-  "price_1T4yuyKcrlZX0EnnLJIFwgnQ", // local annual 199€
-  "price_1T4yvUKcrlZX0Enn8RaH9jGK", // global monthly 79€
-  "price_1T4yvmKcrlZX0EnndLXibrTC", // global annual 499€
+  "price_1T50xQKcrlZX0EnnpjDZb41W", // unlimited monthly 9.99€
+  "price_1T50xgKcrlZX0EnntbHkjEsC", // unlimited annual 99€
   // Legacy prices (still valid for existing subscribers)
-  "price_1T4sOdKcrlZX0EnnHIgwXcq9", // old monthly 29€
-  "price_1T4tliKcrlZX0EnnxHeOxHIO", // old annual 199€
+  "price_1T4yukKcrlZX0EnnBHZvH0kN",
+  "price_1T4yuyKcrlZX0EnnLJIFwgnQ",
+  "price_1T4yvUKcrlZX0Enn8RaH9jGK",
+  "price_1T4yvmKcrlZX0EnndLXibrTC",
+  "price_1T4sOdKcrlZX0EnnHIgwXcq9",
+  "price_1T4tliKcrlZX0EnnxHeOxHIO",
 ];
 
 serve(async (req) => {
@@ -52,7 +54,6 @@ serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
     
-    // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) {
@@ -70,20 +71,14 @@ serve(async (req) => {
       success_url: `${origin}/dashboard/billing?success=true`,
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
       allow_promotion_codes: true,
-      // Enable all major payment methods worldwide
       payment_method_types: ["card", "sepa_debit"],
       payment_method_options: {
-        card: {
-          setup_future_usage: "off_session",
-        },
+        card: { setup_future_usage: "off_session" },
       },
     };
     
-    // Add 3-day trial for new subscribers only
     if (!customerId) {
-      sessionParams.subscription_data = {
-        trial_period_days: 3,
-      };
+      sessionParams.subscription_data = { trial_period_days: 3 };
       logStep("Adding 3-day trial for new customer");
     }
     
