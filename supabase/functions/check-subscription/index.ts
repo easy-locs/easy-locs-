@@ -40,15 +40,10 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No Stripe customer found");
-      // Upsert free status
-      await supabaseClient.from("subscriptions").upsert({
-        user_id: user.id,
-        plan: "free",
-        status: "inactive",
-      }, { onConflict: "user_id" });
-
-      return new Response(JSON.stringify({ subscribed: false, plan: "free" }), {
+      logStep("No Stripe customer found, checking trial");
+      // Check trial status
+      const trialResult = await checkTrial(supabaseClient, user.id);
+      return new Response(JSON.stringify(trialResult), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -68,7 +63,6 @@ serve(async (req) => {
       subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
       productId = sub.items.data[0].price.product as string;
 
-      // Map product to plan name
       const productMap: Record<string, string> = {
         "prod_U2yLnEYKPa8yLG": "individual",
         "prod_U2yLjzJN4Y7LYb": "landlord",
@@ -77,24 +71,31 @@ serve(async (req) => {
       };
       plan = productMap[productId] || "unknown";
       logStep("Active subscription", { plan, subscriptionEnd });
+
+      // Upsert subscription record
+      await supabaseClient.from("subscriptions").upsert({
+        user_id: user.id,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: stripeSubId,
+        plan,
+        status: "active",
+        current_period_end: subscriptionEnd,
+      }, { onConflict: "user_id" });
+
+      return new Response(JSON.stringify({
+        subscribed: true,
+        plan,
+        product_id: productId,
+        subscription_end: subscriptionEnd,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Upsert subscription record
-    await supabaseClient.from("subscriptions").upsert({
-      user_id: user.id,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: stripeSubId,
-      plan,
-      status: hasActive ? "active" : "inactive",
-      current_period_end: subscriptionEnd,
-    }, { onConflict: "user_id" });
-
-    return new Response(JSON.stringify({
-      subscribed: hasActive,
-      plan,
-      product_id: productId,
-      subscription_end: subscriptionEnd,
-    }), {
+    // No active Stripe subscription — check trial
+    logStep("No active Stripe sub, checking trial");
+    const trialResult = await checkTrial(supabaseClient, user.id, customerId);
+    return new Response(JSON.stringify(trialResult), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
@@ -106,3 +107,39 @@ serve(async (req) => {
     });
   }
 });
+
+async function checkTrial(supabaseClient: any, userId: string, stripeCustomerId?: string) {
+  const { data: sub } = await supabaseClient
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (sub && sub.status === "trialing" && sub.trial_ends_at) {
+    const trialEnd = new Date(sub.trial_ends_at);
+    if (trialEnd > new Date()) {
+      logStep("Trial active", { trial_ends_at: sub.trial_ends_at });
+      return {
+        subscribed: true,
+        plan: "trial",
+        subscription_end: sub.trial_ends_at,
+      };
+    }
+    // Trial expired
+    logStep("Trial expired, setting inactive");
+    await supabaseClient.from("subscriptions").update({
+      status: "inactive",
+      plan: "free",
+    }).eq("user_id", userId);
+  } else if (!sub) {
+    // No subscription row at all — create free
+    await supabaseClient.from("subscriptions").upsert({
+      user_id: userId,
+      plan: "free",
+      status: "inactive",
+      ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
+    }, { onConflict: "user_id" });
+  }
+
+  return { subscribed: false, plan: "free" };
+}

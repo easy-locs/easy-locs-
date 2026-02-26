@@ -7,6 +7,8 @@ interface SubscriptionState {
   plan: string;
   subscriptionEnd: string | null;
   loading: boolean;
+  isTrial: boolean;
+  trialDaysLeft: number | null;
 }
 
 interface AuthContextType {
@@ -25,6 +27,8 @@ const defaultSubscription: SubscriptionState = {
   plan: "free",
   subscriptionEnd: null,
   loading: true,
+  isTrial: false,
+  trialDaysLeft: null,
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -66,11 +70,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
+      const isTrial = data.plan === "trial";
+      let trialDaysLeft: number | null = null;
+      if (isTrial && data.subscription_end) {
+        trialDaysLeft = Math.max(0, Math.ceil((new Date(data.subscription_end).getTime() - Date.now()) / 86400000));
+      }
       setSubscription({
         subscribed: data.subscribed ?? false,
         plan: data.plan ?? "free",
         subscriptionEnd: data.subscription_end ?? null,
         loading: false,
+        isTrial,
+        trialDaysLeft,
       });
     } catch {
       setSubscription((prev) => ({ ...prev, loading: false }));
