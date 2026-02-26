@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
+import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
@@ -83,6 +85,7 @@ const RentalManagement = () => {
     generateMonthlyRentCalls, togglePayment, validateReceipt,
   } = useRentalData();
 
+  const { requiresUpgrade } = useSubscriptionGating();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>((searchParams.get("tab") as Tab) || "dashboard");
 
@@ -364,6 +367,16 @@ const RentalManagement = () => {
       if (existing.length === 0 && tenants.some(t => t.rent_amount > 0)) generateMonthlyRentCalls();
     }
   }, [tenants.length]);
+
+  /* ─── Subscription gating ─── */
+  const upgradeNeeded = requiresUpgrade("unlimited_properties");
+  if (upgradeNeeded) {
+    return (
+      <DashboardLayout>
+        <UpgradeBanner requiredTier={upgradeNeeded} featureLabel="Gestion locative" />
+      </DashboardLayout>
+    );
+  }
 
   /* ─── Document Builder mode ─── */
   if (selectedTemplate) {

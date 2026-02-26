@@ -1,9 +1,11 @@
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wrench, Plus } from "lucide-react";
 
 const Interventions = () => {
   return (
     <DashboardLayout>
+      <FeatureGate feature="unlimited_properties" featureLabel="Interventions">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -21,6 +23,7 @@ const Interventions = () => {
           <p className="text-muted-foreground">Aucune intervention enregistrée. Ajoutez vos travaux et réparations pour en garder la trace.</p>
         </div>
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };

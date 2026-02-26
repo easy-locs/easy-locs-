@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { FileText, Download, Plus, Clock } from "lucide-react";
@@ -37,6 +38,7 @@ const Receipts = () => {
 
   return (
     <DashboardLayout>
+      <FeatureGate feature="receipts" featureLabel="Quittances de loyer">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -88,6 +90,7 @@ const Receipts = () => {
           </div>
         )}
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 };
