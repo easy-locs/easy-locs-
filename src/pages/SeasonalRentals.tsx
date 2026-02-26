@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays } from "lucide-react";
 
 interface Booking {
   id: string; property_id: string; guest_name: string; guest_email: string; guest_phone: string;
@@ -13,6 +13,55 @@ interface Booking {
 
 interface Property { id: string; label: string; }
 
+/* ─── iCal helpers ─── */
+const toICalDate = (d: string) => d.replace(/-/g, "");
+
+const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
+  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Logement";
+  const events = bookings.map(b => [
+    "BEGIN:VEVENT",
+    `DTSTART;VALUE=DATE:${toICalDate(b.check_in)}`,
+    `DTEND;VALUE=DATE:${toICalDate(b.check_out)}`,
+    `SUMMARY:${b.guest_name} — ${propName(b.property_id)}`,
+    `DESCRIPTION:Prix: ${b.total_price}€ | Tél: ${b.guest_phone || "—"} | Email: ${b.guest_email || "—"}`,
+    `UID:${b.id}@easyloc`,
+    `STATUS:${b.status === "cancelled" ? "CANCELLED" : "CONFIRMED"}`,
+    "END:VEVENT",
+  ].join("\r\n"));
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Easyloc//Saisonnier//FR",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "X-WR-CALNAME:Easyloc Saisonnier",
+    ...events,
+    "END:VCALENDAR",
+  ].join("\r\n");
+};
+
+const parseICalEvents = (ical: string): { summary: string; start: string; end: string; uid: string }[] => {
+  const events: { summary: string; start: string; end: string; uid: string }[] = [];
+  const blocks = ical.split("BEGIN:VEVENT");
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i].split("END:VEVENT")[0];
+    const getVal = (key: string) => {
+      const match = block.match(new RegExp(`${key}[^:]*:(.+)`));
+      return match ? match[1].trim() : "";
+    };
+    const rawStart = getVal("DTSTART");
+    const rawEnd = getVal("DTEND");
+    const formatDate = (d: string) => {
+      const clean = d.replace(/[^0-9]/g, "").slice(0, 8);
+      if (clean.length >= 8) return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
+      return "";
+    };
+    events.push({ summary: getVal("SUMMARY"), start: formatDate(rawStart), end: formatDate(rawEnd), uid: getVal("UID") });
+  }
+  return events.filter(e => e.start && e.end);
+};
+
 const SeasonalRentals = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
@@ -20,8 +69,13 @@ const SeasonalRentals = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(new Date());
   const [form, setForm] = useState({ property_id: "", guest_name: "", guest_email: "", guest_phone: "", check_in: "", check_out: "", total_price: 0, cleaning_fee: 0, deposit_amount: 0, notes: "" });
+  const [showIcalPanel, setShowIcalPanel] = useState(false);
+  const [icalUrl, setIcalUrl] = useState("");
+  const [importingIcal, setImportingIcal] = useState(false);
+  const [copiedExport, setCopiedExport] = useState(false);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -36,18 +90,32 @@ const SeasonalRentals = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const resetForm = () => {
+    setForm({ property_id: "", guest_name: "", guest_email: "", guest_phone: "", check_in: "", check_out: "", total_price: 0, cleaning_fee: 0, deposit_amount: 0, notes: "" });
+    setShowForm(false);
+    setEditingId(null);
+  };
+
   const save = async () => {
     if (!orgId || !user || !form.guest_name || !form.property_id || !form.check_in || !form.check_out) return;
-    const { error } = await supabase.from("seasonal_bookings").insert({
-      org_id: orgId, user_id: user.id, ...form,
-      property_id: form.property_id, total_price: form.total_price,
-      cleaning_fee: form.cleaning_fee, deposit_amount: form.deposit_amount,
-    });
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Réservation ajoutée" });
-    setShowForm(false);
-    setForm({ property_id: "", guest_name: "", guest_email: "", guest_phone: "", check_in: "", check_out: "", total_price: 0, cleaning_fee: 0, deposit_amount: 0, notes: "" });
+    const record = { org_id: orgId, user_id: user.id, ...form };
+    if (editingId) {
+      const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
+      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Réservation modifiée" });
+    } else {
+      const { error } = await supabase.from("seasonal_bookings").insert(record);
+      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Réservation ajoutée" });
+    }
+    resetForm();
     await load();
+  };
+
+  const startEdit = (b: Booking) => {
+    setEditingId(b.id);
+    setForm({ property_id: b.property_id, guest_name: b.guest_name, guest_email: b.guest_email, guest_phone: b.guest_phone, check_in: b.check_in, check_out: b.check_out, total_price: b.total_price, cleaning_fee: b.cleaning_fee, deposit_amount: b.deposit_amount, notes: b.notes });
+    setShowForm(true);
   };
 
   const remove = async (id: string) => {
@@ -58,12 +126,118 @@ const SeasonalRentals = () => {
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
 
+  /* ─── iCal Export ─── */
+  const handleExportIcal = () => {
+    const ical = generateICalFeed(bookings, properties);
+    const blob = new Blob([ical], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "easyloc-saisonnier.ics"; a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Calendrier exporté (.ics)" });
+  };
+
+  const handleCopyIcalContent = () => {
+    const ical = generateICalFeed(bookings, properties);
+    navigator.clipboard.writeText(ical);
+    setCopiedExport(true);
+    setTimeout(() => setCopiedExport(false), 2000);
+    toast({ title: "Contenu iCal copié" });
+  };
+
+  /* ─── iCal Import ─── */
+  const handleImportIcalUrl = async () => {
+    if (!icalUrl.trim() || !orgId || !user) return;
+    setImportingIcal(true);
+    try {
+      // Try fetching via a CORS proxy or directly
+      let icalText = "";
+      try {
+        const res = await fetch(icalUrl);
+        icalText = await res.text();
+      } catch {
+        toast({ title: "Erreur", description: "Impossible de récupérer le calendrier. Collez le contenu .ics directement.", variant: "destructive" });
+        setImportingIcal(false);
+        return;
+      }
+      const events = parseICalEvents(icalText);
+      if (events.length === 0) {
+        toast({ title: "Aucun événement trouvé", description: "Le fichier iCal ne contient pas de réservations.", variant: "destructive" });
+        setImportingIcal(false);
+        return;
+      }
+      // Insert new bookings (skip existing by UID check via date match)
+      const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
+      const defaultPropId = properties[0]?.id || "";
+      const newBookings = events
+        .filter(e => !existingDates.has(`${e.start}-${e.end}-${e.summary}`))
+        .map(e => ({
+          org_id: orgId, user_id: user.id, property_id: form.property_id || defaultPropId,
+          guest_name: e.summary || "Voyageur importé",
+          check_in: e.start, check_out: e.end, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
+          guest_email: "", guest_phone: "", notes: "Importé via iCal", status: "confirmed",
+        }));
+      if (newBookings.length === 0) {
+        toast({ title: "Toutes les réservations existent déjà" });
+        setImportingIcal(false);
+        return;
+      }
+      const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
+      if (error) throw error;
+      toast({ title: `${newBookings.length} réservation(s) importée(s)` });
+      setIcalUrl("");
+      await load();
+    } catch (err: any) {
+      toast({ title: "Erreur d'import", description: err.message, variant: "destructive" });
+    } finally {
+      setImportingIcal(false);
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !orgId || !user) return;
+    setImportingIcal(true);
+    try {
+      const text = await file.text();
+      const events = parseICalEvents(text);
+      if (events.length === 0) {
+        toast({ title: "Aucun événement trouvé", variant: "destructive" });
+        setImportingIcal(false);
+        return;
+      }
+      const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
+      const defaultPropId = properties[0]?.id || "";
+      const newBookings = events
+        .filter(ev => !existingDates.has(`${ev.start}-${ev.end}-${ev.summary}`))
+        .map(ev => ({
+          org_id: orgId, user_id: user.id, property_id: defaultPropId,
+          guest_name: ev.summary || "Voyageur importé",
+          check_in: ev.start, check_out: ev.end, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
+          guest_email: "", guest_phone: "", notes: "Importé via fichier iCal", status: "confirmed",
+        }));
+      if (newBookings.length === 0) {
+        toast({ title: "Toutes les réservations existent déjà" });
+      } else {
+        const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
+        if (error) throw error;
+        toast({ title: `${newBookings.length} réservation(s) importée(s)` });
+        await load();
+      }
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setImportingIcal(false);
+      e.target.value = "";
+    }
+  };
+
   // Calendar grid
   const calDays = useMemo(() => {
     const y = calMonth.getFullYear(), m = calMonth.getMonth();
     const firstDay = new Date(y, m, 1).getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const offset = firstDay === 0 ? 6 : firstDay - 1; // Monday start
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
     const days: (number | null)[] = Array(offset).fill(null);
     for (let d = 1; d <= daysInMonth; d++) days.push(d);
     while (days.length % 7 !== 0) days.push(null);
@@ -83,12 +257,74 @@ const SeasonalRentals = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Location saisonnière</h1>
-            <p className="text-sm text-muted-foreground">Réservations et calendrier</p>
+            <p className="text-sm text-muted-foreground">Réservations, calendrier et synchronisation Airbnb / Booking</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
-            <Plus className="h-4 w-4" /> Réservation
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors">
+              <Link2 className="h-4 w-4" /> Sync iCal
+            </button>
+            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+              <Plus className="h-4 w-4" /> Réservation
+            </button>
+          </div>
         </div>
+
+        {/* iCal Sync Panel */}
+        {showIcalPanel && (
+          <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> Synchronisation iCal</h3>
+              <button onClick={() => setShowIcalPanel(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-sm text-muted-foreground">Importez vos réservations depuis Airbnb ou Booking.com via leur lien iCal, ou exportez vos réservations Easyloc.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Import */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Download className="h-4 w-4" /> Importer (Airbnb / Booking)</h4>
+                <p className="text-xs text-muted-foreground">Collez l'URL du calendrier iCal de votre annonce Airbnb ou Booking.com :</p>
+                <div className="flex gap-2">
+                  <input value={icalUrl} onChange={e => setIcalUrl(e.target.value)} placeholder="https://www.airbnb.fr/calendar/ical/..." className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
+                  <button onClick={handleImportIcalUrl} disabled={importingIcal || !icalUrl.trim()} className="bg-accent/20 text-accent px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/30 disabled:opacity-50">
+                    {importingIcal ? "Import…" : "Importer"}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">ou</span>
+                  <label className="text-xs text-accent hover:underline cursor-pointer flex items-center gap-1">
+                    <Upload className="h-3 w-3" /> Charger un fichier .ics
+                    <input type="file" accept=".ics,.ical" onChange={handleImportFile} className="hidden" />
+                  </label>
+                </div>
+                {form.property_id === "" && properties.length > 1 && (
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Bien pour les imports :</label>
+                    <select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+                      <option value="">Premier bien par défaut</option>
+                      {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Export */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="h-4 w-4" /> Exporter vers Airbnb / Booking</h4>
+                <p className="text-xs text-muted-foreground">Téléchargez le fichier .ics de vos réservations Easyloc pour l'importer dans Airbnb ou Booking.com :</p>
+                <div className="flex gap-2">
+                  <button onClick={handleExportIcal} className="flex items-center gap-2 bg-accent/20 text-accent px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/30">
+                    <Download className="h-3.5 w-3.5" /> Télécharger .ics
+                  </button>
+                  <button onClick={handleCopyIcalContent} className="flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted">
+                    {copiedExport ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedExport ? "Copié !" : "Copier"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic">Collez ce fichier dans les paramètres de calendrier de votre annonce Airbnb/Booking.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Calendar */}
         <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
@@ -118,7 +354,10 @@ const SeasonalRentals = () => {
         {/* Form */}
         {showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
-            <h3 className="font-semibold text-foreground">Nouvelle réservation</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground">{editingId ? "Modifier la réservation" : "Nouvelle réservation"}</h3>
+              <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div><label className="block text-sm font-medium text-foreground mb-1">Voyageur *</label><input value={form.guest_name} onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Bien *</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">— Sélectionner —</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
@@ -129,9 +368,10 @@ const SeasonalRentals = () => {
               <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.guest_email} onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Téléphone</label><input value={form.guest_phone} onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
+            <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             <div className="flex gap-3">
-              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">Enregistrer</button>
-              <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">Annuler</button>
+              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{editingId ? "Enregistrer" : "Ajouter"}</button>
+              <button onClick={resetForm} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">Annuler</button>
             </div>
           </div>
         )}
@@ -141,13 +381,20 @@ const SeasonalRentals = () => {
           {loading ? <p className="text-center text-muted-foreground py-8">Chargement…</p> :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">Aucune réservation</p> :
               bookings.map(b => (
-                <div key={b.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div key={b.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground">{b.guest_name}</p>
                     <p className="text-xs text-muted-foreground">{propName(b.property_id)} · {b.check_in} → {b.check_out}</p>
+                    {b.notes && <p className="text-xs text-muted-foreground italic mt-0.5">{b.notes}</p>}
                   </div>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full self-start ${b.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-green-500/20 text-green-700"}`}>
+                    {b.status === "cancelled" ? "Annulée" : "Confirmée"}
+                  </span>
                   <p className="text-sm font-bold text-foreground">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(b.total_price)}</p>
-                  <button onClick={() => remove(b.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => startEdit(b)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
+                    <button onClick={() => remove(b.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button>
+                  </div>
                 </div>
               ))}
         </div>

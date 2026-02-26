@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import InventoryBuilder from "@/components/rental/InventoryBuilder";
@@ -82,7 +83,16 @@ const RentalManagement = () => {
     generateMonthlyRentCalls, togglePayment, validateReceipt,
   } = useRentalData();
 
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<Tab>((searchParams.get("tab") as Tab) || "dashboard");
+
+  // Sync tab from URL params
+  useEffect(() => {
+    const tab = searchParams.get("tab") as Tab;
+    if (tab && ["dashboard", "properties", "tenants", "documents", "payments", "inventory"].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
