@@ -17,7 +17,7 @@ import {
   TrendingUp, AlertTriangle, Building, Eye, Trash2, Euro,
   UserPlus, MessageSquare, Upload, Edit, Search, ArrowLeft,
   CheckCircle, Key, Thermometer, Droplets, Zap, ArrowRight,
-  ClipboardCheck, Link2, CalendarClock
+  ClipboardCheck, Link2, CalendarClock, CreditCard, Loader2
 } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
@@ -129,6 +129,8 @@ const RentalManagement = () => {
 
   // Tenant invite link
   const [invitingTenantId, setInvitingTenantId] = useState<string | null>(null);
+  // Stripe rent payment
+  const [payingRentId, setPayingRentId] = useState<string | null>(null);
 
   // Storage keys (local fallback)
   const propKey = `adminia_properties_${orgId}`;
@@ -362,6 +364,24 @@ const RentalManagement = () => {
   };
 
   const getPropertyForTenant = (t: Tenant) => properties.find(p => p.id === t.propertyId);
+
+  /* ─── Pay rent via Stripe ─── */
+  const handlePayRent = async (payment: Payment) => {
+    const tenant = tenants.find(t => t.id === payment.tenant_id);
+    if (!tenant || !orgId) return;
+    setPayingRentId(payment.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-rent-payment", {
+        body: { rentCallId: payment.id, amount: payment.amount, tenantName: tenant.name, month: payment.month, orgId },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Erreur de paiement", description: err.message, variant: "destructive" });
+    } finally {
+      setPayingRentId(null);
+    }
+  };
 
   /* ─── Document Builder mode ─── */
   if (selectedTemplate) {
@@ -1104,6 +1124,16 @@ const RentalManagement = () => {
                             <button onClick={() => togglePayment(p.id)} className={`text-xs px-3 py-1 rounded-full font-medium ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>
                               {p.paid ? "✓ Payé" : "Impayé"}
                             </button>
+                            {!p.paid && (
+                              <button
+                                onClick={() => handlePayRent(p)}
+                                disabled={payingRentId === p.id}
+                                className="ml-2 inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
+                              >
+                                {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+                                Payer par CB
+                              </button>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-right">
                             {p.paid && !p.receipt_validated && (

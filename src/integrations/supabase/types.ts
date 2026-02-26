@@ -285,6 +285,8 @@ export type Database = {
           id: string
           name: string
           owner_user_id: string
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean
         }
         Insert: {
           country?: string
@@ -292,6 +294,8 @@ export type Database = {
           id?: string
           name?: string
           owner_user_id: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Update: {
           country?: string
@@ -299,6 +303,8 @@ export type Database = {
           id?: string
           name?: string
           owner_user_id?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Relationships: []
       }
