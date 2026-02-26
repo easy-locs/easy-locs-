@@ -1,6 +1,7 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink } from "lucide-react";
+import { CreditCard, CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Progress } from "@/components/ui/progress";
 import { PLANS } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -58,6 +59,23 @@ const Billing = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">Abonnement</h1>
         <p className="text-muted-foreground text-sm mb-8">Gérez votre abonnement et votre facturation.</p>
 
+        {/* Trial banner */}
+        {subscription.isTrial && (
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-6 mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <Clock className="h-5 w-5 text-accent" />
+              <h2 className="font-semibold text-foreground">Essai gratuit</h2>
+              <span className="bg-accent/20 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
+                {subscription.trialDaysLeft != null ? `${subscription.trialDaysLeft} jour${subscription.trialDaysLeft > 1 ? 's' : ''} restant${subscription.trialDaysLeft > 1 ? 's' : ''}` : ''}
+              </span>
+            </div>
+            <Progress value={subscription.trialDaysLeft != null ? ((3 - subscription.trialDaysLeft) / 3) * 100 : 0} className="h-2 mb-3" />
+            <p className="text-sm text-muted-foreground">
+              Profitez de toutes les fonctionnalités pendant votre essai. Choisissez un abonnement ci-dessous pour continuer après la période d'essai.
+            </p>
+          </div>
+        )}
+
         {/* Current plan */}
         <div className="bg-card rounded-xl shadow-card border border-border/50 p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -66,21 +84,21 @@ const Billing = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-2xl font-bold text-foreground capitalize">
-              {subscription.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : currentPlan === "free" ? "Aucun abonnement" : currentPlan}
+              {subscription.loading ? <Loader2 className="h-5 w-5 animate-spin" /> : subscription.isTrial ? "Essai gratuit" : currentPlan === "free" ? "Aucun abonnement" : currentPlan}
             </span>
-            {subscription.subscribed && (
+            {subscription.subscribed && !subscription.isTrial && (
               <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Actif</span>
             )}
             {!subscription.subscribed && !subscription.loading && (
               <span className="bg-warning/20 text-warning text-xs font-medium px-2 py-0.5 rounded-full">Inactif</span>
             )}
           </div>
-          {subscription.subscriptionEnd && (
+          {subscription.subscriptionEnd && !subscription.isTrial && (
             <p className="text-sm text-muted-foreground mt-2">
               Renouvellement : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
             </p>
           )}
-          {subscription.subscribed && (
+          {subscription.subscribed && !subscription.isTrial && (
             <button
               onClick={handlePortal}
               disabled={portalLoading}
