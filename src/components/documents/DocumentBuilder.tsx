@@ -8,6 +8,7 @@ import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
@@ -21,6 +22,7 @@ interface Props {
 const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { user, orgId, userType } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const { properties, tenants } = useRentalData();
 
   const defaults: Record<string, unknown> = {};
@@ -314,21 +316,21 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
         <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> Retour
+          <ArrowLeft className="h-4 w-4" /> {t("page.common.back")}
         </button>
 
         <h1 className="text-2xl font-bold text-foreground mb-1">{template.label}</h1>
         <p className="text-sm text-muted-foreground mb-1">{template.description}</p>
         {template.legalBasis && (
-          <p className="text-xs text-muted-foreground/70 italic mb-6">Base légale : {template.legalBasis}</p>
+          <p className="text-xs text-muted-foreground/70 italic mb-6">{t("page.doc_builder.legal_basis")} : {template.legalBasis}</p>
         )}
 
         {template.needsLegalReview && (
           <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4 mb-6">
             <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-foreground">Révision juridique requise</p>
-              <p className="text-xs text-muted-foreground">Ce modèle nécessite une validation juridique avant utilisation en production.</p>
+              <p className="text-sm font-medium text-foreground">{t("page.doc_builder.legal_review_title")}</p>
+              <p className="text-xs text-muted-foreground">{t("page.doc_builder.legal_review_desc")}</p>
             </div>
           </div>
         )}
@@ -337,14 +339,14 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         {isLandlord && tenants.length > 0 && template.fields.some((f) => f.key === "tenantName" || f.key === "recipientName") && (
           <div className="bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4">
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              Pré-remplir à partir d'un locataire
+              {t("page.doc_builder.prefill_tenant")}
             </label>
             <select
               value={String(data.tenantId ?? "")}
               onChange={(e) => updateField("tenantId", e.target.value)}
               className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">— Sélectionner un locataire —</option>
+              <option value="">{t("page.doc_builder.select_tenant")}</option>
               {tenants.map((t) => (
                 <option key={t.id} value={t.id}>{t.name} {t.email ? `(${t.email})` : ""}</option>
               ))}
@@ -367,7 +369,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                   {f.type === "select" ? (
                     <select value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
                       className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}>
-                      <option value="">— Sélectionner —</option>
+                      <option value="">{t("page.common.select")}</option>
                       {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   ) : f.type === "textarea" ? (
@@ -379,7 +381,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                       value={String(data[f.key] ?? "")}
                       onChange={(val) => updateField(f.key, val)}
                       onSelect={(result) => updateField(f.key, result.label)}
-                      placeholder={f.placeholder || "Saisissez une adresse…"}
+                      placeholder={f.placeholder || t("page.common.enter_address")}
                       className={fieldErrors.has(f.key) ? "!border-destructive" : ""}
                     />
                   ) : (
@@ -396,22 +398,22 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
           {/* Signature — chaque utilisateur signe uniquement de son côté */}
           <div className="border-t border-border/50 pt-5 mt-2">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Signature</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">{t("page.doc_builder.signature")}</h3>
             {isLandlord && (
               <div>
                 <SignaturePad
-                  label="Votre signature (bailleur / expéditeur)"
+                  label={t("page.doc_builder.landlord_signature")}
                   value={signatures.landlord}
                   onChange={(v) => setSignatures((s) => ({ ...s, landlord: v }))}
                 />
                 {signatures.tenant ? (
                   <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    Le locataire a signé ce document
+                    {t("page.doc_builder.tenant_signed")}
                   </div>
                 ) : (
                   <p className="mt-3 text-xs text-muted-foreground">
-                    La signature du locataire sera ajoutée depuis son espace personnel.
+                    {t("page.doc_builder.tenant_will_sign")}
                   </p>
                 )}
               </div>
@@ -419,18 +421,18 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             {isTenant && (
               <div>
                 <SignaturePad
-                  label="Votre signature (locataire / destinataire)"
+                  label={t("page.doc_builder.tenant_signature")}
                   value={signatures.tenant}
                   onChange={(v) => setSignatures((s) => ({ ...s, tenant: v }))}
                 />
                 {signatures.landlord ? (
                   <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    Le bailleur a signé ce document
+                    {t("page.doc_builder.landlord_signed")}
                   </div>
                 ) : (
                   <p className="mt-3 text-xs text-muted-foreground">
-                    La signature du bailleur sera ajoutée depuis son interface.
+                    {t("page.doc_builder.landlord_will_sign")}
                   </p>
                 )}
               </div>
@@ -469,17 +471,17 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
           {generated && (
             <div className="flex items-center gap-2 bg-success/10 rounded-lg p-3">
               <CheckCircle className="h-4 w-4 text-success" />
-              <p className="text-sm text-foreground">Document généré et sauvegardé dans l'historique.</p>
+              <p className="text-sm text-foreground">{t("page.doc_builder.generated")}</p>
             </div>
           )}
 
           <div className="flex gap-3">
             <button onClick={handleValidate} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-lg hover:bg-muted transition-colors text-sm">
-              Valider
+              {t("page.common.validate")}
             </button>
             <button onClick={handleGenerate} disabled={template.needsLegalReview || saving}
               className="flex-1 flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Générer le PDF"}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.common.generate_pdf")}
             </button>
           </div>
         </div>
