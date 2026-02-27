@@ -63,8 +63,9 @@ serve(async (req) => {
       .limit(1)
       .single();
 
-    let fromEmail = "jstarbuzz@gmail.com";
+    let fromEmail = "noreply@easy-locs.com";
     let fromName = payload.from_name || "Easy-Locs";
+    const replyTo = "contact@easy-locs.com";
 
     if (orgMember?.org_id) {
       const { data: org } = await supabase
@@ -81,6 +82,7 @@ serve(async (req) => {
     const sgPayload: any = {
       personalizations: [{ to: recipients.map((email) => ({ email })) }],
       from: { email: fromEmail, name: fromName },
+      reply_to: { email: replyTo, name: fromName },
       subject: payload.subject,
       content: [
         ...(payload.text ? [{ type: "text/plain", value: payload.text }] : []),
