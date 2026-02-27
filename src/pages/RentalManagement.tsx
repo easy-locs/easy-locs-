@@ -349,13 +349,32 @@ const RentalManagement = () => {
       } catch { /* ignore */ }
     }
 
+    // Fetch owner profile for landlord info
+    let landlordName = "";
+    let landlordAddress = "";
+    if (orgId) {
+      try {
+        const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).single();
+        if (ownerProfile) {
+          landlordName = ownerProfile.full_name || "";
+          landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
+        }
+      } catch { /* ignore */ }
+    }
+    if (!landlordName) landlordName = user?.user_metadata?.name || "Propriétaire";
+
+    // Map payment method to human-readable label
+    const paymentMethodLabels: Record<string, string> = { online: "Virement en ligne", bank_transfer: "Virement bancaire", cash: "Espèces" };
+    const paymentMethodLabel = payment.payment_method ? (paymentMethodLabels[payment.payment_method] || payment.payment_method) : "";
+
     const data: Record<string, unknown> = {
-      ownerName: user?.user_metadata?.name || "Propriétaire", ownerAddress: prop?.address || "",
+      landlordName, landlordAddress,
       tenantName: tenant.name, tenantAddress: prop ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
       propertyAddress: prop ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
       rentAmount: payment.rent_amount, chargesAmount: payment.charges_amount,
       periodStart: `${payment.month}-01`, periodEnd: `${payment.month}-${new Date(+payment.month.split("-")[0], +payment.month.split("-")[1], 0).getDate()}`,
       paymentDate: payment.paid_date || new Date().toISOString().split("T")[0],
+      paymentMethod: paymentMethodLabel,
     };
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
     const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined, { skipTenantSignature: true });

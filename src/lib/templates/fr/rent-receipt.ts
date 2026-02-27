@@ -44,7 +44,7 @@ export const frRentReceipt: DocumentTemplate = {
       id: "receipt-detail",
       label: "Détail du règlement",
       required: true,
-      text: "Période : du {periodStart} au {periodEnd}\n\nDétail :\n• Loyer hors charges : {rentAmount}\n• Provisions pour charges : {chargesAmount}\n• TOTAL : {total}\n\nDate de paiement : {paymentDate}\nMode de paiement : {paymentMethod}",
+      text: "Période : du {periodStart} au {periodEnd}\n\nDétail :\n• Loyer hors charges : {rentAmount}\n• Provisions pour charges : {chargesAmount}\n• TOTAL : {total}\n\nDate de paiement : {paymentDate}\nMode de paiement : {paymentMethod}\n\nCette quittance atteste du paiement effectif du loyer et des charges pour la période indiquée.",
     },
     {
       id: "receipt-declaration",
