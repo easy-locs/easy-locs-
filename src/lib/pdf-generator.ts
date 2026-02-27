@@ -40,8 +40,9 @@ function formatCurrency(amount: number): string {
 function interpolate(text: string, data: Record<string, unknown>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => {
     const val = data[key];
-    if (val === undefined || val === null) return `{${key}}`;
-    if (typeof val === "number" && key.toLowerCase().includes("amount") || key === "total" || key === "capital" || key === "depositAmount") {
+    if (val === undefined || val === null || val === "") return "";
+    const isAmountKey = key.toLowerCase().includes("amount") || key === "total" || key === "capital" || key === "depositAmount";
+    if (typeof val === "number" && isAmountKey) {
       return formatCurrency(Number(val));
     }
     if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val)) {

@@ -136,6 +136,7 @@ const Finances = () => {
     const revenueThisMonth = currentMonthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
     const expectedThisMonth = currentMonthCalls.reduce((s, r) => s + Number(r.total_amount), 0);
     const totalRevenue = allPaid.reduce((s, r) => s + Number(r.total_amount), 0);
+    const totalExpected = filteredRentCalls.reduce((s, r) => s + Number(r.total_amount), 0);
     const totalUnpaid = allUnpaid.reduce((s, r) => s + Number(r.total_amount), 0);
     const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount), 0);
     const netResult = totalRevenue - totalExpenses;
@@ -143,7 +144,7 @@ const Finances = () => {
       ? Math.round((currentMonthCalls.filter(r => r.paid).length / currentMonthCalls.length) * 100)
       : 0;
 
-    return { revenueThisMonth, expectedThisMonth, totalRevenue, totalUnpaid, totalExpenses, netResult, occupancyRate };
+    return { revenueThisMonth, expectedThisMonth, totalRevenue, totalExpected, totalUnpaid, totalExpenses, netResult, occupancyRate };
   }, [filteredRentCalls, filteredExpenses]);
 
   // Monthly bar chart data (last 12 months)
@@ -296,12 +297,12 @@ const Finances = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { icon: TrendingUp, label: "Encaissé ce mois", value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `sur ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
+            { icon: TrendingUp, label: "Encaissé ce mois", value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `sur ${fmt(kpis.expectedThisMonth)} attendu`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
             { icon: TrendingDown, label: "Impayés", value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} appel(s)`, path: "/dashboard/dunning", iconColor: "text-destructive" },
-            { icon: PiggyBank, label: "Total encaissé", value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+            { icon: PiggyBank, label: "Total encaissé", value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `sur ${fmt(kpis.totalExpected)} attendu`, path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
             { icon: Wallet, label: "Total dépenses", value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} dépense(s)`, path: "/dashboard/expenses", iconColor: "text-destructive" },
-            { icon: BarChart3, label: "Résultat net", value: dataLoading ? "..." : fmt(kpis.netResult), sub: "", path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
-            { icon: CheckCircle, label: "Taux encaissement", value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+            { icon: BarChart3, label: "Résultat net", value: dataLoading ? "..." : fmt(kpis.netResult), sub: `Encaissé - Dépenses`, path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: CheckCircle, label: "Taux encaissement", value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "ce mois", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
           ].map(kpi => {
             const content = (
               <Card className={`${kpi.path ? "hover:shadow-card-hover transition-all cursor-pointer" : ""} group`}>
