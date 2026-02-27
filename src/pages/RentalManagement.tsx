@@ -379,6 +379,11 @@ const RentalManagement = () => {
   const handleInviteTenant = async (tenant: Tenant) => { setInvitingTenantId(tenant.id); await sendTenantInvite(tenant); setInvitingTenantId(null); };
   const getPropertyForTenant = (t: Tenant) => properties.find(p => p.id === t.property_id);
 
+  const iconMap: Record<string, typeof Home> = {
+    "lease": Home, "rent-receipt": Receipt, "inventory": ClipboardList,
+    "rent-revision": TrendingUp, "charges-regularization": Euro, "unpaid-notice": AlertTriangle,
+  };
+
   /* ─── Auto rent call on the 25th ─── */
   useEffect(() => {
     if (tenants.length === 0 || rentCalls.length === undefined) return;
@@ -836,7 +841,7 @@ const RentalManagement = () => {
           <button onClick={() => openPropertyDetail(p)} className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 hover:bg-gradient-gold transition-colors">
             <Home className="h-5 w-5 text-muted-foreground" />
           </button>
-          <button onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left">
+          <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
@@ -907,7 +912,7 @@ const RentalManagement = () => {
                 </div>
               </div>
             )}
-          </button>
+          </div>
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title="Voir détails"><Eye className="h-4 w-4" /></button>
             <button onClick={() => startEditProperty(p)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
@@ -927,11 +932,6 @@ const RentalManagement = () => {
     
     { key: "payments", label: "Loyers & Paiements", icon: Euro },
   ];
-
-  const iconMap: Record<string, typeof Home> = {
-    "lease": Home, "rent-receipt": Receipt, "inventory": ClipboardList,
-    "rent-revision": TrendingUp, "charges-regularization": Euro, "unpaid-notice": AlertTriangle,
-  };
 
   if (loading) {
     return <DashboardLayout><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></DashboardLayout>;
