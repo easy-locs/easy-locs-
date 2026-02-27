@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 
 type LeaseFilter = "all" | "active" | "terminated";
 type ActiveView = "leases" | "create" | "diagnostics";
@@ -148,24 +148,32 @@ const Leases = () => {
           data_json: leaseData as any, status: "draft", country: "FR",
         } as any);
       }
-      downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
+      const pdfFileName = `${title.replace(/\s/g, "_")}.pdf`;
+      downloadPDF(doc, pdfFileName);
       toast({ title: t("page.leases.generated") + " !", description: `${leaseLabel} — ${tenant.name}` });
 
-      // Send email to tenant if they have an email
-      if (tenant.email) {
+      // Send lease email to tenant with attached PDF
+      const pdfDataUri = pdfToDataUri(doc);
+      const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
+      if (tenant.email && pdfBase64) {
         supabase.functions.invoke("send-email", {
           body: {
             to: tenant.email,
             subject: `Votre bail est disponible : ${leaseLabel}`,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">📝 Bail généré</h2>
-              <p style="color:#555;">Votre bail a été créé et est disponible dans votre espace :</p>
+              <h2 style="color:#1a1a1a;">📝 Bail envoyé</h2>
+              <p style="color:#555;">Votre bail est joint à cet email :</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
                 <p style="font-weight:600;color:#1a1a1a;">${title}</p>
                 <p style="color:#888;font-size:13px;">Type : ${leaseLabel}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour consulter et signer votre bail.</p>
+              <p style="color:#888;font-size:13px;">Vous pouvez aussi le retrouver dans votre interface locataire.</p>
             </div>`,
+            attachments: [{
+              content: pdfBase64,
+              filename: pdfFileName,
+              type: "application/pdf",
+            }],
           },
         }).catch(() => {});
       }

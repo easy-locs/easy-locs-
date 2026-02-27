@@ -4,7 +4,7 @@ import { ArrowLeft, AlertCircle, AlertTriangle, CheckCircle, Info, Loader2 } fro
 import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
-import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -282,24 +282,34 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
 
     const skipTenant = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice"].includes(template.docType);
     const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant });
-    downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
+    const pdfFileName = `${template.docType}_${Date.now()}.pdf`;
+    downloadPDF(doc, pdfFileName);
 
-    // Send email notification to tenant if applicable
+    const pdfDataUri = pdfToDataUri(doc);
+    const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
+
+    // Send email notification + attached PDF to tenant if applicable
     const tenantEmail = data.tenantEmail as string;
-    if (tenantEmail && ["rent-receipt", "lease-empty", "lease-furnished", "lease-commercial", "payment-notice"].includes(template.docType)) {
+    const tenantNotifiableDocTypes = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice", "lease-empty", "lease-furnished", "lease-commercial"];
+    if (tenantEmail && tenantNotifiableDocTypes.includes(template.docType) && pdfBase64) {
       supabase.functions.invoke("send-email", {
         body: {
           to: tenantEmail,
-          subject: `Document disponible : ${title}`,
+          subject: `Document envoyé : ${title}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-            <h2 style="color:#1a1a1a;">📄 Nouveau document</h2>
-            <p style="color:#555;">Un document a été généré pour vous :</p>
+            <h2 style="color:#1a1a1a;">📄 Document envoyé</h2>
+            <p style="color:#555;">Votre document est joint à cet email :</p>
             <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
               <p style="font-weight:600;color:#1a1a1a;">${title}</p>
               <p style="color:#888;font-size:13px;">Type : ${template.label}</p>
             </div>
-            <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour le consulter et le télécharger.</p>
+            <p style="color:#888;font-size:13px;">Vous pouvez aussi retrouver ce document dans votre interface locataire.</p>
           </div>`,
+          attachments: [{
+            content: pdfBase64,
+            filename: pdfFileName,
+            type: "application/pdf",
+          }],
         },
       }).catch(() => { /* best-effort */ });
     }
