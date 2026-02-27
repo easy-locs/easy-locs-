@@ -51,7 +51,7 @@ const TenantDashboard = () => {
       <div className="max-w-3xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-bold text-foreground mb-1">Bienvenue 👋</h1>
-          <p className="text-muted-foreground mb-8">Votre espace locataire Easyloc</p>
+          <p className="text-muted-foreground mb-8">Votre espace locataire Easy-Locs</p>
         </motion.div>
 
         {tenantInfo ? (

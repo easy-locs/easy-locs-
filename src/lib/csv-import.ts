@@ -1,5 +1,5 @@
 /**
- * CSV Import utility — parses CSV files and maps Rentila columns to EasyLoc schema.
+ * CSV Import utility — parses CSV files and maps Rentila columns to Easy-Locs schema.
  */
 
 export interface CsvRow {
@@ -172,7 +172,7 @@ export function detectImportType(headers: string[]): ImportType | null {
   return null;
 }
 
-/** Map CSV row to EasyLoc fields using known mappings */
+/** Map CSV row to Easy-Locs fields using known mappings */
 export function mapRow(row: CsvRow, mapping: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [csvCol, value] of Object.entries(row)) {

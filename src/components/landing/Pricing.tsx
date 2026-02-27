@@ -72,14 +72,14 @@ const Pricing = () => {
             )}
             <div className="flex items-center gap-2 mb-1">
               <Infinity className="h-5 w-5 text-gold" />
-              <h3 className="text-lg font-bold text-foreground">EasyLoc Illimité</h3>
+              <h3 className="text-lg font-bold text-foreground">Easy-Locs Illimité</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-4">Tout inclus — Accès complet</p>
             <div className="mb-4">
               <span className="text-5xl font-extrabold text-foreground">{price}€</span>
               <span className="text-muted-foreground text-sm"> / {intLabel}</span>
             </div>
-            <p className="text-xs text-muted-foreground mb-6">Accès illimité à toutes les fonctionnalités EasyLoc.</p>
+            <p className="text-xs text-muted-foreground mb-6">Accès illimité à toutes les fonctionnalités Easy-Locs.</p>
             <ul className="space-y-2.5 mb-8">
               {features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-foreground">

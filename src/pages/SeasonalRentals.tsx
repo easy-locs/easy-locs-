@@ -25,7 +25,7 @@ const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
     `DTEND;VALUE=DATE:${toICalDate(b.check_out)}`,
     `SUMMARY:${b.guest_name} — ${propName(b.property_id)}`,
     `DESCRIPTION:Prix: ${b.total_price}€ | Tél: ${b.guest_phone || "—"} | Email: ${b.guest_email || "—"}`,
-    `UID:${b.id}@easyloc`,
+    `UID:${b.id}@easy-locs`,
     `STATUS:${b.status === "cancelled" ? "CANCELLED" : "CONFIRMED"}`,
     "END:VEVENT",
   ].join("\r\n"));
@@ -33,10 +33,10 @@ const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Easyloc//Saisonnier//FR",
+    "PRODID:-//Easy-Locs//Saisonnier//FR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Easyloc Saisonnier",
+    "X-WR-CALNAME:Easy-Locs Saisonnier",
     ...events,
     "END:VCALENDAR",
   ].join("\r\n");
@@ -133,7 +133,7 @@ const SeasonalRentals = () => {
     const blob = new Blob([ical], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "easyloc-saisonnier.ics"; a.click();
+    a.href = url; a.download = "easy-locs-saisonnier.ics"; a.click();
     URL.revokeObjectURL(url);
     toast({ title: "Calendrier exporté (.ics)" });
   };
@@ -278,7 +278,7 @@ const SeasonalRentals = () => {
               <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> Synchronisation iCal</h3>
               <button onClick={() => setShowIcalPanel(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-sm text-muted-foreground">Importez vos réservations depuis Airbnb ou Booking.com via leur lien iCal, ou exportez vos réservations Easyloc.</p>
+            <p className="text-sm text-muted-foreground">Importez vos réservations depuis Airbnb ou Booking.com via leur lien iCal, ou exportez vos réservations Easy-Locs.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Import */}
@@ -312,7 +312,7 @@ const SeasonalRentals = () => {
               {/* Export */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="h-4 w-4" /> Exporter vers Airbnb / Booking</h4>
-                <p className="text-xs text-muted-foreground">Téléchargez le fichier .ics de vos réservations Easyloc pour l'importer dans Airbnb ou Booking.com :</p>
+                <p className="text-xs text-muted-foreground">Téléchargez le fichier .ics de vos réservations Easy-Locs pour l'importer dans Airbnb ou Booking.com :</p>
                 <div className="flex gap-2">
                   <button onClick={handleExportIcal} className="flex items-center gap-2 bg-accent/20 text-accent px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/30">
                     <Download className="h-3.5 w-3.5" /> Télécharger .ics

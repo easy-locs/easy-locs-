@@ -67,7 +67,7 @@ function set(key: string, value: unknown) {
 export const getUser = (): UserProfile =>
   get<UserProfile>(KEYS.user, {
     id: "demo-user-1",
-    email: "demo@easyloc.fr",
+    email: "demo@easy-locs.com",
     name: "Jean Martin",
     role: "landlord",
     country: "FR",

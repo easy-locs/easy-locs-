@@ -489,7 +489,7 @@ const Company = () => {
         <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <Building2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Easyloc prépare vos documents d'entreprise à titre informatif. L'immatriculation officielle doit être réalisée auprès des organismes compétents (guichet unique, greffe du tribunal de commerce).
+            Easy-Locs prépare vos documents d'entreprise à titre informatif. L'immatriculation officielle doit être réalisée auprès des organismes compétents (guichet unique, greffe du tribunal de commerce).
           </p>
         </div>
       </div>
