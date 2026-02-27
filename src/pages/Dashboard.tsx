@@ -8,20 +8,26 @@ import {
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subMonths } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-const quickActions = [
-  { icon: FileText, label: "Générer une quittance", path: "/dashboard/receipts", color: "bg-info/10 text-info" },
-  { icon: Home, label: "Créer un bail", path: "/dashboard/leases", color: "bg-success/10 text-success" },
-  { icon: Bell, label: "Voir les rappels", path: "/dashboard/reminders", color: "bg-warning/10 text-warning" },
-  { icon: FolderLock, label: "Mon coffre-fort", path: "/dashboard/vault", color: "bg-accent/10 text-gold-dark" },
-];
+const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
 const Dashboard = () => {
   const { orgId } = useAuth();
+  const { t, locale } = useI18n();
+  const dateFnsLocale = DATE_LOCALES[locale] || fr;
+
+  const quickActions = [
+    { icon: FileText, label: t("page.dashboard.generate_receipt"), path: "/dashboard/receipts", color: "bg-info/10 text-info" },
+    { icon: Home, label: t("page.dashboard.create_lease"), path: "/dashboard/leases", color: "bg-success/10 text-success" },
+    { icon: Bell, label: t("page.dashboard.view_reminders"), path: "/dashboard/reminders", color: "bg-warning/10 text-warning" },
+    { icon: FolderLock, label: t("page.dashboard.my_vault"), path: "/dashboard/vault", color: "bg-accent/10 text-gold-dark" },
+  ];
+
   const [stats, setStats] = useState({
     properties: 0, tenants: 0, documents: 0,
     rentCalls: [] as { month: string; paid: boolean; total_amount: number }[],
@@ -72,14 +78,13 @@ const Dashboard = () => {
     return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount };
   }, [stats]);
 
-  // Revenue chart — last 6 months
   const revenueChart = useMemo(() => {
     const now = new Date();
     const months: { month: string; label: string; paid: number; unpaid: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = subMonths(now, i);
       const key = format(d, "yyyy-MM");
-      const label = format(d, "MMM", { locale: fr });
+      const label = format(d, "MMM", { locale: dateFnsLocale });
       const monthCalls = stats.rentCalls.filter(r => r.month === key);
       months.push({
         month: key,
@@ -89,9 +94,9 @@ const Dashboard = () => {
       });
     }
     return months;
-  }, [stats.rentCalls]);
+  }, [stats.rentCalls, dateFnsLocale]);
 
-  const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const fmt = (n: number) => n.toLocaleString(locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "pt" ? "pt-BR" : "en-US", { style: "currency", currency: "EUR" });
   const fmtSize = (bytes: number) => bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} Mo` : `${(bytes / 1024).toFixed(0)} Ko`;
 
   const upcomingActions = useMemo(() => {
@@ -100,35 +105,35 @@ const Dashboard = () => {
     const currentMonth = format(now, "yyyy-MM");
     const unpaidThisMonth = stats.rentCalls.filter(r => r.month === currentMonth && !r.paid).length;
     if (unpaidThisMonth > 0) {
-      actions.push({ label: `${unpaidThisMonth} loyer(s) impayé(s) ce mois`, date: format(now, "MMMM yyyy", { locale: fr }), urgent: true, path: "/dashboard/dunning" });
+      actions.push({ label: `${unpaidThisMonth} ${t("page.dashboard.unpaid_rents")}`, date: format(now, "MMMM yyyy", { locale: dateFnsLocale }), urgent: true, path: "/dashboard/dunning" });
     }
     if (kpis.vacantCount > 0) {
-      actions.push({ label: `${kpis.vacantCount} bien(s) vacant(s)`, date: "À pourvoir", urgent: kpis.vacantCount > 1, path: "/dashboard/rental" });
+      actions.push({ label: `${kpis.vacantCount} ${t("page.dashboard.vacant_props")}`, date: t("page.dashboard.to_fill"), urgent: kpis.vacantCount > 1, path: "/dashboard/rental" });
     }
     if (stats.reminders > 0) {
-      actions.push({ label: `${stats.reminders} rappel(s) actif(s)`, date: "À traiter", urgent: false, path: "/dashboard/reminders" });
+      actions.push({ label: `${stats.reminders} ${t("page.dashboard.active_reminders")}`, date: t("page.dashboard.to_process"), urgent: false, path: "/dashboard/reminders" });
     }
     if (actions.length === 0) {
-      actions.push({ label: "Tout est à jour ! 🎉", date: "", urgent: false, path: "" });
+      actions.push({ label: t("page.dashboard.all_good"), date: "", urgent: false, path: "" });
     }
     return actions;
-  }, [stats, kpis]);
+  }, [stats, kpis, t, dateFnsLocale]);
 
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <h1 className="text-2xl font-bold text-foreground mb-1">Bonjour 👋</h1>
-          <p className="text-muted-foreground mb-8">Voici un résumé de votre situation.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.dashboard.hello")}</h1>
+          <p className="text-muted-foreground mb-8">{t("page.dashboard.summary")}</p>
         </motion.div>
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Building, label: "Biens", value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} locataire(s)`, path: "/dashboard/rental?tab=properties" },
-            { icon: Euro, label: "Encaissé ce mois", value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} impayés` : "0 impayé", path: "/dashboard/rental?tab=payments" },
-            { icon: Percent, label: "Taux d'occupation", value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} vacant(s)`, path: "/dashboard/rental?tab=properties" },
-            { icon: FolderLock, label: "Coffre-fort", value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} fichier(s)`, path: "/dashboard/vault" },
+            { icon: Building, label: t("page.dashboard.properties"), value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} ${t("page.dashboard.tenants_count")}`, path: "/dashboard/rental?tab=properties" },
+            { icon: Euro, label: t("page.dashboard.collected_month"), value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} ${t("page.dashboard.unpaid_amount")}` : t("page.dashboard.no_unpaid"), path: "/dashboard/rental?tab=payments" },
+            { icon: Percent, label: t("page.dashboard.occupancy"), value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} ${t("page.dashboard.vacant")}`, path: "/dashboard/rental?tab=properties" },
+            { icon: FolderLock, label: t("page.dashboard.vault"), value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} ${t("page.dashboard.files")}`, path: "/dashboard/vault" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -158,7 +163,7 @@ const Dashboard = () => {
         {!loading && revenueChart.some(m => m.paid > 0 || m.unpaid > 0) && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
             <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-accent" />Tendance revenus (6 mois)
+              <TrendingUp className="h-5 w-5 text-accent" />{t("page.dashboard.revenue_trend")}
             </h2>
             <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
               <ResponsiveContainer width="100%" height={220}>
@@ -168,7 +173,7 @@ const Dashboard = () => {
                   <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
-                    formatter={(value: number, name: string) => [fmt(value), name === "paid" ? "Encaissé" : "Impayé"]}
+                    formatter={(value: number, name: string) => [fmt(value), name === "paid" ? t("page.dashboard.collected") : t("page.dashboard.unpaid_label")]}
                   />
                   <Bar dataKey="paid" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="paid" />
                   <Bar dataKey="unpaid" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name="unpaid" />
@@ -180,7 +185,7 @@ const Dashboard = () => {
 
         {/* Quick actions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Actions rapides</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.quick_actions")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {quickActions.map((action) => (
               <Link
@@ -207,8 +212,8 @@ const Dashboard = () => {
               <BrainCircuit className="h-6 w-6 text-accent-foreground" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg">Que dois-je faire maintenant ?</h3>
-              <p className="text-sm text-primary-foreground/60">L'IA analyse votre situation et vous propose des actions.</p>
+              <h3 className="font-semibold text-lg">{t("page.dashboard.ai_question")}</h3>
+              <p className="text-sm text-primary-foreground/60">{t("page.dashboard.ai_desc")}</p>
             </div>
             <ArrowRight className="h-5 w-5 text-primary-foreground/60" />
           </Link>
@@ -216,7 +221,7 @@ const Dashboard = () => {
 
         {/* Alerts & actions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Alertes & actions</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.alerts")}</h2>
           <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
             {upcomingActions.map((r, i) => {
               const Wrapper = r.path ? Link : "div" as any;
