@@ -14,12 +14,11 @@ import { useAutoFill } from "@/hooks/useAutoFill";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 
 type LeaseFilter = "all" | "active" | "terminated";
 type ActiveView = "leases" | "create" | "diagnostics";
-
-const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
 const DIAGNOSTIC_LINKS = [
   { name: "Qalimo", url: "https://www.qalimo.fr", desc: "Vérification conformité bail, diagnostics obligatoires, dossier locataire" },
@@ -48,6 +47,9 @@ const Leases = () => {
   const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
+
+  const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
   // Saved leases from documents table
   const [savedLeases, setSavedLeases] = useState<any[]>([]);
@@ -79,9 +81,9 @@ const Leases = () => {
 
   /* ─── Guided lease creation ─── */
   const handleGenerateLease = async () => {
-    if (!selectedTenantId) { toast({ title: "Sélectionnez un locataire", variant: "destructive" }); return; }
+    if (!selectedTenantId) { toast({ title: t("page.leases.select_tenant"), variant: "destructive" }); return; }
     const tenant = tenants.find(t => t.id === selectedTenantId);
-    if (!tenant || !tenant.property_id) { toast({ title: "Le locataire doit être associé à un bien", variant: "destructive" }); return; }
+    if (!tenant || !tenant.property_id) { toast({ title: t("page.leases.add_tenant_hint"), variant: "destructive" }); return; }
     const prop = properties.find(p => p.id === tenant.property_id);
     if (!prop) return;
 
@@ -93,14 +95,12 @@ const Leases = () => {
       const template = leaseTemplateMap[selectedLeaseType];
       if (!template) return;
 
-      // Auto-fill from owner profile
       const ownerData = fillFromOwner();
       let landlordName = ownerData?.landlordName || user?.user_metadata?.name || "Propriétaire";
       let landlordAddress = ownerData?.landlordAddress || "";
       let landlordEmail = ownerData?.landlordEmail || user?.email || "";
       let landlordPhone = ownerData?.landlordPhone || "";
 
-      // Fallback to profiles table if no owner_profiles
       if (!ownerData) {
         try {
           const { data: profile } = await supabase.from("profiles").select("name").eq("id", user!.id).single();
@@ -108,7 +108,6 @@ const Leases = () => {
         } catch { /* default */ }
       }
 
-      // Get inventory reports for this property/tenant
       const inventories = getInventoryForProperty(prop.id, tenant.id);
       const hasEntryInventory = inventories.some(i => i.report_type === "entry" && i.status === "completed");
 
@@ -139,7 +138,7 @@ const Leases = () => {
       }
 
       const doc = generateFromTemplate(template, leaseData);
-      const leaseLabel = selectedLeaseType === "furnished" ? "Bail meublé" : selectedLeaseType === "commercial" ? "Bail commercial" : "Bail d'habitation vide";
+      const leaseLabel = selectedLeaseType === "furnished" ? t("page.leases.furnished_lease") : selectedLeaseType === "commercial" ? t("page.leases.commercial_lease") : t("page.leases.empty_lease");
       const title = `${leaseLabel} — ${tenant.name}`;
 
       if (orgId) {
@@ -150,12 +149,12 @@ const Leases = () => {
         } as any);
       }
       downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
-      toast({ title: "Bail généré !", description: `${leaseLabel} téléchargé pour ${tenant.name}` });
+      toast({ title: t("page.leases.generated") + " !", description: `${leaseLabel} — ${tenant.name}` });
       await loadSavedLeases();
       setActiveView("leases");
     } catch (err) {
       console.error(err);
-      toast({ title: "Erreur de génération", variant: "destructive" });
+      toast({ title: t("page.common.error"), variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -163,19 +162,19 @@ const Leases = () => {
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="legal_documents" featureLabel="Gestion des baux">
+      <FeatureGate feature="legal_documents" featureLabel={t("page.leases.title")}>
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Baux & Locations</h1>
-          <p className="text-muted-foreground text-sm mt-1">Créez, gérez et suivez tous vos baux.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.leases.title")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("page.leases.subtitle")}</p>
         </div>
 
         {/* Main toggle */}
         <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">
           {([
-            { key: "leases" as const, icon: Users, label: `Baux (${tenants.filter(t => t.property_id).length})` },
-            { key: "create" as const, icon: Plus, label: "Créer un bail" },
-            { key: "diagnostics" as const, icon: ClipboardCheck, label: "Diagnostics & Conformité" },
+            { key: "leases" as const, icon: Users, label: `${t("page.leases.leases_tab")} (${tenants.filter(t => t.property_id).length})` },
+            { key: "create" as const, icon: Plus, label: t("page.leases.create_tab") },
+            { key: "diagnostics" as const, icon: ClipboardCheck, label: t("page.leases.diagnostics_tab") },
           ]).map(v => (
             <button key={v.key} onClick={() => setActiveView(v.key)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex-1 justify-center ${activeView === v.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -187,18 +186,17 @@ const Leases = () => {
         {/* ─── LEASE LIST ─── */}
         {activeView === "leases" && (
           <div>
-            {/* Search + filters */}
             <div className="flex items-center gap-3 mb-4 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher un locataire…" className="w-full pl-9 pr-3 py-2 text-sm bg-card border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none" />
+                  placeholder={t("page.leases.search_tenant")} className="w-full pl-9 pr-3 py-2 text-sm bg-card border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none" />
               </div>
               <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
                 {([
-                  { key: "all" as const, label: "Tous", count: tenants.filter(t => t.property_id).length },
-                  { key: "active" as const, label: "Actifs", count: activeCount },
-                  { key: "terminated" as const, label: "Résiliés", count: terminatedCount },
+                  { key: "all" as const, label: t("page.leases.all"), count: tenants.filter(t => t.property_id).length },
+                  { key: "active" as const, label: t("page.leases.active"), count: activeCount },
+                  { key: "terminated" as const, label: t("page.leases.terminated"), count: terminatedCount },
                 ]).map(f => (
                   <button key={f.key} onClick={() => setFilter(f.key)}
                     className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${filter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -211,10 +209,10 @@ const Leases = () => {
             {/* KPI */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Locations actives", value: activeCount, path: "/dashboard/rental?tab=tenants" },
-                { label: "Baux résiliés", value: terminatedCount, path: "/dashboard/rental?tab=tenants" },
-                { label: "Revenus actifs/mois", value: fmt(tenants.filter(t => t.property_id && isActive(t)).reduce((s, t) => s + t.rent_amount + t.charges_amount, 0)), path: "/dashboard/finances" },
-                { label: "Biens loués", value: `${new Set(tenants.filter(t => t.property_id && isActive(t)).map(t => t.property_id)).size} / ${properties.length}`, path: "/dashboard/rental?tab=properties" },
+                { label: t("page.leases.active_leases"), value: activeCount, path: "/dashboard/rental?tab=tenants" },
+                { label: t("page.leases.terminated_leases"), value: terminatedCount, path: "/dashboard/rental?tab=tenants" },
+                { label: t("page.leases.active_revenue"), value: fmt(tenants.filter(t => t.property_id && isActive(t)).reduce((s, t) => s + t.rent_amount + t.charges_amount, 0)), path: "/dashboard/finances" },
+                { label: t("page.leases.rented_props"), value: `${new Set(tenants.filter(t => t.property_id && isActive(t)).map(t => t.property_id)).size} / ${properties.length}`, path: "/dashboard/rental?tab=properties" },
               ].map(kpi => (
                 <Link key={kpi.label} to={kpi.path} className="bg-card rounded-xl p-4 border border-border/50 hover:shadow-card-hover transition-all group">
                   <div className="flex items-center justify-between">
@@ -226,22 +224,20 @@ const Leases = () => {
               ))}
             </div>
 
-            {/* Saved leases (documents) */}
+            {/* Saved leases */}
             {savedLeases.length > 0 && (
               <div className="mb-6">
-                <h2 className="text-sm font-semibold text-foreground mb-3">📄 Baux générés</h2>
+                <h2 className="text-sm font-semibold text-foreground mb-3">📄 {t("page.leases.generated")}</h2>
                 <div className="space-y-2">
                   {savedLeases.slice(0, 5).map(doc => (
                     <div key={doc.id} className="flex items-center justify-between bg-card rounded-lg p-3 border border-border/50 text-sm">
                       <div>
                         <span className="font-medium text-foreground">{doc.title}</span>
-                        <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString("fr-FR")}</span>
+                        <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-muted text-muted-foreground" : "bg-green-500/20 text-green-700"}`}>
-                          {doc.status === "draft" ? "Brouillon" : "Signé"}
-                        </span>
-                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-muted text-muted-foreground" : "bg-green-500/20 text-green-700"}`}>
+                        {doc.status === "draft" ? t("page.leases.draft") : t("page.leases.signed")}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -250,40 +246,40 @@ const Leases = () => {
 
             {/* Lease list */}
             {loading ? (
-              <div className="text-center py-16 text-muted-foreground">Chargement…</div>
+              <div className="text-center py-16 text-muted-foreground">{t("page.common.loading")}</div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-16">
                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                 <h2 className="text-lg font-semibold text-foreground mb-1">
-                  {filter === "terminated" ? "Aucun bail résilié" : filter === "active" ? "Aucun bail actif" : "Aucune location"}
+                  {filter === "terminated" ? t("page.leases.no_terminated") : filter === "active" ? t("page.leases.no_active") : t("page.leases.no_lease")}
                 </h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {filter === "terminated" ? "Tous vos baux sont actifs." : "Ajoutez un locataire avec un bien pour créer un bail."}
+                  {filter === "terminated" ? t("page.leases.all_active") : t("page.leases.add_tenant_hint")}
                 </p>
                 <button onClick={() => setActiveView("create")}
                   className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
-                  <Plus className="h-4 w-4" /> Créer un bail
+                  <Plus className="h-4 w-4" /> {t("page.leases.create")}
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                {filtered.map(t => {
-                  const prop = properties.find(p => p.id === t.property_id);
-                  const active = isActive(t);
+                {filtered.map(tenant => {
+                  const prop = properties.find(p => p.id === tenant.property_id);
+                  const active = isActive(tenant);
                   return (
-                    <Link to={`/dashboard/rental?tab=tenants`} key={t.id} className={`block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all ${!active ? "opacity-70" : ""}`}>
+                    <Link to="/dashboard/rental?tab=tenants" key={tenant.id} className={`block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all ${!active ? "opacity-70" : ""}`}>
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${active ? "bg-gradient-gold" : "bg-muted"}`}>
-                          <span className={`text-sm font-bold ${active ? "text-accent-foreground" : "text-muted-foreground"}`}>{t.name[0]?.toUpperCase()}</span>
+                          <span className={`text-sm font-bold ${active ? "text-accent-foreground" : "text-muted-foreground"}`}>{tenant.name[0]?.toUpperCase()}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-foreground text-sm">{t.name}</span>
+                            <span className="font-semibold text-foreground text-sm">{tenant.name}</span>
                             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${active ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
-                              {active ? "Actif" : "Résilié"}
+                              {active ? t("page.common.active") : t("page.leases.terminated")}
                             </span>
                             <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                              {t.lease_type === "furnished" ? "Meublé" : t.lease_type === "commercial" ? "Commercial" : "Vide"}
+                              {tenant.lease_type === "furnished" ? t("page.leases.furnished") : tenant.lease_type === "commercial" ? t("page.leases.commercial") : t("page.leases.empty")}
                             </span>
                           </div>
                           {prop && (
@@ -294,8 +290,8 @@ const Leases = () => {
                             </div>
                           )}
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
-                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{t.lease_start || "—"} → {t.lease_end || "En cours"}</span>
-                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(t.rent_amount)} + {fmt(t.charges_amount)}/mois</span>
+                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{tenant.lease_start || "—"} → {tenant.lease_end || t("page.leases.in_progress")}</span>
+                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}/mois</span>
                           </div>
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground/30 shrink-0 mt-3" />
@@ -308,48 +304,45 @@ const Leases = () => {
           </div>
         )}
 
-        {/* ─── CREATE LEASE (guided) ─── */}
+        {/* ─── CREATE LEASE ─── */}
         {activeView === "create" && (
           <div className="max-w-xl mx-auto">
             <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card">
-              <h2 className="text-lg font-bold text-foreground mb-1">Créer un bail</h2>
-              <p className="text-sm text-muted-foreground mb-6">Sélectionnez un locataire et le type de bail. Les informations du bien et du locataire seront pré-remplies automatiquement.</p>
+              <h2 className="text-lg font-bold text-foreground mb-1">{t("page.leases.create")}</h2>
+              <p className="text-sm text-muted-foreground mb-6">{t("page.leases.select_tenant")}</p>
 
-              {/* Step 1: Tenant */}
-              <label className="text-sm font-medium text-foreground mb-1 block">1. Locataire</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">1. {t("page.leases.select_tenant_label")}</label>
               <select value={selectedTenantId} onChange={e => setSelectedTenantId(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm mb-4 focus:ring-2 focus:ring-accent/30 outline-none">
-                <option value="">— Choisir un locataire —</option>
-                {tenants.filter(t => t.property_id).map(t => {
-                  const prop = properties.find(p => p.id === t.property_id);
-                  return <option key={t.id} value={t.id}>{t.name} — {prop?.label || "Sans bien"}</option>;
+                <option value="">{t("page.common.select")}</option>
+                {tenants.filter(t => t.property_id).map(tenant => {
+                  const prop = properties.find(p => p.id === tenant.property_id);
+                  return <option key={tenant.id} value={tenant.id}>{tenant.name} — {prop?.label || "—"}</option>;
                 })}
               </select>
 
-              {/* Auto-fill preview */}
               {selectedTenantId && (() => {
-                const t = tenants.find(x => x.id === selectedTenantId);
-                const p = t ? properties.find(x => x.id === t.property_id) : null;
-                if (!t || !p) return null;
+                const tenant = tenants.find(x => x.id === selectedTenantId);
+                const p = tenant ? properties.find(x => x.id === tenant.property_id) : null;
+                if (!tenant || !p) return null;
                 return (
                   <div className="bg-muted/50 rounded-lg p-4 mb-4 text-xs space-y-1">
                     <p className="font-medium text-foreground text-sm mb-2">✅ Données pré-remplies :</p>
-                    <p><span className="text-muted-foreground">Locataire :</span> {t.name} — {t.email || "pas d'email"}</p>
-                    <p><span className="text-muted-foreground">Bien :</span> {p.label} — {p.address}, {p.postal_code} {p.city}</p>
-                    <p><span className="text-muted-foreground">Loyer :</span> {fmt(t.rent_amount)} + {fmt(t.charges_amount)} charges</p>
-                    <p><span className="text-muted-foreground">Dépôt :</span> {fmt(t.deposit_amount)}</p>
-                    <p><span className="text-muted-foreground">Début :</span> {t.lease_start || "Non défini"}</p>
+                    <p><span className="text-muted-foreground">{t("page.leases.select_tenant_label")} :</span> {tenant.name} — {tenant.email || "—"}</p>
+                    <p><span className="text-muted-foreground">{t("page.dashboard.properties")} :</span> {p.label} — {p.address}, {p.postal_code} {p.city}</p>
+                    <p><span className="text-muted-foreground">Loyer :</span> {fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}</p>
+                    <p><span className="text-muted-foreground">Dépôt :</span> {fmt(tenant.deposit_amount)}</p>
+                    <p><span className="text-muted-foreground">{t("ob.lease_start")} :</span> {tenant.lease_start || "—"}</p>
                   </div>
                 );
               })()}
 
-              {/* Step 2: Lease type */}
-              <label className="text-sm font-medium text-foreground mb-1 block">2. Type de bail</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">2. {t("page.leases.lease_type")}</label>
               <div className="grid grid-cols-3 gap-2 mb-6">
                 {([
-                  { key: "empty", label: "Vide", desc: "3 ans" },
-                  { key: "furnished", label: "Meublé", desc: "1 an" },
-                  { key: "commercial", label: "Commercial", desc: "3/6/9 ans" },
+                  { key: "empty", label: t("page.leases.empty"), desc: "3 ans" },
+                  { key: "furnished", label: t("page.leases.furnished"), desc: "1 an" },
+                  { key: "commercial", label: t("page.leases.commercial"), desc: "3/6/9 ans" },
                 ]).map(lt => (
                   <button key={lt.key} onClick={() => setSelectedLeaseType(lt.key)}
                     className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-sm transition-all ${selectedLeaseType === lt.key ? "border-accent bg-accent/10 text-foreground" : "border-border text-muted-foreground hover:border-accent/50"}`}>
@@ -359,28 +352,26 @@ const Leases = () => {
                 ))}
               </div>
 
-              {/* Generate */}
               <button onClick={handleGenerateLease} disabled={generating || !selectedTenantId}
                 className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
                 {generating ? (
-                  <><span className="animate-spin">⏳</span> Génération…</>
+                  <><span className="animate-spin">⏳</span> {t("page.leases.generating")}</>
                 ) : (
-                  <><Download className="h-4 w-4" /> Générer le bail PDF</>
+                  <><Download className="h-4 w-4" /> {t("page.leases.generate_pdf")}</>
                 )}
               </button>
             </div>
           </div>
         )}
 
-        {/* ─── DIAGNOSTICS & COMPLIANCE ─── */}
+        {/* ─── DIAGNOSTICS ─── */}
         {activeView === "diagnostics" && (
           <div className="space-y-6">
-            {/* Mandatory diagnostics checklist */}
             <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card">
               <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-accent" /> Diagnostics obligatoires
+                <AlertTriangle className="h-5 w-5 text-accent" /> {t("page.leases.mandatory_diag")}
               </h2>
-              <p className="text-sm text-muted-foreground mb-4">Avant de signer un bail, vérifiez que ces diagnostics sont à jour pour chaque bien loué.</p>
+              <p className="text-sm text-muted-foreground mb-4">{t("page.leases.diagnostics_tab")}</p>
               <div className="space-y-2">
                 {MANDATORY_DIAGNOSTICS.map((d, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
@@ -391,9 +382,8 @@ const Leases = () => {
               </div>
             </div>
 
-            {/* External links */}
             <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card">
-              <h2 className="text-lg font-bold text-foreground mb-4">🔗 Outils & Partenaires</h2>
+              <h2 className="text-lg font-bold text-foreground mb-4">{t("page.leases.tools_partners")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {DIAGNOSTIC_LINKS.map(link => (
                   <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer"
@@ -408,9 +398,8 @@ const Leases = () => {
               </div>
             </div>
 
-            {/* Compliance tips */}
             <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-2">📋 Conformité du bail — Points clés</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-2">{t("page.leases.compliance_title")}</h3>
               <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
                 <li>Le bail doit contenir toutes les mentions obligatoires (loi ALUR)</li>
                 <li>Les diagnostics doivent être annexés au bail lors de la signature</li>

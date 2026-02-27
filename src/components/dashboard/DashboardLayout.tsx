@@ -77,9 +77,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src={logoEasyloc} alt="Easy-Locs" className="h-8 w-8 object-contain" />
-              <span className="text-lg font-bold text-sidebar-foreground">Easy-Locs</span>
+            <div className="flex items-center gap-2.5">
+              <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-auto object-contain drop-shadow-sm" style={{ filter: "none", border: "none", outline: "none" }} />
+              <span className="text-lg font-bold tracking-tight text-sidebar-foreground">Easy-Locs</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground">
               <X className="h-5 w-5" />
