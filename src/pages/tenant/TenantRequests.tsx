@@ -60,8 +60,8 @@ const TenantRequests = () => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Demande envoyée", description: "Votre bailleur a été notifié." });
-      // Notify landlord
-      const { data: orgData } = await supabase.from("orgs").select("owner_user_id").eq("id", orgId).single();
+      // Notify landlord (notification + email)
+      const { data: orgData } = await supabase.from("orgs").select("owner_user_id, email").eq("id", orgId).single();
       if (orgData) {
         const label = REQUEST_TYPES.find(r => r.value === type)?.label || type;
         await supabase.from("notifications").insert({
@@ -72,6 +72,24 @@ const TenantRequests = () => {
           message: `Demande de : ${label}${period ? ` (${period})` : ""}`,
           link: "/dashboard/messages",
         });
+        // Send email to landlord
+        if (orgData.email) {
+          supabase.functions.invoke("send-email", {
+            body: {
+              to: orgData.email,
+              subject: `Nouvelle demande locataire : ${label}`,
+              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+                <h2 style="color:#1a1a1a;">📋 Demande de document</h2>
+                <p style="color:#555;">Un locataire a fait une demande :</p>
+                <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                  <p style="color:#1a1a1a;"><strong>Type :</strong> ${label}</p>
+                  ${period ? `<p style="color:#1a1a1a;"><strong>Période :</strong> ${period}</p>` : ""}
+                </div>
+                <p style="color:#888;font-size:13px;">Connectez-vous à votre tableau de bord pour traiter cette demande.</p>
+              </div>`,
+            },
+          }).catch(() => {});
+        }
       }
       // Refresh
       const { data } = await supabase
