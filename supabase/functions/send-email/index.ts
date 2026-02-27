@@ -63,7 +63,7 @@ serve(async (req) => {
       .limit(1)
       .single();
 
-    let fromEmail = "noreply@easylocs.app";
+    let fromEmail = "jstarbuzz@gmail.com";
     let fromName = payload.from_name || "Easy-Locs";
 
     if (orgMember?.org_id) {
