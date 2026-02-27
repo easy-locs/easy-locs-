@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 
 export interface AddressResult {
@@ -27,7 +27,7 @@ interface AddressAutocompleteProps {
   countryCode?: string;
 }
 
-const AddressAutocomplete = ({
+const AddressAutocomplete = forwardRef<HTMLDivElement, AddressAutocompleteProps>(({
   value,
   onChange,
   onSelect,
@@ -36,7 +36,7 @@ const AddressAutocomplete = ({
   label,
   required,
   countryCode,
-}: AddressAutocompleteProps) => {
+}, ref) => {
   const [suggestions, setSuggestions] = useState<AddressResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -212,6 +212,8 @@ const AddressAutocomplete = ({
       )}
     </div>
   );
-};
+});
+
+AddressAutocomplete.displayName = "AddressAutocomplete";
 
 export default AddressAutocomplete;
