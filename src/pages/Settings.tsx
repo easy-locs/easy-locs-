@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, AlertTriangle, Building2, Upload, Loader2, PenTool } from "lucide-react";
+import { User, Shield, AlertTriangle, Building2, Upload, Loader2, PenTool, FileSpreadsheet } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -248,6 +249,21 @@ const Settings = () => {
             className="mt-4 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
             {saving ? "Enregistrement..." : "Enregistrer la signature"}
           </button>
+        </div>
+
+        {/* Data Import */}
+        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Import de données</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Migrez vos données depuis Rentila ou un autre logiciel via un simple fichier CSV.
+          </p>
+          <Link to="/dashboard/import"
+            className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90">
+            <Upload className="h-4 w-4" /> Importer mes données
+          </Link>
         </div>
 
         {/* GDPR */}
