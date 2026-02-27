@@ -58,6 +58,7 @@ export interface RentCall {
   total_amount: number;
   paid: boolean;
   paid_date: string | null;
+  payment_method: string | null;
   receipt_validated: boolean;
   receipt_pdf_url: string | null;
 }
@@ -120,8 +121,8 @@ export function useRentalData() {
       id: r.id, tenant_id: r.tenant_id, property_id: r.property_id,
       month: r.month, rent_amount: Number(r.rent_amount) || 0,
       charges_amount: Number(r.charges_amount) || 0, total_amount: Number(r.total_amount) || 0,
-      paid: r.paid || false, paid_date: r.paid_date, receipt_validated: r.receipt_validated || false,
-      receipt_pdf_url: r.receipt_pdf_url,
+      paid: r.paid || false, paid_date: r.paid_date, payment_method: r.payment_method || null,
+      receipt_validated: r.receipt_validated || false, receipt_pdf_url: r.receipt_pdf_url,
     })));
   }, [orgId]);
 
@@ -226,12 +227,13 @@ export function useRentalData() {
     await loadRentCalls();
   };
 
-  const togglePayment = async (id: string) => {
+  const togglePayment = async (id: string, paymentMethod?: string) => {
     const call = rentCalls.find(r => r.id === id);
     if (!call) return;
     const { error } = await supabase.from("rent_calls").update({
       paid: !call.paid,
       paid_date: !call.paid ? new Date().toISOString() : null,
+      payment_method: !call.paid ? (paymentMethod || null) : null,
     }).eq("id", id);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     await loadRentCalls();

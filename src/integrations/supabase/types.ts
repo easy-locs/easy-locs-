@@ -1275,6 +1275,7 @@ export type Database = {
           org_id: string
           paid: boolean | null
           paid_date: string | null
+          payment_method: string | null
           property_id: string | null
           receipt_pdf_url: string | null
           receipt_validated: boolean | null
@@ -1291,6 +1292,7 @@ export type Database = {
           org_id: string
           paid?: boolean | null
           paid_date?: string | null
+          payment_method?: string | null
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
@@ -1307,6 +1309,7 @@ export type Database = {
           org_id?: string
           paid?: boolean | null
           paid_date?: string | null
+          payment_method?: string | null
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
