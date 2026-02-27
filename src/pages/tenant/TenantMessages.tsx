@@ -67,6 +67,27 @@ const TenantMessages = () => {
     } else {
       setMessages(prev => [...prev, { id: Date.now(), sender_id: user.id, content: newMsg.trim(), created_at: new Date().toISOString() }]);
       setNewMsg("");
+      // Notify landlord by email (best-effort)
+      if (orgId) {
+        supabase.from("orgs").select("email").eq("id", orgId).single().then(({ data: org }) => {
+          if (org?.email) {
+            supabase.functions.invoke("send-email", {
+              body: {
+                to: org.email,
+                subject: `Nouveau message de votre locataire`,
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+                  <h2 style="color:#1a1a1a;">📩 Nouveau message locataire</h2>
+                  <p style="color:#555;">Un locataire vous a envoyé un message :</p>
+                  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="color:#1a1a1a;white-space:pre-wrap;">${newMsg.trim()}</p>
+                  </div>
+                  <p style="color:#888;font-size:13px;">Connectez-vous à votre tableau de bord pour répondre.</p>
+                </div>`,
+              },
+            }).catch(() => {});
+          }
+        });
+      }
     }
     setSending(false);
   };

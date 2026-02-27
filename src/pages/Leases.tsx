@@ -150,6 +150,26 @@ const Leases = () => {
       }
       downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
       toast({ title: t("page.leases.generated") + " !", description: `${leaseLabel} — ${tenant.name}` });
+
+      // Send email to tenant if they have an email
+      if (tenant.email) {
+        supabase.functions.invoke("send-email", {
+          body: {
+            to: tenant.email,
+            subject: `Votre bail est disponible : ${leaseLabel}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <h2 style="color:#1a1a1a;">📝 Bail généré</h2>
+              <p style="color:#555;">Votre bail a été créé et est disponible dans votre espace :</p>
+              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="font-weight:600;color:#1a1a1a;">${title}</p>
+                <p style="color:#888;font-size:13px;">Type : ${leaseLabel}</p>
+              </div>
+              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour consulter et signer votre bail.</p>
+            </div>`,
+          },
+        }).catch(() => {});
+      }
+
       await loadSavedLeases();
       setActiveView("leases");
     } catch (err) {
@@ -229,17 +249,36 @@ const Leases = () => {
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-foreground mb-3">📄 {t("page.leases.generated")}</h2>
                 <div className="space-y-2">
-                  {savedLeases.slice(0, 5).map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between bg-card rounded-lg p-3 border border-border/50 text-sm">
-                      <div>
-                        <span className="font-medium text-foreground">{doc.title}</span>
-                        <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
+                  {savedLeases.slice(0, 5).map(doc => {
+                    const handleDownloadSaved = () => {
+                      const templateMap: Record<string, DocumentTemplate> = {
+                        "lease-empty": frLeaseEmpty,
+                        "lease-furnished": frLeaseFurnished,
+                        "lease-commercial": frLeaseCommercial,
+                      };
+                      const tpl = doc.template_id ? (templateMap[doc.doc_type] || Object.values(templateMap).find(t => t.id === doc.template_id)) : templateMap[doc.doc_type];
+                      if (tpl && doc.data_json) {
+                        const pdf = generateFromTemplate(tpl, doc.data_json as Record<string, unknown>);
+                        downloadPDF(pdf, `${doc.title?.replace(/\s/g, "_") || "bail"}.pdf`);
+                      }
+                    };
+                    return (
+                      <div key={doc.id} className="flex items-center justify-between bg-card rounded-lg p-3 border border-border/50 text-sm">
+                        <div>
+                          <span className="font-medium text-foreground">{doc.title}</span>
+                          <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title="Télécharger">
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-muted text-muted-foreground" : "bg-green-500/20 text-green-700"}`}>
+                            {doc.status === "draft" ? t("page.leases.draft") : t("page.leases.signed")}
+                          </span>
+                        </div>
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-muted text-muted-foreground" : "bg-green-500/20 text-green-700"}`}>
-                        {doc.status === "draft" ? t("page.leases.draft") : t("page.leases.signed")}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

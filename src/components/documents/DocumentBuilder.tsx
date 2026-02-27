@@ -284,6 +284,26 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant });
     downloadPDF(doc, `${template.docType}_${Date.now()}.pdf`);
 
+    // Send email notification to tenant if applicable
+    const tenantEmail = data.tenantEmail as string;
+    if (tenantEmail && ["rent-receipt", "lease-empty", "lease-furnished", "lease-commercial", "payment-notice"].includes(template.docType)) {
+      supabase.functions.invoke("send-email", {
+        body: {
+          to: tenantEmail,
+          subject: `Document disponible : ${title}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+            <h2 style="color:#1a1a1a;">📄 Nouveau document</h2>
+            <p style="color:#555;">Un document a été généré pour vous :</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="font-weight:600;color:#1a1a1a;">${title}</p>
+              <p style="color:#888;font-size:13px;">Type : ${template.label}</p>
+            </div>
+            <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour le consulter et le télécharger.</p>
+          </div>`,
+        },
+      }).catch(() => { /* best-effort */ });
+    }
+
     await supabase.from("audit_logs").insert({
       org_id: orgId,
       user_id: user.id,

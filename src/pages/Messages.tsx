@@ -167,6 +167,23 @@ const Messages = () => {
       toast.error(t("page.messages.send_error"));
     } else {
       setNewMessage("");
+      // Send email notification to tenant
+      if (selectedTenant.email) {
+        supabase.functions.invoke("send-email", {
+          body: {
+            to: selectedTenant.email,
+            subject: `Nouveau message de votre bailleur`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <h2 style="color:#1a1a1a;">📩 Nouveau message</h2>
+              <p style="color:#555;">Vous avez reçu un nouveau message de votre bailleur :</p>
+              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;white-space:pre-wrap;">${newMessage.trim()}</p>
+              </div>
+              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour répondre.</p>
+            </div>`,
+          },
+        }).catch(() => { /* silent — email is best-effort */ });
+      }
     }
     setSending(false);
   };
