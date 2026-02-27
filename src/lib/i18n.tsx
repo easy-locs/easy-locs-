@@ -5,17 +5,22 @@ export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt";
 
 /* ─── Country → Locale mapping ─── */
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
-  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr",
-  ES: "es", MX: "es", AR: "es", CL: "es", CO: "es",
+  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", SN: "fr", CI: "fr", MA: "fr", TN: "fr",
+  ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
   DE: "de", AT: "de",
   IT: "it",
   PT: "pt", BR: "pt",
-  US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en",
+  US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
+  AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
+  JP: "en", KR: "en", CN: "en", IN: "en", TR: "en",
+  NL: "en", SE: "en", NO: "en", DK: "en", FI: "en", PL: "en",
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   FR: "EUR", BE: "EUR", ES: "EUR", DE: "EUR", IT: "EUR", PT: "EUR", LU: "EUR", MC: "EUR", AT: "EUR", IE: "EUR", NL: "EUR", FI: "EUR", GR: "EUR",
   GB: "GBP", US: "USD", CH: "CHF", CA: "CAD", AU: "AUD", NZ: "NZD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP",
+  MA: "MAD", TN: "TND", SN: "XOF", CI: "XOF", ZA: "ZAR",
+  AE: "AED", SA: "SAR", TR: "TRY", JP: "JPY", SG: "SGD",
 };
 
 /* ─── Shared onboarding keys (used by all locales) ─── */
