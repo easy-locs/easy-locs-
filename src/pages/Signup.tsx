@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
-import logoEasyloc from "@/assets/logo-easyloc.png";
+import logoEasyloc from "@/assets/logo-easylocs.png";
 import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
@@ -41,14 +41,14 @@ const Signup = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoEasyloc} alt="Easyloc" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
+          <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-9 object-contain" />
+          <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
         </Link>
       </div>
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
         <h1 className="text-2xl font-bold text-foreground mb-1">Créer un compte</h1>
-        <p className="text-muted-foreground text-sm mb-8">Rejoignez Easyloc gratuitement.</p>
+        <p className="text-muted-foreground text-sm mb-8">Rejoignez Easy-Locs gratuitement.</p>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>

@@ -80,7 +80,7 @@ const Billing = () => {
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-5 w-5 text-success" />
               <h2 className="font-semibold text-foreground">Abonnement actif</h2>
-              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">EasyLoc Illimité</span>
+              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs Illimité</span>
             </div>
             {subscription.subscriptionEnd && (
               <p className="text-sm text-muted-foreground mb-4">
@@ -170,7 +170,7 @@ const Billing = () => {
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              Votre essai est terminé. Abonnez-vous pour continuer à utiliser EasyLoc.
+              Votre essai est terminé. Abonnez-vous pour continuer à utiliser Easy-Locs.
             </p>
           </div>
         )}

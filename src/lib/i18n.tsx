@@ -25,7 +25,7 @@ export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
 
 /* ─── Shared onboarding keys (used by all locales) ─── */
 const obFr = {
-  "ob.welcome": "Bienvenue sur Easyloc",
+  "ob.welcome": "Bienvenue sur Easy-Locs",
   "ob.select_profile_country": "Sélectionnez votre profil et votre pays",
   "ob.you_are": "Vous êtes…",
   "ob.landlord": "Bailleur / Propriétaire",
@@ -88,7 +88,7 @@ const obFr = {
 };
 
 const obEn: Record<string, string> = {
-  "ob.welcome": "Welcome to Easyloc",
+  "ob.welcome": "Welcome to Easy-Locs",
   "ob.select_profile_country": "Select your profile and country",
   "ob.you_are": "You are…",
   "ob.landlord": "Landlord / Owner",
@@ -151,7 +151,7 @@ const obEn: Record<string, string> = {
 };
 
 const obEs: Record<string, string> = {
-  "ob.welcome": "Bienvenido a Easyloc",
+  "ob.welcome": "Bienvenido a Easy-Locs",
   "ob.select_profile_country": "Seleccione su perfil y país",
   "ob.you_are": "Usted es…",
   "ob.landlord": "Propietario / Arrendador",
@@ -214,7 +214,7 @@ const obEs: Record<string, string> = {
 };
 
 const obDe: Record<string, string> = {
-  "ob.welcome": "Willkommen bei Easyloc",
+  "ob.welcome": "Willkommen bei Easy-Locs",
   "ob.select_profile_country": "Wählen Sie Ihr Profil und Land",
   "ob.you_are": "Sie sind…",
   "ob.landlord": "Vermieter / Eigentümer",
@@ -277,7 +277,7 @@ const obDe: Record<string, string> = {
 };
 
 const obIt: Record<string, string> = {
-  "ob.welcome": "Benvenuto su Easyloc",
+  "ob.welcome": "Benvenuto su Easy-Locs",
   "ob.select_profile_country": "Seleziona il tuo profilo e il tuo paese",
   "ob.you_are": "Tu sei…",
   "ob.landlord": "Proprietario / Locatore",
@@ -340,7 +340,7 @@ const obIt: Record<string, string> = {
 };
 
 const obPt: Record<string, string> = {
-  "ob.welcome": "Bem-vindo ao Easyloc",
+  "ob.welcome": "Bem-vindo ao Easy-Locs",
   "ob.select_profile_country": "Selecione o seu perfil e país",
   "ob.you_are": "Você é…",
   "ob.landlord": "Proprietário / Locador",
@@ -693,7 +693,7 @@ const pageFr: Record<string, string> = {
   "page.billing.card": "💳 Carte bancaire",
   "page.billing.sepa": "🏦 SEPA",
   "page.billing.no_commitment": "Aucun engagement – Annulation à tout moment. 3 jours d'essai gratuit inclus.",
-  "page.billing.trial_ended": "Votre essai est terminé. Abonnez-vous pour continuer à utiliser EasyLoc.",
+  "page.billing.trial_ended": "Votre essai est terminé. Abonnez-vous pour continuer à utiliser Easy-Locs.",
 
   // Assistant
   "page.ai.title": "Assistant personnel",
@@ -737,7 +737,7 @@ const pageFr: Record<string, string> = {
   "page.doc_builder.generated": "Document généré et sauvegardé dans l'historique.",
 
   // UpgradeBanner
-  "page.upgrade.desc": "Abonnez-vous à EasyLoc Illimité pour accéder à cette fonctionnalité.",
+  "page.upgrade.desc": "Abonnez-vous à Easy-Locs Illimité pour accéder à cette fonctionnalité.",
   "page.upgrade.cta": "S'abonner",
   "page.tasks.in_progress": "En cours", "page.tasks.overdue": "En retard", "page.tasks.completed": "Terminées",
   "page.tasks.edit_task": "Modifier la tâche", "page.tasks.delete_confirm": "Supprimer cette tâche ?", "page.tasks.delete_desc": "Cette action est irréversible.",
@@ -1049,7 +1049,7 @@ const pageEn: Record<string, string> = {
   "page.billing.card": "💳 Credit card",
   "page.billing.sepa": "🏦 SEPA",
   "page.billing.no_commitment": "No commitment – Cancel anytime. 3-day free trial included.",
-  "page.billing.trial_ended": "Your trial has ended. Subscribe to continue using EasyLoc.",
+  "page.billing.trial_ended": "Your trial has ended. Subscribe to continue using Easy-Locs.",
   "page.ai.title": "AI Assistant",
   "page.ai.subtitle": "Ask a question about your administrative obligations or ask me what to do.",
   "page.ai.placeholder": "Ask your question…",
@@ -1085,7 +1085,7 @@ const pageEn: Record<string, string> = {
   "page.doc_builder.landlord_signed": "The landlord has signed this document",
   "page.doc_builder.landlord_will_sign": "The landlord's signature will be added from their interface.",
   "page.doc_builder.generated": "Document generated and saved to history.",
-  "page.upgrade.desc": "Subscribe to EasyLoc Unlimited to access this feature.",
+  "page.upgrade.desc": "Subscribe to Easy-Locs Unlimited to access this feature.",
   "page.upgrade.cta": "Subscribe",
   "page.tasks.in_progress": "In progress", "page.tasks.overdue": "Overdue", "page.tasks.completed": "Completed",
   "page.tasks.edit_task": "Edit task", "page.tasks.delete_confirm": "Delete this task?", "page.tasks.delete_desc": "This action cannot be undone.",
@@ -1196,7 +1196,7 @@ const pageEs: Record<string, string> = {
   "page.common.loading": "Cargando…", "page.common.save": "Guardar", "page.common.cancel": "Cancelar", "page.common.delete": "Eliminar", "page.common.error": "Error", "page.common.paid": "Pagado", "page.common.unpaid": "Impago", "page.common.active": "Activo", "page.common.export_csv": "Exportar CSV",
   "page.common.back": "Volver", "page.common.validate": "Validar", "page.common.generate_pdf": "Generar PDF", "page.common.select": "— Seleccionar —", "page.common.enter_address": "Introduzca una dirección…",
   "page.doc_builder.prefill_tenant": "Rellenar desde un inquilino", "page.doc_builder.select_tenant": "— Seleccionar un inquilino —", "page.doc_builder.legal_basis": "Base legal", "page.doc_builder.legal_review_title": "Revisión legal requerida", "page.doc_builder.legal_review_desc": "Este modelo requiere validación legal antes de su uso.", "page.doc_builder.signature": "Firma", "page.doc_builder.landlord_signature": "Su firma (propietario / remitente)", "page.doc_builder.tenant_signature": "Su firma (inquilino / destinatario)", "page.doc_builder.tenant_signed": "El inquilino ha firmado", "page.doc_builder.tenant_will_sign": "La firma del inquilino se añadirá desde su espacio.", "page.doc_builder.landlord_signed": "El propietario ha firmado", "page.doc_builder.landlord_will_sign": "La firma del propietario se añadirá desde su interfaz.", "page.doc_builder.generated": "Documento generado y guardado.",
-  "page.upgrade.desc": "Suscríbete a EasyLoc Ilimitado para acceder.", "page.upgrade.cta": "Suscribirse",
+  "page.upgrade.desc": "Suscríbete a Easy-Locs Ilimitado para acceder.", "page.upgrade.cta": "Suscribirse",
   "page.tasks.in_progress": "En curso", "page.tasks.overdue": "Atrasada", "page.tasks.completed": "Completadas",
   "page.tasks.edit_task": "Editar tarea", "page.tasks.delete_confirm": "¿Eliminar esta tarea?", "page.tasks.delete_desc": "Esta acción es irreversible.",
   "page.tasks.created": "Tarea creada", "page.tasks.modified": "Tarea modificada", "page.tasks.deleted": "Tarea eliminada",
@@ -1281,7 +1281,7 @@ const pageDe: Record<string, string> = {
   "page.common.loading": "Laden…", "page.common.save": "Speichern", "page.common.cancel": "Abbrechen", "page.common.delete": "Löschen", "page.common.error": "Fehler", "page.common.paid": "Bezahlt", "page.common.unpaid": "Unbezahlt", "page.common.active": "Aktiv", "page.common.export_csv": "CSV Export",
   "page.common.back": "Zurück", "page.common.validate": "Prüfen", "page.common.generate_pdf": "PDF erstellen", "page.common.select": "— Auswählen —", "page.common.enter_address": "Adresse eingeben…",
   "page.doc_builder.prefill_tenant": "Vom Mieter ausfüllen", "page.doc_builder.select_tenant": "— Mieter auswählen —", "page.doc_builder.legal_basis": "Rechtsgrundlage", "page.doc_builder.legal_review_title": "Rechtliche Prüfung erforderlich", "page.doc_builder.legal_review_desc": "Dieses Dokument erfordert eine rechtliche Prüfung.", "page.doc_builder.signature": "Unterschrift", "page.doc_builder.landlord_signature": "Ihre Unterschrift (Vermieter)", "page.doc_builder.tenant_signature": "Ihre Unterschrift (Mieter)", "page.doc_builder.tenant_signed": "Der Mieter hat unterschrieben", "page.doc_builder.tenant_will_sign": "Die Unterschrift des Mieters wird aus seinem Bereich hinzugefügt.", "page.doc_builder.landlord_signed": "Der Vermieter hat unterschrieben", "page.doc_builder.landlord_will_sign": "Die Unterschrift des Vermieters wird hinzugefügt.", "page.doc_builder.generated": "Dokument erstellt und gespeichert.",
-  "page.upgrade.desc": "Abonnieren Sie EasyLoc Unlimited für Zugang.", "page.upgrade.cta": "Abonnieren",
+  "page.upgrade.desc": "Abonnieren Sie Easy-Locs Unlimited für Zugang.", "page.upgrade.cta": "Abonnieren",
   "page.tasks.in_progress": "In Bearbeitung", "page.tasks.overdue": "Überfällig", "page.tasks.completed": "Erledigt",
   "page.tasks.edit_task": "Aufgabe bearbeiten", "page.tasks.delete_confirm": "Aufgabe löschen?", "page.tasks.delete_desc": "Diese Aktion kann nicht rückgängig gemacht werden.",
   "page.tasks.created": "Aufgabe erstellt", "page.tasks.modified": "Aufgabe geändert", "page.tasks.deleted": "Aufgabe gelöscht",
@@ -1366,7 +1366,7 @@ const pageIt: Record<string, string> = {
   "page.common.loading": "Caricamento…", "page.common.save": "Salva", "page.common.cancel": "Annulla", "page.common.delete": "Elimina", "page.common.error": "Errore", "page.common.paid": "Pagato", "page.common.unpaid": "Non pagato", "page.common.active": "Attivo", "page.common.export_csv": "Esporta CSV",
   "page.common.back": "Indietro", "page.common.validate": "Verifica", "page.common.generate_pdf": "Genera PDF", "page.common.select": "— Seleziona —", "page.common.enter_address": "Inserisci un indirizzo…",
   "page.doc_builder.prefill_tenant": "Compila da un inquilino", "page.doc_builder.select_tenant": "— Seleziona un inquilino —", "page.doc_builder.legal_basis": "Base legale", "page.doc_builder.legal_review_title": "Revisione legale necessaria", "page.doc_builder.legal_review_desc": "Questo modello richiede validazione legale.", "page.doc_builder.signature": "Firma", "page.doc_builder.landlord_signature": "La tua firma (proprietario)", "page.doc_builder.tenant_signature": "La tua firma (inquilino)", "page.doc_builder.tenant_signed": "L'inquilino ha firmato", "page.doc_builder.tenant_will_sign": "La firma dell'inquilino sarà aggiunta dal suo spazio.", "page.doc_builder.landlord_signed": "Il proprietario ha firmato", "page.doc_builder.landlord_will_sign": "La firma del proprietario sarà aggiunta.", "page.doc_builder.generated": "Documento generato e salvato.",
-  "page.upgrade.desc": "Abbonati a EasyLoc Illimitato per accedere.", "page.upgrade.cta": "Abbonati",
+  "page.upgrade.desc": "Abbonati a Easy-Locs Illimitato per accedere.", "page.upgrade.cta": "Abbonati",
   "page.tasks.in_progress": "In corso", "page.tasks.overdue": "In ritardo", "page.tasks.completed": "Completate",
   "page.tasks.edit_task": "Modifica attività", "page.tasks.delete_confirm": "Eliminare questa attività?", "page.tasks.delete_desc": "Questa azione è irreversibile.",
   "page.tasks.created": "Attività creata", "page.tasks.modified": "Attività modificata", "page.tasks.deleted": "Attività eliminata",
@@ -1451,7 +1451,7 @@ const pagePt: Record<string, string> = {
   "page.common.loading": "Carregando…", "page.common.save": "Salvar", "page.common.cancel": "Cancelar", "page.common.delete": "Excluir", "page.common.error": "Erro", "page.common.paid": "Pago", "page.common.unpaid": "Não pago", "page.common.active": "Ativo", "page.common.export_csv": "Exportar CSV",
   "page.common.back": "Voltar", "page.common.validate": "Validar", "page.common.generate_pdf": "Gerar PDF", "page.common.select": "— Selecionar —", "page.common.enter_address": "Digite um endereço…",
   "page.doc_builder.prefill_tenant": "Preencher a partir de um inquilino", "page.doc_builder.select_tenant": "— Selecionar um inquilino —", "page.doc_builder.legal_basis": "Base legal", "page.doc_builder.legal_review_title": "Revisão legal necessária", "page.doc_builder.legal_review_desc": "Este modelo requer validação legal.", "page.doc_builder.signature": "Assinatura", "page.doc_builder.landlord_signature": "Sua assinatura (proprietário)", "page.doc_builder.tenant_signature": "Sua assinatura (inquilino)", "page.doc_builder.tenant_signed": "O inquilino assinou", "page.doc_builder.tenant_will_sign": "A assinatura do inquilino será adicionada do seu espaço.", "page.doc_builder.landlord_signed": "O proprietário assinou", "page.doc_builder.landlord_will_sign": "A assinatura do proprietário será adicionada.", "page.doc_builder.generated": "Documento gerado e salvo.",
-  "page.upgrade.desc": "Assine o EasyLoc Ilimitado para acessar.", "page.upgrade.cta": "Assinar",
+  "page.upgrade.desc": "Assine o Easy-Locs Ilimitado para acessar.", "page.upgrade.cta": "Assinar",
   "page.tasks.in_progress": "Em andamento", "page.tasks.overdue": "Atrasada", "page.tasks.completed": "Concluídas",
   "page.tasks.edit_task": "Editar tarefa", "page.tasks.delete_confirm": "Excluir esta tarefa?", "page.tasks.delete_desc": "Esta ação é irreversível.",
   "page.tasks.created": "Tarefa criada", "page.tasks.modified": "Tarefa modificada", "page.tasks.deleted": "Tarefa excluída",

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
-import logoEasyloc from "@/assets/logo-easyloc.png";
+import logoEasyloc from "@/assets/logo-easylocs.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import {
   LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck, Building,
@@ -78,8 +78,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={logoEasyloc} alt="Easyloc" className="h-8 w-8 object-contain" />
-              <span className="text-lg font-bold text-sidebar-foreground">Easyloc</span>
+              <img src={logoEasyloc} alt="Easy-Locs" className="h-8 w-8 object-contain" />
+              <span className="text-lg font-bold text-sidebar-foreground">Easy-Locs</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground">
               <X className="h-5 w-5" />

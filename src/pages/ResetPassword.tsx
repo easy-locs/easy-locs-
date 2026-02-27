@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import logoEasyloc from "@/assets/logo-easyloc.png";
+import logoEasyloc from "@/assets/logo-easylocs.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -50,8 +50,8 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoEasyloc} alt="Easyloc" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-primary-foreground">Easyloc</span>
+          <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-9 object-contain" />
+          <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
         </Link>
       </div>
 
