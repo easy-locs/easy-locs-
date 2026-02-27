@@ -19,7 +19,7 @@ const UpgradeBanner = ({ featureLabel }: UpgradeBannerProps) => {
         {featureLabel || t("gating.feature_locked")}
       </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-        Abonnez-vous à EasyLoc Illimité pour accéder à cette fonctionnalité.
+        Abonnez-vous à Easy-Locs Illimité pour accéder à cette fonctionnalité.
       </p>
       <Link
         to="/dashboard/billing"
