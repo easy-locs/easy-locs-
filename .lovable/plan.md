@@ -1,57 +1,43 @@
 
-# Essai gratuit de 3 jours
+# Plan Easy-Locs — 4 chantiers majeurs
 
-## Modifications
+## 1. Traductions complètes (6 langues : FR, EN, ES, DE, IT, PT)
 
-### 1. Migration base de donnees
-- Ajouter colonne `trial_ends_at` (timestamptz, nullable) a la table `subscriptions`
-- Modifier la fonction `handle_new_user()` pour inserer automatiquement un trial de 3 jours : `plan = 'trial'`, `status = 'trialing'`, `trial_ends_at = now() + interval '3 days'`
+### État actuel
+- i18n.tsx : ~400 clés déjà traduites (onboarding + pages)
+- **Problème** : Les pages utilisent encore du texte français en dur au lieu des clés i18n
 
-### 2. Edge Function `check-subscription`
-Apres la verification Stripe, si aucun abonnement actif :
-- Lire la ligne `subscriptions` de l'utilisateur
-- Si `status = 'trialing'` et `trial_ends_at > now()` : retourner `subscribed: true, plan: "trial"`
-- Si trial expire : mettre a jour `status = 'inactive'`, `plan = 'free'`, retourner `subscribed: false`
+### Pages à migrer vers i18n
+- [x] Onboarding
+- [ ] Dashboard.tsx
+- [ ] Receipts.tsx, Reminders.tsx, Documents.tsx, AIAssistant.tsx
+- [ ] Leases.tsx, Company.tsx, Billing.tsx, Settings.tsx
+- [ ] Tenants.tsx, RentalManagement.tsx, Finances.tsx
+- [ ] Interventions.tsx, Tasks.tsx, Notes.tsx, Messages.tsx
+- [ ] ChargesRegularization.tsx, FiscalReport.tsx, Expenses.tsx
+- [ ] Candidates.tsx, SeasonalRentals.tsx, PaymentNotices.tsx
+- [ ] DunningLetters.tsx, FurnitureInventory.tsx, Buildings.tsx, Vault.tsx
+- [ ] DataImport.tsx
+- [ ] Tenant portal (6 pages)
+- [ ] Landing + Auth pages
+- [ ] DashboardLayout sidebar
 
-### 3. Frontend - AuthContext
-- Ajouter `isTrial: boolean` et `trialDaysLeft: number | null` au state global
-- `isTrial = true` quand `plan === "trial"`
+## 2. Emails de notification (type Rentila)
+- Nouveau locataire, bail signé, appel de loyer, relance, quittance, messages, rappels
+- Service email requis (SendGrid/Resend)
+- Edge function + templates brandés
 
-### 4. Frontend - Billing page
-- Banniere trial : "Essai gratuit - X jours restants" avec barre de progression
-- Message d'encouragement a souscrire
-- Quand expire : "Votre essai gratuit est termine"
+## 3. Notifications in-app améliorées
+- Triggers DB pour tous les événements
+- Table notifications déjà en place
 
-### 5. ProtectedRoute
-Aucun changement : le trial retourne `subscribed: true`, donc l'acces reste autorise.
+## 4. Wizard multi-pays documents
+- Wizard étape par étape par type de document
+- Templates juridiques par pays
+- Tous les pays du système
 
----
-
-## Details techniques
-
-### Migration SQL
-```text
-ALTER TABLE public.subscriptions ADD COLUMN trial_ends_at timestamptz;
-
-CREATE OR REPLACE FUNCTION public.handle_new_user() ...
-  -- Ajouter apres creation org_members :
-  INSERT INTO public.subscriptions (user_id, plan, status, trial_ends_at)
-  VALUES (NEW.id, 'trial', 'trialing', now() + interval '3 days');
-```
-
-### check-subscription (logique ajoutee)
-```text
-Si pas d'abonnement Stripe actif :
-  -> SELECT * FROM subscriptions WHERE user_id = ...
-  -> Si status = 'trialing' AND trial_ends_at > now()
-       -> subscribed = true, plan = 'trial', subscription_end = trial_ends_at
-  -> Sinon
-       -> UPDATE status = 'inactive', plan = 'free'
-       -> subscribed = false
-```
-
-### AuthContext - SubscriptionState
-```text
-isTrial: boolean
-trialDaysLeft: number | null  (calcule depuis subscription_end)
-```
+## Ordre d'exécution
+1. Sprint 1 : Migrer pages vers i18n
+2. Sprint 2 : Service email + notifications
+3. Sprint 3 : Triggers notifications in-app
+4. Sprint 4 : Wizard multi-pays
