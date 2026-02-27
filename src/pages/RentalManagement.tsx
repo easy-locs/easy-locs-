@@ -64,6 +64,7 @@ const defaultTenantForm = {
   notes: "", birth_date: null as string | null, birth_place: null as string | null,
   nationality: "Française" as string | null, profession: null as string | null,
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
+  caf_apl_amount: 0,
 };
 
 const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
@@ -310,6 +311,7 @@ const RentalManagement = () => {
       notes: t.notes, birth_date: t.birth_date ?? null, birth_place: t.birth_place ?? null,
       nationality: t.nationality ?? "Française", profession: t.profession ?? null,
       guarantor_name: t.guarantor_name ?? null, guarantor_phone: t.guarantor_phone ?? null,
+      caf_apl_amount: t.caf_apl_amount ?? 0,
     });
     setShowTenantForm(true);
     setSelectedTenant(null);
@@ -1247,6 +1249,9 @@ const RentalManagement = () => {
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">Loyer HC (€)</label><input type="number" value={tenantForm.rent_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, rent_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">Charges (€)</label><input type="number" value={tenantForm.charges_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, charges_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">Dépôt (€)</label><input type="number" value={tenantForm.deposit_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">APL / CAF (€/mois)</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Garant</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

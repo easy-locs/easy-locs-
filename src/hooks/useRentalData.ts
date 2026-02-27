@@ -46,6 +46,7 @@ export interface Tenant {
   guarantor_phone?: string | null;
   current_address?: string | null;
   tenant_user_id?: string | null;
+  caf_apl_amount?: number;
 }
 
 export interface RentCall {
@@ -107,6 +108,7 @@ export function useRentalData() {
       guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
       current_address: t.current_address,
       tenant_user_id: t.tenant_user_id,
+      caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
     })));
   }, [orgId]);
 
@@ -177,6 +179,7 @@ export function useRentalData() {
       birth_date: form.birth_date || null, birth_place: form.birth_place || null,
       nationality: form.nationality || null, profession: form.profession || null,
       guarantor_name: form.guarantor_name || null, guarantor_phone: form.guarantor_phone || null,
+      caf_apl_amount: form.caf_apl_amount || 0,
     };
     if (editId) {
       const { error } = await supabase.from("tenants").update(record).eq("id", editId);

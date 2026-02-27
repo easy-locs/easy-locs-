@@ -1837,6 +1837,7 @@ export type Database = {
         Row: {
           birth_date: string | null
           birth_place: string | null
+          caf_apl_amount: number | null
           charges_amount: number | null
           co_tenants_json: Json | null
           created_at: string
@@ -1865,6 +1866,7 @@ export type Database = {
         Insert: {
           birth_date?: string | null
           birth_place?: string | null
+          caf_apl_amount?: number | null
           charges_amount?: number | null
           co_tenants_json?: Json | null
           created_at?: string
@@ -1893,6 +1895,7 @@ export type Database = {
         Update: {
           birth_date?: string | null
           birth_place?: string | null
+          caf_apl_amount?: number | null
           charges_amount?: number | null
           co_tenants_json?: Json | null
           created_at?: string
