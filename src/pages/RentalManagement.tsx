@@ -126,6 +126,7 @@ const RentalManagement = () => {
   // Stripe rent payment
   const [payingRentId, setPayingRentId] = useState<string | null>(null);
   const [invitingTenantId, setInvitingTenantId] = useState<string | null>(null);
+  const [paymentMethodDialog, setPaymentMethodDialog] = useState<string | null>(null);
 
   // Postal code lookup
   const [postalSuggestions, setPostalSuggestions] = useState<{ city: string; code: string }[]>([]);
@@ -754,16 +755,38 @@ const RentalManagement = () => {
               ) : (
                 <div className="space-y-2">
                   {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
-                    <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
+                    <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 relative">
                       <div className="flex items-center gap-3">
                         <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-green-500" : "bg-red-400"}`} />
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-foreground">{p.total_amount} €</span>
-                        <button onClick={() => togglePayment(p.id)} className={`text-xs px-2 py-1 rounded ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>
-                          {p.paid ? "Payé" : "Impayé"}
-                        </button>
+                        {p.paid ? (
+                          <button onClick={() => togglePayment(p.id)} className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-700">
+                            Payé {p.payment_method === "online" ? "(en ligne)" : p.payment_method === "bank_transfer" ? "(virement)" : p.payment_method === "cash" ? "(espèces)" : ""}
+                          </button>
+                        ) : (
+                          <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-2 py-1 rounded bg-red-400/20 text-red-600">
+                            Impayé
+                          </button>
+                        )}
+                        {paymentMethodDialog === p.id && (
+                          <div className="absolute right-4 top-10 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-48">
+                            {[
+                              { id: "online", label: "En ligne", icon: CreditCard },
+                              { id: "bank_transfer", label: "Virement", icon: Wallet },
+                              { id: "cash", label: "Espèces", icon: Euro },
+                            ].map(m => (
+                              <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
+                                className="flex items-center gap-2 w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors">
+                                <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                                {m.label}
+                              </button>
+                            ))}
+                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">Annuler</button>
+                          </div>
+                        )}
                         {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">Valider quittance</button>}
                         {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Accessible</span>}
                         {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
@@ -1322,16 +1345,40 @@ const RentalManagement = () => {
                           <td className="px-4 py-3 text-sm text-muted-foreground">{prop?.label || "—"}</td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">{p.month}</td>
                           <td className="px-4 py-3 text-sm font-medium text-foreground">{fmt(p.total_amount)}</td>
-                          <td className="px-4 py-3 text-right">
-                            <button onClick={() => togglePayment(p.id)} className={`text-xs px-3 py-1 rounded-full font-medium ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>
-                              {p.paid ? "✓ Payé" : "Impayé"}
-                            </button>
-                            {!p.paid && (
-                              <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                className="ml-2 inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-50">
-                                {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-                                Payer
+                          <td className="px-4 py-3 text-right relative">
+                            {p.paid ? (
+                              <button onClick={() => togglePayment(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-700">
+                                ✓ Payé {p.payment_method === "online" ? "(en ligne)" : p.payment_method === "bank_transfer" ? "(virement)" : p.payment_method === "cash" ? "(espèces)" : ""}
                               </button>
+                            ) : (
+                              <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                                  Marquer payé
+                                </button>
+                                <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
+                                  className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
+                                  {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+                                  Payer en ligne
+                                </button>
+                              </div>
+                            )}
+                            {/* Payment method dialog */}
+                            {paymentMethodDialog === p.id && (
+                              <div className="absolute right-0 mt-2 bg-card border border-border rounded-xl shadow-lg p-4 z-50 w-56">
+                                <p className="text-xs font-semibold text-foreground mb-3">Mode de paiement</p>
+                                {[
+                                  { id: "online", label: "Paiement en ligne", icon: CreditCard },
+                                  { id: "bank_transfer", label: "Virement bancaire", icon: Wallet },
+                                  { id: "cash", label: "Espèces", icon: Euro },
+                                ].map(m => (
+                                  <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
+                                    className="flex items-center gap-2 w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors">
+                                    <m.icon className="h-4 w-4 text-muted-foreground" />
+                                    {m.label}
+                                  </button>
+                                ))}
+                                <button onClick={() => setPaymentMethodDialog(null)} className="mt-2 text-xs text-muted-foreground hover:text-foreground w-full text-center">Annuler</button>
+                              </div>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right">
