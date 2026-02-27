@@ -63,17 +63,16 @@ serve(async (req) => {
       .limit(1)
       .single();
 
-    let fromEmail = "noreply@easy-locs.com";
-    let fromName = payload.from_name || "Easy-Locs";
+    const fromEmail = "noreply@easy-locs.com";
     const replyTo = "contact@easy-locs.com";
+    let fromName = payload.from_name || "Easy-Locs";
 
     if (orgMember?.org_id) {
       const { data: org } = await supabase
         .from("orgs")
-        .select("name, email")
+        .select("name")
         .eq("id", orgMember.org_id)
         .single();
-      if (org?.email) fromEmail = org.email;
       if (org?.name) fromName = payload.from_name || org.name;
     }
 
