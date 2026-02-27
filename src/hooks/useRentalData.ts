@@ -205,9 +205,17 @@ export function useRentalData() {
     if (!orgId) return;
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const existingMonths = rentCalls.filter(r => r.month === month).map(r => r.tenant_id);
+
+    // Query DB directly to avoid stale state issues
+    const { data: existingCalls } = await supabase
+      .from("rent_calls")
+      .select("tenant_id")
+      .eq("org_id", orgId)
+      .eq("month", month);
+
+    const existingIds = new Set((existingCalls || []).map(r => r.tenant_id));
     const newCalls = tenants
-      .filter(t => t.rent_amount > 0 && !existingMonths.includes(t.id))
+      .filter(t => t.rent_amount > 0 && !existingIds.has(t.id))
       .map(t => ({
         org_id: orgId,
         tenant_id: t.id,
@@ -221,7 +229,7 @@ export function useRentalData() {
       toast({ title: "Tous les appels du mois sont déjà créés" });
       return;
     }
-    const { error } = await supabase.from("rent_calls").insert(newCalls);
+    const { error } = await supabase.from("rent_calls").upsert(newCalls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
     toast({ title: `${newCalls.length} appel(s) de loyer généré(s)` });
     await loadRentCalls();

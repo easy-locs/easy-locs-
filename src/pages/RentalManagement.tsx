@@ -133,7 +133,7 @@ const RentalManagement = () => {
   const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
   const [assignPropertyId, setAssignPropertyId] = useState<string | null>(null);
   const [assignSearch, setAssignSearch] = useState("");
-
+  const [autoGenDone, setAutoGenDone] = useState(false);
   // Property detail linked data
   const [propertyExpenses, setPropertyExpenses] = useState<any[]>([]);
   const [propertyFurniture, setPropertyFurniture] = useState<any[]>([]);
@@ -354,10 +354,20 @@ const RentalManagement = () => {
     let landlordAddress = "";
     if (orgId) {
       try {
-        const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).single();
+        const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
         if (ownerProfile) {
           landlordName = ownerProfile.full_name || "";
           landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
+        }
+      } catch { /* ignore */ }
+    }
+    // Fallback: try org table for name/address
+    if (!landlordName && orgId) {
+      try {
+        const { data: orgData } = await supabase.from("orgs").select("name, address, postal_code, city").eq("id", orgId).single();
+        if (orgData) {
+          landlordName = orgData.name || "";
+          if (!landlordAddress) landlordAddress = [orgData.address, orgData.postal_code, orgData.city].filter(Boolean).join(", ");
         }
       } catch { /* ignore */ }
     }
@@ -404,16 +414,15 @@ const RentalManagement = () => {
     "rent-revision": TrendingUp, "charges-regularization": Euro, "unpaid-notice": AlertTriangle,
   };
 
-  /* ─── Auto rent call on the 25th ─── */
+  /* ─── Auto rent call on the 25th (runs once) ─── */
   useEffect(() => {
-    if (tenants.length === 0 || rentCalls.length === undefined) return;
+    if (autoGenDone || tenants.length === 0 || loading) return;
     const now = new Date();
     if (now.getDate() >= 25) {
-      const nextMonth = now.getMonth() === 11 ? `${now.getFullYear() + 1}-01` : `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, "0")}`;
-      const existing = rentCalls.filter(r => r.month === nextMonth);
-      if (existing.length === 0 && tenants.some(t => t.rent_amount > 0)) generateMonthlyRentCalls();
+      setAutoGenDone(true);
+      generateMonthlyRentCalls();
     }
-  }, [tenants.length]);
+  }, [tenants.length, loading, autoGenDone]);
 
   /* ─── Subscription gating ─── */
   const upgradeNeeded = requiresUpgrade("unlimited_properties");
