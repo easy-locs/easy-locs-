@@ -1,4 +1,4 @@
-// Local storage-based store for demo mode (replace with Lovable Cloud later)
+// Local storage-based store for demo mode
 
 export interface UserProfile {
   id: string;
