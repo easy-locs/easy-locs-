@@ -58,6 +58,34 @@ const PaymentNotices = () => {
     const { error } = await supabase.from("payment_notices").insert(newNotices);
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: `${newNotices.length} ${t("page.notices.generated")}` });
+
+    // Send email to each tenant for their notice
+    const fmt2 = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+    for (const notice of newNotices) {
+      const tenant = tenants.find(t => t.id === notice.tenant_id);
+      if (!tenant) continue;
+      const { data: tenantData } = await supabase.from("tenants").select("email").eq("id", tenant.id).single();
+      if (tenantData?.email) {
+        supabase.functions.invoke("send-email", {
+          body: {
+            to: tenantData.email,
+            subject: `Avis d'échéance — ${notice.month}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <h2 style="color:#1a1a1a;">📄 Avis d'échéance</h2>
+              <p style="color:#555;">Votre avis d'échéance pour le mois de ${notice.month} est disponible.</p>
+              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;"><strong>Loyer :</strong> ${fmt2(notice.rent_amount)}</p>
+                <p style="color:#1a1a1a;"><strong>Charges :</strong> ${fmt2(notice.charges_amount)}</p>
+                <p style="color:#1a1a1a;"><strong>Total :</strong> ${fmt2(notice.total_amount)}</p>
+                <p style="color:#1a1a1a;"><strong>Échéance :</strong> ${notice.due_date}</p>
+              </div>
+              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour consulter et payer.</p>
+            </div>`,
+          },
+        }).catch(() => {});
+      }
+    }
+
     await load();
   };
 

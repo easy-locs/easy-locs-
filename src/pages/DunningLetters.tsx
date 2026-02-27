@@ -55,6 +55,31 @@ const DunningLetters = () => {
     });
     if (error) { toast({ title: t("common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("page.dunning.created").replace("{level}", String(level)) });
+
+    // Send email notification to tenant
+    if (tenant?.id) {
+      const { data: tenantData } = await supabase.from("tenants").select("email, name").eq("id", tenant.id).single();
+      if (tenantData?.email) {
+        const levelInfo = LEVELS.find(l => l.value === level) || LEVELS[0];
+        const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+        supabase.functions.invoke("send-email", {
+          body: {
+            to: tenantData.email,
+            subject: `${level === 3 ? "Mise en demeure" : "Relance de loyer"} — ${month}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? "Mise en demeure" : levelInfo.label}</h2>
+              <p style="color:#555;">${levelInfo.tone}</p>
+              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;"><strong>Mois :</strong> ${month}</p>
+                <p style="color:#1a1a1a;"><strong>Montant dû :</strong> ${fmt(amount)}</p>
+              </div>
+              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour plus de détails.</p>
+            </div>`,
+          },
+        }).catch(() => {});
+      }
+    }
+
     await load();
   };
 
