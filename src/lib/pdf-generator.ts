@@ -68,7 +68,7 @@ function addHeader(doc: jsPDF, title: string): number {
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
 
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
-  doc.text("Easyloc", MARGIN, 22);
+  doc.text("Easy-Locs", MARGIN, 22);
 
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);
@@ -90,7 +90,7 @@ function addFooter(doc: jsPDF) {
       MARGIN, 287
     );
     setFont(doc, "normal", 7, COLOR_MUTED);
-    doc.text(`Easyloc - Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
+    doc.text(`Easy-Locs - Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
     doc.setFillColor(...COLOR_PRIMARY);
     doc.rect(0, 290, PAGE_WIDTH, 7, "F");
   }
