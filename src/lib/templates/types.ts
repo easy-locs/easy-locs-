@@ -1,6 +1,10 @@
 // Template & Rules Engine Types
 
-export type Country = "FR" | "BE" | "ES" | "IT" | "DE";
+export type Country = "FR" | "BE" | "ES" | "IT" | "DE" | "PT" | "NL" | "CH" | "LU" | "GB" | "AT"
+  | "US" | "CA" | "BR" | "MX"
+  | "MA" | "TN" | "SN" | "CI" | "ZA"
+  | "AE" | "SA" | "TR"
+  | "JP" | "AU" | "SG";
 
 export type DocCategory = "rental" | "administrative" | "company" | "legal";
 

@@ -2,15 +2,17 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 
 export interface AddressResult {
-  label: string;         // Full formatted address
+  label: string;
   housenumber?: string;
   street?: string;
   postcode?: string;
   city?: string;
-  context?: string;      // e.g. "75, Paris, Île-de-France"
-  department?: string;   // e.g. "75"
+  context?: string;
+  department?: string;
   lat?: number;
   lng?: number;
+  country?: string;
+  countryCode?: string;
 }
 
 interface AddressAutocompleteProps {
@@ -21,16 +23,19 @@ interface AddressAutocompleteProps {
   className?: string;
   label?: string;
   required?: boolean;
+  /** ISO country code to bias results (e.g. "FR", "US"). If not set, searches worldwide. */
+  countryCode?: string;
 }
 
 const AddressAutocomplete = ({
   value,
   onChange,
   onSelect,
-  placeholder = "Saisissez une adresse…",
+  placeholder = "Enter an address…",
   className = "",
   label,
   required,
+  countryCode,
 }: AddressAutocompleteProps) => {
   const [suggestions, setSuggestions] = useState<AddressResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -39,7 +44,6 @@ const AddressAutocomplete = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -50,6 +54,63 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const searchFrench = useCallback(async (query: string): Promise<AddressResult[]> => {
+    const res = await fetch(
+      `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=6`
+    );
+    const data = await res.json();
+    if (!data.features) return [];
+    return data.features.map((f: any) => {
+      const props = f.properties;
+      const context = props.context || "";
+      const deptMatch = context.match(/^(\d{2,3})/);
+      return {
+        label: props.label,
+        housenumber: props.housenumber,
+        street: props.street,
+        postcode: props.postcode,
+        city: props.city,
+        context,
+        department: deptMatch ? deptMatch[1] : undefined,
+        lat: f.geometry?.coordinates?.[1],
+        lng: f.geometry?.coordinates?.[0],
+        country: "France",
+        countryCode: "FR",
+      };
+    });
+  }, []);
+
+  const searchGlobal = useCallback(async (query: string, cc?: string): Promise<AddressResult[]> => {
+    const params = new URLSearchParams({
+      q: query,
+      format: "json",
+      addressdetails: "1",
+      limit: "6",
+    });
+    if (cc) params.set("countrycodes", cc.toLowerCase());
+
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params}`,
+      { headers: { "Accept-Language": "en,fr,es,de,it,pt" } }
+    );
+    const data = await res.json();
+    return data.map((item: any) => {
+      const addr = item.address || {};
+      return {
+        label: item.display_name,
+        housenumber: addr.house_number,
+        street: addr.road,
+        postcode: addr.postcode,
+        city: addr.city || addr.town || addr.village || addr.municipality,
+        context: [addr.state, addr.country].filter(Boolean).join(", "),
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        country: addr.country,
+        countryCode: addr.country_code?.toUpperCase(),
+      };
+    });
+  }, []);
+
   const search = useCallback(async (query: string) => {
     if (query.length < 3) {
       setSuggestions([]);
@@ -58,42 +119,25 @@ const AddressAutocomplete = ({
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=6`
-      );
-      const data = await res.json();
-      if (data.features) {
-        const results: AddressResult[] = data.features.map((f: any) => {
-          const props = f.properties;
-          const context = props.context || "";
-          const deptMatch = context.match(/^(\d{2,3})/);
-          return {
-            label: props.label,
-            housenumber: props.housenumber,
-            street: props.street,
-            postcode: props.postcode,
-            city: props.city,
-            context,
-            department: deptMatch ? deptMatch[1] : undefined,
-            lat: f.geometry?.coordinates?.[1],
-            lng: f.geometry?.coordinates?.[0],
-          };
-        });
-        setSuggestions(results);
-        setShowSuggestions(results.length > 0);
-        setHighlightIndex(-1);
-      }
+      // Use French API for France (faster & more precise), Nominatim for everything else
+      const useFrench = countryCode === "FR" || (!countryCode && false);
+      const results = useFrench
+        ? await searchFrench(query)
+        : await searchGlobal(query, countryCode);
+      setSuggestions(results);
+      setShowSuggestions(results.length > 0);
+      setHighlightIndex(-1);
     } catch {
       setSuggestions([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [countryCode, searchFrench, searchGlobal]);
 
   const handleChange = (val: string) => {
     onChange(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(val), 300);
+    debounceRef.current = setTimeout(() => search(val), 350);
   };
 
   const handleSelect = (result: AddressResult) => {
@@ -157,7 +201,7 @@ const AddressAutocomplete = ({
             >
               <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
               <div>
-                <div className="font-medium">{s.label}</div>
+                <div className="font-medium line-clamp-2">{s.city ? `${s.city}${s.postcode ? ` (${s.postcode})` : ""}` : s.label}</div>
                 {s.context && (
                   <div className="text-xs text-muted-foreground">{s.context}</div>
                 )}
