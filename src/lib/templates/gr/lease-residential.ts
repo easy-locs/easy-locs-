@@ -1,0 +1,67 @@
+import type { DocumentTemplate } from "../types";
+
+export const grLeaseResidential: DocumentTemplate = {
+  id: "gr-lease-residential",
+  version: "1.0.0",
+  country: "GR",
+  category: "rental",
+  docType: "lease-residential",
+  label: "Μισθωτήριο κατοικίας (Ελλάδα)",
+  description: "Σύμβαση μίσθωσης σύμφωνα με τον Αστικό Κώδικα και τον Ν. 1703/1987.",
+  legalBasis: "Αστικός Κώδικας, Ν. 1703/1987, Ν. 2235/1994",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Ονοματεπώνυμο εκμισθωτή", type: "text", required: true, validation: { minLength: 2 }, group: "Εκμισθωτής" },
+    { key: "landlordAddress", label: "Διεύθυνση εκμισθωτή", type: "text", required: true, group: "Εκμισθωτής" },
+    { key: "landlordAfm", label: "ΑΦΜ εκμισθωτή", type: "text", required: false, group: "Εκμισθωτής" },
+    { key: "tenantName", label: "Ονοματεπώνυμο μισθωτή", type: "text", required: true, validation: { minLength: 2 }, group: "Μισθωτής" },
+    { key: "tenantAddress", label: "Διεύθυνση μισθωτή", type: "text", required: false, group: "Μισθωτής" },
+    { key: "tenantAfm", label: "ΑΦΜ μισθωτή", type: "text", required: false, group: "Μισθωτής" },
+    { key: "propertyAddress", label: "Διεύθυνση ακινήτου", type: "text", required: true, group: "Ακίνητο" },
+    { key: "surface", label: "Εμβαδόν (m²)", type: "number", required: true, validation: { min: 1 }, group: "Ακίνητο" },
+    { key: "rooms", label: "Δωμάτια", type: "number", required: true, validation: { min: 1 }, group: "Ακίνητο" },
+    { key: "rentAmount", label: "Μηνιαίο μίσθωμα (€)", type: "number", required: true, validation: { min: 1 }, group: "Οικονομικά" },
+    { key: "depositAmount", label: "Εγγύηση (€)", type: "number", required: true, validation: { min: 0 }, group: "Οικονομικά" },
+    { key: "startDate", label: "Ημερομηνία έναρξης", type: "date", required: true, group: "Διάρκεια" },
+    { key: "duration", label: "Διάρκεια μίσθωσης", type: "select", required: true, options: [
+      { value: "36", label: "3 έτη (ελάχιστη)" },
+      { value: "60", label: "5 έτη" },
+    ], defaultValue: "36", group: "Διάρκεια" },
+  ],
+  clauses: [
+    { id: "parties", label: "Άρθρο 1 — Συμβαλλόμενοι", required: true,
+      text: "ΙΔΙΩΤΙΚΟ ΣΥΜΦΩΝΗΤΙΚΟ ΜΙΣΘΩΣΗΣ ΚΑΤΟΙΚΙΑΣ\n\nΕκμισθωτής: {landlordName}, {landlordAddress}\nΜισθωτής: {tenantName}" },
+    { id: "akinito", label: "Άρθρο 2 — Μίσθιο", required: true,
+      text: "Το μίσθιο βρίσκεται στη διεύθυνση {propertyAddress}, εμβαδόν {surface} m², {rooms} δωμάτια." },
+    { id: "misthoma", label: "Άρθρο 3 — Μίσθωμα", required: true,
+      text: "Το μηνιαίο μίσθωμα ορίζεται σε {rentAmount} €. Εγγύηση: {depositAmount} €." },
+    { id: "diarkeia", label: "Άρθρο 4 — Διάρκεια", required: true,
+      text: "Η μίσθωση διαρκεί {duration} μήνες από {startDate}. Η ελάχιστη διάρκεια κατοικίας είναι 3 έτη (Ν. 1703/1987)." },
+  ],
+};
+
+export const grRentReceipt: DocumentTemplate = {
+  id: "gr-rent-receipt",
+  version: "1.0.0",
+  country: "GR",
+  category: "rental",
+  docType: "rent-receipt",
+  label: "Απόδειξη ενοικίου (Ελλάδα)",
+  description: "Απόδειξη πληρωμής ενοικίου.",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Εκμισθωτής", type: "text", required: true, group: "Εκμισθωτής" },
+    { key: "tenantName", label: "Μισθωτής", type: "text", required: true, group: "Μισθωτής" },
+    { key: "propertyAddress", label: "Διεύθυνση", type: "text", required: true, group: "Ακίνητο" },
+    { key: "rentAmount", label: "Ενοίκιο (€)", type: "number", required: true, group: "Ποσά" },
+    { key: "chargesAmount", label: "Κοινόχρηστα (€)", type: "number", required: true, defaultValue: 0, group: "Ποσά" },
+    { key: "period", label: "Περίοδος", type: "text", required: true, placeholder: "Ιανουάριος 2026", group: "Περίοδος" },
+    { key: "paymentDate", label: "Ημερομηνία πληρωμής", type: "date", required: true, group: "Περίοδος" },
+  ],
+  clauses: [
+    { id: "apodeixi", label: "Απόδειξη", required: true,
+      text: "ΑΠΟΔΕΙΞΗ ΕΝΟΙΚΙΟΥ\n\nΟ/Η {landlordName} βεβαιώνει ότι εισέπραξε από {tenantName}:\n\n• Ενοίκιο: {rentAmount} €\n• Κοινόχρηστα: {chargesAmount} €\n• ΣΥΝΟΛΟ: {totalAmount} €\n\nγια την περίοδο {period}, πληρωμή {paymentDate}.\n\nΥπογραφή:" },
+  ],
+};
