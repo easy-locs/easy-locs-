@@ -73,6 +73,49 @@ export interface CountryConfig {
     quickActions: string;
     generateReceipt: string;
     housingBenefit: string;
+    totalExpenses: string;
+    inventoryReports: string;
+    noPayment: string;
+    noExpense: string;
+    noInventory: string;
+    noFurniture: string;
+    paymentHistory: string;
+    noExchange: string;
+    assignTenant: string;
+    assignExisting: string;
+    searchTenant: string;
+    noUnassigned: string;
+    createNewTenant: string;
+    connected: string;
+    invite: string;
+    sending: string;
+    noActiveLease: string;
+    allLeasesActive: string;
+    addFirstTenant: string;
+    addFirstProperty: string;
+    noPropertyTitle: string;
+    individualProperties: string;
+    lots: string;
+    month: string;
+    status: string;
+    markPaid: string;
+    online: string;
+    transfer: string;
+    cash: string;
+    cancel: string;
+    validateReceipt: string;
+    accessible: string;
+    calls: string;
+    entryInventory: string;
+    exitInventory: string;
+    roomByRoom: string;
+    compareEntry: string;
+    entry: string;
+    exit: string;
+    draft: string;
+    completed: string;
+    tenant_label: string;
+    perMonth: string;
   };
   defaultNationality: string;
   surfaceUnit: string;
@@ -98,6 +141,23 @@ const frLabels = {
   occupied: "Occupés", revenueMonth: "Revenus/mois", unpaidCount: "Impayés", vacant: "vacant",
   quickActions: "Actions rapides", generateReceipt: "Générer une quittance",
   housingBenefit: "APL / CAF",
+  totalExpenses: "Dépenses totales", inventoryReports: "États des lieux",
+  noPayment: "Aucun paiement.", noExpense: "Aucune dépense enregistrée.",
+  noInventory: "Aucun état des lieux.", noFurniture: "Aucun meuble enregistré.",
+  paymentHistory: "Historique des paiements", noExchange: "Aucun échange.",
+  assignTenant: "Assigner un locataire", assignExisting: "Assigner un locataire existant",
+  searchTenant: "Rechercher un locataire…", noUnassigned: "Aucun locataire sans bien",
+  createNewTenant: "Créer un nouveau locataire", connected: "Connecté", invite: "Inviter",
+  sending: "Envoi…", noActiveLease: "Aucun bail résilié", allLeasesActive: "Tous vos baux sont actifs.",
+  addFirstTenant: "Ajoutez votre premier locataire.", addFirstProperty: "Ajoutez votre premier bien immobilier.",
+  noPropertyTitle: "Aucun bien", individualProperties: "Biens individuels",
+  lots: "lot", month: "Mois", status: "Statut", markPaid: "Marquer payé",
+  online: "En ligne", transfer: "Virement", cash: "Espèces", cancel: "Annuler",
+  validateReceipt: "Valider quittance", accessible: "Accessible", calls: "appel(s)",
+  entryInventory: "État des lieux d'entrée", exitInventory: "État des lieux de sortie",
+  roomByRoom: "Pièce par pièce avec photos", compareEntry: "Comparer avec l'entrée",
+  entry: "Entrée", exit: "Sortie", draft: "Brouillon", completed: "Finalisé",
+  tenant_label: "Locataire", perMonth: "/mois",
 };
 
 const enLabels: typeof frLabels = {
@@ -120,6 +180,23 @@ const enLabels: typeof frLabels = {
   occupied: "Occupied", revenueMonth: "Revenue/month", unpaidCount: "Unpaid", vacant: "vacant",
   quickActions: "Quick actions", generateReceipt: "Generate receipt",
   housingBenefit: "Housing benefit",
+  totalExpenses: "Total expenses", inventoryReports: "Inspections",
+  noPayment: "No payments.", noExpense: "No expenses recorded.",
+  noInventory: "No inspections.", noFurniture: "No furniture recorded.",
+  paymentHistory: "Payment history", noExchange: "No messages.",
+  assignTenant: "Assign tenant", assignExisting: "Assign existing tenant",
+  searchTenant: "Search tenant…", noUnassigned: "No unassigned tenants",
+  createNewTenant: "Create new tenant", connected: "Connected", invite: "Invite",
+  sending: "Sending…", noActiveLease: "No terminated leases", allLeasesActive: "All your leases are active.",
+  addFirstTenant: "Add your first tenant.", addFirstProperty: "Add your first property.",
+  noPropertyTitle: "No property", individualProperties: "Individual properties",
+  lots: "unit", month: "Month", status: "Status", markPaid: "Mark paid",
+  online: "Online", transfer: "Transfer", cash: "Cash", cancel: "Cancel",
+  validateReceipt: "Validate receipt", accessible: "Accessible", calls: "call(s)",
+  entryInventory: "Check-in inspection", exitInventory: "Check-out inspection",
+  roomByRoom: "Room by room with photos", compareEntry: "Compare with check-in",
+  entry: "Entry", exit: "Exit", draft: "Draft", completed: "Completed",
+  tenant_label: "Tenant", perMonth: "/month",
 };
 
 const esLabels: typeof frLabels = {
@@ -142,6 +219,23 @@ const esLabels: typeof frLabels = {
   occupied: "Ocupados", revenueMonth: "Ingresos/mes", unpaidCount: "Impagos", vacant: "vacante",
   quickActions: "Acciones rápidas", generateReceipt: "Generar recibo",
   housingBenefit: "Ayuda vivienda",
+  totalExpenses: "Gastos totales", inventoryReports: "Inspecciones",
+  noPayment: "Sin pagos.", noExpense: "Sin gastos registrados.",
+  noInventory: "Sin inspecciones.", noFurniture: "Sin muebles registrados.",
+  paymentHistory: "Historial de pagos", noExchange: "Sin mensajes.",
+  assignTenant: "Asignar inquilino", assignExisting: "Asignar inquilino existente",
+  searchTenant: "Buscar inquilino…", noUnassigned: "No hay inquilinos sin inmueble",
+  createNewTenant: "Crear nuevo inquilino", connected: "Conectado", invite: "Invitar",
+  sending: "Enviando…", noActiveLease: "Sin contratos finalizados", allLeasesActive: "Todos sus contratos están activos.",
+  addFirstTenant: "Añada su primer inquilino.", addFirstProperty: "Añada su primer inmueble.",
+  noPropertyTitle: "Ningún inmueble", individualProperties: "Inmuebles individuales",
+  lots: "unidad", month: "Mes", status: "Estado", markPaid: "Marcar pagado",
+  online: "En línea", transfer: "Transferencia", cash: "Efectivo", cancel: "Cancelar",
+  validateReceipt: "Validar recibo", accessible: "Accesible", calls: "llamada(s)",
+  entryInventory: "Inspección de entrada", exitInventory: "Inspección de salida",
+  roomByRoom: "Habitación por habitación con fotos", compareEntry: "Comparar con entrada",
+  entry: "Entrada", exit: "Salida", draft: "Borrador", completed: "Completado",
+  tenant_label: "Inquilino", perMonth: "/mes",
 };
 
 const deLabels: typeof frLabels = {
@@ -164,6 +258,23 @@ const deLabels: typeof frLabels = {
   occupied: "Belegt", revenueMonth: "Einnahmen/Monat", unpaidCount: "Ausstehend", vacant: "leer",
   quickActions: "Schnellaktionen", generateReceipt: "Quittung erstellen",
   housingBenefit: "Wohngeld",
+  totalExpenses: "Gesamtausgaben", inventoryReports: "Übergabeprotokolle",
+  noPayment: "Keine Zahlungen.", noExpense: "Keine Ausgaben erfasst.",
+  noInventory: "Keine Protokolle.", noFurniture: "Keine Möbel erfasst.",
+  paymentHistory: "Zahlungsverlauf", noExchange: "Keine Nachrichten.",
+  assignTenant: "Mieter zuweisen", assignExisting: "Bestehenden Mieter zuweisen",
+  searchTenant: "Mieter suchen…", noUnassigned: "Keine Mieter ohne Objekt",
+  createNewTenant: "Neuen Mieter erstellen", connected: "Verbunden", invite: "Einladen",
+  sending: "Sende…", noActiveLease: "Keine beendeten Mietverträge", allLeasesActive: "Alle Mietverträge sind aktiv.",
+  addFirstTenant: "Fügen Sie Ihren ersten Mieter hinzu.", addFirstProperty: "Fügen Sie Ihr erstes Objekt hinzu.",
+  noPropertyTitle: "Kein Objekt", individualProperties: "Einzelobjekte",
+  lots: "Einheit", month: "Monat", status: "Status", markPaid: "Als bezahlt markieren",
+  online: "Online", transfer: "Überweisung", cash: "Bar", cancel: "Abbrechen",
+  validateReceipt: "Quittung bestätigen", accessible: "Zugänglich", calls: "Aufruf(e)",
+  entryInventory: "Einzugsprotokoll", exitInventory: "Auszugsprotokoll",
+  roomByRoom: "Raum für Raum mit Fotos", compareEntry: "Mit Einzug vergleichen",
+  entry: "Einzug", exit: "Auszug", draft: "Entwurf", completed: "Abgeschlossen",
+  tenant_label: "Mieter", perMonth: "/Monat",
 };
 
 const itLabels: typeof frLabels = {
@@ -186,6 +297,23 @@ const itLabels: typeof frLabels = {
   occupied: "Occupati", revenueMonth: "Entrate/mese", unpaidCount: "Insoluti", vacant: "vacante",
   quickActions: "Azioni rapide", generateReceipt: "Genera ricevuta",
   housingBenefit: "Sussidio abitativo",
+  totalExpenses: "Spese totali", inventoryReports: "Verbali",
+  noPayment: "Nessun pagamento.", noExpense: "Nessuna spesa registrata.",
+  noInventory: "Nessun verbale.", noFurniture: "Nessun mobile registrato.",
+  paymentHistory: "Storico pagamenti", noExchange: "Nessun messaggio.",
+  assignTenant: "Assegna inquilino", assignExisting: "Assegna inquilino esistente",
+  searchTenant: "Cerca inquilino…", noUnassigned: "Nessun inquilino senza immobile",
+  createNewTenant: "Crea nuovo inquilino", connected: "Connesso", invite: "Invita",
+  sending: "Invio…", noActiveLease: "Nessun contratto terminato", allLeasesActive: "Tutti i contratti sono attivi.",
+  addFirstTenant: "Aggiungi il tuo primo inquilino.", addFirstProperty: "Aggiungi il tuo primo immobile.",
+  noPropertyTitle: "Nessun immobile", individualProperties: "Immobili singoli",
+  lots: "unità", month: "Mese", status: "Stato", markPaid: "Segna pagato",
+  online: "Online", transfer: "Bonifico", cash: "Contanti", cancel: "Annulla",
+  validateReceipt: "Convalida ricevuta", accessible: "Accessibile", calls: "richiesta/e",
+  entryInventory: "Verbale di ingresso", exitInventory: "Verbale di uscita",
+  roomByRoom: "Stanza per stanza con foto", compareEntry: "Confronta con ingresso",
+  entry: "Ingresso", exit: "Uscita", draft: "Bozza", completed: "Completato",
+  tenant_label: "Inquilino", perMonth: "/mese",
 };
 
 const ptLabels: typeof frLabels = {
@@ -208,6 +336,23 @@ const ptLabels: typeof frLabels = {
   occupied: "Ocupados", revenueMonth: "Receita/mês", unpaidCount: "Em atraso", vacant: "vago",
   quickActions: "Ações rápidas", generateReceipt: "Gerar recibo",
   housingBenefit: "Subsídio habitação",
+  totalExpenses: "Despesas totais", inventoryReports: "Vistorias",
+  noPayment: "Sem pagamentos.", noExpense: "Sem despesas registadas.",
+  noInventory: "Sem vistorias.", noFurniture: "Sem mobília registada.",
+  paymentHistory: "Histórico de pagamentos", noExchange: "Sem mensagens.",
+  assignTenant: "Atribuir inquilino", assignExisting: "Atribuir inquilino existente",
+  searchTenant: "Pesquisar inquilino…", noUnassigned: "Nenhum inquilino sem imóvel",
+  createNewTenant: "Criar novo inquilino", connected: "Conectado", invite: "Convidar",
+  sending: "A enviar…", noActiveLease: "Sem contratos terminados", allLeasesActive: "Todos os contratos estão ativos.",
+  addFirstTenant: "Adicione o seu primeiro inquilino.", addFirstProperty: "Adicione o seu primeiro imóvel.",
+  noPropertyTitle: "Nenhum imóvel", individualProperties: "Imóveis individuais",
+  lots: "fração", month: "Mês", status: "Estado", markPaid: "Marcar pago",
+  online: "Online", transfer: "Transferência", cash: "Dinheiro", cancel: "Cancelar",
+  validateReceipt: "Validar recibo", accessible: "Acessível", calls: "chamada(s)",
+  entryInventory: "Vistoria de entrada", exitInventory: "Vistoria de saída",
+  roomByRoom: "Divisão por divisão com fotos", compareEntry: "Comparar com entrada",
+  entry: "Entrada", exit: "Saída", draft: "Rascunho", completed: "Concluído",
+  tenant_label: "Inquilino", perMonth: "/mês",
 };
 
 /* ─── Property types per language group ─── */
