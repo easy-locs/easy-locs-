@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays } from "lucide-react";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -552,14 +553,17 @@ const SeasonalRentals = () => {
               <div><label className="block text-sm font-medium text-foreground mb-1">Départ *</label><input type="date" value={form.check_out} onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.guest_email} onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Téléphone</label><input value={form.guest_phone} onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Adresse complète</label><input value={form.guest_address} onChange={e => setForm(f => ({ ...f, guest_address: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div className="sm:col-span-2"><label className="block text-sm font-medium text-foreground mb-1">Adresse complète</label>
+                <AddressAutocomplete value={form.guest_address} onChange={(val) => setForm(f => ({ ...f, guest_address: val }))}
+                  onSelect={(result: AddressResult) => setForm(f => ({ ...f, guest_address: result.label || "", guest_postal_code: result.postcode || f.guest_postal_code, guest_city: result.city || f.guest_city, guest_country: result.country || f.guest_country }))} />
+              </div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Code postal</label><input value={form.guest_postal_code} onChange={e => setForm(f => ({ ...f, guest_postal_code: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Ville</label><input value={form.guest_city} onChange={e => setForm(f => ({ ...f, guest_city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Pays</label><input value={form.guest_country} onChange={e => setForm(f => ({ ...f, guest_country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Pièce d'identité</label><select value={form.identity_type} onChange={e => setForm(f => ({ ...f, identity_type: e.target.value as IdentityType }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="none">Aucune</option><option value="cni">CNI</option><option value="passport">Passeport</option></select></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">N° CNI / Passeport</label><input value={form.identity_number} onChange={e => setForm(f => ({ ...f, identity_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Prix total (€)</label><input type="number" value={form.total_price} onChange={e => setForm(f => ({ ...f, total_price: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Frais ménage (€)</label><input type="number" value={form.cleaning_fee} onChange={e => setForm(f => ({ ...f, cleaning_fee: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Prix total (€)</label><input type="number" value={form.total_price || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, total_price: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Frais ménage (€)</label><input type="number" value={form.cleaning_fee || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, cleaning_fee: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
             <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             <div className="flex gap-3">
