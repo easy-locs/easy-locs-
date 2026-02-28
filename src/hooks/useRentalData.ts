@@ -266,10 +266,14 @@ export function useRentalData() {
     if (!orgId || !user) return;
 
     try {
-      // Generate unique token
-      const token = crypto.randomUUID() + "-" + crypto.randomUUID();
+      const tokenPartA = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const tokenPartB = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const token = `${tokenPartA}-${tokenPartB}`;
 
-      // Create invitation record
       const { error: invError } = await supabase.from("tenant_invitations").insert({
         org_id: orgId,
         tenant_id: tenant.id,
@@ -279,11 +283,8 @@ export function useRentalData() {
       });
       if (invError) throw invError;
 
-      // Build invitation URL
       const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
-
-      // Send invitation email
-      const { error: emailError } = await supabase.functions.invoke("send-email", {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenant.email,
           subject: "Invitation à rejoindre votre espace locataire Easy-Locs",
@@ -299,9 +300,11 @@ export function useRentalData() {
           </div>`,
         },
       });
-      if (emailError) throw emailError;
 
-      // Optional clipboard copy (best effort)
+      if (emailError || (emailData && emailData.success === false)) {
+        throw emailError || new Error(emailData?.error || "Échec d'envoi de l'invitation");
+      }
+
       let copied = false;
       try {
         await navigator.clipboard.writeText(inviteUrl);

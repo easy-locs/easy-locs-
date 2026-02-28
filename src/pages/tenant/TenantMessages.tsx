@@ -7,6 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+const escapeEmailHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
 const TenantMessages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -107,12 +115,20 @@ const TenantMessages = () => {
           setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
         }
         setNewMsg("");
-        // Notify landlord by email (best-effort)
+        // Notify landlord by email (best-effort with explicit error handling)
         if (orgId) {
-          supabase.from("orgs").select("email").eq("id", orgId).single().then(({ data: org }) => {
+          try {
+            const { data: org, error: orgError } = await supabase
+              .from("orgs")
+              .select("email")
+              .eq("id", orgId)
+              .single();
+
+            if (orgError) throw orgError;
+
             if (org?.email) {
               const appUrl = window.location.origin;
-              supabase.functions.invoke("send-email", {
+              const { data: mailData, error: mailError } = await supabase.functions.invoke("send-email", {
                 body: {
                   to: org.email,
                   subject: `Nouveau message de votre locataire`,
@@ -120,7 +136,7 @@ const TenantMessages = () => {
                     <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
                     <p style="color:#555;font-size:15px;">Un locataire vous a envoyé un message :</p>
                     <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${messageToSend}</p>
+                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
                     </div>
                     <div style="text-align:center;margin:24px 0;">
                       <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
@@ -128,9 +144,15 @@ const TenantMessages = () => {
                     <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
                   </div>`,
                 },
-              }).catch(() => {});
+              });
+
+              if (mailError || (mailData && mailData.success === false)) {
+                throw mailError || new Error(mailData?.error || "Échec notification email");
+              }
             }
-          });
+          } catch (mailErr: any) {
+            toast({ title: "Message envoyé", description: `Email non envoyé : ${mailErr.message}`, variant: "destructive" });
+          }
         }
       }
     } finally {
