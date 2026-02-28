@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { formatCurrency } from "@/lib/country-config";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 
 type LeaseFilter = "all" | "active" | "terminated";
@@ -45,11 +46,11 @@ const Leases = () => {
   const [generating, setGenerating] = useState(false);
   const { properties, tenants, loading } = useRentalData();
   const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
-  const { user, orgId } = useAuth();
+  const { user, orgId, userCountry } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
-  const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+  const fmt = (n: number) => formatCurrency(n, userCountry);
 
   // Saved leases from documents table
   const [savedLeases, setSavedLeases] = useState<any[]>([]);
