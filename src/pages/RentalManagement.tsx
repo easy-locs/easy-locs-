@@ -76,6 +76,14 @@ const EXPENSE_CATEGORIES: Record<string, string> = {
 
 const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
+const escapeEmailHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
 const RentalManagement = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
@@ -346,7 +354,7 @@ const RentalManagement = () => {
 
     if (selectedTenant.email) {
       const appUrl = window.location.origin;
-      await supabase.functions.invoke("send-email", {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: selectedTenant.email,
           subject: "Nouveau message de votre bailleur",
@@ -354,7 +362,7 @@ const RentalManagement = () => {
             <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message de votre bailleur</h2>
             <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
             <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${messageToSend}</p>
+              <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
             </div>
             <div style="text-align:center;margin:24px 0;">
               <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
@@ -363,6 +371,14 @@ const RentalManagement = () => {
           </div>`,
         },
       });
+
+      if (emailError || (emailData && emailData.success === false)) {
+        toast({
+          title: "Message envoyé",
+          description: `Email non envoyé : ${(emailError as any)?.message || emailData?.error || "erreur inconnue"}`,
+          variant: "destructive",
+        });
+      }
     }
   };
 

@@ -19,6 +19,11 @@ interface TenantDoc {
   created_at: string;
 }
 
+interface TenantContact {
+  email: string | null;
+  tenant_user_id: string | null;
+}
+
 const DOC_TYPES = [
   { type: "id_card", label: "Pièce d'identité" },
   { type: "insurance", label: "Attestation d'assurance habitation" },
@@ -32,26 +37,81 @@ const DOC_TYPES = [
 const statusConfig: Record<string, { label: string; icon: typeof Clock; className: string }> = {
   pending: { label: "En attente", icon: Clock, className: "text-yellow-600 bg-yellow-500/20" },
   validated: { label: "Validé", icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
+  approved: { label: "Validé", icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
   rejected: { label: "Rejeté", icon: XCircle, className: "text-red-600 bg-red-500/20" },
+};
+
+const normalizeStatus = (status: string) => {
+  if (status === "approved") return "validated";
+  return status || "pending";
+};
+
+const getRentalDocPath = (fileUrl: string) => {
+  if (!fileUrl) return "";
+  if (!fileUrl.startsWith("http")) return fileUrl;
+  const marker = "/rental-docs/";
+  const markerIndex = fileUrl.indexOf(marker);
+  if (markerIndex === -1) return fileUrl;
+  return fileUrl.slice(markerIndex + marker.length).split("?")[0];
 };
 
 const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const [docs, setDocs] = useState<TenantDoc[]>([]);
+  const [tenantContact, setTenantContact] = useState<TenantContact | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [openingDocId, setOpeningDocId] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [requestingDocType, setRequestingDocType] = useState<string | null>(null);
 
   const loadDocs = async () => {
     const { data } = await supabase
       .from("tenant_documents")
-      .select("*")
+      .select("id, doc_type, label, file_url, filename, status, created_at")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
     setDocs((data as TenantDoc[]) || []);
   };
 
-  useEffect(() => { loadDocs(); }, [tenantId]);
+  const loadTenantContact = async () => {
+    const { data } = await supabase
+      .from("tenants")
+      .select("email, tenant_user_id")
+      .eq("id", tenantId)
+      .single();
+    setTenantContact((data as TenantContact) || null);
+  };
+
+  useEffect(() => {
+    loadDocs();
+    loadTenantContact();
+  }, [tenantId]);
+
+  const getSignedDocumentUrl = async (fileUrl: string) => {
+    const path = getRentalDocPath(fileUrl);
+    if (!path) return null;
+
+    const { data, error } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 7);
+    if (error || !data?.signedUrl) {
+      throw error || new Error("Impossible de générer un lien sécurisé");
+    }
+
+    return data.signedUrl;
+  };
+
+  const openDocument = async (doc: TenantDoc) => {
+    setOpeningDocId(doc.id);
+    try {
+      const signedUrl = await getSignedDocumentUrl(doc.file_url);
+      if (!signedUrl) throw new Error("Document indisponible");
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setOpeningDocId(null);
+    }
+  };
 
   const handleUpload = async (docType: string, label: string, file: File) => {
     if (!user || !orgId) return;
@@ -62,14 +122,12 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const { error: uploadErr } = await supabase.storage.from("rental-docs").upload(path, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
-
       const { error: insertErr } = await supabase.from("tenant_documents").insert({
         org_id: orgId,
         tenant_id: tenantId,
         doc_type: docType,
         label,
-        file_url: urlData.publicUrl,
+        file_url: path,
         filename: file.name,
         uploaded_by: user.id,
       });
@@ -96,38 +154,89 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
     await loadDocs();
   };
 
-  const handleSendAllByEmail = async () => {
-    if (!orgId || docs.length === 0) return;
-    setSendingEmail(true);
-    try {
-      // Get tenant email
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("email")
-        .eq("id", tenantId)
-        .single();
+  const handleRequestDocument = async (docType: string, label: string) => {
+    if (!orgId) return;
+    setRequestingDocType(docType);
 
-      if (!tenant?.email) {
-        toast({ title: "Erreur", description: "Ce locataire n'a pas d'adresse email configurée.", variant: "destructive" });
-        setSendingEmail(false);
-        return;
+    try {
+      if (tenantContact?.tenant_user_id) {
+        await supabase.from("notifications").insert({
+          user_id: tenantContact.tenant_user_id,
+          org_id: orgId,
+          type: "request",
+          title: "Document demandé",
+          message: `Votre bailleur vous demande : ${label}`,
+          link: "/tenant/documents",
+        });
+      }
+
+      if (tenantContact?.email) {
+        const appUrl = window.location.origin;
+        const { data, error } = await supabase.functions.invoke("send-email", {
+          body: {
+            to: tenantContact.email,
+            subject: `Document demandé : ${label}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+              <h2 style="color:#1a1a1a;text-align:center;">📄 Document demandé</h2>
+              <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
+              <p style="color:#555;font-size:15px;">Votre bailleur vous demande de transmettre le document suivant :</p>
+              <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;margin:0;font-size:15px;font-weight:600;">${label}</p>
+              </div>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Ajouter le document</a>
+              </div>
+              <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+            </div>`,
+          },
+        });
+
+        if (error || (data && data.success === false)) {
+          throw error || new Error(data?.error || "Échec envoi email");
+        }
+      }
+
+      if (!tenantContact?.email && !tenantContact?.tenant_user_id) {
+        throw new Error("Ce locataire n'a ni email ni compte actif pour recevoir la demande.");
+      }
+
+      toast({ title: "Demande envoyée", description: `${label} demandé au locataire.` });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setRequestingDocType(null);
+    }
+  };
+
+  const handleSendAllByEmail = async () => {
+    if (docs.length === 0) return;
+    setSendingEmail(true);
+
+    try {
+      const tenantEmail = tenantContact?.email;
+      if (!tenantEmail) {
+        throw new Error("Ce locataire n'a pas d'adresse email configurée.");
       }
 
       const appUrl = window.location.origin;
-      const docListHtml = docs.map(d => {
-        const sc = statusConfig[d.status];
-        const statusLabel = sc ? sc.label : d.status;
-        return `<tr>
+      const docsWithLinks = await Promise.all(
+        docs.map(async (d) => ({
+          ...d,
+          accessUrl: await getSignedDocumentUrl(d.file_url),
+          statusLabel: statusConfig[normalizeStatus(d.status)]?.label || d.status,
+        }))
+      );
+
+      const docListHtml = docsWithLinks.map((d) => `<tr>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${d.label}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${d.filename}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${statusLabel}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;"><a href="${d.file_url}" style="color:#d4a853;text-decoration:underline;">Télécharger</a></td>
-        </tr>`;
-      }).join("");
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${d.statusLabel}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;"><a href="${d.accessUrl}" style="color:#d4a853;text-decoration:underline;">Télécharger</a></td>
+        </tr>`).join("");
 
-      await supabase.functions.invoke("send-email", {
+      const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
-          to: tenant.email,
+          to: tenantEmail,
           subject: `Vos documents — Easy-Locs`,
           html: `<div style="font-family:sans-serif;max-width:700px;margin:0 auto;padding:24px;background:#ffffff;">
             <h2 style="color:#1a1a1a;text-align:center;">📄 Vos documents locataire</h2>
@@ -152,7 +261,11 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
         },
       });
 
-      toast({ title: "Email envoyé", description: `Récapitulatif des documents envoyé à ${tenant.email}` });
+      if (error || (data && data.success === false)) {
+        throw error || new Error(data?.error || "Échec envoi email");
+      }
+
+      toast({ title: "Email envoyé", description: `Récapitulatif des documents envoyé à ${tenantEmail}` });
     } catch (err: any) {
       toast({ title: "Erreur d'envoi", description: err.message, variant: "destructive" });
     } finally {
@@ -179,7 +292,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       <div className="space-y-3">
         {DOC_TYPES.map(dt => {
           const existing = docs.filter(d => d.doc_type === dt.type);
-          const status = existing.length > 0 ? existing[0].status : null;
+          const status = existing.length > 0 ? normalizeStatus(existing[0].status) : null;
           const sc = status ? statusConfig[status] : null;
 
           return (
@@ -201,21 +314,32 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
                   </span>
                 )}
 
+                <button
+                  onClick={() => handleRequestDocument(dt.type, dt.label)}
+                  disabled={requestingDocType === dt.type}
+                  className="text-xs text-accent hover:underline disabled:opacity-50"
+                >
+                  {requestingDocType === dt.type ? "Envoi…" : "Demander"}
+                </button>
+
                 {existing.length > 0 && status === "pending" && (
                   <>
                     <button onClick={() => handleValidate(existing[0].id, "validated")}
-                      className="text-xs text-green-600 hover:underline">Valider</button>
+                      className="text-xs text-success hover:underline">Valider</button>
                     <button onClick={() => handleValidate(existing[0].id, "rejected")}
-                      className="text-xs text-red-600 hover:underline">Rejeter</button>
+                      className="text-xs text-destructive hover:underline">Rejeter</button>
                   </>
                 )}
 
                 {existing.length > 0 && (
                   <>
-                    <a href={existing[0].file_url} target="_blank" rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground p-1">
-                      <Download className="h-3.5 w-3.5" />
-                    </a>
+                    <button
+                      onClick={() => openDocument(existing[0])}
+                      disabled={openingDocId === existing[0].id}
+                      className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-40"
+                    >
+                      {openingDocId === existing[0].id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                    </button>
                     <button onClick={() => handleDelete(existing[0].id)}
                       className="text-muted-foreground/40 hover:text-destructive p-1">
                       <Trash2 className="h-3.5 w-3.5" />
@@ -241,3 +365,4 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
 };
 
 export default TenantDocuments;
+

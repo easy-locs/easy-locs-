@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle } from "lucide-react";
+import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle, Download } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,22 +13,44 @@ const DOC_TYPES = [
   { value: "other", label: "Autre document" },
 ];
 
+interface TenantDoc {
+  id: string;
+  label: string;
+  filename: string;
+  file_url: string;
+  status: string;
+}
+
+const getRentalDocPath = (fileUrl: string) => {
+  if (!fileUrl) return "";
+  if (!fileUrl.startsWith("http")) return fileUrl;
+  const marker = "/rental-docs/";
+  const markerIndex = fileUrl.indexOf(marker);
+  if (markerIndex === -1) return fileUrl;
+  return fileUrl.slice(markerIndex + marker.length).split("?")[0];
+};
+
 const statusBadge = (status: string) => {
   switch (status) {
-    case "approved": return <span className="flex items-center gap-1 text-xs text-success"><CheckCircle className="h-3 w-3" /> Validé</span>;
-    case "rejected": return <span className="flex items-center gap-1 text-xs text-destructive"><XCircle className="h-3 w-3" /> Refusé</span>;
-    default: return <span className="flex items-center gap-1 text-xs text-warning"><Clock className="h-3 w-3" /> En attente</span>;
+    case "approved":
+    case "validated":
+      return <span className="flex items-center gap-1 text-xs text-success"><CheckCircle className="h-3 w-3" /> Validé</span>;
+    case "rejected":
+      return <span className="flex items-center gap-1 text-xs text-destructive"><XCircle className="h-3 w-3" /> Refusé</span>;
+    default:
+      return <span className="flex items-center gap-1 text-xs text-warning"><Clock className="h-3 w-3" /> En attente</span>;
   }
 };
 
 const TenantDocuments = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [docs, setDocs] = useState<any[]>([]);
+  const [docs, setDocs] = useState<TenantDoc[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [openingDocId, setOpeningDocId] = useState<string | null>(null);
   const [docType, setDocType] = useState("id");
 
   useEffect(() => {
@@ -45,14 +67,42 @@ const TenantDocuments = () => {
       setOrgId(tenant.org_id);
       const { data } = await supabase
         .from("tenant_documents")
-        .select("*")
+        .select("id, label, filename, file_url, status")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
-      setDocs(data || []);
+      setDocs((data as TenantDoc[]) || []);
       setLoading(false);
     };
     fetch();
   }, [user]);
+
+  const refreshDocs = async (targetTenantId: string) => {
+    const { data } = await supabase
+      .from("tenant_documents")
+      .select("id, label, filename, file_url, status")
+      .eq("tenant_id", targetTenantId)
+      .order("created_at", { ascending: false });
+    setDocs((data as TenantDoc[]) || []);
+  };
+
+  const openDocument = async (doc: TenantDoc) => {
+    const path = getRentalDocPath(doc.file_url);
+    if (!path) {
+      toast({ title: "Erreur", description: "Chemin du document introuvable.", variant: "destructive" });
+      return;
+    }
+
+    setOpeningDocId(doc.id);
+    try {
+      const { data, error } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60);
+      if (error || !data?.signedUrl) throw error || new Error("Lien sécurisé indisponible");
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } catch (err: any) {
+      toast({ title: "Impossible d'ouvrir le document", description: err.message, variant: "destructive" });
+    } finally {
+      setOpeningDocId(null);
+    }
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,7 +115,7 @@ const TenantDocuments = () => {
       setUploading(false);
       return;
     }
-    const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
+
     const label = DOC_TYPES.find(d => d.value === docType)?.label || docType;
     const { error } = await supabase.from("tenant_documents").insert({
       tenant_id: tenantId,
@@ -74,20 +124,16 @@ const TenantDocuments = () => {
       doc_type: docType,
       label,
       filename: file.name,
-      file_url: urlData.publicUrl,
+      file_url: path,
     });
+
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Document envoyé", description: "Votre bailleur sera notifié." });
-      // Refresh
-      const { data } = await supabase
-        .from("tenant_documents")
-        .select("*")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
-      setDocs(data || []);
+      await refreshDocs(tenantId);
     }
+
     setUploading(false);
     e.target.value = "";
   };
@@ -128,11 +174,21 @@ const TenantDocuments = () => {
                 <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
                   <FileText className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">{d.label}</p>
-                  <p className="text-xs text-muted-foreground">{d.filename}</p>
+                  <p className="text-xs text-muted-foreground truncate">{d.filename}</p>
                 </div>
-                {statusBadge(d.status)}
+                <div className="flex items-center gap-2">
+                  {statusBadge(d.status)}
+                  <button
+                    onClick={() => openDocument(d)}
+                    disabled={openingDocId === d.id}
+                    className="text-muted-foreground hover:text-foreground p-1 disabled:opacity-50"
+                    title="Ouvrir le document"
+                  >
+                    {openingDocId === d.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -143,3 +199,4 @@ const TenantDocuments = () => {
 };
 
 export default TenantDocuments;
+

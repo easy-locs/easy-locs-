@@ -28,6 +28,14 @@ interface Message {
   created_at: string;
 }
 
+const escapeEmailHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
 const Messages = () => {
   const { user, orgId } = useAuth();
   const { t } = useI18n();
@@ -155,43 +163,55 @@ const Messages = () => {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedTenant || !orgId || !user) return;
+    const messageToSend = newMessage.trim();
+
     setSending(true);
     const { error } = await supabase.from("messages").insert({
       org_id: orgId,
       sender_id: user.id,
       tenant_id: selectedTenant.id,
-      content: newMessage.trim(),
+      content: messageToSend,
       read: false,
     });
+
     if (error) {
       toast.error(t("page.messages.send_error"));
     } else {
       setNewMessage("");
-      // Send email notification to tenant
+
       if (selectedTenant.email) {
-        const appUrl = window.location.origin;
-        supabase.functions.invoke("send-email", {
-          body: {
-            to: selectedTenant.email,
-            subject: `Nouveau message de votre bailleur`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-              <div style="text-align:center;margin-bottom:24px;">
-                <h2 style="color:#1a1a1a;margin:0;">📩 Nouveau message de votre bailleur</h2>
-              </div>
-              <p style="color:#555;font-size:15px;">Bonjour,</p>
-              <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
-              <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${newMessage.trim()}</p>
-              </div>
-              <div style="text-align:center;margin:24px 0;">
-                <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
-              </div>
-              <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement. Pour répondre, utilisez votre espace locataire Easy-Locs.</p>
-            </div>`,
-          },
-        }).catch(() => { /* silent — email is best-effort */ });
+        try {
+          const appUrl = window.location.origin;
+          const { data, error: emailError } = await supabase.functions.invoke("send-email", {
+            body: {
+              to: selectedTenant.email,
+              subject: `Nouveau message de votre bailleur`,
+              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                <div style="text-align:center;margin-bottom:24px;">
+                  <h2 style="color:#1a1a1a;margin:0;">📩 Nouveau message de votre bailleur</h2>
+                </div>
+                <p style="color:#555;font-size:15px;">Bonjour,</p>
+                <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
+                <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                  <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
+                </div>
+                <div style="text-align:center;margin:24px 0;">
+                  <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+                </div>
+                <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement. Pour répondre, utilisez votre espace locataire Easy-Locs.</p>
+              </div>`,
+            },
+          });
+
+          if (emailError || (data && data.success === false)) {
+            throw emailError || new Error(data?.error || "Échec notification email");
+          }
+        } catch (mailErr: any) {
+          toast.error(`Message envoyé, mais email non envoyé: ${mailErr.message}`);
+        }
       }
     }
+
     setSending(false);
   };
 
