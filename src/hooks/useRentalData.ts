@@ -269,13 +269,7 @@ export function useRentalData() {
     if (!orgId || !user) return;
 
     try {
-      const tokenPartA = typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const tokenPartB = typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const token = `${tokenPartA}-${tokenPartB}`;
+      const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}_${Math.random().toString(36).slice(2)}`;
 
       const { error: invError } = await supabase.from("tenant_invitations").insert({
         org_id: orgId,
@@ -288,12 +282,20 @@ export function useRentalData() {
 
       const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
 
+      const canCopyInviteLink =
+        typeof window !== "undefined" &&
+        window.isSecureContext &&
+        typeof navigator !== "undefined" &&
+        !!navigator.clipboard?.writeText;
+
       let copied = false;
-      try {
-        await navigator.clipboard.writeText(inviteUrl);
-        copied = true;
-      } catch {
-        copied = false;
+      if (canCopyInviteLink) {
+        try {
+          await navigator.clipboard.writeText(inviteUrl);
+          copied = true;
+        } catch {
+          copied = false;
+        }
       }
 
       let emailSent = false;

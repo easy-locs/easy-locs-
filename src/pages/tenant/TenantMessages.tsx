@@ -138,7 +138,17 @@ const TenantMessages = () => {
               });
             }
 
-            const landlordEmail = normalizeEmail(org?.email);
+            let landlordEmail = normalizeEmail(org?.email);
+
+            if ((!landlordEmail || !isValidEmail(landlordEmail)) && org?.owner_user_id) {
+              const { data: ownerProfile } = await supabase
+                .from("profiles")
+                .select("email")
+                .eq("id", org.owner_user_id)
+                .maybeSingle();
+
+              landlordEmail = normalizeEmail(ownerProfile?.email ?? null);
+            }
 
             if (landlordEmail && isValidEmail(landlordEmail)) {
               const appUrl = window.location.origin;

@@ -5,7 +5,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, ClipboardList, Globe,
+  CreditCard, Settings, LogOut, Menu, X, Globe,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
@@ -22,7 +22,6 @@ const navItems = [
   { icon: LayoutDashboard, label: "Mon espace", path: "/tenant" },
   { icon: Receipt, label: "Mes quittances", path: "/tenant/receipts" },
   { icon: FileText, label: "Mes documents", path: "/tenant/documents" },
-  { icon: ClipboardList, label: "Demandes", path: "/tenant/requests" },
   { icon: MessageCircle, label: "Messages", path: "/tenant/messages" },
   { icon: CreditCard, label: "Payer mon loyer", path: "/tenant/pay" },
 ];
