@@ -605,11 +605,11 @@ const RentalManagement = () => {
               <p className="text-lg font-bold text-foreground">{propTenants.length}</p>
             </div>
             <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">Dépenses totales</p>
+              <p className="text-xs text-muted-foreground">{L.totalExpenses}</p>
               <p className="text-lg font-bold text-foreground">{fmt(totalExpenses)}</p>
             </div>
             <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">États des lieux</p>
+              <p className="text-xs text-muted-foreground">{L.inventoryReports}</p>
               <p className="text-lg font-bold text-foreground">{propertyInventories.length}</p>
             </div>
           </div>
@@ -621,26 +621,26 @@ const RentalManagement = () => {
               {propTenants.length === 0 && (
                 <button
                   onClick={() => setAssignPropertyId(assignPropertyId === selectedProperty.id ? null : selectedProperty.id)}
-                  className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 flex items-center gap-1"
-                >
-                  <UserPlus className="h-3 w-3" /> Assigner un locataire
-                </button>
-              )}
+                   className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 flex items-center gap-1"
+                 >
+                   <UserPlus className="h-3 w-3" /> {L.assignTenant}
+                 </button>
+               )}
             </div>
             {propTenants.length === 0 ? (
-              <>
-                <p className="text-sm text-muted-foreground">Aucun locataire affecté.</p>
+               <>
+                 <p className="text-sm text-muted-foreground">{L.noTenant}.</p>
                 {assignPropertyId === selectedProperty.id && (
                   <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-foreground">Assigner un locataire existant</span>
-                      <button onClick={() => setAssignPropertyId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                     <div className="flex items-center justify-between mb-2">
+                       <span className="text-xs font-semibold text-foreground">{L.assignExisting}</span>
+                       <button onClick={() => setAssignPropertyId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                     </div>
                     <input
                       type="text"
                       value={assignSearch}
                       onChange={(e) => setAssignSearch(e.target.value)}
-                      placeholder="Rechercher un locataire…"
+                      placeholder={L.searchTenant}
                       className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent"
                     />
                     <div className="max-h-32 overflow-y-auto space-y-1">
@@ -661,15 +661,15 @@ const RentalManagement = () => {
                             {t.email && <span className="text-muted-foreground ml-auto">{t.email}</span>}
                           </button>
                         ))}
-                      {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-2">Aucun locataire sans bien</p>
+                       {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
+                         <p className="text-xs text-muted-foreground text-center py-2">{L.noUnassigned}</p>
                       )}
                     </div>
                     <button
                       onClick={() => { setActiveTab("tenants"); setShowTenantForm(true); setSelectedProperty(null); }}
                       className="w-full mt-2 text-xs text-accent hover:underline flex items-center justify-center gap-1 py-1"
                     >
-                      <Plus className="h-3 w-3" /> Créer un nouveau locataire
+                      <Plus className="h-3 w-3" /> {L.createNewTenant}
                     </button>
                   </div>
                 )}
@@ -697,9 +697,9 @@ const RentalManagement = () => {
           </div>
 
           {/* Paiements */}
-          <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Euro className="h-4 w-4 text-accent" />Paiements</h3>
-            {propPayments.length === 0 ? <p className="text-sm text-muted-foreground">Aucun paiement.</p> : (
+           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
+             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Euro className="h-4 w-4 text-accent" />{L.payments}</h3>
+            {propPayments.length === 0 ? <p className="text-sm text-muted-foreground">{L.noPayment}</p> : (
               <div className="space-y-1">
                 {propPayments.slice(0, 10).map(p => {
                   const tenant = tenants.find(t => t.id === p.tenant_id);
@@ -712,7 +712,7 @@ const RentalManagement = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>{p.paid ? "Payé" : "Impayé"}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>{p.paid ? L.paid : L.unpaid}</span>
                       </div>
                     </div>
                   );
@@ -723,8 +723,8 @@ const RentalManagement = () => {
 
           {/* Dépenses */}
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Wallet className="h-4 w-4 text-accent" />Dépenses</h3>
-            {propertyExpenses.length === 0 ? <p className="text-sm text-muted-foreground">Aucune dépense enregistrée.</p> : (
+             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Wallet className="h-4 w-4 text-accent" />{L.totalExpenses}</h3>
+             {propertyExpenses.length === 0 ? <p className="text-sm text-muted-foreground">{L.noExpense}</p> : (
               <div className="space-y-1">
                 {propertyExpenses.slice(0, 10).map(e => (
                   <div key={e.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
@@ -742,26 +742,26 @@ const RentalManagement = () => {
           {/* États des lieux */}
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-accent" />États des lieux</h3>
-              <div className="flex gap-2">
-                <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "entry", propertyLabel: selectedProperty.label })}
-                  className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20">+ Entrée</button>
-                <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "exit", propertyLabel: selectedProperty.label })}
-                  className="text-xs bg-destructive/10 text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/20">+ Sortie</button>
-              </div>
+               <h3 className="font-semibold text-foreground flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-accent" />{L.inventoryReports}</h3>
+               <div className="flex gap-2">
+                 <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "entry", propertyLabel: selectedProperty.label })}
+                   className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20">+ {L.entry}</button>
+                 <button onClick={() => setInventoryMode({ propertyId: selectedProperty.id, tenantId: propTenants[0]?.id, reportType: "exit", propertyLabel: selectedProperty.label })}
+                   className="text-xs bg-destructive/10 text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/20">+ {L.exit}</button>
+               </div>
             </div>
-            {propertyInventories.length === 0 ? <p className="text-sm text-muted-foreground">Aucun état des lieux.</p> : (
+            {propertyInventories.length === 0 ? <p className="text-sm text-muted-foreground">{L.noInventory}</p> : (
               <div className="space-y-1">
                 {propertyInventories.map(inv => {
                   const invTenant = tenants.find(t => t.id === inv.tenant_id);
                   return (
                     <div key={inv.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
                       <div>
-                        <p className="text-sm font-medium text-foreground">{inv.report_type === "entry" ? "Entrée" : "Sortie"} — {inv.report_date}</p>
-                        {invTenant && <p className="text-xs text-muted-foreground">Locataire : {invTenant.name}</p>}
+                         <p className="text-sm font-medium text-foreground">{inv.report_type === "entry" ? L.entry : L.exit} — {inv.report_date}</p>
+                         {invTenant && <p className="text-xs text-muted-foreground">{L.tenant_label} : {invTenant.name}</p>}
                       </div>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full ${inv.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {inv.status === "completed" ? "Finalisé" : "Brouillon"}
+                        {inv.status === "completed" ? L.completed : L.draft}
                       </span>
                     </div>
                   );
@@ -774,7 +774,7 @@ const RentalManagement = () => {
           {selectedProperty.furnished && (
             <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Sofa className="h-4 w-4 text-accent" />Mobilier</h3>
-              {propertyFurniture.length === 0 ? <p className="text-sm text-muted-foreground">Aucun meuble enregistré.</p> : (
+              {propertyFurniture.length === 0 ? <p className="text-sm text-muted-foreground">{L.noFurniture}</p> : (
                 <div className="space-y-3">
                   {Object.entries(groupedFurniture).map(([room, items]) => (
                     <div key={room}>
@@ -821,11 +821,11 @@ const RentalManagement = () => {
                    {isLeaseActive(selectedTenant) ? L.active : L.terminated}
               </span>
               {selectedTenant.tenant_user_id ? (
-                <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Compte actif</span>
+                <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
               ) : (
                 <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
                   className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50">
-                  <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? "Envoi…" : "Inviter"}
+                  <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
                 </button>
               )}
               <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" /> {L.editTenant}</button>
@@ -872,15 +872,15 @@ const RentalManagement = () => {
 
               {prop && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "entry", propertyLabel: prop.label })}
-                    className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                    <ClipboardCheck className="h-5 w-5 text-accent" />
-                    <div><div className="text-sm font-medium text-foreground">État des lieux d'entrée</div><div className="text-xs text-muted-foreground">Pièce par pièce avec photos</div></div>
-                  </button>
-                  <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "exit", propertyLabel: prop.label })}
-                    className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
-                    <ClipboardCheck className="h-5 w-5 text-destructive" />
-                    <div><div className="text-sm font-medium text-foreground">État des lieux de sortie</div><div className="text-xs text-muted-foreground">Comparer avec l'entrée</div></div>
+                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "entry", propertyLabel: prop.label })}
+                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
+                     <ClipboardCheck className="h-5 w-5 text-accent" />
+                     <div><div className="text-sm font-medium text-foreground">{L.entryInventory}</div><div className="text-xs text-muted-foreground">{L.roomByRoom}</div></div>
+                   </button>
+                   <button onClick={() => setInventoryMode({ propertyId: prop.id, tenantId: selectedTenant.id, reportType: "exit", propertyLabel: prop.label })}
+                     className="flex items-center gap-3 bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left">
+                     <ClipboardCheck className="h-5 w-5 text-destructive" />
+                     <div><div className="text-sm font-medium text-foreground">{L.exitInventory}</div><div className="text-xs text-muted-foreground">{L.compareEntry}</div></div>
                   </button>
                 </div>
               )}
@@ -889,9 +889,9 @@ const RentalManagement = () => {
 
           {tenantTab === "payments" && (
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-              <h3 className="font-semibold text-foreground mb-4">Historique des paiements</h3>
-              {tenantPayments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun paiement enregistré.</p>
+               <h3 className="font-semibold text-foreground mb-4">{L.paymentHistory}</h3>
+               {tenantPayments.length === 0 ? (
+                 <p className="text-sm text-muted-foreground">{L.noPayment}</p>
               ) : (
                 <div className="space-y-2">
                   {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
@@ -913,22 +913,22 @@ const RentalManagement = () => {
                         )}
                         {paymentMethodDialog === p.id && (
                           <div className="absolute right-4 top-10 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-48">
-                            {[
-                              { id: "online", label: "En ligne", icon: CreditCard },
-                              { id: "bank_transfer", label: "Virement", icon: Wallet },
-                              { id: "cash", label: "Espèces", icon: Euro },
-                            ].map(m => (
-                              <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                className="flex items-center gap-2 w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors">
+                             {[
+                               { id: "online", label: L.online, icon: CreditCard },
+                               { id: "bank_transfer", label: L.transfer, icon: Wallet },
+                               { id: "cash", label: L.cash, icon: Euro },
+                             ].map(m => (
+                               <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
+                                 className="flex items-center gap-2 w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted transition-colors">
                                 <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
                                 {m.label}
                               </button>
                             ))}
-                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">Annuler</button>
+                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-[10px] text-muted-foreground w-full text-center">{L.cancel}</button>
                           </div>
                         )}
-                        {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">Valider quittance</button>}
-                        {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Accessible</span>}
+                         {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}
+                         {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
                         {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
                       </div>
                     </div>
@@ -941,7 +941,7 @@ const RentalManagement = () => {
           {tenantTab === "messages" && (
             <div className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ minHeight: 400 }}>
               <div className="flex-1 p-4 space-y-3 overflow-y-auto max-h-80">
-                {messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Aucun échange.</p>}
+                {messages.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">{L.noExchange}</p>}
                 {messages.map((msg: any) => (
                   <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[70%] rounded-xl px-4 py-2 text-sm ${msg.sender_id === user?.id ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
@@ -1253,8 +1253,8 @@ const RentalManagement = () => {
             {properties.length === 0 && !showPropertyForm && (
               <div className="text-center py-16">
                 <Home className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h2 className="text-lg font-semibold text-foreground mb-1">Aucun bien</h2>
-                <p className="text-sm text-muted-foreground">Ajoutez votre premier bien immobilier.</p>
+                 <h2 className="text-lg font-semibold text-foreground mb-1">{L.noPropertyTitle}</h2>
+                 <p className="text-sm text-muted-foreground">{L.addFirstProperty}</p>
               </div>
             )}
 
@@ -1278,7 +1278,7 @@ const RentalManagement = () => {
                       <div className="flex items-center gap-2 mb-2 px-1">
                         <Building className="h-4 w-4 text-accent" />
                         <span className="text-sm font-semibold text-foreground">{bName}</span>
-                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{bProps.length} lot{bProps.length > 1 ? "s" : ""}</span>
+                        <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{bProps.length} {L.lots}{bProps.length > 1 ? "s" : ""}</span>
                       </div>
                       <div className="space-y-2 ml-6 border-l-2 border-accent/20 pl-4">
                         {bProps.map(p => renderPropertyCard(p))}
@@ -1287,7 +1287,7 @@ const RentalManagement = () => {
                   ))}
                   {standalone.length > 0 && Object.keys(buildings).length > 0 && (
                     <div className="mb-2 px-1">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Biens individuels</span>
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{L.individualProperties}</span>
                     </div>
                   )}
                   <div className="space-y-3">
@@ -1382,8 +1382,8 @@ const RentalManagement = () => {
             {filteredTenants.length === 0 && !showTenantForm && (
               <div className="text-center py-16">
                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h2 className="text-lg font-semibold text-foreground mb-1">{leaseFilter === "terminated" ? "Aucun bail résilié" : "Aucun locataire"}</h2>
-                <p className="text-sm text-muted-foreground">{leaseFilter === "terminated" ? "Tous vos baux sont actifs." : "Ajoutez votre premier locataire."}</p>
+                 <h2 className="text-lg font-semibold text-foreground mb-1">{leaseFilter === "terminated" ? L.noActiveLease : L.noTenant}</h2>
+                 <p className="text-sm text-muted-foreground">{leaseFilter === "terminated" ? L.allLeasesActive : L.addFirstTenant}</p>
               </div>
             )}
 
@@ -1404,17 +1404,17 @@ const RentalManagement = () => {
                              {active ? L.active : L.terminated}
                            </span>
                           {t.tenant_user_id ? (
-                            <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />Connecté</span>
+                            <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />{L.connected}</span>
                           ) : t.email ? (
                             <button onClick={(e) => { e.stopPropagation(); handleInviteTenant(t); }} disabled={invitingTenantId === t.id}
                               className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full flex items-center gap-0.5 hover:bg-accent/20 disabled:opacity-50">
-                              <Link2 className="h-2.5 w-2.5" />{invitingTenantId === t.id ? "Copie…" : "Inviter"}
+                              <Link2 className="h-2.5 w-2.5" />{invitingTenantId === t.id ? L.sending : L.invite}
                             </button>
                           ) : null}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
                           {prop && <span className="flex items-center gap-1"><Home className="h-3 w-3" />{prop.label}</span>}
-                          {t.rent_amount > 0 && <span>{fmt(t.rent_amount)}/mois</span>}
+                          {t.rent_amount > 0 && <span>{fmt(t.rent_amount)}{L.perMonth}</span>}
                           <span>{t.lease_start || "—"} → {t.lease_end || "—"}</span>
                         </div>
                       </div>
@@ -1460,7 +1460,7 @@ const RentalManagement = () => {
                 <option value="">{L.allProperties}</option>
                 {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
-              <span className="text-xs text-muted-foreground">{filteredPayments.length} appel(s)</span>
+              <span className="text-xs text-muted-foreground">{filteredPayments.length} {L.calls}</span>
             </div>
 
             {filteredPayments.length === 0 ? (
@@ -1475,9 +1475,9 @@ const RentalManagement = () => {
                     <tr className="border-b border-border bg-muted/30">
                        <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.tenant}</th>
                        <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.property}</th>
-                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Mois</th>
+                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.month}</th>
                        <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.rent}</th>
-                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
+                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{L.status}</th>
                        <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
                        <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
                     </tr>
@@ -1494,18 +1494,18 @@ const RentalManagement = () => {
                           <td className="px-4 py-3 text-sm font-medium text-foreground">{fmt(p.total_amount)}</td>
                           <td className="px-4 py-3 text-right relative">
                             {p.paid ? (
-                              <button onClick={() => togglePayment(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-700">
-                                ✓ Payé {p.payment_method === "online" ? "(en ligne)" : p.payment_method === "bank_transfer" ? "(virement)" : p.payment_method === "cash" ? "(espèces)" : ""}
+                               <button onClick={() => togglePayment(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-700">
+                                 ✓ {L.paid} {p.payment_method === "online" ? `(${L.online})` : p.payment_method === "bank_transfer" ? `(${L.transfer})` : p.payment_method === "cash" ? `(${L.cash})` : ""}
                               </button>
                             ) : (
                               <div className="flex items-center justify-end gap-2">
                                 <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
-                                  Marquer payé
-                                </button>
-                                <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                  className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
-                                  {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-                                  Payer en ligne
+                                   {L.markPaid}
+                                 </button>
+                                 <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
+                                   className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
+                                   {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+                                   {L.online}
                                 </button>
                               </div>
                             )}
