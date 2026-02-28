@@ -365,6 +365,7 @@ const Onboarding = () => {
                     onChange={v => setOwnerForm(f => ({ ...f, address: v }))}
                     onSelect={handleOwnerAddressSelect}
                     placeholder={t("ob.address_placeholder")}
+                    countryCode={country || undefined}
                   />
                 </div>
                 {renderInput(t("ob.postal_code"), ownerForm.postal_code, v => setOwnerForm(f => ({ ...f, postal_code: v })))}
@@ -403,6 +404,7 @@ const Onboarding = () => {
                     onChange={v => setPropertyForm(f => ({ ...f, address: v }))}
                     onSelect={handlePropertyAddressSelect}
                     placeholder={t("ob.address_placeholder")}
+                    countryCode={country || undefined}
                   />
                 </div>
                 {renderInput(t("ob.postal_code"), propertyForm.postal_code, v => setPropertyForm(f => ({ ...f, postal_code: v })))}

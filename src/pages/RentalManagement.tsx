@@ -141,7 +141,7 @@ const RentalManagement = () => {
   const [propertyInventories, setPropertyInventories] = useState<any[]>([]);
 
   // Templates
-  const rentalTemplates = getTemplatesByCategory("rental", "FR");
+  const rentalTemplates = getTemplatesByCategory("rental", userCountry as any);
 
   // Stats
   const totalRent = tenants.reduce((s, t) => s + (t.rent_amount || 0), 0);
@@ -182,7 +182,8 @@ const RentalManagement = () => {
   /* ─── Postal code lookup ─── */
   const handlePostalCodeChange = async (value: string) => {
     setPropertyForm(prev => ({ ...prev, postal_code: value }));
-    if (value.length === 5) {
+    // Only use French postal code API for France; skip for other countries
+    if (userCountry === "FR" && value.length === 5) {
       try {
         const res = await fetch(`https://geo.api.gouv.fr/communes?codePostal=${value}&fields=nom,codesPostaux&limit=10`);
         const data = await res.json();
@@ -576,7 +577,7 @@ const RentalManagement = () => {
       <DashboardLayout>
         <div className="max-w-5xl mx-auto">
           <button onClick={() => setSelectedProperty(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-            <ArrowLeft className="h-3.5 w-3.5" /> Retour aux biens
+            <ArrowLeft className="h-3.5 w-3.5" /> {L.properties}
           </button>
 
           {/* Header */}
@@ -589,18 +590,18 @@ const RentalManagement = () => {
               <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" />Modifier</button>
+              <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" />{L.editProperty}</button>
             </div>
           </div>
 
           {/* KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">Loyer + Charges</p>
+              <p className="text-xs text-muted-foreground">{L.rent} + {L.charges}</p>
               <p className="text-lg font-bold text-foreground">{fmt(selectedProperty.monthly_rent + selectedProperty.monthly_charges)}</p>
             </div>
             <div className="bg-card rounded-xl p-4 border border-border/50">
-              <p className="text-xs text-muted-foreground">Locataire(s)</p>
+              <p className="text-xs text-muted-foreground">{L.tenants}</p>
               <p className="text-lg font-bold text-foreground">{propTenants.length}</p>
             </div>
             <div className="bg-card rounded-xl p-4 border border-border/50">
@@ -616,7 +617,7 @@ const RentalManagement = () => {
           {/* Locataires */}
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><Users className="h-4 w-4 text-accent" />Locataires</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><Users className="h-4 w-4 text-accent" />{L.tenants}</h3>
               {propTenants.length === 0 && (
                 <button
                   onClick={() => setAssignPropertyId(assignPropertyId === selectedProperty.id ? null : selectedProperty.id)}
@@ -804,8 +805,8 @@ const RentalManagement = () => {
     return (
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
-          <button onClick={() => setSelectedTenant(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-            <ArrowLeft className="h-3.5 w-3.5" /> Retour
+           <button onClick={() => setSelectedTenant(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
+             <ArrowLeft className="h-3.5 w-3.5" /> {L.tenants}
           </button>
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center">
@@ -813,11 +814,11 @@ const RentalManagement = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground">{selectedTenant.name}</h1>
-              <p className="text-sm text-muted-foreground">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : "Aucun bien attribué"}</p>
+              <p className="text-sm text-muted-foreground">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isLeaseActive(selectedTenant) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
-                {isLeaseActive(selectedTenant) ? "Bail actif" : "Bail résilié"}
+                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isLeaseActive(selectedTenant) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
+                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
               </span>
               {selectedTenant.tenant_user_id ? (
                 <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Compte actif</span>
@@ -827,16 +828,16 @@ const RentalManagement = () => {
                   <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? "Envoi…" : "Inviter"}
                 </button>
               )}
-              <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" /> Modifier</button>
+              <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" /> {L.editTenant}</button>
             </div>
           </div>
 
           <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">
             {([
-              { key: "info" as const, label: "Fiche", icon: FileText },
-              { key: "payments" as const, label: "Paiements", icon: Euro },
-              { key: "messages" as const, label: "Échanges", icon: MessageSquare },
-              { key: "documents" as const, label: "Documents", icon: Upload },
+               { key: "info" as const, label: L.overview, icon: FileText },
+               { key: "payments" as const, label: L.payments, icon: Euro },
+               { key: "messages" as const, label: "Messages", icon: MessageSquare },
+               { key: "documents" as const, label: "Documents", icon: Upload },
             ]).map((tab) => (
               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors flex-1 justify-center ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -849,24 +850,24 @@ const RentalManagement = () => {
             <div className="space-y-4">
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Email</span><p className="font-medium text-foreground">{selectedTenant.email || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Téléphone</span><p className="font-medium text-foreground">{selectedTenant.phone || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Date de naissance</span><p className="font-medium text-foreground">{selectedTenant.birth_date || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Lieu de naissance</span><p className="font-medium text-foreground">{selectedTenant.birth_place || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Nationalité</span><p className="font-medium text-foreground">{selectedTenant.nationality || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Profession</span><p className="font-medium text-foreground">{selectedTenant.profession || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Type de bail</span><p className="font-medium text-foreground">{selectedTenant.lease_type === "furnished" ? "Meublé" : selectedTenant.lease_type === "commercial" ? "Commercial" : "Vide"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Début / Fin</span><p className="font-medium text-foreground">{selectedTenant.lease_start || "—"} → {selectedTenant.lease_end || "—"}</p></div>
-                  <div><span className="text-xs text-muted-foreground">Loyer HC / Charges</span><p className="font-medium text-foreground">{selectedTenant.rent_amount || 0} € / {selectedTenant.charges_amount || 0} €</p></div>
-                  <div><span className="text-xs text-muted-foreground">Dépôt de garantie</span><p className="font-medium text-foreground">{selectedTenant.deposit_amount || 0} €</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.email}</span><p className="font-medium text-foreground">{selectedTenant.email || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.phone}</span><p className="font-medium text-foreground">{selectedTenant.phone || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.birthDate}</span><p className="font-medium text-foreground">{selectedTenant.birth_date || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.birthPlace}</span><p className="font-medium text-foreground">{selectedTenant.birth_place || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.nationality}</span><p className="font-medium text-foreground">{selectedTenant.nationality || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.profession}</span><p className="font-medium text-foreground">{selectedTenant.profession || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.leaseType}</span><p className="font-medium text-foreground">{cc.leaseTypes.find(lt => lt.value === selectedTenant.lease_type)?.label || selectedTenant.lease_type}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.leaseStart} / {L.leaseEnd}</span><p className="font-medium text-foreground">{selectedTenant.lease_start || "—"} → {selectedTenant.lease_end || "—"}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.rent} / {L.charges}</span><p className="font-medium text-foreground">{fmt(selectedTenant.rent_amount || 0)} / {fmt(selectedTenant.charges_amount || 0)}</p></div>
+                   <div><span className="text-xs text-muted-foreground">{L.deposit}</span><p className="font-medium text-foreground">{fmt(selectedTenant.deposit_amount || 0)}</p></div>
                   {selectedTenant.guarantor_name && (
-                    <>
-                      <div><span className="text-xs text-muted-foreground">Garant</span><p className="font-medium text-foreground">{selectedTenant.guarantor_name}</p></div>
-                      <div><span className="text-xs text-muted-foreground">Tél. garant</span><p className="font-medium text-foreground">{selectedTenant.guarantor_phone || "—"}</p></div>
-                    </>
+                     <>
+                       <div><span className="text-xs text-muted-foreground">{L.guarantor}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_name}</p></div>
+                       <div><span className="text-xs text-muted-foreground">{L.guarantorPhone}</span><p className="font-medium text-foreground">{selectedTenant.guarantor_phone || "—"}</p></div>
+                     </>
                   )}
                 </div>
-                {selectedTenant.notes && <div className="mt-4 border-t border-border/50 pt-3"><span className="text-xs text-muted-foreground">Notes</span><p className="text-sm text-foreground mt-1">{selectedTenant.notes}</p></div>}
+                {selectedTenant.notes && <div className="mt-4 border-t border-border/50 pt-3"><span className="text-xs text-muted-foreground">{L.notes}</span><p className="text-sm text-foreground mt-1">{selectedTenant.notes}</p></div>}
               </div>
 
               {prop && (
@@ -900,15 +901,15 @@ const RentalManagement = () => {
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm text-foreground">{p.total_amount} €</span>
+                        <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
                         {p.paid ? (
-                          <button onClick={() => togglePayment(p.id)} className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-700">
-                            Payé {p.payment_method === "online" ? "(en ligne)" : p.payment_method === "bank_transfer" ? "(virement)" : p.payment_method === "cash" ? "(espèces)" : ""}
-                          </button>
+                           <button onClick={() => togglePayment(p.id)} className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-700">
+                             {L.paid}
+                           </button>
                         ) : (
-                          <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-2 py-1 rounded bg-red-400/20 text-red-600">
-                            Impayé
-                          </button>
+                           <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-2 py-1 rounded bg-red-400/20 text-red-600">
+                             {L.unpaid}
+                           </button>
                         )}
                         {paymentMethodDialog === p.id && (
                           <div className="absolute right-4 top-10 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-48">
@@ -1200,7 +1201,8 @@ const RentalManagement = () => {
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
-                      onSelect={(result: AddressResult) => setPropertyForm({ ...propertyForm, address: result.label || "", postal_code: result.postcode || "", city: result.city || "" })} /></div>
+                      onSelect={(result: AddressResult) => setPropertyForm({ ...propertyForm, address: result.street ? `${result.housenumber || ""} ${result.street}`.trim() : result.label || "", postal_code: result.postcode || "", city: result.city || "" })}
+                      countryCode={userCountry} /></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="relative"><label className="block text-xs font-medium text-muted-foreground mb-1">{L.postalCode}</label>
                       <input value={propertyForm.postal_code} onChange={(e) => handlePostalCodeChange(e.target.value)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
@@ -1302,22 +1304,22 @@ const RentalManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <h2 className="font-semibold text-foreground">{filteredTenants.length} locataire{filteredTenants.length !== 1 ? "s" : ""}</h2>
-                <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
-                  {([
-                    { key: "active" as const, label: "Actifs", count: activeCount },
-                    { key: "terminated" as const, label: "Résiliés", count: terminatedCount },
-                    { key: "all" as const, label: "Tous", count: tenants.length },
-                  ]).map(f => (
-                    <button key={f.key} onClick={() => setLeaseFilter(f.key)}
-                      className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${leaseFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                      {f.label} ({f.count})
-                    </button>
-                  ))}
+                 <h2 className="font-semibold text-foreground">{filteredTenants.length} {L.tenants.toLowerCase()}</h2>
+                 <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
+                   {([
+                     { key: "active" as const, label: L.active, count: activeCount },
+                     { key: "terminated" as const, label: L.terminated, count: terminatedCount },
+                     { key: "all" as const, label: L.all, count: tenants.length },
+                   ]).map(f => (
+                     <button key={f.key} onClick={() => setLeaseFilter(f.key)}
+                       className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${leaseFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                       {f.label} ({f.count})
+                     </button>
+                   ))}
                 </div>
               </div>
-              <button onClick={() => setShowTenantForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                <Plus className="h-4 w-4" />Ajouter
+               <button onClick={() => setShowTenantForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
+                 <Plus className="h-4 w-4" />{L.addTenant}
               </button>
             </div>
 
@@ -1398,9 +1400,9 @@ const RentalManagement = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-foreground text-sm">{t.name}</span>
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${active ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
-                            {active ? "Actif" : "Résilié"}
-                          </span>
+                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${active ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
+                             {active ? L.active : L.terminated}
+                           </span>
                           {t.tenant_user_id ? (
                             <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />Connecté</span>
                           ) : t.email ? (
@@ -1444,9 +1446,9 @@ const RentalManagement = () => {
         {activeTab === "payments" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-foreground">Suivi des loyers</h2>
-              <button onClick={generateMonthlyRentCalls} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                <Plus className="h-4 w-4" />Appels du mois
+               <h2 className="font-semibold text-foreground">{L.rentTracking}</h2>
+               <button onClick={generateMonthlyRentCalls} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
+                 <Plus className="h-4 w-4" />{L.monthCalls}
               </button>
             </div>
 
@@ -1455,7 +1457,7 @@ const RentalManagement = () => {
               <Filter className="h-4 w-4 text-muted-foreground" />
               <select value={paymentPropertyFilter} onChange={e => setPaymentPropertyFilter(e.target.value)}
                 className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
-                <option value="">Tous les biens</option>
+                <option value="">{L.allProperties}</option>
                 {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
               <span className="text-xs text-muted-foreground">{filteredPayments.length} appel(s)</span>
@@ -1471,13 +1473,13 @@ const RentalManagement = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Locataire</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Bien</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Mois</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Montant</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Statut</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Notifier</th>
-                      <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Quittance</th>
+                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.tenant}</th>
+                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.property}</th>
+                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Mois</th>
+                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.rent}</th>
+                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
+                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
+                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
