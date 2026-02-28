@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Upload, CheckCircle, Clock, XCircle, Trash2, Download } from "lucide-react";
+import { FileText, Upload, CheckCircle, Clock, XCircle, Trash2, Download, Mail, Loader2 } from "lucide-react";
 
 interface Props {
   tenantId: string;
@@ -40,6 +40,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   const { toast } = useToast();
   const [docs, setDocs] = useState<TenantDoc[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const loadDocs = async () => {
     const { data } = await supabase
@@ -95,9 +96,85 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
     await loadDocs();
   };
 
+  const handleSendAllByEmail = async () => {
+    if (!orgId || docs.length === 0) return;
+    setSendingEmail(true);
+    try {
+      // Get tenant email
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("email")
+        .eq("id", tenantId)
+        .single();
+
+      if (!tenant?.email) {
+        toast({ title: "Erreur", description: "Ce locataire n'a pas d'adresse email configurée.", variant: "destructive" });
+        setSendingEmail(false);
+        return;
+      }
+
+      const appUrl = window.location.origin;
+      const docListHtml = docs.map(d => {
+        const sc = statusConfig[d.status];
+        const statusLabel = sc ? sc.label : d.status;
+        return `<tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${d.label}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${d.filename}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;">${statusLabel}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;"><a href="${d.file_url}" style="color:#d4a853;text-decoration:underline;">Télécharger</a></td>
+        </tr>`;
+      }).join("");
+
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: tenant.email,
+          subject: `Vos documents — Easy-Locs`,
+          html: `<div style="font-family:sans-serif;max-width:700px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">📄 Vos documents locataire</h2>
+            <p style="color:#555;font-size:15px;">Bonjour ${tenantName},</p>
+            <p style="color:#555;font-size:15px;">Voici le récapitulatif de vos documents :</p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+              <thead>
+                <tr style="background:#f5f5f5;">
+                  <th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Type</th>
+                  <th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Fichier</th>
+                  <th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Statut</th>
+                  <th style="padding:8px 12px;text-align:left;font-size:13px;color:#888;">Lien</th>
+                </tr>
+              </thead>
+              <tbody>${docListHtml}</tbody>
+            </table>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${appUrl}/tenant/documents" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Accéder à mes documents</a>
+            </div>
+            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+          </div>`,
+        },
+      });
+
+      toast({ title: "Email envoyé", description: `Récapitulatif des documents envoyé à ${tenant.email}` });
+    } catch (err: any) {
+      toast({ title: "Erreur d'envoi", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   return (
     <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-      <h3 className="font-semibold text-foreground mb-4">Documents du locataire — {tenantName}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-foreground">Documents du locataire — {tenantName}</h3>
+        {docs.length > 0 && (
+          <button
+            onClick={handleSendAllByEmail}
+            disabled={sendingEmail}
+            className="flex items-center gap-2 text-sm font-medium bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
+          >
+            {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+            {sendingEmail ? "Envoi…" : "Envoyer par email"}
+          </button>
+        )}
+      </div>
 
       <div className="space-y-3">
         {DOC_TYPES.map(dt => {
