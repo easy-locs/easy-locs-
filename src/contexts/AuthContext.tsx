@@ -20,6 +20,8 @@ interface AuthContextType {
   emailVerified: boolean;
   orgId: string | null;
   userType: UserType;
+  userCountry: string;
+  userCurrency: string;
   onboardingCompleted: boolean;
   subscription: SubscriptionState;
   refreshSubscription: () => Promise<void>;
@@ -42,6 +44,8 @@ const AuthContext = createContext<AuthContextType>({
   emailVerified: false,
   orgId: null,
   userType: "landlord",
+  userCountry: "FR",
+  userCurrency: "EUR",
   onboardingCompleted: false,
   subscription: defaultSubscription,
   refreshSubscription: async () => {},
@@ -56,6 +60,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>("landlord");
+  const [userCountry, setUserCountry] = useState("FR");
+  const [userCurrency, setUserCurrency] = useState("EUR");
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
 
@@ -72,11 +78,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserType = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("user_type, onboarding_completed")
+      .select("user_type, onboarding_completed, country, currency")
       .eq("id", userId)
       .single();
     setUserType((data?.user_type as UserType) ?? "landlord");
     setOnboardingCompleted(data?.onboarding_completed ?? false);
+    setUserCountry(data?.country ?? "FR");
+    setUserCurrency(data?.currency ?? "EUR");
   }, []);
 
   const refreshSubscription = useCallback(async () => {
@@ -95,6 +103,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setOrgId(null);
           setUserType("landlord");
+          setUserCountry("FR");
+          setUserCurrency("EUR");
           setOnboardingCompleted(false);
           setSubscription({ ...defaultSubscription, loading: false });
         }
@@ -132,12 +142,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSession(null);
     setOrgId(null);
     setUserType("landlord");
+    setUserCountry("FR");
+    setUserCurrency("EUR");
     setOnboardingCompleted(false);
     setSubscription({ ...defaultSubscription, loading: false });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, onboardingCompleted, subscription, refreshSubscription, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, refreshSubscription, signOut }}>
       {children}
     </AuthContext.Provider>
   );
