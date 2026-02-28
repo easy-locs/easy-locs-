@@ -71,17 +71,21 @@ const TenantMessages = () => {
       if (orgId) {
         supabase.from("orgs").select("email").eq("id", orgId).single().then(({ data: org }) => {
           if (org?.email) {
+            const appUrl = window.location.origin;
             supabase.functions.invoke("send-email", {
               body: {
                 to: org.email,
                 subject: `Nouveau message de votre locataire`,
-                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-                  <h2 style="color:#1a1a1a;">📩 Nouveau message locataire</h2>
-                  <p style="color:#555;">Un locataire vous a envoyé un message :</p>
-                  <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                    <p style="color:#1a1a1a;white-space:pre-wrap;">${newMsg.trim()}</p>
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                  <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
+                  <p style="color:#555;font-size:15px;">Un locataire vous a envoyé un message :</p>
+                  <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${newMsg.trim()}</p>
                   </div>
-                  <p style="color:#888;font-size:13px;">Connectez-vous à votre tableau de bord pour répondre.</p>
+                  <div style="text-align:center;margin:24px 0;">
+                    <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+                  </div>
+                  <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
                 </div>`,
               },
             }).catch(() => {});

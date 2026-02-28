@@ -169,17 +169,24 @@ const Messages = () => {
       setNewMessage("");
       // Send email notification to tenant
       if (selectedTenant.email) {
+        const appUrl = window.location.origin;
         supabase.functions.invoke("send-email", {
           body: {
             to: selectedTenant.email,
             subject: `Nouveau message de votre bailleur`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">📩 Nouveau message</h2>
-              <p style="color:#555;">Vous avez reçu un nouveau message de votre bailleur :</p>
-              <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;white-space:pre-wrap;">${newMessage.trim()}</p>
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+              <div style="text-align:center;margin-bottom:24px;">
+                <h2 style="color:#1a1a1a;margin:0;">📩 Nouveau message de votre bailleur</h2>
               </div>
-              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour répondre.</p>
+              <p style="color:#555;font-size:15px;">Bonjour,</p>
+              <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
+              <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${newMessage.trim()}</p>
+              </div>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+              </div>
+              <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement. Pour répondre, utilisez votre espace locataire Easy-Locs.</p>
             </div>`,
           },
         }).catch(() => { /* silent — email is best-effort */ });
