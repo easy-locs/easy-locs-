@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useI18n } from "@/lib/i18n";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -188,23 +189,29 @@ const Settings = () => {
               <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.address")}</label>
+              <AddressAutocomplete
+                value={org.address}
+                onChange={(val) => setOrg(o => ({ ...o, address: val }))}
+                onSelect={(result: AddressResult) => setOrg(o => ({
+                  ...o,
+                  address: result.label || "",
+                  postal_code: result.postcode || o.postal_code,
+                  city: result.city || o.city,
+                }))}
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.address")}</label>
-                <input type="text" value={org.address} onChange={e => setOrg(o => ({ ...o, address: e.target.value }))}
+                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.postal_code")}</label>
+                <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.postal_code")}</label>
-                  <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.city")}</label>
-                  <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.city")}</label>
+                <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bell } from "lucide-react";
+import { Bell, MessageCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const NotificationBell = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -26,7 +28,6 @@ const NotificationBell = () => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Realtime subscription
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -46,14 +47,32 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
+  const handleAction = (n: any) => {
+    // Mark as read
+    supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
+    setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
+    setOpen(false);
+
+    if (n.link) {
+      navigate(n.link);
+    } else if (n.type === "message") {
+      navigate("/dashboard/messages");
+    }
+  };
+
   const typeIcon: Record<string, string> = {
-    payment: "💳",
-    message: "💬",
-    dunning: "⚠️",
-    rent_call: "🏠",
-    document: "📄",
-    request: "📋",
-    info: "ℹ️",
+    payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
+    document: "📄", request: "📋", info: "ℹ️",
+  };
+
+  const getActionLabel = (n: any): string | null => {
+    if (n.type === "message") return "Répondre";
+    if (n.type === "request") return "Voir la demande";
+    if (n.type === "document") return "Voir le document";
+    if (n.type === "payment") return "Voir le paiement";
+    if (n.type === "dunning") return "Voir la relance";
+    if (n.link) return "Ouvrir";
+    return null;
   };
 
   return (
@@ -86,27 +105,41 @@ const NotificationBell = () => {
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">Aucune notification</div>
               ) : (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <span className="text-base mt-0.5">{typeIcon[n.type] || "ℹ️"}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>
-                          {n.title}
-                        </p>
-                        {n.message && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
-                        )}
-                        <p className="text-[10px] text-muted-foreground/60 mt-1">
-                          {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
-                        </p>
+                notifications.map((n) => {
+                  const label = getActionLabel(n);
+                  return (
+                    <div
+                      key={n.id}
+                      className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-base mt-0.5">{typeIcon[n.type] || "ℹ️"}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>
+                            {n.title}
+                          </p>
+                          {n.message && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <p className="text-[10px] text-muted-foreground/60">
+                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
+                            </p>
+                            {label && (
+                              <button
+                                onClick={() => handleAction(n)}
+                                className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+                              >
+                                {n.type === "message" ? <MessageCircle className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
+                                {label}
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
