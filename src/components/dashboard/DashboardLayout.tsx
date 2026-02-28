@@ -77,8 +77,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-auto object-contain drop-shadow-sm" style={{ filter: "none", border: "none", outline: "none" }} />
-              <span className="text-lg font-bold tracking-tight text-sidebar-foreground">Easy-Locs</span>
+              <img src={logoEasyloc} alt="EASY-LOCS" className="h-10 w-auto object-contain drop-shadow-md" style={{ filter: "none", border: "none", outline: "none" }} />
+              <span className="text-lg font-bold tracking-tight text-sidebar-foreground whitespace-nowrap">EASY-LOCS<sup className="text-[8px] align-super ml-0.5 text-sidebar-foreground/60">®</sup></span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground">
               <X className="h-5 w-5" />
