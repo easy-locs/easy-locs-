@@ -1,6 +1,7 @@
 // Template & Rules Engine Types
 
 export type Country = "FR" | "BE" | "ES" | "IT" | "DE" | "PT" | "NL" | "CH" | "LU" | "GB" | "AT"
+  | "PL" | "SE" | "DK" | "NO" | "FI" | "GR" | "CZ" | "HU" | "RO" | "HR" | "IE" | "BG" | "SK"
   | "US" | "CA" | "BR" | "MX"
   | "MA" | "TN" | "SN" | "CI" | "ZA"
   | "AE" | "SA" | "TR"

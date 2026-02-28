@@ -18,6 +18,9 @@ const categoryLabels: Record<string, string> = {
 const countryLabels: Record<string, string> = {
   FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 Espagne", IT: "🇮🇹 Italie", DE: "🇩🇪 Allemagne",
   PT: "🇵🇹 Portugal", NL: "🇳🇱 Pays-Bas", GB: "🇬🇧 Royaume-Uni", CH: "🇨🇭 Suisse", AT: "🇦🇹 Autriche", LU: "🇱🇺 Luxembourg",
+  PL: "🇵🇱 Pologne", SE: "🇸🇪 Suède", DK: "🇩🇰 Danemark", NO: "🇳🇴 Norvège", FI: "🇫🇮 Finlande",
+  GR: "🇬🇷 Grèce", CZ: "🇨🇿 Tchéquie", HU: "🇭🇺 Hongrie", RO: "🇷🇴 Roumanie", HR: "🇭🇷 Croatie",
+  IE: "🇮🇪 Irlande", BG: "🇧🇬 Bulgarie", SK: "🇸🇰 Slovaquie",
 };
 
 interface DocRow {
@@ -208,6 +211,19 @@ const Documents = () => {
                 CH: "https://www.lawdepot.ch/",
                 AT: "https://www.lawdepot.at/",
                 LU: "https://www.lawdepot.be/",
+                PL: "https://www.lawdepot.com/",
+                SE: "https://www.lawdepot.com/",
+                DK: "https://www.lawdepot.com/",
+                NO: "https://www.lawdepot.com/",
+                FI: "https://www.lawdepot.com/",
+                GR: "https://www.lawdepot.com/",
+                CZ: "https://www.lawdepot.com/",
+                HU: "https://www.lawdepot.com/",
+                RO: "https://www.lawdepot.com/",
+                HR: "https://www.lawdepot.com/",
+                IE: "https://www.lawdepot.co.uk/",
+                BG: "https://www.lawdepot.com/",
+                SK: "https://www.lawdepot.com/",
               };
               return (
               <div key={country}>

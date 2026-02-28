@@ -1,0 +1,65 @@
+import type { DocumentTemplate } from "../types";
+
+export const huLeaseResidential: DocumentTemplate = {
+  id: "hu-lease-residential",
+  version: "1.0.0",
+  country: "HU",
+  category: "rental",
+  docType: "lease-residential",
+  label: "Lakásbérleti szerződés (Magyarország)",
+  description: "Lakásbérleti szerződés a Ptk. és a lakástörvény alapján.",
+  legalBasis: "Ptk. 6:331–6:340; 1993. évi LXXVIII. tv. a lakások bérletéről",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Bérbeadó neve", type: "text", required: true, validation: { minLength: 2 }, group: "Bérbeadó" },
+    { key: "landlordAddress", label: "Bérbeadó címe", type: "text", required: true, group: "Bérbeadó" },
+    { key: "tenantName", label: "Bérlő neve", type: "text", required: true, validation: { minLength: 2 }, group: "Bérlő" },
+    { key: "tenantAddress", label: "Bérlő címe", type: "text", required: false, group: "Bérlő" },
+    { key: "propertyAddress", label: "Ingatlan címe", type: "text", required: true, group: "Ingatlan" },
+    { key: "surface", label: "Alapterület (m²)", type: "number", required: true, validation: { min: 1 }, group: "Ingatlan" },
+    { key: "rooms", label: "Szobák száma", type: "number", required: true, validation: { min: 1 }, group: "Ingatlan" },
+    { key: "rentAmount", label: "Havi bérleti díj (Ft)", type: "number", required: true, validation: { min: 1 }, group: "Pénzügyek" },
+    { key: "depositAmount", label: "Kaució (Ft)", type: "number", required: true, validation: { min: 0 }, group: "Pénzügyek" },
+    { key: "startDate", label: "Kezdés dátuma", type: "date", required: true, group: "Időtartam" },
+    { key: "duration", label: "Időtartam", type: "select", required: true, options: [
+      { value: "indefinite", label: "Határozatlan idejű" },
+      { value: "12", label: "12 hónap" },
+    ], defaultValue: "indefinite", group: "Időtartam" },
+  ],
+  clauses: [
+    { id: "parties", label: "1.§ — Szerződő felek", required: true,
+      text: "LAKÁSBÉRLETI SZERZŐDÉS\n\nBérbeadó: {landlordName}, {landlordAddress}\nBérlő: {tenantName}" },
+    { id: "ingatlan", label: "2.§ — Bérlemény", required: true,
+      text: "A bérlemény címe: {propertyAddress}, {surface} m², {rooms} szoba." },
+    { id: "berleti-dij", label: "3.§ — Bérleti díj", required: true,
+      text: "Havi bérleti díj: {rentAmount} Ft. Kaució: {depositAmount} Ft." },
+    { id: "felmondas", label: "4.§ — Felmondás", required: true,
+      text: "Felmondási idő: 30 nap (határozatlan idejű szerződés esetén). A felmondás írásban érvényes." },
+  ],
+};
+
+export const huRentReceipt: DocumentTemplate = {
+  id: "hu-rent-receipt",
+  version: "1.0.0",
+  country: "HU",
+  category: "rental",
+  docType: "rent-receipt",
+  label: "Bérleti díj nyugta (Magyarország)",
+  description: "Nyugta a bérleti díj kifizetéséről.",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Bérbeadó", type: "text", required: true, group: "Bérbeadó" },
+    { key: "tenantName", label: "Bérlő", type: "text", required: true, group: "Bérlő" },
+    { key: "propertyAddress", label: "Cím", type: "text", required: true, group: "Ingatlan" },
+    { key: "rentAmount", label: "Bérleti díj (Ft)", type: "number", required: true, group: "Összegek" },
+    { key: "chargesAmount", label: "Közüzemi díjak (Ft)", type: "number", required: true, defaultValue: 0, group: "Összegek" },
+    { key: "period", label: "Időszak", type: "text", required: true, placeholder: "Január 2026", group: "Időszak" },
+    { key: "paymentDate", label: "Fizetés dátuma", type: "date", required: true, group: "Időszak" },
+  ],
+  clauses: [
+    { id: "nyugta", label: "Nyugta", required: true,
+      text: "BÉRLETI DÍJ NYUGTA\n\n{landlordName} igazolja, hogy {tenantName} részéről átvette:\n\n• Bérleti díj: {rentAmount} Ft\n• Közüzemi díjak: {chargesAmount} Ft\n• ÖSSZESEN: {totalAmount} Ft\n\na(z) {period} időszakra, fizetve {paymentDate}.\n\nAláírás:" },
+  ],
+};

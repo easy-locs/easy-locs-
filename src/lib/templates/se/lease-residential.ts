@@ -1,0 +1,76 @@
+import type { DocumentTemplate } from "../types";
+
+export const seLeaseResidential: DocumentTemplate = {
+  id: "se-lease-residential",
+  version: "1.0.0",
+  country: "SE",
+  category: "rental",
+  docType: "lease-residential",
+  label: "Hyresavtal för bostad (Sverige)",
+  description: "Hyreskontrakt i enlighet med Jordabalken (1970:994) kapitel 12.",
+  legalBasis: "Jordabalken (1970:994) kap. 12 (Hyreslagen)",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Hyresvärdens namn", type: "text", required: true, validation: { minLength: 2 }, group: "Hyresvärd" },
+    { key: "landlordAddress", label: "Hyresvärdens adress", type: "text", required: true, group: "Hyresvärd" },
+    { key: "landlordPersonnummer", label: "Personnummer / Org.nr", type: "text", required: false, group: "Hyresvärd" },
+    { key: "tenantName", label: "Hyresgästens namn", type: "text", required: true, validation: { minLength: 2 }, group: "Hyresgäst" },
+    { key: "tenantAddress", label: "Nuvarande adress", type: "text", required: false, group: "Hyresgäst" },
+    { key: "tenantPersonnummer", label: "Personnummer", type: "text", required: false, group: "Hyresgäst" },
+    { key: "propertyAddress", label: "Lägenhetens adress", type: "text", required: true, group: "Bostad" },
+    { key: "propertyType", label: "Typ av bostad", type: "select", required: true, options: [
+      { value: "Lägenhet", label: "Lägenhet" },
+      { value: "Hus", label: "Hus" },
+      { value: "Rum", label: "Rum" },
+    ], group: "Bostad" },
+    { key: "surface", label: "Yta (m²)", type: "number", required: true, validation: { min: 1 }, group: "Bostad" },
+    { key: "rooms", label: "Antal rum", type: "number", required: true, validation: { min: 1 }, group: "Bostad" },
+    { key: "furnished", label: "Möblerad?", type: "select", required: true, options: [
+      { value: "nej", label: "Nej" }, { value: "ja", label: "Ja" },
+    ], defaultValue: "nej", group: "Bostad" },
+    { key: "rentAmount", label: "Månadshyra (kr)", type: "number", required: true, validation: { min: 1 }, group: "Ekonomi" },
+    { key: "startDate", label: "Inflyttningsdatum", type: "date", required: true, group: "Period" },
+    { key: "duration", label: "Avtalstid", type: "select", required: true, options: [
+      { value: "indefinite", label: "Tillsvidare" },
+      { value: "12", label: "12 månader" },
+    ], defaultValue: "indefinite", group: "Period" },
+  ],
+  clauses: [
+    { id: "parties", label: "§1 — Parter", required: true,
+      text: "HYRESAVTAL FÖR BOSTAD\n\nHyresvärd: {landlordName}, {landlordAddress}\nHyresgäst: {tenantName}" },
+    { id: "bostad", label: "§2 — Föremål", required: true,
+      text: "Hyresvärden upplåter {propertyType} belägen på {propertyAddress}, {surface} m², {rooms} rum." },
+    { id: "hyra", label: "§3 — Hyra", required: true,
+      text: "Hyran uppgår till {rentAmount} kr/månad, att betalas i förskott senast den siste varje månad." },
+    { id: "tid", label: "§4 — Hyrestid", required: true,
+      text: "Avtalet gäller {duration} från {startDate}. Uppsägningstid: 3 månader enligt Hyreslagen." },
+    { id: "besittningsskydd", label: "§5 — Besittningsskydd", required: true,
+      text: "Hyresgästen har besittningsskydd enligt 12 kap. Jordabalken. Uppsägning ska vara skriftlig." },
+  ],
+};
+
+export const seRentReceipt: DocumentTemplate = {
+  id: "se-rent-receipt",
+  version: "1.0.0",
+  country: "SE",
+  category: "rental",
+  docType: "rent-receipt",
+  label: "Hyreskvitto (Sverige)",
+  description: "Kvitto på betald hyra.",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Hyresvärd", type: "text", required: true, group: "Hyresvärd" },
+    { key: "tenantName", label: "Hyresgäst", type: "text", required: true, group: "Hyresgäst" },
+    { key: "propertyAddress", label: "Adress", type: "text", required: true, group: "Bostad" },
+    { key: "rentAmount", label: "Hyra (kr)", type: "number", required: true, group: "Belopp" },
+    { key: "chargesAmount", label: "Tillägg (kr)", type: "number", required: true, defaultValue: 0, group: "Belopp" },
+    { key: "period", label: "Period", type: "text", required: true, placeholder: "Januari 2026", group: "Period" },
+    { key: "paymentDate", label: "Betalningsdatum", type: "date", required: true, group: "Period" },
+  ],
+  clauses: [
+    { id: "kvitto", label: "Kvitto", required: true,
+      text: "HYRESKVITTO\n\nUndertecknad {landlordName} bekräftar mottagande från {tenantName}:\n\n• Hyra: {rentAmount} kr\n• Tillägg: {chargesAmount} kr\n• TOTALT: {totalAmount} kr\n\nför perioden {period}, betalt {paymentDate}.\n\nUnderskrift:" },
+  ],
+};
