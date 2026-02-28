@@ -155,13 +155,28 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   };
 
   const handleRequestDocument = async (docType: string, label: string) => {
-    if (!orgId) return;
+    if (!orgId || !user) return;
     setRequestingDocType(docType);
 
     try {
-      if (tenantContact?.tenant_user_id) {
+      const normalizedEmail = tenantContact?.email?.trim().toLowerCase() || null;
+      const hasTenantAccount = !!tenantContact?.tenant_user_id;
+      const hasValidEmail = !!normalizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
+      // 1) Message in-app (historique conversation bailleur/locataire)
+      const { error: msgError } = await supabase.from("messages").insert({
+        org_id: orgId,
+        tenant_id: tenantId,
+        sender_id: user.id,
+        content: `Document manquant demandé : ${label}`,
+        read: false,
+      });
+      if (msgError) throw msgError;
+
+      // 2) Notification in-app côté locataire si compte actif
+      if (hasTenantAccount) {
         await supabase.from("notifications").insert({
-          user_id: tenantContact.tenant_user_id,
+          user_id: tenantContact!.tenant_user_id,
           org_id: orgId,
           type: "request",
           title: "Document demandé",
@@ -170,11 +185,12 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
         });
       }
 
-      if (tenantContact?.email) {
+      // 3) Email
+      if (hasValidEmail) {
         const appUrl = window.location.origin;
         const { data, error } = await supabase.functions.invoke("send-email", {
           body: {
-            to: tenantContact.email,
+            to: normalizedEmail,
             subject: `Document demandé : ${label}`,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
               <h2 style="color:#1a1a1a;text-align:center;">📄 Document demandé</h2>
@@ -196,8 +212,8 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
         }
       }
 
-      if (!tenantContact?.email && !tenantContact?.tenant_user_id) {
-        throw new Error("Ce locataire n'a ni email ni compte actif pour recevoir la demande.");
+      if (!hasTenantAccount && !hasValidEmail) {
+        throw new Error("Le locataire n'a ni compte actif ni email valide pour recevoir la demande.");
       }
 
       toast({ title: "Demande envoyée", description: `${label} demandé au locataire.` });
