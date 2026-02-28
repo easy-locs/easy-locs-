@@ -8,6 +8,7 @@ import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency } from "@/lib/country-config";
 import type { Json } from "@/integrations/supabase/types";
 
 interface DBDocument {
@@ -20,7 +21,7 @@ interface DBDocument {
 
 const Receipts = () => {
   const { t } = useI18n();
-  const { user, orgId } = useAuth();
+  const { user, orgId, userCountry } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [receipts, setReceipts] = useState<DBDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +168,7 @@ const Receipts = () => {
                         <td className="px-4 py-3 text-sm font-medium text-foreground">{String(data.tenantName || "—")}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{String(data.landlordName || ownerName || "—")}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{r.title}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{total.toLocaleString("fr-FR")} €</td>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">{formatCurrency(total, userCountry)}</td>
                         <td className="px-4 py-3 text-right">
                           <button onClick={() => handleDownload(r)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
                             <Download className="h-4 w-4" />

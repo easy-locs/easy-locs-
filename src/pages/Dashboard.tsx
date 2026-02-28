@@ -13,17 +13,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subMonths } from "date-fns";
 import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { formatCurrency } from "@/lib/country-config";
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
 const Dashboard = () => {
-  const { orgId } = useAuth();
+  const { orgId, userCountry } = useAuth();
   const { t, locale } = useI18n();
   const dateFnsLocale = DATE_LOCALES[locale] || fr;
+  const fmt = (n: number) => formatCurrency(n, userCountry);
 
   const quickActions = [
-    { icon: Euro, label: "Saisie de loyer", path: "/dashboard/rental?tab=payments", color: "bg-info/10 text-info" },
-    { icon: Users, label: "Nouveau locataire", path: "/dashboard/rental?tab=tenants", color: "bg-success/10 text-success" },
+    { icon: Euro, label: t("page.dashboard.generate_receipt"), path: "/dashboard/rental?tab=payments", color: "bg-info/10 text-info" },
+    { icon: Users, label: t("page.rental.add_tenant"), path: "/dashboard/rental?tab=tenants", color: "bg-success/10 text-success" },
     { icon: Bell, label: t("page.dashboard.view_reminders"), path: "/dashboard/reminders", color: "bg-warning/10 text-warning" },
     { icon: FolderLock, label: t("page.dashboard.my_vault"), path: "/dashboard/vault", color: "bg-accent/10 text-gold-dark" },
   ];
@@ -96,8 +98,7 @@ const Dashboard = () => {
     return months;
   }, [stats.rentCalls, dateFnsLocale]);
 
-  const fmt = (n: number) => n.toLocaleString(locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "pt" ? "pt-BR" : "en-US", { style: "currency", currency: "EUR" });
-  const fmtSize = (bytes: number) => bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} Mo` : `${(bytes / 1024).toFixed(0)} Ko`;
+  const fmtSize = (bytes: number) => bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 
   const upcomingActions = useMemo(() => {
     const actions: { label: string; date: string; urgent: boolean; path: string }[] = [];
