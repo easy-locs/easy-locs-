@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams } from "react-router-dom";
@@ -20,6 +20,7 @@ import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
+import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import {
   Home, FileText, ChevronRight, Plus, Users, Send, X,
   Phone, MapPin, Calendar, Download, Receipt, ClipboardList,
@@ -35,22 +36,7 @@ type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
 
-const propertyTypes = [
-  { value: "apartment", label: "Appartement" },
-  { value: "house", label: "Maison" },
-  { value: "studio", label: "Studio" },
-  { value: "commercial", label: "Local commercial" },
-  { value: "parking", label: "Parking / Garage" },
-];
-
-const heatingTypes = [
-  { value: "individual-gas", label: "Individuel gaz" },
-  { value: "individual-electric", label: "Individuel électrique" },
-  { value: "collective", label: "Collectif" },
-  { value: "heat-pump", label: "Pompe à chaleur" },
-  { value: "other", label: "Autre" },
-];
-
+const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
 const defaultPropertyForm = {
   label: "", address: "", postal_code: "", city: "", property_type: "apartment" as string,
   surface: 0, rooms: 1, heating: "individual-gas", furnished: false,
@@ -63,19 +49,15 @@ const defaultTenantForm = {
   lease_start: null as string | null, lease_end: null as string | null,
   rent_amount: 0, charges_amount: 0, deposit_amount: 0, lease_type: "empty",
   notes: "", birth_date: null as string | null, birth_place: null as string | null,
-  nationality: "Française" as string | null, profession: null as string | null,
+  nationality: "" as string | null, profession: null as string | null,
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
   caf_apl_amount: 0,
 };
-
-const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
 const EXPENSE_CATEGORIES: Record<string, string> = {
   travaux: "Travaux", assurance: "Assurance", taxe_fonciere: "Taxe foncière",
   charges_copro: "Charges copro", interet_emprunt: "Intérêts emprunt",
   frais_gestion: "Frais gestion", diagnostics: "Diagnostics", honoraires: "Honoraires", other: "Autre",
 };
-
-const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
 const escapeEmailHtml = (value: string) =>
   value
@@ -89,7 +71,12 @@ const normalizeEmail = (email: string | null | undefined) => (email || "").trim(
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const RentalManagement = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, userCountry } = useAuth();
+  const cc = useMemo(() => getCountryConfig(userCountry), [userCountry]);
+  const fmt = useCallback((n: number) => formatCurrency(n, userCountry), [userCountry]);
+  const propertyTypes = cc.propertyTypes;
+  const heatingTypes = cc.heatingTypes;
+  const L = cc.labels;
   const { toast } = useToast();
   const {
     properties, tenants, rentCalls, loading,
@@ -1103,12 +1090,11 @@ const RentalManagement = () => {
 
   /* ─── Tabs bar ─── */
   const tabs: { key: Tab; label: string; icon: typeof Home }[] = [
-    { key: "dashboard", label: "Vue d'ensemble", icon: Building },
-    { key: "properties", label: "Biens", icon: Home },
-    { key: "tenants", label: "Locataires", icon: Users },
-    { key: "inventory", label: "États des lieux", icon: ClipboardCheck },
-    
-    { key: "payments", label: "Loyers & Paiements", icon: Euro },
+    { key: "dashboard", label: L.overview, icon: Building },
+    { key: "properties", label: L.properties, icon: Home },
+    { key: "tenants", label: L.tenants, icon: Users },
+    { key: "inventory", label: L.inventory, icon: ClipboardCheck },
+    { key: "payments", label: L.payments, icon: Euro },
   ];
 
   if (loading) {
@@ -1119,8 +1105,8 @@ const RentalManagement = () => {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Gestion locative</h1>
-          <p className="text-muted-foreground text-sm mt-1">Biens, locataires, baux, quittances, paiements — tout au même endroit.</p>
+          <h1 className="text-2xl font-bold text-foreground">{L.rentalManagement}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{L.rentalDesc}</p>
         </div>
 
         {/* Tab bar */}
@@ -1138,10 +1124,10 @@ const RentalManagement = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: "Biens", value: properties.length, icon: Home, tab: "properties" as Tab },
-                { label: "Occupés", value: occupiedProperties, icon: Key, tab: "properties" as Tab },
-                { label: "Revenus/mois", value: fmt(totalRent + totalCharges), icon: Euro, tab: "payments" as Tab },
-                { label: "Impayés", value: unpaidCount, icon: AlertTriangle, danger: unpaidCount > 0, tab: "payments" as Tab },
+                { label: L.properties, value: properties.length, icon: Home, tab: "properties" as Tab },
+                { label: L.occupied, value: occupiedProperties, icon: Key, tab: "properties" as Tab },
+                { label: L.revenueMonth, value: fmt(totalRent + totalCharges), icon: Euro, tab: "payments" as Tab },
+                { label: L.unpaidCount, value: unpaidCount, icon: AlertTriangle, danger: unpaidCount > 0, tab: "payments" as Tab },
               ].map((kpi) => (
                 <button key={kpi.label} onClick={() => setActiveTab(kpi.tab)} className="bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
                   <div className="flex items-center gap-2 mb-1">
@@ -1157,24 +1143,24 @@ const RentalManagement = () => {
             {vacantProperties > 0 && (
               <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4">
                 <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                <p className="text-sm text-foreground">{vacantProperties} bien{vacantProperties > 1 ? "s" : ""} vacant{vacantProperties > 1 ? "s" : ""}</p>
+                <p className="text-sm text-foreground">{vacantProperties} {L.property} {L.vacant}</p>
               </div>
             )}
 
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-              <h3 className="font-semibold text-foreground mb-4">Actions rapides</h3>
+              <h3 className="font-semibold text-foreground mb-4">{L.quickActions}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <button onClick={() => { setActiveTab("properties"); setShowPropertyForm(true); }} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                  <Plus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">Ajouter un bien</span>
+                  <Plus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.addProperty}</span>
                 </button>
                 <button onClick={() => { setActiveTab("tenants"); setShowTenantForm(true); }} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                  <UserPlus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">Ajouter un locataire</span>
+                  <UserPlus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.addTenant}</span>
                 </button>
                 <button onClick={() => setSelectedTemplate(frRentReceipt)} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                  <Receipt className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">Générer une quittance</span>
+                  <Receipt className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.generateReceipt}</span>
                 </button>
                 <button onClick={generateMonthlyRentCalls} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                  <Euro className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">Appels de loyer du mois</span>
+                  <Euro className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.monthCalls}</span>
                 </button>
               </div>
             </div>
@@ -1185,38 +1171,38 @@ const RentalManagement = () => {
         {activeTab === "properties" && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-foreground">{properties.length} bien{properties.length !== 1 ? "s" : ""}</h2>
+              <h2 className="font-semibold text-foreground">{properties.length} {L.properties.toLowerCase()}</h2>
               <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                <Plus className="h-4 w-4" />Ajouter
+                <Plus className="h-4 w-4" />{L.addProperty}
               </button>
             </div>
 
             {showPropertyForm && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">{editingPropertyId ? "Modifier le bien" : "Nouveau bien"}</h3>
+                  <h3 className="font-semibold text-foreground">{editingPropertyId ? L.editProperty : L.addProperty}</h3>
                   <button onClick={resetPropertyForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                 </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Nom du bien *</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.propertyName} *</label>
                       <input value={propertyForm.label} onChange={(e) => setPropertyForm({ ...propertyForm, label: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Immeuble / Résidence</label>
-                      <input value={propertyForm.building_name} onChange={(e) => setPropertyForm({ ...propertyForm, building_name: e.target.value })} placeholder="Ex: Résidence Les Lilas" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">N° de lot</label>
-                      <input value={propertyForm.lot_number} onChange={(e) => setPropertyForm({ ...propertyForm, lot_number: e.target.value })} placeholder="Ex: Lot 12" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.building}</label>
+                      <input value={propertyForm.building_name} onChange={(e) => setPropertyForm({ ...propertyForm, building_name: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.lotNumber}</label>
+                      <input value={propertyForm.lot_number} onChange={(e) => setPropertyForm({ ...propertyForm, lot_number: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Type</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.propertyType}</label>
                       <select value={propertyForm.property_type} onChange={(e) => setPropertyForm({ ...propertyForm, property_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select></div>
                   </div>
-                  <div><label className="block text-xs font-medium text-muted-foreground mb-1">Adresse</label>
+                  <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
                       onSelect={(result: AddressResult) => setPropertyForm({ ...propertyForm, address: result.label || "", postal_code: result.postcode || "", city: result.city || "" })} /></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="relative"><label className="block text-xs font-medium text-muted-foreground mb-1">Code postal</label>
+                    <div className="relative"><label className="block text-xs font-medium text-muted-foreground mb-1">{L.postalCode}</label>
                       <input value={propertyForm.postal_code} onChange={(e) => handlePostalCodeChange(e.target.value)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
                       {showPostalSuggestions && postalSuggestions.length > 0 && (
                         <div className="absolute z-10 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-32 overflow-y-auto">
@@ -1226,37 +1212,37 @@ const RentalManagement = () => {
                           ))}
                         </div>
                       )}</div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Ville</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.city}</label>
                       <input value={propertyForm.city} onChange={(e) => setPropertyForm({ ...propertyForm, city: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Surface (m²)</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.surface} ({cc.surfaceUnit})</label>
                       <input type="number" value={propertyForm.surface || ""} onChange={(e) => setPropertyForm({ ...propertyForm, surface: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Pièces</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rooms}</label>
                       <input type="number" value={propertyForm.rooms || ""} onChange={(e) => setPropertyForm({ ...propertyForm, rooms: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Étage</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.floor}</label>
                       <input type="number" value={propertyForm.floor ?? ""} onChange={(e) => setPropertyForm({ ...propertyForm, floor: e.target.value ? +e.target.value : undefined })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Chauffage</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.heating}</label>
                       <select value={propertyForm.heating} onChange={(e) => setPropertyForm({ ...propertyForm, heating: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         {heatingTypes.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
                       </select></div>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={propertyForm.furnished} onChange={(e) => setPropertyForm({ ...propertyForm, furnished: e.target.checked })} className="rounded border-border" />
-                    <span className="text-sm text-foreground">Meublé</span>
+                    <span className="text-sm text-foreground">{L.furnished}</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Loyer HC (€)</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({cc.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_rent || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_rent: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Charges (€)</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({cc.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_charges || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_charges: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Dépôt de garantie (€)</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({cc.currencySymbol})</label>
                       <input type="number" value={propertyForm.deposit_amount || ""} onChange={(e) => setPropertyForm({ ...propertyForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
-                  <div><label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+                  <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.notes}</label>
                     <textarea value={propertyForm.notes} onChange={(e) => setPropertyForm({ ...propertyForm, notes: e.target.value })} rows={2} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   <button onClick={handleSaveProperty} className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-6 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                    {editingPropertyId ? "Enregistrer" : "Ajouter le bien"}
+                    {editingPropertyId ? L.save : L.addProperty}
                   </button>
                 </div>
               </div>
@@ -1338,54 +1324,54 @@ const RentalManagement = () => {
             {showTenantForm && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">{editingTenantId ? "Modifier le locataire" : "Nouveau locataire"}</h3>
+                  <h3 className="font-semibold text-foreground">{editingTenantId ? L.editTenant : L.addTenant}</h3>
                   <button onClick={resetTenantForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Identité</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{L.fullName}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Nom complet *</label><input value={tenantForm.name} onChange={(e) => setTenantForm({ ...tenantForm, name: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Email</label><input type="email" value={tenantForm.email} onChange={(e) => setTenantForm({ ...tenantForm, email: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Téléphone</label><input type="tel" value={tenantForm.phone} onChange={(e) => setTenantForm({ ...tenantForm, phone: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Date de naissance</label><input type="date" value={tenantForm.birth_date || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_date: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Lieu de naissance</label><input value={tenantForm.birth_place || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_place: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Nationalité</label><input value={tenantForm.nationality || ""} onChange={(e) => setTenantForm({ ...tenantForm, nationality: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Profession</label><input value={tenantForm.profession || ""} onChange={(e) => setTenantForm({ ...tenantForm, profession: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.fullName} *</label><input value={tenantForm.name} onChange={(e) => setTenantForm({ ...tenantForm, name: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.email}</label><input type="email" value={tenantForm.email} onChange={(e) => setTenantForm({ ...tenantForm, email: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.phone}</label><input type="tel" value={tenantForm.phone} onChange={(e) => setTenantForm({ ...tenantForm, phone: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.birthDate}</label><input type="date" value={tenantForm.birth_date || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_date: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.birthPlace}</label><input value={tenantForm.birth_place || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_place: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.nationality}</label><input value={tenantForm.nationality || ""} onChange={(e) => setTenantForm({ ...tenantForm, nationality: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.profession}</label><input value={tenantForm.profession || ""} onChange={(e) => setTenantForm({ ...tenantForm, profession: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Bail</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.leaseType}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Bien attribué</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.property}</label>
                       <select value={tenantForm.property_id || ""} onChange={(e) => {
                         const prop = properties.find(p => p.id === e.target.value);
                         setTenantForm({ ...tenantForm, property_id: e.target.value || null, rent_amount: prop?.monthly_rent || tenantForm.rent_amount, charges_amount: prop?.monthly_charges || tenantForm.charges_amount, deposit_amount: prop?.deposit_amount || tenantForm.deposit_amount, lease_type: prop?.furnished ? "furnished" : tenantForm.lease_type });
                       }} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        <option value="">— Sélectionner un bien —</option>
+                        <option value="">{L.selectProperty}</option>
                         {properties.map(p => <option key={p.id} value={p.id}>{p.label} — {p.address}</option>)}
                       </select></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Type de bail</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseType}</label>
                       <select value={tenantForm.lease_type} onChange={(e) => setTenantForm({ ...tenantForm, lease_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        <option value="empty">Bail vide</option><option value="furnished">Bail meublé</option><option value="commercial">Bail commercial</option>
+                        {cc.leaseTypes.map(lt => <option key={lt.value} value={lt.value}>{lt.label}</option>)}
                       </select></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Début du bail</label><input type="date" value={tenantForm.lease_start || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_start: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Fin du bail</label><input type="date" value={tenantForm.lease_end || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_end: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseStart}</label><input type="date" value={tenantForm.lease_start || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_start: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseEnd}</label><input type="date" value={tenantForm.lease_end || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_end: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Finances</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.rent}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Loyer HC (€)</label><input type="number" value={tenantForm.rent_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, rent_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Charges (€)</label><input type="number" value={tenantForm.charges_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, charges_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Dépôt (€)</label><input type="number" value={tenantForm.deposit_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({cc.currencySymbol})</label><input type="number" value={tenantForm.rent_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, rent_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({cc.currencySymbol})</label><input type="number" value={tenantForm.charges_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, charges_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({cc.currencySymbol})</label><input type="number" value={tenantForm.deposit_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">APL / CAF (€/mois)</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({cc.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Garant</h4>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.guarantor}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Nom du garant</label><input value={tenantForm.guarantor_name || ""} onChange={(e) => setTenantForm({ ...tenantForm, guarantor_name: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">Tél. du garant</label><input type="tel" value={tenantForm.guarantor_phone || ""} onChange={(e) => setTenantForm({ ...tenantForm, guarantor_phone: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.guarantor}</label><input value={tenantForm.guarantor_name || ""} onChange={(e) => setTenantForm({ ...tenantForm, guarantor_name: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.guarantorPhone}</label><input type="tel" value={tenantForm.guarantor_phone || ""} onChange={(e) => setTenantForm({ ...tenantForm, guarantor_phone: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
-                  <textarea value={tenantForm.notes} onChange={(e) => setTenantForm({ ...tenantForm, notes: e.target.value })} placeholder="Notes" rows={2} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
+                  <textarea value={tenantForm.notes} onChange={(e) => setTenantForm({ ...tenantForm, notes: e.target.value })} placeholder={L.notes} rows={2} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
                   <button onClick={handleSaveTenant} className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-6 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                    {editingTenantId ? "Enregistrer" : "Ajouter le locataire"}
+                    {editingTenantId ? L.save : L.addTenant}
                   </button>
                 </div>
               </div>
