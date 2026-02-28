@@ -38,9 +38,20 @@ const Documents = () => {
   const [loading, setLoading] = useState(true);
   const { orgId } = useAuth();
 
-  const activeTemplates = getActiveTemplates("FR");
+  // Detect user country from profile
+  const [userCountry, setUserCountry] = useState<string>("FR");
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.id) {
+        supabase.from("profiles").select("country").eq("id", data.user.id).single()
+          .then(({ data: p }) => { if (p?.country) setUserCountry(p.country); });
+      }
+    });
+  }, []);
+
+  const activeTemplates = getActiveTemplates(userCountry as any);
   const allTemplates = getAllTemplates();
-  const europeTemplates = allTemplates.filter((t) => t.country !== "FR");
+  const europeTemplates = allTemplates.filter((t) => t.country !== userCountry);
 
   const fetchDocs = async () => {
     if (!orgId) return;

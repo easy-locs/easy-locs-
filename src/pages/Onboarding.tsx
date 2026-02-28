@@ -27,6 +27,7 @@ const STEPS = [
 ];
 
 const countries = [
+  // Europe
   { code: "FR", name: "France", flag: "🇫🇷", available: true },
   { code: "BE", name: "Belgique", flag: "🇧🇪", available: true },
   { code: "ES", name: "España", flag: "🇪🇸", available: true },
@@ -34,10 +35,33 @@ const countries = [
   { code: "DE", name: "Deutschland", flag: "🇩🇪", available: true },
   { code: "PT", name: "Portugal", flag: "🇵🇹", available: true },
   { code: "GB", name: "United Kingdom", flag: "🇬🇧", available: true },
-  { code: "US", name: "United States", flag: "🇺🇸", available: true },
   { code: "CH", name: "Suisse", flag: "🇨🇭", available: true },
-  { code: "BR", name: "Brasil", flag: "🇧🇷", available: false },
-  { code: "MX", name: "México", flag: "🇲🇽", available: false },
+  { code: "NL", name: "Nederland", flag: "🇳🇱", available: true },
+  { code: "AT", name: "Österreich", flag: "🇦🇹", available: true },
+  { code: "LU", name: "Luxembourg", flag: "🇱🇺", available: true },
+  { code: "IE", name: "Ireland", flag: "🇮🇪", available: true },
+  { code: "PL", name: "Polska", flag: "🇵🇱", available: true },
+  { code: "SE", name: "Sverige", flag: "🇸🇪", available: true },
+  { code: "DK", name: "Danmark", flag: "🇩🇰", available: true },
+  { code: "NO", name: "Norge", flag: "🇳🇴", available: true },
+  { code: "FI", name: "Suomi", flag: "🇫🇮", available: true },
+  { code: "GR", name: "Ελλάδα", flag: "🇬🇷", available: true },
+  { code: "CZ", name: "Česko", flag: "🇨🇿", available: true },
+  { code: "RO", name: "România", flag: "🇷🇴", available: true },
+  { code: "HU", name: "Magyarország", flag: "🇭🇺", available: true },
+  { code: "HR", name: "Hrvatska", flag: "🇭🇷", available: true },
+  { code: "BG", name: "България", flag: "🇧🇬", available: true },
+  { code: "SK", name: "Slovensko", flag: "🇸🇰", available: true },
+  // Hors Europe
+  { code: "US", name: "United States", flag: "🇺🇸", available: true },
+  { code: "CA", name: "Canada", flag: "🇨🇦", available: true },
+  { code: "MA", name: "Maroc", flag: "🇲🇦", available: true },
+  { code: "TN", name: "Tunisie", flag: "🇹🇳", available: true },
+  { code: "SN", name: "Sénégal", flag: "🇸🇳", available: true },
+  { code: "CI", name: "Côte d'Ivoire", flag: "🇨🇮", available: true },
+  { code: "BR", name: "Brasil", flag: "🇧🇷", available: true },
+  { code: "MX", name: "México", flag: "🇲🇽", available: true },
+  { code: "JP", name: "日本", flag: "🇯🇵", available: true },
 ];
 
 const Onboarding = () => {
