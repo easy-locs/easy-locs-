@@ -134,6 +134,7 @@ const RentalManagement = () => {
 
   // Stripe rent payment
   const [payingRentId, setPayingRentId] = useState<string | null>(null);
+  const [notifyingRentId, setNotifyingRentId] = useState<string | null>(null);
   const [invitingTenantId, setInvitingTenantId] = useState<string | null>(null);
   const [paymentMethodDialog, setPaymentMethodDialog] = useState<string | null>(null);
 
@@ -461,6 +462,60 @@ const RentalManagement = () => {
 
   const handleInviteTenant = async (tenant: Tenant) => { setInvitingTenantId(tenant.id); await sendTenantInvite(tenant); setInvitingTenantId(null); };
   const getPropertyForTenant = (t: Tenant) => properties.find(p => p.id === t.property_id);
+
+  /* ─── Notify tenant about rent call ─── */
+  const handleNotifyRentCall = async (payment: RentCall) => {
+    const tenant = tenants.find(t => t.id === payment.tenant_id);
+    if (!tenant?.email) {
+      toast({ title: "Erreur", description: "Ce locataire n'a pas d'adresse email.", variant: "destructive" });
+      return;
+    }
+    setNotifyingRentId(payment.id);
+    try {
+      const appUrl = window.location.origin;
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: {
+          to: tenant.email,
+          subject: `Appel de loyer — ${payment.month}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">🏠 Appel de loyer</h2>
+            <p style="color:#555;font-size:15px;">Bonjour ${escapeEmailHtml(tenant.name)},</p>
+            <p style="color:#555;font-size:15px;">Votre bailleur vous rappelle le loyer du mois <strong>${payment.month}</strong> :</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="margin:4px 0;font-size:14px;color:#333;">Loyer : <strong>${fmt(payment.rent_amount)}</strong></p>
+              <p style="margin:4px 0;font-size:14px;color:#333;">Charges : <strong>${fmt(payment.charges_amount)}</strong></p>
+              <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">Total : ${fmt(payment.total_amount)}</p>
+            </div>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${appUrl}/tenant/pay" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Payer mon loyer</a>
+            </div>
+            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+          </div>`,
+        },
+      });
+      if (error || (data && data.success === false)) {
+        throw error || new Error(data?.error || "Échec envoi");
+      }
+
+      // Also create in-app notification if tenant has an account
+      if (tenant.tenant_user_id && orgId) {
+        await supabase.from("notifications").insert({
+          user_id: tenant.tenant_user_id,
+          org_id: orgId,
+          type: "payment",
+          title: "Appel de loyer",
+          message: `Loyer de ${payment.month} : ${fmt(payment.total_amount)}`,
+          link: "/tenant/pay",
+        });
+      }
+
+      toast({ title: "Notification envoyée", description: `Email envoyé à ${tenant.email}` });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setNotifyingRentId(null);
+    }
+  };
 
   const iconMap: Record<string, typeof Home> = {
     "lease": Home, "rent-receipt": Receipt, "inventory": ClipboardList,
@@ -1416,6 +1471,7 @@ const RentalManagement = () => {
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Mois</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Montant</th>
                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Statut</th>
+                      <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Notifier</th>
                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Quittance</th>
                     </tr>
                   </thead>
@@ -1463,6 +1519,18 @@ const RentalManagement = () => {
                                 ))}
                                 <button onClick={() => setPaymentMethodDialog(null)} className="mt-2 text-xs text-muted-foreground hover:text-foreground w-full text-center">Annuler</button>
                               </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {!p.paid && (
+                              <button
+                                onClick={() => handleNotifyRentCall(p)}
+                                disabled={notifyingRentId === p.id}
+                                className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                              >
+                                {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                                Notifier
+                              </button>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right">
