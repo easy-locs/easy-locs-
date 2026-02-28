@@ -326,9 +326,44 @@ const RentalManagement = () => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedTenant || !orgId || !user) return;
-    await supabase.from("messages").insert({ org_id: orgId, sender_id: user.id, tenant_id: selectedTenant.id, content: newMessage.trim(), read: false });
+
+    const messageToSend = newMessage.trim();
+    const { error } = await supabase.from("messages").insert({
+      org_id: orgId,
+      sender_id: user.id,
+      tenant_id: selectedTenant.id,
+      content: messageToSend,
+      read: false,
+    });
+
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+
     setNewMessage("");
     await loadMessages(selectedTenant.id);
+
+    if (selectedTenant.email) {
+      const appUrl = window.location.origin;
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: selectedTenant.email,
+          subject: "Nouveau message de votre bailleur",
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message de votre bailleur</h2>
+            <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
+            <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${messageToSend}</p>
+            </div>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+            </div>
+            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+          </div>`,
+        },
+      });
+    }
   };
 
   /* ─── Receipt generation ─── */
