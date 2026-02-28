@@ -76,10 +76,27 @@ serve(async (req) => {
       if (org?.name) fromName = payload.from_name || org.name;
     }
 
-    const recipients = Array.isArray(payload.to) ? payload.to : [payload.to];
+    const rawRecipients = Array.isArray(payload.to) ? payload.to : [payload.to];
+    const recipients = rawRecipients
+      .map((email) => (typeof email === "string" ? email.trim().toLowerCase() : ""))
+      .filter(Boolean);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validRecipients = recipients.filter((email) => emailRegex.test(email));
+
+    if (validRecipients.length === 0) {
+      return new Response(JSON.stringify({ success: false, error: "Aucune adresse email valide" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (validRecipients.length !== recipients.length) {
+      console.warn("Ignoring invalid recipient emails", { provided: recipients.length, valid: validRecipients.length });
+    }
 
     const sgPayload: any = {
-      personalizations: [{ to: recipients.map((email) => ({ email })) }],
+      personalizations: [{ to: validRecipients.map((email) => ({ email })) }],
       from: { email: fromEmail, name: fromName },
       reply_to: { email: replyTo, name: fromName },
       subject: payload.subject,

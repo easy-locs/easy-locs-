@@ -16,6 +16,7 @@ interface Tenant {
   id: string;
   name: string;
   email: string | null;
+  tenant_user_id?: string | null;
   property_label?: string;
 }
 
@@ -36,6 +37,9 @@ const escapeEmailHtml = (value: string) =>
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 const Messages = () => {
   const { user, orgId } = useAuth();
   const { t } = useI18n();
@@ -53,7 +57,7 @@ const Messages = () => {
     if (!orgId) return;
     const { data } = await supabase
       .from("tenants")
-      .select("id, name, email, property_id")
+      .select("id, name, email, tenant_user_id, property_id")
       .eq("org_id", orgId)
       .order("name");
 
@@ -179,12 +183,24 @@ const Messages = () => {
     } else {
       setNewMessage("");
 
-      if (selectedTenant.email) {
+      if (selectedTenant.tenant_user_id) {
+        await supabase.from("notifications").insert({
+          user_id: selectedTenant.tenant_user_id,
+          org_id: orgId,
+          type: "message",
+          title: "Nouveau message",
+          message: "Votre bailleur vous a envoyé un message.",
+          link: "/tenant/messages",
+        });
+      }
+
+      const tenantEmail = normalizeEmail(selectedTenant.email);
+      if (tenantEmail && isValidEmail(tenantEmail)) {
         try {
           const appUrl = window.location.origin;
           const { data, error: emailError } = await supabase.functions.invoke("send-email", {
             body: {
-              to: selectedTenant.email,
+              to: tenantEmail,
               subject: `Nouveau message de votre bailleur`,
               html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
                 <div style="text-align:center;margin-bottom:24px;">

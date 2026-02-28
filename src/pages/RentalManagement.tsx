@@ -84,6 +84,9 @@ const escapeEmailHtml = (value: string) =>
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 const RentalManagement = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
@@ -353,11 +356,23 @@ const RentalManagement = () => {
     setNewMessage("");
     await loadMessages(selectedTenant.id);
 
-    if (selectedTenant.email) {
+    if (selectedTenant.tenant_user_id) {
+      await supabase.from("notifications").insert({
+        user_id: selectedTenant.tenant_user_id,
+        org_id: orgId,
+        type: "message",
+        title: "Nouveau message",
+        message: "Votre bailleur vous a envoyé un message.",
+        link: "/tenant/messages",
+      });
+    }
+
+    const tenantEmail = normalizeEmail(selectedTenant.email);
+    if (tenantEmail && isValidEmail(tenantEmail)) {
       const appUrl = window.location.origin;
       const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
-          to: selectedTenant.email,
+          to: tenantEmail,
           subject: "Nouveau message de votre bailleur",
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
             <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message de votre bailleur</h2>

@@ -46,13 +46,37 @@ const normalizeStatus = (status: string) => {
   return status || "pending";
 };
 
-const getRentalDocPath = (fileUrl: string) => {
-  if (!fileUrl) return "";
-  if (!fileUrl.startsWith("http")) return fileUrl;
-  const marker = "/rental-docs/";
-  const markerIndex = fileUrl.indexOf(marker);
-  if (markerIndex === -1) return fileUrl;
-  return fileUrl.slice(markerIndex + marker.length).split("?")[0];
+interface StorageFileRef {
+  bucket: string;
+  path: string;
+}
+
+const parseStorageFileRef = (fileUrl: string): StorageFileRef | null => {
+  if (!fileUrl) return null;
+
+  if (!fileUrl.startsWith("http")) {
+    return { bucket: "rental-docs", path: fileUrl };
+  }
+
+  const cleanUrl = fileUrl.split("?")[0];
+  const objectMatch = cleanUrl.match(/\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
+  if (objectMatch) {
+    return {
+      bucket: decodeURIComponent(objectMatch[1]),
+      path: decodeURIComponent(objectMatch[2]),
+    };
+  }
+
+  const legacyMarker = "/rental-docs/";
+  const markerIndex = cleanUrl.indexOf(legacyMarker);
+  if (markerIndex >= 0) {
+    return {
+      bucket: "rental-docs",
+      path: cleanUrl.slice(markerIndex + legacyMarker.length),
+    };
+  }
+
+  return null;
 };
 
 const TenantDocuments = ({ tenantId, tenantName }: Props) => {
@@ -89,15 +113,23 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   }, [tenantId]);
 
   const getSignedDocumentUrl = async (fileUrl: string) => {
-    const path = getRentalDocPath(fileUrl);
-    if (!path) return null;
+    const fileRef = parseStorageFileRef(fileUrl);
+    if (!fileRef?.path) return null;
 
-    const { data, error } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 7);
-    if (error || !data?.signedUrl) {
-      throw error || new Error("Impossible de générer un lien sécurisé");
+    const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60 * 24 * 7);
+    if (primary.data?.signedUrl) {
+      return primary.data.signedUrl;
     }
 
-    return data.signedUrl;
+    if (fileRef.bucket !== "rental-docs") {
+      const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60 * 24 * 7);
+      if (fallback.data?.signedUrl) {
+        return fallback.data.signedUrl;
+      }
+      throw fallback.error || primary.error || new Error("Impossible de générer un lien sécurisé");
+    }
+
+    throw primary.error || new Error("Impossible de générer un lien sécurisé");
   };
 
   const openDocument = async (doc: TenantDoc) => {
