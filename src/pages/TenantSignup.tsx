@@ -229,9 +229,8 @@ const TenantSignup = () => {
           </button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Déjà un compte ?{" "}
-          <Link to="/login" className="text-foreground font-medium hover:underline">Se connecter</Link>
+        <p className="text-center text-xs text-muted-foreground/60 mt-6">
+          Propulsé par <strong>EASY-LOCS<sup>®</sup></strong>
         </p>
       </div>
     </div>
