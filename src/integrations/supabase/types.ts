@@ -458,6 +458,94 @@ export type Database = {
           },
         ]
       }
+      interventions: {
+        Row: {
+          actual_cost: number | null
+          category: string
+          completed_date: string | null
+          created_at: string
+          description: string | null
+          estimated_cost: number | null
+          id: string
+          notes: string | null
+          org_id: string
+          priority: string
+          property_id: string | null
+          provider_name: string | null
+          provider_phone: string | null
+          scheduled_date: string | null
+          status: string
+          tenant_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          category?: string
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          priority?: string
+          property_id?: string | null
+          provider_name?: string | null
+          provider_phone?: string | null
+          scheduled_date?: string | null
+          status?: string
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_cost?: number | null
+          category?: string
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          priority?: string
+          property_id?: string | null
+          provider_name?: string | null
+          provider_phone?: string | null
+          scheduled_date?: string | null
+          status?: string
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interventions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interventions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interventions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           condition: string
