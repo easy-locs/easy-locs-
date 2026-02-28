@@ -14,13 +14,13 @@ const Navbar = () => (
       </div>
       <div className="flex items-center gap-4">
         <Link
-          to="/onboarding"
+          to="/login"
           className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors whitespace-nowrap"
         >
           Connexion
         </Link>
         <Link
-          to="/onboarding"
+          to="/signup"
           className="text-sm font-semibold bg-gradient-gold text-accent-foreground px-5 py-2 rounded-lg hover:opacity-90 transition-opacity"
         >
           S'inscrire
