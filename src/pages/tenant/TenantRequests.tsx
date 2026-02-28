@@ -16,6 +16,7 @@ const TenantRequests = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [tenantName, setTenantName] = useState("");
   const [orgId, setOrgId] = useState<string | null>(null);
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +28,13 @@ const TenantRequests = () => {
     const fetch = async () => {
       const { data: tenant } = await supabase
         .from("tenants")
-        .select("id, org_id")
+        .select("id, org_id, name")
         .eq("tenant_user_id", user.id)
         .limit(1)
         .single();
       if (!tenant) { setLoading(false); return; }
       setTenantId(tenant.id);
+      setTenantName(tenant.name || "");
       setOrgId(tenant.org_id);
       const { data } = await supabase
         .from("document_requests")
@@ -68,9 +70,9 @@ const TenantRequests = () => {
           user_id: orgData.owner_user_id,
           org_id: orgId,
           type: "request",
-          title: "Nouvelle demande locataire",
-          message: `Demande de : ${label}${period ? ` (${period})` : ""}`,
-          link: "/dashboard/messages",
+          title: `📋 Demande : ${label}`,
+          message: `${tenantName || "Votre locataire"} demande : ${label}${period ? ` (${period})` : ""}. Cliquez pour traiter.`,
+          link: "/dashboard/rental?tab=tenants",
         });
         // Send email to landlord
         if (orgData.email) {

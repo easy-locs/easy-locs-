@@ -1,10 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bell, MessageCircle, ExternalLink } from "lucide-react";
+import { Bell, MessageCircle, ExternalLink, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+
+const REQUEST_ROUTES: Record<string, { label: string; route: string }> = {
+  receipt: { label: "Générer quittance", route: "/dashboard/receipts" },
+  attestation: { label: "Générer attestation", route: "/dashboard/documents" },
+  lease_copy: { label: "Voir le bail", route: "/dashboard/leases" },
+  charges_detail: { label: "Voir les charges", route: "/dashboard/charges" },
+};
+
+function extractRequestType(n: any): string | null {
+  if (n.type !== "request") return null;
+  const msg = (n.message || "").toLowerCase();
+  if (msg.includes("quittance")) return "receipt";
+  if (msg.includes("attestation")) return "attestation";
+  if (msg.includes("bail") || msg.includes("copie du bail")) return "lease_copy";
+  if (msg.includes("charge")) return "charges_detail";
+  return null;
+}
 
 const NotificationBell = () => {
   const { user } = useAuth();
@@ -24,19 +41,13 @@ const NotificationBell = () => {
     setNotifications(data || []);
   }, [user]);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel("notifications-bell")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => fetchNotifications()
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchNotifications]);
@@ -47,17 +58,23 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const handleAction = (n: any) => {
-    // Mark as read
+  const markRead = (n: any) => {
     supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
-    setOpen(false);
+  };
 
-    if (n.link) {
-      navigate(n.link);
-    } else if (n.type === "message") {
-      navigate("/dashboard/messages");
-    }
+  const handleAction = (n: any) => {
+    markRead(n);
+    setOpen(false);
+    if (n.link) navigate(n.link);
+    else if (n.type === "message") navigate("/dashboard/messages");
+  };
+
+  const handleDocAction = (reqType: string, n: any) => {
+    markRead(n);
+    setOpen(false);
+    const route = REQUEST_ROUTES[reqType];
+    if (route) navigate(route.route);
   };
 
   const typeIcon: Record<string, string> = {
@@ -67,7 +84,7 @@ const NotificationBell = () => {
 
   const getActionLabel = (n: any): string | null => {
     if (n.type === "message") return "Répondre";
-    if (n.type === "request") return "Voir la demande";
+    if (n.type === "request") return "Voir les demandes";
     if (n.type === "document") return "Voir le document";
     if (n.type === "payment") return "Voir le paiement";
     if (n.type === "dunning") return "Voir la relance";
@@ -77,10 +94,7 @@ const NotificationBell = () => {
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-muted transition-colors"
-      >
+      <button onClick={() => setOpen(!open)} className="relative p-2 rounded-lg hover:bg-muted transition-colors">
         <Bell className="h-5 w-5 text-foreground" />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -96,9 +110,7 @@ const NotificationBell = () => {
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
               {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-accent hover:underline">
-                  Tout marquer lu
-                </button>
+                <button onClick={markAllRead} className="text-xs text-accent hover:underline">Tout marquer lu</button>
               )}
             </div>
             <div className="max-h-80 overflow-y-auto divide-y divide-border">
@@ -107,29 +119,33 @@ const NotificationBell = () => {
               ) : (
                 notifications.map((n) => {
                   const label = getActionLabel(n);
+                  const reqType = extractRequestType(n);
+                  const docAction = reqType ? REQUEST_ROUTES[reqType] : null;
                   return (
-                    <div
-                      key={n.id}
-                      className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}
-                    >
+                    <div key={n.id} className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}>
                       <div className="flex items-start gap-2.5">
                         <span className="text-base mt-0.5">{typeIcon[n.type] || "ℹ️"}</span>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>
-                            {n.title}
-                          </p>
-                          {n.message && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
+                          <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
+                          {n.message && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>}
+
+                          {/* Quick doc action button */}
+                          {docAction && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDocAction(reqType!, n); }}
+                              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold bg-accent text-accent-foreground px-2.5 py-1 rounded-md hover:opacity-90 transition-opacity"
+                            >
+                              <Receipt className="h-3 w-3" />
+                              {docAction.label}
+                            </button>
                           )}
+
                           <div className="flex items-center gap-3 mt-1.5">
                             <p className="text-[10px] text-muted-foreground/60">
                               {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
                             </p>
                             {label && (
-                              <button
-                                onClick={() => handleAction(n)}
-                                className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
-                              >
+                              <button onClick={() => handleAction(n)} className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
                                 {n.type === "message" ? <MessageCircle className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
                                 {label}
                               </button>
