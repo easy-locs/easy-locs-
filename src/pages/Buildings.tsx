@@ -146,8 +146,8 @@ const Buildings = () => {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.units")}</label>
-                <input type="number" value={form.total_units} onChange={e => setForm(p => ({ ...p, total_units: +e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+                <input type="number" value={form.total_units || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(p => ({ ...p, total_units: e.target.value === "" ? 0 : +e.target.value }))}
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" placeholder="0" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.notes")}</label>
