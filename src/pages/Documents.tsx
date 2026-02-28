@@ -17,6 +17,7 @@ const categoryLabels: Record<string, string> = {
 };
 const countryLabels: Record<string, string> = {
   FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 Espagne", IT: "🇮🇹 Italie", DE: "🇩🇪 Allemagne",
+  PT: "🇵🇹 Portugal", NL: "🇳🇱 Pays-Bas", GB: "🇬🇧 Royaume-Uni", CH: "🇨🇭 Suisse", AT: "🇦🇹 Autriche", LU: "🇱🇺 Luxembourg",
 };
 
 interface DocRow {
@@ -171,11 +172,11 @@ const Documents = () => {
 
         {tab === "europe" && (
           <div className="space-y-6">
-            <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4">
-              <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-lg p-4">
+              <Globe className="h-5 w-5 text-accent shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Packs européens en préparation</p>
-                <p className="text-xs text-muted-foreground">Ces modèles nécessitent une validation juridique avant utilisation.</p>
+                <p className="text-sm font-medium text-foreground">Documents européens — Powered by LawDepot</p>
+                <p className="text-xs text-muted-foreground">Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.</p>
               </div>
             </div>
             {Object.entries(
@@ -184,25 +185,60 @@ const Documents = () => {
                 acc[t.country].push(t);
                 return acc;
               }, {} as Record<string, DocumentTemplate[]>)
-            ).map(([country, templates]) => (
+            ).map(([country, templates]) => {
+              const lawDepotUrls: Record<string, string> = {
+                BE: "https://www.lawdepot.be/",
+                ES: "https://www.lawdepot.com/es/",
+                DE: "https://www.lawdepot.de/",
+                IT: "https://www.lawdepot.it/",
+                GB: "https://www.lawdepot.co.uk/",
+                PT: "https://www.lawdepot.com/pt/",
+                NL: "https://www.lawdepot.com/nl/",
+                CH: "https://www.lawdepot.ch/",
+                AT: "https://www.lawdepot.at/",
+                LU: "https://www.lawdepot.be/",
+              };
+              return (
               <div key={country}>
-                <h3 className="text-md font-semibold text-foreground mb-3">{countryLabels[country] || country}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-md font-semibold text-foreground">{countryLabels[country] || country}</h3>
+                  {lawDepotUrls[country] && (
+                    <a href={lawDepotUrls[country]} target="_blank" rel="noopener noreferrer"
+                      className="text-xs font-medium text-accent hover:underline flex items-center gap-1">
+                      Plus de documents sur LawDepot <ChevronRight className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {templates.map((t) => (
-                    <div key={t.id} className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 opacity-60 cursor-default">
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Globe className="h-5 w-5 text-muted-foreground" />
+                    <button key={t.id} onClick={() => setSelectedTemplate(t)}
+                      className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
+                        <Globe className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground text-sm">{t.label}</div>
                         <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                        <span className="inline-block mt-1 text-xs bg-warning/20 text-warning px-2 py-0.5 rounded-full">Révision juridique requise</span>
+                        <div className="text-xs text-muted-foreground/60 mt-1">v{t.version}</div>
                       </div>
-                    </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
+                    </button>
                   ))}
                 </div>
               </div>
-            ))}
+              );
+            })}
+
+            {/* LawDepot CTA */}
+            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 text-center">
+              <Scale className="h-10 w-10 text-accent mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-1">Besoin d'un document spécifique ?</h3>
+              <p className="text-sm text-muted-foreground mb-4">Accédez à la bibliothèque complète LawDepot pour des contrats certifiés dans votre pays.</p>
+              <a href="https://www.lawdepot.com/" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground px-6 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
+                Accéder à LawDepot <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
           </div>
         )}
       </div>

@@ -241,7 +241,8 @@ const Onboarding = () => {
   const renderInput = (label: string, value: string | number, onChange: (v: string) => void, type = "text", required = false) => (
     <div>
       <label className="text-sm font-medium text-foreground">{label}{required && " *"}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+      <input type={type} value={value === 0 && type === "number" ? "" : value} onChange={e => onChange(e.target.value)}
+        placeholder={type === "number" ? "0" : ""}
         className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-accent focus:border-accent outline-none" />
     </div>
   );

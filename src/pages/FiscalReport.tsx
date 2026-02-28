@@ -52,6 +52,8 @@ const FiscalReport = () => {
     });
   }, [orgId]);
 
+  const [manualRegime, setManualRegime] = useState<"auto" | "micro-foncier" | "réel">("auto");
+
   const report = useMemo(() => {
     const yearCalls = rentCalls.filter(r => r.month.startsWith(String(year)));
     const paidCalls = yearCalls.filter(r => r.paid);
@@ -62,7 +64,8 @@ const FiscalReport = () => {
 
     const totalExpenses = Object.values(expenses).reduce((s, v) => s + v, 0);
     const revenuNet = totalBrut - totalExpenses;
-    const regime = totalBrut <= 15000 ? "micro-foncier" : "réel";
+    const autoRegime = totalBrut <= 15000 ? "micro-foncier" : "réel";
+    const regime = manualRegime === "auto" ? autoRegime : manualRegime;
     const abattementMicroFoncier = regime === "micro-foncier" ? totalBrut * 0.3 : 0;
     const revenuImposable = regime === "micro-foncier" ? totalBrut - abattementMicroFoncier : revenuNet;
 
@@ -73,12 +76,13 @@ const FiscalReport = () => {
       totalExpenses,
       revenuNet,
       regime,
+      autoRegime,
       abattementMicroFoncier,
       revenuImposable,
       yearCalls: yearCalls.length,
       paidCalls: paidCalls.length,
     };
-  }, [rentCalls, year, expenses]);
+  }, [rentCalls, year, expenses, manualRegime]);
 
   const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 
@@ -146,13 +150,13 @@ const FiscalReport = () => {
         ) : (
           <>
             {/* Régime fiscal */}
-            <Card className={report.regime === "micro-foncier" ? "border-accent/30" : "border-orange-500/30"}>
+            <Card className={report.regime === "micro-foncier" ? "border-accent/30" : "border-warning/30"}>
               <CardContent className="p-5">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                   <Calculator className="h-6 w-6 text-accent" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold text-foreground">
-                      Régime {report.regime === "micro-foncier" ? "micro-foncier" : "réel"} détecté
+                      Régime {report.regime === "micro-foncier" ? "micro-foncier" : "réel"} {manualRegime === "auto" ? "détecté" : "(choix manuel)"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {report.regime === "micro-foncier"
@@ -160,6 +164,14 @@ const FiscalReport = () => {
                         : "Revenus bruts > 15 000 € — déduction des charges réelles"}
                     </p>
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  {(["auto", "micro-foncier", "réel"] as const).map(r => (
+                    <button key={r} onClick={() => setManualRegime(r)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${manualRegime === r ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/40"}`}>
+                      {r === "auto" ? `Auto (${report.autoRegime})` : r === "micro-foncier" ? "Micro-foncier" : "Réel"}
+                    </button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -330,11 +342,17 @@ const FiscalReport = () => {
 
         <div className="flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground">
-            Ce bilan est une aide à la déclaration et ne constitue pas un conseil fiscal. 
-            Consultez un expert-comptable ou les services fiscaux pour votre déclaration définitive. 
-            Formulaire 2044 disponible sur impots.gouv.fr.
-          </p>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              Ce bilan est une aide à la déclaration et ne constitue pas un conseil fiscal. 
+              Consultez un expert-comptable ou les services fiscaux pour votre déclaration définitive. 
+              Formulaire 2044 disponible sur impots.gouv.fr.
+            </p>
+            <a href="https://www.lawdepot.com/contracts/tax-declaration/" target="_blank" rel="noopener noreferrer"
+              className="text-xs text-accent hover:underline mt-2 inline-block">
+              📄 Besoin d'aide pour d'autres pays ? Consultez LawDepot →
+            </a>
+          </div>
         </div>
       </div>
       </FeatureGate>
