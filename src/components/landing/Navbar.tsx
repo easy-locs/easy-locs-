@@ -12,10 +12,10 @@ const Navbar = () => (
         <a href="#features" className="hover:text-primary-foreground transition-colors">Fonctionnalités</a>
         <a href="#pricing" className="hover:text-primary-foreground transition-colors">Tarifs</a>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <Link
           to="/onboarding"
-          className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+          className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors whitespace-nowrap"
         >
           Connexion
         </Link>
