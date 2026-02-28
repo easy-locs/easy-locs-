@@ -259,8 +259,11 @@ export function useRentalData() {
 
   /* ─── Send tenant invite (invitation link) ─── */
   const sendTenantInvite = async (tenant: Tenant) => {
-    if (!tenant.email) {
-      toast({ title: "Erreur", description: "Le locataire n'a pas d'email", variant: "destructive" });
+    const normalizedEmail = tenant.email?.trim().toLowerCase();
+    const isValidEmail = !!normalizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
+    if (!isValidEmail) {
+      toast({ title: "Erreur", description: "Email du locataire invalide", variant: "destructive" });
       return;
     }
     if (!orgId || !user) return;
@@ -278,32 +281,12 @@ export function useRentalData() {
         org_id: orgId,
         tenant_id: tenant.id,
         token,
-        email: tenant.email,
+        email: normalizedEmail,
         invited_by: user.id,
       });
       if (invError) throw invError;
 
       const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
-      const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
-        body: {
-          to: tenant.email,
-          subject: "Invitation à rejoindre votre espace locataire Easy-Locs",
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">🏠 Invitation Easy-Locs</h2>
-            <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
-            <p style="color:#555;font-size:15px;">Votre bailleur vous invite à activer votre espace locataire pour accéder à vos documents, quittances et messages.</p>
-            <div style="text-align:center;margin:24px 0;">
-              <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">Activer mon espace locataire</a>
-            </div>
-            <p style="color:#777;font-size:13px;">Ce lien est personnel et expire dans 7 jours.</p>
-            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
-          </div>`,
-        },
-      });
-
-      if (emailError || (emailData && emailData.success === false)) {
-        throw emailError || new Error(emailData?.error || "Échec d'envoi de l'invitation");
-      }
 
       let copied = false;
       try {
@@ -313,12 +296,50 @@ export function useRentalData() {
         copied = false;
       }
 
-      toast({
-        title: "Invitation envoyée",
-        description: copied
-          ? `Email envoyé à ${tenant.email} et lien copié dans le presse-papiers.`
-          : `Email d'invitation envoyé à ${tenant.email}.`,
-      });
+      let emailSent = false;
+      let emailErrorMessage = "";
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
+          body: {
+            to: normalizedEmail,
+            subject: "Invitation à rejoindre votre espace locataire Easy-Locs",
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+              <h2 style="color:#1a1a1a;text-align:center;">🏠 Invitation Easy-Locs</h2>
+              <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
+              <p style="color:#555;font-size:15px;">Votre bailleur vous invite à activer votre espace locataire pour accéder à vos documents, quittances et messages.</p>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">Activer mon espace locataire</a>
+              </div>
+              <p style="color:#777;font-size:13px;">Ce lien est personnel et expire dans 7 jours.</p>
+              <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+            </div>`,
+          },
+        });
+
+        if (emailError || (emailData && emailData.success === false)) {
+          throw emailError || new Error(emailData?.error || "Échec d'envoi de l'invitation");
+        }
+        emailSent = true;
+      } catch (err: any) {
+        emailErrorMessage = err?.message || "erreur inconnue";
+      }
+
+      if (emailSent) {
+        toast({
+          title: "Invitation envoyée",
+          description: copied
+            ? `Email envoyé à ${normalizedEmail} et lien copié dans le presse-papiers.`
+            : `Email d'invitation envoyé à ${normalizedEmail}.`,
+        });
+      } else {
+        toast({
+          title: "Invitation créée (email non envoyé)",
+          description: copied
+            ? `Lien copié. Vous pouvez l'envoyer manuellement au locataire. Détail: ${emailErrorMessage}`
+            : `Impossible d'envoyer l'email automatiquement. Détail: ${emailErrorMessage}`,
+          variant: "destructive",
+        });
+      }
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
     }

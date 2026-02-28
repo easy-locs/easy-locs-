@@ -48,50 +48,97 @@ const TenantSignup = () => {
     validate();
   }, [token]);
 
+  const acceptInvitation = async (userId: string) => {
+    if (!token) return false;
+
+    const { data: result, error: rpcError } = await supabase.rpc("accept_tenant_invitation", {
+      _token: token,
+      _user_id: userId,
+    });
+
+    if (rpcError) {
+      console.error("Accept invitation error:", rpcError);
+      toast({ title: "Activation échouée", description: "Le lien est invalide ou déjà utilisé.", variant: "destructive" });
+      return false;
+    }
+
+    const res = result as any;
+    if (!res?.success) {
+      toast({ title: "Activation échouée", description: res?.error || "Invitation invalide", variant: "destructive" });
+      return false;
+    }
+
+    toast({ title: "Bienvenue !", description: "Votre compte locataire est activé." });
+    return true;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
       toast({ title: "Mot de passe faible", description: "8 caractères min., 1 majuscule, 1 chiffre.", variant: "destructive" });
       return;
     }
+
     setLoading(true);
 
-    // 1. Create account
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { name, role: "tenant" },
-      },
-    });
+    try {
+      let userId: string | null = null;
 
-    if (signUpError) {
-      toast({ title: "Erreur", description: signUpError.message, variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-
-    // 2. Accept invitation (link tenant_user_id + notify landlord)
-    if (signUpData.user && token) {
-      const { data: result, error: rpcError } = await supabase.rpc("accept_tenant_invitation", {
-        _token: token,
-        _user_id: signUpData.user.id,
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { name, role: "tenant" },
+        },
       });
 
-      if (rpcError) {
-        console.error("Accept invitation error:", rpcError);
-        toast({ title: "Compte créé", description: "Mais l'activation automatique a échoué. Contactez votre bailleur.", variant: "destructive" });
+      if (signUpError) {
+        const alreadyRegistered = /already registered|already exists/i.test(signUpError.message);
+        if (!alreadyRegistered) {
+          toast({ title: "Erreur", description: signUpError.message, variant: "destructive" });
+          return;
+        }
+
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError || !signInData.user) {
+          toast({
+            title: "Compte existant",
+            description: "Cet email existe déjà. Connectez-vous avec le bon mot de passe pour activer l'invitation.",
+            variant: "destructive",
+          });
+          return;
+        }
+        userId = signInData.user.id;
       } else {
-        const res = result as any;
-        if (res?.success) {
-          toast({ title: "Bienvenue !", description: "Votre compte locataire est activé." });
+        userId = signUpData.user?.id ?? null;
+
+        if (!signUpData.session) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInError || !signInData.user) {
+            toast({
+              title: "Compte créé",
+              description: "Connectez-vous puis revenez sur le lien d'invitation pour finaliser l'activation.",
+              variant: "destructive",
+            });
+            return;
+          }
+          userId = signInData.user.id;
         }
       }
-    }
 
-    setLoading(false);
-    navigate("/tenant");
+      if (!userId) {
+        toast({ title: "Erreur", description: "Impossible de finaliser le compte locataire.", variant: "destructive" });
+        return;
+      }
+
+      const activated = await acceptInvitation(userId);
+      if (!activated) return;
+
+      navigate("/tenant");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (validating) {
