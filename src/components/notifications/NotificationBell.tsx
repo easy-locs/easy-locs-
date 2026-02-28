@@ -1,27 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bell, MessageCircle, ExternalLink, Receipt } from "lucide-react";
+import { Bell, MessageCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const REQUEST_ROUTES: Record<string, { label: string; route: string }> = {
-  receipt: { label: "Générer quittance", route: "/dashboard/receipts" },
-  attestation: { label: "Générer attestation", route: "/dashboard/documents" },
-  lease_copy: { label: "Voir le bail", route: "/dashboard/leases" },
-  charges_detail: { label: "Voir les charges", route: "/dashboard/charges" },
-};
-
-function extractRequestType(n: any): string | null {
-  if (n.type !== "request") return null;
-  const msg = (n.message || "").toLowerCase();
-  if (msg.includes("quittance")) return "receipt";
-  if (msg.includes("attestation")) return "attestation";
-  if (msg.includes("bail") || msg.includes("copie du bail")) return "lease_copy";
-  if (msg.includes("charge")) return "charges_detail";
-  return null;
-}
 
 const NotificationBell = () => {
   const { user } = useAuth();
@@ -70,12 +54,6 @@ const NotificationBell = () => {
     else if (n.type === "message") navigate("/dashboard/messages");
   };
 
-  const handleDocAction = (reqType: string, n: any) => {
-    markRead(n);
-    setOpen(false);
-    const route = REQUEST_ROUTES[reqType];
-    if (route) navigate(route.route);
-  };
 
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
@@ -84,7 +62,6 @@ const NotificationBell = () => {
 
   const getActionLabel = (n: any): string | null => {
     if (n.type === "message") return "Répondre";
-    if (n.type === "request") return "Voir les demandes";
     if (n.type === "document") return "Voir le document";
     if (n.type === "payment") return "Voir le paiement";
     if (n.type === "dunning") return "Voir la relance";
@@ -119,8 +96,6 @@ const NotificationBell = () => {
               ) : (
                 notifications.map((n) => {
                   const label = getActionLabel(n);
-                  const reqType = extractRequestType(n);
-                  const docAction = reqType ? REQUEST_ROUTES[reqType] : null;
                   return (
                     <div key={n.id} className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}>
                       <div className="flex items-start gap-2.5">
@@ -128,17 +103,6 @@ const NotificationBell = () => {
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
                           {n.message && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>}
-
-                          {/* Quick doc action button */}
-                          {docAction && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleDocAction(reqType!, n); }}
-                              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold bg-accent text-accent-foreground px-2.5 py-1 rounded-md hover:opacity-90 transition-opacity"
-                            >
-                              <Receipt className="h-3 w-3" />
-                              {docAction.label}
-                            </button>
-                          )}
 
                           <div className="flex items-center gap-3 mt-1.5">
                             <p className="text-[10px] text-muted-foreground/60">

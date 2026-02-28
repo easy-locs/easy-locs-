@@ -7,7 +7,7 @@ import logoEasyloc from "@/assets/logo-easylocs.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import {
   LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck, Building,
-  Wallet, FileText, Contact, Wrench, CheckSquare, StickyNote, MessageCircle,
+  Wallet, FileText, Contact, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock,
 } from "lucide-react";
@@ -56,7 +56,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Contact, label: t("nav.company"), path: "/dashboard/company" },
         { icon: Wrench, label: t("nav.interventions"), path: "/dashboard/interventions" },
         { icon: CheckSquare, label: t("nav.tasks"), path: "/dashboard/tasks" },
-        { icon: StickyNote, label: t("nav.notes"), path: "/dashboard/notes" },
         { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
         { icon: Bell, label: t("nav.reminders"), path: "/dashboard/reminders" },
       ],

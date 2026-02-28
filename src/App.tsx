@@ -27,7 +27,7 @@ import RentalManagement from "./pages/RentalManagement";
 import Finances from "./pages/Finances";
 import Interventions from "./pages/Interventions";
 import Tasks from "./pages/Tasks";
-import Notes from "./pages/Notes";
+// Notes removed
 import Messages from "./pages/Messages";
 import ChargesRegularization from "./pages/ChargesRegularization";
 import FiscalReport from "./pages/FiscalReport";
@@ -48,7 +48,7 @@ import TenantDocuments from "./pages/tenant/TenantDocuments";
 import TenantMessages from "./pages/tenant/TenantMessages";
 import TenantPay from "./pages/tenant/TenantPay";
 import TenantSettings from "./pages/tenant/TenantSettings";
-import TenantRequests from "./pages/tenant/TenantRequests";
+// TenantRequests removed - documents available directly on tenant interface
 import TenantSignup from "./pages/TenantSignup";
 
 const queryClient = new QueryClient();
@@ -86,7 +86,7 @@ const App = () => (
             <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
             <Route path="/dashboard/interventions" element={<ProtectedRoute><Interventions /></ProtectedRoute>} />
             <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-            <Route path="/dashboard/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+            {/* Notes route removed */}
             <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/dashboard/charges" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
             <Route path="/dashboard/fiscal" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
@@ -108,7 +108,7 @@ const App = () => (
             <Route path="/tenant/messages" element={<ProtectedRoute><TenantMessages /></ProtectedRoute>} />
             <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
             <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
-            <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
+            {/* Tenant requests route removed */}
 
             <Route path="*" element={<NotFound />} />
           </Routes>
