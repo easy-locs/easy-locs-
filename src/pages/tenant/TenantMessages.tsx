@@ -49,51 +49,93 @@ const TenantMessages = () => {
   }, [user]);
 
   useEffect(() => {
+    if (!tenantId) return;
+
+    const channel = supabase
+      .channel(`tenant-messages-${tenantId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        (payload) => {
+          const incoming = payload.new as any;
+          setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+
+          if (incoming.sender_id !== user?.id) {
+            supabase.from("messages").update({ read: true }).eq("id", incoming.id).then(() => {});
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenantId, user?.id]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg.trim() || !user || !tenantId || !orgId) return;
+
+    const messageToSend = newMsg.trim();
     setSending(true);
-    const { error } = await supabase.from("messages").insert({
-      tenant_id: tenantId,
-      org_id: orgId,
-      sender_id: user.id,
-      content: newMsg.trim(),
-    });
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    } else {
-      setMessages(prev => [...prev, { id: Date.now(), sender_id: user.id, content: newMsg.trim(), created_at: new Date().toISOString() }]);
-      setNewMsg("");
-      // Notify landlord by email (best-effort)
-      if (orgId) {
-        supabase.from("orgs").select("email").eq("id", orgId).single().then(({ data: org }) => {
-          if (org?.email) {
-            const appUrl = window.location.origin;
-            supabase.functions.invoke("send-email", {
-              body: {
-                to: org.email,
-                subject: `Nouveau message de votre locataire`,
-                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                  <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
-                  <p style="color:#555;font-size:15px;">Un locataire vous a envoyé un message :</p>
-                  <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                    <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${newMsg.trim()}</p>
-                  </div>
-                  <div style="text-align:center;margin:24px 0;">
-                    <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
-                  </div>
-                  <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
-                </div>`,
-              },
-            }).catch(() => {});
-          }
-        });
+
+    try {
+      const { data: inserted, error } = await supabase
+        .from("messages")
+        .insert({
+          tenant_id: tenantId,
+          org_id: orgId,
+          sender_id: user.id,
+          content: messageToSend,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      } else {
+        if (inserted) {
+          setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
+        }
+        setNewMsg("");
+        // Notify landlord by email (best-effort)
+        if (orgId) {
+          supabase.from("orgs").select("email").eq("id", orgId).single().then(({ data: org }) => {
+            if (org?.email) {
+              const appUrl = window.location.origin;
+              supabase.functions.invoke("send-email", {
+                body: {
+                  to: org.email,
+                  subject: `Nouveau message de votre locataire`,
+                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                    <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
+                    <p style="color:#555;font-size:15px;">Un locataire vous a envoyé un message :</p>
+                    <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
+                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${messageToSend}</p>
+                    </div>
+                    <div style="text-align:center;margin:24px 0;">
+                      <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+                    </div>
+                    <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+                  </div>`,
+                },
+              }).catch(() => {});
+            }
+          });
+        }
       }
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   return (

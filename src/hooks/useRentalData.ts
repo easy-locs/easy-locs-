@@ -282,12 +282,39 @@ export function useRentalData() {
       // Build invitation URL
       const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
 
-      // Copy to clipboard for the landlord to share
-      await navigator.clipboard.writeText(inviteUrl);
+      // Send invitation email
+      const { error: emailError } = await supabase.functions.invoke("send-email", {
+        body: {
+          to: tenant.email,
+          subject: "Invitation à rejoindre votre espace locataire Easy-Locs",
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">🏠 Invitation Easy-Locs</h2>
+            <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
+            <p style="color:#555;font-size:15px;">Votre bailleur vous invite à activer votre espace locataire pour accéder à vos documents, quittances et messages.</p>
+            <div style="text-align:center;margin:24px 0;">
+              <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">Activer mon espace locataire</a>
+            </div>
+            <p style="color:#777;font-size:13px;">Ce lien est personnel et expire dans 7 jours.</p>
+            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+          </div>`,
+        },
+      });
+      if (emailError) throw emailError;
+
+      // Optional clipboard copy (best effort)
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(inviteUrl);
+        copied = true;
+      } catch {
+        copied = false;
+      }
 
       toast({
-        title: "Lien d'invitation copié !",
-        description: `Envoyez ce lien à ${tenant.name} pour qu'il crée son compte locataire. Le lien expire dans 7 jours.`,
+        title: "Invitation envoyée",
+        description: copied
+          ? `Email envoyé à ${tenant.email} et lien copié dans le presse-papiers.`
+          : `Email d'invitation envoyé à ${tenant.email}.`,
       });
     } catch (err: any) {
       toast({ title: "Erreur", description: err.message, variant: "destructive" });
