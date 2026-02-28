@@ -21,13 +21,37 @@ interface TenantDoc {
   status: string;
 }
 
-const getRentalDocPath = (fileUrl: string) => {
-  if (!fileUrl) return "";
-  if (!fileUrl.startsWith("http")) return fileUrl;
-  const marker = "/rental-docs/";
-  const markerIndex = fileUrl.indexOf(marker);
-  if (markerIndex === -1) return fileUrl;
-  return fileUrl.slice(markerIndex + marker.length).split("?")[0];
+interface StorageFileRef {
+  bucket: string;
+  path: string;
+}
+
+const parseStorageFileRef = (fileUrl: string): StorageFileRef | null => {
+  if (!fileUrl) return null;
+
+  if (!fileUrl.startsWith("http")) {
+    return { bucket: "rental-docs", path: fileUrl };
+  }
+
+  const cleanUrl = fileUrl.split("?")[0];
+  const objectMatch = cleanUrl.match(/\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
+  if (objectMatch) {
+    return {
+      bucket: decodeURIComponent(objectMatch[1]),
+      path: decodeURIComponent(objectMatch[2]),
+    };
+  }
+
+  const legacyMarker = "/rental-docs/";
+  const markerIndex = cleanUrl.indexOf(legacyMarker);
+  if (markerIndex >= 0) {
+    return {
+      bucket: "rental-docs",
+      path: cleanUrl.slice(markerIndex + legacyMarker.length),
+    };
+  }
+
+  return null;
 };
 
 const statusBadge = (status: string) => {
@@ -86,17 +110,26 @@ const TenantDocuments = () => {
   };
 
   const openDocument = async (doc: TenantDoc) => {
-    const path = getRentalDocPath(doc.file_url);
-    if (!path) {
+    const fileRef = parseStorageFileRef(doc.file_url);
+    if (!fileRef?.path) {
       toast({ title: "Erreur", description: "Chemin du document introuvable.", variant: "destructive" });
       return;
     }
 
     setOpeningDocId(doc.id);
     try {
-      const { data, error } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60);
-      if (error || !data?.signedUrl) throw error || new Error("Lien sécurisé indisponible");
-      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+      let signedUrl: string | null = null;
+      const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60);
+
+      if (primary.data?.signedUrl) {
+        signedUrl = primary.data.signedUrl;
+      } else if (fileRef.bucket !== "rental-docs") {
+        const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60);
+        signedUrl = fallback.data?.signedUrl ?? null;
+      }
+
+      if (!signedUrl) throw primary.error || new Error("Lien sécurisé indisponible");
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
     } catch (err: any) {
       toast({ title: "Impossible d'ouvrir le document", description: err.message, variant: "destructive" });
     } finally {

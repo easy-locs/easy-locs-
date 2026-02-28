@@ -15,6 +15,9 @@ const escapeEmailHtml = (value: string) =>
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 const TenantMessages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -124,9 +127,20 @@ const TenantMessages = () => {
               .eq("id", orgId)
               .single();
 
-            const landlordEmail = org?.email;
+            if (org?.owner_user_id) {
+              await supabase.from("notifications").insert({
+                user_id: org.owner_user_id,
+                org_id: orgId,
+                type: "message",
+                title: "Nouveau message locataire",
+                message: "Un locataire vous a envoyé un message.",
+                link: "/dashboard/messages",
+              });
+            }
 
-            if (landlordEmail) {
+            const landlordEmail = normalizeEmail(org?.email);
+
+            if (landlordEmail && isValidEmail(landlordEmail)) {
               const appUrl = window.location.origin;
               const { data: mailData, error: mailError } = await supabase.functions.invoke("send-email", {
                 body: {

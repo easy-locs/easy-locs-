@@ -6,13 +6,46 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays } from "lucide-react";
 
+type IdentityType = "none" | "cni" | "passport";
+
 interface Booking {
-  id: string; property_id: string; guest_name: string; guest_email: string; guest_phone: string;
-  check_in: string; check_out: string; total_price: number; cleaning_fee: number;
-  deposit_amount: number; status: string; notes: string;
+  id: string;
+  property_id: string;
+  guest_name: string;
+  guest_email: string;
+  guest_phone: string;
+  check_in: string;
+  check_out: string;
+  total_price: number;
+  cleaning_fee: number;
+  deposit_amount: number;
+  status: string;
+  notes: string;
 }
 
 interface Property { id: string; label: string; }
+
+interface SeasonalForm {
+  property_id: string;
+  guest_name: string;
+  guest_email: string;
+  guest_phone: string;
+  guest_address: string;
+  guest_postal_code: string;
+  guest_city: string;
+  guest_country: string;
+  identity_type: IdentityType;
+  identity_number: string;
+  check_in: string;
+  check_out: string;
+  total_price: number;
+  cleaning_fee: number;
+  deposit_amount: number;
+  notes: string;
+}
+
+const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 /* ─── iCal helpers ─── */
 const toICalDate = (d: string) => d.replace(/-/g, "");
@@ -72,7 +105,24 @@ const SeasonalRentals = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(new Date());
-  const [form, setForm] = useState({ property_id: "", guest_name: "", guest_email: "", guest_phone: "", check_in: "", check_out: "", total_price: 0, cleaning_fee: 0, deposit_amount: 0, notes: "" });
+  const [form, setForm] = useState<SeasonalForm>({
+    property_id: "",
+    guest_name: "",
+    guest_email: "",
+    guest_phone: "",
+    guest_address: "",
+    guest_postal_code: "",
+    guest_city: "",
+    guest_country: "France",
+    identity_type: "none",
+    identity_number: "",
+    check_in: "",
+    check_out: "",
+    total_price: 0,
+    cleaning_fee: 0,
+    deposit_amount: 0,
+    notes: "",
+  });
   const [showIcalPanel, setShowIcalPanel] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
   const [importingIcal, setImportingIcal] = useState(false);
@@ -92,30 +142,155 @@ const SeasonalRentals = () => {
   useEffect(() => { load(); }, [load]);
 
   const resetForm = () => {
-    setForm({ property_id: "", guest_name: "", guest_email: "", guest_phone: "", check_in: "", check_out: "", total_price: 0, cleaning_fee: 0, deposit_amount: 0, notes: "" });
+    setForm({
+      property_id: "",
+      guest_name: "",
+      guest_email: "",
+      guest_phone: "",
+      guest_address: "",
+      guest_postal_code: "",
+      guest_city: "",
+      guest_country: "France",
+      identity_type: "none",
+      identity_number: "",
+      check_in: "",
+      check_out: "",
+      total_price: 0,
+      cleaning_fee: 0,
+      deposit_amount: 0,
+      notes: "",
+    });
     setShowForm(false);
     setEditingId(null);
   };
 
+  const notifyReservation = async (title: string, message: string, bookingEmail?: string) => {
+    if (!orgId || !user) return;
+
+    const { data: org } = await supabase
+      .from("orgs")
+      .select("owner_user_id, email, name")
+      .eq("id", orgId)
+      .single();
+
+    const targets = Array.from(new Set([user.id, org?.owner_user_id].filter(Boolean)));
+    await Promise.all(
+      targets.map((targetUserId) =>
+        supabase.from("notifications").insert({
+          user_id: targetUserId,
+          org_id: orgId,
+          type: "info",
+          title,
+          message,
+          link: "/seasonal-rentals",
+        })
+      )
+    );
+
+    const orgEmail = normalizeEmail(org?.email);
+    if (orgEmail && isValidEmail(orgEmail)) {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: orgEmail,
+          subject: title,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${title}</h2>
+            <p style="color:#555;font-size:15px;">${message}</p>
+            <p style="color:#888;font-size:12px;text-align:center;">Notification automatique Easy-Locs.</p>
+          </div>`,
+        },
+      });
+    }
+
+    if (bookingEmail && isValidEmail(bookingEmail)) {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: bookingEmail,
+          subject: "Réservation confirmée",
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">✅ Réservation confirmée</h2>
+            <p style="color:#555;font-size:15px;">Votre réservation a bien été enregistrée.</p>
+            <p style="color:#888;font-size:12px;text-align:center;">Email automatique Easy-Locs.</p>
+          </div>`,
+        },
+      });
+    }
+  };
+
   const save = async () => {
     if (!orgId || !user || !form.guest_name || !form.property_id || !form.check_in || !form.check_out) return;
-    const record = { org_id: orgId, user_id: user.id, ...form };
+
+    if (form.check_out <= form.check_in) {
+      toast({ title: "Erreur", description: "La date de départ doit être après la date d'arrivée.", variant: "destructive" });
+      return;
+    }
+
+    const bookingEmail = normalizeEmail(form.guest_email);
+    if (bookingEmail && !isValidEmail(bookingEmail)) {
+      toast({ title: "Erreur", description: "Email voyageur invalide.", variant: "destructive" });
+      return;
+    }
+
+    const details = [
+      form.guest_address && `Adresse: ${form.guest_address}`,
+      form.guest_postal_code && `Code postal: ${form.guest_postal_code}`,
+      form.guest_city && `Ville: ${form.guest_city}`,
+      form.guest_country && `Pays: ${form.guest_country}`,
+      form.identity_type !== "none" && `Identité: ${form.identity_type === "cni" ? "CNI" : "Passeport"}`,
+      form.identity_number && `N° pièce: ${form.identity_number}`,
+    ].filter(Boolean);
+
+    const record = {
+      org_id: orgId,
+      user_id: user.id,
+      property_id: form.property_id,
+      guest_name: form.guest_name,
+      guest_email: bookingEmail,
+      guest_phone: form.guest_phone.trim(),
+      check_in: form.check_in,
+      check_out: form.check_out,
+      total_price: form.total_price,
+      cleaning_fee: form.cleaning_fee,
+      deposit_amount: form.deposit_amount,
+      notes: [form.notes.trim(), details.length ? `---\n${details.join("\n")}` : ""].filter(Boolean).join("\n"),
+    };
+
     if (editingId) {
       const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
       if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      await notifyReservation("Réservation modifiée", `Réservation mise à jour pour ${form.guest_name}.`, bookingEmail || undefined);
       toast({ title: "Réservation modifiée" });
     } else {
-      const { error } = await supabase.from("seasonal_bookings").insert(record);
+      const { error } = await supabase.from("seasonal_bookings").insert({ ...record, status: "confirmed" });
       if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+      await notifyReservation("Nouvelle réservation", `Nouvelle réservation pour ${form.guest_name}.`, bookingEmail || undefined);
       toast({ title: "Réservation ajoutée" });
     }
+
     resetForm();
     await load();
   };
 
   const startEdit = (b: Booking) => {
     setEditingId(b.id);
-    setForm({ property_id: b.property_id, guest_name: b.guest_name, guest_email: b.guest_email, guest_phone: b.guest_phone, check_in: b.check_in, check_out: b.check_out, total_price: b.total_price, cleaning_fee: b.cleaning_fee, deposit_amount: b.deposit_amount, notes: b.notes });
+    setForm({
+      property_id: b.property_id,
+      guest_name: b.guest_name,
+      guest_email: b.guest_email,
+      guest_phone: b.guest_phone,
+      guest_address: "",
+      guest_postal_code: "",
+      guest_city: "",
+      guest_country: "France",
+      identity_type: "none",
+      identity_number: "",
+      check_in: b.check_in,
+      check_out: b.check_out,
+      total_price: b.total_price,
+      cleaning_fee: b.cleaning_fee,
+      deposit_amount: b.deposit_amount,
+      notes: b.notes,
+    });
     setShowForm(true);
   };
 
@@ -169,11 +344,16 @@ const SeasonalRentals = () => {
       }
       // Insert new bookings (skip existing by UID check via date match)
       const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
-      const defaultPropId = properties[0]?.id || "";
+      const defaultPropId = form.property_id || properties[0]?.id;
+      if (!defaultPropId) {
+        toast({ title: "Erreur", description: "Sélectionnez un bien avant l'import iCal.", variant: "destructive" });
+        setImportingIcal(false);
+        return;
+      }
       const newBookings = events
         .filter(e => !existingDates.has(`${e.start}-${e.end}-${e.summary}`))
         .map(e => ({
-          org_id: orgId, user_id: user.id, property_id: form.property_id || defaultPropId,
+          org_id: orgId, user_id: user.id, property_id: defaultPropId,
           guest_name: e.summary || "Voyageur importé",
           check_in: e.start, check_out: e.end, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
           guest_email: "", guest_phone: "", notes: "Importé via iCal", status: "confirmed",
@@ -208,7 +388,12 @@ const SeasonalRentals = () => {
         return;
       }
       const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
-      const defaultPropId = properties[0]?.id || "";
+      const defaultPropId = form.property_id || properties[0]?.id;
+      if (!defaultPropId) {
+        toast({ title: "Erreur", description: "Sélectionnez un bien avant l'import iCal.", variant: "destructive" });
+        setImportingIcal(false);
+        return;
+      }
       const newBookings = events
         .filter(ev => !existingDates.has(`${ev.start}-${ev.end}-${ev.summary}`))
         .map(ev => ({
@@ -365,10 +550,16 @@ const SeasonalRentals = () => {
               <div><label className="block text-sm font-medium text-foreground mb-1">Bien *</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">— Sélectionner —</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Arrivée *</label><input type="date" value={form.check_in} onChange={e => setForm(f => ({ ...f, check_in: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Départ *</label><input type="date" value={form.check_out} onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Prix total (€)</label><input type="number" value={form.total_price} onChange={e => setForm(f => ({ ...f, total_price: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Frais ménage (€)</label><input type="number" value={form.cleaning_fee} onChange={e => setForm(f => ({ ...f, cleaning_fee: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.guest_email} onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Téléphone</label><input value={form.guest_phone} onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Adresse complète</label><input value={form.guest_address} onChange={e => setForm(f => ({ ...f, guest_address: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Code postal</label><input value={form.guest_postal_code} onChange={e => setForm(f => ({ ...f, guest_postal_code: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Ville</label><input value={form.guest_city} onChange={e => setForm(f => ({ ...f, guest_city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Pays</label><input value={form.guest_country} onChange={e => setForm(f => ({ ...f, guest_country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Pièce d'identité</label><select value={form.identity_type} onChange={e => setForm(f => ({ ...f, identity_type: e.target.value as IdentityType }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="none">Aucune</option><option value="cni">CNI</option><option value="passport">Passeport</option></select></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">N° CNI / Passeport</label><input value={form.identity_number} onChange={e => setForm(f => ({ ...f, identity_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Prix total (€)</label><input type="number" value={form.total_price} onChange={e => setForm(f => ({ ...f, total_price: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Frais ménage (€)</label><input type="number" value={form.cleaning_fee} onChange={e => setForm(f => ({ ...f, cleaning_fee: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
             <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             <div className="flex gap-3">
