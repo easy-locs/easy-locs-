@@ -3,11 +3,37 @@ import { Receipt, Download, Loader2 } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface StorageFileRef {
+  bucket: string;
+  path: string;
+}
+
+const parseStorageFileRef = (fileUrl: string): StorageFileRef | null => {
+  if (!fileUrl) return null;
+  if (!fileUrl.startsWith("http")) {
+    return { bucket: "rental-docs", path: fileUrl };
+  }
+  const cleanUrl = fileUrl.split("?")[0];
+  const objectMatch = cleanUrl.match(/\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
+  if (objectMatch) {
+    return { bucket: decodeURIComponent(objectMatch[1]), path: decodeURIComponent(objectMatch[2]) };
+  }
+  const legacyMarker = "/rental-docs/";
+  const markerIndex = cleanUrl.indexOf(legacyMarker);
+  if (markerIndex >= 0) {
+    return { bucket: "rental-docs", path: cleanUrl.slice(markerIndex + legacyMarker.length) };
+  }
+  return null;
+};
 
 const TenantReceipts = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [receipts, setReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -30,6 +56,33 @@ const TenantReceipts = () => {
     };
     fetch();
   }, [user]);
+
+  const handleDownload = async (r: any) => {
+    setDownloadingId(r.id);
+    try {
+      const fileUrl = r.receipt_pdf_url;
+      if (!fileUrl) throw new Error("Aucun fichier de quittance disponible.");
+
+      const fileRef = parseStorageFileRef(fileUrl);
+      if (!fileRef?.path) throw new Error("Chemin du fichier introuvable.");
+
+      let signedUrl: string | null = null;
+      const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60);
+      if (primary.data?.signedUrl) {
+        signedUrl = primary.data.signedUrl;
+      } else if (fileRef.bucket !== "rental-docs") {
+        const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60);
+        signedUrl = fallback.data?.signedUrl ?? null;
+      }
+
+      if (!signedUrl) throw new Error("Impossible de générer un lien sécurisé.");
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const fmt = (n: number) => n?.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }) ?? "—";
 
@@ -58,9 +111,13 @@ const TenantReceipts = () => {
                   <p className="text-xs text-muted-foreground">Loyer {fmt(r.rent_amount)} + Charges {fmt(r.charges_amount)} = <strong>{fmt(r.total_amount)}</strong></p>
                 </div>
                 {r.receipt_pdf_url && (
-                  <a href={r.receipt_pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-accent hover:underline">
-                    <Download className="h-4 w-4" /> PDF
-                  </a>
+                  <button
+                    onClick={() => handleDownload(r)}
+                    disabled={downloadingId === r.id}
+                    className="flex items-center gap-1.5 text-sm text-accent hover:underline disabled:opacity-50"
+                  >
+                    {downloadingId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} PDF
+                  </button>
                 )}
               </div>
             ))}

@@ -87,12 +87,18 @@ function addFooter(doc: jsPDF) {
     setFont(doc, "italic", 7, COLOR_MUTED);
     doc.text(
       sanitize("Ce document est genere a titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable."),
-      MARGIN, 287
+      MARGIN, 283
     );
+    // EASY-LOCS® branding
+    setFont(doc, "bold", 8, COLOR_PRIMARY);
+    doc.text("EASY-LOCS", PAGE_WIDTH / 2 - 8, 289);
+    setFont(doc, "normal", 5, COLOR_PRIMARY);
+    doc.text("\u00AE", PAGE_WIDTH / 2 + 11, 286.5);
+    // Page number
     setFont(doc, "normal", 7, COLOR_MUTED);
-    doc.text(`Easy-Locs - Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 287, { align: "right" });
+    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 289, { align: "right" });
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 290, PAGE_WIDTH, 7, "F");
+    doc.rect(0, 291, PAGE_WIDTH, 6, "F");
   }
 }
 

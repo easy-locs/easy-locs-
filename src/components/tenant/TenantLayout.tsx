@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n, type Locale } from "@/lib/i18n";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, ClipboardList,
+  CreditCard, Settings, LogOut, Menu, X, ClipboardList, Globe,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+
+const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
+  { code: "it", label: "Italiano", flag: "🇮🇹" },
+  { code: "pt", label: "Português", flag: "🇵🇹" },
+];
 
 const navItems = [
   { icon: LayoutDashboard, label: "Mon espace", path: "/tenant" },
@@ -19,14 +29,18 @@ const navItems = [
 
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { locale, setLocale } = useI18n();
 
   const handleLogout = async () => {
     await signOut();
     navigate("/login");
   };
+
+  const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0];
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -73,6 +87,29 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-0.5">
+          {/* Language selector */}
+          <div className="relative">
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <Globe className="h-4 w-4" />
+              <span>{currentLang.flag} {currentLang.label}</span>
+            </button>
+            {langOpen && (
+              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50">
+                {LANGUAGES.map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setLocale(lang.code); setLangOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar-accent/50 transition-colors ${locale === lang.code ? "text-accent font-medium" : "text-sidebar-foreground/60"}`}
+                  >
+                    {lang.flag} {lang.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Link
             to="/tenant/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
@@ -97,6 +134,10 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
         </header>
         <main className="flex-1 p-6">{children}</main>
+        {/* Footer branding */}
+        <footer className="py-3 text-center border-t border-border/30">
+          <span className="text-xs text-muted-foreground/50 font-medium tracking-wide">EASY-LOCS<sup className="text-[8px]">®</sup></span>
+        </footer>
       </div>
     </div>
   );

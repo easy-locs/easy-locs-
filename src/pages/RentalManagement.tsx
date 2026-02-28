@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import InventoryBuilder from "@/components/rental/InventoryBuilder";
 import TenantDocuments from "@/components/rental/TenantDocuments";
+import TenantRequestsPanel from "@/components/rental/TenantRequestsPanel";
 import InventoryTab from "@/components/rental/InventoryTab";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -975,6 +976,9 @@ const RentalManagement = () => {
           {tenantTab === "documents" && (
             <div className="space-y-6">
               <TenantDocuments tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
+
+              {/* Demandes du locataire */}
+              <TenantRequestsPanel tenantId={selectedTenant.id} tenantName={selectedTenant.name} />
 
               {/* Modèles de documents */}
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
