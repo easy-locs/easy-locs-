@@ -22,8 +22,8 @@ const Dashboard = () => {
   const dateFnsLocale = DATE_LOCALES[locale] || fr;
 
   const quickActions = [
-    { icon: FileText, label: t("page.dashboard.generate_receipt"), path: "/dashboard/receipts", color: "bg-info/10 text-info" },
-    { icon: Home, label: t("page.dashboard.create_lease"), path: "/dashboard/leases", color: "bg-success/10 text-success" },
+    { icon: Euro, label: "Saisie de loyer", path: "/dashboard/rental?tab=payments", color: "bg-info/10 text-info" },
+    { icon: Users, label: "Nouveau locataire", path: "/dashboard/rental?tab=tenants", color: "bg-success/10 text-success" },
     { icon: Bell, label: t("page.dashboard.view_reminders"), path: "/dashboard/reminders", color: "bg-warning/10 text-warning" },
     { icon: FolderLock, label: t("page.dashboard.my_vault"), path: "/dashboard/vault", color: "bg-accent/10 text-gold-dark" },
   ];
