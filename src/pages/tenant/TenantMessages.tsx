@@ -118,19 +118,19 @@ const TenantMessages = () => {
         // Notify landlord by email (best-effort with explicit error handling)
         if (orgId) {
           try {
-            const { data: org, error: orgError } = await supabase
+            const { data: org } = await supabase
               .from("orgs")
-              .select("email")
+              .select("email, owner_user_id")
               .eq("id", orgId)
               .single();
 
-            if (orgError) throw orgError;
+            const landlordEmail = org?.email;
 
-            if (org?.email) {
+            if (landlordEmail) {
               const appUrl = window.location.origin;
               const { data: mailData, error: mailError } = await supabase.functions.invoke("send-email", {
                 body: {
-                  to: org.email,
+                  to: landlordEmail,
                   subject: `Nouveau message de votre locataire`,
                   html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
                     <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
@@ -151,7 +151,7 @@ const TenantMessages = () => {
               }
             }
           } catch (mailErr: any) {
-            toast({ title: "Message envoyé", description: `Email non envoyé : ${mailErr.message}`, variant: "destructive" });
+            console.error("Email notification failed:", mailErr);
           }
         }
       }
