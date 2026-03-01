@@ -8,12 +8,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
+import { COUNTRY_LOCALE_MAP } from "@/lib/i18n";
 
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
 };
-const categoryLabels: Record<string, string> = {
-  rental: "Location", administrative: "Administratif", company: "Entreprise", legal: "Juridique",
+const categoryLabelsByLang: Record<string, Record<string, string>> = {
+  fr: { rental: "Location", administrative: "Administratif", company: "Entreprise", legal: "Juridique" },
+  en: { rental: "Rental", administrative: "Administrative", company: "Company", legal: "Legal" },
+  es: { rental: "Alquiler", administrative: "Administrativo", company: "Empresa", legal: "Jurídico" },
+  de: { rental: "Vermietung", administrative: "Verwaltung", company: "Unternehmen", legal: "Recht" },
+  it: { rental: "Locazione", administrative: "Amministrativo", company: "Azienda", legal: "Legale" },
+  pt: { rental: "Arrendamento", administrative: "Administrativo", company: "Empresa", legal: "Jurídico" },
 };
 const countryLabels: Record<string, string> = {
   FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 Espagne", IT: "🇮🇹 Italie", DE: "🇩🇪 Allemagne",
@@ -99,17 +105,28 @@ const Documents = () => {
     );
   }
 
+  const lang = COUNTRY_LOCALE_MAP[userCountry] || "en";
+  const docLabels: Record<string, Record<string, string>> = {
+    fr: { title: "Documents", desc: "Générez des documents conformes ou consultez votre historique.", create: "Créer", history: "Historique", loading: "Chargement…", noDoc: "Aucun document généré.", needDoc: "Besoin d'un document spécifique ?", moreOn: "Plus de documents sur LawDepot", euroDesc: "Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.", euroTitle: "Documents européens — Powered by LawDepot", accessLawDepot: "Accéder à LawDepot" },
+    en: { title: "Documents", desc: "Generate compliant documents or view your history.", create: "Create", history: "History", loading: "Loading…", noDoc: "No documents generated.", needDoc: "Need a specific document?", moreOn: "More documents on LawDepot", euroDesc: "Generate your local documents via built-in templates or access LawDepot for additional certified templates.", euroTitle: "European documents — Powered by LawDepot", accessLawDepot: "Access LawDepot" },
+    es: { title: "Documentos", desc: "Genere documentos conformes o consulte su historial.", create: "Crear", history: "Historial", loading: "Cargando…", noDoc: "Ningún documento generado.", needDoc: "¿Necesita un documento específico?", moreOn: "Más documentos en LawDepot", euroDesc: "Genere documentos locales o acceda a LawDepot para plantillas certificadas.", euroTitle: "Documentos europeos — Powered by LawDepot", accessLawDepot: "Acceder a LawDepot" },
+    de: { title: "Dokumente", desc: "Konforme Dokumente erstellen oder Verlauf anzeigen.", create: "Erstellen", history: "Verlauf", loading: "Laden…", noDoc: "Keine Dokumente erstellt.", needDoc: "Brauchen Sie ein bestimmtes Dokument?", moreOn: "Mehr Dokumente auf LawDepot", euroDesc: "Erstellen Sie lokale Dokumente oder greifen Sie auf zertifizierte LawDepot-Vorlagen zu.", euroTitle: "Europäische Dokumente — Powered by LawDepot", accessLawDepot: "Zu LawDepot" },
+    it: { title: "Documenti", desc: "Genera documenti conformi o consulta lo storico.", create: "Crea", history: "Storico", loading: "Caricamento…", noDoc: "Nessun documento generato.", needDoc: "Hai bisogno di un documento specifico?", moreOn: "Più documenti su LawDepot", euroDesc: "Genera documenti locali o accedi a LawDepot per modelli certificati.", euroTitle: "Documenti europei — Powered by LawDepot", accessLawDepot: "Accedi a LawDepot" },
+    pt: { title: "Documentos", desc: "Gere documentos conformes ou consulte o histórico.", create: "Criar", history: "Histórico", loading: "A carregar…", noDoc: "Nenhum documento gerado.", needDoc: "Precisa de um documento específico?", moreOn: "Mais documentos no LawDepot", euroDesc: "Gere documentos locais ou aceda ao LawDepot para modelos certificados.", euroTitle: "Documentos europeus — Powered by LawDepot", accessLawDepot: "Aceder ao LawDepot" },
+  };
+  const dl = docLabels[lang] || docLabels.en;
+
   return (
     <DashboardLayout>
-      <FeatureGate feature="legal_documents" featureLabel="Documents juridiques">
+      <FeatureGate feature="legal_documents" featureLabel={dl.title}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Documents</h1>
-        <p className="text-muted-foreground text-sm mb-6">Générez des documents conformes ou consultez votre historique.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{dl.title}</h1>
+        <p className="text-muted-foreground text-sm mb-6">{dl.desc}</p>
 
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
           {([
-            { key: "create" as const, label: "Créer" },
-            { key: "history" as const, label: `Historique (${docs.length})` },
+            { key: "create" as const, label: dl.create },
+            { key: "history" as const, label: `${dl.history} (${docs.length})` },
             { key: "europe" as const, label: "🇪🇺 Europe" },
           ]).map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)}
@@ -127,7 +144,7 @@ const Documents = () => {
                 <div key={cat}>
                   <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                    {categoryLabels[cat] || cat}
+                    {(categoryLabelsByLang[COUNTRY_LOCALE_MAP[userCountry] || "en"] || categoryLabelsByLang.en)[cat] || cat}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {templates.map((t) => (
@@ -154,11 +171,11 @@ const Documents = () => {
         {tab === "history" && (
           <div className="space-y-3">
             {loading ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">Chargement…</div>
+              <div className="text-center py-12 text-muted-foreground text-sm">{dl.loading}</div>
             ) : docs.length === 0 ? (
               <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">Aucun document généré.</p>
+                <p className="text-muted-foreground">{dl.noDoc}</p>
               </div>
             ) : (
               docs.map((d) => (
@@ -189,8 +206,8 @@ const Documents = () => {
             <div className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-lg p-4">
               <Globe className="h-5 w-5 text-accent shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Documents européens — Powered by LawDepot</p>
-                <p className="text-xs text-muted-foreground">Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.</p>
+                <p className="text-sm font-medium text-foreground">{dl.euroTitle}</p>
+                <p className="text-xs text-muted-foreground">{dl.euroDesc}</p>
               </div>
             </div>
             {Object.entries(
@@ -232,7 +249,7 @@ const Documents = () => {
                   {lawDepotUrls[country] && (
                     <a href={lawDepotUrls[country]} target="_blank" rel="noopener noreferrer"
                       className="text-xs font-medium text-accent hover:underline flex items-center gap-1">
-                      Plus de documents sur LawDepot <ChevronRight className="h-3 w-3" />
+                      {dl.moreOn} <ChevronRight className="h-3 w-3" />
                     </a>
                   )}
                 </div>
@@ -259,11 +276,11 @@ const Documents = () => {
             {/* LawDepot CTA */}
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 text-center">
               <Scale className="h-10 w-10 text-accent mx-auto mb-3" />
-              <h3 className="font-semibold text-foreground mb-1">Besoin d'un document spécifique ?</h3>
-              <p className="text-sm text-muted-foreground mb-4">Accédez à la bibliothèque complète LawDepot pour des contrats certifiés dans votre pays.</p>
+              <h3 className="font-semibold text-foreground mb-1">{dl.needDoc}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{dl.euroDesc}</p>
               <a href="https://www.lawdepot.com/" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground px-6 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
-                Accéder à LawDepot <ChevronRight className="h-4 w-4" />
+                {dl.accessLawDepot} <ChevronRight className="h-4 w-4" />
               </a>
             </div>
           </div>

@@ -14,10 +14,13 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
   JP: "en", KR: "en", CN: "en", IN: "en", TR: "en",
   NL: "en", SE: "en", NO: "en", DK: "en", FI: "en", PL: "en",
+  GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en", BG: "en", SK: "en",
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   FR: "EUR", BE: "EUR", ES: "EUR", DE: "EUR", IT: "EUR", PT: "EUR", LU: "EUR", MC: "EUR", AT: "EUR", IE: "EUR", NL: "EUR", FI: "EUR", GR: "EUR",
+  SK: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR",
+  SE: "SEK", DK: "DKK", NO: "NOK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", HR: "EUR", BG: "BGN",
   GB: "GBP", US: "USD", CH: "CHF", CA: "CAD", AU: "AUD", NZ: "NZD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP",
   MA: "MAD", TN: "TND", SN: "XOF", CI: "XOF", ZA: "ZAR",
   AE: "AED", SA: "SAR", TR: "TRY", JP: "JPY", SG: "SGD",

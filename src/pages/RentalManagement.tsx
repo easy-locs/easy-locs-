@@ -17,6 +17,7 @@ import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
 import { frLeaseFurnished } from "@/lib/templates/fr/lease-furnished";
 import { frLeaseCommercial } from "@/lib/templates/fr/lease-commercial";
+import { getAllTemplates } from "@/lib/templates/registry";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,8 +246,16 @@ const RentalManagement = () => {
 
   /* ─── Auto-generate lease PDF ─── */
   const autoGenerateLease = async (tenantId: string, form: typeof defaultTenantForm) => {
-    const leaseTemplateMap: Record<string, DocumentTemplate> = {
-      empty: frLeaseEmpty, furnished: frLeaseFurnished, commercial: frLeaseCommercial,
+    // Try to find country-specific lease template first, fallback to French
+    const allTpls = getAllTemplates();
+    const findLease = (docType: string) =>
+      allTpls.find(t => t.country === userCountry && t.docType === docType && t.active) ||
+      allTpls.find(t => t.country === userCountry && t.category === "rental" && t.docType.includes("lease") && t.active);
+
+    const leaseTemplateMap: Record<string, DocumentTemplate | undefined> = {
+      empty: findLease("lease-empty") || findLease("lease-residential") || frLeaseEmpty,
+      furnished: findLease("lease-furnished") || findLease("lease-residential") || frLeaseFurnished,
+      commercial: findLease("lease-commercial") || frLeaseCommercial,
     };
     const template = leaseTemplateMap[form.lease_type];
     if (!template) return;
@@ -444,10 +453,13 @@ const RentalManagement = () => {
       paymentDate: payment.paid_date || new Date().toISOString().split("T")[0],
       paymentMethod: paymentMethodLabel,
     };
+    // Use country-specific receipt template if available, fallback to French
+    const allTpls = getAllTemplates();
+    const receiptTemplate = allTpls.find(t => t.country === userCountry && t.docType === "rent-receipt" && t.active) || frRentReceipt;
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
-    const doc = generateFromTemplate(frRentReceipt, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
-    downloadPDF(doc, `Quittance_${tenant.name}_${payment.month}.pdf`);
-    toast({ title: "Quittance PDF téléchargée" });
+    const doc = generateFromTemplate(receiptTemplate, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
+    downloadPDF(doc, `${L.generateReceipt.replace(/\s/g, "_")}_${tenant.name}_${payment.month}.pdf`);
+    toast({ title: L.validateReceipt });
   };
 
   /* ─── Pay rent via Stripe ─── */
