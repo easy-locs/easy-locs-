@@ -85,7 +85,7 @@ const Onboarding = () => {
   // Property
   const [propertyForm, setPropertyForm] = useState({
     label: "", address: "", postal_code: "", city: "",
-    property_type: "apartment", surface: 0, rooms: 1,
+    property_type: "apartment", surface: 0, rooms: 0,
     furnished: false, monthly_rent: 0, monthly_charges: 0, deposit_amount: 0,
   });
 
@@ -97,7 +97,7 @@ const Onboarding = () => {
   });
 
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { t, setLocale } = useI18n();
 
@@ -207,6 +207,7 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     await supabase.from("profiles").update({ onboarding_completed: true, onboarding_step: 7 }).eq("id", user.id);
+    await refreshProfile();
     setSaving(false);
     toast({ title: "🎉 " + t("ob.finish_title"), description: t("ob.finish_desc") });
     navigate("/dashboard");
@@ -410,7 +411,7 @@ const Onboarding = () => {
                 {renderInput(t("ob.postal_code"), propertyForm.postal_code, v => setPropertyForm(f => ({ ...f, postal_code: v })))}
                 {renderInput(t("ob.city"), propertyForm.city, v => setPropertyForm(f => ({ ...f, city: v })))}
                 {renderInput(t("ob.surface"), propertyForm.surface, v => setPropertyForm(f => ({ ...f, surface: Number(v) || 0 })), "number")}
-                {renderInput(t("ob.rooms"), propertyForm.rooms, v => setPropertyForm(f => ({ ...f, rooms: Number(v) || 1 })), "number")}
+                {renderInput(t("ob.rooms"), propertyForm.rooms === 0 ? "" : propertyForm.rooms, v => setPropertyForm(f => ({ ...f, rooms: v === "" ? 0 : Number(v) })), "number")}
                 {renderInput(t("ob.monthly_rent"), propertyForm.monthly_rent, v => setPropertyForm(f => ({ ...f, monthly_rent: Number(v) || 0 })), "number")}
                 {renderInput(t("ob.charges"), propertyForm.monthly_charges, v => setPropertyForm(f => ({ ...f, monthly_charges: Number(v) || 0 })), "number")}
                 {renderInput(t("ob.deposit"), propertyForm.deposit_amount, v => setPropertyForm(f => ({ ...f, deposit_amount: Number(v) || 0 })), "number")}

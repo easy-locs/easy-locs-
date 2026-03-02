@@ -55,7 +55,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
 const defaultPropertyForm = {
   label: "", address: "", postal_code: "", city: "", property_type: "apartment" as string,
-  surface: 0, rooms: 1, heating: "individual-gas", furnished: false,
+  surface: 0, rooms: 0, heating: "individual-gas", furnished: false,
   monthly_rent: 0, monthly_charges: 0, deposit_amount: 0, notes: "", floor: undefined as number | undefined,
   building_name: "" as string, lot_number: "" as string, country: "FR" as string,
   payment_day: 5,
@@ -1219,9 +1219,6 @@ const RentalManagement = () => {
                 <button onClick={() => { setActiveTab("tenants"); setShowTenantForm(true); }} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
                   <UserPlus className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.addTenant}</span>
                 </button>
-                <button onClick={() => setSelectedTemplate(frRentReceipt)} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
-                  <Receipt className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.generateReceipt}</span>
-                </button>
                 <button onClick={generateMonthlyRentCalls} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3 hover:bg-muted/50 transition-colors text-left">
                   <Euro className="h-5 w-5 text-accent" /><span className="text-sm font-medium text-foreground">{L.monthCalls}</span>
                 </button>
@@ -1267,7 +1264,12 @@ const RentalManagement = () => {
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
-                      onSelect={(result: AddressResult) => setPropertyForm({ ...propertyForm, address: result.street ? `${result.housenumber || ""} ${result.street}`.trim() : result.label || "", postal_code: result.postcode || "", city: result.city || "" })}
+                      onSelect={(result: AddressResult) => {
+                        const fullAddr = result.housenumber && result.street
+                          ? `${result.housenumber} ${result.street}`
+                          : result.street || result.label || "";
+                        setPropertyForm({ ...propertyForm, address: fullAddr.trim(), postal_code: result.postcode || "", city: result.city || "" });
+                      }}
                       countryCode={propertyForm.country || userCountry} /></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="relative"><label className="block text-xs font-medium text-muted-foreground mb-1">{L.postalCode}</label>
@@ -1286,8 +1288,8 @@ const RentalManagement = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.surface} ({propertyFormConfig.surfaceUnit})</label>
                       <input type="number" value={propertyForm.surface || ""} onChange={(e) => setPropertyForm({ ...propertyForm, surface: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rooms}</label>
-                      <input type="number" value={propertyForm.rooms || ""} onChange={(e) => setPropertyForm({ ...propertyForm, rooms: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rooms}</label>
+                       <input type="number" value={propertyForm.rooms === 0 ? "" : propertyForm.rooms} onChange={(e) => setPropertyForm({ ...propertyForm, rooms: e.target.value === "" ? 0 : +e.target.value })} placeholder="" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.floor}</label>
                       <input type="number" value={propertyForm.floor ?? ""} onChange={(e) => setPropertyForm({ ...propertyForm, floor: e.target.value ? +e.target.value : undefined })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.heating}</label>
@@ -1300,9 +1302,9 @@ const RentalManagement = () => {
                     <span className="text-sm text-foreground">{L.furnished}</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({propertyFormConfig.currencySymbol})</label>
-                      <input type="number" value={propertyForm.monthly_rent || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_rent: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({propertyFormConfig.currencySymbol})</label>
+                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} HC ({propertyFormConfig.currencySymbol})</label>
+                       <input type="number" value={propertyForm.monthly_rent || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_rent: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_charges || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_charges: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.deposit_amount || ""} onChange={(e) => setPropertyForm({ ...propertyForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>

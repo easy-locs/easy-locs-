@@ -281,8 +281,8 @@ const Leases = () => {
                           <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title="Télécharger">
                             <Download className="h-4 w-4" />
                           </button>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-muted text-muted-foreground" : "bg-green-500/20 text-green-700"}`}>
-                            {doc.status === "draft" ? t("page.leases.draft") : t("page.leases.signed")}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-accent/20 text-accent" : "bg-green-500/20 text-green-700"}`}>
+                             {doc.status === "draft" ? t("page.leases.ready") : t("page.leases.signed")}
                           </span>
                         </div>
                       </div>

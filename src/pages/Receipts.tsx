@@ -90,15 +90,7 @@ const Receipts = () => {
     loadReceipts();
   };
 
-  if (showForm) {
-    return (
-      <DocumentBuilder
-        template={frRentReceipt}
-        onBack={() => setShowForm(false)}
-        onGenerated={handleGenerated}
-      />
-    );
-  }
+  // Manual receipt form removed — receipts are generated automatically from payments
 
   return (
     <DashboardLayout>
@@ -108,21 +100,6 @@ const Receipts = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.receipts.title")}</h1>
             <p className="text-muted-foreground text-sm mt-1">{t("page.receipts.subtitle")}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {!canGenerateReceipt() && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg">
-                <Clock className="h-3.5 w-3.5" />
-                {t("page.receipts.available_25th")}
-              </div>
-            )}
-            <button
-              onClick={() => setShowForm(true)}
-              disabled={!canGenerateReceipt()}
-              className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Plus className="h-4 w-4" /> {t("page.receipts.new")}
-            </button>
           </div>
         </div>
 
