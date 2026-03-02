@@ -130,11 +130,14 @@ const RentalManagement = () => {
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [propertyForm, setPropertyForm] = useState(defaultPropertyForm);
+  const propertyFormConfig = useMemo(() => getCountryConfig(propertyForm.country || userCountry), [propertyForm.country, userCountry]);
 
   // Tenant form
   const [showTenantForm, setShowTenantForm] = useState(false);
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [tenantForm, setTenantForm] = useState(defaultTenantForm);
+  const tenantFormCountry = properties.find((p) => p.id === tenantForm.property_id)?.country || userCountry;
+  const tenantFormConfig = useMemo(() => getCountryConfig(tenantFormCountry), [tenantFormCountry]);
 
   // Messages
   const [messages, setMessages] = useState<any[]>([]);
@@ -157,8 +160,9 @@ const RentalManagement = () => {
   const [propertyFurniture, setPropertyFurniture] = useState<any[]>([]);
   const [propertyInventories, setPropertyInventories] = useState<any[]>([]);
 
-  // Templates
-  const rentalTemplates = getTemplatesByCategory("rental", userCountry as any);
+  // Templates (strictement liés au pays du bien du locataire sélectionné)
+  const selectedTenantCountry = selectedTenant ? (properties.find((p) => p.id === selectedTenant.property_id)?.country || userCountry) : userCountry;
+  const rentalTemplates = getTemplatesByCategory("rental", selectedTenantCountry as any);
 
   // Stats
   const totalRent = tenants.reduce((s, t) => s + (t.rent_amount || 0), 0);
@@ -1254,7 +1258,7 @@ const RentalManagement = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.propertyType}</label>
                       <select value={propertyForm.property_type} onChange={(e) => setPropertyForm({ ...propertyForm, property_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        {propertyFormConfig.propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
                       <select value={propertyForm.country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
@@ -1280,7 +1284,7 @@ const RentalManagement = () => {
                       <input value={propertyForm.city} onChange={(e) => setPropertyForm({ ...propertyForm, city: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.surface} ({cc.surfaceUnit})</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.surface} ({propertyFormConfig.surfaceUnit})</label>
                       <input type="number" value={propertyForm.surface || ""} onChange={(e) => setPropertyForm({ ...propertyForm, surface: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rooms}</label>
                       <input type="number" value={propertyForm.rooms || ""} onChange={(e) => setPropertyForm({ ...propertyForm, rooms: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
@@ -1288,7 +1292,7 @@ const RentalManagement = () => {
                       <input type="number" value={propertyForm.floor ?? ""} onChange={(e) => setPropertyForm({ ...propertyForm, floor: e.target.value ? +e.target.value : undefined })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.heating}</label>
                       <select value={propertyForm.heating} onChange={(e) => setPropertyForm({ ...propertyForm, heating: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {heatingTypes.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
+                        {propertyFormConfig.heatingTypes.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
                       </select></div>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1296,11 +1300,11 @@ const RentalManagement = () => {
                     <span className="text-sm text-foreground">{L.furnished}</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({cc.currencySymbol})</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_rent || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_rent: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({cc.currencySymbol})</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_charges || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_charges: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({cc.currencySymbol})</label>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.deposit_amount || ""} onChange={(e) => setPropertyForm({ ...propertyForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.notes}</label>
@@ -1414,19 +1418,19 @@ const RentalManagement = () => {
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseType}</label>
                       <select value={tenantForm.lease_type} onChange={(e) => setTenantForm({ ...tenantForm, lease_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {cc.leaseTypes.map(lt => <option key={lt.value} value={lt.value}>{lt.label}</option>)}
+                        {tenantFormConfig.leaseTypes.map(lt => <option key={lt.value} value={lt.value}>{lt.label}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseStart}</label><input type="date" value={tenantForm.lease_start || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_start: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseEnd}</label><input type="date" value={tenantForm.lease_end || ""} onChange={(e) => setTenantForm({ ...tenantForm, lease_end: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.rent}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({cc.currencySymbol})</label><input type="number" value={tenantForm.rent_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, rent_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({cc.currencySymbol})</label><input type="number" value={tenantForm.charges_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, charges_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({cc.currencySymbol})</label><input type="number" value={tenantForm.deposit_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.rent_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, rent_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.charges_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, charges_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.deposit} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.deposit_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, deposit_amount: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({cc.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 Jour d'appel de loyer</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 5} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="5" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.guarantor}</h4>

@@ -148,6 +148,7 @@ export function useRentalData() {
       heating: form.heating, furnished: form.furnished, monthly_rent: form.monthly_rent,
       monthly_charges: form.monthly_charges, deposit_amount: form.deposit_amount, notes: form.notes,
       building_name: form.building_name || null, lot_number: form.lot_number || null,
+      country: form.country || "FR",
     };
     if (editId) {
       const { error } = await supabase.from("properties").update(record).eq("id", editId);
