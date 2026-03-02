@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { getCountryConfig } from "@/lib/country-config";
 
 interface Tenant {
   id: string;
@@ -18,6 +19,7 @@ interface Tenant {
   email: string | null;
   tenant_user_id?: string | null;
   property_label?: string;
+  property_country?: string;
 }
 
 interface Message {
@@ -62,22 +64,23 @@ const Messages = () => {
       .order("name");
 
     if (data) {
-      // Load property labels
+      // Load property labels and countries
       const propertyIds = data.filter(t => t.property_id).map(t => t.property_id!);
-      let propertyMap: Record<string, string> = {};
+      let propertyMap: Record<string, { label: string; country: string }> = {};
       if (propertyIds.length > 0) {
         const { data: props } = await supabase
           .from("properties")
-          .select("id, label")
+          .select("id, label, country")
           .in("id", propertyIds);
         if (props) {
-          propertyMap = Object.fromEntries(props.map(p => [p.id, p.label]));
+          propertyMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
         }
       }
 
       setTenants(data.map(t => ({
         ...t,
-        property_label: t.property_id ? propertyMap[t.property_id] : undefined,
+        property_label: t.property_id ? propertyMap[t.property_id]?.label : undefined,
+        property_country: t.property_id ? propertyMap[t.property_id]?.country : undefined,
       })));
     }
     setLoading(false);
@@ -184,37 +187,41 @@ const Messages = () => {
       setNewMessage("");
 
       if (selectedTenant.tenant_user_id) {
+        const propCountry = selectedTenant.property_country || "FR";
+        const L = getCountryConfig(propCountry).labels;
         await supabase.from("notifications").insert({
           user_id: selectedTenant.tenant_user_id,
           org_id: orgId,
           type: "message",
-          title: "Nouveau message",
-          message: "Votre bailleur vous a envoyé un message.",
+          title: L.notifNewMsgLandlord,
+          message: L.notifLandlordSentMsg,
           link: "/tenant/messages",
         });
       }
 
       const tenantEmail = normalizeEmail(selectedTenant.email);
+      const propCountry = selectedTenant.property_country || "FR";
+      const L = getCountryConfig(propCountry).labels;
       if (tenantEmail && isValidEmail(tenantEmail)) {
         try {
           const appUrl = window.location.origin;
           const { data, error: emailError } = await supabase.functions.invoke("send-email", {
             body: {
               to: tenantEmail,
-              subject: `Nouveau message de votre bailleur`,
+              subject: L.emailNewMsgSubjectFromLandlord,
               html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
                 <div style="text-align:center;margin-bottom:24px;">
-                  <h2 style="color:#1a1a1a;margin:0;">📩 Nouveau message de votre bailleur</h2>
+                  <h2 style="color:#1a1a1a;margin:0;">📩 ${escapeEmailHtml(L.emailNewMsgFromLandlord)}</h2>
                 </div>
-                <p style="color:#555;font-size:15px;">Bonjour,</p>
-                <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
+                <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailHello)},</p>
+                <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailYouReceivedMsg)}</p>
                 <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
                   <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
                 </div>
                 <div style="text-align:center;margin:24px 0;">
-                  <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+                  <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
                 </div>
-                <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement. Pour répondre, utilisez votre espace locataire Easy-Locs.</p>
+                <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(L.emailAutoSent)}</p>
               </div>`,
             },
           });

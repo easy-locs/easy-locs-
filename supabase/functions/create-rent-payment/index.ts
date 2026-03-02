@@ -85,7 +85,7 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
     
     const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
-    const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
+    const origin = req.headers.get("origin") || "https://easylocs.lovable.app";
 
     const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);

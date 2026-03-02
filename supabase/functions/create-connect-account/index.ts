@@ -58,7 +58,7 @@ serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "https://easy-loc.lovable.app";
+    const origin = req.headers.get("origin") || "https://easylocs.lovable.app";
 
     let accountId = org?.stripe_account_id;
 

@@ -142,6 +142,26 @@ export interface CountryConfig {
     noReceipt: string;
     receiptDownloadError: string;
     noRentCall: string;
+    // Email / notification templates
+    emailNewMsgFromTenant: string;
+    emailNewMsgFromLandlord: string;
+    emailNewMsgSubjectFromTenant: string;
+    emailNewMsgSubjectFromLandlord: string;
+    emailReplyInApp: string;
+    emailAutoSent: string;
+    emailHello: string;
+    emailYouReceivedMsg: string;
+    emailTenantSentMsg: string;
+    notifNewMsgTenant: string;
+    notifNewMsgLandlord: string;
+    notifTenantSentMsg: string;
+    notifLandlordSentMsg: string;
+    // Invitation
+    inviteSubject: string;
+    inviteTitle: string;
+    inviteBody: string;
+    inviteButton: string;
+    inviteLinkExpiry: string;
   };
   defaultNationality: string;
   surfaceUnit: string;
@@ -196,6 +216,16 @@ const frLabels = {
   send: "Envoyer", downloadReceipts: "Téléchargez vos quittances de loyer validées par votre bailleur.",
   noReceipt: "Aucune quittance disponible pour le moment.",
   receiptDownloadError: "Erreur de téléchargement", noRentCall: "Aucun appel de loyer.",
+  emailNewMsgFromTenant: "Nouveau message locataire", emailNewMsgFromLandlord: "Nouveau message de votre bailleur",
+  emailNewMsgSubjectFromTenant: "Nouveau message de votre locataire", emailNewMsgSubjectFromLandlord: "Nouveau message de votre bailleur",
+  emailReplyInApp: "Répondre dans l'application", emailAutoSent: "Cet email est envoyé automatiquement.",
+  emailHello: "Bonjour", emailYouReceivedMsg: "Vous avez reçu un nouveau message :",
+  emailTenantSentMsg: "Un locataire vous a envoyé un message :", notifNewMsgTenant: "Nouveau message locataire",
+  notifNewMsgLandlord: "Nouveau message", notifTenantSentMsg: "Un locataire vous a envoyé un message.",
+  notifLandlordSentMsg: "Votre bailleur vous a envoyé un message.",
+  inviteSubject: "Invitation à rejoindre votre espace locataire",
+  inviteTitle: "🏠 Invitation locataire", inviteBody: "Votre bailleur vous invite à activer votre espace locataire pour accéder à vos documents, quittances et messages.",
+  inviteButton: "Activer mon espace locataire", inviteLinkExpiry: "Ce lien est personnel et expire dans 7 jours.",
 };
 
 const enLabels: typeof frLabels = {
@@ -247,6 +277,16 @@ const enLabels: typeof frLabels = {
   send: "Send", downloadReceipts: "Download your rent receipts validated by your landlord.",
   noReceipt: "No receipts available yet.",
   receiptDownloadError: "Download error", noRentCall: "No rent calls.",
+  emailNewMsgFromTenant: "New tenant message", emailNewMsgFromLandlord: "New message from your landlord",
+  emailNewMsgSubjectFromTenant: "New message from your tenant", emailNewMsgSubjectFromLandlord: "New message from your landlord",
+  emailReplyInApp: "Reply in the app", emailAutoSent: "This email was sent automatically.",
+  emailHello: "Hello", emailYouReceivedMsg: "You have received a new message:",
+  emailTenantSentMsg: "A tenant has sent you a message:", notifNewMsgTenant: "New tenant message",
+  notifNewMsgLandlord: "New message", notifTenantSentMsg: "A tenant has sent you a message.",
+  notifLandlordSentMsg: "Your landlord has sent you a message.",
+  inviteSubject: "Invitation to join your tenant portal",
+  inviteTitle: "🏠 Tenant Invitation", inviteBody: "Your landlord invites you to activate your tenant portal to access your documents, receipts, and messages.",
+  inviteButton: "Activate my tenant portal", inviteLinkExpiry: "This link is personal and expires in 7 days.",
 };
 
 const esLabels: typeof frLabels = {
@@ -298,6 +338,16 @@ const esLabels: typeof frLabels = {
   send: "Enviar", downloadReceipts: "Descargue sus recibos de alquiler validados por su arrendador.",
   noReceipt: "No hay recibos disponibles por el momento.",
   receiptDownloadError: "Error de descarga", noRentCall: "Sin llamadas de alquiler.",
+  emailNewMsgFromTenant: "Nuevo mensaje del inquilino", emailNewMsgFromLandlord: "Nuevo mensaje de su arrendador",
+  emailNewMsgSubjectFromTenant: "Nuevo mensaje de su inquilino", emailNewMsgSubjectFromLandlord: "Nuevo mensaje de su arrendador",
+  emailReplyInApp: "Responder en la aplicación", emailAutoSent: "Este email se ha enviado automáticamente.",
+  emailHello: "Hola", emailYouReceivedMsg: "Ha recibido un nuevo mensaje:",
+  emailTenantSentMsg: "Un inquilino le ha enviado un mensaje:", notifNewMsgTenant: "Nuevo mensaje del inquilino",
+  notifNewMsgLandlord: "Nuevo mensaje", notifTenantSentMsg: "Un inquilino le ha enviado un mensaje.",
+  notifLandlordSentMsg: "Su arrendador le ha enviado un mensaje.",
+  inviteSubject: "Invitación a unirse a su espacio de inquilino",
+  inviteTitle: "🏠 Invitación inquilino", inviteBody: "Su arrendador le invita a activar su espacio de inquilino para acceder a sus documentos, recibos y mensajes.",
+  inviteButton: "Activar mi espacio de inquilino", inviteLinkExpiry: "Este enlace es personal y caduca en 7 días.",
 };
 
 const deLabels: typeof frLabels = {
@@ -349,6 +399,16 @@ const deLabels: typeof frLabels = {
   send: "Senden", downloadReceipts: "Laden Sie Ihre vom Vermieter validierten Quittungen herunter.",
   noReceipt: "Noch keine Quittungen verfügbar.",
   receiptDownloadError: "Download-Fehler", noRentCall: "Keine Mietaufrufe.",
+  emailNewMsgFromTenant: "Neue Nachricht vom Mieter", emailNewMsgFromLandlord: "Neue Nachricht von Ihrem Vermieter",
+  emailNewMsgSubjectFromTenant: "Neue Nachricht von Ihrem Mieter", emailNewMsgSubjectFromLandlord: "Neue Nachricht von Ihrem Vermieter",
+  emailReplyInApp: "In der App antworten", emailAutoSent: "Diese E-Mail wurde automatisch versendet.",
+  emailHello: "Hallo", emailYouReceivedMsg: "Sie haben eine neue Nachricht erhalten:",
+  emailTenantSentMsg: "Ein Mieter hat Ihnen eine Nachricht gesendet:", notifNewMsgTenant: "Neue Mieternachricht",
+  notifNewMsgLandlord: "Neue Nachricht", notifTenantSentMsg: "Ein Mieter hat Ihnen eine Nachricht gesendet.",
+  notifLandlordSentMsg: "Ihr Vermieter hat Ihnen eine Nachricht gesendet.",
+  inviteSubject: "Einladung zu Ihrem Mieterportal",
+  inviteTitle: "🏠 Mieter-Einladung", inviteBody: "Ihr Vermieter lädt Sie ein, Ihr Mieterportal zu aktivieren, um auf Ihre Dokumente, Quittungen und Nachrichten zuzugreifen.",
+  inviteButton: "Mieterportal aktivieren", inviteLinkExpiry: "Dieser Link ist persönlich und läuft in 7 Tagen ab.",
 };
 
 const itLabels: typeof frLabels = {
@@ -400,6 +460,16 @@ const itLabels: typeof frLabels = {
   send: "Invia", downloadReceipts: "Scarica le tue ricevute d'affitto validate dal tuo locatore.",
   noReceipt: "Nessuna ricevuta disponibile al momento.",
   receiptDownloadError: "Errore di download", noRentCall: "Nessuna richiesta di affitto.",
+  emailNewMsgFromTenant: "Nuovo messaggio dell'inquilino", emailNewMsgFromLandlord: "Nuovo messaggio dal proprietario",
+  emailNewMsgSubjectFromTenant: "Nuovo messaggio dal tuo inquilino", emailNewMsgSubjectFromLandlord: "Nuovo messaggio dal tuo proprietario",
+  emailReplyInApp: "Rispondi nell'app", emailAutoSent: "Questa email è stata inviata automaticamente.",
+  emailHello: "Ciao", emailYouReceivedMsg: "Hai ricevuto un nuovo messaggio:",
+  emailTenantSentMsg: "Un inquilino ti ha inviato un messaggio:", notifNewMsgTenant: "Nuovo messaggio inquilino",
+  notifNewMsgLandlord: "Nuovo messaggio", notifTenantSentMsg: "Un inquilino ti ha inviato un messaggio.",
+  notifLandlordSentMsg: "Il tuo proprietario ti ha inviato un messaggio.",
+  inviteSubject: "Invito a unirti al tuo spazio inquilino",
+  inviteTitle: "🏠 Invito inquilino", inviteBody: "Il tuo proprietario ti invita ad attivare il tuo spazio inquilino per accedere ai tuoi documenti, ricevute e messaggi.",
+  inviteButton: "Attiva il mio spazio inquilino", inviteLinkExpiry: "Questo link è personale e scade tra 7 giorni.",
 };
 
 const ptLabels: typeof frLabels = {
@@ -451,6 +521,16 @@ const ptLabels: typeof frLabels = {
   send: "Enviar", downloadReceipts: "Descarregue os seus recibos validados pelo senhorio.",
   noReceipt: "Nenhum recibo disponível de momento.",
   receiptDownloadError: "Erro no download", noRentCall: "Sem chamadas de renda.",
+  emailNewMsgFromTenant: "Nova mensagem do inquilino", emailNewMsgFromLandlord: "Nova mensagem do seu senhorio",
+  emailNewMsgSubjectFromTenant: "Nova mensagem do seu inquilino", emailNewMsgSubjectFromLandlord: "Nova mensagem do seu senhorio",
+  emailReplyInApp: "Responder na aplicação", emailAutoSent: "Este email foi enviado automaticamente.",
+  emailHello: "Olá", emailYouReceivedMsg: "Recebeu uma nova mensagem:",
+  emailTenantSentMsg: "Um inquilino enviou-lhe uma mensagem:", notifNewMsgTenant: "Nova mensagem do inquilino",
+  notifNewMsgLandlord: "Nova mensagem", notifTenantSentMsg: "Um inquilino enviou-lhe uma mensagem.",
+  notifLandlordSentMsg: "O seu senhorio enviou-lhe uma mensagem.",
+  inviteSubject: "Convite para o seu espaço de inquilino",
+  inviteTitle: "🏠 Convite inquilino", inviteBody: "O seu senhorio convida-o a ativar o seu espaço de inquilino para aceder aos seus documentos, recibos e mensagens.",
+  inviteButton: "Ativar o meu espaço de inquilino", inviteLinkExpiry: "Este link é pessoal e expira em 7 dias.",
 };
 
 /* ─── Property types per language group ─── */
