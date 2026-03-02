@@ -25,6 +25,7 @@ interface AuthContextType {
   onboardingCompleted: boolean;
   subscription: SubscriptionState;
   refreshSubscription: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -49,6 +50,7 @@ const AuthContext = createContext<AuthContextType>({
   onboardingCompleted: false,
   subscription: defaultSubscription,
   refreshSubscription: async () => {},
+  refreshProfile: async () => {},
   signOut: async () => {},
 });
 
@@ -86,6 +88,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCountry(data?.country ?? "FR");
     setUserCurrency(data?.currency ?? "EUR");
   }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (user) await fetchUserType(user.id);
+  }, [user, fetchUserType]);
 
   const refreshSubscription = useCallback(async () => {
     // Stripe disabled — open access for now
@@ -149,7 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, refreshSubscription, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, refreshSubscription, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

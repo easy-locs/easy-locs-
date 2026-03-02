@@ -339,17 +339,16 @@ export function useRentalData() {
       if (emailSent) {
         toast({
           title: "Invitation envoyée",
-          description: copied
-            ? `Email envoyé à ${normalizedEmail} et lien copié dans le presse-papiers.`
-            : `Email d'invitation envoyé à ${normalizedEmail}.`,
+          description: `Email envoyé à ${normalizedEmail}.${copied ? " Lien aussi copié dans le presse-papiers." : ""}`,
         });
       } else {
+        // Open the invite link in a new tab as fallback
+        window.open(inviteUrl, '_blank');
         toast({
-          title: "Invitation créée (email non envoyé)",
+          title: "Invitation créée",
           description: copied
-            ? `Lien copié. Vous pouvez l'envoyer manuellement au locataire. Détail: ${emailErrorMessage}`
-            : `Impossible d'envoyer l'email automatiquement. Détail: ${emailErrorMessage}`,
-          variant: "destructive",
+            ? `Lien copié et ouvert dans un nouvel onglet. ${emailErrorMessage ? `(Email non envoyé: ${emailErrorMessage})` : ""}`
+            : `Lien ouvert dans un nouvel onglet. ${emailErrorMessage ? `(Email non envoyé: ${emailErrorMessage})` : ""}`,
         });
       }
     } catch (err: any) {
