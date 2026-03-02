@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
+import { getCountryConfig } from "@/lib/country-config";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
@@ -18,21 +19,22 @@ const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
   { code: "pt", label: "Português", flag: "🇵🇹" },
 ];
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Mon espace", path: "/tenant" },
-  { icon: Receipt, label: "Mes quittances", path: "/tenant/receipts" },
-  { icon: FileText, label: "Mes documents", path: "/tenant/documents" },
-  { icon: MessageCircle, label: "Messages", path: "/tenant/messages" },
-  { icon: CreditCard, label: "Payer mon loyer", path: "/tenant/pay" },
-];
-
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userCountry } = useAuth();
   const { locale, setLocale } = useI18n();
+  const L = useMemo(() => getCountryConfig(userCountry).labels, [userCountry]);
+
+  const navItems = [
+    { icon: LayoutDashboard, label: L.tenantSpace, path: "/tenant" },
+    { icon: Receipt, label: L.myReceipts, path: "/tenant/receipts" },
+    { icon: FileText, label: L.myDocuments, path: "/tenant/documents" },
+    { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages" },
+    { icon: CreditCard, label: L.payRent, path: "/tenant/pay" },
+  ];
 
   const handleLogout = async () => {
     await signOut();
@@ -59,7 +61,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </div>
           <div className="mt-2">
-            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">Espace locataire</span>
+            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{L.tenantSpace}</span>
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
@@ -113,13 +115,13 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             to="/tenant/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <Settings className="h-4 w-4" /> Paramètres
+            <Settings className="h-4 w-4" /> {L.settingsNav}
           </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <LogOut className="h-4 w-4" /> Déconnexion
+            <LogOut className="h-4 w-4" /> {L.logoutNav}
           </button>
         </div>
       </aside>
@@ -133,7 +135,6 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
         </header>
         <main className="flex-1 p-6">{children}</main>
-        {/* Footer branding */}
         <footer className="py-3 text-center border-t border-border/30">
           <span className="text-xs text-muted-foreground/50 font-medium tracking-wide">EASY-LOCS<sup className="text-[8px]">®</sup></span>
         </footer>

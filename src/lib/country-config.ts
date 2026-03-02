@@ -116,6 +116,32 @@ export interface CountryConfig {
     completed: string;
     tenant_label: string;
     perMonth: string;
+    country: string;
+    vacantAssign: string;
+    unpaidN: string;
+    rooms_suffix: string;
+    terminated_label: string;
+    generateDoc: string;
+    writeMessage: string;
+    tenantSpace: string;
+    myReceipts: string;
+    myDocuments: string;
+    messagesNav: string;
+    payRent: string;
+    settingsNav: string;
+    logoutNav: string;
+    welcomeTenant: string;
+    tenantSpaceDesc: string;
+    myRent: string;
+    myCharges: string;
+    myLease: string;
+    noLinkedProperty: string;
+    noLinkedPropertyDesc: string;
+    send: string;
+    downloadReceipts: string;
+    noReceipt: string;
+    receiptDownloadError: string;
+    noRentCall: string;
   };
   defaultNationality: string;
   surfaceUnit: string;
@@ -158,6 +184,18 @@ const frLabels = {
   roomByRoom: "Pièce par pièce avec photos", compareEntry: "Comparer avec l'entrée",
   entry: "Entrée", exit: "Sortie", draft: "Brouillon", completed: "Finalisé",
   tenant_label: "Locataire", perMonth: "/mois",
+  country: "Pays", vacantAssign: "Vacant — Assigner", unpaidN: "impayé(s)",
+  rooms_suffix: "pièce(s)", terminated_label: "résilié", generateDoc: "Générer un document",
+  writeMessage: "Écrire un message...", tenantSpace: "Espace locataire",
+  myReceipts: "Mes quittances", myDocuments: "Mes documents", messagesNav: "Messages",
+  payRent: "Payer mon loyer", settingsNav: "Paramètres", logoutNav: "Déconnexion",
+  welcomeTenant: "Bienvenue 👋", tenantSpaceDesc: "Votre espace locataire Easy-Locs",
+  myRent: "Loyer", myCharges: "Charges", myLease: "Bail",
+  noLinkedProperty: "Aucun logement n'est encore lié à votre compte.",
+  noLinkedPropertyDesc: "Votre bailleur doit vous associer dans sa gestion locative.",
+  send: "Envoyer", downloadReceipts: "Téléchargez vos quittances de loyer validées par votre bailleur.",
+  noReceipt: "Aucune quittance disponible pour le moment.",
+  receiptDownloadError: "Erreur de téléchargement", noRentCall: "Aucun appel de loyer.",
 };
 
 const enLabels: typeof frLabels = {
@@ -197,6 +235,18 @@ const enLabels: typeof frLabels = {
   roomByRoom: "Room by room with photos", compareEntry: "Compare with check-in",
   entry: "Entry", exit: "Exit", draft: "Draft", completed: "Completed",
   tenant_label: "Tenant", perMonth: "/month",
+  country: "Country", vacantAssign: "Vacant — Assign", unpaidN: "unpaid",
+  rooms_suffix: "room(s)", terminated_label: "terminated", generateDoc: "Generate document",
+  writeMessage: "Write a message...", tenantSpace: "Tenant space",
+  myReceipts: "My receipts", myDocuments: "My documents", messagesNav: "Messages",
+  payRent: "Pay my rent", settingsNav: "Settings", logoutNav: "Log out",
+  welcomeTenant: "Welcome 👋", tenantSpaceDesc: "Your Easy-Locs tenant space",
+  myRent: "Rent", myCharges: "Charges", myLease: "Lease",
+  noLinkedProperty: "No property is linked to your account yet.",
+  noLinkedPropertyDesc: "Your landlord must associate you in their management.",
+  send: "Send", downloadReceipts: "Download your rent receipts validated by your landlord.",
+  noReceipt: "No receipts available yet.",
+  receiptDownloadError: "Download error", noRentCall: "No rent calls.",
 };
 
 const esLabels: typeof frLabels = {
@@ -236,6 +286,18 @@ const esLabels: typeof frLabels = {
   roomByRoom: "Habitación por habitación con fotos", compareEntry: "Comparar con entrada",
   entry: "Entrada", exit: "Salida", draft: "Borrador", completed: "Completado",
   tenant_label: "Inquilino", perMonth: "/mes",
+  country: "País", vacantAssign: "Vacante — Asignar", unpaidN: "impago(s)",
+  rooms_suffix: "habitación(es)", terminated_label: "finalizado", generateDoc: "Generar documento",
+  writeMessage: "Escribir un mensaje...", tenantSpace: "Espacio inquilino",
+  myReceipts: "Mis recibos", myDocuments: "Mis documentos", messagesNav: "Mensajes",
+  payRent: "Pagar mi alquiler", settingsNav: "Ajustes", logoutNav: "Cerrar sesión",
+  welcomeTenant: "Bienvenido 👋", tenantSpaceDesc: "Tu espacio inquilino Easy-Locs",
+  myRent: "Alquiler", myCharges: "Gastos", myLease: "Contrato",
+  noLinkedProperty: "Aún no hay ningún inmueble vinculado a su cuenta.",
+  noLinkedPropertyDesc: "Su propietario debe asociarle en su gestión.",
+  send: "Enviar", downloadReceipts: "Descargue sus recibos de alquiler validados por su arrendador.",
+  noReceipt: "No hay recibos disponibles por el momento.",
+  receiptDownloadError: "Error de descarga", noRentCall: "Sin llamadas de alquiler.",
 };
 
 const deLabels: typeof frLabels = {
@@ -275,6 +337,18 @@ const deLabels: typeof frLabels = {
   roomByRoom: "Raum für Raum mit Fotos", compareEntry: "Mit Einzug vergleichen",
   entry: "Einzug", exit: "Auszug", draft: "Entwurf", completed: "Abgeschlossen",
   tenant_label: "Mieter", perMonth: "/Monat",
+  country: "Land", vacantAssign: "Leer — Zuweisen", unpaidN: "ausstehend",
+  rooms_suffix: "Zimmer", terminated_label: "beendet", generateDoc: "Dokument erstellen",
+  writeMessage: "Nachricht schreiben...", tenantSpace: "Mieterbereich",
+  myReceipts: "Meine Quittungen", myDocuments: "Meine Dokumente", messagesNav: "Nachrichten",
+  payRent: "Miete zahlen", settingsNav: "Einstellungen", logoutNav: "Abmelden",
+  welcomeTenant: "Willkommen 👋", tenantSpaceDesc: "Ihr Easy-Locs Mieterbereich",
+  myRent: "Miete", myCharges: "Nebenkosten", myLease: "Vertrag",
+  noLinkedProperty: "Noch keine Immobilie mit Ihrem Konto verknüpft.",
+  noLinkedPropertyDesc: "Ihr Vermieter muss Sie in seiner Verwaltung zuordnen.",
+  send: "Senden", downloadReceipts: "Laden Sie Ihre vom Vermieter validierten Quittungen herunter.",
+  noReceipt: "Noch keine Quittungen verfügbar.",
+  receiptDownloadError: "Download-Fehler", noRentCall: "Keine Mietaufrufe.",
 };
 
 const itLabels: typeof frLabels = {
@@ -314,6 +388,18 @@ const itLabels: typeof frLabels = {
   roomByRoom: "Stanza per stanza con foto", compareEntry: "Confronta con ingresso",
   entry: "Ingresso", exit: "Uscita", draft: "Bozza", completed: "Completato",
   tenant_label: "Inquilino", perMonth: "/mese",
+  country: "Paese", vacantAssign: "Vacante — Assegna", unpaidN: "insoluto/i",
+  rooms_suffix: "stanza/e", terminated_label: "terminato", generateDoc: "Genera documento",
+  writeMessage: "Scrivi un messaggio...", tenantSpace: "Spazio inquilino",
+  myReceipts: "Le mie ricevute", myDocuments: "I miei documenti", messagesNav: "Messaggi",
+  payRent: "Paga l'affitto", settingsNav: "Impostazioni", logoutNav: "Esci",
+  welcomeTenant: "Benvenuto 👋", tenantSpaceDesc: "Il tuo spazio inquilino Easy-Locs",
+  myRent: "Canone", myCharges: "Spese", myLease: "Contratto",
+  noLinkedProperty: "Nessun immobile è ancora collegato al tuo account.",
+  noLinkedPropertyDesc: "Il tuo proprietario deve associarti nella sua gestione.",
+  send: "Invia", downloadReceipts: "Scarica le tue ricevute d'affitto validate dal tuo locatore.",
+  noReceipt: "Nessuna ricevuta disponibile al momento.",
+  receiptDownloadError: "Errore di download", noRentCall: "Nessuna richiesta di affitto.",
 };
 
 const ptLabels: typeof frLabels = {
@@ -353,6 +439,18 @@ const ptLabels: typeof frLabels = {
   roomByRoom: "Divisão por divisão com fotos", compareEntry: "Comparar com entrada",
   entry: "Entrada", exit: "Saída", draft: "Rascunho", completed: "Concluído",
   tenant_label: "Inquilino", perMonth: "/mês",
+  country: "País", vacantAssign: "Vago — Atribuir", unpaidN: "em atraso",
+  rooms_suffix: "divisão(ões)", terminated_label: "terminado", generateDoc: "Gerar documento",
+  writeMessage: "Escrever mensagem...", tenantSpace: "Espaço inquilino",
+  myReceipts: "Meus recibos", myDocuments: "Meus documentos", messagesNav: "Mensagens",
+  payRent: "Pagar renda", settingsNav: "Definições", logoutNav: "Sair",
+  welcomeTenant: "Bem-vindo 👋", tenantSpaceDesc: "O seu espaço inquilino Easy-Locs",
+  myRent: "Renda", myCharges: "Encargos", myLease: "Contrato",
+  noLinkedProperty: "Nenhum imóvel está ainda associado à sua conta.",
+  noLinkedPropertyDesc: "O seu senhorio deve associá-lo na sua gestão.",
+  send: "Enviar", downloadReceipts: "Descarregue os seus recibos validados pelo senhorio.",
+  noReceipt: "Nenhum recibo disponível de momento.",
+  receiptDownloadError: "Erro no download", noRentCall: "Sem chamadas de renda.",
 };
 
 /* ─── Property types per language group ─── */
