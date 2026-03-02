@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getCountryConfig } from "@/lib/country-config";
 
 /* ─── Types ─── */
 export interface Property {
@@ -301,20 +302,27 @@ export function useRentalData() {
 
       let emailSent = false;
       let emailErrorMessage = "";
+      // Determine property country for localized email
+      let propCountry = "FR";
+      if (tenant.property_id) {
+        const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
+        if (prop?.country) propCountry = prop.country;
+      }
+      const L = getCountryConfig(propCountry).labels;
       try {
         const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
           body: {
             to: normalizedEmail,
-            subject: "Invitation à rejoindre votre espace locataire Easy-Locs",
+            subject: L.inviteSubject,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-              <h2 style="color:#1a1a1a;text-align:center;">🏠 Invitation Easy-Locs</h2>
-              <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
-              <p style="color:#555;font-size:15px;">Votre bailleur vous invite à activer votre espace locataire pour accéder à vos documents, quittances et messages.</p>
+              <h2 style="color:#1a1a1a;text-align:center;">${L.inviteTitle}</h2>
+              <p style="color:#555;font-size:15px;">${L.emailHello} ${tenant.name},</p>
+              <p style="color:#555;font-size:15px;">${L.inviteBody}</p>
               <div style="text-align:center;margin:24px 0;">
-                <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">Activer mon espace locataire</a>
+                <a href="${inviteUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;">${L.inviteButton}</a>
               </div>
-              <p style="color:#777;font-size:13px;">Ce lien est personnel et expire dans 7 jours.</p>
-              <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+              <p style="color:#777;font-size:13px;">${L.inviteLinkExpiry}</p>
+              <p style="color:#888;font-size:12px;text-align:center;">${L.emailAutoSent}</p>
             </div>`,
           },
         });

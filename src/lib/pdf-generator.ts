@@ -86,7 +86,7 @@ function addFooter(doc: jsPDF) {
     doc.setPage(i);
     setFont(doc, "italic", 7, COLOR_MUTED);
     doc.text(
-      sanitize("Ce document est genere a titre informatif. Il ne remplace pas les conseils d'un avocat, notaire ou expert-comptable."),
+      sanitize("Document generated for informational purposes. It does not replace legal advice."),
       MARGIN, 283
     );
     // EASY-LOCS® branding

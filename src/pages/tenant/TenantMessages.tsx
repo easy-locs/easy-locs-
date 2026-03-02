@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getCountryConfig } from "@/lib/country-config";
 
 const escapeEmailHtml = (value: string) =>
   value
@@ -24,6 +25,7 @@ const TenantMessages = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [propertyCountry, setPropertyCountry] = useState<string>("FR");
   const [loading, setLoading] = useState(true);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
@@ -34,13 +36,18 @@ const TenantMessages = () => {
     const fetch = async () => {
       const { data: tenant } = await supabase
         .from("tenants")
-        .select("id, org_id")
+        .select("id, org_id, property_id")
         .eq("tenant_user_id", user.id)
         .limit(1)
         .single();
       if (!tenant) { setLoading(false); return; }
       setTenantId(tenant.id);
       setOrgId(tenant.org_id);
+      // Get property country
+      if (tenant.property_id) {
+        const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
+        if (prop?.country) setPropertyCountry(prop.country);
+      }
       const { data } = await supabase
         .from("messages")
         .select("*")
@@ -128,12 +135,13 @@ const TenantMessages = () => {
               .single();
 
             if (org?.owner_user_id) {
+              const L = getCountryConfig(propertyCountry).labels;
               await supabase.from("notifications").insert({
                 user_id: org.owner_user_id,
                 org_id: orgId,
                 type: "message",
-                title: "Nouveau message locataire",
-                message: "Un locataire vous a envoyé un message.",
+                title: L.notifNewMsgTenant,
+                message: L.notifTenantSentMsg,
                 link: "/dashboard/messages",
               });
             }
@@ -152,20 +160,21 @@ const TenantMessages = () => {
 
             if (landlordEmail && isValidEmail(landlordEmail)) {
               const appUrl = window.location.origin;
+              const L = getCountryConfig(propertyCountry).labels;
               const { data: mailData, error: mailError } = await supabase.functions.invoke("send-email", {
                 body: {
                   to: landlordEmail,
-                  subject: `Nouveau message de votre locataire`,
+                  subject: L.emailNewMsgSubjectFromTenant,
                   html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                    <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message locataire</h2>
-                    <p style="color:#555;font-size:15px;">Un locataire vous a envoyé un message :</p>
+                    <h2 style="color:#1a1a1a;text-align:center;">📩 ${escapeEmailHtml(L.emailNewMsgFromTenant)}</h2>
+                    <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailTenantSentMsg)}</p>
                     <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
                       <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
                     </div>
                     <div style="text-align:center;margin:24px 0;">
-                      <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+                      <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
                     </div>
-                    <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+                    <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(L.emailAutoSent)}</p>
                   </div>`,
                 },
               });
