@@ -37,12 +37,28 @@ type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
 
+const COUNTRY_FLAGS: Record<string, string> = {
+  FR: "🇫🇷", BE: "🇧🇪", ES: "🇪🇸", IT: "🇮🇹", DE: "🇩🇪", PT: "🇵🇹", NL: "🇳🇱", GB: "🇬🇧",
+  CH: "🇨🇭", AT: "🇦🇹", LU: "🇱🇺", PL: "🇵🇱", SE: "🇸🇪", DK: "🇩🇰", NO: "🇳🇴", FI: "🇫🇮",
+  GR: "🇬🇷", CZ: "🇨🇿", HU: "🇭🇺", RO: "🇷🇴", HR: "🇭🇷", IE: "🇮🇪", BG: "🇧🇬", SK: "🇸🇰",
+  US: "🇺🇸", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽", MA: "🇲🇦", TN: "🇹🇳", ZA: "🇿🇦", TR: "🇹🇷",
+  JP: "🇯🇵", AU: "🇦🇺", SG: "🇸🇬", AE: "🇦🇪", SA: "🇸🇦",
+};
+const COUNTRY_NAMES: Record<string, string> = {
+  FR: "France", BE: "Belgique", ES: "España", IT: "Italia", DE: "Deutschland", PT: "Portugal",
+  NL: "Nederland", GB: "United Kingdom", CH: "Suisse", AT: "Österreich", LU: "Luxembourg",
+  PL: "Polska", SE: "Sverige", DK: "Danmark", NO: "Norge", FI: "Suomi",
+  GR: "Ελλάδα", CZ: "Česko", HU: "Magyarország", RO: "România", HR: "Hrvatska",
+  IE: "Ireland", BG: "България", SK: "Slovensko",
+};
+
 const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
 const defaultPropertyForm = {
   label: "", address: "", postal_code: "", city: "", property_type: "apartment" as string,
   surface: 0, rooms: 1, heating: "individual-gas", furnished: false,
   monthly_rent: 0, monthly_charges: 0, deposit_amount: 0, notes: "", floor: undefined as number | undefined,
-  building_name: "" as string, lot_number: "" as string,
+  building_name: "" as string, lot_number: "" as string, country: "FR" as string,
+  payment_day: 5,
 };
 
 const defaultTenantForm = {
@@ -52,7 +68,7 @@ const defaultTenantForm = {
   notes: "", birth_date: null as string | null, birth_place: null as string | null,
   nationality: "" as string | null, profession: null as string | null,
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
-  caf_apl_amount: 0,
+  caf_apl_amount: 0, payment_day: 5,
 };
 const EXPENSE_CATEGORIES: Record<string, string> = {
   travaux: "Travaux", assurance: "Assurance", taxe_fonciere: "Taxe foncière",
@@ -184,7 +200,7 @@ const RentalManagement = () => {
   const handlePostalCodeChange = async (value: string) => {
     setPropertyForm(prev => ({ ...prev, postal_code: value }));
     // Only use French postal code API for France; skip for other countries
-    if (userCountry === "FR" && value.length === 5) {
+    if ((propertyForm.country || userCountry) === "FR" && value.length === 5) {
       try {
         const res = await fetch(`https://geo.api.gouv.fr/communes?codePostal=${value}&fields=nom,codesPostaux&limit=10`);
         const data = await res.json();
@@ -219,6 +235,7 @@ const RentalManagement = () => {
       heating: p.heating, furnished: p.furnished, monthly_rent: p.monthly_rent,
       monthly_charges: p.monthly_charges, deposit_amount: p.deposit_amount, notes: p.notes,
       building_name: p.building_name || "", lot_number: p.lot_number || "",
+      country: (p as any).country || userCountry, payment_day: 5,
     });
     setShowPropertyForm(true);
   };
@@ -239,6 +256,8 @@ const RentalManagement = () => {
       }
       if (!editingTenantId && tenantForm.lease_type && tenantForm.property_id) {
         await autoGenerateLease(result as string, tenantForm);
+        // Auto-generate first rent call for the new lease
+        await autoGenerateFirstRentCall(result as string, tenantForm);
       }
       resetTenantForm();
     }
@@ -246,11 +265,15 @@ const RentalManagement = () => {
 
   /* ─── Auto-generate lease PDF ─── */
   const autoGenerateLease = async (tenantId: string, form: typeof defaultTenantForm) => {
-    // Try to find country-specific lease template first, fallback to French
+    // Use the property's country, not the user's country
+    const prop = properties.find(p => p.id === form.property_id);
+    if (!prop) return;
+    const propCountry = (prop as any).country || userCountry;
+
     const allTpls = getAllTemplates();
     const findLease = (docType: string) =>
-      allTpls.find(t => t.country === userCountry && t.docType === docType && t.active) ||
-      allTpls.find(t => t.country === userCountry && t.category === "rental" && t.docType.includes("lease") && t.active);
+      allTpls.find(t => t.country === propCountry && t.docType === docType && t.active) ||
+      allTpls.find(t => t.country === propCountry && t.category === "rental" && t.docType.includes("lease") && t.active);
 
     const leaseTemplateMap: Record<string, DocumentTemplate | undefined> = {
       empty: findLease("lease-empty") || findLease("lease-residential") || frLeaseEmpty,
@@ -259,8 +282,6 @@ const RentalManagement = () => {
     };
     const template = leaseTemplateMap[form.lease_type];
     if (!template) return;
-    const prop = properties.find(p => p.id === form.property_id);
-    if (!prop) return;
 
     let landlordName = user?.user_metadata?.name || "Propriétaire";
     let landlordEmail = user?.email || "";
@@ -300,7 +321,7 @@ const RentalManagement = () => {
       const leaseLabel = form.lease_type === "furnished" ? "Bail meublé" : form.lease_type === "commercial" ? "Bail commercial" : "Bail d'habitation vide";
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {
-        await supabase.from("documents").insert({ org_id: orgId, user_id: user!.id, title, doc_type: template.docType, template_id: template.id, template_version: template.version, data_json: leaseData as any, status: "draft", country: "FR" } as any);
+        await supabase.from("documents").insert({ org_id: orgId, user_id: user!.id, title, doc_type: template.docType, template_id: template.id, template_version: template.version, data_json: leaseData as any, status: "draft", country: propCountry } as any);
       }
       downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
       toast({ title: "Bail généré automatiquement", description: `${leaseLabel} téléchargé pour ${form.name}` });
@@ -308,6 +329,26 @@ const RentalManagement = () => {
       console.error("Auto-lease generation failed:", err);
       toast({ title: "Info", description: "Le locataire a été créé, mais la génération du bail a échoué.", variant: "destructive" });
     }
+  };
+
+  /** Auto-generate first rent call when a lease is created */
+  const autoGenerateFirstRentCall = async (tenantId: string, form: typeof defaultTenantForm) => {
+    if (!orgId || !user || !form.property_id) return;
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    try {
+      await supabase.from("rent_calls").insert({
+        org_id: orgId,
+        tenant_id: tenantId,
+        property_id: form.property_id,
+        month,
+        rent_amount: form.rent_amount || 0,
+        charges_amount: form.charges_amount || 0,
+        total_amount: (form.rent_amount || 0) + (form.charges_amount || 0),
+        paid: false,
+      });
+      toast({ title: L.monthCalls, description: `${month} — ${fmt((form.rent_amount || 0) + (form.charges_amount || 0))}` });
+    } catch { /* ignore duplicate */ }
   };
 
   const resetTenantForm = () => { setTenantForm(defaultTenantForm); setShowTenantForm(false); setEditingTenantId(null); };
@@ -321,7 +362,7 @@ const RentalManagement = () => {
       notes: t.notes, birth_date: t.birth_date ?? null, birth_place: t.birth_place ?? null,
       nationality: t.nationality ?? "Française", profession: t.profession ?? null,
       guarantor_name: t.guarantor_name ?? null, guarantor_phone: t.guarantor_phone ?? null,
-      caf_apl_amount: t.caf_apl_amount ?? 0,
+      caf_apl_amount: t.caf_apl_amount ?? 0, payment_day: 5,
     });
     setShowTenantForm(true);
     setSelectedTenant(null);
@@ -453,9 +494,10 @@ const RentalManagement = () => {
       paymentDate: payment.paid_date || new Date().toISOString().split("T")[0],
       paymentMethod: paymentMethodLabel,
     };
-    // Use country-specific receipt template if available, fallback to French
+    // Use property's country for receipt template
+    const propCountryCode = (prop as any)?.country || userCountry;
     const allTpls = getAllTemplates();
-    const receiptTemplate = allTpls.find(t => t.country === userCountry && t.docType === "rent-receipt" && t.active) || frRentReceipt;
+    const receiptTemplate = allTpls.find(t => t.country === propCountryCode && t.docType === "rent-receipt" && t.active) || frRentReceipt;
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
     const doc = generateFromTemplate(receiptTemplate, data, signatures, stampUrl || undefined, { skipTenantSignature: true });
     downloadPDF(doc, `${L.generateReceipt.replace(/\s/g, "_")}_${tenant.name}_${payment.month}.pdf`);
@@ -598,7 +640,10 @@ const RentalManagement = () => {
               <Home className="h-6 w-6 text-accent-foreground" />
             </div>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground">{selectedProperty.label}</h1>
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <span>{COUNTRY_FLAGS[(selectedProperty as any).country || userCountry] || "🌍"}</span>
+                {selectedProperty.label}
+              </h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
             </div>
             <div className="flex gap-2">
@@ -1021,6 +1066,7 @@ const RentalManagement = () => {
           </button>
           <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm">{COUNTRY_FLAGS[(p as any).country || userCountry] || "🌍"}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
@@ -1212,13 +1258,13 @@ const RentalManagement = () => {
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
                       <select value={(propertyForm as any).country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value } as any)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{c}</option>)}
+                        {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{COUNTRY_FLAGS[c] || ""} {COUNTRY_NAMES[c] || c}</option>)}
                       </select></div>
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
                       onSelect={(result: AddressResult) => setPropertyForm({ ...propertyForm, address: result.street ? `${result.housenumber || ""} ${result.street}`.trim() : result.label || "", postal_code: result.postcode || "", city: result.city || "" })}
-                      countryCode={userCountry} /></div>
+                      countryCode={propertyForm.country || userCountry} /></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="relative"><label className="block text-xs font-medium text-muted-foreground mb-1">{L.postalCode}</label>
                       <input value={propertyForm.postal_code} onChange={(e) => handlePostalCodeChange(e.target.value)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
@@ -1364,7 +1410,7 @@ const RentalManagement = () => {
                         setTenantForm({ ...tenantForm, property_id: e.target.value || null, rent_amount: prop?.monthly_rent || tenantForm.rent_amount, charges_amount: prop?.monthly_charges || tenantForm.charges_amount, deposit_amount: prop?.deposit_amount || tenantForm.deposit_amount, lease_type: prop?.furnished ? "furnished" : tenantForm.lease_type });
                       }} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         <option value="">{L.selectProperty}</option>
-                        {properties.map(p => <option key={p.id} value={p.id}>{p.label} — {p.address}</option>)}
+                        {properties.map(p => <option key={p.id} value={p.id}>{COUNTRY_FLAGS[(p as any).country || userCountry] || "🌍"} {p.label} — {p.address}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseType}</label>
                       <select value={tenantForm.lease_type} onChange={(e) => setTenantForm({ ...tenantForm, lease_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
@@ -1381,6 +1427,7 @@ const RentalManagement = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({cc.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 Jour d'appel de loyer</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 5} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="5" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.guarantor}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
