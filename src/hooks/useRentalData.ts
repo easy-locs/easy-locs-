@@ -23,6 +23,7 @@ export interface Property {
   building_name?: string | null;
   lot_number?: string | null;
   building_id?: string | null;
+  country: string;
 }
 
 export interface Tenant {
@@ -87,7 +88,7 @@ export function useRentalData() {
       furnished: p.furnished || false, monthly_rent: Number(p.monthly_rent) || 0,
       monthly_charges: Number(p.monthly_charges) || 0, deposit_amount: Number(p.deposit_amount) || 0,
       notes: p.notes || "", building_name: (p as any).building_name || null, lot_number: (p as any).lot_number || null,
-      building_id: (p as any).building_id || null,
+      building_id: (p as any).building_id || null, country: p.country || "FR",
     })));
   }, [orgId]);
 

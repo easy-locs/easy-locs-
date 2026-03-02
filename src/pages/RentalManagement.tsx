@@ -235,7 +235,7 @@ const RentalManagement = () => {
       heating: p.heating, furnished: p.furnished, monthly_rent: p.monthly_rent,
       monthly_charges: p.monthly_charges, deposit_amount: p.deposit_amount, notes: p.notes,
       building_name: p.building_name || "", lot_number: p.lot_number || "",
-      country: (p as any).country || userCountry, payment_day: 5,
+      country: p.country || userCountry, payment_day: 5,
     });
     setShowPropertyForm(true);
   };
@@ -268,7 +268,7 @@ const RentalManagement = () => {
     // Use the property's country, not the user's country
     const prop = properties.find(p => p.id === form.property_id);
     if (!prop) return;
-    const propCountry = (prop as any).country || userCountry;
+    const propCountry = prop.country || userCountry;
 
     const allTpls = getAllTemplates();
     const findLease = (docType: string) =>
@@ -495,7 +495,7 @@ const RentalManagement = () => {
       paymentMethod: paymentMethodLabel,
     };
     // Use property's country for receipt template
-    const propCountryCode = (prop as any)?.country || userCountry;
+    const propCountryCode = prop?.country || userCountry;
     const allTpls = getAllTemplates();
     const receiptTemplate = allTpls.find(t => t.country === propCountryCode && t.docType === "rent-receipt" && t.active) || frRentReceipt;
     const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
@@ -641,7 +641,7 @@ const RentalManagement = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <span>{COUNTRY_FLAGS[(selectedProperty as any).country || userCountry] || "🌍"}</span>
+                <span>{COUNTRY_FLAGS[selectedProperty.country] || "🌍"}</span>
                 {selectedProperty.label}
               </h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
@@ -1066,7 +1066,7 @@ const RentalManagement = () => {
           </button>
           <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm">{COUNTRY_FLAGS[(p as any).country || userCountry] || "🌍"}</span>
+              <span className="text-sm">{COUNTRY_FLAGS[p.country] || "🌍"}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
@@ -1257,7 +1257,7 @@ const RentalManagement = () => {
                         {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
-                      <select value={(propertyForm as any).country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value } as any)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
+                      <select value={propertyForm.country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{COUNTRY_FLAGS[c] || ""} {COUNTRY_NAMES[c] || c}</option>)}
                       </select></div>
                   </div>
