@@ -2097,6 +2097,21 @@ export type Database = {
         Args: { _token: string; _user_id: string }
         Returns: Json
       }
+      get_ota_connections: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          external_user_id: string
+          id: string
+          last_sync_at: string
+          linked_properties: Json
+          org_id: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -2109,6 +2124,7 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"
