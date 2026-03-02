@@ -28,20 +28,15 @@ const TenantSignup = () => {
         setValidating(false);
         return;
       }
-      const { data, error: fetchErr } = await supabase
-        .from("tenant_invitations")
-        .select("*, tenants(name)")
-        .eq("token", token)
-        .eq("status", "pending")
-        .gt("expires_at", new Date().toISOString())
-        .maybeSingle();
+      const { data, error: fetchErr } = await supabase.rpc("validate_tenant_invitation", { _token: token });
 
-      if (fetchErr || !data) {
+      if (fetchErr || !data || !(data as any).valid) {
         setError("Ce lien d'invitation est invalide ou a expiré. Veuillez demander un nouveau lien à votre bailleur.");
       } else {
-        setInvitation(data);
-        setEmail(data.email);
-        setName((data.tenants as any)?.name || "");
+        const inv = data as any;
+        setInvitation(inv);
+        setEmail(inv.email);
+        setName(inv.tenant_name || "");
       }
       setValidating(false);
     };

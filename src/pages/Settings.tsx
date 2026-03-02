@@ -65,8 +65,8 @@ const Settings = () => {
     if (error) {
       toast({ title: t("page.settings.upload_error"), description: error.message, variant: "destructive" });
     } else {
-      const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
-      const logoUrl = urlData.publicUrl;
+      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const logoUrl = signedData?.signedUrl || path;
       await supabase.from("orgs").update({ logo_url: logoUrl } as any).eq("id", orgId);
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
       toast({ title: t("page.settings.logo_updated") });
@@ -164,8 +164,8 @@ const Settings = () => {
                     if (error) {
                       toast({ title: t("page.settings.upload_error"), description: error.message, variant: "destructive" });
                     } else {
-                      const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
-                      const stampUrl = urlData.publicUrl;
+                      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+                      const stampUrl = signedData?.signedUrl || path;
                       await supabase.from("orgs").update({ stamp_url: stampUrl } as any).eq("id", orgId);
                       setOrg(prev => ({ ...prev, stamp_url: stampUrl }));
                       toast({ title: t("page.settings.stamp_updated") });

@@ -239,8 +239,8 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       toast({ title: "Erreur upload", description: error.message, variant: "destructive" });
       return;
     }
-    const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
-    const url = urlData.publicUrl;
+    const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+    const url = signedData?.signedUrl || path;
     setRooms(prev =>
       prev.map(r =>
         r.id === roomId
