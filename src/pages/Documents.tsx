@@ -85,7 +85,7 @@ const Documents = () => {
     if (d.template_id) {
       const template = allTemplates.find((t) => t.id === d.template_id);
       if (template) {
-        const doc = generateFromTemplate(template, d.data_json);
+        const doc = generateFromTemplate(template, d.data_json, undefined, undefined, { country: template.country });
         downloadPDF(doc, `${d.title.replace(/\s/g, "_")}.pdf`);
       }
     }
@@ -187,7 +187,7 @@ const Documents = () => {
                     <div className="text-sm font-medium text-foreground truncate">{d.title}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {new Date(d.created_at).toLocaleDateString("fr-FR")}
+                      {new Date(d.created_at).toLocaleDateString(COUNTRY_LOCALE_MAP[userCountry] === "fr" ? "fr-FR" : COUNTRY_LOCALE_MAP[userCountry] === "es" ? "es-ES" : COUNTRY_LOCALE_MAP[userCountry] === "de" ? "de-DE" : COUNTRY_LOCALE_MAP[userCountry] === "it" ? "it-IT" : COUNTRY_LOCALE_MAP[userCountry] === "pt" ? "pt-PT" : "en-GB")}
                       <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
                       {d.template_version && <span className="text-muted-foreground/60">v{d.template_version}</span>}
                     </div>
