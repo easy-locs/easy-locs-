@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Receipt, Download, Loader2 } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 
 interface StorageFileRef {
   bucket: string;
@@ -29,15 +30,17 @@ const parseStorageFileRef = (fileUrl: string): StorageFileRef | null => {
 };
 
 const TenantReceipts = () => {
-  const { user } = useAuth();
+  const { user, userCountry } = useAuth();
   const { toast } = useToast();
+  const L = useMemo(() => getCountryConfig(userCountry).labels, [userCountry]);
+  const fmt = (n: number) => formatCurrency(n, userCountry);
   const [receipts, setReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchReceipts = async () => {
       const { data: tenant } = await supabase
         .from("tenants")
         .select("id")
@@ -54,17 +57,17 @@ const TenantReceipts = () => {
       setReceipts(data || []);
       setLoading(false);
     };
-    fetch();
+    fetchReceipts();
   }, [user]);
 
   const handleDownload = async (r: any) => {
     setDownloadingId(r.id);
     try {
       const fileUrl = r.receipt_pdf_url;
-      if (!fileUrl) throw new Error("Aucun fichier de quittance disponible.");
+      if (!fileUrl) throw new Error(L.noReceipt);
 
       const fileRef = parseStorageFileRef(fileUrl);
-      if (!fileRef?.path) throw new Error("Chemin du fichier introuvable.");
+      if (!fileRef?.path) throw new Error(L.receiptDownloadError);
 
       let signedUrl: string | null = null;
       const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60);
@@ -75,29 +78,27 @@ const TenantReceipts = () => {
         signedUrl = fallback.data?.signedUrl ?? null;
       }
 
-      if (!signedUrl) throw new Error("Impossible de générer un lien sécurisé.");
+      if (!signedUrl) throw new Error(L.receiptDownloadError);
       window.open(signedUrl, "_blank", "noopener,noreferrer");
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: L.receiptDownloadError, description: err.message, variant: "destructive" });
     } finally {
       setDownloadingId(null);
     }
   };
 
-  const fmt = (n: number) => n?.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }) ?? "—";
-
   return (
     <TenantLayout>
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Mes quittances</h1>
-        <p className="text-muted-foreground mb-6">Téléchargez vos quittances de loyer validées par votre bailleur.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{L.myReceipts}</h1>
+        <p className="text-muted-foreground mb-6">{L.downloadReceipts}</p>
 
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : receipts.length === 0 ? (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border/50 text-center">
             <Receipt className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Aucune quittance disponible pour le moment.</p>
+            <p className="text-muted-foreground">{L.noReceipt}</p>
           </div>
         ) : (
           <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
@@ -108,7 +109,7 @@ const TenantReceipts = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{r.month}</p>
-                  <p className="text-xs text-muted-foreground">Loyer {fmt(r.rent_amount)} + Charges {fmt(r.charges_amount)} = <strong>{fmt(r.total_amount)}</strong></p>
+                  <p className="text-xs text-muted-foreground">{L.rent} {fmt(r.rent_amount)} + {L.charges} {fmt(r.charges_amount)} = <strong>{fmt(r.total_amount)}</strong></p>
                 </div>
                 {r.receipt_pdf_url && (
                   <button

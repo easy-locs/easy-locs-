@@ -1223,6 +1223,7 @@ export type Database = {
           building_id: string | null
           building_name: string | null
           city: string
+          country: string
           created_at: string
           deposit_amount: number | null
           floor: number | null
@@ -1248,6 +1249,7 @@ export type Database = {
           building_id?: string | null
           building_name?: string | null
           city?: string
+          country?: string
           created_at?: string
           deposit_amount?: number | null
           floor?: number | null
@@ -1273,6 +1275,7 @@ export type Database = {
           building_id?: string | null
           building_name?: string | null
           city?: string
+          country?: string
           created_at?: string
           deposit_amount?: number | null
           floor?: number | null

@@ -1024,29 +1024,29 @@ const RentalManagement = () => {
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {propTenants.length > 0 ? "Occupé" : (
+                {propTenants.length > 0 ? L.occupied : (
                   <span
                     className="cursor-pointer hover:underline"
                     onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
                   >
-                    Vacant — Assigner
+                    {L.vacantAssign}
                   </span>
                 )}
               </span>
-              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Meublé</span>}
-              {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} impayé(s)</span>}
+              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
+              {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} {L.unpaidN}</span>}
             </div>
             <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
-              {p.surface > 0 && <span>{p.surface} m²</span>}
-              {p.rooms > 0 && <span>{p.rooms} pièce{p.rooms > 1 ? "s" : ""}</span>}
-              <span>{fmt(p.monthly_rent)}/mois</span>
+              {p.surface > 0 && <span>{p.surface} {cc.surfaceUnit}</span>}
+              {p.rooms > 0 && <span>{p.rooms} {L.rooms_suffix}</span>}
+              <span>{fmt(p.monthly_rent)}{L.perMonth}</span>
             </div>
             {propTenants.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {propTenants.map(t => (
                   <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                    {t.name} {!isLeaseActive(t) && "(résilié)"}
+                    {t.name} {!isLeaseActive(t) && `(${L.terminated_label})`}
                   </span>
                 ))}
               </div>
@@ -1054,14 +1054,14 @@ const RentalManagement = () => {
             {assignPropertyId === p.id && (
               <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-foreground">Assigner un locataire existant</span>
+                  <span className="text-xs font-semibold text-foreground">{L.assignExisting}</span>
                   <button onClick={(e) => { e.stopPropagation(); setAssignPropertyId(null); }} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 <input
                   type="text"
                   value={assignSearch}
                   onChange={(e) => setAssignSearch(e.target.value)}
-                  placeholder="Rechercher un locataire…"
+                  placeholder={L.searchTenant}
                   className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent"
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -1085,7 +1085,7 @@ const RentalManagement = () => {
                       </button>
                     ))}
                   {tenants.filter(t => !t.property_id).filter(t => !assignSearch || t.name.toLowerCase().includes(assignSearch.toLowerCase())).length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-2">Aucun locataire sans bien</p>
+                    <p className="text-xs text-muted-foreground text-center py-2">{L.noUnassigned}</p>
                   )}
                 </div>
               </div>
@@ -1209,6 +1209,10 @@ const RentalManagement = () => {
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.propertyType}</label>
                       <select value={propertyForm.property_type} onChange={(e) => setPropertyForm({ ...propertyForm, property_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
+                      <select value={(propertyForm as any).country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value } as any)} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
+                        {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{c}</option>)}
                       </select></div>
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
@@ -1478,7 +1482,7 @@ const RentalManagement = () => {
             {filteredPayments.length === 0 ? (
               <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
                 <Euro className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground text-sm">Aucun appel de loyer.</p>
+                <p className="text-muted-foreground text-sm">{L.noRentCall}</p>
               </div>
             ) : (
               <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
