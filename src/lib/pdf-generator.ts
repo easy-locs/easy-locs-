@@ -14,6 +14,48 @@ const COLOR_GOLD: [number, number, number] = [212, 163, 74];
 const COLOR_BODY: [number, number, number] = [40, 40, 40];
 const COLOR_MUTED: [number, number, number] = [110, 110, 110];
 
+// ====== COUNTRY-AWARE LOCALE MAPS ======
+const COUNTRY_LOCALE: Record<string, string> = {
+  FR: "fr-FR", BE: "fr-BE", ES: "es-ES", IT: "it-IT", DE: "de-DE",
+  PT: "pt-PT", NL: "nl-NL", GB: "en-GB", CH: "fr-CH", AT: "de-AT", LU: "fr-LU",
+  PL: "pl-PL", SE: "sv-SE", DK: "da-DK", NO: "nb-NO", FI: "fi-FI",
+  GR: "el-GR", CZ: "cs-CZ", HU: "hu-HU", RO: "ro-RO", HR: "hr-HR",
+  IE: "en-IE", BG: "bg-BG", SK: "sk-SK",
+};
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR",
+  NL: "EUR", AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR",
+  SK: "EUR", HR: "EUR", BG: "BGN", CH: "CHF", GB: "GBP",
+  PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF", RO: "RON",
+};
+
+const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
+  fr: { legalBasis: "Base légale", signedIn: "Fait à", madeDate: "le", landlordLabel: "Le bailleur / L'expéditeur", tenantLabel: "Le locataire / Le destinataire", copies: "Fait en deux exemplaires originaux.", disclaimer: "Document généré à titre informatif. Il ne remplace pas un conseil juridique." },
+  en: { legalBasis: "Legal basis", signedIn: "Signed in", madeDate: "on", landlordLabel: "The landlord / Sender", tenantLabel: "The tenant / Recipient", copies: "Made in two original copies.", disclaimer: "Document generated for informational purposes. It does not replace legal advice." },
+  es: { legalBasis: "Base legal", signedIn: "Firmado en", madeDate: "el", landlordLabel: "El arrendador / Remitente", tenantLabel: "El inquilino / Destinatario", copies: "Hecho en dos ejemplares originales.", disclaimer: "Documento generado con fines informativos. No sustituye el asesoramiento jurídico." },
+  de: { legalBasis: "Rechtsgrundlage", signedIn: "Erstellt in", madeDate: "am", landlordLabel: "Der Vermieter / Absender", tenantLabel: "Der Mieter / Empfänger", copies: "Erstellt in zwei Originalausfertigungen.", disclaimer: "Dokument zu Informationszwecken erstellt. Es ersetzt keine Rechtsberatung." },
+  it: { legalBasis: "Base giuridica", signedIn: "Fatto a", madeDate: "il", landlordLabel: "Il locatore / Mittente", tenantLabel: "Il conduttore / Destinatario", copies: "Fatto in due copie originali.", disclaimer: "Documento generato a scopo informativo. Non sostituisce la consulenza legale." },
+  pt: { legalBasis: "Base legal", signedIn: "Feito em", madeDate: "em", landlordLabel: "O senhorio / Remetente", tenantLabel: "O inquilino / Destinatário", copies: "Feito em dois exemplares originais.", disclaimer: "Documento gerado para fins informativos. Não substitui aconselhamento jurídico." },
+};
+
+const COUNTRY_LANG: Record<string, string> = {
+  FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt",
+  NL: "en", GB: "en", CH: "fr", AT: "de", LU: "fr",
+  PL: "en", SE: "en", DK: "en", NO: "en", FI: "en",
+  GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en",
+  IE: "en", BG: "en", SK: "en",
+};
+
+function getLang(country?: string): string {
+  return COUNTRY_LANG[country || "FR"] || "en";
+}
+
+function getPdfLabels(country?: string) {
+  const lang = getLang(country);
+  return PDF_LABELS[lang] || PDF_LABELS.en;
+}
+
 /** Sanitize text: normalize unicode, replace smart quotes & special chars */
 function sanitize(text: string): string {
   return text
@@ -27,26 +69,29 @@ function sanitize(text: string): string {
     .replace(/\t/g, "    ");
 }
 
-function formatDate(dateStr: string): string {
+function formatDateLocalized(dateStr: string, country?: string): string {
   if (!dateStr) return "";
+  const locale = COUNTRY_LOCALE[country || "FR"] || "en-GB";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(amount);
+function formatCurrencyLocalized(amount: number, country?: string): string {
+  const locale = COUNTRY_LOCALE[country || "FR"] || "en-GB";
+  const currency = COUNTRY_CURRENCY[country || "FR"] || "EUR";
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(amount);
 }
 
-function interpolate(text: string, data: Record<string, unknown>): string {
+function interpolate(text: string, data: Record<string, unknown>, country?: string): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => {
     const val = data[key];
     if (val === undefined || val === null || val === "") return "";
     const isAmountKey = key.toLowerCase().includes("amount") || key === "total" || key === "capital" || key === "depositAmount";
     if (typeof val === "number" && isAmountKey) {
-      return formatCurrency(Number(val));
+      return formatCurrencyLocalized(Number(val), country);
     }
     if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val)) {
-      return formatDate(val);
+      return formatDateLocalized(val, country);
     }
     return String(val);
   });
@@ -80,13 +125,14 @@ function addHeader(doc: jsPDF, title: string): number {
   return 42;
 }
 
-function addFooter(doc: jsPDF) {
+function addFooter(doc: jsPDF, country?: string) {
+  const labels = getPdfLabels(country);
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     setFont(doc, "italic", 7, COLOR_MUTED);
     doc.text(
-      sanitize("Document generated for informational purposes. It does not replace legal advice."),
+      sanitize(labels.disclaimer),
       MARGIN, 283
     );
     // EASY-LOCS® branding
@@ -140,15 +186,18 @@ export function generateFromTemplate(
   data: Record<string, unknown>,
   signatures?: { landlord?: string; tenant?: string },
   stamp?: string,
-  options?: { skipTenantSignature?: boolean }
+  options?: { skipTenantSignature?: boolean; country?: string }
 ): jsPDF {
+  const country = options?.country || template.country || "FR";
+  const labels = getPdfLabels(country);
+  const locale = COUNTRY_LOCALE[country] || "en-GB";
   const doc = new jsPDF();
   let y = addHeader(doc, template.label.toUpperCase());
 
   // Legal basis
   if (template.legalBasis) {
     setFont(doc, "italic", 8, COLOR_MUTED);
-    doc.text(sanitize(`Base legale : ${template.legalBasis}`), MARGIN, y);
+    doc.text(sanitize(`${labels.legalBasis} : ${template.legalBasis}`), MARGIN, y);
     y += 9;
   }
 
@@ -162,7 +211,7 @@ export function generateFromTemplate(
   for (const clause of template.clauses) {
     if (clause.conditional && !clause.conditional(enrichedData)) continue;
     y = addSection(doc, clause.label, y);
-    const resolved = interpolate(clause.text, enrichedData);
+    const resolved = interpolate(clause.text, enrichedData, country);
     y = addParagraph(doc, resolved, y);
     y += 2;
   }
@@ -170,10 +219,11 @@ export function generateFromTemplate(
   // Signature block
   y += 8;
   y = checkPageBreak(doc, y, 55);
-  y = addParagraph(doc, "Fait en deux exemplaires originaux.", y);
+  y = addParagraph(doc, labels.copies, y);
 
   setFont(doc, "normal", FONT_BODY, COLOR_BODY);
-  doc.text(sanitize(`Fait a ________________, le ${new Date().toLocaleDateString("fr-FR")}`), MARGIN, y);
+  const todayStr = new Date().toLocaleDateString(locale);
+  doc.text(sanitize(`${labels.signedIn} ________________, ${labels.madeDate} ${todayStr}`), MARGIN, y);
   y += 14;
 
   // Dual signature columns
@@ -182,7 +232,7 @@ export function generateFromTemplate(
 
   // Landlord / Sender column
   setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
-  doc.text("Le bailleur / L'expediteur", MARGIN, sigStartY);
+  doc.text(labels.landlordLabel, MARGIN, sigStartY);
   setFont(doc, "normal", FONT_BODY, COLOR_BODY);
   const landlordName = sanitize(String(data.landlordName || data.senderName || data.hostName || data.presidentName || data.gerantName || ""));
   if (landlordName) doc.text(landlordName, MARGIN, sigStartY + 6);
@@ -209,7 +259,7 @@ export function generateFromTemplate(
   if (!options?.skipTenantSignature) {
     const col2X = MARGIN + colWidth + 10;
     setFont(doc, "bold", FONT_LABEL, COLOR_MUTED);
-    doc.text("Le locataire / Le destinataire", col2X, sigStartY);
+    doc.text(labels.tenantLabel, col2X, sigStartY);
     setFont(doc, "normal", FONT_BODY, COLOR_BODY);
     const tenantName = sanitize(String(data.tenantName || data.recipientName || data.guestName || data.guarantorName || ""));
     if (tenantName) doc.text(tenantName, col2X, sigStartY + 6);
@@ -226,7 +276,7 @@ export function generateFromTemplate(
     }
   }
 
-  addFooter(doc);
+  addFooter(doc, country);
   return doc;
 }
 

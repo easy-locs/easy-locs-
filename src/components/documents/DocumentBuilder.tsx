@@ -281,12 +281,26 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     }
 
     const skipTenant = ["rent-receipt", "dunning-letter", "payment-notice", "formal-notice"].includes(template.docType);
-    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant });
+    const docCountry = template.country || "FR";
+    const doc = generateFromTemplate(template, data, signatures.landlord || signatures.tenant ? signatures : undefined, stampUrl || undefined, { skipTenantSignature: skipTenant, country: docCountry });
     const pdfFileName = `${template.docType}_${Date.now()}.pdf`;
     downloadPDF(doc, pdfFileName);
 
     const pdfDataUri = pdfToDataUri(doc);
     const pdfBase64 = pdfDataUri.includes(",") ? pdfDataUri.split(",")[1] : "";
+
+    // Localized email labels per country
+    const emailLabels: Record<string, { subject: string; heading: string; attached: string; alsoAvailable: string }> = {
+      fr: { subject: "Document envoyé", heading: "📄 Document envoyé", attached: "Votre document est joint à cet email :", alsoAvailable: "Vous pouvez aussi retrouver ce document dans votre interface locataire." },
+      en: { subject: "Document sent", heading: "📄 Document sent", attached: "Your document is attached to this email:", alsoAvailable: "You can also find this document in your tenant portal." },
+      es: { subject: "Documento enviado", heading: "📄 Documento enviado", attached: "Su documento está adjunto a este email:", alsoAvailable: "También puede encontrar este documento en su portal de inquilino." },
+      de: { subject: "Dokument gesendet", heading: "📄 Dokument gesendet", attached: "Ihr Dokument ist dieser E-Mail beigefügt:", alsoAvailable: "Sie können dieses Dokument auch in Ihrem Mieterportal finden." },
+      it: { subject: "Documento inviato", heading: "📄 Documento inviato", attached: "Il documento è allegato a questa email:", alsoAvailable: "Puoi trovare questo documento anche nel tuo portale inquilino." },
+      pt: { subject: "Documento enviado", heading: "📄 Documento enviado", attached: "O seu documento está anexado a este email:", alsoAvailable: "Também pode encontrar este documento no seu portal de inquilino." },
+    };
+    const countryLangMap: Record<string, string> = { FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt", NL: "en", GB: "en", CH: "fr", AT: "de", LU: "fr" };
+    const eLang = countryLangMap[docCountry] || "en";
+    const eL = emailLabels[eLang] || emailLabels.en;
 
     // Send email notification + attached PDF to tenant if applicable
     const tenantEmail = data.tenantEmail as string;
@@ -295,15 +309,15 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       supabase.functions.invoke("send-email", {
         body: {
           to: tenantEmail,
-          subject: `Document envoyé : ${title}`,
+          subject: `${eL.subject} : ${title}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-            <h2 style="color:#1a1a1a;">📄 Document envoyé</h2>
-            <p style="color:#555;">Votre document est joint à cet email :</p>
+            <h2 style="color:#1a1a1a;">${eL.heading}</h2>
+            <p style="color:#555;">${eL.attached}</p>
             <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
               <p style="font-weight:600;color:#1a1a1a;">${title}</p>
-              <p style="color:#888;font-size:13px;">Type : ${template.label}</p>
+              <p style="color:#888;font-size:13px;">${template.label}</p>
             </div>
-            <p style="color:#888;font-size:13px;">Vous pouvez aussi retrouver ce document dans votre interface locataire.</p>
+            <p style="color:#888;font-size:13px;">${eL.alsoAvailable}</p>
           </div>`,
           attachments: [{
             content: pdfBase64,
