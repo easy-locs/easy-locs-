@@ -20,7 +20,6 @@ const TenantSignup = () => {
   const [invitation, setInvitation] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Validate token on mount
   useEffect(() => {
     const validate = async () => {
       if (!token) {
@@ -43,30 +42,6 @@ const TenantSignup = () => {
     validate();
   }, [token]);
 
-  const acceptInvitation = async (userId: string) => {
-    if (!token) return false;
-
-    const { data: result, error: rpcError } = await supabase.rpc("accept_tenant_invitation", {
-      _token: token,
-      _user_id: userId,
-    });
-
-    if (rpcError) {
-      console.error("Accept invitation error:", rpcError);
-      toast({ title: "Activation échouée", description: "Le lien est invalide ou déjà utilisé.", variant: "destructive" });
-      return false;
-    }
-
-    const res = result as any;
-    if (!res?.success) {
-      toast({ title: "Activation échouée", description: res?.error || "Invitation invalide", variant: "destructive" });
-      return false;
-    }
-
-    toast({ title: "Bienvenue !", description: "Votre compte locataire est activé." });
-    return true;
-  };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
@@ -77,60 +52,33 @@ const TenantSignup = () => {
     setLoading(true);
 
     try {
-      let userId: string | null = null;
-
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { name, role: "tenant" },
-        },
+      // Call edge function to handle signup + invitation acceptance server-side
+      const { data, error: fnError } = await supabase.functions.invoke("tenant-signup", {
+        body: { email, password, name, token },
       });
 
-      if (signUpError) {
-        const alreadyRegistered = /already registered|already exists/i.test(signUpError.message);
-        if (!alreadyRegistered) {
-          toast({ title: "Erreur", description: signUpError.message, variant: "destructive" });
-          return;
-        }
-
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError || !signInData.user) {
-          toast({
-            title: "Compte existant",
-            description: "Cet email existe déjà. Connectez-vous avec le bon mot de passe pour activer l'invitation.",
-            variant: "destructive",
-          });
-          return;
-        }
-        userId = signInData.user.id;
-      } else {
-        userId = signUpData.user?.id ?? null;
-
-        if (!signUpData.session) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInError || !signInData.user) {
-            toast({
-              title: "Compte créé",
-              description: "Connectez-vous puis revenez sur le lien d'invitation pour finaliser l'activation.",
-              variant: "destructive",
-            });
-            return;
-          }
-          userId = signInData.user.id;
-        }
-      }
-
-      if (!userId) {
-        toast({ title: "Erreur", description: "Impossible de finaliser le compte locataire.", variant: "destructive" });
+      if (fnError || !data?.success) {
+        const msg = data?.error || fnError?.message || "Erreur lors de l'activation";
+        toast({ title: "Erreur", description: msg, variant: "destructive" });
         return;
       }
 
-      const activated = await acceptInvitation(userId);
-      if (!activated) return;
+      // Now sign in the user client-side
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
+      if (signInError) {
+        toast({
+          title: "Compte activé",
+          description: "Votre espace est prêt ! Connectez-vous avec vos identifiants.",
+        });
+        navigate("/login");
+        return;
+      }
+
+      toast({ title: "Bienvenue !", description: "Votre espace locataire est activé." });
       navigate("/tenant");
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Erreur inattendue", variant: "destructive" });
     } finally {
       setLoading(false);
     }

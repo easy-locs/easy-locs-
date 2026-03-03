@@ -283,7 +283,9 @@ export function useRentalData() {
       });
       if (invError) throw invError;
 
-      const inviteUrl = `${window.location.origin}/tenant-signup?token=${token}`;
+      // Always use published URL for tenant invitations
+      const publishedOrigin = "https://easylocs.lovable.app";
+      const inviteUrl = `${publishedOrigin}/tenant-signup?token=${token}`;
 
       const canCopyInviteLink =
         typeof window !== "undefined" &&
