@@ -660,6 +660,11 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   ZAR: "R", AED: "AED", SAR: "SAR", TRY: "₺", JPY: "¥", SGD: "S$",
   SEK: "kr", NOK: "kr", DKK: "kr", PLN: "zł", CZK: "Kč", HUF: "Ft",
   RON: "lei", HRK: "kn", BGN: "лв",
+  THB: "฿", ARS: "$", CLP: "$", COP: "$", PEN: "S/.",
+  DZD: "DA", XAF: "FCFA", NGN: "₦", KES: "KSh", GHS: "₵",
+  QAR: "QR", BHD: "BD", KWD: "KD", OMR: "OMR", ILS: "₪",
+  KRW: "₩", CNY: "¥", INR: "₹", MYR: "RM", VND: "₫",
+  PHP: "₱", IDR: "Rp", NZD: "NZ$", MUR: "₨", JOD: "JD", LBP: "L£",
 };
 
 /* ─── Nationality defaults ─── */
@@ -671,6 +676,13 @@ const NATIONALITY_MAP: Record<string, string> = {
   BR: "Brasileira", MX: "Mexicana", JP: "日本", PL: "Polska", SE: "Svensk",
   DK: "Dansk", NO: "Norsk", FI: "Suomalainen", GR: "Ελληνική",
   CZ: "Česká", RO: "Română", HU: "Magyar", HR: "Hrvatska", BG: "Българска", SK: "Slovenská",
+  TH: "ไทย", AR: "Argentina", CL: "Chilena", CO: "Colombiana", PE: "Peruana",
+  DZ: "Algérienne", CM: "Camerounaise", GA: "Gabonaise", CG: "Congolaise",
+  CD: "Congolaise (RDC)", MG: "Malgache", MU: "Mauricienne", NG: "Nigerian", KE: "Kenyan", GH: "Ghanaian",
+  QA: "Qatari", BH: "Bahraini", KW: "Kuwaiti", OM: "Omani", LB: "Libanaise", JO: "Jordanienne", IL: "Israeli", TR: "Türk",
+  KR: "한국", CN: "中国", IN: "Indian", SG: "Singaporean", MY: "Malaysian",
+  VN: "Việt Nam", PH: "Filipino", ID: "Indonesian", AU: "Australian", NZ: "New Zealander",
+  AE: "Emirati", SA: "Saudi", ZA: "South African",
 };
 
 /* ─── Surface unit ─── */
@@ -682,7 +694,7 @@ import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 
 /* ─── Locale group from country ─── */
 function getLocaleGroup(country: string): "fr" | "en" | "es" | "de" | "it" | "pt" {
-  const frGroup = ["FR", "BE", "CH", "LU", "MC", "SN", "CI", "MA", "TN"];
+  const frGroup = ["FR", "BE", "CH", "LU", "MC", "SN", "CI", "MA", "TN", "DZ", "CM", "GA", "CG", "CD", "MG", "MU", "LB"];
   const esGroup = ["ES", "MX", "AR", "CL", "CO", "PE"];
   const deGroup = ["DE", "AT"];
   const itGroup = ["IT"];
