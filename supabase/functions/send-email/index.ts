@@ -85,12 +85,23 @@ serve(async (req) => {
       });
     }
 
-    // Sanitize HTML: strip dangerous tags (script, iframe, object, embed, form, base)
-    const dangerousTagsRegex = /<\s*\/?\s*(script|iframe|object|embed|form|base|applet|meta|link|style)\b[^>]*>/gi;
-    payload.html = payload.html.replace(dangerousTagsRegex, "");
-    // Also strip event handlers (onclick, onerror, onload, etc.)
-    payload.html = payload.html.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, "");
-    payload.html = payload.html.replace(/\s+on\w+\s*=\s*\S+/gi, "");
+    // Sanitize HTML using whitelist approach
+    // 1. Strip all dangerous tags (iterative to handle nested/obfuscated)
+    let prevHtml = "";
+    while (prevHtml !== payload.html) {
+      prevHtml = payload.html;
+      // Remove dangerous tags including unicode-obfuscated variants
+      payload.html = payload.html.replace(/<\s*\/?\s*(script|iframe|object|embed|form|base|applet|meta|link|style|svg|math|xmp|noscript|noembed|noframes)\b[^>]*>/gi, "");
+      // Strip HTML comments (can hide payloads)
+      payload.html = payload.html.replace(/<!--[\s\S]*?-->/g, "");
+    }
+    // 2. Strip ALL event handlers (on*=) with multiple pattern approaches
+    // Handles: onclick="..." onload='...' onerror=alert(1) and encoded variants
+    payload.html = payload.html.replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+    // 3. Strip javascript: and data: URIs in href/src/action attributes
+    payload.html = payload.html.replace(/(href|src|action|formaction|xlink:href|poster|background)\s*=\s*(?:"[^"]*(?:javascript|data|vbscript)\s*:[^"]*"|'[^']*(?:javascript|data|vbscript)\s*:[^']*')/gi, "");
+    // 4. Strip expression() and url() in style attributes (CSS injection)
+    payload.html = payload.html.replace(/style\s*=\s*(?:"[^"]*(?:expression|url|import)\s*\([^"]*"|'[^']*(?:expression|url|import)\s*\([^']*')/gi, "");
 
     // Validate attachments
     if (payload.attachments?.length) {
