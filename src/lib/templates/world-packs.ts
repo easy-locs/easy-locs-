@@ -387,21 +387,382 @@ export const sgRentReceipt = makeReceipt("SG", {
   receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: S$ {rentAmount}\n• Fees: S$ {chargesAmount}\n• TOTAL: S$ {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
 });
 
+// ─── Argentina ───
+export const arLeaseResidential = makeLease("AR", {
+  label: "Contrato de Alquiler (Argentina)", desc: "Contrato conforme a la Ley de Alquileres.",
+  legal: "Ley 27.551 de Alquileres", landlord: "Locador", landlordAddr: "Domicilio", tenant: "Locatario", tenantAddr: "Domicilio",
+  address: "Dirección del inmueble", surface: "Superficie", rooms: "Ambientes", rent: "Alquiler mensual", deposit: "Depósito",
+  start: "Fecha de inicio", duration: "Duración", indefinite: "Plazo indeterminado", months12: "12 meses",
+  parties: "Partes", property: "Inmueble", rentClause: "Alquiler", termination: "Rescisión",
+  terminationText: "El locatario puede rescindir con 30 días de preaviso. Penalidad según ley vigente.",
+  partiesText: (v) => `CONTRATO DE ALQUILER\n\nLocador: ${v}`, propertyText: (v) => `Inmueble en ${v}.`,
+  rentText: (v) => `Alquiler mensual: ${v}.`, currency: "ARS",
+});
+export const arRentReceipt = makeReceipt("AR", {
+  label: "Recibo de Alquiler (Argentina)", desc: "Recibo de pago.",
+  landlord: "Locador", tenant: "Locatario", address: "Inmueble", rent: "Alquiler", charges: "Expensas",
+  period: "Período", periodPlaceholder: "Enero 2026", paymentDate: "Fecha de pago", currency: "ARS",
+  receiptText: "RECIBO DE ALQUILER\n\n{landlordName} confirma recepción de {tenantName}:\n\n• Alquiler: {rentAmount} ARS\n• Expensas: {chargesAmount} ARS\n• TOTAL: {totalAmount} ARS\n\nPeríodo: {period}, pagado el {paymentDate}.\n\nFirma:",
+});
+
+// ─── Chile ───
+export const clLeaseResidential = makeLease("CL", {
+  label: "Contrato de Arriendo (Chile)", desc: "Contrato conforme a la Ley 18.101.",
+  legal: "Ley 18.101", landlord: "Arrendador", landlordAddr: "Domicilio", tenant: "Arrendatario", tenantAddr: "Domicilio",
+  address: "Dirección", surface: "Superficie", rooms: "Habitaciones", rent: "Arriendo mensual", deposit: "Garantía",
+  start: "Fecha de inicio", duration: "Duración", indefinite: "Indefinido", months12: "12 meses",
+  parties: "Partes", property: "Inmueble", rentClause: "Arriendo", termination: "Término",
+  terminationText: "Desahucio con 2 meses de anticipación.",
+  partiesText: (v) => `CONTRATO DE ARRIENDO\n\nArrendador: ${v}`, propertyText: (v) => `Inmueble en ${v}.`,
+  rentText: (v) => `Arriendo mensual: ${v}.`, currency: "CLP",
+});
+export const clRentReceipt = makeReceipt("CL", {
+  label: "Recibo de Arriendo (Chile)", desc: "Recibo de pago.",
+  landlord: "Arrendador", tenant: "Arrendatario", address: "Inmueble", rent: "Arriendo", charges: "Gastos comunes",
+  period: "Período", periodPlaceholder: "Enero 2026", paymentDate: "Fecha de pago", currency: "CLP",
+  receiptText: "RECIBO\n\n{landlordName} confirma recepción de {tenantName}:\n\n• Arriendo: {rentAmount} CLP\n• Gastos: {chargesAmount} CLP\n• TOTAL: {totalAmount} CLP\n\nPeríodo: {period}, pagado el {paymentDate}.\n\nFirma:",
+});
+
+// ─── Colombia ───
+export const coLeaseResidential = makeLease("CO", {
+  label: "Contrato de Arrendamiento (Colombia)", desc: "Contrato conforme a la Ley 820 de 2003.",
+  legal: "Ley 820 de 2003", landlord: "Arrendador", landlordAddr: "Dirección", tenant: "Arrendatario", tenantAddr: "Dirección",
+  address: "Dirección del inmueble", surface: "Área", rooms: "Habitaciones", rent: "Canon mensual", deposit: "Depósito",
+  start: "Fecha de inicio", duration: "Duración", indefinite: "Indefinido", months12: "12 meses",
+  parties: "Partes", property: "Inmueble", rentClause: "Canon", termination: "Terminación",
+  terminationText: "Preaviso de 3 meses conforme a la Ley 820.",
+  partiesText: (v) => `CONTRATO DE ARRENDAMIENTO\n\nArrendador: ${v}`, propertyText: (v) => `Inmueble en ${v}.`,
+  rentText: (v) => `Canon mensual: ${v}.`, currency: "COP",
+});
+export const coRentReceipt = makeReceipt("CO", {
+  label: "Recibo de Arriendo (Colombia)", desc: "Recibo de pago.",
+  landlord: "Arrendador", tenant: "Arrendatario", address: "Inmueble", rent: "Canon", charges: "Administración",
+  period: "Período", periodPlaceholder: "Enero 2026", paymentDate: "Fecha de pago", currency: "COP",
+  receiptText: "RECIBO\n\n{landlordName} confirma recepción de {tenantName}:\n\n• Canon: {rentAmount} COP\n• Administración: {chargesAmount} COP\n• TOTAL: {totalAmount} COP\n\nPeríodo: {period}, pagado el {paymentDate}.\n\nFirma:",
+});
+
+// ─── Peru ───
+export const peLeaseResidential = makeLease("PE", {
+  label: "Contrato de Arrendamiento (Perú)", desc: "Contrato conforme al Código Civil peruano.",
+  legal: "Código Civil Art. 1666-1712", landlord: "Arrendador", landlordAddr: "Domicilio", tenant: "Arrendatario", tenantAddr: "Domicilio",
+  address: "Dirección", surface: "Área", rooms: "Habitaciones", rent: "Renta mensual", deposit: "Garantía",
+  start: "Fecha de inicio", duration: "Duración", indefinite: "Indefinido", months12: "12 meses",
+  parties: "Partes", property: "Inmueble", rentClause: "Renta", termination: "Resolución",
+  terminationText: "Preaviso de 30 días. Resolución por incumplimiento conforme al Código Civil.",
+  partiesText: (v) => `CONTRATO DE ARRENDAMIENTO\n\nArrendador: ${v}`, propertyText: (v) => `Inmueble en ${v}.`,
+  rentText: (v) => `Renta mensual: ${v}.`, currency: "PEN",
+});
+export const peRentReceipt = makeReceipt("PE", {
+  label: "Recibo de Renta (Perú)", desc: "Recibo de pago.",
+  landlord: "Arrendador", tenant: "Arrendatario", address: "Inmueble", rent: "Renta", charges: "Mantenimiento",
+  period: "Período", periodPlaceholder: "Enero 2026", paymentDate: "Fecha de pago", currency: "PEN",
+  receiptText: "RECIBO\n\n{landlordName} confirma recepción de {tenantName}:\n\n• Renta: {rentAmount} PEN\n• Mantenimiento: {chargesAmount} PEN\n• TOTAL: {totalAmount} PEN\n\nPeríodo: {period}, pagado el {paymentDate}.\n\nFirma:",
+});
+
+// ─── Algeria ───
+export const dzLeaseResidential = makeLease("DZ", {
+  label: "Contrat de bail (Algérie)", desc: "Contrat conforme au Code civil algérien.",
+  legal: "Code civil algérien", landlord: "Bailleur", landlordAddr: "Adresse", tenant: "Locataire", tenantAddr: "Adresse",
+  address: "Adresse du bien", surface: "Superficie", rooms: "Pièces", rent: "Loyer mensuel", deposit: "Caution",
+  start: "Date de début", duration: "Durée", indefinite: "Indéterminée", months12: "12 mois",
+  parties: "Parties", property: "Bien", rentClause: "Loyer", termination: "Résiliation",
+  terminationText: "Préavis de 3 mois conformément au Code civil.",
+  partiesText: (v) => `CONTRAT DE BAIL\n\nBailleur: ${v}`, propertyText: (v) => `Bien situé à ${v}.`,
+  rentText: (v) => `Loyer mensuel: ${v}.`, currency: "DZD",
+});
+export const dzRentReceipt = makeReceipt("DZ", {
+  label: "Quittance de loyer (Algérie)", desc: "Quittance de paiement.",
+  landlord: "Bailleur", tenant: "Locataire", address: "Bien", rent: "Loyer", charges: "Charges",
+  period: "Période", periodPlaceholder: "Janvier 2026", paymentDate: "Date de paiement", currency: "DZD",
+  receiptText: "QUITTANCE\n\n{landlordName} confirme la réception de {tenantName}:\n\n• Loyer: {rentAmount} DZD\n• Charges: {chargesAmount} DZD\n• TOTAL: {totalAmount} DZD\n\nPériode {period}, payé le {paymentDate}.\n\nSignature:",
+});
+
+// ─── Cameroon ───
+export const cmLeaseResidential = makeLease("CM", {
+  label: "Contrat de bail (Cameroun)", desc: "Contrat conforme au droit OHADA.",
+  legal: "Droit OHADA", landlord: "Bailleur", landlordAddr: "Adresse", tenant: "Locataire", tenantAddr: "Adresse",
+  address: "Adresse du bien", surface: "Superficie", rooms: "Pièces", rent: "Loyer", deposit: "Caution",
+  start: "Date de début", duration: "Durée", indefinite: "Indéterminée", months12: "12 mois",
+  parties: "Parties", property: "Bien", rentClause: "Loyer", termination: "Résiliation",
+  terminationText: "Préavis de 3 mois.",
+  partiesText: (v) => `CONTRAT DE BAIL\n\nBailleur: ${v}`, propertyText: (v) => `Bien situé à ${v}.`,
+  rentText: (v) => `Loyer mensuel: ${v}.`, currency: "FCFA",
+});
+export const cmRentReceipt = makeReceipt("CM", {
+  label: "Quittance (Cameroun)", desc: "Quittance de loyer.",
+  landlord: "Bailleur", tenant: "Locataire", address: "Bien", rent: "Loyer", charges: "Charges",
+  period: "Période", periodPlaceholder: "Janvier 2026", paymentDate: "Date de paiement", currency: "FCFA",
+  receiptText: "QUITTANCE\n\n{landlordName} confirme réception de {tenantName}:\n\n• Loyer: {rentAmount} FCFA\n• Charges: {chargesAmount} FCFA\n• TOTAL: {totalAmount} FCFA\n\nPériode {period}, payé le {paymentDate}.\n\nSignature:",
+});
+
+// ─── Nigeria ───
+export const ngLeaseResidential = makeLease("NG", {
+  label: "Tenancy Agreement (Nigeria)", desc: "Standard tenancy agreement under Nigerian law.",
+  legal: "Tenancy Law of Lagos / State laws", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Annual rent", deposit: "Caution deposit",
+  start: "Start date", duration: "Duration", indefinite: "Periodic", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "Notice per state tenancy law. Typically 6 months for yearly tenancies.",
+  partiesText: (v) => `TENANCY AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Rent: ${v}.`, currency: "₦",
+});
+export const ngRentReceipt = makeReceipt("NG", {
+  label: "Rent Receipt (Nigeria)", desc: "Rent payment receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Service charge",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "₦",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: ₦{rentAmount}\n• Service charge: ₦{chargesAmount}\n• TOTAL: ₦{totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Kenya ───
+export const keLeaseResidential = makeLease("KE", {
+  label: "Tenancy Agreement (Kenya)", desc: "Standard tenancy agreement under Kenyan law.",
+  legal: "Landlord and Tenant (Shops, Hotels and Catering) Act", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "One month's written notice required for periodic tenancies.",
+  partiesText: (v) => `TENANCY AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "KES",
+});
+export const keRentReceipt = makeReceipt("KE", {
+  label: "Rent Receipt (Kenya)", desc: "Rent payment receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Service charge",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "KES",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: KES {rentAmount}\n• Service: KES {chargesAmount}\n• TOTAL: KES {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Ghana ───
+export const ghLeaseResidential = makeLease("GH", {
+  label: "Tenancy Agreement (Ghana)", desc: "Standard tenancy agreement under Ghanaian law.",
+  legal: "Rent Act 220 of 1963", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Advance rent",
+  start: "Start date", duration: "Duration", indefinite: "Periodic", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "3 months' notice required for termination.",
+  partiesText: (v) => `TENANCY AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "GHS",
+});
+export const ghRentReceipt = makeReceipt("GH", {
+  label: "Rent Receipt (Ghana)", desc: "Rent payment receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Service",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "GHS",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: GHS {rentAmount}\n• Service: GHS {chargesAmount}\n• TOTAL: GHS {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Qatar ───
+export const qaLeaseResidential = makeLease("QA", {
+  label: "Tenancy Contract (Qatar)", desc: "Standard tenancy contract under Qatari law.",
+  legal: "Law No. 4 of 2008", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Annual rent", deposit: "Deposit",
+  start: "Start date", duration: "Duration", indefinite: "Renewable", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "As per contract terms. Typically 2 months' notice.",
+  partiesText: (v) => `TENANCY CONTRACT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Rent: ${v}.`, currency: "QAR",
+});
+export const qaRentReceipt = makeReceipt("QA", {
+  label: "Rent Receipt (Qatar)", desc: "Rent receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Fees",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "QAR",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: QAR {rentAmount}\n• Fees: QAR {chargesAmount}\n• TOTAL: QAR {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Israel ───
+export const ilLeaseResidential = makeLease("IL", {
+  label: "הסכם שכירות (ישראל)", desc: "הסכם שכירות בהתאם לחוק השכירות והשאילה.",
+  legal: "חוק השכירות והשאילה, תשל\"א-1971", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "As per contract terms. 90 days' notice for either party.",
+  partiesText: (v) => `RENTAL AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "₪",
+});
+export const ilRentReceipt = makeReceipt("IL", {
+  label: "Rent Receipt (Israel)", desc: "Rent receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Va'ad Bayit",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "₪",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: ₪{rentAmount}\n• Va'ad: ₪{chargesAmount}\n• TOTAL: ₪{totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── South Korea ───
+export const krLeaseResidential = makeLease("KR", {
+  label: "임대차계약서 (대한민국)", desc: "주택임대차보호법에 따른 임대차계약.",
+  legal: "주택임대차보호법", landlord: "임대인", landlordAddr: "주소", tenant: "임차인", tenantAddr: "주소",
+  address: "소재지", surface: "면적", rooms: "방 수", rent: "월세", deposit: "보증금",
+  start: "계약 시작일", duration: "기간", indefinite: "기간 미정", months12: "12개월",
+  parties: "계약 당사자", property: "부동산", rentClause: "임대료", termination: "해지",
+  terminationText: "임차인은 1개월 전 서면 통지로 해지 가능.",
+  partiesText: (v) => `임대차계약서\n\n임대인: ${v}`, propertyText: (v) => `소재지: ${v}`,
+  rentText: (v) => `월세: ${v}`, currency: "₩",
+});
+export const krRentReceipt = makeReceipt("KR", {
+  label: "임대료 영수증 (대한민국)", desc: "임대료 수령 확인.",
+  landlord: "임대인", tenant: "임차인", address: "소재지", rent: "월세", charges: "관리비",
+  period: "기간", periodPlaceholder: "2026년 1월", paymentDate: "납부일", currency: "₩",
+  receiptText: "임대료 영수증\n\n{landlordName}은(는) {tenantName}으로부터 아래 금액을 수령하였습니다:\n\n• 월세: ₩{rentAmount}\n• 관리비: ₩{chargesAmount}\n• 합계: ₩{totalAmount}\n\n기간: {period}, 납부일: {paymentDate}\n\n서명:",
+});
+
+// ─── India ───
+export const inLeaseResidential = makeLease("IN", {
+  label: "Rental Agreement (India)", desc: "Standard rental agreement under state-specific Rent Control Act.",
+  legal: "State Rent Control Act / Transfer of Property Act", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Security deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "11 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "1 month written notice. Agreement typically for 11 months to avoid registration.",
+  partiesText: (v) => `RENTAL AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "₹",
+});
+export const inRentReceipt = makeReceipt("IN", {
+  label: "Rent Receipt (India)", desc: "Rent payment receipt for HRA claims.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Maintenance",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "₹",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: ₹{rentAmount}\n• Maintenance: ₹{chargesAmount}\n• TOTAL: ₹{totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Thailand ───
+export const thLeaseResidential = makeLease("TH", {
+  label: "สัญญาเช่า (ไทย)", desc: "สัญญาเช่าตามประมวลกฎหมายแพ่งและพาณิชย์.",
+  legal: "Civil and Commercial Code, Book III", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "Lease up to 3 years does not need registration. 30 days' notice for periodic tenancies.",
+  partiesText: (v) => `RENTAL AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "฿",
+});
+export const thRentReceipt = makeReceipt("TH", {
+  label: "Rent Receipt (Thailand)", desc: "Rent payment receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Common fees",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "฿",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: ฿{rentAmount}\n• Common fees: ฿{chargesAmount}\n• TOTAL: ฿{totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Malaysia ───
+export const myLeaseResidential = makeLease("MY", {
+  label: "Tenancy Agreement (Malaysia)", desc: "Standard tenancy agreement.",
+  legal: "National Land Code / Contracts Act 1950", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Security deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "1 month's notice for periodic tenancy. Stamping required for validity.",
+  partiesText: (v) => `TENANCY AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "RM",
+});
+export const myRentReceipt = makeReceipt("MY", {
+  label: "Rent Receipt (Malaysia)", desc: "Rent receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Service charge",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "RM",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: RM {rentAmount}\n• Service: RM {chargesAmount}\n• TOTAL: RM {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Vietnam ───
+export const vnLeaseResidential = makeLease("VN", {
+  label: "Hợp đồng thuê nhà (Việt Nam)", desc: "Hợp đồng thuê nhà theo Bộ luật Dân sự 2015.",
+  legal: "Bộ luật Dân sự 2015", landlord: "Bên cho thuê", landlordAddr: "Địa chỉ", tenant: "Bên thuê", tenantAddr: "Địa chỉ",
+  address: "Địa chỉ nhà", surface: "Diện tích", rooms: "Phòng", rent: "Tiền thuê hàng tháng", deposit: "Tiền đặt cọc",
+  start: "Ngày bắt đầu", duration: "Thời hạn", indefinite: "Không xác định", months12: "12 tháng",
+  parties: "Các bên", property: "Nhà ở", rentClause: "Tiền thuê", termination: "Chấm dứt",
+  terminationText: "Báo trước 30 ngày bằng văn bản.",
+  partiesText: (v) => `HỢP ĐỒNG THUÊ NHÀ\n\nBên cho thuê: ${v}`, propertyText: (v) => `Nhà tại ${v}.`,
+  rentText: (v) => `Tiền thuê: ${v}.`, currency: "VND",
+});
+export const vnRentReceipt = makeReceipt("VN", {
+  label: "Biên lai thuê nhà (Việt Nam)", desc: "Biên lai thanh toán tiền thuê.",
+  landlord: "Bên cho thuê", tenant: "Bên thuê", address: "Nhà ở", rent: "Tiền thuê", charges: "Phí dịch vụ",
+  period: "Kỳ", periodPlaceholder: "Tháng 1/2026", paymentDate: "Ngày thanh toán", currency: "VND",
+  receiptText: "BIÊN LAI\n\n{landlordName} xác nhận đã nhận từ {tenantName}:\n\n• Tiền thuê: {rentAmount} VND\n• Dịch vụ: {chargesAmount} VND\n• TỔNG: {totalAmount} VND\n\nKỳ: {period}, ngày thanh toán: {paymentDate}.\n\nChữ ký:",
+});
+
+// ─── Philippines ───
+export const phLeaseResidential = makeLease("PH", {
+  label: "Contract of Lease (Philippines)", desc: "Standard lease under the Rent Control Act.",
+  legal: "RA 9653 (Rent Control Act of 2009)", landlord: "Lessor", landlordAddr: "Address", tenant: "Lessee", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Monthly rent", deposit: "Security deposit",
+  start: "Start date", duration: "Duration", indefinite: "Month-to-month", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "30 days' written notice required.",
+  partiesText: (v) => `CONTRACT OF LEASE\n\nLessor: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Monthly rent: ${v}.`, currency: "₱",
+});
+export const phRentReceipt = makeReceipt("PH", {
+  label: "Rent Receipt (Philippines)", desc: "Rent receipt.",
+  landlord: "Lessor", tenant: "Lessee", address: "Property", rent: "Rent", charges: "Association dues",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "₱",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: ₱{rentAmount}\n• Dues: ₱{chargesAmount}\n• TOTAL: ₱{totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
+// ─── Indonesia ───
+export const idLeaseResidential = makeLease("ID", {
+  label: "Perjanjian Sewa Menyewa (Indonesia)", desc: "Perjanjian sewa sesuai KUH Perdata.",
+  legal: "KUH Perdata Pasal 1548-1600", landlord: "Pemilik", landlordAddr: "Alamat", tenant: "Penyewa", tenantAddr: "Alamat",
+  address: "Alamat properti", surface: "Luas", rooms: "Kamar", rent: "Sewa bulanan", deposit: "Uang jaminan",
+  start: "Tanggal mulai", duration: "Durasi", indefinite: "Tidak terbatas", months12: "12 bulan",
+  parties: "Para Pihak", property: "Properti", rentClause: "Sewa", termination: "Pengakhiran",
+  terminationText: "Pemberitahuan tertulis 1 bulan sebelumnya.",
+  partiesText: (v) => `PERJANJIAN SEWA\n\nPemilik: ${v}`, propertyText: (v) => `Properti di ${v}.`,
+  rentText: (v) => `Sewa bulanan: ${v}.`, currency: "IDR",
+});
+export const idRentReceipt = makeReceipt("ID", {
+  label: "Kwitansi Sewa (Indonesia)", desc: "Kwitansi pembayaran sewa.",
+  landlord: "Pemilik", tenant: "Penyewa", address: "Properti", rent: "Sewa", charges: "Iuran",
+  period: "Periode", periodPlaceholder: "Januari 2026", paymentDate: "Tanggal bayar", currency: "IDR",
+  receiptText: "KWITANSI SEWA\n\n{landlordName} menyatakan telah menerima dari {tenantName}:\n\n• Sewa: IDR {rentAmount}\n• Iuran: IDR {chargesAmount}\n• TOTAL: IDR {totalAmount}\n\nPeriode: {period}, dibayar {paymentDate}.\n\nTanda tangan:",
+});
+
+// ─── New Zealand ───
+export const nzLeaseResidential = makeLease("NZ", {
+  label: "Residential Tenancy Agreement (New Zealand)", desc: "Standard tenancy under the Residential Tenancies Act 1986.",
+  legal: "Residential Tenancies Act 1986", landlord: "Landlord", landlordAddr: "Address", tenant: "Tenant", tenantAddr: "Address",
+  address: "Property address", surface: "Area", rooms: "Rooms", rent: "Weekly rent", deposit: "Bond",
+  start: "Start date", duration: "Duration", indefinite: "Periodic", months12: "12 months",
+  parties: "Parties", property: "Property", rentClause: "Rent", termination: "Termination",
+  terminationText: "Tenant: 28 days' notice. Landlord: 90 days' notice for periodic tenancy.",
+  partiesText: (v) => `RESIDENTIAL TENANCY AGREEMENT\n\nLandlord: ${v}`, propertyText: (v) => `Property at ${v}.`,
+  rentText: (v) => `Rent: ${v}. Bond lodged with Tenancy Services.`, currency: "NZ$",
+});
+export const nzRentReceipt = makeReceipt("NZ", {
+  label: "Rent Receipt (New Zealand)", desc: "Rent payment receipt.",
+  landlord: "Landlord", tenant: "Tenant", address: "Property", rent: "Rent", charges: "Outgoings",
+  period: "Period", periodPlaceholder: "January 2026", paymentDate: "Payment date", currency: "NZ$",
+  receiptText: "RENT RECEIPT\n\n{landlordName} acknowledges receipt from {tenantName}:\n\n• Rent: NZ$ {rentAmount}\n• Outgoings: NZ$ {chargesAmount}\n• TOTAL: NZ$ {totalAmount}\n\nFor {period}, paid on {paymentDate}.\n\nSignature:",
+});
+
 // ─── Export all ───
 export const allWorldTemplates: DocumentTemplate[] = [
   usLeaseResidential, usRentReceipt,
   caLeaseResidential, caRentReceipt,
   brLeaseResidential, brRentReceipt,
   mxLeaseResidential, mxRentReceipt,
+  arLeaseResidential, arRentReceipt,
+  clLeaseResidential, clRentReceipt,
+  coLeaseResidential, coRentReceipt,
+  peLeaseResidential, peRentReceipt,
   maLeaseResidential, maRentReceipt,
   tnLeaseResidential, tnRentReceipt,
+  dzLeaseResidential, dzRentReceipt,
   snLeaseResidential, snRentReceipt,
   ciLeaseResidential, ciRentReceipt,
+  cmLeaseResidential, cmRentReceipt,
+  ngLeaseResidential, ngRentReceipt,
+  keLeaseResidential, keRentReceipt,
+  ghLeaseResidential, ghRentReceipt,
   zaLeaseResidential, zaRentReceipt,
   aeLeaseResidential, aeRentReceipt,
   saLeaseResidential, saRentReceipt,
+  qaLeaseResidential, qaRentReceipt,
+  ilLeaseResidential, ilRentReceipt,
   trLeaseResidential, trRentReceipt,
   jpLeaseResidential, jpRentReceipt,
+  krLeaseResidential, krRentReceipt,
+  inLeaseResidential, inRentReceipt,
+  thLeaseResidential, thRentReceipt,
+  myLeaseResidential, myRentReceipt,
+  vnLeaseResidential, vnRentReceipt,
+  phLeaseResidential, phRentReceipt,
+  idLeaseResidential, idRentReceipt,
   auLeaseResidential, auRentReceipt,
   sgLeaseResidential, sgRentReceipt,
+  nzLeaseResidential, nzRentReceipt,
 ];

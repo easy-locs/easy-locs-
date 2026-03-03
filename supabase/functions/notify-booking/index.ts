@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const { data: property } = await supabase
       .from("properties")
-      .select("label, address, city, country")
+      .select("label, address, city, country, photo_urls")
       .eq("id", br.property_id)
       .single();
 
@@ -53,10 +53,14 @@ serve(async (req) => {
     const totalPrice = nights * (listing?.price_per_night || 0);
     const propertyLabel = listing?.title || property?.label || "Logement";
 
+    // Get property photo
+    const photoUrls: string[] = Array.isArray(property?.photo_urls) ? property.photo_urls : [];
+    const mainPhoto = photoUrls.length > 0 ? photoUrls[0] : "";
+    const listingUrl = listing?.slug ? `https://easylocs.lovable.app/listing/${listing.slug}` : "";
+
     // Generate payment link
     let paymentUrl = "";
     if (totalPrice > 0) {
-      const origin = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", "") || "";
       const fnUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/create-booking-payment`;
       
       try {
@@ -83,6 +87,19 @@ serve(async (req) => {
         console.error("Failed to generate payment link:", e);
       }
     }
+
+    // Photo HTML block
+    const photoBlock = mainPhoto
+      ? `<div style="text-align:center;margin-bottom:20px;">
+          <img src="${mainPhoto}" alt="${propertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
+        </div>`
+      : "";
+
+    const listingBlock = listingUrl
+      ? `<p style="text-align:center;margin:8px 0 16px;">
+          <a href="${listingUrl}" style="color:#2563eb;font-size:13px;text-decoration:underline;">Voir l'annonce complète →</a>
+        </p>`
+      : "";
 
     // 1. Notify owner (in-app + email)
     if (org?.owner_user_id) {
@@ -117,6 +134,7 @@ serve(async (req) => {
               <div style="text-align:center;margin-bottom:24px;">
                 <h1 style="color:#1a1a1a;font-size:22px;">🏖️ Nouvelle demande de réservation</h1>
               </div>
+              ${photoBlock}
               <table style="width:100%;border-collapse:collapse;margin:16px 0;">
                 <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">Voyageur</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;">${br.guest_name}</td></tr>
                 <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.guest_email}</td></tr>
@@ -136,11 +154,11 @@ serve(async (req) => {
       });
     }
 
-    // 2. Email to guest with payment link
+    // 2. Email to guest with photo + payment link
     if (br.guest_email && SENDGRID_API_KEY) {
       const paymentSection = paymentUrl
         ? `<div style="text-align:center;margin:24px 0;">
-            <a href="${paymentUrl}" style="background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">💳 Payer ${totalPrice} EUR</a>
+            <a href="${paymentUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">💳 Payer ${totalPrice} EUR</a>
             <p style="color:#888;font-size:12px;margin-top:8px;">Paiement sécurisé par carte ou Apple Pay</p>
           </div>`
         : "";
@@ -162,6 +180,8 @@ serve(async (req) => {
               <div style="text-align:center;margin-bottom:24px;">
                 <h1 style="color:#1a1a1a;font-size:22px;">✅ Demande de réservation reçue</h1>
               </div>
+              ${photoBlock}
+              ${listingBlock}
               <p style="color:#555;font-size:15px;">Bonjour ${br.guest_name},</p>
               <p style="color:#555;font-size:15px;">Votre demande de réservation pour <strong>${propertyLabel}</strong> a bien été enregistrée.</p>
               <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">

@@ -30,12 +30,15 @@ const countryLabels: Record<string, string> = {
   IE: "🇮🇪 Ireland", BG: "🇧🇬 България", SK: "🇸🇰 Slovensko",
   // Americas
   US: "🇺🇸 United States", CA: "🇨🇦 Canada", BR: "🇧🇷 Brasil", MX: "🇲🇽 México",
+  AR: "🇦🇷 Argentina", CL: "🇨🇱 Chile", CO: "🇨🇴 Colombia", PE: "🇵🇪 Perú",
   // Africa
-  MA: "🇲🇦 Maroc", TN: "🇹🇳 Tunisie", SN: "🇸🇳 Sénégal", CI: "🇨🇮 Côte d'Ivoire", ZA: "🇿🇦 South Africa",
+  MA: "🇲🇦 Maroc", TN: "🇹🇳 Tunisie", DZ: "🇩🇿 Algérie", SN: "🇸🇳 Sénégal", CI: "🇨🇮 Côte d'Ivoire",
+  CM: "🇨🇲 Cameroun", NG: "🇳🇬 Nigeria", KE: "🇰🇪 Kenya", GH: "🇬🇭 Ghana", ZA: "🇿🇦 South Africa",
   // Middle East
-  AE: "🇦🇪 UAE", SA: "🇸🇦 Saudi Arabia", TR: "🇹🇷 Türkiye",
+  AE: "🇦🇪 UAE", SA: "🇸🇦 Saudi Arabia", QA: "🇶🇦 Qatar", IL: "🇮🇱 Israel", TR: "🇹🇷 Türkiye",
   // Asia-Pacific
-  JP: "🇯🇵 日本", AU: "🇦🇺 Australia", SG: "🇸🇬 Singapore",
+  JP: "🇯🇵 日本", KR: "🇰🇷 대한민국", IN: "🇮🇳 India", TH: "🇹🇭 ประเทศไทย", MY: "🇲🇾 Malaysia",
+  VN: "🇻🇳 Việt Nam", PH: "🇵🇭 Philippines", ID: "🇮🇩 Indonesia", AU: "🇦🇺 Australia", SG: "🇸🇬 Singapore", NZ: "🇳🇿 New Zealand",
 };
 
 interface DocRow {
