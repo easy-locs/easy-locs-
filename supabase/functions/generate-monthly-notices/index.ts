@@ -9,29 +9,45 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    // Validate authorization — only allow calls with the anon key (pg_cron) or service role key
+    // Validate authorization — only allow service role key or dedicated cron secret
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.replace("Bearer ", "");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const cronSecret = req.headers.get("x-cron-secret") || "";
 
-    if (!token || (token !== anonKey && token !== serviceRoleKey)) {
+    // Accept service role key OR dedicated cron secret from pg_cron
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      serviceRoleKey
+    );
+
+    // Validate: check cron secret from internal_config table
+    let authorized = false;
+    if (token === serviceRoleKey) {
+      authorized = true;
+    } else if (cronSecret) {
+      const { data: configRow } = await supabaseAdmin
+        .from("internal_config")
+        .select("value")
+        .eq("key", "cron_secret")
+        .single();
+      if (configRow && configRow.value === cronSecret) {
+        authorized = true;
+      }
+    }
+
+    if (!authorized) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      serviceRoleKey
-    );
-
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const dueDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-    const { data: orgs } = await supabase.from("orgs").select("id");
+    const { data: orgs } = await supabaseAdmin.from("orgs").select("id");
     if (!orgs || orgs.length === 0) {
       return new Response(JSON.stringify({ message: "No orgs found" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -40,7 +56,7 @@ Deno.serve(async (req) => {
     let totalAlerts = 0;
 
     for (const org of orgs) {
-      const { data: tenants } = await supabase
+      const { data: tenants } = await supabaseAdmin
         .from("tenants")
         .select("id, name, property_id, rent_amount, charges_amount, tenant_user_id, user_id")
         .eq("org_id", org.id)
@@ -63,7 +79,7 @@ Deno.serve(async (req) => {
       }));
 
       if (newNotices.length > 0) {
-        const { data: inserted } = await supabase
+        const { data: inserted } = await supabaseAdmin
           .from("payment_notices")
           .upsert(newNotices, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true })
           .select("id");
@@ -82,26 +98,26 @@ Deno.serve(async (req) => {
       }));
 
       if (newCalls.length > 0) {
-        await supabase
+        await supabaseAdmin
           .from("rent_calls")
           .upsert(newCalls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
       }
 
       // === UNPAID ALERTS ===
-      const { data: unpaid } = await supabase
+      const { data: unpaid } = await supabaseAdmin
         .from("rent_calls")
         .select("id, tenant_id, month, total_amount")
         .eq("org_id", org.id)
         .eq("paid", false);
 
       if (unpaid && unpaid.length > 0) {
-        const { data: orgData } = await supabase.from("orgs").select("owner_user_id").eq("id", org.id).single();
+        const { data: orgData } = await supabaseAdmin.from("orgs").select("owner_user_id").eq("id", org.id).single();
 
         for (const call of unpaid) {
           const tenant = activeTenants.find((t: any) => t.id === call.tenant_id);
           if (!tenant) continue;
 
-          const { data: existingNotif } = await supabase
+          const { data: existingNotif } = await supabaseAdmin
             .from("notifications")
             .select("id")
             .eq("user_id", orgData?.owner_user_id)
@@ -112,7 +128,7 @@ Deno.serve(async (req) => {
           if (existingNotif && existingNotif.length > 0) continue;
 
           if (orgData?.owner_user_id) {
-            await supabase.from("notifications").insert({
+            await supabaseAdmin.from("notifications").insert({
               user_id: orgData.owner_user_id,
               org_id: org.id,
               type: "dunning",
