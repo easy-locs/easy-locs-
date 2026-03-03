@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle } from "lucide-react";
+import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle, CreditCard } from "lucide-react";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const [listing, setListing] = useState<any>(null);
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,11 @@ const PublicListing = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") setPaymentSuccess(true);
+  }, [searchParams]);
 
   useEffect(() => {
     const load = async () => {
@@ -42,7 +48,6 @@ const PublicListing = () => {
         .maybeSingle();
       setProperty(p);
 
-      // Load existing bookings to show unavailable dates
       const { data: bookings } = await supabase
         .from("seasonal_bookings")
         .select("check_in, check_out")
@@ -70,7 +75,7 @@ const PublicListing = () => {
     if (!form.guest_name || !form.guest_email || !form.check_in || !form.check_out) return;
 
     setSubmitting(true);
-    const { error } = await supabase.from("booking_requests").insert({
+    const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
       listing_id: listing.id,
       property_id: property.id,
       org_id: listing.org_id,
@@ -81,14 +86,49 @@ const PublicListing = () => {
       check_out: form.check_out,
       guests_count: form.guests_count,
       message: form.message,
-    } as any);
-    setSubmitting(false);
+    } as any).select().single();
 
     if (error) {
+      setSubmitting(false);
       alert("Erreur lors de l'envoi. Veuillez réessayer.");
       return;
     }
+
+    // Trigger notification + payment link generation
+    try {
+      await supabase.functions.invoke("notify-booking", {
+        body: { booking_request_id: insertedRequest.id },
+      });
+    } catch (e) {
+      console.error("Notification error:", e);
+    }
+
+    setSubmitting(false);
     setSubmitted(true);
+  };
+
+  const handlePayNow = async () => {
+    if (!listing || !property || totalPrice <= 0) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+        body: {
+          listing_id: listing.id,
+          guest_email: form.guest_email || "guest@temp.com",
+          guest_name: form.guest_name || "Voyageur",
+          amount: totalPrice,
+          nights,
+          property_label: listing.title || property.label,
+          origin: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      alert("Erreur de paiement: " + (err.message || "Réessayez."));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -105,6 +145,18 @@ const PublicListing = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Annonce introuvable</h1>
           <p className="text-muted-foreground">Ce lien n'est plus actif ou n'existe pas.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Paiement confirmé !</h1>
+          <p className="text-muted-foreground">Votre paiement a été traité avec succès. Le propriétaire a été notifié et vous recevrez un email de confirmation.</p>
         </div>
       </div>
     );
@@ -215,8 +267,11 @@ const PublicListing = () => {
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-foreground mb-1">Demande envoyée !</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mb-4">
                     Le propriétaire reviendra vers vous rapidement.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Un email de confirmation avec le lien de paiement vous a été envoyé.
                   </p>
                 </div>
               ) : (
@@ -313,6 +368,23 @@ const PublicListing = () => {
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       Envoyer la demande
                     </button>
+
+                    {nights > 0 && totalPrice > 0 && form.guest_email && form.guest_name && (
+                      <button
+                        type="button"
+                        onClick={handlePayNow}
+                        disabled={submitting}
+                        className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                        Payer {totalPrice}€ maintenant
+                      </button>
+                    )}
+                    {nights > 0 && totalPrice > 0 && (
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        Paiement sécurisé par Stripe · Carte & Apple Pay acceptés
+                      </p>
+                    )}
                   </form>
                 </>
               )}
