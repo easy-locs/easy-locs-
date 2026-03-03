@@ -2,10 +2,11 @@
 
 export type Country = "FR" | "BE" | "ES" | "IT" | "DE" | "PT" | "NL" | "CH" | "LU" | "GB" | "AT"
   | "PL" | "SE" | "DK" | "NO" | "FI" | "GR" | "CZ" | "HU" | "RO" | "HR" | "IE" | "BG" | "SK"
-  | "US" | "CA" | "BR" | "MX"
-  | "MA" | "TN" | "SN" | "CI" | "ZA"
-  | "AE" | "SA" | "TR"
-  | "JP" | "AU" | "SG";
+  | "SI" | "LT" | "LV" | "EE" | "CY" | "MT"
+  | "US" | "CA" | "BR" | "MX" | "AR" | "CL" | "CO" | "PE"
+  | "MA" | "TN" | "DZ" | "SN" | "CI" | "CM" | "GA" | "CG" | "CD" | "MG" | "MU" | "ZA" | "NG" | "KE" | "GH"
+  | "AE" | "SA" | "QA" | "BH" | "KW" | "OM" | "LB" | "JO" | "IL" | "TR"
+  | "JP" | "KR" | "CN" | "IN" | "SG" | "MY" | "TH" | "VN" | "PH" | "ID" | "AU" | "NZ";
 
 export type DocCategory = "rental" | "administrative" | "company" | "legal";
 
