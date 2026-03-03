@@ -4,8 +4,10 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays } from "lucide-react";
+import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays, Camera } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
+import ListingManager from "@/components/seasonal/ListingManager";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -24,7 +26,7 @@ interface Booking {
   notes: string;
 }
 
-interface Property { id: string; label: string; }
+interface Property { id: string; label: string; photo_urls?: any; }
 
 interface SeasonalForm {
   property_id: string;
@@ -128,12 +130,13 @@ const SeasonalRentals = () => {
   const [icalUrl, setIcalUrl] = useState("");
   const [importingIcal, setImportingIcal] = useState(false);
   const [copiedExport, setCopiedExport] = useState(false);
+  const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!orgId) return;
     const [{ data: b }, { data: p }] = await Promise.all([
       supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
-      supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
+      supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
     ]);
     if (b) setBookings(b as Booking[]);
     if (p) setProperties(p);
@@ -538,6 +541,45 @@ const SeasonalRentals = () => {
             })}
           </div>
         </div>
+
+        {/* Photos & Listing per property */}
+        {properties.length > 0 && (
+          <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Camera className="h-4 w-4 text-accent" /> Photos & Annonce publique
+              </h3>
+              <select
+                value={selectedPropertyForPhotos || properties[0]?.id || ""}
+                onChange={e => setSelectedPropertyForPhotos(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm"
+              >
+                {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+              </select>
+            </div>
+            {(() => {
+              const propId = selectedPropertyForPhotos || properties[0]?.id;
+              const prop = properties.find(p => p.id === propId);
+              if (!propId || !prop) return null;
+              const currentPhotos: string[] = Array.isArray(prop.photo_urls) ? prop.photo_urls : [];
+              return (
+                <div className="space-y-6">
+                  <PropertyPhotos
+                    propertyId={propId}
+                    orgId={orgId || ""}
+                    photos={currentPhotos}
+                    onPhotosChange={(urls) => {
+                      setProperties(prev => prev.map(p => p.id === propId ? { ...p, photo_urls: urls } : p));
+                    }}
+                  />
+                  <div className="border-t border-border/50 pt-4">
+                    <ListingManager propertyId={propId} propertyLabel={prop.label} />
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Form */}
         {showForm && (
