@@ -61,6 +61,7 @@ const Finances = () => {
   const [searchParams] = useSearchParams();
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [connectLoading, setConnectLoading] = useState(true);
+  const [connectSyncing, setConnectSyncing] = useState(false);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -68,7 +69,10 @@ const Finances = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [propertyFilter, setPropertyFilter] = useState("");
 
-  const checkConnectStatus = async () => {
+  const checkConnectStatus = async (silent = false) => {
+    if (silent) setConnectSyncing(true);
+    else setConnectLoading(true);
+
     try {
       const { data, error } = await supabase.functions.invoke("check-connect-status");
       if (error) throw error;
@@ -76,7 +80,8 @@ const Finances = () => {
     } catch {
       setConnectStatus({ connected: false, onboarding_complete: false });
     } finally {
-      setConnectLoading(false);
+      if (silent) setConnectSyncing(false);
+      else setConnectLoading(false);
     }
   };
 
@@ -250,7 +255,16 @@ const Finances = () => {
               <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-green-500" : "text-accent"}`} />
             </div>
             <div className="flex-1">
-              <h2 className="font-semibold text-foreground text-lg mb-1">Paiement en ligne des loyers</h2>
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <h2 className="font-semibold text-foreground text-lg">Paiement en ligne des loyers</h2>
+                <button
+                  onClick={() => checkConnectStatus(true)}
+                  disabled={connectSyncing || connectLoading}
+                  className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+                >
+                  {connectSyncing ? "Synchronisation..." : "Synchroniser Stripe"}
+                </button>
+              </div>
               {connectLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <Loader2 className="h-4 w-4 animate-spin" /> Vérification...
