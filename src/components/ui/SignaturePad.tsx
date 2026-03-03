@@ -14,7 +14,7 @@ const SignaturePad = ({ label, value, onChange, width = 400, height = 150, class
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
 
-  // Restore from value
+  // Restore from value whenever it changes
   useEffect(() => {
     if (value && canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
@@ -26,8 +26,12 @@ const SignaturePad = ({ label, value, onChange, width = 400, height = 150, class
         setHasSignature(true);
       };
       img.src = value;
+    } else if (!value && canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, width, height);
+      setHasSignature(false);
     }
-  }, []);
+  }, [value, width, height]);
 
   const getPos = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;

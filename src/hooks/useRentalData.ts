@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getCountryConfig } from "@/lib/country-config";
+import { generateFromTemplate, pdfToDataUri } from "@/lib/pdf-generator";
+import { getAllTemplates } from "@/lib/templates/registry";
+import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 
 /* ─── Types ─── */
 export interface Property {
@@ -244,12 +247,135 @@ export function useRentalData() {
   const togglePayment = async (id: string, paymentMethod?: string) => {
     const call = rentCalls.find(r => r.id === id);
     if (!call) return;
+    const nowPaid = !call.paid;
     const { error } = await supabase.from("rent_calls").update({
-      paid: !call.paid,
-      paid_date: !call.paid ? new Date().toISOString() : null,
-      payment_method: !call.paid ? (paymentMethod || null) : null,
+      paid: nowPaid,
+      paid_date: nowPaid ? new Date().toISOString() : null,
+      payment_method: nowPaid ? (paymentMethod || null) : null,
+      receipt_validated: nowPaid ? true : false,
     }).eq("id", id);
     if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+
+    // When marking as paid: auto-generate receipt, save to DB, email to tenant
+    if (nowPaid && user && orgId) {
+      try {
+        const tenant = tenants.find(t => t.id === call.tenant_id);
+        const prop = properties.find(p => p.id === (call.property_id || tenant?.property_id));
+        if (tenant) {
+          // Fetch landlord info
+          let landlordName = "";
+          let landlordAddress = "";
+          let landlordSignature = "";
+          let stampUrl = "";
+          try {
+            const { data: profile } = await supabase.from("profiles").select("signature_url, name").eq("id", user.id).single();
+            if (profile?.signature_url) landlordSignature = profile.signature_url;
+            if (profile?.name) landlordName = profile.name;
+          } catch { /* ignore */ }
+          try {
+            const { data: ownerProfile } = await supabase.from("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
+            if (ownerProfile) {
+              landlordName = ownerProfile.full_name || landlordName;
+              landlordAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city].filter(Boolean).join(", ");
+            }
+          } catch { /* ignore */ }
+          try {
+            const { data: orgData } = await supabase.from("orgs").select("stamp_url, name, address, postal_code, city").eq("id", orgId).single();
+            if ((orgData as any)?.stamp_url) stampUrl = (orgData as any).stamp_url;
+            if (!landlordName && orgData?.name) landlordName = orgData.name;
+            if (!landlordAddress) landlordAddress = [orgData?.address, orgData?.postal_code, orgData?.city].filter(Boolean).join(", ");
+          } catch { /* ignore */ }
+          if (!landlordName) landlordName = user?.user_metadata?.name || "Proprietaire";
+
+          const paymentMethodLabels: Record<string, string> = { online: "Virement en ligne", bank_transfer: "Virement bancaire", cash: "Especes" };
+          const paymentMethodLabel = paymentMethod ? (paymentMethodLabels[paymentMethod] || paymentMethod) : "";
+
+          const receiptData: Record<string, unknown> = {
+            landlordName, landlordAddress,
+            tenantName: tenant.name,
+            tenantAddress: prop ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
+            propertyAddress: prop ? `${prop.address}, ${prop.postal_code} ${prop.city}` : "",
+            rentAmount: call.rent_amount, chargesAmount: call.charges_amount,
+            periodStart: `${call.month}-01`,
+            periodEnd: `${call.month}-${new Date(+call.month.split("-")[0], +call.month.split("-")[1], 0).getDate()}`,
+            paymentDate: new Date().toISOString().split("T")[0],
+            paymentMethod: paymentMethodLabel,
+          };
+
+          const propCountryCode = prop?.country || "FR";
+          const allTpls = getAllTemplates();
+          const receiptTemplate = allTpls.find(t => t.country === propCountryCode && t.docType === "rent-receipt" && t.active) || frRentReceipt;
+          const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
+          const pdfDoc = generateFromTemplate(receiptTemplate, receiptData, signatures, stampUrl || undefined, { skipTenantSignature: true, country: propCountryCode });
+
+          const receiptTitle = `Quittance ${tenant.name} - ${call.month}`;
+
+          // Save receipt to documents table
+          await supabase.from("documents").insert({
+            org_id: orgId,
+            user_id: user.id,
+            doc_type: "rent-receipt",
+            title: receiptTitle,
+            data_json: receiptData as any,
+            country: propCountryCode,
+            status: "final",
+          });
+
+          // Send receipt by email if tenant has email
+          const tenantEmail = tenant.email?.trim().toLowerCase();
+          if (tenantEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tenantEmail)) {
+            try {
+              const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
+              await supabase.functions.invoke("send-email", {
+                body: {
+                  to: tenantEmail,
+                  subject: `Quittance de loyer - ${call.month}`,
+                  from_name: landlordName || "Easy-Locs",
+                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+                    <h2 style="color:#1a1a1a;text-align:center;">Quittance de loyer</h2>
+                    <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
+                    <p style="color:#555;font-size:15px;">Votre quittance de loyer pour la periode <strong>${call.month}</strong> est disponible en piece jointe.</p>
+                    <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
+                      <p style="margin:4px 0;font-size:14px;color:#333;">Loyer : <strong>${call.rent_amount}</strong></p>
+                      <p style="margin:4px 0;font-size:14px;color:#333;">Charges : <strong>${call.charges_amount}</strong></p>
+                      <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">Total : ${call.total_amount}</p>
+                    </div>
+                    <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoye automatiquement par Easy-Locs.</p>
+                  </div>`,
+                  attachments: [{
+                    content: pdfBase64,
+                    filename: `Quittance_${tenant.name.replace(/\s/g, "_")}_${call.month}.pdf`,
+                    type: "application/pdf",
+                  }],
+                },
+              });
+              toast({ title: "Paiement enregistre", description: "Quittance generee et envoyee par email." });
+            } catch (emailErr) {
+              console.error("Email send failed:", emailErr);
+              toast({ title: "Paiement enregistre", description: "Quittance generee mais l'email n'a pas pu etre envoye." });
+            }
+          } else {
+            toast({ title: "Paiement enregistre", description: "Quittance generee automatiquement." });
+          }
+
+          // Notify tenant in-app
+          if (tenant.tenant_user_id) {
+            await supabase.from("notifications").insert({
+              user_id: tenant.tenant_user_id,
+              org_id: orgId,
+              type: "receipt",
+              title: "Quittance disponible",
+              message: `Votre quittance de loyer pour ${call.month} est disponible.`,
+              link: "/tenant/receipts",
+            });
+          }
+        }
+      } catch (receiptErr) {
+        console.error("Auto-receipt generation error:", receiptErr);
+        toast({ title: "Paiement enregistre", description: "Erreur lors de la generation automatique de la quittance." });
+      }
+    }
+
     await loadRentCalls();
   };
 
