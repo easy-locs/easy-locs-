@@ -343,9 +343,40 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
   const handleFinalizeAndSend = async () => {
     await handleSave(true);
-    await handleDownloadPDF();
 
-    // Send notification to tenant if linked
+    // Generate PDF for download + email attachment
+    let pdfDoc: any = null;
+    try {
+      pdfDoc = await generateInventoryPDF({
+        propertyLabel,
+        reportType,
+        reportDate,
+        tenantName: tenantName || undefined,
+        keysCount,
+        keysDetails,
+        meterElectricity,
+        meterGas,
+        meterWater,
+        generalNotes,
+        rooms: rooms.map(r => ({
+          room_name: r.room_name,
+          items: r.items.map(it => ({
+            element_name: it.element_name,
+            condition: it.condition,
+            notes: it.notes,
+            photo_urls: it.photo_urls,
+          })),
+        })),
+      }, landlordSignature ? { landlord: landlordSignature } : undefined, stampUrl || undefined);
+
+      const typeStr = reportType === "entry" ? "entree" : "sortie";
+      downloadPDF(pdfDoc, `etat_des_lieux_${typeStr}_${reportDate}.pdf`);
+      toast({ title: "PDF téléchargé !" });
+    } catch (err: any) {
+      toast({ title: "Erreur PDF", description: err.message, variant: "destructive" });
+    }
+
+    // Send notification + email with PDF attachment to tenant
     if (tenantId && orgId) {
       try {
         const { data: tenant } = await supabase.from("tenants").select("tenant_user_id, email, name").eq("id", tenantId).single();
@@ -359,8 +390,20 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
             link: "/tenant/documents",
           });
         }
-        // Send email
+        // Send email with PDF attachment
         if (tenant?.email) {
+          const typeStr = reportType === "entry" ? "entree" : "sortie";
+          const attachments: any[] = [];
+          if (pdfDoc) {
+            try {
+              const pdfBase64 = pdfDoc.output("datauristring").split(",")[1];
+              attachments.push({
+                content: pdfBase64,
+                filename: `etat_des_lieux_${typeStr}_${reportDate}.pdf`,
+                type: "application/pdf",
+              });
+            } catch {}
+          }
           await supabase.functions.invoke("send-email", {
             body: {
               to: tenant.email,
@@ -369,9 +412,10 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                 <h2 style="color:#1a2744;text-align:center;">📋 État des lieux finalisé</h2>
                 <p style="color:#555;">Bonjour ${tenant.name || ""},</p>
                 <p style="color:#555;">L'état des lieux ${reportType === "entry" ? "d'entrée" : "de sortie"} pour <strong>${propertyLabel}</strong> a été finalisé le ${reportDate}.</p>
-                <p style="color:#555;">Vous pouvez consulter ce document dans votre espace locataire.</p>
+                <p style="color:#555;">Le PDF est joint à cet email. Vous pouvez aussi le consulter dans votre espace locataire.</p>
                 <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Gestion locative intelligente</p>
               </div>`,
+              attachments,
             },
           });
         }
@@ -411,8 +455,9 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
             className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
             <Save className="h-4 w-4" />{saving ? "…" : "Brouillon"}
           </button>
-          <button onClick={handleDownloadPDF} disabled={generatingPdf}
-            className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
+          <button onClick={handleDownloadPDF} disabled={generatingPdf || reportStatus !== "completed"}
+            title={reportStatus !== "completed" ? "Finalisez d'abord l'état des lieux" : ""}
+            className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <Download className="h-4 w-4" />{generatingPdf ? "Génération…" : "PDF"}
           </button>
           <button onClick={handleFinalizeAndSend} disabled={saving || generatingPdf}

@@ -22,6 +22,128 @@ const PRODUCT_MAP: Record<string, string> = {
   "prod_U2zlUjPtdVVjIw": "unlimited_annual",
 };
 
+/** Country → locale mapping for localized emails */
+const COUNTRY_LOCALE: Record<string, { lang: string; currency: string; currencySymbol: string }> = {
+  FR: { lang: "fr", currency: "EUR", currencySymbol: "€" },
+  ES: { lang: "es", currency: "EUR", currencySymbol: "€" },
+  DE: { lang: "de", currency: "EUR", currencySymbol: "€" },
+  IT: { lang: "it", currency: "EUR", currencySymbol: "€" },
+  PT: { lang: "pt", currency: "EUR", currencySymbol: "€" },
+  GB: { lang: "en", currency: "GBP", currencySymbol: "£" },
+  US: { lang: "en", currency: "USD", currencySymbol: "$" },
+  CH: { lang: "fr", currency: "CHF", currencySymbol: "CHF" },
+  BE: { lang: "fr", currency: "EUR", currencySymbol: "€" },
+  LU: { lang: "fr", currency: "EUR", currencySymbol: "€" },
+  NL: { lang: "en", currency: "EUR", currencySymbol: "€" },
+  AT: { lang: "de", currency: "EUR", currencySymbol: "€" },
+  IE: { lang: "en", currency: "EUR", currencySymbol: "€" },
+  MA: { lang: "fr", currency: "MAD", currencySymbol: "MAD" },
+  TN: { lang: "fr", currency: "TND", currencySymbol: "TND" },
+};
+
+const emailStrings: Record<string, Record<string, string>> = {
+  fr: {
+    rentPaidTitle: "💰 Loyer payé",
+    rentPaidMsg: "{tenant} a payé {amount}{symbol} pour {month}.",
+    paymentConfirmedTitle: "✅ Paiement confirmé",
+    paymentConfirmedMsg: "Votre paiement de {amount}{symbol} pour {month} a été reçu. Votre quittance est disponible.",
+    receiptTitle: "Quittance de loyer — {month}",
+    bookingPaidTitle: "💳 Paiement reçu — réservation confirmée",
+    bookingPaidMsg: "{guest} a payé {amount}{symbol} pour {listing} ({checkin} → {checkout}). Les dates sont bloquées.",
+    bookingConfirmedTitle: "✅ Paiement confirmé",
+    bookingConfirmedGreeting: "Bonjour {name},",
+    bookingConfirmedBody: "Votre paiement de <strong>{amount} {currency}</strong> a été reçu. Votre réservation est confirmée :",
+    arrival: "Arrivée", departure: "Départ", duration: "Durée",
+    nightsSuffix: "nuit", nightsSuffixPlural: "nuits",
+    footer: "EASY-LOCS® — Gestion locative intelligente",
+  },
+  en: {
+    rentPaidTitle: "💰 Rent paid",
+    rentPaidMsg: "{tenant} paid {amount}{symbol} for {month}.",
+    paymentConfirmedTitle: "✅ Payment confirmed",
+    paymentConfirmedMsg: "Your payment of {amount}{symbol} for {month} has been received. Your receipt is available.",
+    receiptTitle: "Rent receipt — {month}",
+    bookingPaidTitle: "💳 Payment received — booking confirmed",
+    bookingPaidMsg: "{guest} paid {amount}{symbol} for {listing} ({checkin} → {checkout}). Dates are blocked.",
+    bookingConfirmedTitle: "✅ Payment confirmed",
+    bookingConfirmedGreeting: "Hello {name},",
+    bookingConfirmedBody: "Your payment of <strong>{amount} {currency}</strong> has been received. Your booking is confirmed:",
+    arrival: "Check-in", departure: "Check-out", duration: "Duration",
+    nightsSuffix: "night", nightsSuffixPlural: "nights",
+    footer: "EASY-LOCS® — Smart property management",
+  },
+  es: {
+    rentPaidTitle: "💰 Alquiler pagado",
+    rentPaidMsg: "{tenant} ha pagado {amount}{symbol} por {month}.",
+    paymentConfirmedTitle: "✅ Pago confirmado",
+    paymentConfirmedMsg: "Su pago de {amount}{symbol} por {month} ha sido recibido. Su recibo está disponible.",
+    receiptTitle: "Recibo de alquiler — {month}",
+    bookingPaidTitle: "💳 Pago recibido — reserva confirmada",
+    bookingPaidMsg: "{guest} ha pagado {amount}{symbol} por {listing} ({checkin} → {checkout}). Las fechas están bloqueadas.",
+    bookingConfirmedTitle: "✅ Pago confirmado",
+    bookingConfirmedGreeting: "Hola {name},",
+    bookingConfirmedBody: "Su pago de <strong>{amount} {currency}</strong> ha sido recibido. Su reserva está confirmada:",
+    arrival: "Llegada", departure: "Salida", duration: "Duración",
+    nightsSuffix: "noche", nightsSuffixPlural: "noches",
+    footer: "EASY-LOCS® — Gestión inmobiliaria inteligente",
+  },
+  de: {
+    rentPaidTitle: "💰 Miete bezahlt",
+    rentPaidMsg: "{tenant} hat {amount}{symbol} für {month} bezahlt.",
+    paymentConfirmedTitle: "✅ Zahlung bestätigt",
+    paymentConfirmedMsg: "Ihre Zahlung von {amount}{symbol} für {month} wurde empfangen. Ihre Quittung ist verfügbar.",
+    receiptTitle: "Mietquittung — {month}",
+    bookingPaidTitle: "💳 Zahlung erhalten — Buchung bestätigt",
+    bookingPaidMsg: "{guest} hat {amount}{symbol} für {listing} ({checkin} → {checkout}) bezahlt. Daten sind blockiert.",
+    bookingConfirmedTitle: "✅ Zahlung bestätigt",
+    bookingConfirmedGreeting: "Hallo {name},",
+    bookingConfirmedBody: "Ihre Zahlung von <strong>{amount} {currency}</strong> wurde empfangen. Ihre Buchung ist bestätigt:",
+    arrival: "Anreise", departure: "Abreise", duration: "Dauer",
+    nightsSuffix: "Nacht", nightsSuffixPlural: "Nächte",
+    footer: "EASY-LOCS® — Intelligente Immobilienverwaltung",
+  },
+  it: {
+    rentPaidTitle: "💰 Affitto pagato",
+    rentPaidMsg: "{tenant} ha pagato {amount}{symbol} per {month}.",
+    paymentConfirmedTitle: "✅ Pagamento confermato",
+    paymentConfirmedMsg: "Il pagamento di {amount}{symbol} per {month} è stato ricevuto. La ricevuta è disponibile.",
+    receiptTitle: "Ricevuta di affitto — {month}",
+    bookingPaidTitle: "💳 Pagamento ricevuto — prenotazione confermata",
+    bookingPaidMsg: "{guest} ha pagato {amount}{symbol} per {listing} ({checkin} → {checkout}). Le date sono bloccate.",
+    bookingConfirmedTitle: "✅ Pagamento confermato",
+    bookingConfirmedGreeting: "Ciao {name},",
+    bookingConfirmedBody: "Il pagamento di <strong>{amount} {currency}</strong> è stato ricevuto. La prenotazione è confermata:",
+    arrival: "Arrivo", departure: "Partenza", duration: "Durata",
+    nightsSuffix: "notte", nightsSuffixPlural: "notti",
+    footer: "EASY-LOCS® — Gestione immobiliare intelligente",
+  },
+  pt: {
+    rentPaidTitle: "💰 Aluguel pago",
+    rentPaidMsg: "{tenant} pagou {amount}{symbol} por {month}.",
+    paymentConfirmedTitle: "✅ Pagamento confirmado",
+    paymentConfirmedMsg: "Seu pagamento de {amount}{symbol} por {month} foi recebido. Seu recibo está disponível.",
+    receiptTitle: "Recibo de aluguel — {month}",
+    bookingPaidTitle: "💳 Pagamento recebido — reserva confirmada",
+    bookingPaidMsg: "{guest} pagou {amount}{symbol} por {listing} ({checkin} → {checkout}). As datas estão bloqueadas.",
+    bookingConfirmedTitle: "✅ Pagamento confirmado",
+    bookingConfirmedGreeting: "Olá {name},",
+    bookingConfirmedBody: "Seu pagamento de <strong>{amount} {currency}</strong> foi recebido. Sua reserva está confirmada:",
+    arrival: "Chegada", departure: "Saída", duration: "Duração",
+    nightsSuffix: "noite", nightsSuffixPlural: "noites",
+    footer: "EASY-LOCS® — Gestão imobiliária inteligente",
+  },
+};
+
+function getLocale(country: string) {
+  const cfg = COUNTRY_LOCALE[country] || COUNTRY_LOCALE.FR;
+  const strings = emailStrings[cfg.lang] || emailStrings.fr;
+  return { ...cfg, strings };
+}
+
+function tpl(template: string, vars: Record<string, string | number>) {
+  return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), template);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -138,7 +260,6 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
 
   logStep("Processing booking payment", { bookingRequestId });
 
-  // Get booking request
   const { data: br } = await supabase
     .from("booking_requests")
     .select("*")
@@ -146,10 +267,8 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
     .single();
   if (!br) { logStep("Booking request not found"); return; }
 
-  // Update status to paid
   await supabase.from("booking_requests").update({ status: "paid" }).eq("id", bookingRequestId);
 
-  // Get listing info
   const { data: listing } = await supabase
     .from("public_listings")
     .select("title, price_per_night")
@@ -161,7 +280,14 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
   );
   const totalPrice = nights * (listing?.price_per_night || 0);
 
-  // Auto-create seasonal booking to block dates
+  // Get property country for localization
+  const { data: property } = await supabase
+    .from("properties")
+    .select("country")
+    .eq("id", br.property_id)
+    .single();
+  const locale = getLocale(property?.country || "FR");
+
   const { data: org } = await supabase
     .from("orgs")
     .select("owner_user_id")
@@ -169,8 +295,39 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
     .single();
 
   if (org?.owner_user_id) {
-    // Create booking entry in seasonal_bookings
-    await supabase.from("seasonal_bookings").insert({
+    // Check for date overlaps before creating booking
+    const { data: overlapping } = await supabase
+      .from("seasonal_bookings")
+      .select("id")
+      .eq("property_id", br.property_id)
+      .eq("status", "confirmed")
+      .lt("check_in", br.check_out)
+      .gt("check_out", br.check_in)
+      .limit(1);
+
+    if (overlapping && overlapping.length > 0) {
+      logStep("Date overlap detected, skipping booking creation", { property_id: br.property_id });
+    } else {
+      await supabase.from("seasonal_bookings").insert({
+        org_id: br.org_id,
+        user_id: org.owner_user_id,
+        property_id: br.property_id,
+        guest_name: br.guest_name,
+        guest_email: br.guest_email || "",
+        guest_phone: br.guest_phone || "",
+        check_in: br.check_in,
+        check_out: br.check_out,
+        total_price: totalPrice,
+        cleaning_fee: 0,
+        deposit_amount: 0,
+        notes: `Paiement en ligne - Stripe ${session.payment_intent || ""}`,
+        status: "confirmed",
+      });
+      logStep("Seasonal booking created (dates blocked)");
+    }
+
+    // Also create a reservation record
+    await supabase.from("reservations").insert({
       org_id: br.org_id,
       user_id: org.owner_user_id,
       property_id: br.property_id,
@@ -179,27 +336,33 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
       guest_phone: br.guest_phone || "",
       check_in: br.check_in,
       check_out: br.check_out,
-      total_price: totalPrice,
-      cleaning_fee: 0,
-      deposit_amount: 0,
-      notes: `Paiement en ligne - Stripe ${session.payment_intent || ""}`,
+      amount: totalPrice,
+      currency: locale.currency,
       status: "confirmed",
+      notes: `Stripe payment ${session.payment_intent || ""}`,
     });
-    logStep("Seasonal booking created (dates blocked)", { check_in: br.check_in, check_out: br.check_out });
 
     // Notify owner
     await supabase.from("notifications").insert({
       user_id: org.owner_user_id,
       org_id: br.org_id,
       type: "info",
-      title: "💳 Paiement reçu — réservation confirmée",
-      message: `${br.guest_name} a payé ${totalPrice}€ pour ${listing?.title || "votre bien"} (${br.check_in} → ${br.check_out}). Les dates sont bloquées.`,
+      title: locale.strings.bookingPaidTitle,
+      message: tpl(locale.strings.bookingPaidMsg, {
+        guest: br.guest_name,
+        amount: totalPrice,
+        symbol: locale.currencySymbol,
+        listing: listing?.title || "",
+        checkin: br.check_in,
+        checkout: br.check_out,
+      }),
       link: "/dashboard/seasonal",
     });
   }
 
   // Email confirmation to guest
   const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+  const nightsLabel = nights > 1 ? locale.strings.nightsSuffixPlural : locale.strings.nightsSuffix;
   if (br.guest_email && SENDGRID_API_KEY) {
     await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
@@ -208,19 +371,19 @@ async function handleBookingPayment(supabase: any, metadata: Record<string, stri
         personalizations: [{ to: [{ email: br.guest_email }] }],
         from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
         reply_to: { email: "contact@easy-locs.com", name: "Easy-Locs" },
-        subject: `✅ Paiement confirmé — ${listing?.title || "Réservation"}`,
+        subject: `${locale.strings.bookingConfirmedTitle} — ${listing?.title || ""}`,
         content: [{
           type: "text/html",
           value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-            <h2 style="color:#1a2744;text-align:center;">✅ Paiement confirmé</h2>
-            <p style="color:#555;">Bonjour ${br.guest_name},</p>
-            <p style="color:#555;">Votre paiement de <strong>${totalPrice} EUR</strong> a été reçu. Votre réservation est confirmée :</p>
+            <h2 style="color:#1a2744;text-align:center;">${locale.strings.bookingConfirmedTitle}</h2>
+            <p style="color:#555;">${tpl(locale.strings.bookingConfirmedGreeting, { name: br.guest_name })}</p>
+            <p style="color:#555;">${tpl(locale.strings.bookingConfirmedBody, { amount: totalPrice, currency: locale.currency })}</p>
             <table style="width:100%;margin:16px 0;border-collapse:collapse;">
-              <tr><td style="padding:8px;color:#888;">Arrivée</td><td style="padding:8px;font-weight:600;">${br.check_in}</td></tr>
-              <tr><td style="padding:8px;color:#888;">Départ</td><td style="padding:8px;font-weight:600;">${br.check_out}</td></tr>
-              <tr><td style="padding:8px;color:#888;">Durée</td><td style="padding:8px;">${nights} nuit${nights > 1 ? "s" : ""}</td></tr>
+              <tr><td style="padding:8px;color:#888;">${locale.strings.arrival}</td><td style="padding:8px;font-weight:600;">${br.check_in}</td></tr>
+              <tr><td style="padding:8px;color:#888;">${locale.strings.departure}</td><td style="padding:8px;font-weight:600;">${br.check_out}</td></tr>
+              <tr><td style="padding:8px;color:#888;">${locale.strings.duration}</td><td style="padding:8px;">${nights} ${nightsLabel}</td></tr>
             </table>
-            <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Gestion locative intelligente</p>
+            <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">${locale.strings.footer}</p>
           </div>`,
         }],
       }),
@@ -242,13 +405,56 @@ async function handleRentPayment(supabase: any, metadata: Record<string, string>
     payment_method: "stripe",
   }).eq("id", rentCallId);
 
-  // Get rent call details for receipt generation
   const { data: rc } = await supabase.from("rent_calls").select("*").eq("id", rentCallId).single();
   if (!rc) return;
 
-  // Get tenant + property info for notification
-  const { data: tenant } = await supabase.from("tenants").select("name, email, tenant_user_id").eq("id", rc.tenant_id).single();
+  // Get tenant + property info
+  const { data: tenant } = await supabase.from("tenants").select("name, email, tenant_user_id, property_id").eq("id", rc.tenant_id).single();
   const { data: org } = await supabase.from("orgs").select("owner_user_id, email, name").eq("id", rc.org_id).single();
+
+  // Get property country for localization
+  let propertyCountry = "FR";
+  if (rc.property_id) {
+    const { data: prop } = await supabase.from("properties").select("country").eq("id", rc.property_id).single();
+    if (prop?.country) propertyCountry = prop.country;
+  } else if (tenant?.property_id) {
+    const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
+    if (prop?.country) propertyCountry = prop.country;
+  }
+  const locale = getLocale(propertyCountry);
+
+  // Auto-generate receipt document
+  if (org?.owner_user_id) {
+    try {
+      await supabase.from("documents").insert({
+        org_id: rc.org_id,
+        user_id: org.owner_user_id,
+        doc_type: "rent_receipt",
+        title: tpl(locale.strings.receiptTitle, { month: rc.month }),
+        country: propertyCountry,
+        status: "final",
+        data_json: {
+          tenant_name: tenant?.name || "",
+          month: rc.month,
+          rent_amount: rc.rent_amount,
+          charges_amount: rc.charges_amount,
+          total_amount: rc.total_amount,
+          paid_date: new Date().toISOString().split("T")[0],
+          payment_method: "stripe",
+        },
+        lease_id: null,
+      });
+
+      // Mark receipt as validated on rent_call
+      await supabase.from("rent_calls").update({
+        receipt_validated: true,
+      }).eq("id", rentCallId);
+
+      logStep("Receipt document auto-generated");
+    } catch (err) {
+      logStep("Error generating receipt", { error: String(err) });
+    }
+  }
 
   // Notify owner
   if (org?.owner_user_id) {
@@ -256,8 +462,13 @@ async function handleRentPayment(supabase: any, metadata: Record<string, string>
       user_id: org.owner_user_id,
       org_id: rc.org_id,
       type: "info",
-      title: "💰 Loyer payé",
-      message: `${tenant?.name || "Locataire"} a payé ${rc.total_amount}€ pour ${rc.month}.`,
+      title: locale.strings.rentPaidTitle,
+      message: tpl(locale.strings.rentPaidMsg, {
+        tenant: tenant?.name || "Locataire",
+        amount: rc.total_amount,
+        symbol: locale.currencySymbol,
+        month: rc.month,
+      }),
       link: "/dashboard/rental?tab=payments",
     });
   }
@@ -268,13 +479,57 @@ async function handleRentPayment(supabase: any, metadata: Record<string, string>
       user_id: tenant.tenant_user_id,
       org_id: rc.org_id,
       type: "info",
-      title: "✅ Paiement confirmé",
-      message: `Votre paiement de ${rc.total_amount}€ pour ${rc.month} a été reçu. La quittance sera générée.`,
+      title: locale.strings.paymentConfirmedTitle,
+      message: tpl(locale.strings.paymentConfirmedMsg, {
+        amount: rc.total_amount,
+        symbol: locale.currencySymbol,
+        month: rc.month,
+      }),
       link: "/tenant/receipts",
     });
   }
 
-  logStep("Rent payment processed, notifications sent");
+  // Send email to both parties
+  const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+  if (SENDGRID_API_KEY) {
+    const recipients: string[] = [];
+    if (tenant?.email) recipients.push(tenant.email);
+    if (org?.email) recipients.push(org.email);
+
+    for (const email of recipients) {
+      const isTenant = email === tenant?.email;
+      try {
+        await fetch("https://api.sendgrid.com/v3/mail/send", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${SENDGRID_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email }] }],
+            from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
+            reply_to: { email: "contact@easy-locs.com", name: "Easy-Locs" },
+            subject: isTenant
+              ? `${locale.strings.paymentConfirmedTitle} — ${rc.month}`
+              : `${locale.strings.rentPaidTitle} — ${rc.month}`,
+            content: [{
+              type: "text/html",
+              value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                <h2 style="color:#1a2744;text-align:center;">${isTenant ? locale.strings.paymentConfirmedTitle : locale.strings.rentPaidTitle}</h2>
+                <p style="color:#555;">${isTenant
+                  ? tpl(locale.strings.paymentConfirmedMsg, { amount: rc.total_amount, symbol: locale.currencySymbol, month: rc.month })
+                  : tpl(locale.strings.rentPaidMsg, { tenant: tenant?.name || "", amount: rc.total_amount, symbol: locale.currencySymbol, month: rc.month })
+                }</p>
+                <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">${locale.strings.footer}</p>
+              </div>`,
+            }],
+          }),
+        });
+      } catch (err) {
+        logStep("Error sending rent email", { email, error: String(err) });
+      }
+    }
+    logStep("Rent payment emails sent", { count: recipients.length });
+  }
+
+  logStep("Rent payment fully processed");
 }
 
 async function handleSubscriptionChange(supabase: any, stripe: Stripe, subscription: Stripe.Subscription) {
