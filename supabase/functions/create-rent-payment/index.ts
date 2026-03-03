@@ -140,6 +140,7 @@ serve(async (req) => {
       metadata: {
         rent_call_id: rentCallId,
         org_id: rentCall.org_id,
+        type: "rent_payment",
       },
     };
 
