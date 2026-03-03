@@ -45,31 +45,48 @@ serve(async (req) => {
     const body = await req.json();
     const rentCallId = body.rentCallId || body.rent_call_id;
     const paymentMethod = body.payment_method || "card";
-    
+
     if (!rentCallId) throw new Error("Missing rent_call_id");
+    if (!["card", "sepa"].includes(paymentMethod)) {
+      throw new Error("Invalid payment method");
+    }
+
     logStep("Payment request", { rentCallId, paymentMethod });
 
     // Fetch rent call details from DB (no need for client to pass them)
     const { data: rentCall, error: rcError } = await supabaseClient
       .from("rent_calls")
-      .select("id, total_amount, rent_amount, charges_amount, month, tenant_id, org_id, property_id")
+      .select("id, paid, total_amount, rent_amount, charges_amount, month, tenant_id, org_id, property_id")
       .eq("id", rentCallId)
       .single();
 
     if (rcError || !rentCall) throw new Error("Appel de loyer introuvable");
     if (rentCall.paid) throw new Error("Ce loyer est déjà payé");
-    
+
     const amount = Number(rentCall.total_amount);
     if (!amount || amount <= 0) throw new Error("Montant invalide");
 
-    // Fetch tenant name
+    // Fetch tenant info
     const { data: tenant } = await supabaseClient
       .from("tenants")
-      .select("name")
+      .select("name, tenant_user_id")
       .eq("id", rentCall.tenant_id)
       .single();
 
     const tenantName = tenant?.name || "Locataire";
+
+    // Authorization: tenant concerned OR org member
+    const isTenantPayer = !!tenant?.tenant_user_id && tenant.tenant_user_id === user.id;
+    const { data: orgMembership } = await supabaseClient
+      .from("org_members")
+      .select("id")
+      .eq("org_id", rentCall.org_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!isTenantPayer && !orgMembership) {
+      throw new Error("Unauthorized for this rent call");
+    }
 
     // Get the landlord's connected Stripe account and country
     const { data: org } = await supabaseClient
@@ -83,22 +100,26 @@ serve(async (req) => {
 
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
-    
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || "https://easylocs.lovable.app";
 
     const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
-    const paymentMethods: string[] = ["card"];
-    if (currency === "eur" && paymentMethod !== "card") {
-      paymentMethods.push("sepa_debit");
-    }
+    const paymentMethods: string[] = paymentMethod === "sepa" && currency === "eur"
+      ? ["sepa_debit"]
+      : ["card"];
+
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customerId = customers.data[0]?.id;
 
     // Build session config - with or without Connect transfer
     const sessionConfig: any = {
       mode: "payment",
-      customer_email: user.email,
+      customer: customerId,
+      customer_email: customerId ? undefined : user.email,
+      customer_creation: customerId ? undefined : "always",
       line_items: [
         {
           price_data: {
@@ -113,6 +134,7 @@ serve(async (req) => {
         },
       ],
       payment_method_types: paymentMethods,
+      locale: "auto",
       success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
       cancel_url: `${origin}/tenant/pay?payment=cancel`,
       metadata: {
@@ -140,6 +162,14 @@ serve(async (req) => {
           tenant_name: tenantName,
           month: rentCall.month || "",
         },
+      };
+    }
+
+    // Save mandate/payment method for future off-session SEPA debits
+    if (paymentMethod === "sepa" && currency === "eur") {
+      sessionConfig.payment_intent_data = {
+        ...sessionConfig.payment_intent_data,
+        setup_future_usage: "off_session",
       };
     }
 
