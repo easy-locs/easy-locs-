@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
-import { getCountryConfig, formatCurrency } from "@/lib/country-config";
+import { useTenantProperty } from "@/hooks/useTenantProperty";
+import { formatCurrency } from "@/lib/country-config";
 
 type PaymentMethod = "card" | "sepa" | "bank_transfer";
 
@@ -115,9 +116,10 @@ const COPY_BY_LANG: Record<string, any> = {
 };
 
 const TenantPay = () => {
-  const { user, userCountry } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const { propertyCountry, fmt: fmtProp } = useTenantProperty();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [orgInfo, setOrgInfo] = useState<any>(null);
   const [unpaidCalls, setUnpaidCalls] = useState<any[]>([]);
@@ -125,9 +127,7 @@ const TenantPay = () => {
   const [payingId, setPayingId] = useState<string | null>(null);
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [propertyCountry, setPropertyCountry] = useState<string>(userCountry || "FR");
 
-  const countryConfig = useMemo(() => getCountryConfig(propertyCountry), [propertyCountry]);
   const langGroup = (() => {
     const frGroup = ["FR", "BE", "CH", "LU", "MC", "SN", "CI", "MA", "TN"];
     const esGroup = ["ES", "MX", "AR", "CL", "CO", "PE"];
@@ -181,18 +181,6 @@ const TenantPay = () => {
 
       setTenantInfo(tenant);
 
-      if (tenant.property_id) {
-        const { data: property } = await supabase
-          .from("properties")
-          .select("country")
-          .eq("id", tenant.property_id)
-          .maybeSingle();
-
-        if (property?.country) {
-          setPropertyCountry(property.country);
-        }
-      }
-
       const { data: org } = await supabase
         .from("orgs")
         .select("name, email, phone")
@@ -234,7 +222,7 @@ const TenantPay = () => {
     }
   };
 
-  const fmt = (n: number) => formatCurrency(n, propertyCountry);
+  const fmt = (n: number) => fmtProp(n);
 
   return (
     <TenantLayout>

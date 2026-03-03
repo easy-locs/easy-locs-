@@ -835,6 +835,17 @@ const pageFr: Record<string, string> = {
   "page.settings.stamp_updated": "Tampon mis à jour",
   "page.settings.stamp_deleted": "Tampon supprimé",
   "page.settings.upload_error": "Erreur upload",
+  "page.settings.payment_providers": "Fournisseurs de paiement",
+  "page.settings.payment_providers_desc": "Configurez les comptes de paiement pour recevoir les loyers directement de vos locataires.",
+  "page.settings.stripe_desc": "Carte bancaire, Apple Pay, Google Pay, SEPA",
+  "page.settings.paypal_desc": "Paiement via compte PayPal",
+  "page.settings.connected": "Connecté",
+  "page.settings.pending": "En cours",
+  "page.settings.complete_setup": "Finaliser la configuration",
+  "page.settings.connect_stripe": "Connecter Stripe",
+  "page.settings.default_provider": "Fournisseur par défaut",
+  "page.settings.bank_transfer": "Virement bancaire",
+  "page.settings.saas_disclaimer": "Easy-Locs ne transite, n'encaisse, ni ne bloque aucun fonds. Les paiements s'effectuent directement du locataire vers votre compte.",
 };
 
 const pageEn: Record<string, string> = {
@@ -1226,6 +1237,17 @@ const pageEn: Record<string, string> = {
   "page.settings.stamp_updated": "Stamp updated",
   "page.settings.stamp_deleted": "Stamp deleted",
   "page.settings.upload_error": "Upload error",
+  "page.settings.payment_providers": "Payment providers",
+  "page.settings.payment_providers_desc": "Configure payment accounts to receive rent directly from your tenants.",
+  "page.settings.stripe_desc": "Card, Apple Pay, Google Pay, SEPA",
+  "page.settings.paypal_desc": "Payment via PayPal account",
+  "page.settings.connected": "Connected",
+  "page.settings.pending": "Pending",
+  "page.settings.complete_setup": "Complete setup",
+  "page.settings.connect_stripe": "Connect Stripe",
+  "page.settings.default_provider": "Default provider",
+  "page.settings.bank_transfer": "Bank transfer",
+  "page.settings.saas_disclaimer": "Easy-Locs does not hold, block, or transfer any funds. Payments go directly from your tenant to your account.",
 };
 
 const pageEs: Record<string, string> = {
@@ -1352,6 +1374,11 @@ const pageEs: Record<string, string> = {
   "page.settings.delete_account": "Eliminar mi cuenta", "page.settings.delete_desc": "Eliminación permanente de su cuenta y todos sus datos.",
   "page.settings.profile_updated": "Perfil actualizado", "page.settings.org_updated": "Organización actualizada",
   "page.settings.logo_updated": "Logo actualizado", "page.settings.stamp_updated": "Sello actualizado", "page.settings.stamp_deleted": "Sello eliminado", "page.settings.upload_error": "Error de subida",
+  "page.settings.payment_providers": "Proveedores de pago", "page.settings.payment_providers_desc": "Configure las cuentas de pago para recibir los alquileres directamente de sus inquilinos.",
+  "page.settings.stripe_desc": "Tarjeta, Apple Pay, Google Pay, SEPA", "page.settings.paypal_desc": "Pago mediante cuenta PayPal",
+  "page.settings.connected": "Conectado", "page.settings.pending": "Pendiente", "page.settings.complete_setup": "Completar configuración",
+  "page.settings.connect_stripe": "Conectar Stripe", "page.settings.default_provider": "Proveedor predeterminado",
+  "page.settings.bank_transfer": "Transferencia bancaria", "page.settings.saas_disclaimer": "Easy-Locs no retiene, bloquea ni transfiere fondos. Los pagos van directamente del inquilino a su cuenta.",
 };
 
 const pageDe: Record<string, string> = {
@@ -1453,6 +1480,11 @@ const pageDe: Record<string, string> = {
   "page.settings.delete_account": "Mein Konto löschen", "page.settings.delete_desc": "Dauerhafte Löschung Ihres Kontos und aller Daten.",
   "page.settings.profile_updated": "Profil aktualisiert", "page.settings.org_updated": "Organisation aktualisiert",
   "page.settings.logo_updated": "Logo aktualisiert", "page.settings.stamp_updated": "Stempel aktualisiert", "page.settings.stamp_deleted": "Stempel gelöscht", "page.settings.upload_error": "Upload-Fehler",
+  "page.settings.payment_providers": "Zahlungsanbieter", "page.settings.payment_providers_desc": "Konfigurieren Sie Zahlungskonten, um Mieten direkt von Ihren Mietern zu erhalten.",
+  "page.settings.stripe_desc": "Karte, Apple Pay, Google Pay, SEPA", "page.settings.paypal_desc": "Zahlung über PayPal-Konto",
+  "page.settings.connected": "Verbunden", "page.settings.pending": "Ausstehend", "page.settings.complete_setup": "Einrichtung abschließen",
+  "page.settings.connect_stripe": "Stripe verbinden", "page.settings.default_provider": "Standardanbieter",
+  "page.settings.bank_transfer": "Banküberweisung", "page.settings.saas_disclaimer": "Easy-Locs hält, blockiert oder überweist keine Gelder. Zahlungen gehen direkt vom Mieter auf Ihr Konto.",
 };
 
 const pageIt: Record<string, string> = {
@@ -1554,6 +1586,11 @@ const pageIt: Record<string, string> = {
   "page.settings.delete_account": "Elimina il mio account", "page.settings.delete_desc": "Eliminazione permanente del tuo account e di tutti i tuoi dati.",
   "page.settings.profile_updated": "Profilo aggiornato", "page.settings.org_updated": "Organizzazione aggiornata",
   "page.settings.logo_updated": "Logo aggiornato", "page.settings.stamp_updated": "Timbro aggiornato", "page.settings.stamp_deleted": "Timbro eliminato", "page.settings.upload_error": "Errore di caricamento",
+  "page.settings.payment_providers": "Fornitori di pagamento", "page.settings.payment_providers_desc": "Configura i conti di pagamento per ricevere gli affitti direttamente dai tuoi inquilini.",
+  "page.settings.stripe_desc": "Carta, Apple Pay, Google Pay, SEPA", "page.settings.paypal_desc": "Pagamento tramite conto PayPal",
+  "page.settings.connected": "Connesso", "page.settings.pending": "In attesa", "page.settings.complete_setup": "Completa configurazione",
+  "page.settings.connect_stripe": "Collega Stripe", "page.settings.default_provider": "Fornitore predefinito",
+  "page.settings.bank_transfer": "Bonifico bancario", "page.settings.saas_disclaimer": "Easy-Locs non trattiene, blocca né trasferisce fondi. I pagamenti vanno direttamente dall'inquilino al tuo conto.",
 };
 
 const pagePt: Record<string, string> = {
@@ -1655,6 +1692,11 @@ const pagePt: Record<string, string> = {
   "page.settings.delete_account": "Excluir minha conta", "page.settings.delete_desc": "Exclusão permanente da sua conta e todos os dados.",
   "page.settings.profile_updated": "Perfil atualizado", "page.settings.org_updated": "Organização atualizada",
   "page.settings.logo_updated": "Logo atualizado", "page.settings.stamp_updated": "Carimbo atualizado", "page.settings.stamp_deleted": "Carimbo excluído", "page.settings.upload_error": "Erro de upload",
+  "page.settings.payment_providers": "Fornecedores de pagamento", "page.settings.payment_providers_desc": "Configure as contas de pagamento para receber as rendas diretamente dos seus inquilinos.",
+  "page.settings.stripe_desc": "Cartão, Apple Pay, Google Pay, SEPA", "page.settings.paypal_desc": "Pagamento via conta PayPal",
+  "page.settings.connected": "Conectado", "page.settings.pending": "Pendente", "page.settings.complete_setup": "Concluir configuração",
+  "page.settings.connect_stripe": "Conectar Stripe", "page.settings.default_provider": "Fornecedor padrão",
+  "page.settings.bank_transfer": "Transferência bancária", "page.settings.saas_disclaimer": "Easy-Locs não retém, bloqueia nem transfere fundos. Os pagamentos vão diretamente do inquilino para a sua conta.",
 };
 
 const translations: Record<Locale, Record<string, string>> = {
