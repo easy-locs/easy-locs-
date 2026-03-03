@@ -41,6 +41,76 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_requests: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          guests_count: number | null
+          id: string
+          listing_id: string
+          message: string | null
+          org_id: string
+          property_id: string
+          status: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          guests_count?: number | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          org_id: string
+          property_id: string
+          status?: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string | null
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          guests_count?: number | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          org_id?: string
+          property_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "public_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buildings: {
         Row: {
           address: string
@@ -1266,6 +1336,7 @@ export type Database = {
           monthly_rent: number | null
           notes: string | null
           org_id: string
+          photo_urls: Json | null
           postal_code: string
           property_type: string
           rental_mode: string | null
@@ -1292,6 +1363,7 @@ export type Database = {
           monthly_rent?: number | null
           notes?: string | null
           org_id: string
+          photo_urls?: Json | null
           postal_code?: string
           property_type?: string
           rental_mode?: string | null
@@ -1318,6 +1390,7 @@ export type Database = {
           monthly_rent?: number | null
           notes?: string | null
           org_id?: string
+          photo_urls?: Json | null
           postal_code?: string
           property_type?: string
           rental_mode?: string | null
@@ -1339,6 +1412,72 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_listings: {
+        Row: {
+          active: boolean | null
+          amenities: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          max_guests: number | null
+          min_nights: number | null
+          org_id: string
+          price_per_night: number | null
+          property_id: string
+          slug: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          amenities?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          max_guests?: number | null
+          min_nights?: number | null
+          org_id: string
+          price_per_night?: number | null
+          property_id: string
+          slug: string
+          title?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          amenities?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          max_guests?: number | null
+          min_nights?: number | null
+          org_id?: string
+          price_per_night?: number | null
+          property_id?: string
+          slug?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_listings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]

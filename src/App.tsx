@@ -50,6 +50,7 @@ import TenantPay from "./pages/tenant/TenantPay";
 import TenantSettings from "./pages/tenant/TenantSettings";
 // TenantRequests removed - documents available directly on tenant interface
 import TenantSignup from "./pages/TenantSignup";
+import PublicListing from "./pages/PublicListing";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/listing/:slug" element={<PublicListing />} />
 
             {/* Protected — Landlord */}
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
