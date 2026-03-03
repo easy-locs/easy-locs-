@@ -55,6 +55,81 @@ serve(async (req) => {
       });
     }
 
+    // --- Input validation & sanitization ---
+
+    // Validate subject length
+    if (typeof payload.subject !== "string" || payload.subject.length > 500) {
+      return new Response(JSON.stringify({ error: "Subject too long (max 500 chars)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate & sanitize from_name: max 100 chars, no control characters
+    if (payload.from_name) {
+      if (typeof payload.from_name !== "string" || payload.from_name.length > 100) {
+        return new Response(JSON.stringify({ error: "from_name too long (max 100 chars)" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Strip control characters (keep printable + accented chars)
+      payload.from_name = payload.from_name.replace(/[\x00-\x1F\x7F]/g, "").trim();
+    }
+
+    // Validate HTML content size (max 1MB)
+    if (typeof payload.html !== "string" || payload.html.length > 1_000_000) {
+      return new Response(JSON.stringify({ error: "HTML content too large (max 1MB)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Sanitize HTML: strip dangerous tags (script, iframe, object, embed, form, base)
+    const dangerousTagsRegex = /<\s*\/?\s*(script|iframe|object|embed|form|base|applet|meta|link|style)\b[^>]*>/gi;
+    payload.html = payload.html.replace(dangerousTagsRegex, "");
+    // Also strip event handlers (onclick, onerror, onload, etc.)
+    payload.html = payload.html.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, "");
+    payload.html = payload.html.replace(/\s+on\w+\s*=\s*\S+/gi, "");
+
+    // Validate attachments
+    if (payload.attachments?.length) {
+      // Max 10MB total for all attachments
+      let totalSize = 0;
+      const safeFilenameRegex = /^[a-zA-Z0-9À-ÿ\s\-_\.()]+$/;
+      for (const att of payload.attachments) {
+        // Validate filename: no path traversal, max 255 chars
+        if (!att.filename || att.filename.length > 255) {
+          return new Response(JSON.stringify({ error: "Invalid attachment filename (max 255 chars)" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (att.filename.includes("..") || att.filename.includes("/") || att.filename.includes("\\")) {
+          return new Response(JSON.stringify({ error: "Invalid characters in attachment filename" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (!safeFilenameRegex.test(att.filename)) {
+          return new Response(JSON.stringify({ error: "Attachment filename contains invalid characters" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Estimate base64 decoded size
+        totalSize += Math.ceil((att.content?.length || 0) * 0.75);
+      }
+      if (totalSize > 10_000_000) {
+        return new Response(JSON.stringify({ error: "Total attachment size too large (max 10MB)" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // --- End input validation ---
+
     // Get org info for sender
     const { data: orgMember } = await supabase
       .from("org_members")
