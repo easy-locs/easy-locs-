@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -237,6 +238,9 @@ const Settings = () => {
             </button>
           </div>
         </div>
+
+        {/* Payment Providers */}
+        <PaymentProvidersSettings />
 
         {/* Signature */}
         <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">

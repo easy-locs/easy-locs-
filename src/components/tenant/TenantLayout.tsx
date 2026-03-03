@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
-import { getCountryConfig } from "@/lib/country-config";
+import { useTenantProperty } from "@/hooks/useTenantProperty";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
@@ -24,9 +24,9 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut, userCountry } = useAuth();
+  const { user, signOut } = useAuth();
   const { locale, setLocale } = useI18n();
-  const L = useMemo(() => getCountryConfig(userCountry).labels, [userCountry]);
+  const { L } = useTenantProperty();
 
   const navItems = [
     { icon: LayoutDashboard, label: L.tenantSpace, path: "/tenant" },
