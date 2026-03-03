@@ -124,7 +124,7 @@ const RentalManagement = () => {
   const [paymentPropertyFilter, setPaymentPropertyFilter] = useState("");
 
   // Inventory builder
-  const [inventoryMode, setInventoryMode] = useState<{ propertyId: string; tenantId?: string; reportType: "entry" | "exit"; propertyLabel: string } | null>(null);
+  const [inventoryMode, setInventoryMode] = useState<{ propertyId: string; tenantId?: string; reportType: "entry" | "exit"; propertyLabel: string; existingReportId?: string } | null>(null);
 
   // Property form
   const [showPropertyForm, setShowPropertyForm] = useState(false);
@@ -613,7 +613,7 @@ const RentalManagement = () => {
   if (inventoryMode) {
     return (
       <DashboardLayout>
-        <InventoryBuilder propertyId={inventoryMode.propertyId} tenantId={inventoryMode.tenantId} reportType={inventoryMode.reportType} propertyLabel={inventoryMode.propertyLabel} onBack={() => setInventoryMode(null)} />
+        <InventoryBuilder propertyId={inventoryMode.propertyId} tenantId={inventoryMode.tenantId} reportType={inventoryMode.reportType} propertyLabel={inventoryMode.propertyLabel} onBack={() => setInventoryMode(null)} existingReportId={inventoryMode.existingReportId} />
       </DashboardLayout>
     );
   }
