@@ -159,7 +159,8 @@ const Billing = () => {
         {/* Payment methods info */}
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
           <span>💳 Carte bancaire</span>
-          <span>🏦 SEPA</span>
+          <span> Apple Pay</span>
+          <span>🟢 Google Pay</span>
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-4">

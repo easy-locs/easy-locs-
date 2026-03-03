@@ -98,6 +98,10 @@ serve(async (req) => {
     const hasConnect = org?.stripe_account_id && org.stripe_onboarding_complete;
     logStep("Stripe Connect status", { hasConnect, accountId: org?.stripe_account_id || "none" });
 
+    if (!hasConnect) {
+      throw new Error("Le bailleur n'a pas encore configuré son compte de paiement Stripe Connect. Les loyers ne peuvent pas être encaissés tant que le bailleur n'a pas finalisé son onboarding Stripe.");
+    }
+
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
 
@@ -144,27 +148,17 @@ serve(async (req) => {
       },
     };
 
-    // Only add transfer_data if Connect is configured
-    if (hasConnect) {
-      sessionConfig.payment_intent_data = {
-        transfer_data: {
-          destination: org.stripe_account_id,
-        },
-        metadata: {
-          rent_call_id: rentCallId,
-          tenant_name: tenantName,
-          month: rentCall.month || "",
-        },
-      };
-    } else {
-      sessionConfig.payment_intent_data = {
-        metadata: {
-          rent_call_id: rentCallId,
-          tenant_name: tenantName,
-          month: rentCall.month || "",
-        },
-      };
-    }
+    // Always route rent payments to landlord via Stripe Connect
+    sessionConfig.payment_intent_data = {
+      transfer_data: {
+        destination: org.stripe_account_id,
+      },
+      metadata: {
+        rent_call_id: rentCallId,
+        tenant_name: tenantName,
+        month: rentCall.month || "",
+      },
+    };
 
     // Save mandate/payment method for future off-session SEPA debits
     if (paymentMethod === "sepa" && currency === "eur") {

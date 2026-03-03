@@ -71,7 +71,7 @@ serve(async (req) => {
       success_url: `${origin}/dashboard/billing?success=true`,
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
       allow_promotion_codes: true,
-      payment_method_types: ["card", "sepa_debit"],
+      payment_method_types: ["card"],
     };
     
     if (!customerId) {
