@@ -56,17 +56,41 @@ function getPdfLabels(country?: string) {
   return PDF_LABELS[lang] || PDF_LABELS.en;
 }
 
-/** Sanitize text: normalize unicode, replace smart quotes & special chars */
+/** Sanitize text: normalize unicode, replace smart quotes & special chars for jsPDF Helvetica compatibility */
 function sanitize(text: string): string {
   return text
     .normalize("NFC")
     .replace(/[\u2018\u2019\u201A]/g, "'")
-    .replace(/[\u201C\u201D\u201E]/g, '"')
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
     .replace(/\u2026/g, "...")
     .replace(/[\u2013\u2014]/g, "-")
     .replace(/\u00A0/g, " ")
     .replace(/\u202F/g, " ")
-    .replace(/\t/g, "    ");
+    .replace(/\t/g, "    ")
+    // Box-drawing characters -> ASCII
+    .replace(/[\u2550\u2551\u2554\u2557\u255A\u255D\u2500\u2502\u250C\u2510\u2514\u2518\u2552\u2555\u2558\u255B\u2553\u2556\u2559\u255C\u255E\u2561\u255F\u2562\u256A\u256B\u256C]/g, "-")
+    .replace(/[\u2022\u2023\u25E6\u25AA\u25AB\u2043\u2219]/g, "-") // bullets
+    .replace(/\u00B0/g, "deg") // degree
+    .replace(/\u00B2/g, "2") // superscript 2 (m²)
+    .replace(/\u20AC/g, "EUR") // euro sign
+    .replace(/\u00A3/g, "GBP") // pound sign
+    // Replace accented characters that Helvetica can't render
+    .replace(/[\u00E0\u00E2\u00E4]/g, "a")
+    .replace(/[\u00E9\u00E8\u00EA\u00EB]/g, "e")
+    .replace(/[\u00EE\u00EF]/g, "i")
+    .replace(/[\u00F4\u00F6]/g, "o")
+    .replace(/[\u00F9\u00FB\u00FC]/g, "u")
+    .replace(/\u00E7/g, "c")
+    .replace(/[\u00C0\u00C2\u00C4]/g, "A")
+    .replace(/[\u00C9\u00C8\u00CA\u00CB]/g, "E")
+    .replace(/[\u00CE\u00CF]/g, "I")
+    .replace(/[\u00D4\u00D6]/g, "O")
+    .replace(/[\u00D9\u00DB\u00DC]/g, "U")
+    .replace(/\u00C7/g, "C")
+    .replace(/\u0153/g, "oe")
+    .replace(/\u0152/g, "OE")
+    // Remove any remaining non-ASCII that Helvetica can't handle
+    .replace(/[^\x00-\x7F]/g, "");
 }
 
 function formatDateLocalized(dateStr: string, country?: string): string {
