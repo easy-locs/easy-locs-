@@ -4,48 +4,38 @@ import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const REQUEST_TYPES = [
-  { value: "receipt", label: "Quittance de loyer", icon: Receipt, description: "Demander une quittance pour un mois donné" },
-  { value: "attestation", label: "Attestation de loyer", icon: Shield, description: "Pour vos démarches administratives (CAF, etc.)" },
-  { value: "lease_copy", label: "Copie du bail", icon: FileText, description: "Obtenir une copie de votre contrat de location" },
-  { value: "charges_detail", label: "Détail des charges", icon: Home, description: "Demander le décompte détaillé des charges" },
-];
+import { useTenantProperty } from "@/hooks/useTenantProperty";
+import { getCountryConfig } from "@/lib/country-config";
 
 const TenantRequests = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [tenantId, setTenantId] = useState<string | null>(null);
-  const [tenantName, setTenantName] = useState("");
-  const [orgId, setOrgId] = useState<string | null>(null);
+  const { tenantId, tenantName, orgId, propertyCountry, T } = useTenantProperty();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [period, setPeriod] = useState("");
 
+  const REQUEST_TYPES = [
+    { value: "receipt", label: T.requestReceipt, icon: Receipt, description: T.requestReceiptDesc },
+    { value: "attestation", label: T.requestAttestation, icon: Shield, description: T.requestAttestationDesc },
+    { value: "lease_copy", label: T.requestLeaseCopy, icon: FileText, description: T.requestLeaseCopyDesc },
+    { value: "charges_detail", label: T.requestCharges, icon: Home, description: T.requestChargesDesc },
+  ];
+
   useEffect(() => {
-    if (!user) return;
+    if (!tenantId) return;
     const fetch = async () => {
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id, org_id, name")
-        .eq("tenant_user_id", user.id)
-        .limit(1)
-        .single();
-      if (!tenant) { setLoading(false); return; }
-      setTenantId(tenant.id);
-      setTenantName(tenant.name || "");
-      setOrgId(tenant.org_id);
       const { data } = await supabase
         .from("document_requests")
         .select("*")
-        .eq("tenant_id", tenant.id)
+        .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
       setRequests(data || []);
       setLoading(false);
     };
     fetch();
-  }, [user]);
+  }, [tenantId]);
 
   const handleRequest = async (type: string) => {
     if (!tenantId || !orgId || !user) return;
@@ -59,41 +49,37 @@ const TenantRequests = () => {
     });
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: T.error, description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Demande envoyée", description: "Votre bailleur a été notifié." });
-      // Notify landlord (notification + email)
+      toast({ title: T.requestSent, description: T.requestSentDesc });
       const { data: orgData } = await supabase.from("orgs").select("owner_user_id, email").eq("id", orgId).single();
       if (orgData) {
         const label = REQUEST_TYPES.find(r => r.value === type)?.label || type;
+        const L = getCountryConfig(propertyCountry).labels;
         await supabase.from("notifications").insert({
           user_id: orgData.owner_user_id,
           org_id: orgId,
           type: "request",
-          title: `📋 Demande : ${label}`,
-          message: `${tenantName || "Votre locataire"} demande : ${label}${period ? ` (${period})` : ""}. Cliquez pour traiter.`,
+          title: `📋 ${T.requestSent}: ${label}`,
+          message: `${tenantName || L.tenant} — ${label}${period ? ` (${period})` : ""}`,
           link: "/dashboard/rental?tab=tenants",
         });
-        // Send email to landlord
         if (orgData.email) {
           supabase.functions.invoke("send-email", {
             body: {
               to: orgData.email,
-              subject: `Nouvelle demande locataire : ${label}`,
+              subject: `${T.requestSent}: ${label}`,
               html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-                <h2 style="color:#1a1a1a;">📋 Demande de document</h2>
-                <p style="color:#555;">Un locataire a fait une demande :</p>
+                <h2 style="color:#1a1a1a;">📋 ${T.requestsTitle}</h2>
                 <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                  <p style="color:#1a1a1a;"><strong>Type :</strong> ${label}</p>
-                  ${period ? `<p style="color:#1a1a1a;"><strong>Période :</strong> ${period}</p>` : ""}
+                  <p style="color:#1a1a1a;"><strong>${label}</strong></p>
+                  ${period ? `<p style="color:#1a1a1a;">${T.periodLabel}: ${period}</p>` : ""}
                 </div>
-                <p style="color:#888;font-size:13px;">Connectez-vous à votre tableau de bord pour traiter cette demande.</p>
               </div>`,
             },
           }).catch(() => {});
         }
       }
-      // Refresh
       const { data } = await supabase
         .from("document_requests")
         .select("*")
@@ -105,25 +91,24 @@ const TenantRequests = () => {
     setSubmitting(null);
   };
 
+  const dateLocale = getCountryConfig(propertyCountry).locale;
+
   return (
     <TenantLayout>
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Demandes de documents</h1>
-        <p className="text-muted-foreground mb-6">Faites une demande rapide à votre bailleur.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{T.requestsTitle}</h1>
+        <p className="text-muted-foreground mb-6">{T.requestsSubtitle}</p>
 
-        {/* Period input */}
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 mb-4">
-          <label className="block text-sm font-medium text-foreground mb-1.5">Période concernée (optionnel)</label>
+          <label className="block text-sm font-medium text-foreground mb-1.5">{T.periodLabel}</label>
           <input
             type="month"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
             className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Ex: 2026-01"
           />
         </div>
 
-        {/* Quick request buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
           {REQUEST_TYPES.map((rt) => (
             <button
@@ -147,14 +132,13 @@ const TenantRequests = () => {
           ))}
         </div>
 
-        {/* History */}
-        <h2 className="text-lg font-semibold text-foreground mb-3">Historique</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-3">{T.history}</h2>
         {loading ? (
           <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : requests.length === 0 ? (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border/50 text-center">
             <FileText className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Aucune demande effectuée.</p>
+            <p className="text-muted-foreground">{T.noRequest}</p>
           </div>
         ) : (
           <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
@@ -172,11 +156,11 @@ const TenantRequests = () => {
                     {REQUEST_TYPES.find((rt) => rt.value === r.request_type)?.label || r.request_type}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {r.period || "—"} · {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                    {r.period || "—"} · {new Date(r.created_at).toLocaleDateString(dateLocale)}
                   </p>
                 </div>
                 <span className={`text-xs font-medium px-2 py-1 rounded-full ${r.status === "resolved" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                  {r.status === "resolved" ? "Traité" : "En attente"}
+                  {r.status === "resolved" ? T.statusResolved : T.statusPending}
                 </span>
               </div>
             ))}

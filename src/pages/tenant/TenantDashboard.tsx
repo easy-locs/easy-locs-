@@ -1,19 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Receipt, FileText, MessageCircle, CreditCard, Home } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getCountryConfig, formatCurrency } from "@/lib/country-config";
+import { useTenantProperty } from "@/hooks/useTenantProperty";
 
 const TenantDashboard = () => {
-  const { user, userCountry } = useAuth();
-  const L = useMemo(() => getCountryConfig(userCountry).labels, [userCountry]);
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const { user } = useAuth();
+  const { tenantId, propertyCountry, L, fmt } = useTenantProperty();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [receiptsCount, setReceiptsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -42,6 +42,7 @@ const TenantDashboard = () => {
           .neq("sender_id", user.id);
         setUnreadMessages(msgCount || 0);
       }
+      setLoaded(true);
     };
     fetchData();
   }, [user]);
@@ -105,13 +106,13 @@ const TenantDashboard = () => {
               ))}
             </div>
           </>
-        ) : (
+        ) : loaded ? (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border/50 text-center">
             <Home className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground">{L.noLinkedProperty}</p>
             <p className="text-sm text-muted-foreground mt-1">{L.noLinkedPropertyDesc}</p>
           </div>
-        )}
+        ) : null}
       </div>
     </TenantLayout>
   );

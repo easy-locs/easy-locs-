@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Receipt, Download, Loader2 } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getCountryConfig, formatCurrency } from "@/lib/country-config";
+import { useTenantProperty } from "@/hooks/useTenantProperty";
 
 interface StorageFileRef {
   bucket: string;
@@ -13,62 +13,46 @@ interface StorageFileRef {
 
 const parseStorageFileRef = (fileUrl: string): StorageFileRef | null => {
   if (!fileUrl) return null;
-  if (!fileUrl.startsWith("http")) {
-    return { bucket: "rental-docs", path: fileUrl };
-  }
+  if (!fileUrl.startsWith("http")) return { bucket: "rental-docs", path: fileUrl };
   const cleanUrl = fileUrl.split("?")[0];
   const objectMatch = cleanUrl.match(/\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
-  if (objectMatch) {
-    return { bucket: decodeURIComponent(objectMatch[1]), path: decodeURIComponent(objectMatch[2]) };
-  }
+  if (objectMatch) return { bucket: decodeURIComponent(objectMatch[1]), path: decodeURIComponent(objectMatch[2]) };
   const legacyMarker = "/rental-docs/";
   const markerIndex = cleanUrl.indexOf(legacyMarker);
-  if (markerIndex >= 0) {
-    return { bucket: "rental-docs", path: cleanUrl.slice(markerIndex + legacyMarker.length) };
-  }
+  if (markerIndex >= 0) return { bucket: "rental-docs", path: cleanUrl.slice(markerIndex + legacyMarker.length) };
   return null;
 };
 
 const TenantReceipts = () => {
-  const { user, userCountry } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const L = useMemo(() => getCountryConfig(userCountry).labels, [userCountry]);
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const { tenantId, L, fmt } = useTenantProperty();
   const [receipts, setReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!tenantId) return;
     const fetchReceipts = async () => {
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id")
-        .eq("tenant_user_id", user.id)
-        .limit(1)
-        .single();
-      if (!tenant) { setLoading(false); return; }
       const { data } = await supabase
         .from("rent_calls")
         .select("id, month, rent_amount, charges_amount, total_amount, paid, receipt_pdf_url, receipt_validated")
-        .eq("tenant_id", tenant.id)
+        .eq("tenant_id", tenantId)
         .eq("receipt_validated", true)
         .order("month", { ascending: false });
       setReceipts(data || []);
       setLoading(false);
     };
     fetchReceipts();
-  }, [user]);
+  }, [tenantId]);
 
   const handleDownload = async (r: any) => {
     setDownloadingId(r.id);
     try {
       const fileUrl = r.receipt_pdf_url;
       if (!fileUrl) throw new Error(L.noReceipt);
-
       const fileRef = parseStorageFileRef(fileUrl);
       if (!fileRef?.path) throw new Error(L.receiptDownloadError);
-
       let signedUrl: string | null = null;
       const primary = await supabase.storage.from(fileRef.bucket).createSignedUrl(fileRef.path, 60 * 60);
       if (primary.data?.signedUrl) {
@@ -77,7 +61,6 @@ const TenantReceipts = () => {
         const fallback = await supabase.storage.from("rental-docs").createSignedUrl(fileRef.path, 60 * 60);
         signedUrl = fallback.data?.signedUrl ?? null;
       }
-
       if (!signedUrl) throw new Error(L.receiptDownloadError);
       window.open(signedUrl, "_blank", "noopener,noreferrer");
     } catch (err: any) {
