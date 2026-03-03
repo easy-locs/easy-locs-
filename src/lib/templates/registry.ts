@@ -13,6 +13,7 @@ import { frInventory, frRentRevision, frChargesRegularization, frUnpaidNotice } 
 import { frCongesBailleur, frCongesLocataire, frCautionSolidaire, frAttestationHebergement, frCommandementPayer, frRestitutionDepot } from "./fr/rental-legal";
 import { frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC } from "./fr/company-legal";
 import { allEuropeTemplates } from "./europe-packs";
+import { allWorldTemplates } from "./world-packs";
 
 const allTemplates: DocumentTemplate[] = [
   // France — Rental
@@ -62,8 +63,10 @@ const allTemplates: DocumentTemplate[] = [
   frStatutsSARL,
   frPacteAssocies,
   frNominationCAC,
-  // Europe packs — stubs
+  // Europe packs
   ...allEuropeTemplates,
+  // World packs (Americas, Africa, Middle East, Asia-Pacific)
+  ...allWorldTemplates,
 ];
 
 export function getTemplateById(id: string): DocumentTemplate | undefined {

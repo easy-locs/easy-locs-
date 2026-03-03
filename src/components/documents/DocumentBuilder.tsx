@@ -298,7 +298,16 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       it: { subject: "Documento inviato", heading: "📄 Documento inviato", attached: "Il documento è allegato a questa email:", alsoAvailable: "Puoi trovare questo documento anche nel tuo portale inquilino." },
       pt: { subject: "Documento enviado", heading: "📄 Documento enviado", attached: "O seu documento está anexado a este email:", alsoAvailable: "Também pode encontrar este documento no seu portal de inquilino." },
     };
-    const countryLangMap: Record<string, string> = { FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt", NL: "en", GB: "en", CH: "fr", AT: "de", LU: "fr" };
+    const countryLangMap: Record<string, string> = {
+      FR: "fr", BE: "fr", CH: "fr", LU: "fr", SN: "fr", CI: "fr", MA: "fr", TN: "fr",
+      ES: "es", MX: "es",
+      IT: "it",
+      DE: "de", AT: "de",
+      PT: "pt", BR: "pt",
+      GB: "en", US: "en", CA: "en", NL: "en", IE: "en", AU: "en", SG: "en", ZA: "en",
+      AE: "en", SA: "en", JP: "en", TR: "en",
+      PL: "en", SE: "en", DK: "en", NO: "en", FI: "en", GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en", BG: "en", SK: "en",
+    };
     const eLang = countryLangMap[docCountry] || "en";
     const eL = emailLabels[eLang] || emailLabels.en;
 

@@ -22,11 +22,20 @@ const categoryLabelsByLang: Record<string, Record<string, string>> = {
   pt: { rental: "Arrendamento", administrative: "Administrativo", company: "Empresa", legal: "Jurídico" },
 };
 const countryLabels: Record<string, string> = {
-  FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 Espagne", IT: "🇮🇹 Italie", DE: "🇩🇪 Allemagne",
-  PT: "🇵🇹 Portugal", NL: "🇳🇱 Pays-Bas", GB: "🇬🇧 Royaume-Uni", CH: "🇨🇭 Suisse", AT: "🇦🇹 Autriche", LU: "🇱🇺 Luxembourg",
-  PL: "🇵🇱 Pologne", SE: "🇸🇪 Suède", DK: "🇩🇰 Danemark", NO: "🇳🇴 Norvège", FI: "🇫🇮 Finlande",
-  GR: "🇬🇷 Grèce", CZ: "🇨🇿 Tchéquie", HU: "🇭🇺 Hongrie", RO: "🇷🇴 Roumanie", HR: "🇭🇷 Croatie",
-  IE: "🇮🇪 Irlande", BG: "🇧🇬 Bulgarie", SK: "🇸🇰 Slovaquie",
+  // Europe
+  FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 España", IT: "🇮🇹 Italia", DE: "🇩🇪 Deutschland",
+  PT: "🇵🇹 Portugal", NL: "🇳🇱 Nederland", GB: "🇬🇧 United Kingdom", CH: "🇨🇭 Suisse", AT: "🇦🇹 Österreich", LU: "🇱🇺 Luxembourg",
+  PL: "🇵🇱 Polska", SE: "🇸🇪 Sverige", DK: "🇩🇰 Danmark", NO: "🇳🇴 Norge", FI: "🇫🇮 Suomi",
+  GR: "🇬🇷 Ελλάδα", CZ: "🇨🇿 Česko", HU: "🇭🇺 Magyarország", RO: "🇷🇴 România", HR: "🇭🇷 Hrvatska",
+  IE: "🇮🇪 Ireland", BG: "🇧🇬 България", SK: "🇸🇰 Slovensko",
+  // Americas
+  US: "🇺🇸 United States", CA: "🇨🇦 Canada", BR: "🇧🇷 Brasil", MX: "🇲🇽 México",
+  // Africa
+  MA: "🇲🇦 Maroc", TN: "🇹🇳 Tunisie", SN: "🇸🇳 Sénégal", CI: "🇨🇮 Côte d'Ivoire", ZA: "🇿🇦 South Africa",
+  // Middle East
+  AE: "🇦🇪 UAE", SA: "🇸🇦 Saudi Arabia", TR: "🇹🇷 Türkiye",
+  // Asia-Pacific
+  JP: "🇯🇵 日本", AU: "🇦🇺 Australia", SG: "🇸🇬 Singapore",
 };
 
 interface DocRow {
@@ -47,20 +56,44 @@ const Documents = () => {
   const [loading, setLoading] = useState(true);
   const { orgId } = useAuth();
 
-  // Detect user country from profile
+  // Detect user country from profile + property countries
   const [userCountry, setUserCountry] = useState<string>("FR");
+  const [propertyCountries, setPropertyCountries] = useState<string[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.id) {
         supabase.from("profiles").select("country").eq("id", data.user.id).single()
-          .then(({ data: p }) => { if (p?.country) setUserCountry(p.country); });
+          .then(({ data: p }) => {
+            if (p?.country) {
+              setUserCountry(p.country);
+              setSelectedCountry(p.country);
+            }
+          });
       }
     });
   }, []);
 
-  const activeTemplates = getActiveTemplates(userCountry as any);
+  // Load unique countries from user's properties
+  useEffect(() => {
+    if (!orgId) return;
+    supabase.from("properties").select("country").eq("org_id", orgId).then(({ data: props }) => {
+      if (props) {
+        const countries = [...new Set(props.map((p) => p.country))].filter(Boolean);
+        setPropertyCountries(countries);
+        // If user has properties, default to first property country
+        if (countries.length > 0 && !selectedCountry) {
+          setSelectedCountry(countries[0]);
+        }
+      }
+    });
+  }, [orgId]);
+
+  const activeCountry = selectedCountry || userCountry;
+  const activeTemplates = getActiveTemplates(activeCountry as any);
   const allTemplates = getAllTemplates();
-  const europeTemplates = allTemplates.filter((t) => t.country !== userCountry);
+  const europeTemplates = allTemplates.filter((t) => t.country !== activeCountry);
 
   const fetchDocs = async () => {
     if (!orgId) return;
@@ -105,7 +138,7 @@ const Documents = () => {
     );
   }
 
-  const lang = COUNTRY_LOCALE_MAP[userCountry] || "en";
+  const lang = COUNTRY_LOCALE_MAP[activeCountry] || "en";
   const docLabels: Record<string, Record<string, string>> = {
     fr: { title: "Documents", desc: "Générez des documents conformes ou consultez votre historique.", create: "Créer", history: "Historique", loading: "Chargement…", noDoc: "Aucun document généré.", needDoc: "Besoin d'un document spécifique ?", moreOn: "Plus de documents sur LawDepot", euroDesc: "Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.", euroTitle: "Documents européens — Powered by LawDepot", accessLawDepot: "Accéder à LawDepot" },
     en: { title: "Documents", desc: "Generate compliant documents or view your history.", create: "Create", history: "History", loading: "Loading…", noDoc: "No documents generated.", needDoc: "Need a specific document?", moreOn: "More documents on LawDepot", euroDesc: "Generate your local documents via built-in templates or access LawDepot for additional certified templates.", euroTitle: "European documents — Powered by LawDepot", accessLawDepot: "Access LawDepot" },
@@ -123,11 +156,33 @@ const Documents = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">{dl.title}</h1>
         <p className="text-muted-foreground text-sm mb-6">{dl.desc}</p>
 
+        {/* Country selector based on user's properties */}
+        {propertyCountries.length > 1 && (
+          <div className="flex items-center gap-3 mb-6">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-wrap gap-2">
+              {propertyCountries.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCountry(c)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    activeCountry === c
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {countryLabels[c] || c}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
           {([
             { key: "create" as const, label: dl.create },
             { key: "history" as const, label: `${dl.history} (${docs.length})` },
-            { key: "europe" as const, label: "🇪🇺 Europe" },
+            { key: "europe" as const, label: "🌍 International" },
           ]).map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -144,7 +199,7 @@ const Documents = () => {
                 <div key={cat}>
                   <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                    {(categoryLabelsByLang[COUNTRY_LOCALE_MAP[userCountry] || "en"] || categoryLabelsByLang.en)[cat] || cat}
+                    {(categoryLabelsByLang[COUNTRY_LOCALE_MAP[activeCountry] || "en"] || categoryLabelsByLang.en)[cat] || cat}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {templates.map((t) => (
@@ -187,7 +242,7 @@ const Documents = () => {
                     <div className="text-sm font-medium text-foreground truncate">{d.title}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {new Date(d.created_at).toLocaleDateString(COUNTRY_LOCALE_MAP[userCountry] === "fr" ? "fr-FR" : COUNTRY_LOCALE_MAP[userCountry] === "es" ? "es-ES" : COUNTRY_LOCALE_MAP[userCountry] === "de" ? "de-DE" : COUNTRY_LOCALE_MAP[userCountry] === "it" ? "it-IT" : COUNTRY_LOCALE_MAP[userCountry] === "pt" ? "pt-PT" : "en-GB")}
+                      {new Date(d.created_at).toLocaleDateString(COUNTRY_LOCALE_MAP[activeCountry] === "fr" ? "fr-FR" : COUNTRY_LOCALE_MAP[activeCountry] === "es" ? "es-ES" : COUNTRY_LOCALE_MAP[activeCountry] === "de" ? "de-DE" : COUNTRY_LOCALE_MAP[activeCountry] === "it" ? "it-IT" : COUNTRY_LOCALE_MAP[activeCountry] === "pt" ? "pt-PT" : "en-GB")}
                       <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
                       {d.template_version && <span className="text-muted-foreground/60">v{d.template_version}</span>}
                     </div>
