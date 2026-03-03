@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,12 +103,22 @@ const parseICalEvents = (ical: string): { summary: string; start: string; end: s
 const SeasonalRentals = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [calMonth, setCalMonth] = useState(new Date());
+  const [calMonth, setCalMonth] = useState(() => {
+    // Deep-link: if month param is provided, open that month
+    const monthParam = new URLSearchParams(window.location.search).get("month");
+    if (monthParam) {
+      const [y, m] = monthParam.split("-").map(Number);
+      if (y && m) return new Date(y, m - 1, 1);
+    }
+    return new Date();
+  });
+  const [focusedRequestId] = useState(() => new URLSearchParams(window.location.search).get("focusRequest") || null);
   const [form, setForm] = useState<SeasonalForm>({
     property_id: "",
     guest_name: "",
@@ -131,6 +142,7 @@ const SeasonalRentals = () => {
   const [importingIcal, setImportingIcal] = useState(false);
   const [copiedExport, setCopiedExport] = useState(false);
   const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
+  const [focusedRequest, setFocusedRequest] = useState<any>(null);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -144,6 +156,20 @@ const SeasonalRentals = () => {
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Deep-link: load focused booking request
+  useEffect(() => {
+    if (!focusedRequestId || !orgId) return;
+    const loadRequest = async () => {
+      const { data } = await supabase
+        .from("booking_requests")
+        .select("*")
+        .eq("id", focusedRequestId)
+        .single();
+      if (data) setFocusedRequest(data);
+    };
+    loadRequest();
+  }, [focusedRequestId, orgId]);
 
   const resetForm = () => {
     setForm({
@@ -517,7 +543,34 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        {/* Calendar */}
+        {/* Focused booking request panel (from deep-link) */}
+        {focusedRequest && (
+          <div className="bg-accent/10 border border-accent/30 rounded-xl p-5 mb-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                🏖️ Demande de réservation
+              </h3>
+              <button onClick={() => setFocusedRequest(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div><span className="text-muted-foreground block text-xs">Voyageur</span><span className="font-medium text-foreground">{focusedRequest.guest_name}</span></div>
+              <div><span className="text-muted-foreground block text-xs">Email</span><span className="text-foreground">{focusedRequest.guest_email}</span></div>
+              <div><span className="text-muted-foreground block text-xs">Arrivée</span><span className="font-medium text-foreground">{focusedRequest.check_in}</span></div>
+              <div><span className="text-muted-foreground block text-xs">Départ</span><span className="font-medium text-foreground">{focusedRequest.check_out}</span></div>
+            </div>
+            {focusedRequest.message && <p className="text-sm text-muted-foreground italic">"{focusedRequest.message}"</p>}
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                focusedRequest.status === "paid" ? "bg-green-500/20 text-green-700" :
+                focusedRequest.status === "pending" ? "bg-yellow-500/20 text-yellow-700" :
+                "bg-muted text-muted-foreground"
+              }`}>
+                {focusedRequest.status === "paid" ? "✅ Payé" : focusedRequest.status === "pending" ? "⏳ En attente" : focusedRequest.status}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1))} className="p-2 hover:bg-muted rounded-lg"><ChevronLeft className="h-4 w-4" /></button>
@@ -529,13 +582,34 @@ const SeasonalRentals = () => {
             {calDays.map((day, i) => {
               if (!day) return <div key={i} />;
               const dayBookings = bookingsForDay(day);
+              const MAX_VISIBLE = 2;
+              const visible = dayBookings.slice(0, MAX_VISIBLE);
+              const overflow = dayBookings.length - MAX_VISIBLE;
+              // Assign lane colors for visual differentiation
+              const laneColors = [
+                "bg-primary/15 text-primary border-l-2 border-primary/40",
+                "bg-accent/15 text-accent border-l-2 border-accent/40",
+                "bg-orange-500/15 text-orange-700 border-l-2 border-orange-400/40",
+              ];
               return (
-                <div key={i} className={`min-h-[60px] p-1 rounded-lg border text-xs ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
-                  <span className="text-foreground font-medium">{day}</span>
-                  {dayBookings.slice(0, 2).map(b => (
-                    <div key={b.id} className="mt-0.5 bg-primary/10 text-primary text-[10px] px-1 rounded truncate">{b.guest_name}</div>
-                  ))}
-                  {dayBookings.length > 2 && <div className="text-[10px] text-muted-foreground">+{dayBookings.length - 2}</div>}
+                <div key={i} className={`min-h-[68px] p-1 rounded-lg border text-xs relative overflow-hidden ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
+                  <span className="text-foreground font-medium block mb-0.5">{day}</span>
+                  <div className="space-y-0.5">
+                    {visible.map((b, idx) => (
+                      <div
+                        key={b.id}
+                        className={`text-[10px] px-1 py-px rounded truncate ${laneColors[idx % laneColors.length]}`}
+                        title={`${b.guest_name} (${b.check_in} → ${b.check_out})`}
+                      >
+                        {b.guest_name}
+                      </div>
+                    ))}
+                    {overflow > 0 && (
+                      <div className="text-[10px] text-muted-foreground font-medium px-1" title={dayBookings.slice(MAX_VISIBLE).map(b => b.guest_name).join(", ")}>
+                        +{overflow} autre{overflow > 1 ? "s" : ""}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
