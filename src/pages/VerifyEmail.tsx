@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, RefreshCw, Loader2 } from "lucide-react";
-import logoEasyloc from "@/assets/logo-easylocs.png";
 import { useToast } from "@/hooks/use-toast";
+import AuthBrand from "@/components/auth/AuthBrand";
 
 const VerifyEmail = () => {
   const [resending, setResending] = useState(false);
@@ -48,12 +48,7 @@ const VerifyEmail = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
-      <div className="absolute top-6 left-6">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
-        </Link>
-      </div>
+      <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full text-center">
         <div className="w-16 h-16 rounded-2xl bg-gradient-gold flex items-center justify-center mx-auto mb-6">
