@@ -38,7 +38,7 @@ serve(async (req) => {
   try {
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Key info", { prefix: stripeKey.substring(0, 10), length: stripeKey.length });
+    logStep("Stripe key configured", { configured: !!stripeKey });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
