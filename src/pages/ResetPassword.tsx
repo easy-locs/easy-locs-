@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import logoEasyloc from "@/assets/logo-easylocs.png";
+import AuthBrand from "@/components/auth/AuthBrand";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -48,12 +48,7 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
-      <div className="absolute top-6 left-6">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
-        </Link>
-      </div>
+      <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
         {success ? (

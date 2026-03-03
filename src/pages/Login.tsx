@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
-import logoEasyloc from "@/assets/logo-easylocs.png";
 import { useToast } from "@/hooks/use-toast";
+import AuthBrand from "@/components/auth/AuthBrand";
 
 type AuthMode = "password" | "otp";
 
@@ -37,6 +37,20 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) await redirectByUserType();
+    };
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === "SIGNED_IN") await redirectByUserType();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -44,13 +58,19 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/login?otp=1`,
+      },
+    });
     setLoading(false);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
       setOtpSent(true);
-      toast({ title: "Code envoyé", description: "Vérifiez votre boîte email pour le code OTP." });
+      toast({ title: "Code envoyé", description: "Saisissez le code reçu par email ou utilisez le lien sécurisé." });
     }
   };
 
@@ -72,12 +92,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
-      <div className="absolute top-6 left-6">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoEasyloc} alt="Easy-Locs" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
-        </Link>
-      </div>
+      <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
         <h1 className="text-2xl font-bold text-foreground mb-1">Connexion</h1>
