@@ -945,11 +945,16 @@ export type Database = {
           city: string | null
           country: string
           created_at: string
+          default_payment_provider: string | null
           email: string | null
+          gocardless_access_token: string | null
+          gocardless_environment: string | null
           id: string
           logo_url: string | null
           name: string
           owner_user_id: string
+          payment_providers: Json
+          paypal_email: string | null
           phone: string | null
           postal_code: string | null
           siret: string | null
@@ -962,11 +967,16 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          default_payment_provider?: string | null
           email?: string | null
+          gocardless_access_token?: string | null
+          gocardless_environment?: string | null
           id?: string
           logo_url?: string | null
           name?: string
           owner_user_id: string
+          payment_providers?: Json
+          paypal_email?: string | null
           phone?: string | null
           postal_code?: string | null
           siret?: string | null
@@ -979,11 +989,16 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          default_payment_provider?: string | null
           email?: string | null
+          gocardless_access_token?: string | null
+          gocardless_environment?: string | null
           id?: string
           logo_url?: string | null
           name?: string
           owner_user_id?: string
+          payment_providers?: Json
+          paypal_email?: string | null
           phone?: string | null
           postal_code?: string | null
           siret?: string | null

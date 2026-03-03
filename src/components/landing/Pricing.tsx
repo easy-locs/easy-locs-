@@ -18,7 +18,7 @@ const features = [
 ];
 
 const Pricing = () => {
-  const [interval, setInterval] = useState<"monthly" | "annual">("annual");
+  const [interval, setInterval] = useState<"monthly" | "annual">("monthly");
   const price = interval === "monthly" ? 9.99 : 99;
   const intLabel = interval === "monthly" ? "mois" : "an";
 
