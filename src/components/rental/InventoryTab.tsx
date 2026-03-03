@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ClipboardCheck, Home, Users, Calendar, Eye } from "lucide-react";
+import { ClipboardCheck, Home, Users, Calendar, Eye, Mail, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { generateInventoryPDF } from "@/lib/inventory-pdf-generator";
 import type { Property, Tenant } from "@/hooks/useRentalData";
 
 interface InventoryReport {
@@ -17,12 +19,14 @@ interface InventoryTabProps {
   tenants: Tenant[];
   orgId: string | null;
   isLeaseActive: (t: Tenant) => boolean;
-  setInventoryMode: (mode: { propertyId: string; tenantId?: string; reportType: "entry" | "exit"; propertyLabel: string } | null) => void;
+  setInventoryMode: (mode: { propertyId: string; tenantId?: string; reportType: "entry" | "exit"; propertyLabel: string; existingReportId?: string } | null) => void;
 }
 
 const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryMode }: InventoryTabProps) => {
+  const { toast } = useToast();
   const [reports, setReports] = useState<InventoryReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const loadReports = useCallback(async () => {
     if (!orgId) return;
@@ -36,6 +40,59 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
   }, [orgId]);
 
   useEffect(() => { loadReports(); }, [loadReports]);
+
+  const handleResendEmail = async (report: InventoryReport, property: Property, tenant: Tenant) => {
+    setResendingId(report.id);
+    try {
+      // Load rooms + items for PDF generation
+      const { data: dbRooms } = await supabase
+        .from("inventory_rooms").select("*").eq("report_id", report.id).order("sort_order");
+      const rooms: { room_name: string; items: { element_name: string; condition: string; notes: string; photo_urls: string[] }[] }[] = [];
+      for (const r of dbRooms || []) {
+        const { data: items } = await supabase
+          .from("inventory_items").select("*").eq("room_id", r.id).order("sort_order");
+        rooms.push({
+          room_name: r.room_name,
+          items: (items || []).map((it: any) => ({
+            element_name: it.element_name, condition: it.condition,
+            notes: it.notes || "", photo_urls: Array.isArray(it.photo_urls) ? it.photo_urls : [],
+          })),
+        });
+      }
+      const { data: reportData } = await supabase.from("inventory_reports").select("*").eq("id", report.id).single();
+      if (!reportData) throw new Error("Rapport introuvable");
+
+      const doc = await generateInventoryPDF({
+        propertyLabel: property.label, reportType: report.report_type as "entry" | "exit",
+        reportDate: report.report_date, tenantName: tenant.name,
+        keysCount: reportData.keys_count || 0, keysDetails: reportData.keys_details || "",
+        meterElectricity: reportData.meter_electricity || "", meterGas: reportData.meter_gas || "",
+        meterWater: reportData.meter_water || "", generalNotes: reportData.general_notes || "", rooms,
+      });
+
+      const typeStr = report.report_type === "entry" ? "entree" : "sortie";
+      const pdfBase64 = doc.output("datauristring").split(",")[1];
+
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: tenant.email,
+          subject: `État des lieux ${report.report_type === "entry" ? "d'entrée" : "de sortie"} — ${property.label}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+            <h2 style="color:#1a2744;text-align:center;">📋 État des lieux</h2>
+            <p style="color:#555;">Bonjour ${tenant.name},</p>
+            <p style="color:#555;">Veuillez trouver ci-joint l'état des lieux ${report.report_type === "entry" ? "d'entrée" : "de sortie"} pour <strong>${property.label}</strong> du ${report.report_date}.</p>
+            <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Gestion locative intelligente</p>
+          </div>`,
+          attachments: [{ content: pdfBase64, filename: `etat_des_lieux_${typeStr}_${report.report_date}.pdf`, type: "application/pdf" }],
+        },
+      });
+      toast({ title: "Email renvoyé", description: `PDF envoyé à ${tenant.email}` });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   if (properties.length === 0) {
     return (
@@ -140,9 +197,34 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                            {r.status === "completed" ? "Finalisé" : "Brouillon"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setInventoryMode({
+                                propertyId: p.id,
+                                tenantId: r.tenant_id || undefined,
+                                reportType: r.report_type as "entry" | "exit",
+                                propertyLabel: p.label,
+                                existingReportId: r.id,
+                              })}
+                              className="text-[10px] flex items-center gap-1 text-accent hover:underline"
+                              title="Ouvrir l'état des lieux"
+                            >
+                              <Eye className="h-3 w-3" /> Ouvrir
+                            </button>
+                            {r.status === "completed" && reportTenant && (
+                              <button
+                                onClick={() => handleResendEmail(r, p, reportTenant)}
+                                disabled={resendingId === r.id}
+                                className="text-[10px] flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
+                                title="Renvoyer par email"
+                              >
+                                {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />} Email
+                              </button>
+                            )}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                              {r.status === "completed" ? "Finalisé" : "Brouillon"}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
