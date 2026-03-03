@@ -60,6 +60,10 @@ const PublicListing = () => {
   }, [slug]);
 
   const photos: string[] = property?.photo_urls || [];
+  const amenities: any[] = Array.isArray(listing?.amenities) ? listing.amenities : [];
+  const stringAmenities = amenities.filter((a: any) => typeof a === "string") as string[];
+  const cleaningFeeObj = amenities.find((a: any) => typeof a === "object" && a?.type === "cleaning_fee");
+  const cleaningFee = typeof cleaningFeeObj === "object" && cleaningFeeObj ? (cleaningFeeObj as any).amount || 0 : 0;
 
   const nights = useMemo(() => {
     if (!form.check_in || !form.check_out) return 0;
@@ -67,7 +71,7 @@ const PublicListing = () => {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }, [form.check_in, form.check_out]);
 
-  const totalPrice = nights * (listing?.price_per_night || 0);
+  const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +248,20 @@ const PublicListing = () => {
               </div>
             )}
 
+            {/* Amenities */}
+            {stringAmenities.length > 0 && (
+              <div>
+                <h2 className="font-semibold text-foreground mb-2">Équipements</h2>
+                <div className="flex flex-wrap gap-2">
+                  {stringAmenities.map(a => (
+                    <span key={a} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-medium">
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Mini photo gallery */}
             {photos.length > 1 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -352,9 +370,19 @@ const PublicListing = () => {
                     </div>
 
                     {nights > 0 && listing.price_per_night > 0 && (
-                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{nights} nuit{nights > 1 ? "s" : ""} × {listing.price_per_night}€</span>
+                          <span className="text-foreground">{nights * listing.price_per_night}€</span>
+                        </div>
+                        {cleaningFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Ménage</span>
+                            <span className="text-foreground">{cleaningFee}€</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between border-t border-border pt-1">
+                          <span className="font-medium text-foreground">Total</span>
                           <span className="font-semibold text-foreground">{totalPrice}€</span>
                         </div>
                       </div>

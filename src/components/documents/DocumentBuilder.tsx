@@ -439,9 +439,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     />
                   ) : (
                     <input type={f.type === "postal-code" || f.type === "phone" || f.type === "email" ? "text" : f.type}
-                      value={String(data[f.key] ?? "")}
-                      onChange={(e) => updateField(f.key, f.type === "number" ? +e.target.value : e.target.value)}
-                      placeholder={f.placeholder}
+                      value={f.type === "number" && (data[f.key] === 0 || data[f.key] === "0") ? "" : String(data[f.key] ?? "")}
+                      onFocus={(e) => { if (f.type === "number" && (e.target.value === "0" || e.target.value === "")) e.target.value = ""; }}
+                      onChange={(e) => updateField(f.key, f.type === "number" ? (e.target.value === "" ? 0 : +e.target.value) : e.target.value)}
+                      placeholder={f.placeholder || (f.type === "number" ? "0" : "")}
                       className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
                   )}
                 </div>
