@@ -1302,7 +1302,7 @@ const RentalManagement = () => {
                     <span className="text-sm text-foreground">{L.furnished}</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} HC ({propertyFormConfig.currencySymbol})</label>
+                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.rent} ({propertyFormConfig.currencySymbol})</label>
                        <input type="number" value={propertyForm.monthly_rent || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_rent: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                      <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.charges} ({propertyFormConfig.currencySymbol})</label>
                       <input type="number" value={propertyForm.monthly_charges || ""} onChange={(e) => setPropertyForm({ ...propertyForm, monthly_charges: +e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
