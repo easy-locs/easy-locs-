@@ -11,6 +11,13 @@ const logStep = (step: string, details?: any) => {
   console.log(`[BOOKING-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+/** Country → currency mapping */
+const COUNTRY_CURRENCY: Record<string, string> = {
+  FR: "eur", ES: "eur", DE: "eur", IT: "eur", PT: "eur", NL: "eur", BE: "eur", LU: "eur", AT: "eur", IE: "eur", GR: "eur", FI: "eur",
+  GB: "gbp", US: "usd", CA: "cad", AU: "aud", CH: "chf", SE: "sek", NO: "nok", DK: "dkk", PL: "pln", CZ: "czk", HU: "huf",
+  MA: "mad", TN: "tnd", AE: "aed", SA: "sar", BR: "brl", MX: "mxn", TH: "thb",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,15 +39,19 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Get the org's Stripe Connect account if available
+    // Get the org's Stripe Connect account + property country
     let stripeAccountId: string | null = null;
+    let currency = "eur";
+    let propertyId: string | null = null;
+
     if (listing_id) {
       const { data: listing } = await supabaseClient
         .from("public_listings")
-        .select("org_id")
+        .select("org_id, property_id")
         .eq("id", listing_id)
         .single();
       if (listing?.org_id) {
+        propertyId = listing.property_id;
         const { data: org } = await supabaseClient
           .from("orgs")
           .select("stripe_account_id, stripe_onboarding_complete")
@@ -48,6 +59,38 @@ serve(async (req) => {
           .single();
         if (org?.stripe_account_id && org?.stripe_onboarding_complete) {
           stripeAccountId = org.stripe_account_id;
+        }
+      }
+    }
+
+    // Resolve currency from property country
+    if (propertyId) {
+      const { data: prop } = await supabaseClient.from("properties").select("country").eq("id", propertyId).single();
+      if (prop?.country) currency = COUNTRY_CURRENCY[prop.country] || "eur";
+    }
+
+    // Date overlap validation
+    if (booking_request_id) {
+      const { data: br } = await supabaseClient
+        .from("booking_requests")
+        .select("property_id, check_in, check_out")
+        .eq("id", booking_request_id)
+        .single();
+      if (br) {
+        const { data: overlapping } = await supabaseClient
+          .from("seasonal_bookings")
+          .select("id")
+          .eq("property_id", br.property_id)
+          .eq("status", "confirmed")
+          .lt("check_in", br.check_out)
+          .gt("check_out", br.check_in)
+          .limit(1);
+        if (overlapping && overlapping.length > 0) {
+          logStep("Date overlap detected, rejecting payment");
+          return new Response(JSON.stringify({ error: "Ces dates ne sont plus disponibles." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 409,
+          });
         }
       }
     }
@@ -67,7 +110,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency,
             product_data: {
               name: `Réservation${property_label ? ` — ${property_label}` : ""}`,
               description: `${nights} nuit${nights > 1 ? "s" : ""}`,
@@ -88,7 +131,6 @@ serve(async (req) => {
       },
     };
 
-    // If Connect account exists, use destination charges
     if (stripeAccountId) {
       sessionParams.payment_intent_data = {
         transfer_data: { destination: stripeAccountId },
@@ -99,7 +141,6 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create(sessionParams);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
-    // Update booking request with payment link
     if (booking_request_id) {
       await supabaseClient
         .from("booking_requests")
