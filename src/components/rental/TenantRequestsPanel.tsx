@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, CheckCircle, Clock, Loader2, FileText, Receipt, Send, Download } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { ClipboardList, CheckCircle, Clock, Loader2, FileText, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -11,27 +12,28 @@ interface Props {
   tenantName: string;
 }
 
-const REQUEST_LABELS: Record<string, string> = {
-  receipt: "Quittance de loyer",
-  attestation: "Attestation de loyer",
-  lease_copy: "Copie du bail",
-  charges_detail: "Détail des charges",
-};
-
-const REQUEST_ACTIONS: Record<string, { label: string; icon: typeof Receipt; route?: string }> = {
-  receipt: { label: "Générer quittance", icon: Receipt, route: "/dashboard/receipts" },
-  attestation: { label: "Générer attestation", icon: FileText, route: "/dashboard/documents" },
-  lease_copy: { label: "Voir le bail", icon: FileText, route: "/dashboard/leases" },
-  charges_detail: { label: "Voir les charges", icon: FileText, route: "/dashboard/charges" },
-};
-
 const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
   const { orgId } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+
+  const REQUEST_LABELS: Record<string, string> = {
+    receipt: t("comp.requests.receipt"),
+    attestation: t("comp.requests.attestation"),
+    lease_copy: t("comp.requests.lease_copy"),
+    charges_detail: t("comp.requests.charges_detail"),
+  };
+
+  const REQUEST_ACTIONS: Record<string, { label: string; icon: typeof Receipt; route?: string }> = {
+    receipt: { label: t("comp.requests.gen_receipt"), icon: Receipt, route: "/dashboard/receipts" },
+    attestation: { label: t("comp.requests.gen_attestation"), icon: FileText, route: "/dashboard/documents" },
+    lease_copy: { label: t("comp.requests.view_lease"), icon: FileText, route: "/dashboard/leases" },
+    charges_detail: { label: t("comp.requests.view_charges"), icon: FileText, route: "/dashboard/charges" },
+  };
 
   const loadRequests = async () => {
     const { data } = await supabase
@@ -53,17 +55,17 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
       .eq("id", requestId);
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Demande traitée" });
+      toast({ title: t("comp.requests.resolved") });
       const { data: tenant } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantId).single();
       if (tenant?.tenant_user_id) {
         await supabase.from("notifications").insert({
           user_id: tenant.tenant_user_id,
           org_id: orgId,
           type: "document",
-          title: "✅ Document disponible",
-          message: `Votre bailleur a traité votre demande. Le document est disponible dans votre espace.`,
+          title: t("comp.requests.doc_available_notif"),
+          message: t("comp.requests.doc_available_msg"),
           link: "/tenant/documents",
         });
       }
@@ -89,15 +91,14 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
     <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
       <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
         <ClipboardList className="h-4 w-4 text-accent" />
-        Demandes du locataire — {tenantName}
+        {t("comp.requests.title")} — {tenantName}
         {pending.length > 0 && (
           <span className="ml-auto text-xs font-bold bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
-            {pending.length} en attente
+            {pending.length} {t("comp.requests.pending_count")}
           </span>
         )}
       </h3>
 
-      {/* Pending requests with action buttons */}
       {pending.length > 0 && (
         <div className="space-y-3 mb-4">
           {pending.map((r) => {
@@ -112,32 +113,21 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{REQUEST_LABELS[r.request_type] || r.request_type}</p>
-                      <p className="text-xs text-muted-foreground">{r.period || "—"} · {new Date(r.created_at).toLocaleDateString("fr-FR")}</p>
+                      <p className="text-xs text-muted-foreground">{r.period || "—"} · {new Date(r.created_at).toLocaleDateString()}</p>
                       {r.notes && <p className="text-xs text-muted-foreground mt-1">{r.notes}</p>}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-3 ml-12">
                   {action && (
-                    <Button
-                      size="sm"
-                      variant="default"
-                      className="bg-accent text-accent-foreground text-xs"
-                      onClick={() => handleAction(r.request_type)}
-                    >
+                    <Button size="sm" variant="default" className="bg-accent text-accent-foreground text-xs" onClick={() => handleAction(r.request_type)}>
                       <ActionIcon className="h-3.5 w-3.5 mr-1.5" />
                       {action.label}
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    onClick={() => handleResolve(r.id)}
-                    disabled={resolvingId === r.id}
-                  >
+                  <Button size="sm" variant="outline" className="text-xs" onClick={() => handleResolve(r.id)} disabled={resolvingId === r.id}>
                     {resolvingId === r.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
-                    Marquer traité
+                    {t("comp.requests.mark_resolved")}
                   </Button>
                 </div>
               </div>
@@ -146,7 +136,6 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
         </div>
       )}
 
-      {/* Resolved */}
       {resolved.length > 0 && (
         <div className="space-y-1.5">
           {resolved.slice(0, 5).map((r) => (
@@ -155,10 +144,10 @@ const TenantRequestsPanel = ({ tenantId, tenantName }: Props) => {
                 <CheckCircle className="h-4 w-4 text-success" />
                 <div>
                   <p className="text-sm font-medium text-foreground">{REQUEST_LABELS[r.request_type] || r.request_type}</p>
-                  <p className="text-xs text-muted-foreground">{r.period || "—"} · {new Date(r.created_at).toLocaleDateString("fr-FR")}</p>
+                  <p className="text-xs text-muted-foreground">{r.period || "—"} · {new Date(r.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
-              <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">Traité</span>
+              <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">{t("comp.requests.resolved_label")}</span>
             </div>
           ))}
         </div>

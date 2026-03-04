@@ -6,6 +6,7 @@ import { getCountryConfig } from "@/lib/country-config";
 import { generateFromTemplate, pdfToDataUri } from "@/lib/pdf-generator";
 import { getAllTemplates } from "@/lib/templates/registry";
 import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
+import { useI18n } from "@/lib/i18n";
 
 /* ─── Types ─── */
 export interface Property {
@@ -72,6 +73,7 @@ export interface RentCall {
 export function useRentalData() {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [properties, setProperties] = useState<Property[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
@@ -155,12 +157,12 @@ export function useRentalData() {
     };
     if (editId) {
       const { error } = await supabase.from("properties").update(record).eq("id", editId);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return false; }
-      toast({ title: "Bien modifié" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+      toast({ title: t("hook.rental.property_modified") });
     } else {
       const { error } = await supabase.from("properties").insert(record);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return false; }
-      toast({ title: "Bien ajouté" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+      toast({ title: t("hook.rental.property_added") });
     }
     await loadProperties();
     return true;
@@ -168,8 +170,8 @@ export function useRentalData() {
 
   const deleteProperty = async (id: string) => {
     const { error } = await supabase.from("properties").delete().eq("id", id);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Bien supprimé" });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("hook.rental.property_deleted") });
     await loadProperties();
   };
 
@@ -189,14 +191,14 @@ export function useRentalData() {
     };
     if (editId) {
       const { error } = await supabase.from("tenants").update(record).eq("id", editId);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return false; }
-      toast({ title: "Locataire modifié" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+      toast({ title: t("hook.rental.tenant_modified") });
       await loadTenants();
       return editId;
     } else {
       const { data, error } = await supabase.from("tenants").insert(record).select("id").single();
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return false; }
-      toast({ title: "Locataire ajouté" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return false; }
+      toast({ title: t("hook.rental.tenant_added") });
       await loadTenants();
       return data.id;
     }
@@ -204,8 +206,8 @@ export function useRentalData() {
 
   const deleteTenant = async (id: string) => {
     const { error } = await supabase.from("tenants").delete().eq("id", id);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Locataire supprimé" });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("hook.rental.tenant_deleted") });
     await loadTenants();
   };
 
@@ -215,7 +217,6 @@ export function useRentalData() {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    // Query DB directly to avoid stale state issues
     const { data: existingCalls } = await supabase
       .from("rent_calls")
       .select("tenant_id")
@@ -224,23 +225,23 @@ export function useRentalData() {
 
     const existingIds = new Set((existingCalls || []).map(r => r.tenant_id));
     const newCalls = tenants
-      .filter(t => t.rent_amount > 0 && !existingIds.has(t.id))
-      .map(t => ({
+      .filter(tn => tn.rent_amount > 0 && !existingIds.has(tn.id))
+      .map(tn => ({
         org_id: orgId,
-        tenant_id: t.id,
-        property_id: t.property_id,
+        tenant_id: tn.id,
+        property_id: tn.property_id,
         month,
-        rent_amount: t.rent_amount,
-        charges_amount: t.charges_amount,
-        total_amount: t.rent_amount + t.charges_amount,
+        rent_amount: tn.rent_amount,
+        charges_amount: tn.charges_amount,
+        total_amount: tn.rent_amount + tn.charges_amount,
       }));
     if (newCalls.length === 0) {
-      toast({ title: "Tous les appels du mois sont déjà créés" });
+      toast({ title: t("hook.rental.all_calls_created") });
       return;
     }
     const { error } = await supabase.from("rent_calls").upsert(newCalls, { onConflict: "org_id,tenant_id,month", ignoreDuplicates: true });
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: `${newCalls.length} appel(s) de loyer généré(s)` });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: `${newCalls.length} ${t("hook.rental.calls_generated")}` });
     await loadRentCalls();
   };
 
@@ -254,15 +255,13 @@ export function useRentalData() {
       payment_method: nowPaid ? (paymentMethod || null) : null,
       receipt_validated: nowPaid ? true : false,
     }).eq("id", id);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
 
-    // When marking as paid: auto-generate receipt, save to DB, email to tenant
     if (nowPaid && user && orgId) {
       try {
-        const tenant = tenants.find(t => t.id === call.tenant_id);
+        const tenant = tenants.find(tn => tn.id === call.tenant_id);
         const prop = properties.find(p => p.id === (call.property_id || tenant?.property_id));
         if (tenant) {
-          // Fetch landlord info
           let landlordName = "";
           let landlordAddress = "";
           let landlordSignature = "";
@@ -285,9 +284,13 @@ export function useRentalData() {
             if (!landlordName && orgData?.name) landlordName = orgData.name;
             if (!landlordAddress) landlordAddress = [orgData?.address, orgData?.postal_code, orgData?.city].filter(Boolean).join(", ");
           } catch { /* ignore */ }
-          if (!landlordName) landlordName = user?.user_metadata?.name || "Proprietaire";
+          if (!landlordName) landlordName = user?.user_metadata?.name || t("hook.rental.owner_fallback");
 
-          const paymentMethodLabels: Record<string, string> = { online: "Virement en ligne", bank_transfer: "Virement bancaire", cash: "Especes" };
+          const paymentMethodLabels: Record<string, string> = {
+            online: t("hook.rental.payment_method_online"),
+            bank_transfer: t("hook.rental.payment_method_transfer"),
+            cash: t("hook.rental.payment_method_cash"),
+          };
           const paymentMethodLabel = paymentMethod ? (paymentMethodLabels[paymentMethod] || paymentMethod) : "";
 
           const receiptData: Record<string, unknown> = {
@@ -304,13 +307,12 @@ export function useRentalData() {
 
           const propCountryCode = prop?.country || "FR";
           const allTpls = getAllTemplates();
-          const receiptTemplate = allTpls.find(t => t.country === propCountryCode && t.docType === "rent-receipt" && t.active) || frRentReceipt;
+          const receiptTemplate = allTpls.find(tpl => tpl.country === propCountryCode && tpl.docType === "rent-receipt" && tpl.active) || frRentReceipt;
           const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
           const pdfDoc = generateFromTemplate(receiptTemplate, receiptData, signatures, stampUrl || undefined, { skipTenantSignature: true, country: propCountryCode });
 
-          const receiptTitle = `Quittance ${tenant.name} - ${call.month}`;
+          const receiptTitle = t("hook.rental.receipt_title").replace("{name}", tenant.name).replace("{month}", call.month);
 
-          // Save receipt to documents table
           await supabase.from("documents").insert({
             org_id: orgId,
             user_id: user.id,
@@ -321,7 +323,6 @@ export function useRentalData() {
             status: "final",
           });
 
-          // Send receipt by email if tenant has email
           const tenantEmail = tenant.email?.trim().toLowerCase();
           if (tenantEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tenantEmail)) {
             try {
@@ -329,50 +330,48 @@ export function useRentalData() {
               await supabase.functions.invoke("send-email", {
                 body: {
                   to: tenantEmail,
-                  subject: `Quittance de loyer - ${call.month}`,
+                  subject: t("hook.rental.receipt_email_subject").replace("{month}", call.month),
                   from_name: landlordName || "Easy-Locs",
                   html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                    <h2 style="color:#1a1a1a;text-align:center;">Quittance de loyer</h2>
-                    <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
-                    <p style="color:#555;font-size:15px;">Votre quittance de loyer pour la periode <strong>${call.month}</strong> est disponible en piece jointe.</p>
+                    <h2 style="color:#1a1a1a;text-align:center;">${t("hook.rental.receipt_email_heading")}</h2>
+                    <p style="color:#555;font-size:15px;">${t("hook.rental.receipt_email_body").replace("{month}", call.month)}</p>
                     <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="margin:4px 0;font-size:14px;color:#333;">Loyer : <strong>${call.rent_amount}</strong></p>
-                      <p style="margin:4px 0;font-size:14px;color:#333;">Charges : <strong>${call.charges_amount}</strong></p>
-                      <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">Total : ${call.total_amount}</p>
+                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_rent")} : <strong>${call.rent_amount}</strong></p>
+                      <p style="margin:4px 0;font-size:14px;color:#333;">${t("hook.rental.receipt_email_charges")} : <strong>${call.charges_amount}</strong></p>
+                      <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${t("hook.rental.receipt_email_total")} : ${call.total_amount}</p>
                     </div>
-                    <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoye automatiquement par Easy-Locs.</p>
+                    <p style="color:#888;font-size:12px;text-align:center;">${t("hook.rental.receipt_email_footer")}</p>
                   </div>`,
                   attachments: [{
                     content: pdfBase64,
-                    filename: `Quittance_${tenant.name.replace(/\s/g, "_")}_${call.month}.pdf`,
+                    filename: `${receiptTitle.replace(/\s/g, "_")}.pdf`,
                     type: "application/pdf",
                   }],
                 },
               });
-              toast({ title: "Paiement enregistre", description: "Quittance generee et envoyee par email." });
+              toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated_emailed") });
             } catch (emailErr) {
               console.error("Email send failed:", emailErr);
-              toast({ title: "Paiement enregistre", description: "Quittance generee mais l'email n'a pas pu etre envoye." });
+              toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated_no_email") });
             }
           } else {
-            toast({ title: "Paiement enregistre", description: "Quittance generee automatiquement." });
+            toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated") });
           }
 
-          // Notify tenant in-app
           if (tenant.tenant_user_id) {
             await supabase.from("notifications").insert({
               user_id: tenant.tenant_user_id,
               org_id: orgId,
               type: "receipt",
-              title: "Quittance disponible",
-              message: `Votre quittance de loyer pour ${call.month} est disponible.`,
+              title: t("hook.rental.receipt_available"),
+              message: t("hook.rental.receipt_available_msg").replace("{month}", call.month),
               link: "/tenant/receipts",
             });
           }
         }
       } catch (receiptErr) {
         console.error("Auto-receipt generation error:", receiptErr);
-        toast({ title: "Paiement enregistre", description: "Erreur lors de la generation automatique de la quittance." });
+        toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_gen_error") });
       }
     }
 
@@ -381,8 +380,8 @@ export function useRentalData() {
 
   const validateReceipt = async (id: string) => {
     const { error } = await supabase.from("rent_calls").update({ receipt_validated: true }).eq("id", id);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Quittance validée — le locataire peut la télécharger" });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("hook.rental.receipt_validated") });
     await loadRentCalls();
   };
 
@@ -392,7 +391,7 @@ export function useRentalData() {
     const isValidEmail = !!normalizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
 
     if (!isValidEmail) {
-      toast({ title: "Erreur", description: "Email du locataire invalide", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: t("hook.rental.tenant_email_invalid"), variant: "destructive" });
       return;
     }
     if (!orgId || !user) return;
@@ -409,7 +408,6 @@ export function useRentalData() {
       });
       if (invError) throw invError;
 
-      // Always use published URL for tenant invitations
       const publishedOrigin = "https://easylocs.lovable.app";
       const inviteUrl = `${publishedOrigin}/tenant-signup?token=${token}`;
 
@@ -431,7 +429,6 @@ export function useRentalData() {
 
       let emailSent = false;
       let emailErrorMessage = "";
-      // Determine property country for localized email
       let propCountry = "FR";
       if (tenant.property_id) {
         const { data: prop } = await supabase.from("properties").select("country").eq("id", tenant.property_id).single();
@@ -457,30 +454,29 @@ export function useRentalData() {
         });
 
         if (emailError || (emailData && emailData.success === false)) {
-          throw emailError || new Error(emailData?.error || "Échec d'envoi de l'invitation");
+          throw emailError || new Error(emailData?.error || "Send failed");
         }
         emailSent = true;
       } catch (err: any) {
-        emailErrorMessage = err?.message || "erreur inconnue";
+        emailErrorMessage = err?.message || "unknown error";
       }
 
       if (emailSent) {
         toast({
-          title: "Invitation envoyée",
-          description: `Email envoyé à ${normalizedEmail}.${copied ? " Lien aussi copié dans le presse-papiers." : ""}`,
+          title: t("hook.rental.invite_sent"),
+          description: t("hook.rental.invite_sent_desc").replace("{email}", normalizedEmail!) + (copied ? t("hook.rental.invite_link_copied") : ""),
         });
       } else {
-        // Open the invite link in a new tab as fallback
         window.open(inviteUrl, '_blank');
+        const linkMsg = copied ? t("hook.rental.invite_link_opened") : t("hook.rental.invite_link_opened_no_copy");
+        const errMsg = emailErrorMessage ? ` ${t("hook.rental.invite_email_failed").replace("{error}", emailErrorMessage)}` : "";
         toast({
-          title: "Invitation créée",
-          description: copied
-            ? `Lien copié et ouvert dans un nouvel onglet. ${emailErrorMessage ? `(Email non envoyé: ${emailErrorMessage})` : ""}`
-            : `Lien ouvert dans un nouvel onglet. ${emailErrorMessage ? `(Email non envoyé: ${emailErrorMessage})` : ""}`,
+          title: t("hook.rental.invite_created"),
+          description: linkMsg + errMsg,
         });
       }
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     }
   };
 
@@ -492,10 +488,13 @@ export function useRentalData() {
       .update({ property_id: propertyId })
       .eq("id", tenantId);
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
       return false;
     }
-    toast({ title: "Locataire assigné", description: prop ? `Locataire assigné à ${prop.label}` : "Locataire assigné" });
+    toast({
+      title: t("hook.rental.tenant_assigned"),
+      description: prop ? t("hook.rental.tenant_assigned_to").replace("{property}", prop.label) : t("hook.rental.tenant_assigned"),
+    });
     await loadTenants();
     return true;
   };

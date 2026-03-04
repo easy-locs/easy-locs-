@@ -9,6 +9,7 @@ import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy,
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
 import ListingManager from "@/components/seasonal/ListingManager";
+import { useI18n } from "@/lib/i18n";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -103,6 +104,7 @@ const parseICalEvents = (ical: string): { summary: string; start: string; end: s
 const SeasonalRentals = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -110,7 +112,6 @@ const SeasonalRentals = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(() => {
-    // Deep-link: if month param is provided, open that month
     const monthParam = new URLSearchParams(window.location.search).get("month");
     if (monthParam) {
       const [y, m] = monthParam.split("-").map(Number);
@@ -157,15 +158,10 @@ const SeasonalRentals = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  // Deep-link: load focused booking request
   useEffect(() => {
     if (!focusedRequestId || !orgId) return;
     const loadRequest = async () => {
-      const { data } = await supabase
-        .from("booking_requests")
-        .select("*")
-        .eq("id", focusedRequestId)
-        .single();
+      const { data } = await supabase.from("booking_requests").select("*").eq("id", focusedRequestId).single();
       if (data) setFocusedRequest(data);
     };
     loadRequest();
@@ -197,11 +193,7 @@ const SeasonalRentals = () => {
   const notifyReservation = async (title: string, message: string, bookingEmail?: string) => {
     if (!orgId || !user) return;
 
-    const { data: org } = await supabase
-      .from("orgs")
-      .select("owner_user_id, email, name")
-      .eq("id", orgId)
-      .single();
+    const { data: org } = await supabase.from("orgs").select("owner_user_id, email, name").eq("id", orgId).single();
 
     const targets = Array.from(new Set([user.id, org?.owner_user_id].filter(Boolean)));
     await Promise.all(
@@ -226,7 +218,7 @@ const SeasonalRentals = () => {
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
             <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${title}</h2>
             <p style="color:#555;font-size:15px;">${message}</p>
-            <p style="color:#888;font-size:12px;text-align:center;">Notification automatique Easy-Locs.</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${t("page.seasonal.auto_notif")}</p>
           </div>`,
         },
       });
@@ -236,11 +228,11 @@ const SeasonalRentals = () => {
       await supabase.functions.invoke("send-email", {
         body: {
           to: bookingEmail,
-          subject: "Réservation confirmée",
+          subject: t("page.seasonal.booking_confirmed_subject"),
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">✅ Réservation confirmée</h2>
-            <p style="color:#555;font-size:15px;">Votre réservation a bien été enregistrée.</p>
-            <p style="color:#888;font-size:12px;text-align:center;">Email automatique Easy-Locs.</p>
+            <h2 style="color:#1a1a1a;text-align:center;">${t("page.seasonal.booking_confirmed_heading")}</h2>
+            <p style="color:#555;font-size:15px;">${t("page.seasonal.booking_confirmed_body")}</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${t("page.seasonal.booking_confirmed_footer")}</p>
           </div>`,
         },
       });
@@ -251,23 +243,23 @@ const SeasonalRentals = () => {
     if (!orgId || !user || !form.guest_name || !form.property_id || !form.check_in || !form.check_out) return;
 
     if (form.check_out <= form.check_in) {
-      toast({ title: "Erreur", description: "La date de départ doit être après la date d'arrivée.", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
       return;
     }
 
     const bookingEmail = normalizeEmail(form.guest_email);
     if (bookingEmail && !isValidEmail(bookingEmail)) {
-      toast({ title: "Erreur", description: "Email voyageur invalide.", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: t("page.seasonal.error_email"), variant: "destructive" });
       return;
     }
 
     const details = [
-      form.guest_address && `Adresse: ${form.guest_address}`,
-      form.guest_postal_code && `Code postal: ${form.guest_postal_code}`,
-      form.guest_city && `Ville: ${form.guest_city}`,
-      form.guest_country && `Pays: ${form.guest_country}`,
-      form.identity_type !== "none" && `Identité: ${form.identity_type === "cni" ? "CNI" : "Passeport"}`,
-      form.identity_number && `N° pièce: ${form.identity_number}`,
+      form.guest_address && `${t("page.seasonal.full_address")}: ${form.guest_address}`,
+      form.guest_postal_code && `${t("page.seasonal.postal_code")}: ${form.guest_postal_code}`,
+      form.guest_city && `${t("page.seasonal.city")}: ${form.guest_city}`,
+      form.guest_country && `${t("page.seasonal.country")}: ${form.guest_country}`,
+      form.identity_type !== "none" && `${t("page.seasonal.identity_doc")}: ${form.identity_type === "cni" ? t("page.seasonal.id_cni") : t("page.seasonal.id_passport")}`,
+      form.identity_number && `${t("page.seasonal.id_number")}: ${form.identity_number}`,
     ].filter(Boolean);
 
     const record = {
@@ -287,14 +279,14 @@ const SeasonalRentals = () => {
 
     if (editingId) {
       const { error } = await supabase.from("seasonal_bookings").update(record).eq("id", editingId);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      await notifyReservation("Réservation modifiée", `Réservation mise à jour pour ${form.guest_name}.`, bookingEmail || undefined);
-      toast({ title: "Réservation modifiée" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+      await notifyReservation(t("page.seasonal.modified_reservation_notif"), t("page.seasonal.modified_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
+      toast({ title: t("page.seasonal.booking_modified") });
     } else {
       const { error } = await supabase.from("seasonal_bookings").insert({ ...record, status: "confirmed" });
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      await notifyReservation("Nouvelle réservation", `Nouvelle réservation pour ${form.guest_name}.`, bookingEmail || undefined);
-      toast({ title: "Réservation ajoutée" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+      await notifyReservation(t("page.seasonal.new_reservation_notif"), t("page.seasonal.new_reservation_msg").replace("{name}", form.guest_name), bookingEmail || undefined);
+      toast({ title: t("page.seasonal.booking_added") });
     }
 
     resetForm();
@@ -326,7 +318,7 @@ const SeasonalRentals = () => {
 
   const remove = async (id: string) => {
     await supabase.from("seasonal_bookings").delete().eq("id", id);
-    toast({ title: "Réservation supprimée" });
+    toast({ title: t("page.seasonal.booking_deleted") });
     await load();
   };
 
@@ -340,7 +332,7 @@ const SeasonalRentals = () => {
     const a = document.createElement("a");
     a.href = url; a.download = "easy-locs-saisonnier.ics"; a.click();
     URL.revokeObjectURL(url);
-    toast({ title: "Calendrier exporté (.ics)" });
+    toast({ title: t("page.seasonal.calendar_exported") });
   };
 
   const handleCopyIcalContent = () => {
@@ -348,7 +340,7 @@ const SeasonalRentals = () => {
     navigator.clipboard.writeText(ical);
     setCopiedExport(true);
     setTimeout(() => setCopiedExport(false), 2000);
-    toast({ title: "Contenu iCal copié" });
+    toast({ title: t("page.seasonal.ical_copied") });
   };
 
   /* ─── iCal Import ─── */
@@ -356,27 +348,25 @@ const SeasonalRentals = () => {
     if (!icalUrl.trim() || !orgId || !user) return;
     setImportingIcal(true);
     try {
-      // Try fetching via a CORS proxy or directly
       let icalText = "";
       try {
         const res = await fetch(icalUrl);
         icalText = await res.text();
       } catch {
-        toast({ title: "Erreur", description: "Impossible de récupérer le calendrier. Collez le contenu .ics directement.", variant: "destructive" });
+        toast({ title: t("page.common.error"), description: t("page.seasonal.ical_error_fetch"), variant: "destructive" });
         setImportingIcal(false);
         return;
       }
       const events = parseICalEvents(icalText);
       if (events.length === 0) {
-        toast({ title: "Aucun événement trouvé", description: "Le fichier iCal ne contient pas de réservations.", variant: "destructive" });
+        toast({ title: t("page.seasonal.no_events"), description: t("page.seasonal.no_events_desc"), variant: "destructive" });
         setImportingIcal(false);
         return;
       }
-      // Insert new bookings (skip existing by UID check via date match)
       const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
       const defaultPropId = form.property_id || properties[0]?.id;
       if (!defaultPropId) {
-        toast({ title: "Erreur", description: "Sélectionnez un bien avant l'import iCal.", variant: "destructive" });
+        toast({ title: t("page.common.error"), description: t("page.seasonal.ical_error_property"), variant: "destructive" });
         setImportingIcal(false);
         return;
       }
@@ -384,22 +374,22 @@ const SeasonalRentals = () => {
         .filter(e => !existingDates.has(`${e.start}-${e.end}-${e.summary}`))
         .map(e => ({
           org_id: orgId, user_id: user.id, property_id: defaultPropId,
-          guest_name: e.summary || "Voyageur importé",
+          guest_name: e.summary || t("page.seasonal.imported_guest"),
           check_in: e.start, check_out: e.end, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
-          guest_email: "", guest_phone: "", notes: "Importé via iCal", status: "confirmed",
+          guest_email: "", guest_phone: "", notes: t("page.seasonal.imported_via_ical"), status: "confirmed",
         }));
       if (newBookings.length === 0) {
-        toast({ title: "Toutes les réservations existent déjà" });
+        toast({ title: t("page.seasonal.all_exist") });
         setImportingIcal(false);
         return;
       }
       const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
       if (error) throw error;
-      toast({ title: `${newBookings.length} réservation(s) importée(s)` });
+      toast({ title: `${newBookings.length} ${t("page.seasonal.ical_imported")}` });
       setIcalUrl("");
       await load();
     } catch (err: any) {
-      toast({ title: "Erreur d'import", description: err.message, variant: "destructive" });
+      toast({ title: t("page.seasonal.import_error"), description: err.message, variant: "destructive" });
     } finally {
       setImportingIcal(false);
     }
@@ -413,14 +403,14 @@ const SeasonalRentals = () => {
       const text = await file.text();
       const events = parseICalEvents(text);
       if (events.length === 0) {
-        toast({ title: "Aucun événement trouvé", variant: "destructive" });
+        toast({ title: t("page.seasonal.no_events"), variant: "destructive" });
         setImportingIcal(false);
         return;
       }
       const existingDates = new Set(bookings.map(b => `${b.check_in}-${b.check_out}-${b.guest_name}`));
       const defaultPropId = form.property_id || properties[0]?.id;
       if (!defaultPropId) {
-        toast({ title: "Erreur", description: "Sélectionnez un bien avant l'import iCal.", variant: "destructive" });
+        toast({ title: t("page.common.error"), description: t("page.seasonal.ical_error_property"), variant: "destructive" });
         setImportingIcal(false);
         return;
       }
@@ -428,27 +418,26 @@ const SeasonalRentals = () => {
         .filter(ev => !existingDates.has(`${ev.start}-${ev.end}-${ev.summary}`))
         .map(ev => ({
           org_id: orgId, user_id: user.id, property_id: defaultPropId,
-          guest_name: ev.summary || "Voyageur importé",
+          guest_name: ev.summary || t("page.seasonal.imported_guest"),
           check_in: ev.start, check_out: ev.end, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
-          guest_email: "", guest_phone: "", notes: "Importé via fichier iCal", status: "confirmed",
+          guest_email: "", guest_phone: "", notes: t("page.seasonal.imported_via_file"), status: "confirmed",
         }));
       if (newBookings.length === 0) {
-        toast({ title: "Toutes les réservations existent déjà" });
+        toast({ title: t("page.seasonal.all_exist") });
       } else {
         const { error } = await supabase.from("seasonal_bookings").insert(newBookings);
         if (error) throw error;
-        toast({ title: `${newBookings.length} réservation(s) importée(s)` });
+        toast({ title: `${newBookings.length} ${t("page.seasonal.ical_imported")}` });
         await load();
       }
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setImportingIcal(false);
       e.target.value = "";
     }
   };
 
-  // Calendar grid
   const calDays = useMemo(() => {
     const y = calMonth.getFullYear(), m = calMonth.getMonth();
     const firstDay = new Date(y, m, 1).getDay();
@@ -466,97 +455,94 @@ const SeasonalRentals = () => {
   };
 
   const monthLabel = calMonth.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const dayNames = t("page.seasonal.day_names").split(",");
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="ota_sync" featureLabel="Locations saisonnières & OTA">
+      <FeatureGate feature="ota_sync" featureLabel={t("page.seasonal.feature_label")}>
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Location saisonnière</h1>
-            <p className="text-sm text-muted-foreground">Réservations, calendrier et synchronisation Airbnb / Booking</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.seasonal.title_page")}</h1>
+            <p className="text-sm text-muted-foreground">{t("page.seasonal.subtitle_page")}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors">
-              <Link2 className="h-4 w-4" /> Sync iCal
+              <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
             </button>
             <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
-              <Plus className="h-4 w-4" /> Réservation
+              <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
         </div>
 
-        {/* iCal Sync Panel */}
         {showIcalPanel && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> Synchronisation iCal</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> {t("page.seasonal.ical_sync_title")}</h3>
               <button onClick={() => setShowIcalPanel(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-sm text-muted-foreground">Importez vos réservations depuis Airbnb ou Booking.com via leur lien iCal, ou exportez vos réservations Easy-Locs.</p>
+            <p className="text-sm text-muted-foreground">{t("page.seasonal.ical_import_desc")}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Import */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Download className="h-4 w-4" /> Importer (Airbnb / Booking)</h4>
-                <p className="text-xs text-muted-foreground">Collez l'URL du calendrier iCal de votre annonce Airbnb ou Booking.com :</p>
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Download className="h-4 w-4" /> {t("page.seasonal.import_airbnb")}</h4>
+                <p className="text-xs text-muted-foreground">{t("page.seasonal.import_url_hint")}</p>
                 <div className="flex gap-2">
                   <input value={icalUrl} onChange={e => setIcalUrl(e.target.value)} placeholder="https://www.airbnb.fr/calendar/ical/..." className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
                   <button onClick={handleImportIcalUrl} disabled={importingIcal || !icalUrl.trim()} className="bg-accent/20 text-accent px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/30 disabled:opacity-50">
-                    {importingIcal ? "Import…" : "Importer"}
+                    {importingIcal ? t("page.seasonal.importing") : t("page.seasonal.import")}
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">ou</span>
+                  <span className="text-xs text-muted-foreground">{t("page.seasonal.or")}</span>
                   <label className="text-xs text-accent hover:underline cursor-pointer flex items-center gap-1">
-                    <Upload className="h-3 w-3" /> Charger un fichier .ics
+                    <Upload className="h-3 w-3" /> {t("page.seasonal.upload_ics")}
                     <input type="file" accept=".ics,.ical" onChange={handleImportFile} className="hidden" />
                   </label>
                 </div>
                 {form.property_id === "" && properties.length > 1 && (
                   <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Bien pour les imports :</label>
+                    <label className="block text-xs text-muted-foreground mb-1">{t("page.seasonal.import_property_label")}</label>
                     <select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
-                      <option value="">Premier bien par défaut</option>
+                      <option value="">{t("page.seasonal.default_property")}</option>
                       {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                     </select>
                   </div>
                 )}
               </div>
 
-              {/* Export */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="h-4 w-4" /> Exporter vers Airbnb / Booking</h4>
-                <p className="text-xs text-muted-foreground">Téléchargez le fichier .ics de vos réservations Easy-Locs pour l'importer dans Airbnb ou Booking.com :</p>
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Upload className="h-4 w-4" /> {t("page.seasonal.export_title")}</h4>
+                <p className="text-xs text-muted-foreground">{t("page.seasonal.export_desc")}</p>
                 <div className="flex gap-2">
                   <button onClick={handleExportIcal} className="flex items-center gap-2 bg-accent/20 text-accent px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/30">
-                    <Download className="h-3.5 w-3.5" /> Télécharger .ics
+                    <Download className="h-3.5 w-3.5" /> {t("page.seasonal.download_ics")}
                   </button>
                   <button onClick={handleCopyIcalContent} className="flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted">
                     {copiedExport ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copiedExport ? "Copié !" : "Copier"}
+                    {copiedExport ? t("page.seasonal.copied") : t("page.seasonal.copy")}
                   </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">Collez ce fichier dans les paramètres de calendrier de votre annonce Airbnb/Booking.</p>
+                <p className="text-[10px] text-muted-foreground italic">{t("page.seasonal.export_hint")}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Focused booking request panel (from deep-link) */}
         {focusedRequest && (
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-5 mb-6 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                🏖️ Demande de réservation
+                🏖️ {t("page.seasonal.booking_request")}
               </h3>
               <button onClick={() => setFocusedRequest(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div><span className="text-muted-foreground block text-xs">Voyageur</span><span className="font-medium text-foreground">{focusedRequest.guest_name}</span></div>
+              <div><span className="text-muted-foreground block text-xs">{t("page.seasonal.guest")}</span><span className="font-medium text-foreground">{focusedRequest.guest_name}</span></div>
               <div><span className="text-muted-foreground block text-xs">Email</span><span className="text-foreground">{focusedRequest.guest_email}</span></div>
-              <div><span className="text-muted-foreground block text-xs">Arrivée</span><span className="font-medium text-foreground">{focusedRequest.check_in}</span></div>
-              <div><span className="text-muted-foreground block text-xs">Départ</span><span className="font-medium text-foreground">{focusedRequest.check_out}</span></div>
+              <div><span className="text-muted-foreground block text-xs">{t("page.seasonal.arrival")}</span><span className="font-medium text-foreground">{focusedRequest.check_in}</span></div>
+              <div><span className="text-muted-foreground block text-xs">{t("page.seasonal.departure")}</span><span className="font-medium text-foreground">{focusedRequest.check_out}</span></div>
             </div>
             {focusedRequest.message && <p className="text-sm text-muted-foreground italic">"{focusedRequest.message}"</p>}
             <div className="flex items-center gap-2">
@@ -565,7 +551,7 @@ const SeasonalRentals = () => {
                 focusedRequest.status === "pending" ? "bg-yellow-500/20 text-yellow-700" :
                 "bg-muted text-muted-foreground"
               }`}>
-                {focusedRequest.status === "paid" ? "✅ Payé" : focusedRequest.status === "pending" ? "⏳ En attente" : focusedRequest.status}
+                {focusedRequest.status === "paid" ? t("page.seasonal.status_paid") : focusedRequest.status === "pending" ? t("page.seasonal.status_pending_label") : focusedRequest.status}
               </span>
             </div>
           </div>
@@ -578,14 +564,13 @@ const SeasonalRentals = () => {
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1))} className="p-2 hover:bg-muted rounded-lg"><ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-xs">
-            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(d => <div key={d} className="text-center text-muted-foreground font-medium py-1">{d}</div>)}
+            {dayNames.map(d => <div key={d} className="text-center text-muted-foreground font-medium py-1">{d}</div>)}
             {calDays.map((day, i) => {
               if (!day) return <div key={i} />;
               const dayBookings = bookingsForDay(day);
               const MAX_VISIBLE = 2;
               const visible = dayBookings.slice(0, MAX_VISIBLE);
               const overflow = dayBookings.length - MAX_VISIBLE;
-              // Assign lane colors for visual differentiation
               const laneColors = [
                 "bg-primary/15 text-primary border-l-2 border-primary/40",
                 "bg-accent/15 text-accent border-l-2 border-accent/40",
@@ -606,7 +591,7 @@ const SeasonalRentals = () => {
                     ))}
                     {overflow > 0 && (
                       <div className="text-[10px] text-muted-foreground font-medium px-1" title={dayBookings.slice(MAX_VISIBLE).map(b => b.guest_name).join(", ")}>
-                        +{overflow} autre{overflow > 1 ? "s" : ""}
+                        +{overflow} {overflow > 1 ? t("page.seasonal.other_plural") : t("page.seasonal.other_singular")}
                       </div>
                     )}
                   </div>
@@ -616,12 +601,11 @@ const SeasonalRentals = () => {
           </div>
         </div>
 
-        {/* Photos & Listing per property */}
         {properties.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Camera className="h-4 w-4 text-accent" /> Photos & Annonce publique
+                <Camera className="h-4 w-4 text-accent" /> {t("page.seasonal.photos_listing")}
               </h3>
               <select
                 value={selectedPropertyForPhotos || properties[0]?.id || ""}
@@ -655,44 +639,42 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        {/* Form */}
         {showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">{editingId ? "Modifier la réservation" : "Nouvelle réservation"}</h3>
+              <h3 className="font-semibold text-foreground">{editingId ? t("page.seasonal.edit_booking") : t("page.seasonal.new_booking")}</h3>
               <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium text-foreground mb-1">Voyageur *</label><input value={form.guest_name} onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Bien *</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">— Sélectionner —</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Arrivée *</label><input type="date" value={form.check_in} onChange={e => setForm(f => ({ ...f, check_in: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Départ *</label><input type="date" value={form.check_out} onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.guest_required")}</label><input value={form.guest_name} onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.property_required")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">{t("page.seasonal.select_dash")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.arrival_required")}</label><input type="date" value={form.check_in} onChange={e => setForm(f => ({ ...f, check_in: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.departure_required")}</label><input type="date" value={form.check_out} onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.guest_email} onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Téléphone</label><input value={form.guest_phone} onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div className="sm:col-span-2"><label className="block text-sm font-medium text-foreground mb-1">Adresse complète</label>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.company.jal_address")}</label><input value={form.guest_phone} onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div className="sm:col-span-2"><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.full_address")}</label>
                 <AddressAutocomplete value={form.guest_address} onChange={(val) => setForm(f => ({ ...f, guest_address: val }))}
                   onSelect={(result: AddressResult) => setForm(f => ({ ...f, guest_address: result.label || "", guest_postal_code: result.postcode || f.guest_postal_code, guest_city: result.city || f.guest_city, guest_country: result.country || f.guest_country }))} />
               </div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Code postal</label><input value={form.guest_postal_code} onChange={e => setForm(f => ({ ...f, guest_postal_code: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Ville</label><input value={form.guest_city} onChange={e => setForm(f => ({ ...f, guest_city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Pays</label><input value={form.guest_country} onChange={e => setForm(f => ({ ...f, guest_country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Pièce d'identité</label><select value={form.identity_type} onChange={e => setForm(f => ({ ...f, identity_type: e.target.value as IdentityType }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="none">Aucune</option><option value="cni">CNI</option><option value="passport">Passeport</option></select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">N° CNI / Passeport</label><input value={form.identity_number} onChange={e => setForm(f => ({ ...f, identity_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Prix total (€)</label><input type="number" value={form.total_price || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, total_price: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Frais ménage (€)</label><input type="number" value={form.cleaning_fee || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, cleaning_fee: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.postal_code")}</label><input value={form.guest_postal_code} onChange={e => setForm(f => ({ ...f, guest_postal_code: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.city")}</label><input value={form.guest_city} onChange={e => setForm(f => ({ ...f, guest_city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.country")}</label><input value={form.guest_country} onChange={e => setForm(f => ({ ...f, guest_country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.identity_doc")}</label><select value={form.identity_type} onChange={e => setForm(f => ({ ...f, identity_type: e.target.value as IdentityType }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="none">{t("page.seasonal.id_none")}</option><option value="cni">{t("page.seasonal.id_cni")}</option><option value="passport">{t("page.seasonal.id_passport")}</option></select></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.id_number")}</label><input value={form.identity_number} onChange={e => setForm(f => ({ ...f, identity_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.total_price_eur")}</label><input type="number" value={form.total_price || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, total_price: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.cleaning_fee_eur")}</label><input type="number" value={form.cleaning_fee || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }} onChange={e => setForm(f => ({ ...f, cleaning_fee: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
-            <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+            <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.notes")}</label><textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             <div className="flex gap-3">
-              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{editingId ? "Enregistrer" : "Ajouter"}</button>
-              <button onClick={resetForm} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">Annuler</button>
+              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{editingId ? t("page.seasonal.save_btn") : t("page.seasonal.add_btn")}</button>
+              <button onClick={resetForm} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">{t("page.seasonal.cancel_btn")}</button>
             </div>
           </div>
         )}
 
-        {/* List */}
         <div className="space-y-3">
-          {loading ? <p className="text-center text-muted-foreground py-8">Chargement…</p> :
-            bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">Aucune réservation</p> :
+          {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
+            bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
                 <div key={b.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group">
                   <div className="flex-1 min-w-0">
@@ -701,7 +683,7 @@ const SeasonalRentals = () => {
                     {b.notes && <p className="text-xs text-muted-foreground italic mt-0.5">{b.notes}</p>}
                   </div>
                   <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full self-start ${b.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-green-500/20 text-green-700"}`}>
-                    {b.status === "cancelled" ? "Annulée" : "Confirmée"}
+                    {b.status === "cancelled" ? t("page.seasonal.status_cancelled_label") : t("page.seasonal.status_confirmed_label")}
                   </span>
                   <p className="text-sm font-bold text-foreground">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(b.total_price)}</p>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

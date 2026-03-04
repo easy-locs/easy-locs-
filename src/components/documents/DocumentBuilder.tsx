@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { ArrowLeft, AlertCircle, AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
 
@@ -255,7 +254,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     const result = handleValidate();
     if (result.errors.length > 0) return;
     if (!user || !orgId) {
-      toast({ title: "Erreur", description: "Vous devez être connecté.", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: "Not logged in", variant: "destructive" });
       return;
     }
 
@@ -275,7 +274,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     });
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
       setSaving(false);
       return;
     }
@@ -420,122 +419,100 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     {f.required && <span className="text-destructive ml-1">*</span>}
                   </label>
                   {f.type === "select" ? (
-                    <select value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`}>
+                    <select
+                      value={String(data[f.key] ?? "")}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive focus:ring-destructive" : "border-border"}`}
+                    >
                       <option value="">{t("page.common.select")}</option>
-                      {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      {f.options?.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
                     </select>
                   ) : f.type === "textarea" ? (
-                    <textarea rows={4} value={String(data[f.key] ?? "")} onChange={(e) => updateField(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
-                  ) : f.key.toLowerCase().includes("address") || f.key.toLowerCase().includes("adresse") || f.key === "registeredOffice" || f.key === "propertyAddress" ? (
-                    <AddressAutocomplete
+                    <textarea
                       value={String(data[f.key] ?? "")}
-                      onChange={(val) => updateField(f.key, val)}
-                      onSelect={(result) => updateField(f.key, result.label)}
-                      placeholder={f.placeholder || t("page.common.enter_address")}
-                      className={fieldErrors.has(f.key) ? "!border-destructive" : ""}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      rows={4}
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive focus:ring-destructive" : "border-border"}`}
+                    />
+                  ) : f.type === "date" ? (
+                    <input
+                      type="date"
+                      value={String(data[f.key] ?? "")}
+                      onChange={(e) => updateField(f.key, e.target.value)}
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive focus:ring-destructive" : "border-border"}`}
                     />
                   ) : (
-                    <input type={f.type === "postal-code" || f.type === "phone" || f.type === "email" ? "text" : f.type}
-                      value={f.type === "number" && (data[f.key] === 0 || data[f.key] === "0") ? "" : String(data[f.key] ?? "")}
-                      onFocus={(e) => { if (f.type === "number" && (e.target.value === "0" || e.target.value === "")) e.target.value = ""; }}
-                      onChange={(e) => updateField(f.key, f.type === "number" ? (e.target.value === "" ? 0 : +e.target.value) : e.target.value)}
-                      placeholder={f.placeholder || (f.type === "number" ? "0" : "")}
-                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive" : "border-border"}`} />
+                    <input
+                      type={f.type === "number" ? "number" : f.type === "email" ? "email" : "text"}
+                      value={String(data[f.key] ?? "")}
+                      onChange={(e) => updateField(f.key, f.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)}
+                      placeholder={f.placeholder}
+                      className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${fieldErrors.has(f.key) ? "border-destructive focus:ring-destructive" : "border-border"}`}
+                    />
+                  )}
+                  {fieldErrors.has(f.key) && (
+                    <p className="text-xs text-destructive mt-1">
+                      {validation?.errors.find((e) => e.field === f.key)?.message}
+                    </p>
                   )}
                 </div>
               ))}
             </div>
           ))}
 
-          {/* Signature — chaque utilisateur signe uniquement de son côté */}
-          <div className="border-t border-border/50 pt-5 mt-2">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{t("page.doc_builder.signature")}</h3>
-            {isLandlord && (
-              <div>
+          {/* Signatures */}
+          <div className="border-t border-border pt-6 mt-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4">{t("page.doc_builder.signature")}</h3>
+            
+            {/* Landlord signature block */}
+            <div className="mb-6">
+              <label className="block text-xs font-medium text-muted-foreground mb-2">
+                {t("page.doc_builder.landlord_signature")}
+              </label>
+              {isLandlord ? (
                 <SignaturePad
-                  label={t("page.doc_builder.landlord_signature")}
+                  label={t("page.settings.signature")}
                   value={signatures.landlord}
-                  onChange={(v) => setSignatures((s) => ({ ...s, landlord: v }))}
+                  onChange={(val) => setSignatures(s => ({ ...s, landlord: val }))}
                 />
-                {signatures.tenant ? (
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    {t("page.doc_builder.tenant_signed")}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {t("page.doc_builder.tenant_will_sign")}
-                  </p>
-                )}
-              </div>
-            )}
-            {isTenant && (
+              ) : (
+                <div className="bg-muted/30 p-4 rounded-lg text-sm text-muted-foreground italic border border-dashed border-border text-center">
+                  {signatures.landlord ? t("page.doc_builder.landlord_signed") : t("page.doc_builder.landlord_will_sign")}
+                </div>
+              )}
+            </div>
+
+            {/* Tenant signature block (only if applicable for this document type) */}
+            {!["rent-receipt", "dunning-letter", "payment-notice", "formal-notice"].includes(template.docType) && (
               <div>
-                <SignaturePad
-                  label={t("page.doc_builder.tenant_signature")}
-                  value={signatures.tenant}
-                  onChange={(v) => setSignatures((s) => ({ ...s, tenant: v }))}
-                />
-                {signatures.landlord ? (
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    {t("page.doc_builder.landlord_signed")}
-                  </div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">
+                  {t("page.doc_builder.tenant_signature")}
+                </label>
+                {isTenant ? (
+                  <SignaturePad
+                    label={t("page.settings.signature")}
+                    value={signatures.tenant}
+                    onChange={(val) => setSignatures(s => ({ ...s, tenant: val }))}
+                  />
                 ) : (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {t("page.doc_builder.landlord_will_sign")}
-                  </p>
+                  <div className="bg-muted/30 p-4 rounded-lg text-sm text-muted-foreground italic border border-dashed border-border text-center">
+                    {signatures.tenant ? t("page.doc_builder.tenant_signed") : t("page.doc_builder.tenant_will_sign")}
+                  </div>
                 )}
               </div>
             )}
           </div>
 
-          {validation && (
-            <div className="space-y-3">
-              {validation.corrections.length > 0 && (
-                <div className="flex items-start gap-2 bg-info/10 rounded-lg p-3">
-                  <Info className="h-4 w-4 text-info shrink-0 mt-0.5" />
-                  <div className="text-xs text-foreground space-y-1">
-                    {validation.corrections.map((c, i) => <p key={i}>{c.message}</p>)}
-                  </div>
-                </div>
-              )}
-              {validation.warnings.length > 0 && (
-                <div className="flex items-start gap-2 bg-warning/10 rounded-lg p-3">
-                  <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                  <div className="text-xs text-foreground space-y-1">
-                    {validation.warnings.map((w, i) => <p key={i}>{w.message}</p>)}
-                  </div>
-                </div>
-              )}
-              {validation.errors.length > 0 && (
-                <div className="flex items-start gap-2 bg-destructive/10 rounded-lg p-3">
-                  <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                  <div className="text-xs text-foreground space-y-1">
-                    {validation.errors.map((e, i) => <p key={i}>{e.message}</p>)}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {generated && (
-            <div className="flex items-center gap-2 bg-success/10 rounded-lg p-3">
-              <CheckCircle className="h-4 w-4 text-success" />
-              <p className="text-sm text-foreground">{t("page.doc_builder.generated")}</p>
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <button onClick={handleValidate} className="flex-1 border border-border text-foreground font-semibold py-3 rounded-lg hover:bg-muted transition-colors text-sm">
-              {t("page.common.validate")}
-            </button>
-            <button onClick={handleGenerate} disabled={template.needsLegalReview || saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.common.generate_pdf")}
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={handleGenerate}
+              disabled={saving}
+              className="flex-1 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 disabled:opacity-50 transition-all"
+            >
+              {saving ? t("page.common.loading") : t("page.common.generate_pdf")}
             </button>
           </div>
         </div>
