@@ -6,6 +6,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { JAL_PUBLISHERS, getJALByDepartment, type JALPublisher } from "@/lib/jal-publishers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import {
   Building2, FileText, ChevronRight, Plus, Users, Briefcase, XCircle,
@@ -13,72 +14,9 @@ import {
   Newspaper, CreditCard, ExternalLink, Loader2, Search
 } from "lucide-react";
 
-// Entity types for wizard
-const entityTypes = [
-  { key: "company-sas", label: "SAS", description: "Société par Actions Simplifiée — flexible, idéale pour startups et PME" },
-  { key: "company-sarl", label: "SARL", description: "Société à Responsabilité Limitée — structure classique, encadrée" },
-  { key: "company-eurl", label: "EURL", description: "Entreprise Unipersonnelle à Responsabilité Limitée — SARL à associé unique" },
-  { key: "micro-entrepreneur", label: "Micro-entreprise", description: "Statut simplifié pour activité individuelle" },
-];
-
-// Map entity → related docs to generate
-const entityDocuments: Record<string, { docType: string; label: string; icon: typeof FileText }[]> = {
-  "company-sas": [
-    { docType: "company-sas", label: "Statuts SAS", icon: ScrollText },
-    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
-    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
-  ],
-  "company-sarl": [
-    { docType: "company-sarl", label: "Statuts SARL", icon: ScrollText },
-    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
-    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
-  ],
-  "company-eurl": [
-    { docType: "company-eurl", label: "Statuts EURL", icon: ScrollText },
-    { docType: "legal-notice", label: "Annonce légale de constitution", icon: FileText },
-    { docType: "form-m0", label: "Formulaire M0 (Cerfa 13959)", icon: ClipboardList },
-  ],
-  "micro-entrepreneur": [
-    { docType: "micro-entrepreneur", label: "Déclaration d'activité", icon: ScrollText },
-    { docType: "form-p0", label: "Formulaire P0 (Cerfa 15253)", icon: ClipboardList },
-  ],
-};
-
-const wizardSteps = [
-  { title: "Type", description: "Forme juridique" },
-  { title: "Documents", description: "Choisir le document" },
-  { title: "Remplir", description: "Compléter et générer" },
-];
-
-const sections = [
-  {
-    title: "Création d'entreprise",
-    description: "Statuts, annonces légales et formalités",
-    icon: Plus,
-    filter: (t: DocumentTemplate) => ["company-sas", "company-sarl", "company-eurl", "micro-entrepreneur", "legal-notice", "form-m0", "form-p0"].includes(t.docType),
-  },
-  {
-    title: "Modifications statutaires",
-    description: "Changements de dirigeant, siège, activité",
-    icon: Briefcase,
-    filter: (t: DocumentTemplate) => ["change-director", "change-office", "change-activity"].includes(t.docType),
-  },
-  {
-    title: "Vie sociale & assemblées",
-    description: "PV d'AG, approbation des comptes, cession de parts",
-    icon: Users,
-    filter: (t: DocumentTemplate) => ["pv-ago", "accounts-approval", "share-transfer", "capital-increase"].includes(t.docType),
-  },
-  {
-    title: "Fermeture",
-    description: "Dissolution et liquidation",
-    icon: XCircle,
-    filter: (t: DocumentTemplate) => ["dissolution"].includes(t.docType),
-  },
-];
-
 const Company = () => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [wizardMode, setWizardMode] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
@@ -90,6 +28,70 @@ const Company = () => {
   const [registeredAddress, setRegisteredAddress] = useState("");
   const [detectedDepartment, setDetectedDepartment] = useState("");
   const companyTemplates = getTemplatesByCategory("company", "FR");
+
+  // Entity types for wizard
+  const entityTypes = [
+    { key: "company-sas", label: t("page.company.entity_sas"), description: t("page.company.entity_sas_desc") },
+    { key: "company-sarl", label: t("page.company.entity_sarl"), description: t("page.company.entity_sarl_desc") },
+    { key: "company-eurl", label: t("page.company.entity_eurl"), description: t("page.company.entity_eurl_desc") },
+    { key: "micro-entrepreneur", label: t("page.company.entity_micro"), description: t("page.company.entity_micro_desc") },
+  ];
+
+  // Map entity → related docs to generate
+  const entityDocuments: Record<string, { docType: string; label: string; icon: typeof FileText }[]> = {
+    "company-sas": [
+      { docType: "company-sas", label: t("page.company.doc_statuts_sas"), icon: ScrollText },
+      { docType: "legal-notice", label: t("page.company.doc_legal_notice"), icon: FileText },
+      { docType: "form-m0", label: t("page.company.doc_form_m0"), icon: ClipboardList },
+    ],
+    "company-sarl": [
+      { docType: "company-sarl", label: t("page.company.doc_statuts_sarl"), icon: ScrollText },
+      { docType: "legal-notice", label: t("page.company.doc_legal_notice"), icon: FileText },
+      { docType: "form-m0", label: t("page.company.doc_form_m0"), icon: ClipboardList },
+    ],
+    "company-eurl": [
+      { docType: "company-eurl", label: t("page.company.doc_statuts_eurl"), icon: ScrollText },
+      { docType: "legal-notice", label: t("page.company.doc_legal_notice"), icon: FileText },
+      { docType: "form-m0", label: t("page.company.doc_form_m0"), icon: ClipboardList },
+    ],
+    "micro-entrepreneur": [
+      { docType: "micro-entrepreneur", label: t("page.company.doc_activity_decl"), icon: ScrollText },
+      { docType: "form-p0", label: t("page.company.doc_form_p0"), icon: ClipboardList },
+    ],
+  };
+
+  const wizardSteps = [
+    { title: t("page.company.wizard_step_type"), description: t("page.company.wizard_step_type_desc") },
+    { title: t("page.company.wizard_step_docs"), description: t("page.company.wizard_step_docs_desc") },
+    { title: t("page.company.wizard_step_fill"), description: t("page.company.wizard_step_fill_desc") },
+  ];
+
+  const sections = [
+    {
+      title: t("page.company.section_creation"),
+      description: t("page.company.section_creation_desc"),
+      icon: Plus,
+      filter: (tpl: DocumentTemplate) => ["company-sas", "company-sarl", "company-eurl", "micro-entrepreneur", "legal-notice", "form-m0", "form-p0"].includes(tpl.docType),
+    },
+    {
+      title: t("page.company.section_changes"),
+      description: t("page.company.section_changes_desc"),
+      icon: Briefcase,
+      filter: (tpl: DocumentTemplate) => ["change-director", "change-office", "change-activity"].includes(tpl.docType),
+    },
+    {
+      title: t("page.company.section_social"),
+      description: t("page.company.section_social_desc"),
+      icon: Users,
+      filter: (tpl: DocumentTemplate) => ["pv-ago", "accounts-approval", "share-transfer", "capital-increase"].includes(tpl.docType),
+    },
+    {
+      title: t("page.company.section_closure"),
+      description: t("page.company.section_closure_desc"),
+      icon: XCircle,
+      filter: (tpl: DocumentTemplate) => ["dissolution"].includes(tpl.docType),
+    },
+  ];
 
   const resetWizard = () => {
     setSelectedTemplate(null);
@@ -110,10 +112,6 @@ const Company = () => {
     setRegisteredAddress(result.label);
     if (result.department) {
       setDetectedDepartment(result.department);
-      // Auto-set JAL department for filtering
-      if (!jalDepartment) {
-        // Don't override manual input
-      }
     }
   };
 
@@ -127,7 +125,7 @@ const Company = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Erreur de paiement", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message || t("page.common.error"), variant: "destructive" });
     } finally {
       setPayingJAL(false);
     }
@@ -153,7 +151,7 @@ const Company = () => {
       <DashboardLayout>
         <div className="max-w-2xl mx-auto">
           <button onClick={() => setShowJALPanel(false)} className="text-sm text-accent hover:underline mb-6 flex items-center gap-1">
-            ← Retour aux documents
+            {t("page.company.back_docs")}
           </button>
 
           <div className="flex items-center gap-3 mb-6">
@@ -161,8 +159,8 @@ const Company = () => {
               <Newspaper className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Publication d'annonce légale</h1>
-              <p className="text-sm text-muted-foreground">Choisissez un journal habilité (JAL) pour publier votre annonce.</p>
+              <h1 className="text-xl font-bold text-foreground">{t("page.company.jal_title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("page.company.jal_subtitle")}</p>
             </div>
           </div>
 
@@ -170,12 +168,12 @@ const Company = () => {
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-5 mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-semibold text-foreground">Publication annonce légale</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Tout compris : rédaction + publication JAL + attestation</div>
+                <div className="text-sm font-semibold text-foreground">{t("page.company.jal_label")}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{t("page.company.jal_all_included")}</div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-foreground">249 €</div>
-                <div className="text-xs text-muted-foreground">TTC</div>
+                <div className="text-2xl font-bold text-foreground">{t("page.company.jal_price")}</div>
+                <div className="text-xs text-muted-foreground">{t("page.company.jal_ttc")}</div>
               </div>
             </div>
           </div>
@@ -183,16 +181,16 @@ const Company = () => {
           {/* Address autocomplete for department auto-detect */}
           <div className="mb-4">
             <AddressAutocomplete
-              label="Adresse du siège social"
+              label={t("page.company.jal_address")}
               value={registeredAddress}
               onChange={setRegisteredAddress}
               onSelect={handleAddressSelect}
-              placeholder="Saisissez l'adresse du siège social…"
+              placeholder={t("page.company.jal_address_placeholder")}
             />
             {detectedDepartment && !jalDepartment && (
               <p className="text-xs text-accent mt-1.5 flex items-center gap-1">
                 <CheckCircle className="h-3 w-3" />
-                Département {detectedDepartment} détecté — journaux filtrés automatiquement
+                {t("page.company.jal_dept_detected").replace("{dept}", detectedDepartment)}
               </p>
             )}
           </div>
@@ -200,14 +198,14 @@ const Company = () => {
           {/* Department search */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              Ou rechercher par numéro de département
+              {t("page.company.jal_search_dept")}
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 value={jalDepartment}
                 onChange={(e) => setJalDepartment(e.target.value)}
-                placeholder="Ex: 75, 69, 13..."
+                placeholder={t("page.company.jal_search_placeholder")}
                 className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -233,7 +231,7 @@ const Company = () => {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-foreground text-sm">{jal.name}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    Dép. : {jal.departments.join(", ")}
+                    {t("page.company.jal_dept_prefix")} {jal.departments.join(", ")}
                   </div>
                 </div>
                 {jal.website && (
@@ -249,7 +247,7 @@ const Company = () => {
 
           {effectiveDept.length >= 2 && filteredJALs.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-6">
-              Aucun JAL trouvé pour le département {effectiveDept}. Essayez un autre département.
+              {t("page.company.jal_not_found").replace("{dept}", effectiveDept)}
             </p>
           )}
 
@@ -264,13 +262,13 @@ const Company = () => {
             ) : (
               <>
                 <CreditCard className="h-4 w-4" />
-                Payer 249 € — Publier l'annonce
+                {t("page.company.jal_pay")}
               </>
             )}
           </button>
 
           <p className="text-xs text-muted-foreground text-center mt-3">
-            Paiement sécurisé par Stripe. L'attestation de parution vous sera envoyée sous 48h.
+            {t("page.company.jal_secure")}
           </p>
         </div>
       </DashboardLayout>
@@ -285,7 +283,7 @@ const Company = () => {
       <DashboardLayout>
         <div className="max-w-2xl mx-auto">
           <button onClick={resetWizard} className="text-sm text-accent hover:underline mb-6 flex items-center gap-1">
-            ← Retour à l'accueil
+            {t("page.company.back_home")}
           </button>
 
           {/* Progress */}
@@ -308,8 +306,8 @@ const Company = () => {
           {/* Step 0: Entity type */}
           {wizardStep === 0 && (
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Quelle forme juridique ?</h2>
-              <p className="text-sm text-muted-foreground mb-6">Choisissez le type de société à créer.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">{t("page.company.wizard_entity_title")}</h2>
+              <p className="text-sm text-muted-foreground mb-6">{t("page.company.wizard_entity_subtitle")}</p>
               <div className="space-y-3">
                 {entityTypes.map((et) => (
                   <button
@@ -337,7 +335,7 @@ const Company = () => {
                 disabled={!selectedEntityType}
                 className="mt-6 flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-6 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                Continuer <ArrowRight className="h-4 w-4" />
+                {t("page.company.continue")} <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -346,15 +344,15 @@ const Company = () => {
           {wizardStep === 1 && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                Documents pour votre {entityTypes.find(e => e.key === selectedEntityType)?.label}
+                {t("page.company.wizard_docs_title").replace("{type}", entityTypes.find(e => e.key === selectedEntityType)?.label || "")}
               </h2>
               <p className="text-sm text-muted-foreground mb-6">
-                Sélectionnez le document à générer. Vous pourrez revenir ici pour les autres.
+                {t("page.company.wizard_docs_subtitle")}
               </p>
 
               <div className="space-y-3">
                 {docs.map((doc, i) => {
-                  const template = companyTemplates.find(t => t.docType === doc.docType);
+                  const template = companyTemplates.find(tpl => tpl.docType === doc.docType);
                   if (!template) return null;
                   const DocIcon = doc.icon;
                   const isLegalNotice = doc.docType === "legal-notice";
@@ -371,7 +369,7 @@ const Company = () => {
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground text-sm">{doc.label}</span>
                             {i === 0 && (
-                              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Principal</span>
+                              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{t("page.company.doc_primary")}</span>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
@@ -386,8 +384,8 @@ const Company = () => {
                         >
                           <Newspaper className="h-4 w-4 text-accent shrink-0" />
                           <div className="flex-1">
-                            <span className="text-sm font-medium text-foreground">Publier dans un journal (JAL)</span>
-                            <span className="text-xs text-muted-foreground ml-2">249 € TTC</span>
+                            <span className="text-sm font-medium text-foreground">{t("page.company.jal_publish")}</span>
+                            <span className="text-xs text-muted-foreground ml-2">{t("page.company.jal_price_inline")}</span>
                           </div>
                           <CreditCard className="h-4 w-4 text-accent shrink-0" />
                         </button>
@@ -400,17 +398,17 @@ const Company = () => {
               <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
                 <Rocket className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                 <div className="text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Étapes après génération :</strong>
+                  <strong className="text-foreground">{t("page.company.steps_after")}</strong>
                   {selectedEntityType === "micro-entrepreneur" ? (
-                    <span> Déclarez sur le guichet unique (formalites.entreprises.gouv.fr) avec votre formulaire P0.</span>
+                    <span> {t("page.company.steps_micro")}</span>
                   ) : (
-                    <span> Signez les statuts → Déposez le capital → Publiez l'annonce légale → Déposez le dossier M0 au greffe.</span>
+                    <span> {t("page.company.steps_company")}</span>
                   )}
                 </div>
               </div>
 
               <button onClick={() => setWizardStep(0)} className="mt-4 flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors">
-                <ArrowLeft className="h-4 w-4" /> Retour
+                <ArrowLeft className="h-4 w-4" /> {t("page.company.back")}
               </button>
             </div>
           )}
@@ -425,9 +423,9 @@ const Company = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Entreprise</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.company.title")}</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Créez, gérez et modifiez votre société — SAS, SARL, EURL ou micro-entreprise.
+              {t("page.company.subtitle")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -436,14 +434,14 @@ const Company = () => {
               className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors"
             >
               <Newspaper className="h-4 w-4" />
-              Annonce légale
+              {t("page.company.legal_notice_btn")}
             </button>
             <button
               onClick={() => setWizardMode(true)}
               className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
             >
               <Rocket className="h-4 w-4" />
-              Créer ma société
+              {t("page.company.create_company")}
             </button>
           </div>
         </div>
@@ -464,19 +462,19 @@ const Company = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {templates.map((t) => (
+                {templates.map((tpl) => (
                   <button
-                    key={t.id}
-                    onClick={() => setSelectedTemplate(t)}
+                    key={tpl.id}
+                    onClick={() => setSelectedTemplate(tpl)}
                     className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group"
                   >
                     <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
                       <FileText className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-foreground text-sm">{t.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                      {t.legalBasis && <div className="text-xs text-muted-foreground/60 mt-1 italic">{t.legalBasis}</div>}
+                      <div className="font-semibold text-foreground text-sm">{tpl.label}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{tpl.description}</div>
+                      {tpl.legalBasis && <div className="text-xs text-muted-foreground/60 mt-1 italic">{tpl.legalBasis}</div>}
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
                   </button>
@@ -489,7 +487,7 @@ const Company = () => {
         <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <Building2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Easy-Locs prépare vos documents d'entreprise à titre informatif. L'immatriculation officielle doit être réalisée auprès des organismes compétents (guichet unique, greffe du tribunal de commerce).
+            {t("page.company.disclaimer")}
           </p>
         </div>
       </div>
