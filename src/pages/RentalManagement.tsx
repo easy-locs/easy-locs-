@@ -3,6 +3,7 @@ import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { useI18n } from "@/lib/i18n";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import InventoryBuilder from "@/components/rental/InventoryBuilder";
 import TenantDocuments from "@/components/rental/TenantDocuments";
@@ -52,7 +53,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   IE: "Ireland", BG: "България", SK: "Slovensko",
 };
 
-const CONDITIONS_LABEL: Record<string, string> = { new: "Neuf", good: "Bon état", fair: "État moyen", poor: "Usé" };
+// CONDITIONS_LABEL now uses i18n - see render usage
 const defaultPropertyForm = {
   label: "", address: "", postal_code: "", city: "", property_type: "apartment" as string,
   surface: 0, rooms: 0, heating: "individual-gas", furnished: false,
@@ -70,11 +71,7 @@ const defaultTenantForm = {
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
   caf_apl_amount: 0, payment_day: 5,
 };
-const EXPENSE_CATEGORIES: Record<string, string> = {
-  travaux: "Travaux", assurance: "Assurance", taxe_fonciere: "Taxe foncière",
-  charges_copro: "Charges copro", interet_emprunt: "Intérêts emprunt",
-  frais_gestion: "Frais gestion", diagnostics: "Diagnostics", honoraires: "Honoraires", other: "Autre",
-};
+// EXPENSE_CATEGORIES now uses i18n - see render usage
 
 const escapeEmailHtml = (value: string) =>
   value
@@ -89,12 +86,26 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 const RentalManagement = () => {
   const { user, orgId, userCountry } = useAuth();
+  const { t } = useI18n();
   const cc = useMemo(() => getCountryConfig(userCountry), [userCountry]);
   const fmt = useCallback((n: number) => formatCurrency(n, userCountry), [userCountry]);
   const propertyTypes = cc.propertyTypes;
   const heatingTypes = cc.heatingTypes;
   const L = cc.labels;
   const { toast } = useToast();
+
+  const CONDITIONS_LABEL: Record<string, string> = useMemo(() => ({
+    new: t("page.rental.condition_new"), good: t("page.rental.condition_good"),
+    fair: t("page.rental.condition_fair"), poor: t("page.rental.condition_poor"),
+  }), [t]);
+
+  const EXPENSE_CATEGORIES: Record<string, string> = useMemo(() => ({
+    travaux: t("page.rental.expense_works"), assurance: t("page.rental.expense_insurance"),
+    taxe_fonciere: t("page.rental.expense_property_tax"), charges_copro: t("page.rental.expense_condo"),
+    interet_emprunt: t("page.rental.expense_loan"), frais_gestion: t("page.rental.expense_mgmt"),
+    diagnostics: t("page.rental.expense_diag"), honoraires: t("page.rental.expense_fees"),
+    other: t("page.rental.expense_other"),
+  }), [t]);
   const {
     properties, tenants, rentCalls, loading,
     saveProperty, deleteProperty,
@@ -220,7 +231,7 @@ const RentalManagement = () => {
 
   /* ─── Property handlers ─── */
   const handleSaveProperty = async () => {
-    if (!propertyForm.label.trim()) { toast({ title: "Erreur", description: "Le nom du bien est requis", variant: "destructive" }); return; }
+    if (!propertyForm.label.trim()) { toast({ title: t("page.rental.error"), description: t("page.rental.property_name_required"), variant: "destructive" }); return; }
     const ok = await saveProperty(propertyForm as any, editingPropertyId || undefined);
     if (ok) resetPropertyForm();
   };
@@ -251,7 +262,7 @@ const RentalManagement = () => {
 
   /* ─── Tenant handlers ─── */
   const handleSaveTenant = async () => {
-    if (!tenantForm.name.trim()) { toast({ title: "Erreur", description: "Le nom est requis", variant: "destructive" }); return; }
+    if (!tenantForm.name.trim()) { toast({ title: t("page.rental.error"), description: t("page.rental.tenant_name_required"), variant: "destructive" }); return; }
     const result = await saveTenant(tenantForm as any, editingTenantId || undefined);
     if (result) {
       if (!editingTenantId && tenantForm.email) {
@@ -287,7 +298,7 @@ const RentalManagement = () => {
     const template = leaseTemplateMap[form.lease_type];
     if (!template) return;
 
-    let landlordName = user?.user_metadata?.name || "Propriétaire";
+    let landlordName = user?.user_metadata?.name || t("page.rental.landlord");
     let landlordEmail = user?.email || "";
     let landlordSignature = "";
     try {
@@ -322,16 +333,16 @@ const RentalManagement = () => {
     try {
       const signatures = landlordSignature ? { landlord: landlordSignature, tenant: "" } : undefined;
       const doc = generateFromTemplate(template, leaseData, signatures);
-      const leaseLabel = form.lease_type === "furnished" ? "Bail meublé" : form.lease_type === "commercial" ? "Bail commercial" : "Bail d'habitation vide";
+      const leaseLabel = form.lease_type === "furnished" ? t("page.rental.lease_furnished") : form.lease_type === "commercial" ? t("page.rental.lease_commercial") : t("page.rental.lease_empty");
       const title = `${leaseLabel} — ${form.name}`;
       if (orgId) {
         await supabase.from("documents").insert({ org_id: orgId, user_id: user!.id, title, doc_type: template.docType, template_id: template.id, template_version: template.version, data_json: leaseData as any, status: "draft", country: propCountry } as any);
       }
       downloadPDF(doc, `${title.replace(/\s/g, "_")}.pdf`);
-      toast({ title: "Bail généré automatiquement", description: `${leaseLabel} téléchargé pour ${form.name}` });
+      toast({ title: t("page.rental.lease_generated"), description: `${leaseLabel} ${t("page.rental.lease_downloaded")} ${form.name}` });
     } catch (err) {
       console.error("Auto-lease generation failed:", err);
-      toast({ title: "Info", description: "Le locataire a été créé, mais la génération du bail a échoué.", variant: "destructive" });
+      toast({ title: t("page.rental.info"), description: t("page.rental.lease_gen_failed"), variant: "destructive" });
     }
   };
 
@@ -392,7 +403,7 @@ const RentalManagement = () => {
     });
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.rental.error"), description: error.message, variant: "destructive" });
       return;
     }
 
@@ -404,8 +415,8 @@ const RentalManagement = () => {
         user_id: selectedTenant.tenant_user_id,
         org_id: orgId,
         type: "message",
-        title: "Nouveau message",
-        message: "Votre bailleur vous a envoyé un message.",
+        title: t("page.rental.new_message_notif"),
+        message: t("page.rental.landlord_message"),
         link: "/tenant/messages",
       });
     }
@@ -416,25 +427,25 @@ const RentalManagement = () => {
       const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenantEmail,
-          subject: "Nouveau message de votre bailleur",
+          subject: t("page.rental.email_new_msg_subject"),
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">📩 Nouveau message de votre bailleur</h2>
-            <p style="color:#555;font-size:15px;">Vous avez reçu un nouveau message :</p>
+            <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(t("page.rental.email_new_msg_title"))}</h2>
+            <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.email_new_msg_body"))}</p>
             <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
               <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
             </div>
             <div style="text-align:center;margin:24px 0;">
-              <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Répondre dans l'application</a>
+              <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(t("page.rental.reply_in_app"))}</a>
             </div>
-            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(t("page.rental.email_auto_footer"))}</p>
           </div>`,
         },
       });
 
       if (emailError || (emailData && emailData.success === false)) {
         toast({
-          title: "Message envoyé",
-          description: `Email non envoyé : ${(emailError as any)?.message || emailData?.error || "erreur inconnue"}`,
+          title: t("page.rental.msg_sent"),
+          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "erreur inconnue"}`,
           variant: "destructive",
         });
       }
@@ -483,10 +494,8 @@ const RentalManagement = () => {
         }
       } catch { /* ignore */ }
     }
-    if (!landlordName) landlordName = user?.user_metadata?.name || "Propriétaire";
-
-    // Map payment method to human-readable label
-    const paymentMethodLabels: Record<string, string> = { online: "Virement en ligne", bank_transfer: "Virement bancaire", cash: "Espèces" };
+    if (!landlordName) landlordName = user?.user_metadata?.name || t("page.rental.landlord");
+    const paymentMethodLabels: Record<string, string> = { online: t("page.rental.payment_method_online"), bank_transfer: t("page.rental.payment_method_transfer"), cash: t("page.rental.payment_method_cash") };
     const paymentMethodLabel = payment.payment_method ? (paymentMethodLabels[payment.payment_method] || payment.payment_method) : "";
 
     const data: Record<string, unknown> = {
@@ -518,7 +527,7 @@ const RentalManagement = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur de paiement", description: err.message, variant: "destructive" });
+      toast({ title: t("page.rental.payment_error"), description: err.message, variant: "destructive" });
     } finally { setPayingRentId(null); }
   };
 
@@ -529,7 +538,7 @@ const RentalManagement = () => {
   const handleNotifyRentCall = async (payment: RentCall) => {
     const tenant = tenants.find(t => t.id === payment.tenant_id);
     if (!tenant?.email) {
-      toast({ title: "Erreur", description: "Ce locataire n'a pas d'adresse email.", variant: "destructive" });
+      toast({ title: t("page.rental.error"), description: t("page.rental.no_tenant_email"), variant: "destructive" });
       return;
     }
     setNotifyingRentId(payment.id);
@@ -538,42 +547,41 @@ const RentalManagement = () => {
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenant.email,
-          subject: `Appel de loyer — ${payment.month}`,
+          subject: `${t("page.rental.rent_call_notif")} — ${payment.month}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">🏠 Appel de loyer</h2>
-            <p style="color:#555;font-size:15px;">Bonjour ${escapeEmailHtml(tenant.name)},</p>
-            <p style="color:#555;font-size:15px;">Votre bailleur vous rappelle le loyer du mois <strong>${payment.month}</strong> :</p>
+            <h2 style="color:#1a1a1a;text-align:center;">${escapeEmailHtml(t("page.rental.email_rent_call_title"))}</h2>
+            <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_hello"))} ${escapeEmailHtml(tenant.name)},</p>
+            <p style="color:#555;font-size:15px;">${escapeEmailHtml(t("page.rental.rent_call_reminder"))} <strong>${payment.month}</strong> :</p>
             <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-              <p style="margin:4px 0;font-size:14px;color:#333;">Loyer : <strong>${fmt(payment.rent_amount)}</strong></p>
-              <p style="margin:4px 0;font-size:14px;color:#333;">Charges : <strong>${fmt(payment.charges_amount)}</strong></p>
-              <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">Total : ${fmt(payment.total_amount)}</p>
+              <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_rent_label"))} : <strong>${fmt(payment.rent_amount)}</strong></p>
+              <p style="margin:4px 0;font-size:14px;color:#333;">${escapeEmailHtml(t("page.rental.email_charges_label"))} : <strong>${fmt(payment.charges_amount)}</strong></p>
+              <p style="margin:8px 0 0;font-size:16px;color:#1a1a1a;font-weight:700;">${escapeEmailHtml(t("page.rental.email_total_label"))} : ${fmt(payment.total_amount)}</p>
             </div>
             <div style="text-align:center;margin:24px 0;">
-              <a href="${appUrl}/tenant/pay" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Payer mon loyer</a>
+              <a href="${appUrl}/tenant/pay" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(t("page.rental.pay_rent_btn"))}</a>
             </div>
-            <p style="color:#888;font-size:12px;text-align:center;">Cet email est envoyé automatiquement par Easy-Locs.</p>
+            <p style="color:#888;font-size:12px;text-align:center;">${escapeEmailHtml(t("page.rental.email_auto_footer"))}</p>
           </div>`,
         },
       });
       if (error || (data && data.success === false)) {
-        throw error || new Error(data?.error || "Échec envoi");
+        throw error || new Error(data?.error || "error");
       }
 
-      // Also create in-app notification if tenant has an account
       if (tenant.tenant_user_id && orgId) {
         await supabase.from("notifications").insert({
           user_id: tenant.tenant_user_id,
           org_id: orgId,
           type: "payment",
-          title: "Appel de loyer",
-          message: `Loyer de ${payment.month} : ${fmt(payment.total_amount)}`,
+          title: t("page.rental.rent_call_notif"),
+          message: `${t("page.rental.rent_call_notif")} ${payment.month} : ${fmt(payment.total_amount)}`,
           link: "/tenant/pay",
         });
       }
 
-      toast({ title: "Notification envoyée", description: `Email envoyé à ${tenant.email}` });
+      toast({ title: t("page.rental.notif_sent"), description: `${t("page.rental.email_sent_to")} ${tenant.email}` });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.rental.error"), description: err.message, variant: "destructive" });
     } finally {
       setNotifyingRentId(null);
     }
@@ -748,7 +756,7 @@ const RentalManagement = () => {
                       <p className="text-xs text-muted-foreground">{t.lease_start || "—"} → {t.lease_end || "—"} · {fmt(t.rent_amount)}/mois</p>
                     </div>
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${isLeaseActive(t) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
-                      {isLeaseActive(t) ? "Actif" : "Résilié"}
+                      {isLeaseActive(t) ? L.active : L.terminated}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
                   </button>
@@ -834,7 +842,7 @@ const RentalManagement = () => {
           {/* Mobilier */}
           {selectedProperty.furnished && (
             <div className="bg-card rounded-xl border border-border/50 p-5 mb-4">
-              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Sofa className="h-4 w-4 text-accent" />Mobilier</h3>
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><Sofa className="h-4 w-4 text-accent" />{t("page.rental.furniture")}</h3>
               {propertyFurniture.length === 0 ? <p className="text-sm text-muted-foreground">{L.noFurniture}</p> : (
                 <div className="space-y-3">
                   {Object.entries(groupedFurniture).map(([room, items]) => (
@@ -1142,7 +1150,7 @@ const RentalManagement = () => {
             )}
           </div>
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title="Voir détails"><Eye className="h-4 w-4" /></button>
+            <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.view_details")}><Eye className="h-4 w-4" /></button>
             <button onClick={() => startEditProperty(p)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
             <button onClick={() => deleteProperty(p.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
           </div>
@@ -1433,7 +1441,7 @@ const RentalManagement = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 Jour d'appel de loyer</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 5} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="5" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 {t("page.rental.payment_day_label")}</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 5} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="5" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.guarantor}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1581,11 +1589,11 @@ const RentalManagement = () => {
                             {/* Payment method dialog */}
                             {paymentMethodDialog === p.id && (
                               <div className="absolute right-0 mt-2 bg-card border border-border rounded-xl shadow-lg p-4 z-50 w-56">
-                                <p className="text-xs font-semibold text-foreground mb-3">Mode de paiement</p>
+                                <p className="text-xs font-semibold text-foreground mb-3">{t("page.rental.payment_method")}</p>
                                 {[
-                                  { id: "online", label: "Paiement en ligne", icon: CreditCard },
-                                  { id: "bank_transfer", label: "Virement bancaire", icon: Wallet },
-                                  { id: "cash", label: "Espèces", icon: Euro },
+                                  { id: "online", label: t("page.rental.payment_method_online"), icon: CreditCard },
+                                  { id: "bank_transfer", label: t("page.rental.payment_method_transfer"), icon: Wallet },
+                                  { id: "cash", label: t("page.rental.payment_method_cash"), icon: Euro },
                                 ].map(m => (
                                   <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
                                     className="flex items-center gap-2 w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors">
@@ -1593,7 +1601,7 @@ const RentalManagement = () => {
                                     {m.label}
                                   </button>
                                 ))}
-                                <button onClick={() => setPaymentMethodDialog(null)} className="mt-2 text-xs text-muted-foreground hover:text-foreground w-full text-center">Annuler</button>
+                                <button onClick={() => setPaymentMethodDialog(null)} className="mt-2 text-xs text-muted-foreground hover:text-foreground w-full text-center">{t("page.rental.cancel")}</button>
                               </div>
                             )}
                           </td>
@@ -1605,13 +1613,13 @@ const RentalManagement = () => {
                                 className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
                               >
                                 {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-                                Notifier
+                                {t("page.rental.notify")}
                               </button>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">Valider</button>}
-                            {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />Validée</span>}
+                            {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
+                            {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
                             {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground ml-2"><Download className="h-3.5 w-3.5" /></button>}
                           </td>
                         </tr>
