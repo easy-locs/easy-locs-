@@ -128,14 +128,14 @@ const PaymentNotices = () => {
     y += 25;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(26, 39, 68);
-    doc.text("Détail", 20, y);
+    doc.text(t("pdf.detail"), 20, y);
     y += 10;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
-    doc.text(`Loyer : ${fmt(notice.rent_amount)}`, 20, y);
-    doc.text(`Charges : ${fmt(notice.charges_amount)}`, 20, y + 7);
+    doc.text(`${t("pdf.rent")} : ${fmt(notice.rent_amount)}`, 20, y);
+    doc.text(`${t("pdf.charges")} : ${fmt(notice.charges_amount)}`, 20, y + 7);
     doc.setFont("helvetica", "bold");
-    doc.text(`Total à payer : ${fmt(notice.total_amount)}`, 20, y + 17);
+    doc.text(`${t("pdf.total")} : ${fmt(notice.total_amount)}`, 20, y + 17);
 
     doc.setFillColor(26, 39, 68);
     doc.rect(0, 290, 210, 7, "F");
