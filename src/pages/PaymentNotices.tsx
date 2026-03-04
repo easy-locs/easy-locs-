@@ -110,7 +110,7 @@ const PaymentNotices = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(26, 39, 68);
-    doc.text("Locataire", 20, y);
+    doc.text(t("pdf.tenant"), 20, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
     doc.text(tenant?.name || "—", 20, y + 7);
