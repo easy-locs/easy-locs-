@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
+import { useI18n } from "@/lib/i18n";
 
 const TenantSignup = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,14 +25,14 @@ const TenantSignup = () => {
   useEffect(() => {
     const validate = async () => {
       if (!token) {
-        setError("Lien d'invitation invalide. Veuillez demander un nouveau lien à votre bailleur.");
+        setError(t("page.tsignup.invalid_link"));
         setValidating(false);
         return;
       }
       const { data, error: fetchErr } = await supabase.rpc("validate_tenant_invitation", { _token: token });
 
       if (fetchErr || !data || !(data as any).valid) {
-        setError("Ce lien d'invitation est invalide ou a expiré. Veuillez demander un nouveau lien à votre bailleur.");
+        setError(t("page.tsignup.expired_link"));
       } else {
         const inv = data as any;
         setInvitation(inv);
@@ -45,40 +47,38 @@ const TenantSignup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
-      toast({ title: "Mot de passe faible", description: "8 caractères min., 1 majuscule, 1 chiffre.", variant: "destructive" });
+      toast({ title: t("page.tsignup.weak_password"), description: t("page.tsignup.weak_password_desc"), variant: "destructive" });
       return;
     }
 
     setLoading(true);
 
     try {
-      // Call edge function to handle signup + invitation acceptance server-side
       const { data, error: fnError } = await supabase.functions.invoke("tenant-signup", {
         body: { email, password, name, token },
       });
 
       if (fnError || !data?.success) {
-        const msg = data?.error || fnError?.message || "Erreur lors de l'activation";
-        toast({ title: "Erreur", description: msg, variant: "destructive" });
+        const msg = data?.error || fnError?.message || t("page.tsignup.activation_error");
+        toast({ title: t("common.error") || "Error", description: msg, variant: "destructive" });
         return;
       }
 
-      // Now sign in the user client-side
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
       if (signInError) {
         toast({
-          title: "Compte activé",
-          description: "Votre espace est prêt ! Connectez-vous avec vos identifiants.",
+          title: t("page.tsignup.account_activated"),
+          description: t("page.tsignup.account_activated_desc"),
         });
         navigate("/login");
         return;
       }
 
-      toast({ title: "Bienvenue !", description: "Votre espace locataire est activé." });
+      toast({ title: t("page.tsignup.welcome"), description: t("page.tsignup.welcome_desc") });
       navigate("/tenant");
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message || "Erreur inattendue", variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: err.message || t("page.tsignup.unexpected_error"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -97,10 +97,10 @@ const TenantSignup = () => {
       <div className="min-h-screen bg-hero flex items-center justify-center p-4">
         <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-foreground mb-2">Invitation invalide</h1>
+          <h1 className="text-xl font-bold text-foreground mb-2">{t("page.tsignup.invalid_invitation")}</h1>
           <p className="text-muted-foreground text-sm mb-6">{error}</p>
           <Link to="/login" className="text-primary font-medium hover:underline text-sm">
-            Se connecter avec un compte existant
+            {t("page.tsignup.login_existing")}
           </Link>
         </div>
       </div>
@@ -114,16 +114,16 @@ const TenantSignup = () => {
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
         <div className="flex items-center gap-2 mb-1">
           <CheckCircle className="h-5 w-5 text-primary" />
-          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Invitation vérifiée</span>
+          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">{t("page.tsignup.verified_badge")}</span>
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-1 mt-3">Créer votre espace locataire</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1 mt-3">{t("page.tsignup.create_space")}</h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Votre bailleur vous invite à rejoindre Easy-Locs pour consulter vos documents, quittances et communiquer facilement.
+          {t("page.tsignup.invite_desc")}
         </p>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.tsignup.full_name")}</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -134,7 +134,7 @@ const TenantSignup = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.tsignup.email")}</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -142,16 +142,16 @@ const TenantSignup = () => {
                 className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">L'email est pré-rempli par votre bailleur</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("page.tsignup.email_prefilled")}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Mot de passe</label>
+            <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.tsignup.password")}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-background border border-border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="8 caractères min., 1 majuscule, 1 chiffre"
+                placeholder={t("page.tsignup.password_placeholder")}
               />
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -163,12 +163,12 @@ const TenantSignup = () => {
             type="submit" disabled={loading}
             className="w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activer mon espace locataire"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.tsignup.activate_btn")}
           </button>
         </form>
 
         <p className="text-center text-xs text-muted-foreground/60 mt-6">
-          Propulsé par <strong>EASY-LOCS<sup>®</sup></strong>
+          {t("page.tsignup.powered_by")} <strong>EASY-LOCS<sup>®</sup></strong>
         </p>
       </div>
     </div>
