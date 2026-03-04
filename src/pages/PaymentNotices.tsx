@@ -119,7 +119,7 @@ const PaymentNotices = () => {
       y += 20;
       doc.setFont("helvetica", "bold");
       doc.setTextColor(26, 39, 68);
-      doc.text("Bien", 20, y);
+      doc.text(t("pdf.property"), 20, y);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(50, 50, 50);
       doc.text(`${property.label} — ${property.address}, ${property.city}`, 20, y + 7);
