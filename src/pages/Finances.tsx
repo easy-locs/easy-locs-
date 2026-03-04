@@ -7,12 +7,16 @@ import { exportToCSV } from "@/lib/csv-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subMonths } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
+import { formatCurrency } from "@/lib/country-config";
+
+const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
 interface ConnectStatus {
   connected: boolean;
@@ -47,17 +51,13 @@ interface Property {
   label: string;
 }
 
-const EXPENSE_CATEGORIES: Record<string, string> = {
-  travaux: "Travaux", assurance: "Assurance", taxe_fonciere: "Taxe foncière",
-  charges_copro: "Charges copro", interet_emprunt: "Intérêts emprunt",
-  frais_gestion: "Frais gestion", diagnostics: "Diagnostics", honoraires: "Honoraires", other: "Autre",
-};
-
 const COLORS = ["hsl(var(--accent))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
 
 const Finances = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, userCountry } = useAuth();
   const { toast } = useToast();
+  const { t, locale } = useI18n();
+  const dateFnsLocale = DATE_LOCALES[locale] || fr;
   const [searchParams] = useSearchParams();
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [connectLoading, setConnectLoading] = useState(true);
@@ -68,6 +68,14 @@ const Finances = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [propertyFilter, setPropertyFilter] = useState("");
+
+  const fmt = (n: number) => formatCurrency(n, userCountry);
+
+  const EXPENSE_CATEGORIES: Record<string, string> = {
+    travaux: t("page.finances.cat_travaux"), assurance: t("page.finances.cat_assurance"), taxe_fonciere: t("page.finances.cat_taxe_fonciere"),
+    charges_copro: t("page.finances.cat_charges_copro"), interet_emprunt: t("page.finances.cat_interet"),
+    frais_gestion: t("page.finances.cat_gestion"), diagnostics: t("page.finances.cat_diagnostics"), honoraires: t("page.finances.cat_honoraires"), other: t("page.finances.cat_other"),
+  };
 
   const checkConnectStatus = async (silent = false) => {
     if (silent) setConnectSyncing(true);
@@ -109,7 +117,7 @@ const Finances = () => {
 
   useEffect(() => {
     if (searchParams.get("connect") === "success") {
-      toast({ title: "Compte Stripe connecté !", description: "Vérification du statut en cours..." });
+      toast({ title: t("page.finances.stripe_connected"), description: t("page.finances.checking") });
       checkConnectStatus();
     }
   }, [searchParams]);
@@ -121,7 +129,7 @@ const Finances = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setOnboardingLoading(false);
     }
@@ -154,29 +162,29 @@ const Finances = () => {
 
   // Monthly bar chart data (last 12 months)
   const monthlyData = useMemo(() => {
-    const months: { month: string; label: string; encaissé: number; impayé: number; dépenses: number }[] = [];
+    const months: { month: string; label: string; collected: number; unpaid: number; expenses: number }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = subMonths(new Date(), i);
       const key = format(d, "yyyy-MM");
-      const label = format(d, "MMM yy", { locale: fr });
+      const label = format(d, "MMM yy", { locale: dateFnsLocale });
       const calls = filteredRentCalls.filter(r => r.month === key);
       const paid = calls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-      const unpaid = calls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
+      const unpaidAmt = calls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
       const exp = filteredExpenses.filter(e => e.expense_date.startsWith(key)).reduce((s, e) => s + Number(e.amount), 0);
-      months.push({ month: key, label, encaissé: paid, impayé: unpaid, dépenses: exp });
+      months.push({ month: key, label, collected: paid, unpaid: unpaidAmt, expenses: exp });
     }
     return months;
-  }, [filteredRentCalls, filteredExpenses]);
+  }, [filteredRentCalls, filteredExpenses, dateFnsLocale]);
 
   // Pie chart
   const pieData = useMemo(() => {
     const paid = filteredRentCalls.filter(r => r.paid).length;
     const unpaid = filteredRentCalls.filter(r => !r.paid).length;
     return [
-      { name: "Payés", value: paid },
-      { name: "Impayés", value: unpaid },
+      { name: t("page.common.paid"), value: paid },
+      { name: t("page.common.unpaid"), value: unpaid },
     ].filter(d => d.value > 0);
-  }, [filteredRentCalls]);
+  }, [filteredRentCalls, t]);
 
   // Expenses by category
   const expensesByCategory = useMemo(() => {
@@ -191,54 +199,52 @@ const Finances = () => {
   }, [filteredExpenses]);
 
   const chartConfig = {
-    encaissé: { label: "Encaissé", color: "hsl(var(--accent))" },
-    impayé: { label: "Impayé", color: "hsl(var(--destructive))" },
-    dépenses: { label: "Dépenses", color: "hsl(var(--muted-foreground))" },
+    collected: { label: t("page.dashboard.collected"), color: "hsl(var(--accent))" },
+    unpaid: { label: t("page.common.unpaid"), color: "hsl(var(--destructive))" },
+    expenses: { label: t("page.finances.total_expenses"), color: "hsl(var(--muted-foreground))" },
   };
 
-  const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
   const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="unlimited_properties" featureLabel="Finances">
+      <FeatureGate feature="unlimited_properties" featureLabel={t("page.finances.title")}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Finances</h1>
-            <p className="text-muted-foreground mt-1">Revenus locatifs, dépenses et résultat net</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.finances.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("page.finances.subtitle")}</p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Property filter */}
             <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
               className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
-              <option value="">Tous les biens</option>
+              <option value="">{t("page.finances.all_properties")}</option>
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
             {rentCalls.length > 0 && (
               <button
                 onClick={() => exportToCSV(
                   filteredRentCalls.map(r => ({
-                    mois: r.month,
-                    loyer: r.rent_amount,
+                    month: r.month,
+                    rent: r.rent_amount,
                     charges: r.charges_amount,
                     total: r.total_amount,
-                    payé: r.paid ? "Oui" : "Non",
-                    date_paiement: r.paid_date || "",
+                    paid: r.paid ? t("page.common.paid") : t("page.common.unpaid"),
+                    paid_date: r.paid_date || "",
                   })),
-                  "finances_loyers",
+                  "finances_rent",
                   [
-                    { key: "mois", label: "Mois" },
-                    { key: "loyer", label: "Loyer (€)" },
-                    { key: "charges", label: "Charges (€)" },
-                    { key: "total", label: "Total (€)" },
-                    { key: "payé", label: "Payé" },
-                    { key: "date_paiement", label: "Date de paiement" },
+                    { key: "month", label: "Month" },
+                    { key: "rent", label: "Rent" },
+                    { key: "charges", label: "Charges" },
+                    { key: "total", label: "Total" },
+                    { key: "paid", label: t("page.common.paid") },
+                    { key: "paid_date", label: "Date" },
                   ]
                 )}
                 className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
               >
-                <Download className="h-4 w-4" /> Export CSV
+                <Download className="h-4 w-4" /> {t("page.common.export_csv")}
               </button>
             )}
           </div>
@@ -256,51 +262,51 @@ const Finances = () => {
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3 mb-1">
-                <h2 className="font-semibold text-foreground text-lg">Paiement en ligne des loyers</h2>
+                <h2 className="font-semibold text-foreground text-lg">{t("page.finances.online_payment")}</h2>
                 <button
                   onClick={() => checkConnectStatus(true)}
                   disabled={connectSyncing || connectLoading}
                   className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
                 >
-                  {connectSyncing ? "Synchronisation..." : "Synchroniser Stripe"}
+                  {connectSyncing ? t("page.finances.checking") : "Sync Stripe"}
                 </button>
               </div>
               {connectLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Vérification...
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t("page.finances.checking")}
                 </div>
               ) : connectStatus?.onboarding_complete ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
-                    <CheckCircle className="h-4 w-4" /> Compte Stripe connecté — vos locataires peuvent payer par CB et Apple Pay
+                    <CheckCircle className="h-4 w-4" /> {t("page.finances.stripe_connected")}
                   </div>
                   <div className="flex gap-3 text-xs text-muted-foreground">
-                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> Paiements activés</span>}
-                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> Virements activés</span>}
+                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payments_enabled")}</span>}
+                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payouts_enabled")}</span>}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="text-sm text-accent hover:underline flex items-center gap-1 mt-2">
                     {onboardingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
-                    Modifier mes informations bancaires
+                    {t("page.finances.edit_bank")}
                   </button>
                 </div>
               ) : connectStatus?.connected ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-yellow-600 text-sm">
-                    <AlertTriangle className="h-4 w-4" /> Onboarding en cours — complétez la vérification
+                    <AlertTriangle className="h-4 w-4" /> {t("page.finances.onboarding_pending")}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
                     {onboardingLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                    Continuer l'activation
+                    {t("page.finances.continue_activation")}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Connectez votre compte bancaire pour recevoir les paiements de loyer directement par carte bancaire ou Apple Pay.
+                    {t("page.finances.connect_desc")}
                   </p>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
                     {onboardingLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                    Connecter mon compte Stripe
+                    {t("page.finances.connect_stripe")}
                   </button>
                 </div>
               )}
@@ -311,12 +317,12 @@ const Finances = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { icon: TrendingUp, label: "Encaissé ce mois", value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `sur ${fmt(kpis.expectedThisMonth)} attendu`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
-            { icon: TrendingDown, label: "Impayés", value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} appel(s)`, path: "/dashboard/dunning", iconColor: "text-destructive" },
-            { icon: PiggyBank, label: "Total encaissé", value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `sur ${fmt(kpis.totalExpected)} attendu`, path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
-            { icon: Wallet, label: "Total dépenses", value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} dépense(s)`, path: "/dashboard/expenses", iconColor: "text-destructive" },
-            { icon: BarChart3, label: "Résultat net", value: dataLoading ? "..." : fmt(kpis.netResult), sub: `Encaissé - Dépenses`, path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
-            { icon: CheckCircle, label: "Taux encaissement", value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "ce mois", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
+            { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconColor: "text-destructive" },
+            { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
+            { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconColor: "text-destructive" },
+            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: CheckCircle, label: t("page.finances.collection_rate"), value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
           ].map(kpi => {
             const content = (
               <Card className={`${kpi.path ? "hover:shadow-card-hover transition-all cursor-pointer" : ""} group`}>
@@ -342,22 +348,22 @@ const Finances = () => {
         {/* Charts */}
         <Tabs defaultValue="bar" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="bar">Revenus & Dépenses</TabsTrigger>
-            <TabsTrigger value="pie">Paiements</TabsTrigger>
-            <TabsTrigger value="expenses">Dépenses par catégorie</TabsTrigger>
-            <TabsTrigger value="detail">Détail dépenses</TabsTrigger>
+            <TabsTrigger value="bar">{t("page.finances.revenue_expenses")}</TabsTrigger>
+            <TabsTrigger value="pie">{t("page.finances.payments")}</TabsTrigger>
+            <TabsTrigger value="expenses">{t("page.finances.expenses_category")}</TabsTrigger>
+            <TabsTrigger value="detail">{t("page.finances.detail_expenses")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bar">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Revenus vs Dépenses — 12 derniers mois</CardTitle>
+                <CardTitle className="text-base">{t("page.finances.chart_title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {filteredRentCalls.length === 0 && filteredExpenses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Wallet className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Aucune donnée — les graphiques apparaîtront automatiquement.</p>
+                    <p className="text-sm">{t("page.finances.no_data")}</p>
                   </div>
                 ) : (
                   <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -366,9 +372,9 @@ const Finances = () => {
                       <XAxis dataKey="label" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                       <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" tickFormatter={(v) => `${v}€`} />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="encaissé" fill="var(--color-encaissé)" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="impayé" fill="var(--color-impayé)" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="dépenses" fill="var(--color-dépenses)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="collected" fill="var(--color-collected)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="unpaid" fill="var(--color-unpaid)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="expenses" fill="var(--color-expenses)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ChartContainer>
                 )}
@@ -379,13 +385,13 @@ const Finances = () => {
           <TabsContent value="pie">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Répartition payés / impayés</CardTitle>
+                <CardTitle className="text-base">{t("page.finances.payments")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {pieData.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Wallet className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Aucune donnée disponible.</p>
+                    <p className="text-sm">{t("page.finances.no_data")}</p>
                   </div>
                 ) : (
                   <div className="h-[300px] w-full flex items-center justify-center">
@@ -408,13 +414,13 @@ const Finances = () => {
           <TabsContent value="expenses">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Dépenses par catégorie</CardTitle>
+                <CardTitle className="text-base">{t("page.finances.expenses_category")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {expensesByCategory.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Wallet className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Aucune dépense enregistrée.</p>
+                    <p className="text-sm">{t("page.finances.no_data")}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -438,13 +444,13 @@ const Finances = () => {
           <TabsContent value="detail">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Dernières dépenses</CardTitle>
+                <CardTitle className="text-base">{t("page.finances.detail_expenses")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {filteredExpenses.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Wallet className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Aucune dépense enregistrée.</p>
+                    <p className="text-sm">{t("page.finances.no_data")}</p>
                   </div>
                 ) : (
                   <div className="space-y-2">

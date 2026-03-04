@@ -7,9 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 const Billing = () => {
   const { subscription, refreshSubscription } = useAuth();
+  const { t, locale } = useI18n();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -18,7 +20,7 @@ const Billing = () => {
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
-      toast({ title: "Abonnement activé !", description: "Merci pour votre confiance." });
+      toast({ title: t("page.billing.activated"), description: t("page.billing.thanks") });
       refreshSubscription();
     }
   }, [searchParams, refreshSubscription, toast]);
@@ -30,7 +32,7 @@ const Billing = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
       setLoadingPriceId(null);
     }
   };
@@ -42,7 +44,7 @@ const Billing = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }
@@ -54,22 +56,22 @@ const Billing = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Abonnement</h1>
-        <p className="text-muted-foreground text-sm mb-8">Un seul plan, tout illimité.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.billing.title")}</h1>
+        <p className="text-muted-foreground text-sm mb-8">{t("page.billing.subtitle")}</p>
 
         {/* Trial banner */}
         {subscription.isTrial && (
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-6 mb-8">
             <div className="flex items-center gap-3 mb-3">
               <Clock className="h-5 w-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Essai gratuit — 3 jours</h2>
+              <h2 className="font-semibold text-foreground">{t("page.billing.trial_title")}</h2>
               <span className="bg-accent/20 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-                {subscription.trialDaysLeft != null ? `${subscription.trialDaysLeft} jour${subscription.trialDaysLeft > 1 ? 's' : ''} restant${subscription.trialDaysLeft > 1 ? 's' : ''}` : ''}
+                {subscription.trialDaysLeft != null ? `${subscription.trialDaysLeft} ${t("page.billing.days_left")}` : ''}
               </span>
             </div>
             <Progress value={subscription.trialDaysLeft != null ? ((3 - subscription.trialDaysLeft) / 3) * 100 : 0} className="h-2 mb-3" />
             <p className="text-sm text-muted-foreground">
-              Accès complet à toutes les fonctionnalités. Abonnez-vous ci-dessous pour continuer après l'essai.
+              {t("page.billing.trial_desc")}
             </p>
           </div>
         )}
@@ -79,17 +81,17 @@ const Billing = () => {
           <div className="bg-card rounded-xl shadow-card border border-success/30 p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-5 w-5 text-success" />
-              <h2 className="font-semibold text-foreground">Abonnement actif</h2>
+              <h2 className="font-semibold text-foreground">{t("page.billing.active")}</h2>
               <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs Illimité</span>
             </div>
             {subscription.subscriptionEnd && (
               <p className="text-sm text-muted-foreground mb-4">
-                Prochain renouvellement : {new Date(subscription.subscriptionEnd).toLocaleDateString("fr-FR")}
+                {t("page.billing.next_renewal")} : {new Date(subscription.subscriptionEnd).toLocaleDateString(locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "pt" ? "pt-PT" : "en-US")}
               </p>
             )}
             <button onClick={handlePortal} disabled={portalLoading} className="flex items-center gap-2 text-sm font-medium text-accent hover:underline">
               {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-              Gérer mon abonnement
+              {t("page.billing.manage")}
             </button>
           </div>
         )}
@@ -100,13 +102,13 @@ const Billing = () => {
             onClick={() => setBillingInterval("monthly")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "monthly" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
           >
-            Mensuel
+            {t("page.billing.monthly")}
           </button>
           <button
             onClick={() => setBillingInterval("annual")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
           >
-            Annuel
+            {t("page.billing.annual")}
           </button>
         </div>
 
@@ -122,7 +124,7 @@ const Billing = () => {
               </span>
             )}
             {isSubscribed && (
-              <span className="inline-block bg-success/20 text-success text-xs font-semibold px-2 py-0.5 rounded-full mb-3">Votre plan</span>
+              <span className="inline-block bg-success/20 text-success text-xs font-semibold px-2 py-0.5 rounded-full mb-3">{t("page.billing.your_plan")}</span>
             )}
             <div className="flex items-center gap-2 mb-1">
               <Infinity className="h-5 w-5 text-gold" />
@@ -143,14 +145,14 @@ const Billing = () => {
               ))}
             </ul>
             {isSubscribed ? (
-              <button disabled className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default">Plan actuel</button>
+              <button disabled className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default">{t("page.billing.current")}</button>
             ) : (
               <button
                 onClick={() => handleCheckout(plan.priceId)}
                 disabled={!!loadingPriceId}
                 className="w-full py-3 rounded-lg text-sm font-semibold bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90 transition-all disabled:opacity-50"
               >
-                {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "S'abonner"}
+                {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t("page.billing.subscribe")}
               </button>
             )}
           </div>
@@ -158,20 +160,20 @@ const Billing = () => {
 
         {/* Payment methods info */}
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
-          <span>💳 Carte bancaire</span>
+          <span>{t("page.billing.card")}</span>
           <span> Apple Pay</span>
           <span>🟢 Google Pay</span>
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-4">
-          Aucun engagement – Annulation à tout moment. 3 jours d'essai gratuit inclus.
+          {t("page.billing.no_commitment")}
         </p>
 
         {!subscription.subscribed && !subscription.loading && !subscription.isTrial && (
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              Votre essai est terminé. Abonnez-vous pour continuer à utiliser Easy-Locs.
+              {t("page.billing.trial_ended")}
             </p>
           </div>
         )}
