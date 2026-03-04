@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send } from "lucide-react";
 
 interface ListingManagerProps {
@@ -9,9 +10,16 @@ interface ListingManagerProps {
   propertyLabel: string;
 }
 
+const AMENITY_KEYS = [
+  "amenity.wifi", "amenity.ac", "amenity.pool", "amenity.parking", "amenity.washer", "amenity.dryer",
+  "amenity.kitchen", "amenity.balcony", "amenity.garden", "amenity.tv", "amenity.iron",
+  "amenity.linens", "amenity.towels", "amenity.pets", "amenity.accessibility",
+];
+
 const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -67,23 +75,17 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       ...(form.cleaning_fee > 0 ? [{ type: "cleaning_fee", amount: form.cleaning_fee }] : []),
     ];
     const { data, error } = await supabase.from("public_listings").insert({
-      property_id: propertyId,
-      org_id: orgId,
-      user_id: user.id,
-      slug,
-      title: form.title || propertyLabel,
-      description: form.description,
-      price_per_night: form.price_per_night,
-      min_nights: form.min_nights,
-      max_guests: form.max_guests,
-      amenities: amenities as any,
+      property_id: propertyId, org_id: orgId, user_id: user.id, slug,
+      title: form.title || propertyLabel, description: form.description,
+      price_per_night: form.price_per_night, min_nights: form.min_nights,
+      max_guests: form.max_guests, amenities: amenities as any,
     } as any).select().single();
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
       return;
     }
     setListing(data);
-    toast({ title: "Annonce créée ! Lien public disponible." });
+    toast({ title: t("page.listing_mgr.created") });
   };
 
   const updateListing = async () => {
@@ -93,38 +95,32 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       ...(form.cleaning_fee > 0 ? [{ type: "cleaning_fee", amount: form.cleaning_fee }] : []),
     ];
     const { error } = await supabase.from("public_listings").update({
-      title: form.title,
-      description: form.description,
-      price_per_night: form.price_per_night,
-      min_nights: form.min_nights,
-      max_guests: form.max_guests,
-      amenities: amenities as any,
+      title: form.title, description: form.description,
+      price_per_night: form.price_per_night, min_nights: form.min_nights,
+      max_guests: form.max_guests, amenities: amenities as any,
     } as any).eq("id", listing.id);
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Annonce mise à jour" });
+    toast({ title: t("page.listing_mgr.updated") });
     load();
   };
 
   const toggleActive = async () => {
     if (!listing) return;
     await supabase.from("public_listings").update({ active: !listing.active } as any).eq("id", listing.id);
-    toast({ title: listing.active ? "Annonce désactivée" : "Annonce activée" });
+    toast({ title: listing.active ? t("page.listing_mgr.deactivated") : t("page.listing_mgr.activated") });
     load();
   };
 
-  const getPublicUrl = () => {
-    const base = window.location.origin;
-    return `${base}/listing/${listing?.slug}`;
-  };
+  const getPublicUrl = () => `${window.location.origin}/listing/${listing?.slug}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(getPublicUrl());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast({ title: "Lien copié !" });
+    toast({ title: t("page.listing_mgr.link_copied") });
   };
 
   const sendLinkByEmail = async () => {
@@ -134,31 +130,25 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       await supabase.functions.invoke("send-email", {
         body: {
           to: shareEmail,
-          subject: `🏖️ Découvrez ce logement — ${form.title || propertyLabel}`,
+          subject: `🏖️ ${t("page.listing_mgr.email_subject")} — ${form.title || propertyLabel}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
             <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${form.title || propertyLabel}</h2>
-            <p style="color:#555;text-align:center;">Découvrez cette annonce et réservez votre séjour :</p>
+            <p style="color:#555;text-align:center;">${t("page.listing_mgr.email_body")} :</p>
             <p style="text-align:center;margin:24px 0;">
-              <a href="${getPublicUrl()}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">Voir l'annonce →</a>
+              <a href="${getPublicUrl()}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">${t("page.listing_mgr.email_cta")}</a>
             </p>
-            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">Envoyé via EASY-LOCS®</p>
+            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
           </div>`,
         },
       });
-      toast({ title: "Lien envoyé par email !" });
+      toast({ title: t("page.listing_mgr.email_sent") });
       setShareEmail("");
     } catch {
-      toast({ title: "Erreur d'envoi", variant: "destructive" });
+      toast({ title: t("page.listing_mgr.email_error"), variant: "destructive" });
     } finally {
       setSendingEmail(false);
     }
   };
-
-  const AVAILABLE_OPTIONS = [
-    "WiFi", "Climatisation", "Piscine", "Parking", "Lave-linge", "Sèche-linge",
-    "Cuisine équipée", "Balcon / Terrasse", "Jardin", "TV", "Fer à repasser",
-    "Draps fournis", "Serviettes fournies", "Animaux acceptés", "Accès PMR",
-  ];
 
   const toggleOption = (opt: string) => {
     setForm(p => ({
@@ -169,113 +159,80 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     }));
   };
 
-  if (loading) return <div className="text-sm text-muted-foreground">Chargement…</div>;
+  if (loading) return <div className="text-sm text-muted-foreground">{t("page.listing_mgr.loading")}</div>;
 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <Link2 className="h-4 w-4 text-accent" /> Annonce publique
+        <Link2 className="h-4 w-4 text-accent" /> {t("page.listing_mgr.title")}
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Titre de l'annonce</label>
-          <input
-            value={form.title}
-            onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-            placeholder={propertyLabel}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.listing_title")}</label>
+          <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder={propertyLabel}
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Prix / nuit (€)</label>
-          <input
-            type="number"
-            value={form.price_per_night || ""}
-            onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
-            onChange={e => setForm(p => ({ ...p, price_per_night: e.target.value === "" ? 0 : +e.target.value }))}
-            placeholder="0"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.price_night")}</label>
+          <input type="number" value={form.price_per_night || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
+            onChange={e => setForm(p => ({ ...p, price_per_night: e.target.value === "" ? 0 : +e.target.value }))} placeholder="0"
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Frais ménage (€)</label>
-          <input
-            type="number"
-            value={form.cleaning_fee || ""}
-            onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
-            onChange={e => setForm(p => ({ ...p, cleaning_fee: e.target.value === "" ? 0 : +e.target.value }))}
-            placeholder="0"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.cleaning_fee")}</label>
+          <input type="number" value={form.cleaning_fee || ""} onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
+            onChange={e => setForm(p => ({ ...p, cleaning_fee: e.target.value === "" ? 0 : +e.target.value }))} placeholder="0"
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Nuits minimum</label>
-          <input
-            type="number"
-            value={form.min_nights || ""}
-            onFocus={e => { if (e.target.value === "0" || e.target.value === "1") e.target.value = ""; }}
-            onChange={e => setForm(p => ({ ...p, min_nights: e.target.value === "" ? 1 : +e.target.value }))}
-            placeholder="1"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.min_nights")}</label>
+          <input type="number" value={form.min_nights || ""} onFocus={e => { if (e.target.value === "0" || e.target.value === "1") e.target.value = ""; }}
+            onChange={e => setForm(p => ({ ...p, min_nights: e.target.value === "" ? 1 : +e.target.value }))} placeholder="1"
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Voyageurs max</label>
-          <input
-            type="number"
-            value={form.max_guests || ""}
-            onFocus={e => { if (e.target.value === "0" || e.target.value === "4") e.target.value = ""; }}
-            onChange={e => setForm(p => ({ ...p, max_guests: e.target.value === "" ? 4 : +e.target.value }))}
-            placeholder="4"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.max_guests")}</label>
+          <input type="number" value={form.max_guests || ""} onFocus={e => { if (e.target.value === "0" || e.target.value === "4") e.target.value = ""; }}
+            onChange={e => setForm(p => ({ ...p, max_guests: e.target.value === "" ? 4 : +e.target.value }))} placeholder="4"
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs font-medium text-muted-foreground">Description</label>
-          <textarea
-            value={form.description}
-            onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-            rows={3}
-            placeholder="Décrivez votre bien pour les voyageurs…"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 resize-none"
-          />
+          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.description")}</label>
+          <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3}
+            placeholder={t("page.listing_mgr.description_placeholder")}
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 resize-none" />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">Équipements & options</label>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">{t("page.listing_mgr.amenities_title")}</label>
           <div className="flex flex-wrap gap-2">
-            {AVAILABLE_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => toggleOption(opt)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  form.options.includes(opt)
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
+            {AMENITY_KEYS.map(key => {
+              const label = t(key);
+              return (
+                <button key={key} type="button" onClick={() => toggleOption(label)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    form.options.includes(label)
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}>
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {!listing ? (
-        <button
-          onClick={createListing}
-          className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          Créer l'annonce et générer le lien
+        <button onClick={createListing}
+          className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+          {t("page.listing_mgr.create_btn")}
         </button>
       ) : (
         <div className="space-y-3">
-          <button
-            onClick={updateListing}
-            className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
-          >
-            Mettre à jour l'annonce
+          <button onClick={updateListing}
+            className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+            {t("page.listing_mgr.update_btn")}
           </button>
 
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
@@ -289,34 +246,23 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
             </a>
           </div>
 
-          <button
-            onClick={toggleActive}
-            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={toggleActive}
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
             {listing.active ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            {listing.active ? "Désactiver l'annonce" : "Réactiver l'annonce"}
+            {listing.active ? t("page.listing_mgr.deactivate") : t("page.listing_mgr.reactivate")}
           </button>
 
-          {/* Email share */}
           <div className="mt-3 space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Mail className="h-3.5 w-3.5" /> Envoyer le lien par email
+              <Mail className="h-3.5 w-3.5" /> {t("page.listing_mgr.share_email")}
             </label>
             <div className="flex gap-2">
-              <input
-                type="email"
-                value={shareEmail}
-                onChange={e => setShareEmail(e.target.value)}
-                placeholder="email@exemple.com"
-                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm"
-              />
-              <button
-                onClick={sendLinkByEmail}
-                disabled={!shareEmail || sendingEmail}
-                className="flex items-center gap-1.5 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50"
-              >
+              <input type="email" value={shareEmail} onChange={e => setShareEmail(e.target.value)} placeholder="email@example.com"
+                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+              <button onClick={sendLinkByEmail} disabled={!shareEmail || sendingEmail}
+                className="flex items-center gap-1.5 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50">
                 {sendingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                Envoyer
+                {t("page.listing_mgr.send")}
               </button>
             </div>
           </div>
