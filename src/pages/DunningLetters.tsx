@@ -72,10 +72,10 @@ const DunningLetters = () => {
               <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? t("email.dunning_subject_3") : levelLabel}</h2>
               <p style="color:#555;">${levelTone}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;"><strong>Mois :</strong> ${month}</p>
-                <p style="color:#1a1a1a;"><strong>Montant dû :</strong> ${fmt(amount)}</p>
+                <p style="color:#1a1a1a;"><strong>${t("email.dunning_month")} :</strong> ${month}</p>
+                <p style="color:#1a1a1a;"><strong>${t("email.dunning_amount")} :</strong> ${fmt(amount)}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour plus de détails.</p>
+              <p style="color:#888;font-size:13px;">${t("email.dunning_footer")}</p>
             </div>`,
           },
         }).catch(() => {});
