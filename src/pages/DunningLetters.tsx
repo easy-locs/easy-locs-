@@ -103,25 +103,25 @@ const DunningLetters = () => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
-    doc.text(`Date : ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
+    doc.text(`${t("pdf.date")} : ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
     y += 10;
-    doc.text(`Destinataire : ${tenant?.name || "—"}`, 20, y);
-    if (property) { y += 7; doc.text(`Bien : ${property.label} — ${property.address}, ${property.city}`, 20, y); }
+    doc.text(`${t("pdf.recipient")} : ${tenant?.name || "—"}`, 20, y);
+    if (property) { y += 7; doc.text(`${t("pdf.property")} : ${property.label} — ${property.address}, ${property.city}`, 20, y); }
     y += 15;
 
-    doc.text(`Objet : Loyer impayé — ${letter.month}`, 20, y);
+    doc.text(`${t("pdf.subject_unpaid")} — ${letter.month}`, 20, y);
     y += 10;
-    doc.text(`Madame, Monsieur ${tenant?.name || ""},`, 20, y);
+    doc.text(`${t("pdf.salutation")} ${tenant?.name || ""},`, 20, y);
     y += 10;
 
-    const lines = doc.splitTextToSize(levelInfo.tone + ` Le montant dû s'élève à ${fmt(letter.amount_due)} pour le mois de ${letter.month}.`, 170);
+    const lines = doc.splitTextToSize(t(levelInfo.toneKey) + ` ${t("pdf.amount_due")} ${fmt(letter.amount_due)} ${t("pdf.for_month")} ${letter.month}.`, 170);
     doc.text(lines, 20, y);
     y += lines.length * 5 + 10;
 
-    doc.text("Veuillez agréer nos salutations distinguées.", 20, y);
+    doc.text(t("pdf.closing"), 20, y);
     y += 20;
     doc.setFont("helvetica", "bold");
-    doc.text("Le bailleur", 20, y);
+    doc.text(t("pdf.landlord"), 20, y);
 
     doc.setFillColor(26, 39, 68);
     doc.rect(0, 290, 210, 7, "F");
