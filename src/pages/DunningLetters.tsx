@@ -67,10 +67,10 @@ const DunningLetters = () => {
         supabase.functions.invoke("send-email", {
           body: {
             to: tenantData.email,
-            subject: `${level === 3 ? "Mise en demeure" : "Relance de loyer"} — ${month}`,
+            subject: `${level === 3 ? t("email.dunning_subject_3") : t("email.dunning_subject")} — ${month}`,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? "Mise en demeure" : levelInfo.label}</h2>
-              <p style="color:#555;">${levelInfo.tone}</p>
+              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? t("email.dunning_subject_3") : levelLabel}</h2>
+              <p style="color:#555;">${levelTone}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
                 <p style="color:#1a1a1a;"><strong>Mois :</strong> ${month}</p>
                 <p style="color:#1a1a1a;"><strong>Montant dû :</strong> ${fmt(amount)}</p>
