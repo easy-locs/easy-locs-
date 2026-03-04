@@ -50,7 +50,7 @@ const PaymentProvidersSettings = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setConnectingStripe(false);
     }

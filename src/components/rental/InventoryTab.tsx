@@ -4,6 +4,7 @@ import { ClipboardCheck, Home, Users, Calendar, Eye, Mail, Loader2 } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import { generateInventoryPDF } from "@/lib/inventory-pdf-generator";
 import type { Property, Tenant } from "@/hooks/useRentalData";
+import { useI18n } from "@/lib/i18n";
 
 interface InventoryReport {
   id: string;
@@ -24,6 +25,7 @@ interface InventoryTabProps {
 
 const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryMode }: InventoryTabProps) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [reports, setReports] = useState<InventoryReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -44,7 +46,6 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
   const handleResendEmail = async (report: InventoryReport, property: Property, tenant: Tenant) => {
     setResendingId(report.id);
     try {
-      // Load rooms + items for PDF generation
       const { data: dbRooms } = await supabase
         .from("inventory_rooms").select("*").eq("report_id", report.id).order("sort_order");
       const rooms: { room_name: string; items: { element_name: string; condition: string; notes: string; photo_urls: string[] }[] }[] = [];
@@ -60,7 +61,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
         });
       }
       const { data: reportData } = await supabase.from("inventory_reports").select("*").eq("id", report.id).single();
-      if (!reportData) throw new Error("Rapport introuvable");
+      if (!reportData) throw new Error(t("comp.inventory.report_not_found"));
 
       const doc = await generateInventoryPDF({
         propertyLabel: property.label, reportType: report.report_type as "entry" | "exit",
@@ -72,23 +73,25 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
 
       const typeStr = report.report_type === "entry" ? "entree" : "sortie";
       const pdfBase64 = doc.output("datauristring").split(",")[1];
+      const subjectType = report.report_type === "entry" ? t("comp.inventory.email_subject_entry") : t("comp.inventory.email_subject_exit");
+      const bodyText = report.report_type === "entry" ? t("comp.inventory.email_body_entry") : t("comp.inventory.email_body_exit");
 
       await supabase.functions.invoke("send-email", {
         body: {
           to: tenant.email,
-          subject: `État des lieux ${report.report_type === "entry" ? "d'entrée" : "de sortie"} — ${property.label}`,
+          subject: `${subjectType} — ${property.label}`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-            <h2 style="color:#1a2744;text-align:center;">📋 État des lieux</h2>
+            <h2 style="color:#1a2744;text-align:center;">${t("comp.inventory.email_heading")}</h2>
             <p style="color:#555;">Bonjour ${tenant.name},</p>
-            <p style="color:#555;">Veuillez trouver ci-joint l'état des lieux ${report.report_type === "entry" ? "d'entrée" : "de sortie"} pour <strong>${property.label}</strong> du ${report.report_date}.</p>
+            <p style="color:#555;">${bodyText} <strong>${property.label}</strong> du ${report.report_date}.</p>
             <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Gestion locative intelligente</p>
           </div>`,
           attachments: [{ content: pdfBase64, filename: `etat_des_lieux_${typeStr}_${report.report_date}.pdf`, type: "application/pdf" }],
         },
       });
-      toast({ title: "Email renvoyé", description: `PDF envoyé à ${tenant.email}` });
+      toast({ title: t("comp.inventory.email_resent"), description: t("comp.inventory.email_resent_desc").replace("{email}", tenant.email) });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setResendingId(null);
     }
@@ -98,7 +101,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
     return (
       <div className="text-center py-16">
         <ClipboardCheck className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-        <p className="text-sm text-muted-foreground">Ajoutez d'abord un bien.</p>
+        <p className="text-sm text-muted-foreground">{t("comp.inventory.add_property_first")}</p>
       </div>
     );
   }
@@ -106,17 +109,16 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-foreground">États des lieux par bien</h2>
-        <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} rapport(s) total</span>
+        <h2 className="font-semibold text-foreground">{t("comp.inventory.inventory_by_property")}</h2>
+        <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} {t("comp.inventory.reports_total")}</span>
       </div>
       <div className="space-y-4">
         {properties.map(p => {
-          const propTenants = tenants.filter(t => t.property_id === p.id);
+          const propTenants = tenants.filter(tn => tn.property_id === p.id);
           const propReports = reports.filter(r => r.property_id === p.id);
 
           return (
             <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
-              {/* Property header */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
@@ -128,36 +130,34 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                   </div>
                 </div>
                 <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                  {propReports.length} état(s) des lieux
+                  {propReports.length} {t("comp.inventory.inventory_reports")}
                 </span>
               </div>
 
-              {/* Tenants */}
               {propTenants.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs text-muted-foreground mb-1">Locataire(s) :</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("comp.inventory.tenants_label")}</p>
                   <div className="flex flex-wrap gap-1">
-                    {propTenants.map(t => (
-                      <span key={t.id} className={`text-xs px-2 py-0.5 rounded-full ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {t.name} {!isLeaseActive(t) && "(résilié)"}
+                    {propTenants.map(tn => (
+                      <span key={tn.id} className={`text-xs px-2 py-0.5 rounded-full ${isLeaseActive(tn) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                        {tn.name} {!isLeaseActive(tn) && t("comp.inventory.terminated")}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Action buttons */}
               <div className="flex gap-2 flex-wrap mb-4">
                 {propTenants.filter(isLeaseActive).length > 0 ? (
-                  propTenants.filter(isLeaseActive).map(t => (
-                    <div key={t.id} className="flex gap-2">
-                      <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: t.id, reportType: "entry", propertyLabel: p.label })}
+                  propTenants.filter(isLeaseActive).map(tn => (
+                    <div key={tn.id} className="flex gap-2">
+                      <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "entry", propertyLabel: p.label })}
                         className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                        <ClipboardCheck className="h-4 w-4" />Entrée ({t.name})
+                        <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.entry")} ({tn.name})
                       </button>
-                      <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: t.id, reportType: "exit", propertyLabel: p.label })}
+                      <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "exit", propertyLabel: p.label })}
                         className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                        <ClipboardCheck className="h-4 w-4" />Sortie ({t.name})
+                        <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.exit")} ({tn.name})
                       </button>
                     </div>
                   ))
@@ -165,28 +165,27 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                   <>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "entry", propertyLabel: p.label })}
                       className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <ClipboardCheck className="h-4 w-4" />Entrée
+                      <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.entry")}
                     </button>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "exit", propertyLabel: p.label })}
                       className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                      <ClipboardCheck className="h-4 w-4" />Sortie
+                      <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.exit")}
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Existing reports */}
               {propReports.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Historique</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("comp.inventory.history")}</p>
                   <div className="space-y-1">
                     {propReports.map(r => {
-                      const reportTenant = tenants.find(t => t.id === r.tenant_id);
+                      const reportTenant = tenants.find(tn => tn.id === r.tenant_id);
                       return (
                         <div key={r.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
                           <div className="flex items-center gap-3">
                             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
-                              {r.report_type === "entry" ? "Entrée" : "Sortie"}
+                              {r.report_type === "entry" ? t("comp.inventory.entry") : t("comp.inventory.exit")}
                             </span>
                             <span className="text-sm text-foreground flex items-center gap-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" /> {r.report_date}
@@ -207,22 +206,22 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                                 existingReportId: r.id,
                               })}
                               className="text-[10px] flex items-center gap-1 text-accent hover:underline"
-                              title="Ouvrir l'état des lieux"
+                              title={t("comp.inventory.open_tooltip")}
                             >
-                              <Eye className="h-3 w-3" /> Ouvrir
+                              <Eye className="h-3 w-3" /> {t("comp.inventory.open")}
                             </button>
                             {r.status === "completed" && reportTenant && (
                               <button
                                 onClick={() => handleResendEmail(r, p, reportTenant)}
                                 disabled={resendingId === r.id}
                                 className="text-[10px] flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
-                                title="Renvoyer par email"
+                                title={t("comp.inventory.email_resend_tooltip")}
                               >
                                 {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />} Email
                               </button>
                             )}
                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                              {r.status === "completed" ? "Finalisé" : "Brouillon"}
+                              {r.status === "completed" ? t("comp.inventory.finalized") : t("comp.inventory.draft")}
                             </span>
                           </div>
                         </div>
