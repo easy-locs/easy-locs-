@@ -100,11 +100,11 @@ const PaymentNotices = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(26, 39, 68);
-    doc.text("AVIS D'ÉCHÉANCE", 20, 25);
+    doc.text(t("pdf.notice_title"), 20, 25);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Mois : ${notice.month}`, 20, 33);
-    doc.text(`Date d'échéance : ${notice.due_date}`, 20, 39);
+    doc.text(`${t("pdf.notice_month")} : ${notice.month}`, 20, 33);
+    doc.text(`${t("pdf.notice_due_date")} : ${notice.due_date}`, 20, 39);
 
     let y = 55;
     doc.setFont("helvetica", "bold");
