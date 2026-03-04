@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 import {
   Plus, X, Trash2, Camera, CheckCircle, ChevronDown, ChevronUp,
   ArrowLeft, Save, Star, AlertTriangle, Zap, Droplets, ThermometerSun,
@@ -48,15 +49,16 @@ const DEFAULT_ELEMENTS = [
   "Éclairage", "Placards / Rangements",
 ];
 
-const conditionLabels: Record<string, { label: string; color: string; icon: typeof Star }> = {
-  good: { label: "Bon", color: "bg-green-500/20 text-green-700 border-green-500/30", icon: CheckCircle },
-  average: { label: "Moyen", color: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30", icon: AlertTriangle },
-  bad: { label: "Mauvais", color: "bg-red-500/20 text-red-700 border-red-500/30", icon: X },
-};
-
 const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onBack, existingReportId }: Props) => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
+
+  const conditionLabels: Record<string, { label: string; color: string; icon: typeof Star }> = {
+    good: { label: t("page.inventory.cond_good"), color: "bg-green-500/20 text-green-700 border-green-500/30", icon: CheckCircle },
+    average: { label: t("page.inventory.cond_average"), color: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30", icon: AlertTriangle },
+    bad: { label: t("page.inventory.cond_bad"), color: "bg-red-500/20 text-red-700 border-red-500/30", icon: X },
+  };
 
   const [reportId, setReportId] = useState(existingReportId || "");
   const [reportDate, setReportDate] = useState(new Date().toISOString().split("T")[0]);
@@ -76,7 +78,6 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
   const [stampUrl, setStampUrl] = useState("");
   const [tenantName, setTenantName] = useState("");
 
-  // Init with default rooms if new
   useEffect(() => {
     if (!existingReportId) {
       setRooms(
@@ -98,7 +99,6 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
     }
   }, [existingReportId]);
 
-  // Load existing report
   useEffect(() => {
     if (!existingReportId) return;
     const load = async () => {
@@ -153,7 +153,6 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
     load();
   }, [existingReportId]);
 
-  // Load landlord signature, stamp & tenant name
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("signature_url").eq("id", user.id).single().then(({ data }) => {
@@ -229,7 +228,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
     const path = `${orgId}/${reportId || "new"}/${roomId}/${itemId}_${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("rental-docs").upload(path, file);
     if (error) {
-      toast({ title: "Erreur upload", description: error.message, variant: "destructive" });
+      toast({ title: t("page.inventory.upload_error"), description: error.message, variant: "destructive" });
       return;
     }
     const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
@@ -298,9 +297,9 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       }
 
       setReportStatus(newStatus);
-      toast({ title: finalize ? "État des lieux finalisé !" : "Brouillon enregistré" });
+      toast({ title: finalize ? t("page.inventory.finalized_toast") : t("page.inventory.draft_saved") });
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -333,9 +332,9 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
       const typeStr = reportType === "entry" ? "entree" : "sortie";
       downloadPDF(doc, `etat_des_lieux_${typeStr}_${reportDate}.pdf`);
-      toast({ title: "PDF téléchargé !" });
+      toast({ title: t("page.inventory.pdf_downloaded") });
     } catch (err: any) {
-      toast({ title: "Erreur PDF", description: err.message, variant: "destructive" });
+      toast({ title: t("page.inventory.pdf_error"), description: err.message, variant: "destructive" });
     } finally {
       setGeneratingPdf(false);
     }
@@ -344,7 +343,6 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
   const handleFinalizeAndSend = async () => {
     await handleSave(true);
 
-    // Generate PDF for download + email attachment
     let pdfDoc: any = null;
     try {
       pdfDoc = await generateInventoryPDF({
@@ -371,12 +369,11 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
       const typeStr = reportType === "entry" ? "entree" : "sortie";
       downloadPDF(pdfDoc, `etat_des_lieux_${typeStr}_${reportDate}.pdf`);
-      toast({ title: "PDF téléchargé !" });
+      toast({ title: t("page.inventory.pdf_downloaded") });
     } catch (err: any) {
-      toast({ title: "Erreur PDF", description: err.message, variant: "destructive" });
+      toast({ title: t("page.inventory.pdf_error"), description: err.message, variant: "destructive" });
     }
 
-    // Send notification + email with PDF attachment to tenant
     if (tenantId && orgId) {
       try {
         const { data: tenant } = await supabase.from("tenants").select("tenant_user_id, email, name").eq("id", tenantId).single();
@@ -385,12 +382,11 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
             user_id: tenant.tenant_user_id,
             org_id: orgId,
             type: "info",
-            title: `📋 État des lieux ${reportType === "entry" ? "d'entrée" : "de sortie"}`,
-            message: `L'état des lieux pour ${propertyLabel} a été finalisé.`,
+            title: reportType === "entry" ? t("page.inventory.notif_entry") : t("page.inventory.notif_exit"),
+            message: t("page.inventory.notif_msg").replace("{property}", propertyLabel),
             link: "/tenant/documents",
           });
         }
-        // Send email with PDF attachment
         if (tenant?.email) {
           const typeStr = reportType === "entry" ? "entree" : "sortie";
           const attachments: any[] = [];
@@ -404,16 +400,19 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
               });
             } catch {}
           }
+          const emailSubject = reportType === "entry"
+            ? `${t("page.inventory.email_subject_entry")} — ${propertyLabel}`
+            : `${t("page.inventory.email_subject_exit")} — ${propertyLabel}`;
           await supabase.functions.invoke("send-email", {
             body: {
               to: tenant.email,
-              subject: `État des lieux ${reportType === "entry" ? "d'entrée" : "de sortie"} — ${propertyLabel}`,
+              subject: emailSubject,
               html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                <h2 style="color:#1a2744;text-align:center;">📋 État des lieux finalisé</h2>
-                <p style="color:#555;">Bonjour ${tenant.name || ""},</p>
-                <p style="color:#555;">L'état des lieux ${reportType === "entry" ? "d'entrée" : "de sortie"} pour <strong>${propertyLabel}</strong> a été finalisé le ${reportDate}.</p>
-                <p style="color:#555;">Le PDF est joint à cet email. Vous pouvez aussi le consulter dans votre espace locataire.</p>
-                <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Gestion locative intelligente</p>
+                <h2 style="color:#1a2744;text-align:center;">${t("page.inventory.email_title")}</h2>
+                <p style="color:#555;">${t("page.inventory.email_hello")} ${tenant.name || ""},</p>
+                <p style="color:#555;">${t("page.inventory.email_body").replace("{property}", propertyLabel).replace("{date}", reportDate)}</p>
+                <p style="color:#555;">${t("page.inventory.email_pdf_note")}</p>
+                <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — ${t("page.listing.powered_by_brand") || "EASY-LOCS®"}</p>
               </div>`,
               attachments,
             },
@@ -440,38 +439,37 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
   return (
     <div className="max-w-4xl mx-auto">
       <button onClick={onBack} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-        <ArrowLeft className="h-3.5 w-3.5" /> Retour
+        <ArrowLeft className="h-3.5 w-3.5" /> {t("page.inventory.back")}
       </button>
 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground">
-            État des lieux {reportType === "entry" ? "d'entrée" : "de sortie"}
+            {reportType === "entry" ? t("page.inventory.entry") : t("page.inventory.exit")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => handleSave(false)} disabled={saving}
             className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
-            <Save className="h-4 w-4" />{saving ? "…" : "Brouillon"}
+            <Save className="h-4 w-4" />{saving ? "…" : t("page.inventory.draft_btn")}
           </button>
           <button onClick={handleDownloadPDF} disabled={generatingPdf || reportStatus !== "completed"}
-            title={reportStatus !== "completed" ? "Finalisez d'abord l'état des lieux" : ""}
+            title={reportStatus !== "completed" ? t("page.inventory.finalize_tooltip") : ""}
             className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            <Download className="h-4 w-4" />{generatingPdf ? "Génération…" : "PDF"}
+            <Download className="h-4 w-4" />{generatingPdf ? t("page.inventory.pdf_generating") : t("page.inventory.pdf_btn")}
           </button>
           <button onClick={handleFinalizeAndSend} disabled={saving || generatingPdf}
             className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50">
-            <FileCheck className="h-4 w-4" />Finaliser & Envoyer
+            <FileCheck className="h-4 w-4" />{t("page.inventory.finalize_btn")}
           </button>
         </div>
       </div>
 
-      {/* Status badge */}
       {reportStatus === "completed" && (
         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2.5 mb-6">
           <CheckCircle className="h-4 w-4 text-green-600" />
-          <p className="text-sm text-green-700 font-medium">État des lieux finalisé</p>
+          <p className="text-sm text-green-700 font-medium">{t("page.inventory.finalized_badge")}</p>
         </div>
       )}
 
@@ -479,69 +477,69 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       <div className="grid grid-cols-5 gap-3 mb-6">
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-foreground">{rooms.length}</div>
-          <div className="text-xs text-muted-foreground">Pièces</div>
+          <div className="text-xs text-muted-foreground">{t("page.inventory.rooms_label")}</div>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-green-600">{goodCount}</div>
-          <div className="text-xs text-muted-foreground">Bon état</div>
+          <div className="text-xs text-muted-foreground">{t("page.inventory.good_label")}</div>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-yellow-600">{avgCount}</div>
-          <div className="text-xs text-muted-foreground">Moyen</div>
+          <div className="text-xs text-muted-foreground">{t("page.inventory.average_label")}</div>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-red-600">{badCount}</div>
-          <div className="text-xs text-muted-foreground">Mauvais</div>
+          <div className="text-xs text-muted-foreground">{t("page.inventory.bad_label")}</div>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-accent">{totalPhotos}</div>
-          <div className="text-xs text-muted-foreground">Photos</div>
+          <div className="text-xs text-muted-foreground">{t("page.inventory.photos_label")}</div>
         </div>
       </div>
 
       {/* General Info */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
-        <h3 className="font-semibold text-foreground mb-4">Informations générales</h3>
+        <h3 className="font-semibold text-foreground mb-4">{t("page.inventory.general_info")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Date</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("page.inventory.date")}</label>
             <input type="date" value={reportDate} onChange={e => setReportDate(e.target.value)}
               className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Clés remises</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">{t("page.inventory.keys_label")}</label>
             <div className="flex gap-2">
               <input type="number" value={keysCount || ""} onChange={e => setKeysCount(+e.target.value)} placeholder="Nb"
                 onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
                 className="w-20 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
-              <input value={keysDetails} onChange={e => setKeysDetails(e.target.value)} placeholder="Détails (badge, boîte aux lettres…)"
+              <input value={keysDetails} onChange={e => setKeysDetails(e.target.value)} placeholder={t("page.inventory.keys_details")}
                 className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
             </div>
           </div>
         </div>
 
-        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-4 mb-2">Relevés de compteurs</h4>
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-4 mb-2">{t("page.inventory.meters")}</h4>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-yellow-500 shrink-0" />
-            <input value={meterElectricity} onChange={e => setMeterElectricity(e.target.value)} placeholder="Électricité (kWh)"
+            <input value={meterElectricity} onChange={e => setMeterElectricity(e.target.value)} placeholder={t("page.inventory.electricity")}
               className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
           </div>
           <div className="flex items-center gap-2">
             <ThermometerSun className="h-4 w-4 text-orange-500 shrink-0" />
-            <input value={meterGas} onChange={e => setMeterGas(e.target.value)} placeholder="Gaz (m³)"
+            <input value={meterGas} onChange={e => setMeterGas(e.target.value)} placeholder={t("page.inventory.gas")}
               className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
           </div>
           <div className="flex items-center gap-2">
             <Droplets className="h-4 w-4 text-blue-500 shrink-0" />
-            <input value={meterWater} onChange={e => setMeterWater(e.target.value)} placeholder="Eau (m³)"
+            <input value={meterWater} onChange={e => setMeterWater(e.target.value)} placeholder={t("page.inventory.water")}
               className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
           </div>
         </div>
 
         <div className="mt-4">
-          <label className="block text-xs font-medium text-muted-foreground mb-1">Observations générales</label>
-          <textarea value={generalNotes} onChange={e => setGeneralNotes(e.target.value)} rows={2} placeholder="Remarques sur l'état général du logement…"
+          <label className="block text-xs font-medium text-muted-foreground mb-1">{t("page.inventory.general_obs")}</label>
+          <textarea value={generalNotes} onChange={e => setGeneralNotes(e.target.value)} rows={2} placeholder={t("page.inventory.general_obs_placeholder")}
             className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
         </div>
       </div>
@@ -554,7 +552,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/20 transition-colors">
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground text-sm">{room.room_name}</span>
-                <span className="text-xs text-muted-foreground">{room.items.length} élément{room.items.length !== 1 ? "s" : ""}</span>
+                <span className="text-xs text-muted-foreground">{room.items.length} {t("page.inventory.elements")}</span>
                 <span className="text-xs text-accent">{room.items.reduce((s, it) => s + it.photo_urls.length, 0)} 📷</span>
                 <div className="flex gap-1">
                   {room.items.filter(i => i.condition === "good").length > 0 && <span className="w-2 h-2 rounded-full bg-green-500" />}
@@ -599,10 +597,10 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 
                       <div className="flex gap-2">
                         <input value={item.notes} onChange={e => updateItemNotes(room.id, item.id, e.target.value)}
-                          placeholder="Notes / observations…"
+                          placeholder={t("page.inventory.notes_placeholder")}
                           className="flex-1 bg-background border border-border/50 rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
                         <label className="flex items-center gap-1 text-xs text-accent cursor-pointer hover:underline shrink-0">
-                          <Camera className="h-3.5 w-3.5" />Photo
+                          <Camera className="h-3.5 w-3.5" />{t("page.inventory.photo")}
                           <input type="file" accept="image/*" className="hidden" multiple
                             onChange={e => {
                               const files = e.target.files;
@@ -629,7 +627,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                     </div>
                   );
                 })}
-                <AddElementInline onAdd={(name) => addItem(room.id, name)} />
+                <AddElementInline onAdd={(name) => addItem(room.id, name)} t={t} />
               </div>
             )}
           </div>
@@ -640,10 +638,10 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       <div className="flex gap-2 mb-8">
         <input value={newRoomName} onChange={e => setNewRoomName(e.target.value)}
           onKeyDown={e => e.key === "Enter" && addRoom()}
-          placeholder="Ajouter une pièce (ex: Chambre 2, Balcon…)"
+          placeholder={t("page.inventory.add_room_placeholder")}
           className="flex-1 bg-muted/50 border border-border/50 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
         <button onClick={addRoom} className="flex items-center gap-2 bg-accent/10 text-accent px-4 py-2.5 rounded-lg hover:bg-accent/20 transition-colors text-sm font-medium">
-          <Plus className="h-4 w-4" />Ajouter
+          <Plus className="h-4 w-4" />{t("page.inventory.add_room")}
         </button>
       </div>
     </div>
@@ -651,17 +649,17 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
 };
 
 /* ─── Inline element adder ─── */
-const AddElementInline = ({ onAdd }: { onAdd: (name: string) => void }) => {
+const AddElementInline = ({ onAdd, t }: { onAdd: (name: string) => void; t: (key: string) => string }) => {
   const [name, setName] = useState("");
   return (
     <div className="flex gap-2 mt-2">
       <input value={name} onChange={e => setName(e.target.value)}
         onKeyDown={e => { if (e.key === "Enter" && name.trim()) { onAdd(name); setName(""); } }}
-        placeholder="Ajouter un élément…"
+        placeholder={t("page.inventory.add_element")}
         className="flex-1 bg-background border border-border/50 rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent" />
       <button onClick={() => { if (name.trim()) { onAdd(name); setName(""); } }}
         className="text-xs text-accent hover:underline flex items-center gap-1">
-        <Plus className="h-3 w-3" />Ajouter
+        <Plus className="h-3 w-3" />{t("page.inventory.add_room")}
       </button>
     </div>
   );
