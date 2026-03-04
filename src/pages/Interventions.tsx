@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wrench, Plus, Pencil, Trash2, Calendar, Phone, Euro, CheckCircle2, Clock, AlertTriangle, X } from "lucide-react";
@@ -32,32 +32,22 @@ interface Intervention {
   created_at: string;
 }
 
-const CATEGORIES = [
-  { value: "repair", label: "Réparation" },
-  { value: "maintenance", label: "Entretien" },
-  { value: "renovation", label: "Rénovation" },
-  { value: "plumbing", label: "Plomberie" },
-  { value: "electrical", label: "Électricité" },
-  { value: "painting", label: "Peinture" },
-  { value: "locksmith", label: "Serrurerie" },
-  { value: "heating", label: "Chauffage / Climatisation" },
-  { value: "other", label: "Autre" },
-];
+const CATEGORY_KEYS = ["repair", "maintenance", "renovation", "plumbing", "electrical", "painting", "locksmith", "heating", "other"];
 
-const PRIORITIES = [
-  { value: "low", label: "Basse", color: "bg-muted text-muted-foreground" },
-  { value: "medium", label: "Moyenne", color: "bg-accent/20 text-accent-foreground" },
-  { value: "high", label: "Haute", color: "bg-destructive/20 text-destructive" },
-  { value: "urgent", label: "Urgente", color: "bg-destructive text-destructive-foreground" },
-];
+const PRIORITY_COLORS: Record<string, string> = {
+  low: "bg-muted text-muted-foreground",
+  medium: "bg-accent/20 text-accent-foreground",
+  high: "bg-destructive/20 text-destructive",
+  urgent: "bg-destructive text-destructive-foreground",
+};
 
-const STATUSES = [
-  { value: "pending", label: "En attente", icon: Clock },
-  { value: "scheduled", label: "Planifiée", icon: Calendar },
-  { value: "in_progress", label: "En cours", icon: Wrench },
-  { value: "completed", label: "Terminée", icon: CheckCircle2 },
-  { value: "cancelled", label: "Annulée", icon: X },
-];
+const STATUS_ICONS: Record<string, typeof Clock> = {
+  pending: Clock,
+  scheduled: Calendar,
+  in_progress: Wrench,
+  completed: CheckCircle2,
+  cancelled: X,
+};
 
 const emptyForm = {
   title: "", description: "", category: "repair", priority: "medium", status: "pending",
@@ -78,6 +68,10 @@ const Interventions = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [filterStatus, setFilterStatus] = useState("all");
+
+  const CATEGORIES = useMemo(() => CATEGORY_KEYS.map(v => ({ value: v, label: t(`page.interventions.cat_${v}`) })), [t]);
+  const PRIORITIES = useMemo(() => ["low", "medium", "high", "urgent"].map(v => ({ value: v, label: t(`page.interventions.priority_${v}`), color: PRIORITY_COLORS[v] })), [t]);
+  const STATUSES = useMemo(() => ["pending", "scheduled", "in_progress", "completed", "cancelled"].map(v => ({ value: v, label: t(`page.interventions.status_${v}`), icon: STATUS_ICONS[v] })), [t]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -110,7 +104,7 @@ const Interventions = () => {
 
   const save = async () => {
     if (!orgId || !user || !form.title.trim()) {
-      toast({ title: "Erreur", description: "Le titre est obligatoire", variant: "destructive" });
+      toast({ title: t("page.common.error"), description: t("page.interventions.title_required"), variant: "destructive" });
       return;
     }
     const record = {
@@ -123,12 +117,12 @@ const Interventions = () => {
     };
     if (editId) {
       const { error } = await supabase.from("interventions").update(record).eq("id", editId);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Intervention modifiée" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+      toast({ title: t("page.interventions.modified") });
     } else {
       const { error } = await supabase.from("interventions").insert(record);
-      if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-      toast({ title: "Intervention ajoutée" });
+      if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+      toast({ title: t("page.interventions.added") });
     }
     setDialogOpen(false);
     load();
@@ -136,22 +130,22 @@ const Interventions = () => {
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("interventions").delete().eq("id", id);
-    if (error) { toast({ title: "Erreur", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Intervention supprimée" });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("page.interventions.deleted") });
     load();
   };
 
   const filtered = filterStatus === "all" ? interventions : interventions.filter(i => i.status === filterStatus);
   const getPropLabel = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
-  const getTenantName = (id: string | null) => tenants.find(t => t.id === id)?.name || "";
+  const getTenantName = (id: string | null) => tenants.find(tn => tn.id === id)?.name || "";
   const getPriorityBadge = (p: string) => PRIORITIES.find(x => x.value === p) || PRIORITIES[1];
   const getStatusInfo = (s: string) => STATUSES.find(x => x.value === s) || STATUSES[0];
+  const getCatLabel = (c: string) => CATEGORIES.find(x => x.value === c)?.label || c;
 
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.interventions.title")}>
         <div className="space-y-6">
-          {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-2xl font-bold text-foreground">{t("page.interventions.title")}</h1>
@@ -162,9 +156,8 @@ const Interventions = () => {
             </Button>
           </div>
 
-          {/* Filters */}
           <div className="flex gap-2 flex-wrap">
-            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>Tout</Button>
+            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>{t("page.interventions.all")}</Button>
             {STATUSES.map(s => (
               <Button key={s.value} variant={filterStatus === s.value ? "default" : "outline"} size="sm" onClick={() => setFilterStatus(s.value)}>
                 <s.icon className="h-3.5 w-3.5 mr-1" />{s.label}
@@ -172,9 +165,8 @@ const Interventions = () => {
             ))}
           </div>
 
-          {/* List */}
           {loading ? (
-            <div className="text-center py-12 text-muted-foreground">Chargement…</div>
+            <div className="text-center py-12 text-muted-foreground">{t("page.interventions.loading")}</div>
           ) : filtered.length === 0 ? (
             <div className="bg-card rounded-xl p-8 border border-border/50 shadow-card text-center">
               <Wrench className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -198,7 +190,7 @@ const Interventions = () => {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {CATEGORIES.find(c => c.value === i.category)?.label || i.category}
+                          {getCatLabel(i.category)}
                           {i.property_id && <> · <span className="font-medium">{getPropLabel(i.property_id)}</span></>}
                           {i.tenant_id && <> · {getTenantName(i.tenant_id)}</>}
                         </p>
@@ -226,40 +218,39 @@ const Interventions = () => {
           )}
         </div>
 
-        {/* Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editId ? "Modifier l'intervention" : "Nouvelle intervention"}</DialogTitle>
+              <DialogTitle>{editId ? t("page.interventions.edit") : t("page.interventions.create_title")}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 mt-2">
               <div>
-                <label className="text-sm font-medium">Titre *</label>
-                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Ex: Fuite robinet cuisine" />
+                <label className="text-sm font-medium">{t("page.interventions.title_label")} *</label>
+                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t("page.interventions.title_placeholder")} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Bien</label>
+                  <label className="text-sm font-medium">{t("page.interventions.property")}</label>
                   <Select value={form.property_id} onValueChange={v => setForm(f => ({ ...f, property_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("page.interventions.select_property")} /></SelectTrigger>
                     <SelectContent>
                       {properties.map(p => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Locataire</label>
+                  <label className="text-sm font-medium">{t("page.interventions.tenant")}</label>
                   <Select value={form.tenant_id} onValueChange={v => setForm(f => ({ ...f, tenant_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("page.interventions.select_tenant")} /></SelectTrigger>
                     <SelectContent>
-                      {tenants.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      {tenants.map(tn => <SelectItem key={tn.id} value={tn.id}>{tn.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Catégorie</label>
+                  <label className="text-sm font-medium">{t("page.interventions.category")}</label>
                   <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -268,7 +259,7 @@ const Interventions = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Priorité</label>
+                  <label className="text-sm font-medium">{t("page.interventions.priority")}</label>
                   <Select value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -277,7 +268,7 @@ const Interventions = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Statut</label>
+                  <label className="text-sm font-medium">{t("page.interventions.status")}</label>
                   <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -287,46 +278,46 @@ const Interventions = () => {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Description</label>
-                <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Décrivez l'intervention…" />
+                <label className="text-sm font-medium">{t("page.interventions.description")}</label>
+                <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder={t("page.interventions.description_placeholder")} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Date prévue</label>
+                  <label className="text-sm font-medium">{t("page.interventions.scheduled_date")}</label>
                   <Input type="date" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Date réalisée</label>
+                  <label className="text-sm font-medium">{t("page.interventions.completed_date")}</label>
                   <Input type="date" value={form.completed_date} onChange={e => setForm(f => ({ ...f, completed_date: e.target.value }))} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Prestataire</label>
-                  <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} placeholder="Nom de l'artisan / société" />
+                  <label className="text-sm font-medium">{t("page.interventions.provider")}</label>
+                  <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} placeholder={t("page.interventions.provider_placeholder")} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Téléphone prestataire</label>
+                  <label className="text-sm font-medium">{t("page.interventions.provider_phone")}</label>
                   <Input value={form.provider_phone} onChange={e => setForm(f => ({ ...f, provider_phone: e.target.value }))} placeholder="06 …" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Coût estimé (€)</label>
+                  <label className="text-sm font-medium">{t("page.interventions.estimated_cost")}</label>
                   <Input type="number" value={form.estimated_cost || ""} onFocus={e => { if (Number(e.target.value) === 0) setForm(f => ({ ...f, estimated_cost: 0 })); }} onChange={e => setForm(f => ({ ...f, estimated_cost: Number(e.target.value) || 0 }))} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Coût réel (€)</label>
+                  <label className="text-sm font-medium">{t("page.interventions.actual_cost")}</label>
                   <Input type="number" value={form.actual_cost || ""} onFocus={e => { if (Number(e.target.value) === 0) setForm(f => ({ ...f, actual_cost: 0 })); }} onChange={e => setForm(f => ({ ...f, actual_cost: Number(e.target.value) || 0 }))} />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Notes</label>
+                <label className="text-sm font-medium">{t("page.interventions.notes")}</label>
                 <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                <Button onClick={save} className="bg-accent text-accent-foreground">{editId ? "Enregistrer" : "Créer"}</Button>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("page.common.cancel")}</Button>
+                <Button onClick={save} className="bg-accent text-accent-foreground">{editId ? t("page.common.save") : t("page.interventions.new")}</Button>
               </div>
             </div>
           </DialogContent>
