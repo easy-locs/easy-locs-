@@ -9,9 +9,9 @@ import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 
 const LEVELS = [
-  { value: 1, label: "1re relance", tone: "Nous vous rappelons que le loyer reste dû." },
-  { value: 2, label: "2e relance", tone: "Malgré notre précédent courrier, le loyer reste impayé. Nous vous prions de régulariser dans les meilleurs délais." },
-  { value: 3, label: "Mise en demeure", tone: "À défaut de régularisation sous 8 jours, nous nous verrons contraints d'engager les procédures légales." },
+  { value: 1, labelKey: "page.dunning.level_1", toneKey: "page.dunning.tone_1" },
+  { value: 2, labelKey: "page.dunning.level_2", toneKey: "page.dunning.tone_2" },
+  { value: 3, labelKey: "page.dunning.level_3", toneKey: "page.dunning.tone_3" },
 ];
 
 interface DunningLetter { id: string; tenant_id: string; property_id: string | null; level: number; month: string; amount_due: number; sent_at: string | null; created_at: string; }
