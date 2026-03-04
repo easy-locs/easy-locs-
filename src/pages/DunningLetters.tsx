@@ -62,6 +62,8 @@ const DunningLetters = () => {
       if (tenantData?.email) {
         const levelInfo = LEVELS.find(l => l.value === level) || LEVELS[0];
         const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+        const levelLabel = t(levelInfo.labelKey);
+        const levelTone = t(levelInfo.toneKey);
         supabase.functions.invoke("send-email", {
           body: {
             to: tenantData.email,
