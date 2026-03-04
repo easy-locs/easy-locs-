@@ -9,9 +9,9 @@ import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 
 const LEVELS = [
-  { value: 1, label: "1re relance", tone: "Nous vous rappelons que le loyer reste dû." },
-  { value: 2, label: "2e relance", tone: "Malgré notre précédent courrier, le loyer reste impayé. Nous vous prions de régulariser dans les meilleurs délais." },
-  { value: 3, label: "Mise en demeure", tone: "À défaut de régularisation sous 8 jours, nous nous verrons contraints d'engager les procédures légales." },
+  { value: 1, labelKey: "page.dunning.level_1", toneKey: "page.dunning.tone_1" },
+  { value: 2, labelKey: "page.dunning.level_2", toneKey: "page.dunning.tone_2" },
+  { value: 3, labelKey: "page.dunning.level_3", toneKey: "page.dunning.tone_3" },
 ];
 
 interface DunningLetter { id: string; tenant_id: string; property_id: string | null; level: number; month: string; amount_due: number; sent_at: string | null; created_at: string; }
@@ -62,18 +62,20 @@ const DunningLetters = () => {
       if (tenantData?.email) {
         const levelInfo = LEVELS.find(l => l.value === level) || LEVELS[0];
         const fmt = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+        const levelLabel = t(levelInfo.labelKey);
+        const levelTone = t(levelInfo.toneKey);
         supabase.functions.invoke("send-email", {
           body: {
             to: tenantData.email,
-            subject: `${level === 3 ? "Mise en demeure" : "Relance de loyer"} — ${month}`,
+            subject: `${level === 3 ? t("email.dunning_subject_3") : t("email.dunning_subject")} — ${month}`,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? "Mise en demeure" : levelInfo.label}</h2>
-              <p style="color:#555;">${levelInfo.tone}</p>
+              <h2 style="color:#1a1a1a;">⚠️ ${level === 3 ? t("email.dunning_subject_3") : levelLabel}</h2>
+              <p style="color:#555;">${levelTone}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;"><strong>Mois :</strong> ${month}</p>
-                <p style="color:#1a1a1a;"><strong>Montant dû :</strong> ${fmt(amount)}</p>
+                <p style="color:#1a1a1a;"><strong>${t("email.dunning_month")} :</strong> ${month}</p>
+                <p style="color:#1a1a1a;"><strong>${t("email.dunning_amount")} :</strong> ${fmt(amount)}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour plus de détails.</p>
+              <p style="color:#888;font-size:13px;">${t("email.dunning_footer")}</p>
             </div>`,
           },
         }).catch(() => {});
@@ -95,31 +97,31 @@ const DunningLetters = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(26, 39, 68);
-    doc.text(letter.level === 3 ? "MISE EN DEMEURE" : `RELANCE DE LOYER IMPAYÉ (${levelInfo.label})`, 20, 25);
+    doc.text(letter.level === 3 ? t("pdf.dunning_title_3") : `${t("pdf.dunning_title")} (${t(levelInfo.labelKey)})`, 20, 25);
 
     let y = 45;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
-    doc.text(`Date : ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
+    doc.text(`${t("pdf.date")} : ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
     y += 10;
-    doc.text(`Destinataire : ${tenant?.name || "—"}`, 20, y);
-    if (property) { y += 7; doc.text(`Bien : ${property.label} — ${property.address}, ${property.city}`, 20, y); }
+    doc.text(`${t("pdf.recipient")} : ${tenant?.name || "—"}`, 20, y);
+    if (property) { y += 7; doc.text(`${t("pdf.property")} : ${property.label} — ${property.address}, ${property.city}`, 20, y); }
     y += 15;
 
-    doc.text(`Objet : Loyer impayé — ${letter.month}`, 20, y);
+    doc.text(`${t("pdf.subject_unpaid")} — ${letter.month}`, 20, y);
     y += 10;
-    doc.text(`Madame, Monsieur ${tenant?.name || ""},`, 20, y);
+    doc.text(`${t("pdf.salutation")} ${tenant?.name || ""},`, 20, y);
     y += 10;
 
-    const lines = doc.splitTextToSize(levelInfo.tone + ` Le montant dû s'élève à ${fmt(letter.amount_due)} pour le mois de ${letter.month}.`, 170);
+    const lines = doc.splitTextToSize(t(levelInfo.toneKey) + ` ${t("pdf.amount_due")} ${fmt(letter.amount_due)} ${t("pdf.for_month")} ${letter.month}.`, 170);
     doc.text(lines, 20, y);
     y += lines.length * 5 + 10;
 
-    doc.text("Veuillez agréer nos salutations distinguées.", 20, y);
+    doc.text(t("pdf.closing"), 20, y);
     y += 20;
     doc.setFont("helvetica", "bold");
-    doc.text("Le bailleur", 20, y);
+    doc.text(t("pdf.landlord"), 20, y);
 
     doc.setFillColor(26, 39, 68);
     doc.rect(0, 290, 210, 7, "F");
@@ -163,7 +165,7 @@ const DunningLetters = () => {
                       <p className="text-xs text-muted-foreground">{call.month} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(call.total_amount)}</p>
                     </div>
                     <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
-                      <Plus className="h-3 w-3" /> {LEVELS.find(l => l.value === nextLevel)?.label}
+                      <Plus className="h-3 w-3" /> {t(LEVELS.find(l => l.value === nextLevel)?.labelKey || "page.dunning.level_1")}
                     </button>
                   </div>
                 );
@@ -190,7 +192,7 @@ const DunningLetters = () => {
                     <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
                       <td className="px-4 py-3 text-muted-foreground">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
                       <td className="px-4 py-3 text-foreground font-medium">{tenantName(l.tenant_id)}</td>
-                      <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-blue-500/10 text-blue-500"}`}>{LEVELS.find(x => x.value === l.level)?.label}</span></td>
+                      <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-blue-500/10 text-blue-500"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
                       <td className="px-4 py-3 text-muted-foreground">{l.month}</td>
                       <td className="px-4 py-3 text-right text-foreground font-semibold">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
                       <td className="px-4 py-3"><button onClick={() => downloadPDF(l)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>

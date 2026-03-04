@@ -69,17 +69,17 @@ const PaymentNotices = () => {
         supabase.functions.invoke("send-email", {
           body: {
             to: tenantData.email,
-            subject: `Avis d'échéance — ${notice.month}`,
+            subject: `${t("email.notice_subject")} — ${notice.month}`,
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">📄 Avis d'échéance</h2>
-              <p style="color:#555;">Votre avis d'échéance pour le mois de ${notice.month} est disponible.</p>
+              <h2 style="color:#1a1a1a;">${t("email.notice_title")}</h2>
+              <p style="color:#555;">${t("email.notice_body").replace("{month}", notice.month)}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
-                <p style="color:#1a1a1a;"><strong>Loyer :</strong> ${fmt2(notice.rent_amount)}</p>
-                <p style="color:#1a1a1a;"><strong>Charges :</strong> ${fmt2(notice.charges_amount)}</p>
+                <p style="color:#1a1a1a;"><strong>${t("pdf.rent")} :</strong> ${fmt2(notice.rent_amount)}</p>
+                <p style="color:#1a1a1a;"><strong>${t("pdf.charges")} :</strong> ${fmt2(notice.charges_amount)}</p>
                 <p style="color:#1a1a1a;"><strong>Total :</strong> ${fmt2(notice.total_amount)}</p>
-                <p style="color:#1a1a1a;"><strong>Échéance :</strong> ${notice.due_date}</p>
+                <p style="color:#1a1a1a;"><strong>${t("email.notice_due")} :</strong> ${notice.due_date}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Connectez-vous à votre espace locataire pour consulter et payer.</p>
+              <p style="color:#888;font-size:13px;">${t("email.notice_footer")}</p>
             </div>`,
           },
         }).catch(() => {});
@@ -100,17 +100,17 @@ const PaymentNotices = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(26, 39, 68);
-    doc.text("AVIS D'ÉCHÉANCE", 20, 25);
+    doc.text(t("pdf.notice_title"), 20, 25);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Mois : ${notice.month}`, 20, 33);
-    doc.text(`Date d'échéance : ${notice.due_date}`, 20, 39);
+    doc.text(`${t("pdf.notice_month")} : ${notice.month}`, 20, 33);
+    doc.text(`${t("pdf.notice_due_date")} : ${notice.due_date}`, 20, 39);
 
     let y = 55;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(26, 39, 68);
-    doc.text("Locataire", 20, y);
+    doc.text(t("pdf.tenant"), 20, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
     doc.text(tenant?.name || "—", 20, y + 7);
@@ -119,7 +119,7 @@ const PaymentNotices = () => {
       y += 20;
       doc.setFont("helvetica", "bold");
       doc.setTextColor(26, 39, 68);
-      doc.text("Bien", 20, y);
+      doc.text(t("pdf.property"), 20, y);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(50, 50, 50);
       doc.text(`${property.label} — ${property.address}, ${property.city}`, 20, y + 7);
@@ -128,20 +128,20 @@ const PaymentNotices = () => {
     y += 25;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(26, 39, 68);
-    doc.text("Détail", 20, y);
+    doc.text(t("pdf.detail"), 20, y);
     y += 10;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 50, 50);
-    doc.text(`Loyer : ${fmt(notice.rent_amount)}`, 20, y);
-    doc.text(`Charges : ${fmt(notice.charges_amount)}`, 20, y + 7);
+    doc.text(`${t("pdf.rent")} : ${fmt(notice.rent_amount)}`, 20, y);
+    doc.text(`${t("pdf.charges")} : ${fmt(notice.charges_amount)}`, 20, y + 7);
     doc.setFont("helvetica", "bold");
-    doc.text(`Total à payer : ${fmt(notice.total_amount)}`, 20, y + 17);
+    doc.text(`${t("pdf.total")} : ${fmt(notice.total_amount)}`, 20, y + 17);
 
     doc.setFillColor(26, 39, 68);
     doc.rect(0, 290, 210, 7, "F");
     doc.setFontSize(7);
     doc.setTextColor(140, 140, 140);
-    doc.text("Easy-Locs — Avis d'échéance", 20, 287);
+    doc.text(t("pdf.footer_notice"), 20, 287);
 
     doc.save(`avis_echeance_${notice.month}_${tenant?.name || ""}.pdf`);
   };
