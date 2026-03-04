@@ -2,25 +2,27 @@ import { motion } from "framer-motion";
 import { Check, Sparkles, Infinity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
-const features = [
-  "Tous les pays du monde",
-  "Nombre illimité de biens",
-  "Nombre illimité de locataires",
-  "Locations longue durée + Airbnb",
-  "Synchronisation Airbnb, Booking & OTA",
-  "Documents juridiques multi-pays",
-  "Baux, états des lieux, quittances",
-  "Signature électronique",
-  "Archivage sécurisé longue durée",
-  "Export juridique PDF",
-  "Support prioritaire",
+const featureKeys = [
+  "landing.pricing.feat_countries",
+  "landing.pricing.feat_properties",
+  "landing.pricing.feat_tenants",
+  "landing.pricing.feat_rental_modes",
+  "landing.pricing.feat_ota_sync",
+  "landing.pricing.feat_legal_docs",
+  "landing.pricing.feat_leases",
+  "landing.pricing.feat_esign",
+  "landing.pricing.feat_archive",
+  "landing.pricing.feat_pdf",
+  "landing.pricing.feat_support",
 ];
 
 const Pricing = () => {
   const [interval, setInterval] = useState<"monthly" | "annual">("monthly");
+  const { t } = useI18n();
   const price = interval === "monthly" ? 9.99 : 99;
-  const intLabel = interval === "monthly" ? "mois" : "an";
+  const intLabel = interval === "monthly" ? t("landing.pricing.per_month") : t("landing.pricing.per_year");
 
   return (
     <section id="pricing" className="py-24 bg-muted/30">
@@ -32,13 +34,12 @@ const Pricing = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Un seul plan, <span className="text-gradient-gold">tout illimité</span>
+            {t("landing.pricing.title")} <span className="text-gradient-gold">{t("landing.pricing.title_highlight")}</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-3xl mx-auto mb-2">
-            Une seule plateforme pour gérer vos locations longue durée, Airbnb et Booking,
-            avec des documents juridiques adaptés à chaque pays.
+            {t("landing.pricing.subtitle")}
           </p>
-          <p className="text-muted-foreground text-sm">Aucun engagement – Annulation à tout moment</p>
+          <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment")}</p>
         </motion.div>
 
         {/* Interval toggle */}
@@ -47,13 +48,13 @@ const Pricing = () => {
             onClick={() => setInterval("monthly")}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${interval === "monthly" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"}`}
           >
-            Mensuel
+            {t("landing.pricing.monthly")}
           </button>
           <button
             onClick={() => setInterval("annual")}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${interval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"}`}
           >
-            Annuel
+            {t("landing.pricing.annual")}
           </button>
         </div>
 
@@ -67,24 +68,24 @@ const Pricing = () => {
             {interval === "annual" && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
-                Économisez 20€/an
+                {t("landing.pricing.save_annual")}
               </div>
             )}
             <div className="flex items-center gap-2 mb-1">
               <Infinity className="h-5 w-5 text-gold" />
-              <h3 className="text-lg font-bold text-foreground">Easy-Locs Illimité</h3>
+              <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name")}</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Tout inclus — Accès complet</p>
+            <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc")}</p>
             <div className="mb-4">
               <span className="text-5xl font-extrabold text-foreground">{price}€</span>
               <span className="text-muted-foreground text-sm"> / {intLabel}</span>
             </div>
-            <p className="text-xs text-muted-foreground mb-6">Accès illimité à toutes les fonctionnalités Easy-Locs.</p>
+            <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc")}</p>
             <ul className="space-y-2.5 mb-8">
-              {features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-foreground">
+              {featureKeys.map((key) => (
+                <li key={key} className="flex items-start gap-2 text-sm text-foreground">
                   <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                  <span>{f}</span>
+                  <span>{t(key)}</span>
                 </li>
               ))}
             </ul>
@@ -92,25 +93,21 @@ const Pricing = () => {
               to="/onboarding"
               className="block w-full text-center py-3 rounded-lg font-semibold bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90 transition-all"
             >
-              Essai gratuit 3 jours
+              {t("landing.pricing.cta")}
             </Link>
           </div>
         </motion.div>
 
         {/* Payment methods */}
         <div className="flex items-center justify-center gap-4 mt-8 text-xs text-muted-foreground">
-          <span>💳 Carte bancaire</span>
-          <span>🏦 SEPA</span>
+          <span>{t("landing.pricing.payment_card")}</span>
+          <span>{t("landing.pricing.payment_sepa")}</span>
         </div>
 
         {/* Legal disclaimer */}
         <div className="max-w-3xl mx-auto mt-8 text-center text-xs text-muted-foreground/70 space-y-2">
-          <p>
-            La plateforme fournit des modèles de documents juridiques automatisés. Elle ne fournit pas de conseil juridique personnalisé et ne se substitue pas à un professionnel du droit.
-          </p>
-          <p>
-            Les abonnements sont reconduits automatiquement. Résiliation à tout moment depuis l'espace utilisateur. Aucun remboursement partiel.
-          </p>
+          <p>{t("landing.pricing.legal_1")}</p>
+          <p>{t("landing.pricing.legal_2")}</p>
         </div>
       </div>
     </section>
