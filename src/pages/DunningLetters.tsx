@@ -97,7 +97,7 @@ const DunningLetters = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(26, 39, 68);
-    doc.text(letter.level === 3 ? "MISE EN DEMEURE" : `RELANCE DE LOYER IMPAYÉ (${levelInfo.label})`, 20, 25);
+    doc.text(letter.level === 3 ? t("pdf.dunning_title_3") : `${t("pdf.dunning_title")} (${t(levelInfo.labelKey)})`, 20, 25);
 
     let y = 45;
     doc.setFontSize(10);
