@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle, CreditCard } from "lucide-react";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
+  const { t } = useI18n();
   const [listing, setListing] = useState<any>(null);
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -94,11 +96,10 @@ const PublicListing = () => {
 
     if (error) {
       setSubmitting(false);
-      alert("Erreur lors de l'envoi. Veuillez réessayer.");
+      alert(t("page.listing.error_submit"));
       return;
     }
 
-    // Trigger notification + payment link generation
     try {
       await supabase.functions.invoke("notify-booking", {
         body: { booking_request_id: insertedRequest.id },
@@ -129,7 +130,7 @@ const PublicListing = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      alert("Erreur de paiement: " + (err.message || "Réessayez."));
+      alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);
     } finally {
       setSubmitting(false);
     }
@@ -147,8 +148,8 @@ const PublicListing = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Annonce introuvable</h1>
-          <p className="text-muted-foreground">Ce lien n'est plus actif ou n'existe pas.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.not_found")}</h1>
+          <p className="text-muted-foreground">{t("page.listing.not_found_desc")}</p>
         </div>
       </div>
     );
@@ -159,8 +160,8 @@ const PublicListing = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Paiement confirmé !</h1>
-          <p className="text-muted-foreground">Votre paiement a été traité avec succès. Le propriétaire a été notifié et vous recevrez un email de confirmation.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.payment_confirmed")}</h1>
+          <p className="text-muted-foreground">{t("page.listing.payment_confirmed_desc")}</p>
         </div>
       </div>
     );
@@ -201,7 +202,7 @@ const PublicListing = () => {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <p className="text-muted-foreground">Aucune photo</p>
+            <p className="text-muted-foreground">{t("page.listing.no_photos")}</p>
           </div>
         )}
       </div>
@@ -223,35 +224,34 @@ const PublicListing = () => {
             <div className="flex flex-wrap gap-4 text-sm">
               {listing.price_per_night > 0 && (
                 <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-1.5 rounded-full font-medium">
-                  <Euro className="h-4 w-4" /> {listing.price_per_night}€ / nuit
+                  <Euro className="h-4 w-4" /> {listing.price_per_night}€ {t("page.listing.per_night")}
                 </span>
               )}
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
-                <Users className="h-4 w-4" /> {listing.max_guests} voyageur{listing.max_guests > 1 ? "s" : ""} max
+                <Users className="h-4 w-4" /> {listing.max_guests} {t("page.listing.guests_max")}
               </span>
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
-                <Moon className="h-4 w-4" /> Min. {listing.min_nights} nuit{listing.min_nights > 1 ? "s" : ""}
+                <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
               </span>
             </div>
 
             {listing.description && (
               <div>
-                <h2 className="font-semibold text-foreground mb-2">Description</h2>
+                <h2 className="font-semibold text-foreground mb-2">{t("page.listing.description")}</h2>
                 <p className="text-muted-foreground text-sm whitespace-pre-wrap">{listing.description}</p>
               </div>
             )}
 
             {property?.surface && (
               <div className="text-sm text-muted-foreground">
-                Surface : {property.surface} m² · {property.rooms || 1} pièce{(property.rooms || 1) > 1 ? "s" : ""}
-                {property.furnished && " · Meublé"}
+                {t("page.listing.surface")} : {property.surface} m² · {property.rooms || 1} {t("page.listing.rooms")}
+                {property.furnished && ` · ${t("page.listing.furnished")}`}
               </div>
             )}
 
-            {/* Amenities */}
             {stringAmenities.length > 0 && (
               <div>
-                <h2 className="font-semibold text-foreground mb-2">Équipements</h2>
+                <h2 className="font-semibold text-foreground mb-2">{t("page.listing.amenities")}</h2>
                 <div className="flex flex-wrap gap-2">
                   {stringAmenities.map(a => (
                     <span key={a} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-medium">
@@ -262,7 +262,6 @@ const PublicListing = () => {
               </div>
             )}
 
-            {/* Mini photo gallery */}
             {photos.length > 1 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {photos.map((url, i) => (
@@ -284,20 +283,20 @@ const PublicListing = () => {
               {submitted ? (
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-foreground mb-1">Demande envoyée !</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Le propriétaire reviendra vers vous rapidement.
+                    {t("page.listing.request_sent_desc")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Un email de confirmation avec le lien de paiement vous a été envoyé.
+                    {t("page.listing.payment_link_sent")}
                   </p>
                 </div>
               ) : (
                 <>
-                  <h3 className="font-semibold text-foreground text-center">Réserver ce logement</h3>
+                  <h3 className="font-semibold text-foreground text-center">{t("page.listing.book_title")}</h3>
                   <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground">Nom complet *</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.full_name")} *</label>
                       <input
                         required
                         value={form.guest_name}
@@ -306,7 +305,7 @@ const PublicListing = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground">Email *</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.email")} *</label>
                       <input
                         required
                         type="email"
@@ -316,7 +315,7 @@ const PublicListing = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground">Téléphone</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.phone")}</label>
                       <input
                         value={form.guest_phone}
                         onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))}
@@ -325,7 +324,7 @@ const PublicListing = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs font-medium text-muted-foreground">Arrivée *</label>
+                        <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_in")} *</label>
                         <input
                           required
                           type="date"
@@ -336,7 +335,7 @@ const PublicListing = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-muted-foreground">Départ *</label>
+                        <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_out")} *</label>
                         <input
                           required
                           type="date"
@@ -348,7 +347,7 @@ const PublicListing = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground">Nombre de voyageurs</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.guests_count")}</label>
                       <input
                         type="number"
                         min={1}
@@ -359,30 +358,30 @@ const PublicListing = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground">Message</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.message")}</label>
                       <textarea
                         value={form.message}
                         onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
                         rows={2}
                         className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 resize-none"
-                        placeholder="Un mot pour le propriétaire…"
+                        placeholder={t("page.listing.message_placeholder")}
                       />
                     </div>
 
                     {nights > 0 && listing.price_per_night > 0 && (
                       <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">{nights} nuit{nights > 1 ? "s" : ""} × {listing.price_per_night}€</span>
+                          <span className="text-muted-foreground">{nights} {t("page.listing.nights")} × {listing.price_per_night}€</span>
                           <span className="text-foreground">{nights * listing.price_per_night}€</span>
                         </div>
                         {cleaningFee > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Ménage</span>
+                            <span className="text-muted-foreground">{t("page.listing.cleaning")}</span>
                             <span className="text-foreground">{cleaningFee}€</span>
                           </div>
                         )}
                         <div className="flex justify-between border-t border-border pt-1">
-                          <span className="font-medium text-foreground">Total</span>
+                          <span className="font-medium text-foreground">{t("page.listing.total")}</span>
                           <span className="font-semibold text-foreground">{totalPrice}€</span>
                         </div>
                       </div>
@@ -394,7 +393,7 @@ const PublicListing = () => {
                       className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                     >
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      Envoyer la demande
+                      {t("page.listing.send_request")}
                     </button>
 
                     {nights > 0 && totalPrice > 0 && form.guest_email && form.guest_name && (
@@ -405,12 +404,12 @@ const PublicListing = () => {
                         className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                       >
                         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                        Payer {totalPrice}€ maintenant
+                        {t("page.listing.pay_now")} {totalPrice}€
                       </button>
                     )}
                     {nights > 0 && totalPrice > 0 && (
                       <p className="text-[10px] text-muted-foreground text-center">
-                        Paiement sécurisé par Stripe · Carte & Apple Pay acceptés
+                        {t("page.listing.stripe_note") || "Stripe · Apple Pay / Google Pay"}
                       </p>
                     )}
                   </form>
@@ -422,7 +421,7 @@ const PublicListing = () => {
       </div>
 
       <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-        Propulsé par <span className="font-semibold">EASY-LOCS®</span>
+        {t("page.tsignup.powered_by")} <span className="font-semibold">EASY-LOCS®</span>
       </footer>
     </div>
   );

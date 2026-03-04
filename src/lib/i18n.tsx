@@ -1488,6 +1488,8 @@ const pageFr: Record<string, string> = {
   "page.listing.payment_link_sent": "Un email de confirmation avec le lien de paiement vous a été envoyé.",
   "page.listing.error_submit": "Erreur lors de l'envoi. Veuillez réessayer.",
   "page.listing.error_payment": "Erreur de paiement",
+  "page.listing.stripe_note": "Paiement sécurisé par Stripe · Carte & Apple Pay acceptés",
+  "page.listing.powered_by_brand": "Gestion locative intelligente",
   // ── Listing Manager ──
   "page.listing_mgr.title": "Annonce publique",
   "page.listing_mgr.listing_title": "Titre de l'annonce",
@@ -2661,6 +2663,8 @@ const pageEn: Record<string, string> = {
   "page.listing.payment_link_sent": "A confirmation email with the payment link has been sent.",
   "page.listing.error_submit": "Error sending request. Please try again.",
   "page.listing.error_payment": "Payment error",
+  "page.listing.stripe_note": "Secure payment via Stripe · Card & Apple Pay accepted",
+  "page.listing.powered_by_brand": "Smart rental management",
   // ── Listing Manager ──
   "page.listing_mgr.title": "Public listing",
   "page.listing_mgr.listing_title": "Listing title",
