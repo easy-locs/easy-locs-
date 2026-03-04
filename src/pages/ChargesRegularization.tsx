@@ -3,26 +3,19 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { formatCurrency } from "@/lib/country-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
-import { format } from "date-fns";
 
-interface Tenant {
-  id: string;
-  name: string;
-  charges_amount: number;
-  property_id: string | null;
-}
-
-interface Property {
-  id: string;
-  label: string;
-  monthly_charges: number;
-}
+interface Tenant { id: string; name: string; charges_amount: number; property_id: string | null; }
+interface Property { id: string; label: string; monthly_charges: number; }
 
 const ChargesRegularization = () => {
-  const { orgId } = useAuth();
+  const { orgId, userCountry } = useAuth();
+  const { t } = useI18n();
+  const fmt = (n: number) => formatCurrency(n, userCountry);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [year, setYear] = useState(new Date().getFullYear() - 1);
@@ -34,88 +27,72 @@ const ChargesRegularization = () => {
     Promise.all([
       supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId),
       supabase.from("properties").select("id, label, monthly_charges").eq("org_id", orgId),
-    ]).then(([t, p]) => {
-      setTenants((t.data || []) as Tenant[]);
-      setProperties((p.data || []) as Property[]);
+    ]).then(([tData, pData]) => {
+      setTenants((tData.data || []) as Tenant[]);
+      setProperties((pData.data || []) as Property[]);
       setLoading(false);
     });
   }, [orgId]);
 
   const results = useMemo(() => {
-    return tenants.map(t => {
-      const prop = properties.find(p => p.id === t.property_id);
-      const provisionsAnnuelles = (t.charges_amount || prop?.monthly_charges || 0) * 12;
-      const chargesReelles = realCharges[t.id] || 0;
+    return tenants.map(tenant => {
+      const prop = properties.find(p => p.id === tenant.property_id);
+      const provisionsAnnuelles = (tenant.charges_amount || prop?.monthly_charges || 0) * 12;
+      const chargesReelles = realCharges[tenant.id] || 0;
       const solde = provisionsAnnuelles - chargesReelles;
       return {
-        tenantId: t.id,
-        tenantName: t.name,
-        propertyLabel: prop?.label || "—",
-        provisionsAnnuelles,
-        chargesReelles,
-        solde,
-        type: solde > 0 ? "Trop-perçu (à rembourser)" : solde < 0 ? "Complément à réclamer" : "Équilibré",
+        tenantId: tenant.id, tenantName: tenant.name, propertyLabel: prop?.label || "—",
+        provisionsAnnuelles, chargesReelles, solde,
+        type: solde > 0 ? t("page.charges.overpaid") : solde < 0 ? t("page.charges.underpaid") : t("page.charges.balanced"),
       };
     });
-  }, [tenants, properties, realCharges]);
-
-  const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  }, [tenants, properties, realCharges, t]);
 
   const handleExport = () => {
     exportToCSV(
       results.map(r => ({
-        locataire: r.tenantName,
-        bien: r.propertyLabel,
-        provisions: r.provisionsAnnuelles,
-        charges_reelles: r.chargesReelles,
-        solde: r.solde,
-        resultat: r.type,
+        locataire: r.tenantName, bien: r.propertyLabel,
+        provisions: r.provisionsAnnuelles, charges_reelles: r.chargesReelles,
+        solde: r.solde, resultat: r.type,
       })),
       `regularisation_charges_${year}`,
       [
-        { key: "locataire", label: "Locataire" },
-        { key: "bien", label: "Bien" },
-        { key: "provisions", label: "Provisions annuelles (€)" },
-        { key: "charges_reelles", label: "Charges réelles (€)" },
-        { key: "solde", label: "Solde (€)" },
-        { key: "resultat", label: "Résultat" },
+        { key: "locataire", label: t("page.receipts.tenant") },
+        { key: "bien", label: t("page.expenses.property") },
+        { key: "provisions", label: t("page.charges.provisions_annual") },
+        { key: "charges_reelles", label: t("page.charges.real_charges") },
+        { key: "solde", label: t("page.charges.balance") },
+        { key: "resultat", label: t("page.charges.result") },
       ]
     );
   };
 
   return (
     <DashboardLayout>
-      <FeatureGate feature="unlimited_properties" featureLabel="Régularisation des charges">
+      <FeatureGate feature="unlimited_properties" featureLabel={t("page.charges.title")}>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Régularisation des charges</h1>
-            <p className="text-muted-foreground text-sm mt-1">Calculez l'ajustement annuel entre provisions et charges réelles</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.charges.title")}</h1>
+            <p className="text-muted-foreground text-sm mt-1">{t("page.charges.subtitle")}</p>
           </div>
           <div className="flex items-center gap-3">
-            <select
-              value={year}
-              onChange={e => setYear(Number(e.target.value))}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm"
-            >
-              {[...Array(5)].map((_, i) => {
-                const y = new Date().getFullYear() - i;
-                return <option key={y} value={y}>{y}</option>;
-              })}
+            <select value={year} onChange={e => setYear(Number(e.target.value))} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              {[...Array(5)].map((_, i) => { const y = new Date().getFullYear() - i; return <option key={y} value={y}>{y}</option>; })}
             </select>
             <button onClick={handleExport} className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90">
-              <Download className="h-4 w-4" /> Export CSV
+              <Download className="h-4 w-4" /> {t("page.charges.export_csv")}
             </button>
           </div>
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+          <div className="text-center py-12 text-muted-foreground">{t("page.common.loading")}</div>
         ) : tenants.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Users className="h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground text-sm">Aucun locataire — ajoutez des locataires dans la gestion locative.</p>
+              <p className="text-muted-foreground text-sm">{t("page.charges.no_tenants")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -124,33 +101,25 @@ const ChargesRegularization = () => {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-accent" />
-                  Saisie des charges réelles {year}
+                  {t("page.charges.real_charges_title")} {year}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Entrez le montant total des charges réelles supportées pour chaque locataire sur l'année {year} (eau, chauffage collectif, entretien, ordures ménagères, etc.)
+                  {t("page.charges.real_charges_desc").replace("{year}", String(year))}
                 </p>
                 <div className="space-y-3">
-                  {tenants.map(t => (
-                    <div key={t.id} className="flex items-center gap-4">
+                  {tenants.map(tenant => (
+                    <div key={tenant.id} className="flex items-center gap-4">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">{t.name}</p>
+                        <p className="text-sm font-medium text-foreground">{tenant.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {properties.find(p => p.id === t.property_id)?.label || "—"} • Provisions : {fmt((t.charges_amount || 0) * 12)}/an
+                          {properties.find(p => p.id === tenant.property_id)?.label || "—"} • {t("page.charges.provisions")} : {fmt((tenant.charges_amount || 0) * 12)}/an
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Euro className="h-4 w-4 text-muted-foreground" />
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={realCharges[t.id] || ""}
-                          onChange={e => setRealCharges(prev => ({ ...prev, [t.id]: Number(e.target.value) }))}
-                          placeholder="0.00"
-                          className="w-32 bg-background border border-border rounded-lg px-3 py-2 text-sm text-right"
-                        />
+                        <input type="number" min={0} step={0.01} value={realCharges[tenant.id] || ""} onChange={e => setRealCharges(prev => ({ ...prev, [tenant.id]: Number(e.target.value) }))} placeholder="0.00" className="w-32 bg-background border border-border rounded-lg px-3 py-2 text-sm text-right" />
                       </div>
                     </div>
                   ))}
@@ -159,40 +128,27 @@ const ChargesRegularization = () => {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Résultat de la régularisation</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("page.charges.result_title")}</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left py-2 font-medium text-muted-foreground">Locataire</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">Provisions</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">Charges réelles</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">Solde</th>
-                        <th className="text-left py-2 font-medium text-muted-foreground">Résultat</th>
+                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.receipts.tenant")}</th>
+                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.provisions")}</th>
+                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.real_charges")}</th>
+                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.balance")}</th>
+                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.charges.result")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {results.map(r => (
                         <tr key={r.tenantId} className="border-b border-border/50">
-                          <td className="py-3">
-                            <p className="font-medium text-foreground">{r.tenantName}</p>
-                            <p className="text-xs text-muted-foreground">{r.propertyLabel}</p>
-                          </td>
+                          <td className="py-3"><p className="font-medium text-foreground">{r.tenantName}</p><p className="text-xs text-muted-foreground">{r.propertyLabel}</p></td>
                           <td className="text-right py-3 text-foreground">{fmt(r.provisionsAnnuelles)}</td>
                           <td className="text-right py-3 text-foreground">{fmt(r.chargesReelles)}</td>
-                          <td className={`text-right py-3 font-semibold ${r.solde > 0 ? "text-green-600" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>
-                            {r.solde > 0 ? "+" : ""}{fmt(r.solde)}
-                          </td>
-                          <td className="py-3">
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              r.solde > 0 ? "bg-green-500/10 text-green-600" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
-                            }`}>
-                              {r.type}
-                            </span>
-                          </td>
+                          <td className={`text-right py-3 font-semibold ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
+                          <td className="py-3"><span className={`text-xs px-2 py-1 rounded-full ${r.solde > 0 ? "bg-success/10 text-success" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>{r.type}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -205,9 +161,7 @@ const ChargesRegularization = () => {
 
         <div className="flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground">
-            La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).
-          </p>
+          <p className="text-xs text-muted-foreground">{t("page.charges.legal_notice")}</p>
         </div>
       </div>
       </FeatureGate>
