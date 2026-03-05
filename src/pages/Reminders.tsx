@@ -70,7 +70,7 @@ const Reminders = () => {
                   <div className="flex-1">
                     <div className="text-sm font-medium text-foreground">{r.label}</div>
                     <div className="text-xs text-muted-foreground">
-                      {r.next_run_at ? new Date(r.next_run_at).toLocaleDateString("fr-FR") : "—"}
+                      {r.next_run_at ? new Date(r.next_run_at).toLocaleDateString() : "—"}
                     </div>
                   </div>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>

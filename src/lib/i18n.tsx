@@ -1076,6 +1076,7 @@ const pageFr: Record<string, string> = {
   "page.leases.rent_label": "Loyer",
   "page.leases.deposit_label": "Dépôt",
   "page.leases.download_tooltip": "Télécharger",
+  "page.leases.entry_inventory_done": "État des lieux d'entrée réalisé",
 
   // PDF labels
   "pdf.notice_title": "AVIS D'ÉCHÉANCE",
@@ -2993,6 +2994,7 @@ const pageEn: Record<string, string> = {
   "page.leases.email_body": "Your lease is attached to this email:",
   "page.leases.email_type": "Type",
   "page.leases.email_footer": "You can also find it in your tenant portal.",
+  "page.leases.entry_inventory_done": "Entry inventory completed",
   // ── TenantPay ──
   "page.tenant_pay.title": "Pay my rent",
   "page.tenant_pay.subtitle": "Choose your payment method and settle your rent.",

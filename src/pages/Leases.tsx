@@ -21,20 +21,20 @@ import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-gener
 type LeaseFilter = "all" | "active" | "terminated";
 type ActiveView = "leases" | "create" | "diagnostics";
 
-const DIAGNOSTIC_LINKS = [
-  { name: "Qalimo", url: "https://www.qalimo.fr", desc: "Vérification conformité bail, diagnostics obligatoires, dossier locataire" },
-  { name: "Diagamter", url: "https://www.diagamter.com", desc: "DPE, amiante, plomb, gaz, électricité — réseau national" },
-  { name: "Allodiagnostic", url: "https://www.allodiagnostic.com", desc: "Diagnostics immobiliers en ligne, devis instantané" },
-  { name: "ANIL", url: "https://www.anil.org", desc: "Information juridique gratuite sur le logement (loyers, baux, etc.)" },
+const DIAGNOSTIC_LINK_KEYS = [
+  { name: "Qalimo", url: "https://www.qalimo.fr", descKey: "page.leases.diag_qalimo" },
+  { name: "Diagamter", url: "https://www.diagamter.com", descKey: "page.leases.diag_diagamter" },
+  { name: "Allodiagnostic", url: "https://www.allodiagnostic.com", descKey: "page.leases.diag_allodiag" },
+  { name: "ANIL", url: "https://www.anil.org", descKey: "page.leases.diag_anil" },
 ];
 
-const MANDATORY_DIAGNOSTICS = [
-  "DPE (Diagnostic de Performance Énergétique)",
-  "CREP (Constat de Risque d'Exposition au Plomb) — logements avant 1949",
-  "État de l'installation intérieure de gaz (+ de 15 ans)",
-  "État de l'installation intérieure d'électricité (+ de 15 ans)",
-  "État des Risques et Pollutions (ERP)",
-  "Diagnostic bruit — zones d'exposition au bruit des aérodromes",
+const MANDATORY_DIAG_KEYS = [
+  "page.leases.diag_dpe",
+  "page.leases.diag_crep",
+  "page.leases.diag_gas",
+  "page.leases.diag_elec",
+  "page.leases.diag_erp",
+  "page.leases.diag_noise",
 ];
 
 const Leases = () => {
@@ -97,7 +97,7 @@ const Leases = () => {
       if (!template) return;
 
       const ownerData = fillFromOwner();
-      let landlordName = ownerData?.landlordName || user?.user_metadata?.name || "Propriétaire";
+      let landlordName = ownerData?.landlordName || user?.user_metadata?.name || t("page.leases.landlord_default");
       let landlordAddress = ownerData?.landlordAddress || "";
       let landlordEmail = ownerData?.landlordEmail || user?.email || "";
       let landlordPhone = ownerData?.landlordPhone || "";
@@ -125,7 +125,7 @@ const Leases = () => {
         tenantNationality: tenant.nationality || "", tenantProfession: tenant.profession || "",
         propertyAddress: `${prop.address}, ${prop.postal_code} ${prop.city}`, propertyType: propertyTypeMap[prop.property_type] || prop.property_type,
         surface: prop.surface, rooms: prop.rooms, floor: prop.floor ?? "", heating: heatingMap[prop.heating] || prop.heating,
-        hotWater: "individuel", annexes: hasEntryInventory ? "État des lieux d'entrée réalisé" : "", equipments: "",
+        hotWater: "individuel", annexes: hasEntryInventory ? t("page.leases.entry_inventory_done") : "", equipments: "",
         rentAmount: tenant.rent_amount || prop.monthly_rent, chargesAmount: tenant.charges_amount || prop.monthly_charges,
         chargesMode: "provisions", depositAmount: tenant.deposit_amount || prop.deposit_amount, paymentDay: 5, paymentMethod: "virement",
         zoneTendue: "non", dpeLetter: "D", gesLetter: "D",
@@ -160,15 +160,15 @@ const Leases = () => {
         supabase.functions.invoke("send-email", {
           body: {
             to: tenant.email,
-            subject: `Votre bail est disponible : ${leaseLabel}`,
+            subject: t("page.leases.email_subject").replace("{type}", leaseLabel),
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">📝 Bail envoyé</h2>
-              <p style="color:#555;">Votre bail est joint à cet email :</p>
+              <h2 style="color:#1a1a1a;">${t("page.leases.email_title")}</h2>
+              <p style="color:#555;">${t("page.leases.email_body")}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
                 <p style="font-weight:600;color:#1a1a1a;">${title}</p>
-                <p style="color:#888;font-size:13px;">Type : ${leaseLabel}</p>
+                <p style="color:#888;font-size:13px;">${t("page.leases.email_type")} : ${leaseLabel}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Vous pouvez aussi le retrouver dans votre interface locataire.</p>
+              <p style="color:#888;font-size:13px;">${t("page.leases.email_footer")}</p>
             </div>`,
             attachments: [{
               content: pdfBase64,
@@ -339,7 +339,7 @@ const Leases = () => {
                           )}
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{tenant.lease_start || "—"} → {tenant.lease_end || t("page.leases.in_progress")}</span>
-                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}/mois</span>
+                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}{t("page.leases.per_month")}</span>
                           </div>
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground/30 shrink-0 mt-3" />
@@ -374,12 +374,12 @@ const Leases = () => {
                 const p = tenant ? properties.find(x => x.id === tenant.property_id) : null;
                 if (!tenant || !p) return null;
                 return (
-                  <div className="bg-muted/50 rounded-lg p-4 mb-4 text-xs space-y-1">
-                    <p className="font-medium text-foreground text-sm mb-2">✅ Données pré-remplies :</p>
+                   <div className="bg-muted/50 rounded-lg p-4 mb-4 text-xs space-y-1">
+                    <p className="font-medium text-foreground text-sm mb-2">✅ {t("page.leases.prefilled_data")} :</p>
                     <p><span className="text-muted-foreground">{t("page.leases.select_tenant_label")} :</span> {tenant.name} — {tenant.email || "—"}</p>
                     <p><span className="text-muted-foreground">{t("page.dashboard.properties")} :</span> {p.label} — {p.address}, {p.postal_code} {p.city}</p>
-                    <p><span className="text-muted-foreground">Loyer :</span> {fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}</p>
-                    <p><span className="text-muted-foreground">Dépôt :</span> {fmt(tenant.deposit_amount)}</p>
+                    <p><span className="text-muted-foreground">{t("page.leases.rent_label")} :</span> {fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}</p>
+                    <p><span className="text-muted-foreground">{t("page.leases.deposit_label")} :</span> {fmt(tenant.deposit_amount)}</p>
                     <p><span className="text-muted-foreground">{t("ob.lease_start")} :</span> {tenant.lease_start || "—"}</p>
                   </div>
                 );
@@ -388,9 +388,9 @@ const Leases = () => {
               <label className="text-sm font-medium text-foreground mb-1 block">2. {t("page.leases.lease_type")}</label>
               <div className="grid grid-cols-3 gap-2 mb-6">
                 {([
-                  { key: "empty", label: t("page.leases.empty"), desc: "3 ans" },
-                  { key: "furnished", label: t("page.leases.furnished"), desc: "1 an" },
-                  { key: "commercial", label: t("page.leases.commercial"), desc: "3/6/9 ans" },
+                  { key: "empty", label: t("page.leases.empty"), desc: t("page.leases.duration_empty") },
+                  { key: "furnished", label: t("page.leases.furnished"), desc: t("page.leases.duration_furnished") },
+                  { key: "commercial", label: t("page.leases.commercial"), desc: t("page.leases.duration_commercial") },
                 ]).map(lt => (
                   <button key={lt.key} onClick={() => setSelectedLeaseType(lt.key)}
                     className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-sm transition-all ${selectedLeaseType === lt.key ? "border-accent bg-accent/10 text-foreground" : "border-border text-muted-foreground hover:border-accent/50"}`}>
@@ -420,11 +420,11 @@ const Leases = () => {
                 <AlertTriangle className="h-5 w-5 text-accent" /> {t("page.leases.mandatory_diag")}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">{t("page.leases.diagnostics_tab")}</p>
-              <div className="space-y-2">
-                {MANDATORY_DIAGNOSTICS.map((d, i) => (
+               <div className="space-y-2">
+                {MANDATORY_DIAG_KEYS.map((key, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
                     <CheckCircle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0" />
-                    <span className="text-foreground">{d}</span>
+                    <span className="text-foreground">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -433,13 +433,13 @@ const Leases = () => {
             <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card">
               <h2 className="text-lg font-bold text-foreground mb-4">{t("page.leases.tools_partners")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DIAGNOSTIC_LINKS.map(link => (
+                {DIAGNOSTIC_LINK_KEYS.map(link => (
                   <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer"
                     className="flex items-start gap-3 p-4 rounded-lg border border-border/50 hover:border-accent/50 hover:shadow-sm transition-all group">
                     <ExternalLink className="h-4 w-4 text-accent mt-0.5 shrink-0" />
                     <div>
                       <span className="font-semibold text-foreground text-sm group-hover:text-accent transition-colors">{link.name}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">{link.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t(link.descKey)}</p>
                     </div>
                   </a>
                 ))}
@@ -448,12 +448,12 @@ const Leases = () => {
 
             <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-foreground mb-2">{t("page.leases.compliance_title")}</h3>
-              <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
-                <li>Le bail doit contenir toutes les mentions obligatoires (loi ALUR)</li>
-                <li>Les diagnostics doivent être annexés au bail lors de la signature</li>
-                <li>En zone tendue, vérifier l'encadrement des loyers (plafonds préfectoraux)</li>
-                <li>Le dépôt de garantie ne peut excéder 1 mois de loyer HC (vide) ou 2 mois (meublé)</li>
-                <li>L'état des lieux doit être réalisé de manière contradictoire</li>
+               <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                <li>{t("page.leases.compliance_1")}</li>
+                <li>{t("page.leases.compliance_2")}</li>
+                <li>{t("page.leases.compliance_3")}</li>
+                <li>{t("page.leases.compliance_4")}</li>
+                <li>{t("page.leases.compliance_5")}</li>
               </ul>
             </div>
           </div>
