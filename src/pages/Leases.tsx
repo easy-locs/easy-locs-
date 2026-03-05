@@ -433,13 +433,13 @@ const Leases = () => {
             <div className="bg-card rounded-xl p-6 border border-border/50 shadow-card">
               <h2 className="text-lg font-bold text-foreground mb-4">{t("page.leases.tools_partners")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DIAGNOSTIC_LINKS.map(link => (
+                {DIAGNOSTIC_LINK_KEYS.map(link => (
                   <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer"
                     className="flex items-start gap-3 p-4 rounded-lg border border-border/50 hover:border-accent/50 hover:shadow-sm transition-all group">
                     <ExternalLink className="h-4 w-4 text-accent mt-0.5 shrink-0" />
                     <div>
                       <span className="font-semibold text-foreground text-sm group-hover:text-accent transition-colors">{link.name}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">{link.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t(link.descKey)}</p>
                     </div>
                   </a>
                 ))}
