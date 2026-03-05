@@ -137,7 +137,7 @@ const FiscalReport = () => {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <select value={userCountry} onChange={e => setUserCountry(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
-              {Object.entries(FISCAL_CONFIGS).map(([code, cfg]) => <option key={code} value={code}>{cfg.flag} {cfg.label}</option>)}
+              {Object.entries(FISCAL_CONFIGS_STATIC).map(([code, cfg]) => <option key={code} value={code}>{cfg.flag} {cfg.label}</option>)}
               <option value="OTHER">🌍 Other</option>
             </select>
             <select value={year} onChange={e => setYear(Number(e.target.value))} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
