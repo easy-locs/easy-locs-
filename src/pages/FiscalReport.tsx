@@ -65,7 +65,18 @@ const FiscalReport = () => {
   const [userCountry, setUserCountry] = useState(authUserCountry || "FR");
   const [manualRegime, setManualRegime] = useState<"auto" | "micro" | "real">("auto");
 
-  const config = FISCAL_CONFIGS[userCountry] || DEFAULT_CONFIG;
+  const staticConfig = FISCAL_CONFIGS_STATIC[userCountry] || DEFAULT_CONFIG_STATIC;
+  const config = useMemo(() => ({
+    ...staticConfig,
+    microLabel: t("page.fiscal.micro_label"),
+    realLabel: t("page.fiscal.real_label"),
+    deficitLabel: t("page.fiscal.deficit_label"),
+    expenseFields: staticConfig.expenseFieldKeys.map(f => ({
+      key: f.key,
+      label: f.labelKey ? t(f.labelKey) : f.key,
+      desc: f.descKey ? t(f.descKey) : "",
+    })),
+  }), [staticConfig, t]);
   const fmt = (n: number) => formatCurrency(n, userCountry);
 
   useEffect(() => {
