@@ -1,7 +1,7 @@
 import React from "react";
-import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import logoEasylocs from "@/assets/logo-easylocs.png";
 
 const Footer = React.forwardRef<HTMLElement>((_, ref) => {
   const { t } = useI18n();
@@ -11,8 +11,8 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <Shield className="h-6 w-6 text-gold" />
-              <span className="text-lg font-bold text-primary-foreground">Easy-Locs</span>
+              <img src={logoEasylocs} alt="Easy-Locs" className="h-8 w-auto object-contain" />
+              <span className="text-lg font-bold text-primary-foreground">Easy-Locs<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/60">®</sup></span>
             </Link>
             <p className="text-sm leading-relaxed">{t("landing.footer.desc")}</p>
           </div>
