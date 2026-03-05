@@ -173,13 +173,13 @@ const Documents = () => {
 
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
           {([
-            { key: "create" as const, label: dl.create },
-            { key: "history" as const, label: `${dl.history} (${docs.length})` },
+            { key: "create" as const, label: t("page.documents.create") },
+            { key: "history" as const, label: `${t("page.documents.history")} (${docs.length})` },
             { key: "europe" as const, label: "🌍 International" },
-          ]).map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              {t.label}
+          ]).map((tb) => (
+            <button key={tb.key} onClick={() => setTab(tb.key)}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              {tb.label}
             </button>
           ))}
         </div>
