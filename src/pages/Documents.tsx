@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
-import { COUNTRY_LOCALE_MAP } from "@/lib/i18n";
+import { useI18n, COUNTRY_LOCALE_MAP } from "@/lib/i18n";
 
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
