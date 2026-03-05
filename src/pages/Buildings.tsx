@@ -20,11 +20,11 @@ interface BuildingRecord {
 }
 
 const BUILDING_TYPES = [
-  { value: "immeuble", label: "Immeuble" },
-  { value: "residence", label: "Résidence" },
-  { value: "copropriete", label: "Copropriété" },
-  { value: "lotissement", label: "Lotissement" },
-  { value: "parking", label: "Parking / Garage" },
+  { value: "immeuble", labelKey: "page.buildings.type_immeuble" },
+  { value: "residence", labelKey: "page.buildings.type_residence" },
+  { value: "copropriete", labelKey: "page.buildings.type_copropriete" },
+  { value: "lotissement", labelKey: "page.buildings.type_lotissement" },
+  { value: "parking", labelKey: "page.buildings.type_parking" },
 ];
 
 const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "" };
