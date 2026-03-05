@@ -120,13 +120,8 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    const baseOrigin = origin || "https://easylocs.lovable.app";
-    const successUrl = listing_id 
-      ? `${baseOrigin}/listing/${listing_id}?payment=success`
-      : `${baseOrigin}?payment=success`;
-    const cancelUrl = listing_id
-      ? `${baseOrigin}/listing/${listing_id}?payment=cancelled`
-      : `${baseOrigin}?payment=cancelled`;
+    const successUrl = `${safeOrigin}/listing/${listing_id}?payment=success`;
+    const cancelUrl = `${safeOrigin}/listing/${listing_id}?payment=cancelled`;
 
     const sessionParams: any = {
       customer_email: guest_email,
@@ -136,9 +131,9 @@ serve(async (req) => {
             currency,
             product_data: {
               name: `Réservation${property_label ? ` — ${property_label}` : ""}`,
-              description: `${nights} nuit${nights > 1 ? "s" : ""}`,
+              description: `${nights} nuit${nights > 1 ? "s" : ""} × ${pricePerNight} ${currency.toUpperCase()}`,
             },
-            unit_amount: Math.round(amount * 100),
+            unit_amount: Math.round(verifiedAmount * 100),
           },
           quantity: 1,
         },
