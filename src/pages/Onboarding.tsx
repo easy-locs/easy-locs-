@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Shield, Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
+  Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
 } from "lucide-react";
+import logoEasylocs from "@/assets/logo-easylocs.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
