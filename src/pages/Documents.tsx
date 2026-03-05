@@ -297,7 +297,7 @@ const Documents = () => {
                   {lawDepotUrls[country] && (
                     <a href={lawDepotUrls[country]} target="_blank" rel="noopener noreferrer"
                       className="text-xs font-medium text-accent hover:underline flex items-center gap-1">
-                      {dl.moreOn} <ChevronRight className="h-3 w-3" />
+                      {t("page.documents.more_on")} <ChevronRight className="h-3 w-3" />
                     </a>
                   )}
                 </div>
