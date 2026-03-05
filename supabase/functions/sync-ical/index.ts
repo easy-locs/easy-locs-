@@ -88,14 +88,52 @@ serve(async (req) => {
       throw new Error("Missing required fields: ical_url, property_id, provider, org_id");
     }
 
+    // SSRF protection: validate URL scheme and hostname
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(ical_url);
+    } catch {
+      throw new Error("Invalid iCal URL format");
+    }
+
+    if (parsedUrl.protocol !== "https:") {
+      throw new Error("Only HTTPS iCal URLs are allowed");
+    }
+
+    const blockedHostnames = ["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "metadata.google.internal"];
+    if (blockedHostnames.includes(parsedUrl.hostname.toLowerCase())) {
+      throw new Error("Internal/private hostnames are not allowed");
+    }
+
+    const blockedIpPatterns = /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|169\.254\.|0\.)/;
+    if (blockedIpPatterns.test(parsedUrl.hostname)) {
+      throw new Error("Private/internal IP addresses are not allowed");
+    }
+
     logStep("Fetching iCal", { url: ical_url.substring(0, 60) + "...", provider });
 
-    // Fetch the iCal feed
-    const icalResponse = await fetch(ical_url);
+    // Fetch the iCal feed with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    let icalResponse: Response;
+    try {
+      icalResponse = await fetch(ical_url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!icalResponse.ok) {
       throw new Error(`Failed to fetch iCal: ${icalResponse.status}`);
     }
+
+    // Enforce max response size (5MB)
+    const contentLength = icalResponse.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > 5 * 1024 * 1024) {
+      throw new Error("iCal feed too large (max 5MB)");
+    }
     const icalText = await icalResponse.text();
+    if (icalText.length > 5 * 1024 * 1024) {
+      throw new Error("iCal feed too large (max 5MB)");
+    }
     const events = parseICal(icalText);
 
     logStep("Parsed events", { count: events.length });
