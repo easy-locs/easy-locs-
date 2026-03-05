@@ -97,7 +97,7 @@ const Candidates = () => {
                 className={`bg-card rounded-xl border p-4 text-left transition-colors ${filterStatus === s.value ? "border-primary" : "border-border/50 hover:border-border"}`}>
                 <s.icon className={`h-5 w-5 ${s.color} mb-2`} />
                 <p className="text-2xl font-bold text-foreground">{count}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-xs text-muted-foreground">{t(s.labelKey)}</p>
               </button>
             );
           })}
