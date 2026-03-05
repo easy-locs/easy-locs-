@@ -219,11 +219,11 @@ const Documents = () => {
         {tab === "history" && (
           <div className="space-y-3">
             {loading ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">{dl.loading}</div>
+              <div className="text-center py-12 text-muted-foreground text-sm">{t("page.documents.loading")}</div>
             ) : docs.length === 0 ? (
               <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">{dl.noDoc}</p>
+                <p className="text-muted-foreground">{t("page.documents.no_doc")}</p>
               </div>
             ) : (
               docs.map((d) => (
