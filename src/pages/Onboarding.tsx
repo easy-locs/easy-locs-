@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Shield, Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
+  Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
 } from "lucide-react";
+import logoEasylocs from "@/assets/logo-easylocs.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -275,8 +276,8 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="absolute top-6 left-6 flex items-center gap-2">
-        <Shield className="h-7 w-7 text-gold" />
-        <span className="text-xl font-bold text-primary-foreground">Easy-Locs</span>
+        <img src={logoEasylocs} alt="Easy-Locs" className="h-10 w-auto object-contain" />
+        <span className="text-xl font-bold text-primary-foreground">Easy-Locs<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/60">®</sup></span>
       </div>
 
       <motion.div className="bg-card rounded-2xl shadow-card-hover p-6 sm:p-10 max-w-2xl w-full"
