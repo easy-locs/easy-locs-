@@ -18,8 +18,12 @@ interface VaultFile {
   created_at: string;
 }
 
-const fmtSize = (bytes: number) =>
-  bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} Mo` : `${(bytes / 1024).toFixed(0)} Ko`;
+const fmtSize = (bytes: number, locale: string = "fr") => {
+  const isEn = locale === "en" || locale.startsWith("en");
+  const mb = isEn ? "MB" : "Mo";
+  const kb = isEn ? "KB" : "Ko";
+  return bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} ${mb}` : `${(bytes / 1024).toFixed(0)} ${kb}`;
+};
 
 const fileIcon = (name: string) => {
   const ext = name.split(".").pop()?.toLowerCase();
