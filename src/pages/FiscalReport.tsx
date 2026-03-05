@@ -13,24 +13,45 @@ interface RentCall { month: string; rent_amount: number; charges_amount: number;
 interface Property { id: string; label: string; monthly_rent: number; monthly_charges: number; address: string; city: string; }
 
 // Country-specific fiscal configurations
-const FISCAL_CONFIGS: Record<string, {
-  label: string; flag: string; formName: string; microThreshold: number; microRate: number; microLabel: string; realLabel: string;
-  deficitMax: number | null; deficitLabel: string; taxAuthority: string; taxUrl: string; lawDepotUrl: string;
-  expenseFields: { key: string; label: string; desc: string }[];
+// Fiscal configs are built dynamically with i18n in the component below
+const FISCAL_CONFIGS_STATIC: Record<string, {
+  label: string; flag: string; formName: string; microThreshold: number; microRate: number; taxAuthority: string; taxUrl: string; lawDepotUrl: string;
+  deficitMax: number | null;
+  expenseFieldKeys: { key: string; labelKey: string; descKey: string }[];
 }> = {
   FR: {
-    label: "France", flag: "🇫🇷", formName: "Formulaire 2044", microThreshold: 15000, microRate: 0.3, microLabel: "Micro-foncier", realLabel: "Réel",
-    deficitMax: 10700, deficitLabel: "Déficit foncier imputable sur le revenu global", taxAuthority: "impots.gouv.fr", taxUrl: "https://www.impots.gouv.fr", lawDepotUrl: "https://www.lawdepot.com/contracts/tax-declaration/",
-    expenseFields: [{ key: "taxeFonciere", label: "Taxe foncière", desc: "Ligne 227" }, { key: "assurance", label: "Assurance PNO", desc: "Propriétaire non-occupant" }, { key: "travauxEntretien", label: "Travaux", desc: "Ligne 224" }, { key: "fraisGestion", label: "Frais de gestion", desc: "Forfait 20 €/lot ou réel" }, { key: "interetsEmprunt", label: "Intérêts d'emprunt", desc: "Ligne 250" }, { key: "chargesRecuperables", label: "Charges copro non récup.", desc: "Part propriétaire" }, { key: "autresFrais", label: "Autres frais", desc: "Diagnostics, frais" }],
+    label: "France", flag: "🇫🇷", formName: "Formulaire 2044", microThreshold: 15000, microRate: 0.3,
+    deficitMax: 10700, taxAuthority: "impots.gouv.fr", taxUrl: "https://www.impots.gouv.fr", lawDepotUrl: "https://www.lawdepot.com/contracts/tax-declaration/",
+    expenseFieldKeys: [
+      { key: "taxeFonciere", labelKey: "page.fiscal.field_taxe_fonciere", descKey: "page.fiscal.field_taxe_fonciere_desc" },
+      { key: "assurance", labelKey: "page.fiscal.field_assurance", descKey: "page.fiscal.field_assurance_desc" },
+      { key: "travauxEntretien", labelKey: "page.fiscal.field_travaux", descKey: "page.fiscal.field_travaux_desc" },
+      { key: "fraisGestion", labelKey: "page.fiscal.field_gestion", descKey: "page.fiscal.field_gestion_desc" },
+      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_desc" },
+      { key: "chargesRecuperables", labelKey: "page.fiscal.field_charges_copro", descKey: "page.fiscal.field_charges_copro_desc" },
+      { key: "autresFrais", labelKey: "page.fiscal.field_autres", descKey: "page.fiscal.field_autres_desc" },
+    ],
   },
-  // Simplified for other countries to save space, but logic remains same
-  BE: { label: "Belgique", flag: "🇧🇪", formName: "Déclaration IPP", microThreshold: 0, microRate: 0, microLabel: "Forfaitaire", realLabel: "Réel", deficitMax: null, deficitLabel: "Revenu cadastral", taxAuthority: "finances.belgium.be", taxUrl: "https://finances.belgium.be", lawDepotUrl: "https://www.lawdepot.be/", expenseFields: [{ key: "taxeFonciere", label: "Précompte immobilier", desc: "Taxe annuelle" }, { key: "interetsEmprunt", label: "Intérêts", desc: "Crédit" }] },
+  BE: {
+    label: "Belgique", flag: "🇧🇪", formName: "Déclaration IPP", microThreshold: 0, microRate: 0,
+    deficitMax: null, taxAuthority: "finances.belgium.be", taxUrl: "https://finances.belgium.be", lawDepotUrl: "https://www.lawdepot.be/",
+    expenseFieldKeys: [
+      { key: "taxeFonciere", labelKey: "page.fiscal.field_precompte", descKey: "page.fiscal.field_precompte_desc" },
+      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_credit" },
+    ],
+  },
 };
 
-const DEFAULT_CONFIG = {
-  label: "International", flag: "🌍", formName: "Tax Declaration", microThreshold: 0, microRate: 0, microLabel: "Simplified", realLabel: "Actual costs",
-  deficitMax: null, deficitLabel: "Consult advisor", taxAuthority: "lawdepot.com", taxUrl: "https://www.lawdepot.com", lawDepotUrl: "https://www.lawdepot.com",
-  expenseFields: [{ key: "taxeFonciere", label: "Property Tax", desc: "" }, { key: "assurance", label: "Insurance", desc: "" }, { key: "travauxEntretien", label: "Maintenance", desc: "" }, { key: "fraisGestion", label: "Management", desc: "" }, { key: "interetsEmprunt", label: "Interests", desc: "" }],
+const DEFAULT_CONFIG_STATIC = {
+  label: "International", flag: "🌍", formName: "Tax Declaration", microThreshold: 0, microRate: 0,
+  deficitMax: null, taxAuthority: "lawdepot.com", taxUrl: "https://www.lawdepot.com", lawDepotUrl: "https://www.lawdepot.com",
+  expenseFieldKeys: [
+    { key: "taxeFonciere", labelKey: "page.fiscal.field_property_tax", descKey: "" },
+    { key: "assurance", labelKey: "page.fiscal.field_insurance", descKey: "" },
+    { key: "travauxEntretien", labelKey: "page.fiscal.field_maintenance", descKey: "" },
+    { key: "fraisGestion", labelKey: "page.fiscal.field_management", descKey: "" },
+    { key: "interetsEmprunt", labelKey: "page.fiscal.field_interests", descKey: "" },
+  ],
 };
 
 const FiscalReport = () => {
@@ -44,7 +65,18 @@ const FiscalReport = () => {
   const [userCountry, setUserCountry] = useState(authUserCountry || "FR");
   const [manualRegime, setManualRegime] = useState<"auto" | "micro" | "real">("auto");
 
-  const config = FISCAL_CONFIGS[userCountry] || DEFAULT_CONFIG;
+  const staticConfig = FISCAL_CONFIGS_STATIC[userCountry] || DEFAULT_CONFIG_STATIC;
+  const config = useMemo(() => ({
+    ...staticConfig,
+    microLabel: t("page.fiscal.micro_label"),
+    realLabel: t("page.fiscal.real_label"),
+    deficitLabel: t("page.fiscal.deficit_label"),
+    expenseFields: staticConfig.expenseFieldKeys.map(f => ({
+      key: f.key,
+      label: f.labelKey ? t(f.labelKey) : f.key,
+      desc: f.descKey ? t(f.descKey) : "",
+    })),
+  }), [staticConfig, t]);
   const fmt = (n: number) => formatCurrency(n, userCountry);
 
   useEffect(() => {
@@ -105,7 +137,7 @@ const FiscalReport = () => {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <select value={userCountry} onChange={e => setUserCountry(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
-              {Object.entries(FISCAL_CONFIGS).map(([code, cfg]) => <option key={code} value={code}>{cfg.flag} {cfg.label}</option>)}
+              {Object.entries(FISCAL_CONFIGS_STATIC).map(([code, cfg]) => <option key={code} value={code}>{cfg.flag} {cfg.label}</option>)}
               <option value="OTHER">🌍 Other</option>
             </select>
             <select value={year} onChange={e => setYear(Number(e.target.value))} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
@@ -174,8 +206,8 @@ const FiscalReport = () => {
                 <CardContent className="pt-4">
                   <p className="text-sm text-muted-foreground mb-4">
                     {report.regime === "micro"
-                      ? `${t("page.fiscal.auto")} : ${config.microLabel}. Abattement de ${config.microRate * 100}% (${fmt(report.abattement)}) appliqué sur les recettes brutes.`
-                      : `${t("page.fiscal.auto")} : ${config.realLabel}. Déduction des charges réelles (${fmt(report.totalExpenses)}).`
+                      ? `${t("page.fiscal.auto")} : ${config.microLabel}. ${t("page.fiscal.allowance_text").replace("{rate}", String(config.microRate * 100)).replace("{amount}", fmt(report.abattement))}`
+                      : `${t("page.fiscal.auto")} : ${config.realLabel}. ${t("page.fiscal.deduction_text").replace("{amount}", fmt(report.totalExpenses))}`
                     }
                   </p>
                 </CardContent>

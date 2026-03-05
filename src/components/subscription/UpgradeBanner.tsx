@@ -19,13 +19,13 @@ const UpgradeBanner = ({ featureLabel }: UpgradeBannerProps) => {
         {featureLabel || t("gating.feature_locked")}
       </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-        Abonnez-vous à Easy-Locs Illimité pour accéder à cette fonctionnalité.
+        {t("page.upgrade.desc")}
       </p>
       <Link
         to="/dashboard/billing"
         className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-6 py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
       >
-        S'abonner <ArrowRight className="h-4 w-4" />
+        {t("page.upgrade.cta")} <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   );
