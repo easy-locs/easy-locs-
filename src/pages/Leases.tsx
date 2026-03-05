@@ -374,12 +374,12 @@ const Leases = () => {
                 const p = tenant ? properties.find(x => x.id === tenant.property_id) : null;
                 if (!tenant || !p) return null;
                 return (
-                  <div className="bg-muted/50 rounded-lg p-4 mb-4 text-xs space-y-1">
-                    <p className="font-medium text-foreground text-sm mb-2">✅ Données pré-remplies :</p>
+                   <div className="bg-muted/50 rounded-lg p-4 mb-4 text-xs space-y-1">
+                    <p className="font-medium text-foreground text-sm mb-2">✅ {t("page.leases.prefilled_data")} :</p>
                     <p><span className="text-muted-foreground">{t("page.leases.select_tenant_label")} :</span> {tenant.name} — {tenant.email || "—"}</p>
                     <p><span className="text-muted-foreground">{t("page.dashboard.properties")} :</span> {p.label} — {p.address}, {p.postal_code} {p.city}</p>
-                    <p><span className="text-muted-foreground">Loyer :</span> {fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}</p>
-                    <p><span className="text-muted-foreground">Dépôt :</span> {fmt(tenant.deposit_amount)}</p>
+                    <p><span className="text-muted-foreground">{t("page.leases.rent_label")} :</span> {fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}</p>
+                    <p><span className="text-muted-foreground">{t("page.leases.deposit_label")} :</span> {fmt(tenant.deposit_amount)}</p>
                     <p><span className="text-muted-foreground">{t("ob.lease_start")} :</span> {tenant.lease_start || "—"}</p>
                   </div>
                 );
