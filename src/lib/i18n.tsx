@@ -1719,13 +1719,9 @@ const pageFr: Record<string, string> = {
   "pdf.dunning.email_month": "Mois",
   "pdf.dunning.email_amount": "Montant dû",
   "pdf.dunning.email_footer": "Connectez-vous à votre espace locataire pour plus de détails.",
-  // ── Documents page ──
-  "page.documents.title": "Documents",
+  // ── Documents page extras ──
   "page.documents.desc": "Générez des documents conformes ou consultez votre historique.",
-  "page.documents.create": "Créer",
-  "page.documents.history": "Historique",
   "page.documents.loading": "Chargement…",
-  "page.documents.no_doc": "Aucun document généré.",
   "page.documents.need_doc": "Besoin d'un document spécifique ?",
   "page.documents.more_on": "Plus de documents sur LawDepot",
   "page.documents.euro_desc": "Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.",
@@ -1796,7 +1792,7 @@ const pageFr: Record<string, string> = {
   "page.tenant_pay.beneficiary": "Bénéficiaire",
   // ── Messages extras ──
   "page.messages.sent_no_email": "Message envoyé, mais email non envoyé",
-  // ── Candidates page ──
+  // ── Candidates extras ──
   "page.candidates.status_new": "Nouveau",
   "page.candidates.status_shortlisted": "Présélectionné",
   "page.candidates.status_accepted": "Accepté",
@@ -1811,7 +1807,7 @@ const pageFr: Record<string, string> = {
   "page.candidates.guarantor_label": "Garant",
   "page.candidates.notes_label": "Notes",
   "page.candidates.no_property": "— Aucun —",
-  // ── Buildings page ──
+  // ── Buildings extras ──
   "page.buildings.type_immeuble": "Immeuble",
   "page.buildings.type_residence": "Résidence",
   "page.buildings.type_copropriete": "Copropriété",
@@ -1826,8 +1822,6 @@ const pageFr: Record<string, string> = {
   "page.finances.csv_charges": "Charges",
   "page.finances.csv_total": "Total",
   "page.finances.csv_date": "Date",
-  // ── Interventions extras ──
-  "page.interventions.estimated_label": "~{amount}",
 };
 
 const pageEn: Record<string, string> = {
