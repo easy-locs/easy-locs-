@@ -254,8 +254,8 @@ const Documents = () => {
             <div className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-lg p-4">
               <Globe className="h-5 w-5 text-accent shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">{dl.euroTitle}</p>
-                <p className="text-xs text-muted-foreground">{dl.euroDesc}</p>
+                <p className="text-sm font-medium text-foreground">{t("page.documents.euro_title")}</p>
+                <p className="text-xs text-muted-foreground">{t("page.documents.euro_desc")}</p>
               </div>
             </div>
             {Object.entries(
