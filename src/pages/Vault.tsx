@@ -128,7 +128,7 @@ const Vault = () => {
               {t("page.vault.title")}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {files.length} {t("dashboard.files")} · {fmtSize(totalSize)}
+              {files.length} {t("dashboard.files")} · {fmtSize(totalSize, locale)}
             </p>
           </div>
           <label className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">
@@ -181,7 +181,7 @@ const Vault = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{file.filename}</p>
                     <p className="text-xs text-muted-foreground">
-                      {file.size ? fmtSize(file.size) : "—"} · {new Date(file.created_at).toLocaleDateString(locale === "en" ? "en-US" : locale)}
+                      {file.size ? fmtSize(file.size, locale) : "—"} · {new Date(file.created_at).toLocaleDateString(locale === "en" ? "en-US" : locale)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
