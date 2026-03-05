@@ -1727,10 +1727,6 @@ const pageFr: Record<string, string> = {
   "page.documents.euro_desc": "Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.",
   "page.documents.euro_title": "Documents européens — Powered by LawDepot",
   "page.documents.access_lawdepot": "Accéder à LawDepot",
-  "page.documents.cat_rental": "Location",
-  "page.documents.cat_administrative": "Administratif",
-  "page.documents.cat_company": "Entreprise",
-  "page.documents.cat_legal": "Juridique",
   // ── Leases page extras ──
   "page.leases.per_month": "/mois",
   "page.leases.pre_filled": "Données pré-remplies :",
