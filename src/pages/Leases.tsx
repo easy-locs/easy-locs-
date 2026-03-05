@@ -420,11 +420,11 @@ const Leases = () => {
                 <AlertTriangle className="h-5 w-5 text-accent" /> {t("page.leases.mandatory_diag")}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">{t("page.leases.diagnostics_tab")}</p>
-              <div className="space-y-2">
-                {MANDATORY_DIAGNOSTICS.map((d, i) => (
+               <div className="space-y-2">
+                {MANDATORY_DIAG_KEYS.map((key, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
                     <CheckCircle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0" />
-                    <span className="text-foreground">{d}</span>
+                    <span className="text-foreground">{t(key)}</span>
                   </div>
                 ))}
               </div>
