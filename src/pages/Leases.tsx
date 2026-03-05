@@ -21,20 +21,20 @@ import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-gener
 type LeaseFilter = "all" | "active" | "terminated";
 type ActiveView = "leases" | "create" | "diagnostics";
 
-const DIAGNOSTIC_LINKS = [
-  { name: "Qalimo", url: "https://www.qalimo.fr", desc: "Vérification conformité bail, diagnostics obligatoires, dossier locataire" },
-  { name: "Diagamter", url: "https://www.diagamter.com", desc: "DPE, amiante, plomb, gaz, électricité — réseau national" },
-  { name: "Allodiagnostic", url: "https://www.allodiagnostic.com", desc: "Diagnostics immobiliers en ligne, devis instantané" },
-  { name: "ANIL", url: "https://www.anil.org", desc: "Information juridique gratuite sur le logement (loyers, baux, etc.)" },
+const DIAGNOSTIC_LINK_KEYS = [
+  { name: "Qalimo", url: "https://www.qalimo.fr", descKey: "page.leases.diag_qalimo" },
+  { name: "Diagamter", url: "https://www.diagamter.com", descKey: "page.leases.diag_diagamter" },
+  { name: "Allodiagnostic", url: "https://www.allodiagnostic.com", descKey: "page.leases.diag_allodiag" },
+  { name: "ANIL", url: "https://www.anil.org", descKey: "page.leases.diag_anil" },
 ];
 
-const MANDATORY_DIAGNOSTICS = [
-  "DPE (Diagnostic de Performance Énergétique)",
-  "CREP (Constat de Risque d'Exposition au Plomb) — logements avant 1949",
-  "État de l'installation intérieure de gaz (+ de 15 ans)",
-  "État de l'installation intérieure d'électricité (+ de 15 ans)",
-  "État des Risques et Pollutions (ERP)",
-  "Diagnostic bruit — zones d'exposition au bruit des aérodromes",
+const MANDATORY_DIAG_KEYS = [
+  "page.leases.diag_dpe",
+  "page.leases.diag_crep",
+  "page.leases.diag_gas",
+  "page.leases.diag_elec",
+  "page.leases.diag_erp",
+  "page.leases.diag_noise",
 ];
 
 const Leases = () => {
