@@ -1009,6 +1009,41 @@ export type Database = {
           },
         ]
       }
+      org_secrets: {
+        Row: {
+          created_at: string
+          gocardless_access_token: string | null
+          gocardless_environment: string | null
+          id: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gocardless_access_token?: string | null
+          gocardless_environment?: string | null
+          id?: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gocardless_access_token?: string | null
+          gocardless_environment?: string | null
+          id?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_secrets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orgs: {
         Row: {
           address: string | null
@@ -1017,8 +1052,6 @@ export type Database = {
           created_at: string
           default_payment_provider: string | null
           email: string | null
-          gocardless_access_token: string | null
-          gocardless_environment: string | null
           id: string
           logo_url: string | null
           name: string
@@ -1039,8 +1072,6 @@ export type Database = {
           created_at?: string
           default_payment_provider?: string | null
           email?: string | null
-          gocardless_access_token?: string | null
-          gocardless_environment?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -1061,8 +1092,6 @@ export type Database = {
           created_at?: string
           default_payment_provider?: string | null
           email?: string | null
-          gocardless_access_token?: string | null
-          gocardless_environment?: string | null
           id?: string
           logo_url?: string | null
           name?: string
