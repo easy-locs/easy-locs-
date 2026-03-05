@@ -116,7 +116,7 @@ const Buildings = () => {
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.name")} *</label>
                 <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="Résidence Les Lilas" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+                  placeholder={t("page.buildings.placeholder_name")} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
