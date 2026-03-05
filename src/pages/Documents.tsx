@@ -13,13 +13,11 @@ import { useI18n, COUNTRY_LOCALE_MAP } from "@/lib/i18n";
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
 };
-const categoryLabelsByLang: Record<string, Record<string, string>> = {
-  fr: { rental: "Location", administrative: "Administratif", company: "Entreprise", legal: "Juridique" },
-  en: { rental: "Rental", administrative: "Administrative", company: "Company", legal: "Legal" },
-  es: { rental: "Alquiler", administrative: "Administrativo", company: "Empresa", legal: "Jurídico" },
-  de: { rental: "Vermietung", administrative: "Verwaltung", company: "Unternehmen", legal: "Recht" },
-  it: { rental: "Locazione", administrative: "Amministrativo", company: "Azienda", legal: "Legale" },
-  pt: { rental: "Arrendamento", administrative: "Administrativo", company: "Empresa", legal: "Jurídico" },
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  rental: "page.documents.cat_rental",
+  administrative: "page.documents.cat_admin",
+  company: "page.documents.cat_company",
+  legal: "page.documents.cat_legal",
 };
 const countryLabels: Record<string, string> = {
   // Europe
