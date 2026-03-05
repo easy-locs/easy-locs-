@@ -50,6 +50,27 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
+    // Check local subscriptions table first (for manually granted access)
+    const { data: localSub } = await supabaseClient
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (localSub && localSub.status === "active" && localSub.plan !== "free") {
+      const subEnd = localSub.current_period_end || localSub.trial_ends_at;
+      if (subEnd && new Date(subEnd) > new Date()) {
+        logStep("Local active subscription found", { plan: localSub.plan, end: subEnd });
+        return new Response(JSON.stringify({
+          subscribed: true,
+          plan: localSub.plan,
+          subscription_end: subEnd,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Test direct fetch to Stripe API first
     const testRes = await fetch("https://api.stripe.com/v1/customers?limit=1", {
       headers: { "Authorization": `Bearer ${stripeKey}` },
