@@ -125,7 +125,7 @@ const Leases = () => {
         tenantNationality: tenant.nationality || "", tenantProfession: tenant.profession || "",
         propertyAddress: `${prop.address}, ${prop.postal_code} ${prop.city}`, propertyType: propertyTypeMap[prop.property_type] || prop.property_type,
         surface: prop.surface, rooms: prop.rooms, floor: prop.floor ?? "", heating: heatingMap[prop.heating] || prop.heating,
-        hotWater: "individuel", annexes: hasEntryInventory ? "État des lieux d'entrée réalisé" : "", equipments: "",
+        hotWater: "individuel", annexes: hasEntryInventory ? t("page.leases.entry_inventory_done") : "", equipments: "",
         rentAmount: tenant.rent_amount || prop.monthly_rent, chargesAmount: tenant.charges_amount || prop.monthly_charges,
         chargesMode: "provisions", depositAmount: tenant.deposit_amount || prop.deposit_amount, paymentDay: 5, paymentMethod: "virement",
         zoneTendue: "non", dpeLetter: "D", gesLetter: "D",
