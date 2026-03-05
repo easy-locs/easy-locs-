@@ -160,15 +160,15 @@ const Leases = () => {
         supabase.functions.invoke("send-email", {
           body: {
             to: tenant.email,
-            subject: `Votre bail est disponible : ${leaseLabel}`,
+            subject: t("page.leases.email_subject").replace("{type}", leaseLabel),
             html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-              <h2 style="color:#1a1a1a;">📝 Bail envoyé</h2>
-              <p style="color:#555;">Votre bail est joint à cet email :</p>
+              <h2 style="color:#1a1a1a;">${t("page.leases.email_title")}</h2>
+              <p style="color:#555;">${t("page.leases.email_body")}</p>
               <div style="background:#f5f5f5;border-radius:8px;padding:16px;margin:16px 0;">
                 <p style="font-weight:600;color:#1a1a1a;">${title}</p>
-                <p style="color:#888;font-size:13px;">Type : ${leaseLabel}</p>
+                <p style="color:#888;font-size:13px;">${t("page.leases.email_type")} : ${leaseLabel}</p>
               </div>
-              <p style="color:#888;font-size:13px;">Vous pouvez aussi le retrouver dans votre interface locataire.</p>
+              <p style="color:#888;font-size:13px;">${t("page.leases.email_footer")}</p>
             </div>`,
             attachments: [{
               content: pdfBase64,
