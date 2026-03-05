@@ -388,9 +388,9 @@ const Leases = () => {
               <label className="text-sm font-medium text-foreground mb-1 block">2. {t("page.leases.lease_type")}</label>
               <div className="grid grid-cols-3 gap-2 mb-6">
                 {([
-                  { key: "empty", label: t("page.leases.empty"), desc: "3 ans" },
-                  { key: "furnished", label: t("page.leases.furnished"), desc: "1 an" },
-                  { key: "commercial", label: t("page.leases.commercial"), desc: "3/6/9 ans" },
+                  { key: "empty", label: t("page.leases.empty"), desc: t("page.leases.duration_empty") },
+                  { key: "furnished", label: t("page.leases.furnished"), desc: t("page.leases.duration_furnished") },
+                  { key: "commercial", label: t("page.leases.commercial"), desc: t("page.leases.duration_commercial") },
                 ]).map(lt => (
                   <button key={lt.key} onClick={() => setSelectedLeaseType(lt.key)}
                     className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-sm transition-all ${selectedLeaseType === lt.key ? "border-accent bg-accent/10 text-foreground" : "border-border text-muted-foreground hover:border-accent/50"}`}>
