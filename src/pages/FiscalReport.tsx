@@ -206,8 +206,8 @@ const FiscalReport = () => {
                 <CardContent className="pt-4">
                   <p className="text-sm text-muted-foreground mb-4">
                     {report.regime === "micro"
-                      ? `${t("page.fiscal.auto")} : ${config.microLabel}. Abattement de ${config.microRate * 100}% (${fmt(report.abattement)}) appliqué sur les recettes brutes.`
-                      : `${t("page.fiscal.auto")} : ${config.realLabel}. Déduction des charges réelles (${fmt(report.totalExpenses)}).`
+                      ? `${t("page.fiscal.auto")} : ${config.microLabel}. ${t("page.fiscal.allowance_text").replace("{rate}", String(config.microRate * 100)).replace("{amount}", fmt(report.abattement))}`
+                      : `${t("page.fiscal.auto")} : ${config.realLabel}. ${t("page.fiscal.deduction_text").replace("{amount}", fmt(report.totalExpenses))}`
                     }
                   </p>
                 </CardContent>

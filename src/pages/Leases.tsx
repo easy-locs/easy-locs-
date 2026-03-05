@@ -278,7 +278,7 @@ const Leases = () => {
                           <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title="Télécharger">
+                          <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title={t("page.leases.download_tooltip")}>
                             <Download className="h-4 w-4" />
                           </button>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-accent/20 text-accent" : "bg-green-500/20 text-green-700"}`}>
