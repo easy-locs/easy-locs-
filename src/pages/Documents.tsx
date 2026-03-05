@@ -58,6 +58,7 @@ const Documents = () => {
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { orgId } = useAuth();
+  const { t } = useI18n();
 
   // Detect user country from profile + property countries
   const [userCountry, setUserCountry] = useState<string>("FR");
