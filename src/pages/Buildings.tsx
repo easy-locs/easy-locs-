@@ -131,7 +131,7 @@ const Buildings = () => {
                   value={form.address}
                   onSelect={handleAddressSelect}
                   onChange={val => setForm(p => ({ ...p, address: val }))}
-                  placeholder="Adresse de l'immeuble"
+                  placeholder={t("page.buildings.placeholder_address")}
                 />
               </div>
               <div>
