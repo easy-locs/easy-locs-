@@ -142,23 +142,12 @@ const Documents = () => {
     );
   }
 
-  const lang = COUNTRY_LOCALE_MAP[activeCountry] || "en";
-  const docLabels: Record<string, Record<string, string>> = {
-    fr: { title: "Documents", desc: "Générez des documents conformes ou consultez votre historique.", create: "Créer", history: "Historique", loading: "Chargement…", noDoc: "Aucun document généré.", needDoc: "Besoin d'un document spécifique ?", moreOn: "Plus de documents sur LawDepot", euroDesc: "Générez vos documents locaux via nos modèles intégrés ou accédez à LawDepot pour des modèles certifiés supplémentaires.", euroTitle: "Documents européens — Powered by LawDepot", accessLawDepot: "Accéder à LawDepot" },
-    en: { title: "Documents", desc: "Generate compliant documents or view your history.", create: "Create", history: "History", loading: "Loading…", noDoc: "No documents generated.", needDoc: "Need a specific document?", moreOn: "More documents on LawDepot", euroDesc: "Generate your local documents via built-in templates or access LawDepot for additional certified templates.", euroTitle: "European documents — Powered by LawDepot", accessLawDepot: "Access LawDepot" },
-    es: { title: "Documentos", desc: "Genere documentos conformes o consulte su historial.", create: "Crear", history: "Historial", loading: "Cargando…", noDoc: "Ningún documento generado.", needDoc: "¿Necesita un documento específico?", moreOn: "Más documentos en LawDepot", euroDesc: "Genere documentos locales o acceda a LawDepot para plantillas certificadas.", euroTitle: "Documentos europeos — Powered by LawDepot", accessLawDepot: "Acceder a LawDepot" },
-    de: { title: "Dokumente", desc: "Konforme Dokumente erstellen oder Verlauf anzeigen.", create: "Erstellen", history: "Verlauf", loading: "Laden…", noDoc: "Keine Dokumente erstellt.", needDoc: "Brauchen Sie ein bestimmtes Dokument?", moreOn: "Mehr Dokumente auf LawDepot", euroDesc: "Erstellen Sie lokale Dokumente oder greifen Sie auf zertifizierte LawDepot-Vorlagen zu.", euroTitle: "Europäische Dokumente — Powered by LawDepot", accessLawDepot: "Zu LawDepot" },
-    it: { title: "Documenti", desc: "Genera documenti conformi o consulta lo storico.", create: "Crea", history: "Storico", loading: "Caricamento…", noDoc: "Nessun documento generato.", needDoc: "Hai bisogno di un documento specifico?", moreOn: "Più documenti su LawDepot", euroDesc: "Genera documenti locali o accedi a LawDepot per modelli certificati.", euroTitle: "Documenti europei — Powered by LawDepot", accessLawDepot: "Accedi a LawDepot" },
-    pt: { title: "Documentos", desc: "Gere documentos conformes ou consulte o histórico.", create: "Criar", history: "Histórico", loading: "A carregar…", noDoc: "Nenhum documento gerado.", needDoc: "Precisa de um documento específico?", moreOn: "Mais documentos no LawDepot", euroDesc: "Gere documentos locais ou aceda ao LawDepot para modelos certificados.", euroTitle: "Documentos europeus — Powered by LawDepot", accessLawDepot: "Aceder ao LawDepot" },
-  };
-  const dl = docLabels[lang] || docLabels.en;
-
   return (
     <DashboardLayout>
-      <FeatureGate feature="legal_documents" featureLabel={dl.title}>
+      <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">{dl.title}</h1>
-        <p className="text-muted-foreground text-sm mb-6">{dl.desc}</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
+        <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
 
         {/* Country selector based on user's properties */}
         {propertyCountries.length > 1 && (
