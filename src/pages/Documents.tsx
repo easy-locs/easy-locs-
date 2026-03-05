@@ -190,7 +190,7 @@ const Documents = () => {
                 <div key={cat}>
                   <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                    {(categoryLabelsByLang[COUNTRY_LOCALE_MAP[activeCountry] || "en"] || categoryLabelsByLang.en)[cat] || cat}
+                    {t(CATEGORY_LABEL_KEYS[cat] || "page.documents.cat_rental")}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {templates.map((t) => (

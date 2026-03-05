@@ -1076,6 +1076,7 @@ const pageFr: Record<string, string> = {
   "page.leases.rent_label": "Loyer",
   "page.leases.deposit_label": "Dépôt",
   "page.leases.download_tooltip": "Télécharger",
+  "page.leases.entry_inventory_done": "État des lieux d'entrée réalisé",
 
   // PDF labels
   "pdf.notice_title": "AVIS D'ÉCHÉANCE",
