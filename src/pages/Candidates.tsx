@@ -7,10 +7,10 @@ import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const STATUSES = [
-  { value: "new", label: "Nouveau", icon: Clock, color: "text-blue-500" },
-  { value: "shortlisted", label: "Présélectionné", icon: Star, color: "text-warning" },
-  { value: "accepted", label: "Accepté", icon: UserCheck, color: "text-success" },
-  { value: "rejected", label: "Refusé", icon: UserX, color: "text-destructive" },
+  { value: "new", labelKey: "page.candidates.status_new", icon: Clock, color: "text-blue-500" },
+  { value: "shortlisted", labelKey: "page.candidates.status_shortlisted", icon: Star, color: "text-warning" },
+  { value: "accepted", labelKey: "page.candidates.status_accepted", icon: UserCheck, color: "text-success" },
+  { value: "rejected", labelKey: "page.candidates.status_rejected", icon: UserX, color: "text-destructive" },
 ];
 
 interface Candidate {
