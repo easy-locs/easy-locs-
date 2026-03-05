@@ -27,8 +27,17 @@ serve(async (req) => {
     const { booking_request_id, listing_id, guest_email, guest_name, amount, nights, property_label, origin } = await req.json();
     logStep("Request received", { booking_request_id, listing_id, amount, nights });
 
-    if (!amount || amount <= 0) throw new Error("Invalid amount");
+    if (!nights || nights <= 0) throw new Error("Invalid nights");
     if (!guest_email) throw new Error("Guest email required");
+    if (!listing_id) throw new Error("Listing ID required");
+
+    // Validate origin against allowlist to prevent open redirects
+    const ALLOWED_ORIGINS = [
+      "https://easy-locs.lovable.app",
+      "https://easylocs.lovable.app",
+      "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app",
+    ];
+    const safeOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
@@ -39,27 +48,41 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Get the org's Stripe Connect account + property country
+    // Get the listing details including price for server-side validation
     let stripeAccountId: string | null = null;
     let currency = "eur";
     let propertyId: string | null = null;
 
-    if (listing_id) {
-      const { data: listing } = await supabaseClient
-        .from("public_listings")
-        .select("org_id, property_id")
-        .eq("id", listing_id)
+    const { data: listing } = await supabaseClient
+      .from("public_listings")
+      .select("org_id, property_id, price_per_night")
+      .eq("id", listing_id)
+      .single();
+
+    if (!listing) throw new Error("Listing not found");
+
+    // Server-side price calculation — never trust client-supplied amount
+    const pricePerNight = listing.price_per_night ?? 0;
+    if (pricePerNight <= 0) throw new Error("Listing has no valid price");
+    const expectedTotal = pricePerNight * nights;
+
+    // Allow a tiny tolerance for floating-point rounding (max 1 cent)
+    if (!amount || Math.abs(amount - expectedTotal) > 0.01) {
+      logStep("Price mismatch", { clientAmount: amount, expectedTotal, pricePerNight, nights });
+      throw new Error(`Amount mismatch: expected ${expectedTotal}`);
+    }
+
+    const verifiedAmount = expectedTotal;
+
+    propertyId = listing.property_id;
+    if (listing.org_id) {
+      const { data: org } = await supabaseClient
+        .from("orgs")
+        .select("stripe_account_id, stripe_onboarding_complete")
+        .eq("id", listing.org_id)
         .single();
-      if (listing?.org_id) {
-        propertyId = listing.property_id;
-        const { data: org } = await supabaseClient
-          .from("orgs")
-          .select("stripe_account_id, stripe_onboarding_complete")
-          .eq("id", listing.org_id)
-          .single();
-        if (org?.stripe_account_id && org?.stripe_onboarding_complete) {
-          stripeAccountId = org.stripe_account_id;
-        }
+      if (org?.stripe_account_id && org?.stripe_onboarding_complete) {
+        stripeAccountId = org.stripe_account_id;
       }
     }
 
