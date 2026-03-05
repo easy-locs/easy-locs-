@@ -143,7 +143,7 @@ const Candidates = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <select value={c.status} onChange={e => updateStatus(c.id, e.target.value)} className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs">
-                        {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        {STATUSES.map(s => <option key={s.value} value={s.value}>{t(s.labelKey)}</option>)}
                       </select>
                       <button onClick={() => remove(c.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button>
                     </div>
