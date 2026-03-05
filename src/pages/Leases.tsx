@@ -97,7 +97,7 @@ const Leases = () => {
       if (!template) return;
 
       const ownerData = fillFromOwner();
-      let landlordName = ownerData?.landlordName || user?.user_metadata?.name || "Propriétaire";
+      let landlordName = ownerData?.landlordName || user?.user_metadata?.name || t("page.leases.landlord_default");
       let landlordAddress = ownerData?.landlordAddress || "";
       let landlordEmail = ownerData?.landlordEmail || user?.email || "";
       let landlordPhone = ownerData?.landlordPhone || "";
