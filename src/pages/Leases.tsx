@@ -339,7 +339,7 @@ const Leases = () => {
                           )}
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{tenant.lease_start || "—"} → {tenant.lease_end || t("page.leases.in_progress")}</span>
-                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}/mois</span>
+                            <span className="flex items-center gap-1"><Euro className="h-3 w-3" />{fmt(tenant.rent_amount)} + {fmt(tenant.charges_amount)}{t("page.leases.per_month")}</span>
                           </div>
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground/30 shrink-0 mt-3" />
