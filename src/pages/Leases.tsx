@@ -448,12 +448,12 @@ const Leases = () => {
 
             <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-foreground mb-2">{t("page.leases.compliance_title")}</h3>
-              <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
-                <li>Le bail doit contenir toutes les mentions obligatoires (loi ALUR)</li>
-                <li>Les diagnostics doivent être annexés au bail lors de la signature</li>
-                <li>En zone tendue, vérifier l'encadrement des loyers (plafonds préfectoraux)</li>
-                <li>Le dépôt de garantie ne peut excéder 1 mois de loyer HC (vide) ou 2 mois (meublé)</li>
-                <li>L'état des lieux doit être réalisé de manière contradictoire</li>
+               <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                <li>{t("page.leases.compliance_1")}</li>
+                <li>{t("page.leases.compliance_2")}</li>
+                <li>{t("page.leases.compliance_3")}</li>
+                <li>{t("page.leases.compliance_4")}</li>
+                <li>{t("page.leases.compliance_5")}</li>
               </ul>
             </div>
           </div>

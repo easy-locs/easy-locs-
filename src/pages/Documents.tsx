@@ -324,11 +324,11 @@ const Documents = () => {
             {/* LawDepot CTA */}
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 text-center">
               <Scale className="h-10 w-10 text-accent mx-auto mb-3" />
-              <h3 className="font-semibold text-foreground mb-1">{dl.needDoc}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{dl.euroDesc}</p>
+              <h3 className="font-semibold text-foreground mb-1">{t("page.documents.need_doc")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("page.documents.euro_desc")}</p>
               <a href="https://www.lawdepot.com/" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground px-6 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
-                {dl.accessLawDepot} <ChevronRight className="h-4 w-4" />
+                {t("page.documents.access_lawdepot")} <ChevronRight className="h-4 w-4" />
               </a>
             </div>
           </div>
