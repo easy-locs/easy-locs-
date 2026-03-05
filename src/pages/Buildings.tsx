@@ -122,7 +122,7 @@ const Buildings = () => {
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
                 <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
-                  {BUILDING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {BUILDING_TYPES.map(bt => <option key={bt.value} value={bt.value}>{t(bt.labelKey)}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-2">
