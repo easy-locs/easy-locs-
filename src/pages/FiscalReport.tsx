@@ -13,24 +13,45 @@ interface RentCall { month: string; rent_amount: number; charges_amount: number;
 interface Property { id: string; label: string; monthly_rent: number; monthly_charges: number; address: string; city: string; }
 
 // Country-specific fiscal configurations
-const FISCAL_CONFIGS: Record<string, {
-  label: string; flag: string; formName: string; microThreshold: number; microRate: number; microLabel: string; realLabel: string;
-  deficitMax: number | null; deficitLabel: string; taxAuthority: string; taxUrl: string; lawDepotUrl: string;
-  expenseFields: { key: string; label: string; desc: string }[];
+// Fiscal configs are built dynamically with i18n in the component below
+const FISCAL_CONFIGS_STATIC: Record<string, {
+  label: string; flag: string; formName: string; microThreshold: number; microRate: number; taxAuthority: string; taxUrl: string; lawDepotUrl: string;
+  deficitMax: number | null;
+  expenseFieldKeys: { key: string; labelKey: string; descKey: string }[];
 }> = {
   FR: {
-    label: "France", flag: "🇫🇷", formName: "Formulaire 2044", microThreshold: 15000, microRate: 0.3, microLabel: "Micro-foncier", realLabel: "Réel",
-    deficitMax: 10700, deficitLabel: "Déficit foncier imputable sur le revenu global", taxAuthority: "impots.gouv.fr", taxUrl: "https://www.impots.gouv.fr", lawDepotUrl: "https://www.lawdepot.com/contracts/tax-declaration/",
-    expenseFields: [{ key: "taxeFonciere", label: "Taxe foncière", desc: "Ligne 227" }, { key: "assurance", label: "Assurance PNO", desc: "Propriétaire non-occupant" }, { key: "travauxEntretien", label: "Travaux", desc: "Ligne 224" }, { key: "fraisGestion", label: "Frais de gestion", desc: "Forfait 20 €/lot ou réel" }, { key: "interetsEmprunt", label: "Intérêts d'emprunt", desc: "Ligne 250" }, { key: "chargesRecuperables", label: "Charges copro non récup.", desc: "Part propriétaire" }, { key: "autresFrais", label: "Autres frais", desc: "Diagnostics, frais" }],
+    label: "France", flag: "🇫🇷", formName: "Formulaire 2044", microThreshold: 15000, microRate: 0.3,
+    deficitMax: 10700, taxAuthority: "impots.gouv.fr", taxUrl: "https://www.impots.gouv.fr", lawDepotUrl: "https://www.lawdepot.com/contracts/tax-declaration/",
+    expenseFieldKeys: [
+      { key: "taxeFonciere", labelKey: "page.fiscal.field_taxe_fonciere", descKey: "page.fiscal.field_taxe_fonciere_desc" },
+      { key: "assurance", labelKey: "page.fiscal.field_assurance", descKey: "page.fiscal.field_assurance_desc" },
+      { key: "travauxEntretien", labelKey: "page.fiscal.field_travaux", descKey: "page.fiscal.field_travaux_desc" },
+      { key: "fraisGestion", labelKey: "page.fiscal.field_gestion", descKey: "page.fiscal.field_gestion_desc" },
+      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_desc" },
+      { key: "chargesRecuperables", labelKey: "page.fiscal.field_charges_copro", descKey: "page.fiscal.field_charges_copro_desc" },
+      { key: "autresFrais", labelKey: "page.fiscal.field_autres", descKey: "page.fiscal.field_autres_desc" },
+    ],
   },
-  // Simplified for other countries to save space, but logic remains same
-  BE: { label: "Belgique", flag: "🇧🇪", formName: "Déclaration IPP", microThreshold: 0, microRate: 0, microLabel: "Forfaitaire", realLabel: "Réel", deficitMax: null, deficitLabel: "Revenu cadastral", taxAuthority: "finances.belgium.be", taxUrl: "https://finances.belgium.be", lawDepotUrl: "https://www.lawdepot.be/", expenseFields: [{ key: "taxeFonciere", label: "Précompte immobilier", desc: "Taxe annuelle" }, { key: "interetsEmprunt", label: "Intérêts", desc: "Crédit" }] },
+  BE: {
+    label: "Belgique", flag: "🇧🇪", formName: "Déclaration IPP", microThreshold: 0, microRate: 0,
+    deficitMax: null, taxAuthority: "finances.belgium.be", taxUrl: "https://finances.belgium.be", lawDepotUrl: "https://www.lawdepot.be/",
+    expenseFieldKeys: [
+      { key: "taxeFonciere", labelKey: "page.fiscal.field_precompte", descKey: "page.fiscal.field_precompte_desc" },
+      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_credit" },
+    ],
+  },
 };
 
-const DEFAULT_CONFIG = {
-  label: "International", flag: "🌍", formName: "Tax Declaration", microThreshold: 0, microRate: 0, microLabel: "Simplified", realLabel: "Actual costs",
-  deficitMax: null, deficitLabel: "Consult advisor", taxAuthority: "lawdepot.com", taxUrl: "https://www.lawdepot.com", lawDepotUrl: "https://www.lawdepot.com",
-  expenseFields: [{ key: "taxeFonciere", label: "Property Tax", desc: "" }, { key: "assurance", label: "Insurance", desc: "" }, { key: "travauxEntretien", label: "Maintenance", desc: "" }, { key: "fraisGestion", label: "Management", desc: "" }, { key: "interetsEmprunt", label: "Interests", desc: "" }],
+const DEFAULT_CONFIG_STATIC = {
+  label: "International", flag: "🌍", formName: "Tax Declaration", microThreshold: 0, microRate: 0,
+  deficitMax: null, taxAuthority: "lawdepot.com", taxUrl: "https://www.lawdepot.com", lawDepotUrl: "https://www.lawdepot.com",
+  expenseFieldKeys: [
+    { key: "taxeFonciere", labelKey: "page.fiscal.field_property_tax", descKey: "" },
+    { key: "assurance", labelKey: "page.fiscal.field_insurance", descKey: "" },
+    { key: "travauxEntretien", labelKey: "page.fiscal.field_maintenance", descKey: "" },
+    { key: "fraisGestion", labelKey: "page.fiscal.field_management", descKey: "" },
+    { key: "interetsEmprunt", labelKey: "page.fiscal.field_interests", descKey: "" },
+  ],
 };
 
 const FiscalReport = () => {
