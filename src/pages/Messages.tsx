@@ -230,7 +230,7 @@ const Messages = () => {
             throw emailError || new Error(data?.error || "Échec notification email");
           }
         } catch (mailErr: any) {
-          toast.error(`Message envoyé, mais email non envoyé: ${mailErr.message}`);
+          toast.error(`${t("page.messages.sent_no_email")}: ${mailErr.message}`);
         }
       }
     }

@@ -7,10 +7,10 @@ import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const STATUSES = [
-  { value: "new", label: "Nouveau", icon: Clock, color: "text-blue-500" },
-  { value: "shortlisted", label: "Présélectionné", icon: Star, color: "text-warning" },
-  { value: "accepted", label: "Accepté", icon: UserCheck, color: "text-success" },
-  { value: "rejected", label: "Refusé", icon: UserX, color: "text-destructive" },
+  { value: "new", labelKey: "page.candidates.status_new", icon: Clock, color: "text-blue-500" },
+  { value: "shortlisted", labelKey: "page.candidates.status_shortlisted", icon: Star, color: "text-warning" },
+  { value: "accepted", labelKey: "page.candidates.status_accepted", icon: UserCheck, color: "text-success" },
+  { value: "rejected", labelKey: "page.candidates.status_rejected", icon: UserX, color: "text-destructive" },
 ];
 
 interface Candidate {
@@ -97,7 +97,7 @@ const Candidates = () => {
                 className={`bg-card rounded-xl border p-4 text-left transition-colors ${filterStatus === s.value ? "border-primary" : "border-border/50 hover:border-border"}`}>
                 <s.icon className={`h-5 w-5 ${s.color} mb-2`} />
                 <p className="text-2xl font-bold text-foreground">{count}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-xs text-muted-foreground">{t(s.labelKey)}</p>
               </button>
             );
           })}
@@ -108,16 +108,16 @@ const Candidates = () => {
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <h3 className="font-semibold text-foreground">{t("page.candidates.new_candidate")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium text-foreground mb-1">Nom *</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Email</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Téléphone</label><input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Profession</label><input value={form.profession} onChange={e => setForm(f => ({ ...f, profession: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Revenu mensuel (€)</label><input type="number" value={form.monthly_income} onChange={e => setForm(f => ({ ...f, monthly_income: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Bien concerné</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">— Aucun —</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Score (0-100)</label><input type="number" min={0} max={100} value={form.score} onChange={e => setForm(f => ({ ...f, score: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">Garant</label><input value={form.guarantor_info} onChange={e => setForm(f => ({ ...f, guarantor_info: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.name_label")} *</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.email_label")}</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.phone_label")}</label><input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.profession_label")}</label><input value={form.profession} onChange={e => setForm(f => ({ ...f, profession: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.income_label")}</label><input type="number" value={form.monthly_income} onChange={e => setForm(f => ({ ...f, monthly_income: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.property_label")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">{t("page.candidates.no_property")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.score_label")}</label><input type="number" min={0} max={100} value={form.score} onChange={e => setForm(f => ({ ...f, score: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.guarantor_label")}</label><input value={form.guarantor_info} onChange={e => setForm(f => ({ ...f, guarantor_info: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
-            <div><label className="block text-sm font-medium text-foreground mb-1">Notes</label><textarea rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm resize-none" /></div>
+            <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.candidates.notes_label")}</label><textarea rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm resize-none" /></div>
             <div className="flex gap-3">
                <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{t("page.common.save")}</button>
                <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">{t("page.common.cancel")}</button>
@@ -143,7 +143,7 @@ const Candidates = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <select value={c.status} onChange={e => updateStatus(c.id, e.target.value)} className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs">
-                        {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        {STATUSES.map(s => <option key={s.value} value={s.value}>{t(s.labelKey)}</option>)}
                       </select>
                       <button onClick={() => remove(c.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button>
                     </div>

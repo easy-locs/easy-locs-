@@ -20,11 +20,11 @@ interface BuildingRecord {
 }
 
 const BUILDING_TYPES = [
-  { value: "immeuble", label: "Immeuble" },
-  { value: "residence", label: "Résidence" },
-  { value: "copropriete", label: "Copropriété" },
-  { value: "lotissement", label: "Lotissement" },
-  { value: "parking", label: "Parking / Garage" },
+  { value: "immeuble", labelKey: "page.buildings.type_immeuble" },
+  { value: "residence", labelKey: "page.buildings.type_residence" },
+  { value: "copropriete", labelKey: "page.buildings.type_copropriete" },
+  { value: "lotissement", labelKey: "page.buildings.type_lotissement" },
+  { value: "parking", labelKey: "page.buildings.type_parking" },
 ];
 
 const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "" };
@@ -116,13 +116,13 @@ const Buildings = () => {
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.name")} *</label>
                 <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="Résidence Les Lilas" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+                  placeholder={t("page.buildings.placeholder_name")} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
                 <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
-                  {BUILDING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {BUILDING_TYPES.map(bt => <option key={bt.value} value={bt.value}>{t(bt.labelKey)}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -131,7 +131,7 @@ const Buildings = () => {
                   value={form.address}
                   onSelect={handleAddressSelect}
                   onChange={val => setForm(p => ({ ...p, address: val }))}
-                  placeholder="Adresse de l'immeuble"
+                  placeholder={t("page.buildings.placeholder_address")}
                 />
               </div>
               <div>
@@ -186,7 +186,7 @@ const Buildings = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground text-sm">{b.name}</span>
                         <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
-                          {BUILDING_TYPES.find(t => t.value === b.building_type)?.label || b.building_type}
+                          {BUILDING_TYPES.find(bt => bt.value === b.building_type) ? t(BUILDING_TYPES.find(bt => bt.value === b.building_type)!.labelKey) : b.building_type}
                         </span>
                         <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">
                           {linked.length} {t("page.buildings.linked")}
