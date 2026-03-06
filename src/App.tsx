@@ -56,6 +56,7 @@ const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
 const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Install = lazy(() => import("./pages/Install"));
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/listing/:slug" element={<PublicListing />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/property-management-france" element={<PropertyManagement />} />
               <Route path="/property-management-uk" element={<PropertyManagement />} />
