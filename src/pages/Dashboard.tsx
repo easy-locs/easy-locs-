@@ -14,6 +14,8 @@ import { format, subMonths } from "date-fns";
 import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { formatCurrency } from "@/lib/country-config";
+import WorldPropertyMap from "@/components/dashboard/WorldPropertyMap";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
@@ -37,13 +39,14 @@ const Dashboard = () => {
     tenantsList: [] as { property_id: string | null; lease_end: string | null }[],
     expenses: [] as { amount: number; expense_date: string }[],
     reservations: [] as { amount: number; check_in: string }[],
+    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string }[],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!orgId) return;
     Promise.all([
-      supabase.from("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("properties").select("id, country", { count: "exact" }).eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
@@ -54,8 +57,23 @@ const Dashboard = () => {
     ]).then(([props, tenantsRes, docs, rc, rem, vault, expRes, resRes]) => {
       const vaultFiles = vault.data || [];
       const tenantsList = (tenantsRes.data || []) as any[];
+      const propData = (props.data || []) as { id: string; country: string }[];
+
+      // Aggregate properties by country
+      const countryMap = new Map<string, number>();
+      propData.forEach(p => {
+        const c = p.country || "FR";
+        countryMap.set(c, (countryMap.get(c) || 0) + 1);
+      });
+      const propertiesByCountry = Array.from(countryMap.entries())
+        .map(([code, count]) => {
+          const entry = getCountryEntryOrDefault(code);
+          return { code, count, flag: entry.flag, name: entry.name };
+        })
+        .sort((a, b) => b.count - a.count);
+
       setStats({
-        properties: props.count || 0,
+        properties: props.count || propData.length,
         tenants: tenantsList.length,
         documents: docs.count || 0,
         rentCalls: (rc.data || []) as any,
@@ -65,6 +83,7 @@ const Dashboard = () => {
         tenantsList,
         expenses: (expRes.data || []) as any,
         reservations: (resRes.data || []) as any,
+        propertiesByCountry,
       });
       setLoading(false);
     });
@@ -173,6 +192,11 @@ const Dashboard = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* World Map */}
+        {!loading && stats.propertiesByCountry.length > 0 && (
+          <WorldPropertyMap propertiesByCountry={stats.propertiesByCountry} userCountry={userCountry} />
+        )}
 
         {/* Revenue chart */}
         {!loading && revenueChart.some(m => m.paid > 0 || m.unpaid > 0) && (
