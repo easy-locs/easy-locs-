@@ -43,12 +43,9 @@ const PublicListing = () => {
       if (!l) { setNotFound(true); setLoading(false); return; }
       setListing(l);
 
-      const { data: p } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("id", l.property_id)
-        .maybeSingle();
-      setProperty(p);
+      // Use security definer function to bypass RLS for public access
+      const { data: propData } = await supabase.rpc("get_listing_property", { p_listing_id: l.id });
+      setProperty(propData);
 
       const { data: bookings } = await supabase
         .from("seasonal_bookings")
