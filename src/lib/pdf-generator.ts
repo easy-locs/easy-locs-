@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import type { DocumentTemplate } from "./templates/types";
+import { getCountryEntry } from "@/lib/global-country-registry";
 
 const MARGIN = 20;
 const PAGE_WIDTH = 210;
@@ -178,7 +179,9 @@ function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
   return y;
 }
 
-function addHeader(doc: jsPDF, title: string): number {
+function addHeader(doc: jsPDF, title: string, country: string, docType: string): number {
+  const countryEntry = getCountryEntry(country);
+
   doc.setFillColor(...COLOR_GOLD);
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
 
@@ -186,6 +189,18 @@ function addHeader(doc: jsPDF, title: string): number {
   doc.text("EASY-LOCS", MARGIN, 22);
   setFont(doc, "normal", 6, COLOR_PRIMARY);
   doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
+
+  if (countryEntry) {
+    setFont(doc, "bold", 8, COLOR_MUTED);
+    doc.text(sanitize(`${countryEntry.name} — ${countryEntry.taxIdLabel}`), PAGE_WIDTH - MARGIN, 19, { align: "right" });
+    setFont(doc, "normal", 7, COLOR_MUTED);
+    doc.text(
+      sanitize(`${docType === "rent-receipt" ? "Government receipt layout" : "Government lease layout"} · ${countryEntry.legalDocumentTypes.join(", ")}`),
+      PAGE_WIDTH - MARGIN,
+      24,
+      { align: "right" }
+    );
+  }
 
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);
@@ -541,7 +556,7 @@ export function generateFromTemplate(
   const labels = getPdfLabels(country);
   const locale = COUNTRY_LOCALE[country] || "en-GB";
   const doc = new jsPDF();
-  let y = addHeader(doc, template.label.toUpperCase());
+  let y = addHeader(doc, template.label.toUpperCase(), country, template.docType);
 
   // Legal basis
   if (template.legalBasis) {
