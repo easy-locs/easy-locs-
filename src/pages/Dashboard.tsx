@@ -162,7 +162,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { icon: Building, label: t("page.dashboard.properties"), value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} ${t("page.dashboard.tenants_count")}`, path: "/dashboard/rental?tab=properties" },
             { icon: Euro, label: t("page.dashboard.collected_month"), value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} ${t("page.dashboard.unpaid_amount")}` : t("page.dashboard.no_unpaid"), path: "/dashboard/rental?tab=payments" },
@@ -174,20 +174,25 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.05 }}
+              className="h-full"
             >
               <Link
                 to={stat.path}
-                className="block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group"
+                className="flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                {/* Icon + Arrow row */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors shrink-0">
                     <stat.icon className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="text-sm text-muted-foreground">{stat.label}</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors ml-auto" />
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.sub}</div>
+                {/* Title — fixed single line */}
+                <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{stat.label}</span>
+                {/* Value — prominent */}
+                <div className="text-xl sm:text-2xl font-bold text-foreground mt-auto">{stat.value}</div>
+                {/* Secondary info */}
+                <div className="text-[11px] sm:text-xs text-muted-foreground truncate mt-1">{stat.sub}</div>
               </Link>
             </motion.div>
           ))}
@@ -225,17 +230,17 @@ const Dashboard = () => {
         {/* Quick actions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
           <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.quick_actions")}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action) => (
               <Link
                 key={action.label}
                 to={action.path}
-                className="group bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all flex flex-col items-center text-center gap-3"
+                className="group flex flex-col items-center text-center gap-3 bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all h-full"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.color}`}>
-                  <action.icon className="h-6 w-6" />
+                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
+                  <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <span className="text-sm font-medium text-foreground">{action.label}</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground leading-tight">{action.label}</span>
               </Link>
             ))}
           </div>
