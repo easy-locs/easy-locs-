@@ -86,6 +86,7 @@ const App = () => (
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/listing/:slug" element={<PublicListing />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/property-management-france" element={<PropertyManagement />} />
               <Route path="/property-management-uk" element={<PropertyManagement />} />
