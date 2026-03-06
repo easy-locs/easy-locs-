@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Shield, Loader2, Check, X, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,7 @@ const MFASettings = () => {
     }
   };
 
-  useState(() => { loadFactors(); });
+  useEffect(() => { loadFactors(); }, []);
 
   const startEnroll = async () => {
     setLoading(true);
