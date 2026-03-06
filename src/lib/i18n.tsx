@@ -4048,7 +4048,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Bearbeiten", "reviews.delete": "Löschen", "reviews.reply": "Antwort des Vermieters",
     "reviews.write_reply": "Antworten", "reviews.updated": "Bewertung aktualisiert", "reviews.submitted": "Bewertung abgegeben!",
     "reviews.stars": "Stern(e)", "nav.reviews": "Bewertungen", "nav.requests": "Anfragen",
-    ...obDe, ...pageDe,
+    ...obDe, ...pageDe, ...pageDeExtra,
   },
   it: {
     "nav.dashboard": "Cruscotto", "nav.properties": "Immobili", "nav.tenants": "Inquilini",
