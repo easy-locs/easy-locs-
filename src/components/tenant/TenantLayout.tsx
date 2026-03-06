@@ -49,7 +49,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
   const { locale, setLocale, t } = useI18n();
   const { L } = useTenantProperty();
 
@@ -88,7 +88,24 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </div>
           <div className="mt-2">
-            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.tenant") || L.tenantSpace}</span>
+            {hasDualRole ? (
+              <div className="flex items-center bg-muted/50 rounded-lg p-0.5 w-fit">
+                <button
+                  onClick={() => { switchRole("landlord"); navigate("/dashboard"); }}
+                  className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded transition-colors ${activeRole === "landlord" ? "bg-accent text-accent-foreground" : "text-sidebar-foreground/50 hover:text-sidebar-foreground"}`}
+                >
+                  {t("badge.landlord")}
+                </button>
+                <button
+                  onClick={() => { switchRole("tenant"); navigate("/tenant"); }}
+                  className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded transition-colors ${activeRole === "tenant" ? "bg-accent text-accent-foreground" : "text-sidebar-foreground/50 hover:text-sidebar-foreground"}`}
+                >
+                  {t("badge.tenant") || L.tenantSpace}
+                </button>
+              </div>
+            ) : (
+              <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.tenant") || L.tenantSpace}</span>
+            )}
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
