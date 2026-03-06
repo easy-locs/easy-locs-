@@ -2,7 +2,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Infinity } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
-import { PLANS } from "@/lib/stripe-plans";
+import { PLANS, getPlanDisplay } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -51,7 +51,8 @@ const Billing = () => {
   };
 
   const isSubscribed = subscription.subscribed && !subscription.isTrial;
-  const plan = PLANS.find((p) => p.interval === (billingInterval === "monthly" ? "mois" : "an"));
+  const plan = PLANS.find((p) => p.key === (billingInterval === "monthly" ? "unlimited_monthly" : "unlimited_annual"));
+  const planDisplay = plan ? getPlanDisplay(plan, t) : null;
 
   return (
     <DashboardLayout>
@@ -82,7 +83,7 @@ const Billing = () => {
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-5 w-5 text-success" />
               <h2 className="font-semibold text-foreground">{t("page.billing.active")}</h2>
-              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs {t("page.billing.annual") === "Annual" ? "Unlimited" : "Illimité"}</span>
+              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs {t("plan.unlimited_label")}</span>
             </div>
             {subscription.subscriptionEnd && (
               <p className="text-sm text-muted-foreground mb-4">
@@ -113,14 +114,14 @@ const Billing = () => {
         </div>
 
         {/* Single plan card */}
-        {plan && (
+        {plan && planDisplay && (
           <div className={`relative bg-card rounded-xl p-8 shadow-card border transition-all ${
             isSubscribed ? "border-success ring-2 ring-success/20" : "border-gold ring-2 ring-gold/20"
           }`}>
-            {plan.savings && (
+            {planDisplay.savings && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
-                {plan.savings}
+                {planDisplay.savings}
               </span>
             )}
             {isSubscribed && (
@@ -128,16 +129,16 @@ const Billing = () => {
             )}
             <div className="flex items-center gap-2 mb-1">
               <Infinity className="h-5 w-5 text-gold" />
-              <h3 className="font-semibold text-foreground text-lg">{plan.name}</h3>
+              <h3 className="font-semibold text-foreground text-lg">{planDisplay.name}</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">{plan.subtitle}</p>
+            <p className="text-xs text-muted-foreground mb-3">{planDisplay.subtitle}</p>
             <div className="mt-2 mb-4">
               <span className="text-5xl font-bold text-foreground">{plan.price}€</span>
-              <span className="text-sm text-muted-foreground">/{plan.interval}</span>
+              <span className="text-sm text-muted-foreground">/{planDisplay.interval}</span>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">{plan.description}</p>
+            <p className="text-xs text-muted-foreground mb-4">{planDisplay.description}</p>
             <ul className="space-y-2 mb-6">
-              {plan.features.map((f) => (
+              {planDisplay.features.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="h-4 w-4 text-success shrink-0" />
                   {f}

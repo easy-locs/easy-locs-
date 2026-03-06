@@ -1,66 +1,68 @@
 export interface PlanConfig {
   key: string;
-  name: string;
-  subtitle: string;
+  nameKey: string;
+  subtitleKey: string;
   price: number;
   priceId: string;
   productId: string;
-  interval: "mois" | "an";
-  features: string[];
+  intervalKey: string;
+  featureKeys: string[];
   highlight: boolean;
-  savings?: string;
-  description: string;
+  savingsKey?: string;
+  descriptionKey: string;
 }
+
+/** i18n-aware plan accessors */
+export function getPlanDisplay(plan: PlanConfig, t: (key: string) => string) {
+  return {
+    name: t(plan.nameKey),
+    subtitle: t(plan.subtitleKey),
+    interval: t(plan.intervalKey),
+    description: t(plan.descriptionKey),
+    features: plan.featureKeys.map((k) => t(k)),
+    savings: plan.savingsKey ? t(plan.savingsKey) : undefined,
+  };
+}
+
+const FEATURE_KEYS = [
+  "plan.feat.worldwide",
+  "plan.feat.unlimited_properties",
+  "plan.feat.unlimited_tenants",
+  "plan.feat.long_short_term",
+  "plan.feat.ota_sync",
+  "plan.feat.legal_docs",
+  "plan.feat.leases_inventory",
+  "plan.feat.e_signature",
+  "plan.feat.secure_archive",
+  "plan.feat.pdf_export",
+  "plan.feat.priority_support",
+];
 
 export const PLANS: PlanConfig[] = [
   {
     key: "unlimited_monthly",
-    name: "EasyLoc Illimité",
-    subtitle: "Tout inclus",
+    nameKey: "plan.name",
+    subtitleKey: "plan.subtitle",
     price: 9.99,
     priceId: "price_1T50xQKcrlZX0EnnpjDZb41W",
     productId: "prod_U37B1NPO4TQTnD",
-    interval: "mois",
-    description: "Accès illimité à toutes les fonctionnalités EasyLoc.",
-    features: [
-      "Tous les pays du monde",
-      "Nombre illimité de biens",
-      "Nombre illimité de locataires",
-      "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb, Booking & OTA",
-      "Documents juridiques multi-pays",
-      "Baux, états des lieux, quittances",
-      "Signature électronique",
-      "Archivage sécurisé longue durée",
-      "Export juridique PDF",
-      "Support prioritaire",
-    ],
+    intervalKey: "plan.interval.month",
+    descriptionKey: "plan.description",
+    featureKeys: FEATURE_KEYS,
     highlight: false,
   },
   {
     key: "unlimited_annual",
-    name: "EasyLoc Illimité",
-    subtitle: "Tout inclus",
+    nameKey: "plan.name",
+    subtitleKey: "plan.subtitle",
     price: 99,
     priceId: "price_1T50xgKcrlZX0EnntbHkjEsC",
     productId: "prod_U37COZzTYiHqG1",
-    interval: "an",
-    description: "Accès illimité à toutes les fonctionnalités EasyLoc.",
-    features: [
-      "Tous les pays du monde",
-      "Nombre illimité de biens",
-      "Nombre illimité de locataires",
-      "Locations longue durée + Airbnb",
-      "Synchronisation Airbnb, Booking & OTA",
-      "Documents juridiques multi-pays",
-      "Baux, états des lieux, quittances",
-      "Signature électronique",
-      "Archivage sécurisé longue durée",
-      "Export juridique PDF",
-      "Support prioritaire",
-    ],
+    intervalKey: "plan.interval.year",
+    descriptionKey: "plan.description",
+    featureKeys: FEATURE_KEYS,
     highlight: true,
-    savings: "Économisez 20€/an",
+    savingsKey: "plan.savings_annual",
   },
 ];
 

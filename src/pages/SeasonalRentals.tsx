@@ -120,8 +120,9 @@ const SeasonalRentals = () => {
     return new Date();
   });
   const [focusedRequestId] = useState(() => new URLSearchParams(window.location.search).get("focusRequest") || null);
+  const initialPropertyId = new URLSearchParams(window.location.search).get("propertyId") || "";
   const [form, setForm] = useState<SeasonalForm>({
-    property_id: "",
+    property_id: initialPropertyId,
     guest_name: "",
     guest_email: "",
     guest_phone: "",
