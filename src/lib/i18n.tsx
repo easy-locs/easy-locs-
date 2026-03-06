@@ -4229,7 +4229,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Handtekening opslaan",
     "page.settings.profile_updated": "Profiel bijgewerkt",
     "page.settings.org_updated": "Organisatie bijgewerkt",
-    ...obEn,
+    ...obNl, ...pageNl,
   },
   pl: {
     "nav.dashboard": "Panel", "nav.properties": "Nieruchomości", "nav.tenants": "Najemcy",
