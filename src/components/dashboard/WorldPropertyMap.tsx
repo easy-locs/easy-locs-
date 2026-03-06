@@ -139,7 +139,7 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
         {/* Earth sphere */}
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
-          <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} />
+          <meshStandardMaterial map={texture} roughness={0.45} metalness={0.15} />
         </mesh>
 
         {/* Property markers — inside the same rotating group */}
