@@ -24,13 +24,14 @@ const PaymentProvidersSettings = () => {
     const fetchData = async () => {
       const { data: org } = await supabase
         .from("orgs")
-        .select("paypal_email, default_payment_provider, stripe_account_id, stripe_onboarding_complete")
+        .select("paypal_email, default_payment_provider, stripe_account_id, stripe_onboarding_complete, country")
         .eq("id", orgId)
         .single();
 
       if (org) {
         setPaypalEmail((org as any).paypal_email || "");
         setDefaultProvider((org as any).default_payment_provider || "stripe");
+        if ((org as any).country) setOrgCountry((org as any).country);
       }
 
       // Check Stripe Connect status
