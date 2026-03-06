@@ -10,11 +10,19 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   DE: "de", AT: "de",
   IT: "it",
   PT: "pt", BR: "pt",
+  NL: "nl",
+  PL: "pl",
+  TR: "tr",
+  JP: "ja",
   US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
   AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
-  JP: "en", KR: "en", CN: "en", IN: "en", TR: "en",
-  NL: "en", SE: "en", NO: "en", DK: "en", FI: "en", PL: "en",
+  KR: "en", CN: "en", IN: "en",
+  SE: "en", NO: "en", DK: "en", FI: "en",
   GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en", BG: "en", SK: "en",
+  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr",
+  NG: "en", KE: "en", GH: "en",
+  MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
+  IL: "en", JO: "en", LB: "en",
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
