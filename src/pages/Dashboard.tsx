@@ -35,6 +35,8 @@ const Dashboard = () => {
     rentCalls: [] as { month: string; paid: boolean; total_amount: number }[],
     reminders: 0, vaultFiles: 0, vaultSize: 0,
     tenantsList: [] as { property_id: string | null; lease_end: string | null }[],
+    expenses: [] as { amount: number; expense_date: string }[],
+    reservations: [] as { amount: number; check_in: string }[],
   });
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +49,9 @@ const Dashboard = () => {
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
       supabase.from("reminders").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true),
       supabase.from("vault_files").select("size").eq("org_id", orgId),
-    ]).then(([props, tenantsRes, docs, rc, rem, vault]) => {
+      supabase.from("expenses").select("amount, expense_date").eq("org_id", orgId),
+      supabase.from("reservations").select("amount, check_in").eq("org_id", orgId),
+    ]).then(([props, tenantsRes, docs, rc, rem, vault, expRes, resRes]) => {
       const vaultFiles = vault.data || [];
       const tenantsList = (tenantsRes.data || []) as any[];
       setStats({
@@ -59,6 +63,8 @@ const Dashboard = () => {
         vaultFiles: vaultFiles.length,
         vaultSize: vaultFiles.reduce((s, f) => s + (Number(f.size) || 0), 0),
         tenantsList,
+        expenses: (expRes.data || []) as any,
+        reservations: (resRes.data || []) as any,
       });
       setLoading(false);
     });
@@ -77,7 +83,15 @@ const Dashboard = () => {
     const occupancyRate = stats.properties > 0 ? Math.round((occupiedProperties / stats.properties) * 100) : 0;
     const vacantCount = stats.properties - occupiedProperties;
 
-    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount };
+    const expensesThisMonth = stats.expenses
+      .filter(e => e.expense_date?.startsWith(currentMonth))
+      .reduce((s, e) => s + Number(e.amount), 0);
+    const seasonalThisMonth = stats.reservations
+      .filter(r => r.check_in?.startsWith(currentMonth))
+      .reduce((s, r) => s + Number(r.amount), 0);
+    const netIncome = revenueThisMonth + seasonalThisMonth - expensesThisMonth;
+
+    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount, netIncome, expensesThisMonth };
   }, [stats]);
 
   const revenueChart = useMemo(() => {
@@ -134,7 +148,7 @@ const Dashboard = () => {
             { icon: Building, label: t("page.dashboard.properties"), value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} ${t("page.dashboard.tenants_count")}`, path: "/dashboard/rental?tab=properties" },
             { icon: Euro, label: t("page.dashboard.collected_month"), value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} ${t("page.dashboard.unpaid_amount")}` : t("page.dashboard.no_unpaid"), path: "/dashboard/rental?tab=payments" },
             { icon: Percent, label: t("page.dashboard.occupancy"), value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} ${t("page.dashboard.vacant")}`, path: "/dashboard/rental?tab=properties" },
-            { icon: FolderLock, label: t("page.dashboard.vault"), value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} ${t("page.dashboard.files")}`, path: "/dashboard/vault" },
+            { icon: PiggyBank, label: t("page.dashboard.net_income") || "Résultat net", value: loading ? "..." : fmt(kpis.netIncome), sub: `${fmt(kpis.expensesThisMonth)} ${t("page.dashboard.expenses_label") || "dépenses"}`, path: "/dashboard/finances" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
