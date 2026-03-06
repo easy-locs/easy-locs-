@@ -577,7 +577,7 @@ export function generateFromTemplate(
   const country = options?.country || template.country || "FR";
 
   // UAE Ejari: use dedicated official format
-  if (country === "AE" && template.docType === "lease-residential") {
+  if (country === "AE" && (template.docType === "lease-residential" || template.docType === "ejari-contract")) {
     return generateUaeEjariPdf(template, data, signatures, stamp, options);
   }
 
