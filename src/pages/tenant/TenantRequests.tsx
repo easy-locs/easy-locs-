@@ -102,10 +102,11 @@ const TenantRequests = () => {
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 mb-4">
           <label className="block text-sm font-medium text-foreground mb-1.5">{T.periodLabel}</label>
           <input
-            type="month"
+            type="text"
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="ex: 2026-03, Mars 2026..."
+            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
           />
         </div>
 
