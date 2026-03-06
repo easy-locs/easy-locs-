@@ -318,15 +318,20 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         return;
       }
 
-      if (selectedProperty && selectedProperty.country !== template.country) {
-        toast({
-          title: t("page.common.error"),
-          description: t("page.doc_builder.country_mismatch") !== "page.doc_builder.country_mismatch"
-            ? t("page.doc_builder.country_mismatch")
-            : `Property (${selectedProperty.country}) does not match template country (${template.country}).`,
-          variant: "destructive",
-        });
-        return;
+      if (selectedProperty) {
+        try {
+          assertTemplateCountryMatch(selectedProperty.country, template);
+        } catch (e) {
+          const msg = e instanceof CountryIsolationError
+            ? `⛔ ${e.message}`
+            : `Property (${selectedProperty.country}) does not match template country (${template.country}).`;
+          toast({
+            title: t("page.common.error"),
+            description: msg,
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
 
