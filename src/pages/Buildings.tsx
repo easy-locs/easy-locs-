@@ -142,6 +142,13 @@ const Buildings = () => {
                   onSelect={handleAddressSelect}
                   onChange={val => setForm(p => ({ ...p, address: val }))}
                   placeholder={t("page.buildings.placeholder_address")}
+                  countryCode={form.country}
+                />
+              </div>
+                  value={form.address}
+                  onSelect={handleAddressSelect}
+                  onChange={val => setForm(p => ({ ...p, address: val }))}
+                  placeholder={t("page.buildings.placeholder_address")}
                 />
               </div>
               <div>
