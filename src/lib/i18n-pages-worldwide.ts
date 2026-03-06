@@ -363,6 +363,8 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "newsletter.cta": "Iscriviti", "newsletter.success": "Grazie! Sei iscritto.",
     "page.dashboard.net_income": "Reddito netto", "page.dashboard.expenses_label": "spese",
     "page.dashboard.ai_question": "Cosa devo fare adesso?", "page.dashboard.ai_desc": "Il tuo assistente analizza la situazione.",
+    "page.ai.title": "Assistente IA", "page.ai.subtitle": "Chiedi delle tue obbligazioni amministrative.", "page.ai.placeholder": "Fai la tua domanda…",
+    "page.ai.hint": "Clicca su « Cosa devo fare? » o fai la tua domanda.", "page.ai.hint2": "L'assistente analizzerà il tuo profilo e i tuoi documenti.",
     "page.fiscal.title": "Bilancio fiscale — Redditi immobiliari",
     "page.fiscal.micro_label": "Cedolare secca", "page.fiscal.real_label": "Spese effettive",
     "page.fiscal.deficit_label": "Deficit immobiliare",
