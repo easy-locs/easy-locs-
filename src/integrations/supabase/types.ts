@@ -1573,47 +1573,80 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
+          city: string | null
+          company_name: string | null
           country: string | null
           created_at: string
           currency: string | null
+          date_of_birth: string | null
           email: string
+          first_name: string | null
           id: string
+          id_number: string | null
+          last_name: string | null
           locale: string | null
           name: string | null
+          nationality: string | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
+          phone: string | null
+          postal_code: string | null
           referral_code: string | null
           signature_url: string | null
+          tax_id: string | null
           updated_at: string
           user_type: string
         }
         Insert: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           currency?: string | null
+          date_of_birth?: string | null
           email: string
+          first_name?: string | null
           id: string
+          id_number?: string | null
+          last_name?: string | null
           locale?: string | null
           name?: string | null
+          nationality?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          phone?: string | null
+          postal_code?: string | null
           referral_code?: string | null
           signature_url?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_type?: string
         }
         Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           currency?: string | null
+          date_of_birth?: string | null
           email?: string
+          first_name?: string | null
           id?: string
+          id_number?: string | null
+          last_name?: string | null
           locale?: string | null
           name?: string | null
+          nationality?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          phone?: string | null
+          postal_code?: string | null
           referral_code?: string | null
           signature_url?: string | null
+          tax_id?: string | null
           updated_at?: string
           user_type?: string
         }

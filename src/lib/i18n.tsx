@@ -4629,7 +4629,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string): string => {
-    return translations[locale]?.[key] || translations.fr[key] || key;
+    // Fallback chain: locale → en → fr → key (never empty)
+    const val = translations[locale]?.[key] || translations.en?.[key] || translations.fr?.[key];
+    if (val) return val;
+    if (import.meta.env.DEV) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
+    return key;
   }, [locale]);
 
   return (
