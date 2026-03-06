@@ -128,13 +128,11 @@
 
 /* ── Global UI consistency ── */
 @layer base {
-  /* Standardize all inputs/selects to consistent height */
+  /* Consistent font sizing for form elements */
   input:not([type="checkbox"]):not([type="radio"]),
-  select {
-    @apply h-10 text-sm rounded-lg;
-  }
+  select,
   textarea {
-    @apply text-sm rounded-lg;
+    @apply text-sm;
   }
 
   /* Prevent text overflow globally */
@@ -148,7 +146,7 @@
     @apply w-full;
   }
   th, td {
-    @apply text-sm py-2.5 px-3;
+    @apply text-sm;
   }
 }
 
