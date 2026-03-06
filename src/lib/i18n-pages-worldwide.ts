@@ -36,6 +36,7 @@ const landingKeys = {
   "newsletter.placeholder": 1, "newsletter.cta": 1, "newsletter.success": 1,
   "page.dashboard.net_income": 1, "page.dashboard.expenses_label": 1,
   "page.dashboard.ai_question": 1, "page.dashboard.ai_desc": 1,
+  "page.ai.title": 1, "page.ai.subtitle": 1, "page.ai.placeholder": 1, "page.ai.hint": 1, "page.ai.hint2": 1,
   "page.fiscal.title": 1, "page.fiscal.micro_label": 1, "page.fiscal.real_label": 1,
   "page.fiscal.deficit_label": 1, "page.fiscal.allowance_text": 1, "page.fiscal.deduction_text": 1,
   "page.fiscal.gross_revenue": 1, "page.fiscal.paid_calls": 1, "page.fiscal.deductible_expenses": 1,
