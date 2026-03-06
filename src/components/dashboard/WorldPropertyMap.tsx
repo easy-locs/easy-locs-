@@ -230,7 +230,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
         {/* 3D Globe */}
-        <div className="relative w-full" style={{ height: 420 }}>
+        <div className="relative w-full" style={{ height: 320 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
           <Suspense fallback={
             <div className="w-full h-full flex items-center justify-center bg-muted/10">
