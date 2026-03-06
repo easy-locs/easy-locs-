@@ -106,6 +106,8 @@ const App = () => (
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/property-management-:country" element={<PropertyManagement />} />
+              <Route path="/rental-management" element={<PropertyManagement />} />
+              <Route path="/landlord-software" element={<PropertyManagement />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
