@@ -10,7 +10,8 @@ import CountrySelect from "@/components/ui/CountrySelect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useI18n, COUNTRY_LOCALE_MAP, COUNTRY_CURRENCY_MAP, type Locale } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
+import { getCountryEntry } from "@/lib/global-country-registry";
 import { Progress } from "@/components/ui/progress";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
