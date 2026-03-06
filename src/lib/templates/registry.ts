@@ -14,6 +14,7 @@ import { frCongesBailleur, frCongesLocataire, frCautionSolidaire, frAttestationH
 import { frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC } from "./fr/company-legal";
 import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
+import { allExtraWorldTemplates } from "./world-packs-extra";
 
 const allTemplates: DocumentTemplate[] = [
   // France — Rental
@@ -67,6 +68,8 @@ const allTemplates: DocumentTemplate[] = [
   ...allEuropeTemplates,
   // World packs (Americas, Africa, Middle East, Asia-Pacific)
   ...allWorldTemplates,
+  // Extra world packs (Indonesia, NZ, Egypt, Pakistan, Bangladesh, China, Ukraine, Jordan, Kuwait)
+  ...allExtraWorldTemplates,
 ];
 
 export function getTemplateById(id: string): DocumentTemplate | undefined {
