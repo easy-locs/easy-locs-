@@ -87,3 +87,5 @@
 - [x] Navigation locataire complétée (requests + reviews)
 - [x] **Admin Dashboard Revenue tab** : KPIs (total revenue, rent collected, booking revenue, MoM growth), graphique revenus 6 mois, breakdown loyers vs réservations
 - [x] **User type badges** dans la liste Recent Signups (landlord/tenant)
+- [x] **Edge function `collect-sepa-rents`** : prélèvement SEPA automatique mensuel off-session via Stripe Connect
+- [x] **Dashboard résultat net** : KPI net income (loyers + saisonnier - dépenses) sur le mois en cours
