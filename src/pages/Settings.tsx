@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 
 const Settings = () => {
@@ -104,77 +105,7 @@ const Settings = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.country")}</label>
-              <select value={profile.country} onChange={e => setProfile(p => ({ ...p, country: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                <optgroup label="Europe">
-                  <option value="FR">🇫🇷 France</option>
-                  <option value="BE">🇧🇪 Belgique</option>
-                  <option value="CH">🇨🇭 Suisse</option>
-                  <option value="LU">🇱🇺 Luxembourg</option>
-                  <option value="DE">🇩🇪 Deutschland</option>
-                  <option value="AT">🇦🇹 Österreich</option>
-                  <option value="ES">🇪🇸 España</option>
-                  <option value="IT">🇮🇹 Italia</option>
-                  <option value="PT">🇵🇹 Portugal</option>
-                  <option value="NL">🇳🇱 Nederland</option>
-                  <option value="GB">🇬🇧 United Kingdom</option>
-                  <option value="IE">🇮🇪 Ireland</option>
-                  <option value="PL">🇵🇱 Polska</option>
-                  <option value="SE">🇸🇪 Sverige</option>
-                  <option value="NO">🇳🇴 Norge</option>
-                  <option value="DK">🇩🇰 Danmark</option>
-                  <option value="FI">🇫🇮 Suomi</option>
-                  <option value="GR">🇬🇷 Ελλάδα</option>
-                  <option value="CZ">🇨🇿 Česko</option>
-                  <option value="HU">🇭🇺 Magyarország</option>
-                  <option value="RO">🇷🇴 România</option>
-                  <option value="HR">🇭🇷 Hrvatska</option>
-                  <option value="BG">🇧🇬 България</option>
-                  <option value="SK">🇸🇰 Slovensko</option>
-                </optgroup>
-                <optgroup label="Americas">
-                  <option value="US">🇺🇸 United States</option>
-                  <option value="CA">🇨🇦 Canada</option>
-                  <option value="MX">🇲🇽 México</option>
-                  <option value="BR">🇧🇷 Brasil</option>
-                  <option value="AR">🇦🇷 Argentina</option>
-                  <option value="CL">🇨🇱 Chile</option>
-                  <option value="CO">🇨🇴 Colombia</option>
-                  <option value="PE">🇵🇪 Perú</option>
-                </optgroup>
-                <optgroup label="Africa">
-                  <option value="MA">🇲🇦 Maroc</option>
-                  <option value="TN">🇹🇳 Tunisie</option>
-                  <option value="DZ">🇩🇿 Algérie</option>
-                  <option value="SN">🇸🇳 Sénégal</option>
-                  <option value="CI">🇨🇮 Côte d'Ivoire</option>
-                  <option value="CM">🇨🇲 Cameroun</option>
-                  <option value="NG">🇳🇬 Nigeria</option>
-                  <option value="KE">🇰🇪 Kenya</option>
-                  <option value="GH">🇬🇭 Ghana</option>
-                  <option value="ZA">🇿🇦 South Africa</option>
-                </optgroup>
-                <optgroup label="Middle East">
-                  <option value="AE">🇦🇪 UAE</option>
-                  <option value="SA">🇸🇦 Saudi Arabia</option>
-                  <option value="QA">🇶🇦 Qatar</option>
-                  <option value="TR">🇹🇷 Türkiye</option>
-                  <option value="IL">🇮🇱 Israel</option>
-                </optgroup>
-                <optgroup label="Asia-Pacific">
-                  <option value="JP">🇯🇵 日本</option>
-                  <option value="KR">🇰🇷 한국</option>
-                  <option value="IN">🇮🇳 India</option>
-                  <option value="TH">🇹🇭 Thailand</option>
-                  <option value="MY">🇲🇾 Malaysia</option>
-                  <option value="SG">🇸🇬 Singapore</option>
-                  <option value="AU">🇦🇺 Australia</option>
-                  <option value="NZ">🇳🇿 New Zealand</option>
-                  <option value="PH">🇵🇭 Philippines</option>
-                  <option value="ID">🇮🇩 Indonesia</option>
-                  <option value="VN">🇻🇳 Việt Nam</option>
-                </optgroup>
-              </select>
+              <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
             </div>
             <button onClick={saveProfile} disabled={saving}
               className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">

@@ -8,6 +8,7 @@ import { pageIt as pageItFull } from "./i18n-pages-it";
 import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages, thPages, viPages, idPages, msPages, svPages, daPages, nbPages, fiPages, elPages, csPages, huPages, roPages, hrPages, bgPages, skPages, hePages, ukPages, docBuilderExtraKeys } from "./i18n-world-pages";
 import { billingWorldwide } from "./i18n-billing-worldwide";
 import { notifKeys } from "./i18n-validation";
+import { pagesWorldwide } from "./i18n-pages-worldwide";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
@@ -4696,7 +4697,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((key: string): string => {
     // Fallback chain: locale → notif → billing → docBuilderExtra → en → fr → key
-    const val = translations[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
+    const val = translations[locale]?.[key] || pagesWorldwide[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || pagesWorldwide.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || pagesWorldwide.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
     if (val) return val;
     if (import.meta.env.DEV) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     return key;

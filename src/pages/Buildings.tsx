@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight } from "lucide-react";
+import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRentalData } from "@/hooks/useRentalData";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import CountrySelect from "@/components/ui/CountrySelect";
 import { useI18n } from "@/lib/i18n";
 
 interface BuildingRecord {
@@ -27,7 +28,7 @@ const BUILDING_TYPES = [
   { value: "parking", labelKey: "page.buildings.type_parking" },
 ];
 
-const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "" };
+const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "", country: "FR" };
 
 const Buildings = () => {
   const { user, orgId } = useAuth();
@@ -79,7 +80,7 @@ const Buildings = () => {
 
   const startEdit = (b: BuildingRecord) => {
     setEditId(b.id);
-    setForm({ name: b.name, address: b.address, postal_code: b.postal_code, city: b.city, building_type: b.building_type, total_units: b.total_units, notes: b.notes });
+    setForm({ name: b.name, address: b.address, postal_code: b.postal_code, city: b.city, building_type: b.building_type, total_units: b.total_units, notes: b.notes, country: (b as any).country || "FR" });
     setShowForm(true);
   };
 
@@ -125,6 +126,10 @@ const Buildings = () => {
                   {BUILDING_TYPES.map(bt => <option key={bt.value} value={bt.value}>{t(bt.labelKey)}</option>)}
                 </select>
               </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.country") || "Country"}</label>
+                <CountrySelect value={form.country} onChange={code => setForm(p => ({ ...p, country: code }))} className="mt-1" />
+              </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.address")}</label>
                 <AddressAutocomplete
@@ -132,6 +137,7 @@ const Buildings = () => {
                   onSelect={handleAddressSelect}
                   onChange={val => setForm(p => ({ ...p, address: val }))}
                   placeholder={t("page.buildings.placeholder_address")}
+                  countryCode={form.country}
                 />
               </div>
               <div>

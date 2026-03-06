@@ -33,6 +33,7 @@ import {
   Sofa, Wallet, Filter
 } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import CountrySelect from "@/components/ui/CountrySelect";
 
 type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
@@ -1266,9 +1267,7 @@ const RentalManagement = () => {
                         {propertyFormConfig.propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
-                      <select value={propertyForm.country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{COUNTRY_FLAGS[c] || ""} {COUNTRY_NAMES[c] || c}</option>)}
-                      </select></div>
+                      <CountrySelect value={propertyForm.country || userCountry} onChange={(code) => setPropertyForm({ ...propertyForm, country: code })} /></div>
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
@@ -1413,7 +1412,7 @@ const RentalManagement = () => {
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.phone}</label><input type="tel" value={tenantForm.phone} onChange={(e) => setTenantForm({ ...tenantForm, phone: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.birthDate}</label><input type="date" value={tenantForm.birth_date || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_date: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.birthPlace}</label><input value={tenantForm.birth_place || ""} onChange={(e) => setTenantForm({ ...tenantForm, birth_place: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.nationality}</label><input value={tenantForm.nationality || ""} onChange={(e) => setTenantForm({ ...tenantForm, nationality: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.nationality}</label><CountrySelect value={tenantForm.nationality || ""} onChange={(code) => setTenantForm({ ...tenantForm, nationality: code || null })} placeholder={L.nationality} /></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.profession}</label><input value={tenantForm.profession || ""} onChange={(e) => setTenantForm({ ...tenantForm, profession: e.target.value || null })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.leaseType}</h4>

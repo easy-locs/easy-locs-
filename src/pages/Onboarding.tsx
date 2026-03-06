@@ -6,6 +6,7 @@ import {
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
 } from "lucide-react";
 import logoEasylocs from "@/assets/logo-easylocs.png";
+import CountrySelect from "@/components/ui/CountrySelect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,43 +28,7 @@ const STEPS = [
   { key: "activation", icon: CheckCircle2, requiredFor: "all" },
 ];
 
-const countries = [
-  // Europe
-  { code: "FR", name: "France", flag: "🇫🇷", available: true },
-  { code: "BE", name: "Belgique", flag: "🇧🇪", available: true },
-  { code: "ES", name: "España", flag: "🇪🇸", available: true },
-  { code: "IT", name: "Italia", flag: "🇮🇹", available: true },
-  { code: "DE", name: "Deutschland", flag: "🇩🇪", available: true },
-  { code: "PT", name: "Portugal", flag: "🇵🇹", available: true },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧", available: true },
-  { code: "CH", name: "Suisse", flag: "🇨🇭", available: true },
-  { code: "NL", name: "Nederland", flag: "🇳🇱", available: true },
-  { code: "AT", name: "Österreich", flag: "🇦🇹", available: true },
-  { code: "LU", name: "Luxembourg", flag: "🇱🇺", available: true },
-  { code: "IE", name: "Ireland", flag: "🇮🇪", available: true },
-  { code: "PL", name: "Polska", flag: "🇵🇱", available: true },
-  { code: "SE", name: "Sverige", flag: "🇸🇪", available: true },
-  { code: "DK", name: "Danmark", flag: "🇩🇰", available: true },
-  { code: "NO", name: "Norge", flag: "🇳🇴", available: true },
-  { code: "FI", name: "Suomi", flag: "🇫🇮", available: true },
-  { code: "GR", name: "Ελλάδα", flag: "🇬🇷", available: true },
-  { code: "CZ", name: "Česko", flag: "🇨🇿", available: true },
-  { code: "RO", name: "România", flag: "🇷🇴", available: true },
-  { code: "HU", name: "Magyarország", flag: "🇭🇺", available: true },
-  { code: "HR", name: "Hrvatska", flag: "🇭🇷", available: true },
-  { code: "BG", name: "България", flag: "🇧🇬", available: true },
-  { code: "SK", name: "Slovensko", flag: "🇸🇰", available: true },
-  // Hors Europe
-  { code: "US", name: "United States", flag: "🇺🇸", available: true },
-  { code: "CA", name: "Canada", flag: "🇨🇦", available: true },
-  { code: "MA", name: "Maroc", flag: "🇲🇦", available: true },
-  { code: "TN", name: "Tunisie", flag: "🇹🇳", available: true },
-  { code: "SN", name: "Sénégal", flag: "🇸🇳", available: true },
-  { code: "CI", name: "Côte d'Ivoire", flag: "🇨🇮", available: true },
-  { code: "BR", name: "Brasil", flag: "🇧🇷", available: true },
-  { code: "MX", name: "México", flag: "🇲🇽", available: true },
-  { code: "JP", name: "日本", flag: "🇯🇵", available: true },
-];
+// Countries are now sourced from CountrySelect (global-country-registry)
 
 const Onboarding = () => {
   const [step, setStep] = useState(0);
@@ -324,16 +289,7 @@ const Onboarding = () => {
               </div>
 
               <p className="text-sm font-semibold text-foreground mb-3">{t("ob.your_country")}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {countries.map(c => (
-                  <button key={c.code} onClick={() => c.available && setCountry(c.code)} disabled={!c.available}
-                    className={`flex items-center gap-2 p-3 rounded-lg border transition-all text-left text-sm ${country === c.code ? "border-gold bg-gold/5" : c.available ? "border-border hover:border-gold/40" : "border-border/50 opacity-40 cursor-not-allowed"}`}>
-                    <span className="text-lg">{c.flag}</span>
-                    <span className="font-medium text-foreground truncate">{c.name}</span>
-                    {!c.available && <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full ml-auto">{t("ob.soon")}</span>}
-                  </button>
-                ))}
-              </div>
+              <CountrySelect value={country || ""} onChange={(code) => setCountry(code || null)} placeholder={t("ob.your_country")} />
 
               <button disabled={!selectedType || !country || saving} onClick={handleStep0Next}
                 className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
