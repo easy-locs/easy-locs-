@@ -83,7 +83,7 @@ const Billing = () => {
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-5 w-5 text-success" />
               <h2 className="font-semibold text-foreground">{t("page.billing.active")}</h2>
-              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs {t("page.billing.annual") === "Annual" ? "Unlimited" : "Illimité"}</span>
+              <span className="bg-success/20 text-success text-xs font-medium px-2 py-0.5 rounded-full">Easy-Locs {t("plan.unlimited_label")}</span>
             </div>
             {subscription.subscriptionEnd && (
               <p className="text-sm text-muted-foreground mb-4">
