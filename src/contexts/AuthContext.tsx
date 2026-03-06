@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
 type UserType = "landlord" | "tenant";
+type ActiveRole = "landlord" | "tenant";
 
 interface SubscriptionState {
   subscribed: boolean;
@@ -24,6 +25,9 @@ interface AuthContextType {
   userCurrency: string;
   onboardingCompleted: boolean;
   subscription: SubscriptionState;
+  activeRole: ActiveRole;
+  hasDualRole: boolean;
+  switchRole: (role: ActiveRole) => void;
   refreshSubscription: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -49,6 +53,9 @@ const AuthContext = createContext<AuthContextType>({
   userCurrency: "EUR",
   onboardingCompleted: false,
   subscription: defaultSubscription,
+  activeRole: "landlord",
+  hasDualRole: false,
+  switchRole: () => {},
   refreshSubscription: async () => {},
   refreshProfile: async () => {},
   signOut: async () => {},
@@ -66,6 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userCurrency, setUserCurrency] = useState("EUR");
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
+  const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
+  const [hasDualRole, setHasDualRole] = useState(false);
 
   const fetchOrgId = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -83,15 +92,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .select("user_type, onboarding_completed, country, currency")
       .eq("id", userId)
       .single();
-    setUserType((data?.user_type as UserType) ?? "landlord");
+    const ut = (data?.user_type as UserType) ?? "landlord";
+    setUserType(ut);
     setOnboardingCompleted(data?.onboarding_completed ?? false);
     setUserCountry(data?.country ?? "FR");
     setUserCurrency(data?.currency ?? "EUR");
+
+    // Check dual-role: user has both org membership (landlord) and tenant link
+    const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
+      supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+      supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+    ]);
+
+    const dual = !!tenantLink && !!orgLink;
+    setHasDualRole(dual);
+
+    // Restore saved role preference
+    const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
+    if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
+      setActiveRole(savedRole);
+    } else {
+      setActiveRole(ut === "tenant" ? "tenant" : "landlord");
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user) await fetchUserType(user.id);
   }, [user, fetchUserType]);
+
+  const switchRole = useCallback((role: ActiveRole) => {
+    setActiveRole(role);
+    if (user) localStorage.setItem(`easylocs_active_role_${user.id}`, role);
+  }, [user]);
 
   const refreshSubscription = useCallback(async () => {
     if (!session?.access_token) return;
@@ -135,6 +167,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserCurrency("EUR");
           setOnboardingCompleted(false);
           setSubscription({ ...defaultSubscription, loading: false });
+          setActiveRole("landlord");
+          setHasDualRole(false);
         }
         setLoading(false);
       }
@@ -174,10 +208,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCurrency("EUR");
     setOnboardingCompleted(false);
     setSubscription({ ...defaultSubscription, loading: false });
+    setActiveRole("landlord");
+    setHasDualRole(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, refreshSubscription, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
