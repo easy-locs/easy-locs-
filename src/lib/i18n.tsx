@@ -28,12 +28,26 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+  // Europe – Eurozone
   FR: "EUR", BE: "EUR", ES: "EUR", DE: "EUR", IT: "EUR", PT: "EUR", LU: "EUR", MC: "EUR", AT: "EUR", IE: "EUR", NL: "EUR", FI: "EUR", GR: "EUR",
-  SK: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR",
-  SE: "SEK", DK: "DKK", NO: "NOK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", HR: "EUR", BG: "BGN",
-  GB: "GBP", US: "USD", CH: "CHF", CA: "CAD", AU: "AUD", NZ: "NZD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP",
-  MA: "MAD", TN: "TND", SN: "XOF", CI: "XOF", ZA: "ZAR",
-  AE: "AED", SA: "SAR", TR: "TRY", JP: "JPY", SG: "SGD",
+  SK: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR", HR: "EUR",
+  // Europe – Non-euro
+  SE: "SEK", DK: "DKK", NO: "NOK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", BG: "BGN",
+  GB: "GBP", CH: "CHF", UA: "UAH", RS: "RSD", IS: "ISK", GE: "GEL", MD: "MDL",
+  // Americas
+  US: "USD", CA: "CAD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
+  UY: "UYU", BO: "BOB", PY: "PYG", VE: "VES", DO: "DOP", CR: "CRC", GT: "GTQ", PA: "PAB", JM: "JMD", TT: "TTD",
+  // Africa
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF", ZA: "ZAR", NG: "NGN", KE: "KES", GH: "GHS",
+  EG: "EGP", ET: "ETB", TZ: "TZS", UG: "UGX", MU: "MUR", RW: "RWF",
+  // Middle East
+  AE: "AED", SA: "SAR", QA: "QAR", BH: "BHD", KW: "KWD", OM: "OMR", JO: "JOD", IL: "ILS", LB: "LBP", IQ: "IQD",
+  TR: "TRY",
+  // Asia-Pacific
+  JP: "JPY", CN: "CNY", KR: "KRW", IN: "INR", SG: "SGD", MY: "MYR", TH: "THB", VN: "VND", PH: "PHP", ID: "IDR",
+  TW: "TWD", HK: "HKD", BD: "BDT", PK: "PKR", LK: "LKR", NP: "NPR", MM: "MMK", KH: "KHR", KZ: "KZT",
+  // Oceania
+  AU: "AUD", NZ: "NZD", FJ: "FJD", PG: "PGK",
 };
 
 /* ─── Shared onboarding keys (used by all locales) ─── */
