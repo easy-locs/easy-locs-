@@ -320,7 +320,7 @@ const Onboarding = () => {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderInput(t("ob.full_name"), ownerForm.full_name, v => setOwnerForm(f => ({ ...f, full_name: v })), "text", true)}
                 {ownerForm.person_type === "company" && renderInput(t("ob.company_name"), ownerForm.company_name || "", v => setOwnerForm(f => ({ ...f, company_name: v })))}
                 <div className="sm:col-span-2">
