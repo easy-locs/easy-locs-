@@ -9,7 +9,7 @@ export const koAll: Record<string, string> = {
   "ob.describe_property": "첫 번째 부동산을 설명하세요", "ob.property_name": "부동산명", "ob.surface": "면적 (㎡)", "ob.rooms": "방 수", "ob.monthly_rent": "월세", "ob.charges": "관리비", "ob.deposit": "보증금", "ob.furnished": "가구 포함", "ob.rental_mode": "임대 방식", "ob.long_term": "장기", "ob.long_term_desc": "표준 임대 계약", "ob.short_term": "단기", "ob.short_term_desc": "Airbnb, Booking, 휴가 임대", "ob.mixed": "혼합", "ob.mixed_desc": "두 가지 방식 결합",
   "ob.connect_ota": "Airbnb와 Booking 계정을 연결하세요", "ob.connect": "연결", "ob.add_first_tenant": "첫 번째 세입자 추가", "ob.lease_start": "계약 시작일", "ob.finish_title": "설정 완료!", "ob.finish_desc": "작업 공간이 준비되었습니다.", "common.error": "오류",
   "page.dashboard.hello": "안녕하세요 👋", "page.dashboard.summary": "상황 요약입니다.", "page.dashboard.properties": "부동산", "page.dashboard.tenants_count": "세입자", "page.dashboard.collected_month": "이번 달 수금액", "page.dashboard.unpaid_amount": "미납", "page.dashboard.occupancy": "입주율", "page.dashboard.vacant": "공실",
-  "page.dashboard.quick_actions": "빠른 작업", "page.dashboard.generate_receipt": "영수증 생성", "page.dashboard.create_lease": "계약서 작성", "page.dashboard.alerts": "알림 및 조치", "page.dashboard.all_good": "모두 최신입니다! 🎉",
+  "page.dashboard.quick_actions": "빠른 작업", "page.dashboard.generate_receipt": "영수증 생성", "page.dashboard.create_lease": "계약서 작성", "page.dashboard.alerts": "알림 및 조치", "page.dashboard.all_good": "모두 최신입니다! 🎉", "page.dashboard.world_map": "내 글로벌 포트폴리오",
   "page.tasks.title": "작업", "page.tasks.new": "새 작업", "page.tasks.empty": "작업이 없습니다.",
   "page.interventions.title": "수리", "page.interventions.new": "새 수리", "page.interventions.empty": "수리 요청이 없습니다.",
   "page.finances.title": "재무", "page.finances.subtitle": "임대 수입, 비용, 순이익",
