@@ -88,7 +88,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </div>
           <div className="mt-2">
-            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{L.tenantSpace}</span>
+            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.tenant") || L.tenantSpace}</span>
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
