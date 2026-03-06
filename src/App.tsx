@@ -51,6 +51,11 @@ import TenantSettings from "./pages/tenant/TenantSettings";
 // TenantRequests removed - documents available directly on tenant interface
 import TenantSignup from "./pages/TenantSignup";
 import PublicListing from "./pages/PublicListing";
+// SEO + Growth
+import PropertyManagement from "./pages/PropertyManagement";
+import LandlordProfile from "./pages/LandlordProfile";
+import Referrals from "./pages/Referrals";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +77,16 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/listing/:slug" element={<PublicListing />} />
+            <Route path="/landlord/:slug" element={<LandlordProfile />} />
+            <Route path="/property-management" element={<PropertyManagement />} />
+            <Route path="/property-management-france" element={<PropertyManagement />} />
+            <Route path="/property-management-uk" element={<PropertyManagement />} />
+            <Route path="/property-management-spain" element={<PropertyManagement />} />
+            <Route path="/property-management-dubai" element={<PropertyManagement />} />
+            <Route path="/property-management-germany" element={<PropertyManagement />} />
+            <Route path="/property-management-italy" element={<PropertyManagement />} />
+            <Route path="/rental-management" element={<PropertyManagement />} />
+            <Route path="/landlord-software" element={<PropertyManagement />} />
 
             {/* Protected — Landlord */}
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -102,6 +117,8 @@ const App = () => (
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
             <Route path="/dashboard/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
+            <Route path="/dashboard/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
             {/* Protected — Tenant portal */}
             <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />

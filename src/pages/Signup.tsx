@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
+import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
 
 const Signup = () => {
@@ -84,6 +85,8 @@ const Signup = () => {
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.signup.submit")}
           </button>
         </form>
+
+        <SocialLoginButtons />
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("auth.signup.has_account")}{" "}

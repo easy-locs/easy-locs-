@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Home, Users, KeyRound, CalendarRange, ClipboardList, FileCheck, Building,
   Wallet, FileText, Contact, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock,
+  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock, Gift, Shield,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹" };
@@ -58,6 +58,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: CheckSquare, label: t("nav.tasks"), path: "/dashboard/tasks" },
         { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
         { icon: Bell, label: t("nav.reminders"), path: "/dashboard/reminders" },
+        { icon: Gift, label: t("nav.referrals") || "Referrals", path: "/dashboard/referrals" },
+        { icon: Shield, label: "Admin", path: "/dashboard/admin" },
       ],
     },
   ];
