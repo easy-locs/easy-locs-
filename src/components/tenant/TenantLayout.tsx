@@ -54,11 +54,11 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const { L } = useTenantProperty();
 
   const navItems = [
-    { icon: LayoutDashboard, label: L.tenantSpace, path: "/tenant" },
-    { icon: Receipt, label: L.myReceipts, path: "/tenant/receipts" },
-    { icon: FileText, label: L.myDocuments, path: "/tenant/documents" },
-    { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages" },
-    { icon: CreditCard, label: L.payRent, path: "/tenant/pay" },
+    { icon: LayoutDashboard, label: t("badge.tenant") || L.tenantSpace, path: "/tenant" },
+    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
+    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
+    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
     { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];
