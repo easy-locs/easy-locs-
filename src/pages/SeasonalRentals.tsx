@@ -149,12 +149,14 @@ const SeasonalRentals = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: b }, { data: p }] = await Promise.all([
+    const [{ data: b }, { data: p }, { data: reqs }] = await Promise.all([
       supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
       supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
+      supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
     ]);
     if (b) setBookings(b as Booking[]);
     if (p) setProperties(p);
+    if (reqs) setAllRequests(reqs);
     setLoading(false);
   }, [orgId]);
 
