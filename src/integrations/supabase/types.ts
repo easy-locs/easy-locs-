@@ -1918,10 +1918,13 @@ export type Database = {
           paid: boolean | null
           paid_date: string | null
           payment_method: string | null
+          payment_reference: string | null
+          payment_status: string
           property_id: string | null
           receipt_pdf_url: string | null
           receipt_validated: boolean | null
           rent_amount: number
+          stripe_payment_intent_id: string | null
           tenant_id: string
           total_amount: number
           updated_at: string
@@ -1935,10 +1938,13 @@ export type Database = {
           paid?: boolean | null
           paid_date?: string | null
           payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
           rent_amount?: number
+          stripe_payment_intent_id?: string | null
           tenant_id: string
           total_amount?: number
           updated_at?: string
@@ -1952,10 +1958,13 @@ export type Database = {
           paid?: boolean | null
           paid_date?: string | null
           payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
           rent_amount?: number
+          stripe_payment_intent_id?: string | null
           tenant_id?: string
           total_amount?: number
           updated_at?: string
