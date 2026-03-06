@@ -3,7 +3,7 @@ import { BrainCircuit, Send, Loader2, User } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import { useRentalData } from "@/hooks/useRentalData";
 
 interface Message {
@@ -17,7 +17,7 @@ const AIAssistant = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { properties, tenants } = useRentalData();
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const AIAssistant = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("ai-assistant", {
-        body: { message: text.trim(), context: buildContext() },
+        body: { message: text.trim(), context: buildContext(), locale },
       });
 
       if (error) throw error;
