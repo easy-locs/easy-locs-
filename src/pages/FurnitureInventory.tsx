@@ -309,8 +309,8 @@ const FurnitureInventory = () => {
           </div>
           <div className="flex gap-2">
             {selectedProp && filtered.length > 0 && (
-              <button onClick={downloadPDFFile} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted">
-                <Download className="h-4 w-4" /> PDF
+              <button onClick={downloadPDFFile} disabled={uploading} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted disabled:opacity-50">
+                <Download className="h-4 w-4" /> {uploading ? "..." : "PDF"}
               </button>
             )}
             <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
