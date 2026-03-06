@@ -103,18 +103,16 @@ const allTemplates: DocumentTemplate[] = [
   ...allExtraWorldTemplates2,
 ];
 
-const existingCountries = new Set(allTemplates.map((t) => String(t.country)));
+const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country)}::${t.docType}`));
 
 // Generate localized templates for all countries without dedicated packs
 const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
-  .filter((country) => !existingCountries.has(country.code))
   .flatMap((country) => {
     const cc = country.code.toLowerCase();
     const L = getLabelsForCountry(country.code);
     const surfaceUnit = country.measurementUnit === "imperial" ? "sq ft" : "m²";
 
-    return [
-      // 1. Lease
+    const candidates: DocumentTemplate[] = [
       {
         id: `${cc}-lease-residential`,
         version: "1.0.0",
@@ -224,6 +222,8 @@ const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
         ],
       },
     ];
+
+    return candidates.filter((template) => !existingTemplateKeys.has(`${country.code}::${template.docType}`));
   });
 
 allTemplates.push(...generatedFallbackTemplates);

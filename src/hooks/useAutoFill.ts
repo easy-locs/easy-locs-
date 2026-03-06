@@ -63,35 +63,57 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
 
     const property = tenant.property_id ? properties.find(p => p.id === tenant.property_id) : null;
 
+    const fullAddress = property
+      ? `${property.address}, ${property.postal_code} ${property.city}`
+      : "";
+
     return {
+      tenantId: tenant.id,
+      propertyId: tenant.property_id,
       // Tenant identity
       tenantName: tenant.name,
+      recipientName: tenant.name,
+      guestName: tenant.name,
+      fullName: tenant.name,
       tenantEmail: tenant.email,
+      recipientEmail: tenant.email,
       tenantPhone: tenant.phone,
+      recipientPhone: tenant.phone,
       tenantAddress: tenant.current_address || "",
       currentAddress: tenant.current_address || "",
+      recipientAddress: tenant.current_address || "",
+      // Personal info
       tenantBirthDate: tenant.birth_date || "",
+      birthDate: tenant.birth_date || "",
       tenantBirthPlace: tenant.birth_place || "",
+      birthPlace: tenant.birth_place || "",
       tenantNationality: tenant.nationality || "",
+      nationality: tenant.nationality || "",
       tenantProfession: tenant.profession || "",
+      profession: tenant.profession || "",
       // Guarantor
       guarantorName: tenant.guarantor_name || "",
       guarantorPhone: tenant.guarantor_phone || "",
       // Lease
       leaseStart: tenant.lease_start || "",
+      startDate: tenant.lease_start || "",
       leaseEnd: tenant.lease_end || "",
+      endDate: tenant.lease_end || "",
       leaseType: tenant.lease_type,
       // Financials
       rentAmount: tenant.rent_amount,
       chargesAmount: tenant.charges_amount,
       depositAmount: tenant.deposit_amount,
-      // Property (if linked)
-      propertyId: tenant.property_id,
+      totalAmount: (Number(tenant.rent_amount) || 0) + (Number(tenant.charges_amount) || 0),
       ...(property ? {
         propertyLabel: property.label,
-        propertyAddress: property.address,
+        propertyAddress: fullAddress,
+        fullAddress,
+        address: fullAddress,
         propertyPostalCode: property.postal_code,
+        propertyZipCode: property.postal_code,
         propertyCity: property.city,
+        propertyCountry: property.country || "",
         propertyType: property.property_type,
         propertySurface: property.surface,
         propertyRooms: property.rooms,
@@ -100,9 +122,10 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
         propertyFloor: property.floor,
         propertyHeating: property.heating,
         propertyFurnished: property.furnished,
+        furnished: property.furnished ? "yes" : "no",
         propertyBuildingName: property.building_name || "",
         propertyLotNumber: property.lot_number || "",
-        fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
+        propertyReference: property.lot_number || property.label || "",
       } : {}),
     };
   }, [properties, tenants]);
@@ -112,12 +135,18 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
     const property = properties.find(p => p.id === propertyId);
     if (!property) return null;
 
+    const fullAddress = `${property.address}, ${property.postal_code} ${property.city}`;
+
     return {
       propertyId: property.id,
       propertyLabel: property.label,
-      propertyAddress: property.address,
+      propertyAddress: fullAddress,
+      fullAddress,
+      address: fullAddress,
       propertyPostalCode: property.postal_code,
+      propertyZipCode: property.postal_code,
       propertyCity: property.city,
+      propertyCountry: property.country || "",
       propertyType: property.property_type,
       propertySurface: property.surface,
       propertyRooms: property.rooms,
@@ -126,12 +155,14 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
       propertyFloor: property.floor,
       propertyHeating: property.heating,
       propertyFurnished: property.furnished,
+      furnished: property.furnished ? "yes" : "no",
       propertyBuildingName: property.building_name || "",
       propertyLotNumber: property.lot_number || "",
-      fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
+      propertyReference: property.lot_number || property.label || "",
       rentAmount: property.monthly_rent,
       chargesAmount: property.monthly_charges,
       depositAmount: property.deposit_amount,
+      totalAmount: (Number(property.monthly_rent) || 0) + (Number(property.monthly_charges) || 0),
     };
   }, [properties]);
 
@@ -140,19 +171,35 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
     if (!ownerProfile) return null;
     const ownerAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city]
       .filter(Boolean).join(", ");
+    const landlordName = ownerProfile.person_type === "company"
+      ? ownerProfile.company_name || ownerProfile.full_name
+      : ownerProfile.full_name;
+
     return {
-      landlordName: ownerProfile.person_type === "company"
-        ? ownerProfile.company_name || ownerProfile.full_name
-        : ownerProfile.full_name,
+      landlordName,
+      senderName: landlordName,
+      hostName: landlordName,
+      ownerName: landlordName,
       landlordAddress: ownerAddress,
+      senderAddress: ownerAddress,
       landlordEmail: ownerProfile.email || "",
       landlordPhone: ownerProfile.phone || "",
       landlordTaxId: ownerProfile.tax_id || "",
+      taxId: ownerProfile.tax_id || "",
+      landlordNIF: ownerProfile.tax_id || "",
+      landlordDNI: ownerProfile.tax_id || "",
+      landlordAfm: ownerProfile.tax_id || "",
+      landlordSiret: ownerProfile.tax_id || "",
+      landlordTIN: ownerProfile.tax_id || "",
       landlordBankName: ownerProfile.bank_name || "",
+      bankName: ownerProfile.bank_name || "",
       landlordBankIban: ownerProfile.bank_iban || "",
+      bankIban: ownerProfile.bank_iban || "",
       landlordBankBic: ownerProfile.bank_bic || "",
+      bankBic: ownerProfile.bank_bic || "",
       landlordPersonType: ownerProfile.person_type,
       landlordCompanyName: ownerProfile.company_name || "",
+      companyName: ownerProfile.company_name || "",
     };
   }, [ownerProfile]);
 

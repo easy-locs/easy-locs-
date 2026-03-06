@@ -42,6 +42,24 @@ describe("Document Templates", () => {
       expect(mod.rules).toBeDefined();
     }
   });
+
+  it("ES includes generated fallback doc types", async () => {
+    const { getTemplatesByCountry } = await import("@/lib/templates/registry");
+    const esTemplates = getTemplatesByCountry("ES");
+    expect(esTemplates.some((t) => t.docType === "formal-notice")).toBe(true);
+    expect(esTemplates.some((t) => t.docType === "inventory")).toBe(true);
+  });
+
+  it("every registered country has lease and rent receipt templates", async () => {
+    const { getTemplatesByCountry } = await import("@/lib/templates/registry");
+    const { getAllCountryEntries } = await import("@/lib/global-country-registry");
+
+    for (const country of getAllCountryEntries()) {
+      const templates = getTemplatesByCountry(country.code);
+      expect(templates.some((t) => t.docType === "lease-residential")).toBe(true);
+      expect(templates.some((t) => t.docType === "rent-receipt")).toBe(true);
+    }
+  });
 });
 
 describe("PDF Generator", () => {

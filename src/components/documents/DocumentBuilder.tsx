@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
 import { useAutoFill } from "@/hooks/useAutoFill";
+import { getCountryEntry } from "@/lib/global-country-registry";
 
 interface Props {
   template: DocumentTemplate;
@@ -24,15 +25,28 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { toast } = useToast();
   const { t } = useI18n();
   const { properties, tenants } = useRentalData();
-  const { fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
+  const { fillFromTenant, fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
 
   const defaults: Record<string, unknown> = {};
   const today = new Date().toISOString().split("T")[0];
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+  const locale = getCountryEntry(template.country)?.locale || "en-GB";
+  const periodLabel = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(now);
 
-  const autoDateKeys = ["date", "documentDate", "signatureDate", "receiptDate", "noticeDate", "statementDate", "paymentDate"];
+  const autoDateKeys = [
+    "date",
+    "documentDate",
+    "signatureDate",
+    "receiptDate",
+    "noticeDate",
+    "statementDate",
+    "paymentDate",
+    "reportDate",
+    "leaseDate",
+    "commandmentDate",
+  ];
 
   for (const f of template.fields) {
     if (f.type === "date" && !f.defaultValue) {
@@ -45,6 +59,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       } else {
         defaults[f.key] = "";
       }
+    } else if (f.type === "select") {
+      defaults[f.key] = f.defaultValue ?? f.options?.[0]?.value ?? "";
+    } else if (f.key === "period" && !f.defaultValue) {
+      defaults[f.key] = periodLabel;
     } else {
       defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
     }
@@ -56,6 +74,41 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [signatures, setSignatures] = useState<{ landlord: string; tenant: string }>({ landlord: "", tenant: "" });
   const [stampUrl, setStampUrl] = useState("");
   const [prefilled, setPrefilled] = useState(false);
+
+  const applyDerivedValues = (input: Record<string, unknown>) => {
+    const next = { ...input };
+    const rent = Number(next.rentAmount) || 0;
+    const charges = Number(next.chargesAmount) || 0;
+    const deposit = Number(next.depositAmount) || 0;
+
+    if ((next.totalAmount === undefined || next.totalAmount === "" || Number(next.totalAmount) === 0) && (rent > 0 || charges > 0)) {
+      next.totalAmount = rent + charges;
+    }
+    if ((next.coldRent === undefined || next.coldRent === "") && rent > 0) next.coldRent = rent;
+    if ((next.operatingCosts === undefined || next.operatingCosts === "") && charges > 0) next.operatingCosts = charges;
+    if ((next.depositMonths === undefined || next.depositMonths === "") && rent > 0 && deposit > 0) {
+      next.depositMonths = Number((deposit / rent).toFixed(2));
+    }
+    if ((next.period === undefined || next.period === "") && periodLabel) {
+      next.period = periodLabel;
+    }
+    if ((next.startDate === undefined || next.startDate === "") && typeof next.leaseStart === "string" && next.leaseStart) {
+      next.startDate = next.leaseStart;
+    }
+    if ((next.endDate === undefined || next.endDate === "") && typeof next.leaseEnd === "string" && next.leaseEnd) {
+      next.endDate = next.leaseEnd;
+    }
+
+    const landlordTax = String(next.landlordTaxId || next.taxId || "");
+    if (landlordTax) {
+      if (!next.landlordNIF) next.landlordNIF = landlordTax;
+      if (!next.landlordDNI) next.landlordDNI = landlordTax;
+      if (!next.landlordAfm) next.landlordAfm = landlordTax;
+      if (!next.landlordSiret) next.landlordSiret = landlordTax;
+    }
+
+    return next;
+  };
 
   // Auto-load owner profile data + saved signature
   useEffect(() => {
@@ -144,7 +197,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               merged[key] = val;
             }
           }
-          return merged;
+          return applyDerivedValues(merged);
         });
       }
 
@@ -162,86 +215,49 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     const tenant = tenants.find((t) => t.id === tenantId);
     if (!tenant) return;
 
-    const property = tenant.property_id ? properties.find((p) => p.id === tenant.property_id) : null;
+    const tenantAutoData = fillFromTenant(tenantId);
+    if (tenantAutoData) {
+      setData((prev) => {
+        const merged = { ...prev };
+        for (const [key, val] of Object.entries(tenantAutoData)) {
+          if (val !== undefined && val !== null && val !== "" && template.fields.some((f) => f.key === key)) {
+            merged[key] = val;
+          }
+        }
+        return applyDerivedValues(merged);
+      });
+    }
 
-    // Load tenant's saved signature if they have a user account
     if (tenant.tenant_user_id) {
       supabase
         .from("profiles")
-        .select("signature_url")
+        .select("signature_url, id_number")
         .eq("id", tenant.tenant_user_id)
         .single()
         .then(({ data: tenantProfile }) => {
           if (tenantProfile?.signature_url) {
             setSignatures((s) => ({ ...s, tenant: tenantProfile.signature_url! }));
           }
+
+          const tenantIdNumber = tenantProfile?.id_number || "";
+          if (!tenantIdNumber) return;
+
+          setData((prev) => {
+            const merged = { ...prev };
+            const tenantTaxKeys = ["tenantDNI", "tenantNIF", "tenantTaxId", "tenantAfm", "tenantIdNumber", "tenantEmiratesId"];
+            for (const key of tenantTaxKeys) {
+              if (template.fields.some((f) => f.key === key) && (!merged[key] || merged[key] === "")) {
+                merged[key] = tenantIdNumber;
+              }
+            }
+            return applyDerivedValues(merged);
+          });
         });
     }
-
-    setData((prev) => {
-      const merged = { ...prev };
-      const tenantFields: Record<string, unknown> = {
-        // Identity
-        tenantName: tenant.name,
-        recipientName: tenant.name,
-        guestName: tenant.name,
-        tenantEmail: tenant.email,
-        tenantPhone: tenant.phone,
-        tenantAddress: tenant.current_address,
-        currentAddress: tenant.current_address,
-        // Personal info
-        tenantBirthDate: tenant.birth_date,
-        birthDate: tenant.birth_date,
-        tenantBirthPlace: tenant.birth_place,
-        birthPlace: tenant.birth_place,
-        tenantNationality: tenant.nationality,
-        nationality: tenant.nationality,
-        tenantProfession: tenant.profession,
-        profession: tenant.profession,
-        // Address
-        recipientAddress: tenant.current_address,
-        // Guarantor
-        guarantorName: tenant.guarantor_name,
-        guarantorPhone: tenant.guarantor_phone,
-        // Lease & financial
-        leaseStart: tenant.lease_start,
-        leaseEnd: tenant.lease_end,
-        leaseType: tenant.lease_type,
-        rentAmount: tenant.rent_amount,
-        chargesAmount: tenant.charges_amount,
-        depositAmount: tenant.deposit_amount,
-      };
-
-      for (const [key, val] of Object.entries(tenantFields)) {
-        if (val && template.fields.some((f) => f.key === key)) {
-          merged[key] = val;
-        }
-      }
-
-      if (property) {
-        const propFields: Record<string, unknown> = {
-          propertyAddress: `${property.address}, ${property.postal_code} ${property.city}`,
-          fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
-          propertyLabel: property.label,
-          propertySurface: property.surface,
-          propertyRooms: property.rooms,
-          surface: property.surface,
-          rooms: property.rooms,
-          propertyType: property.property_type,
-        };
-        for (const [key, val] of Object.entries(propFields)) {
-          if (val && template.fields.some((f) => f.key === key)) {
-            merged[key] = val;
-          }
-        }
-      }
-
-      return merged;
-    });
-  }, [data.tenantId, tenants, properties, template.fields]);
+  }, [data.tenantId, tenants, template.fields, fillFromTenant]);
 
   const updateField = (key: string, value: unknown) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+    setData((prev) => applyDerivedValues({ ...prev, [key]: value }));
     setValidation(null);
     setGenerated(false);
   };
@@ -417,8 +433,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                       }
                       // Also set address-related keys that templates commonly use
                       const fullAddr = (propData as any).fullAddress;
-                      if (fullAddr) merged.propertyAddress = fullAddr;
-                      if (fullAddr) merged.fullAddress = fullAddr;
+                      if (fullAddr && template.fields.some((f) => f.key === "propertyAddress")) merged.propertyAddress = fullAddr;
+                      if (fullAddr && template.fields.some((f) => f.key === "fullAddress")) merged.fullAddress = fullAddr;
                     }
                     // Apply owner fields
                     if (ownerData) {
@@ -428,7 +444,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                         }
                       }
                     }
-                    return merged;
+                    return applyDerivedValues(merged);
                   });
                 }
 
