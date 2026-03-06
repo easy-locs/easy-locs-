@@ -237,22 +237,22 @@ const Onboarding = () => {
   };
 
   const renderInput = (label: string, value: string | number, onChange: (v: string) => void, type = "text", required = false) => (
-    <div>
-      <label className="text-sm font-medium text-foreground">{label}{required && " *"}</label>
+    <div className="min-w-0">
+      <label className="block text-sm font-medium text-foreground mb-1.5">{label}{required && " *"}</label>
       <input type={type} value={value === 0 && type === "number" ? "" : value} onChange={e => onChange(e.target.value)}
         placeholder={type === "number" ? "0" : ""}
-        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-accent focus:border-accent outline-none" />
+        className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-accent focus:border-accent outline-none" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+    <div className="min-h-screen bg-hero flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute top-6 left-6 flex items-center gap-2">
         <img src={logoEasylocs} alt="Easy-Locs" className="h-10 w-auto object-contain" />
         <span className="text-xl font-bold text-primary-foreground">Easy-Locs<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/60">®</sup></span>
       </div>
 
-      <motion.div className="bg-card rounded-2xl shadow-card-hover p-6 sm:p-10 max-w-2xl w-full"
+      <motion.div className="bg-card rounded-2xl shadow-card-hover p-5 sm:p-10 max-w-2xl w-full my-16"
         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}>
 
         {/* Progress */}
@@ -320,7 +320,7 @@ const Onboarding = () => {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderInput(t("ob.full_name"), ownerForm.full_name, v => setOwnerForm(f => ({ ...f, full_name: v })), "text", true)}
                 {ownerForm.person_type === "company" && renderInput(t("ob.company_name"), ownerForm.company_name || "", v => setOwnerForm(f => ({ ...f, company_name: v })))}
                 <div className="sm:col-span-2">
@@ -360,7 +360,7 @@ const Onboarding = () => {
               <h2 className="text-2xl font-bold text-foreground mb-2">{t("onboarding.step2")}</h2>
               <p className="text-muted-foreground mb-4">{t("ob.describe_property")}</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 {renderInput(t("ob.property_name") + " *", propertyForm.label, v => setPropertyForm(f => ({ ...f, label: v })), "text", true)}
                 <div className="sm:col-span-2">
                   <AddressAutocomplete
@@ -481,7 +481,7 @@ const Onboarding = () => {
               <h2 className="text-2xl font-bold text-foreground mb-2">{t("onboarding.step4")}</h2>
               <p className="text-muted-foreground mb-6">{t("ob.add_first_tenant")}</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderInput(t("ob.full_name") + " *", tenantForm.name, v => setTenantForm(f => ({ ...f, name: v })), "text", true)}
                 {renderInput(t("ob.email"), tenantForm.email, v => setTenantForm(f => ({ ...f, email: v })), "email")}
                 {renderInput(t("ob.phone"), tenantForm.phone, v => setTenantForm(f => ({ ...f, phone: v })), "tel")}
