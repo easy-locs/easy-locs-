@@ -405,7 +405,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                 const ownerData = fillFromOwner();
                 if (propData || ownerData) {
                   setData((prev) => {
-                    const merged = { ...prev, propertyId: propId };
+                    const merged: Record<string, unknown> = { ...prev, propertyId: propId };
                     // Apply property fields
                     if (propData) {
                       for (const [key, val] of Object.entries(propData)) {
