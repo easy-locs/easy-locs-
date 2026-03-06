@@ -468,6 +468,8 @@ const pageFr: Record<string, string> = {
   "page.dashboard.unpaid_label": "Impayé",
   "page.dashboard.no_unpaid": "0 impayé",
   "page.dashboard.world_map": "Mon portefeuille mondial",
+  "page.dashboard.net_income": "Résultat net",
+  "page.dashboard.expenses_label": "dépenses",
 
   // Tasks
   "page.tasks.title": "Tâches",
