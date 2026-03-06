@@ -373,7 +373,7 @@ serve(async (req) => {
           personalizations: [{ to: [{ email: br.guest_email }] }],
           from: { email: "noreply@easy-locs.com", name: org?.name || "Easy-Locs" },
           reply_to: { email: org?.email || "contact@easy-locs.com", name: org?.name || "Easy-Locs" },
-          subject: tpl(t.guestSubject, { property: propertyLabel }),
+          subject: tpl(t.guestSubject, { property: safePropertyLabel }),
           content: [{
             type: "text/html",
             value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
@@ -382,8 +382,8 @@ serve(async (req) => {
               </div>
               ${photoBlock}
               ${listingBlock}
-              <p style="color:#555;font-size:15px;">${tpl(t.guestGreeting, { name: br.guest_name })}</p>
-              <p style="color:#555;font-size:15px;">${tpl(t.guestBody, { property: propertyLabel })}</p>
+              <p style="color:#555;font-size:15px;">${tpl(t.guestGreeting, { name: safeGuestName })}</p>
+              <p style="color:#555;font-size:15px;">${tpl(t.guestBody, { property: safePropertyLabel })}</p>
               <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">
                 <tr><td style="padding:10px 12px;color:#888;">${t.arrival}</td><td style="padding:10px 12px;font-weight:600;">${br.check_in}</td></tr>
                 <tr><td style="padding:10px 12px;color:#888;">${t.departure}</td><td style="padding:10px 12px;font-weight:600;">${br.check_out}</td></tr>
