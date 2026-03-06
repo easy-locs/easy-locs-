@@ -136,7 +136,12 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      payment_method_types: paymentMethods,
+      // Let Stripe auto-enable card, Apple Pay, Google Pay, and wallets
+      // For SEPA, explicitly set payment methods
+      ...(useSepa
+        ? { payment_method_types: ["sepa_debit"] }
+        : { payment_method_types: ["card", "link"] }
+      ),
       locale: "auto",
       success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
       cancel_url: `${origin}/tenant/pay?payment=cancel`,
