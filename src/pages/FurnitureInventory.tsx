@@ -191,27 +191,112 @@ const FurnitureInventory = () => {
   const condLabel = (c: string) => CONDITIONS.find(x => x.value === c)?.label || c;
   const groupedByProp = items.reduce((acc, item) => { if (!acc[item.property_id]) acc[item.property_id] = []; acc[item.property_id].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
 
-  const downloadPDFFile = () => {
-    const prop = properties.find(p => p.id === selectedProp);
-    const doc = new jsPDF();
-    doc.setFillColor(212, 163, 74); doc.rect(0, 0, 210, 8, "F");
-    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(26, 39, 68);
-    doc.text(t("page.furniture.pdf_title"), 20, 25);
-    doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-    doc.text(prop ? `${t("page.furniture.property")} : ${prop.label}` : t("page.furniture.all_properties"), 20, 33);
-    let y = 50;
-    for (const [room, roomItems] of Object.entries(grouped)) {
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(26, 39, 68); doc.text(room, 20, y); y += 8;
-      for (const item of roomItems) {
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(50, 50, 50);
-        doc.text(`• ${item.item_name} (x${item.quantity}) — ${condLabel(item.condition)}${item.notes ? ` — ${item.notes}` : ""}`, 25, y); y += 6;
+  const loadImageBase64 = async (url: string): Promise<string | null> => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch { return null; }
+  };
+
+  const downloadPDFFile = async () => {
+    setUploading(true);
+    try {
+      const prop = properties.find(p => p.id === selectedProp);
+      const doc = new jsPDF();
+      const PAGE_W = 210;
+      const MARGIN = 20;
+      const CONTENT_W = PAGE_W - MARGIN * 2;
+
+      const checkPage = (y: number, need: number) => {
+        if (y + need > 275) { doc.addPage(); return 25; }
+        return y;
+      };
+
+      // Header
+      doc.setFillColor(212, 163, 74); doc.rect(0, 0, PAGE_W, 8, "F");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(26, 39, 68);
+      doc.text(t("page.furniture.pdf_title"), MARGIN, 25);
+      doc.setFontSize(10); doc.setTextColor(100, 100, 100);
+      doc.text(prop ? `${t("page.furniture.property")} : ${prop.label}` : t("page.furniture.all_properties"), MARGIN, 33);
+      doc.setDrawColor(212, 163, 74); doc.setLineWidth(0.5);
+      doc.line(MARGIN, 37, PAGE_W - MARGIN, 37);
+      let y = 46;
+
+      for (const [room, roomItems] of Object.entries(grouped)) {
+        y = checkPage(y, 20);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(26, 39, 68);
+        doc.text(room, MARGIN, y);
+        doc.setDrawColor(212, 163, 74); doc.setLineWidth(0.3);
+        doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
+        y += 9;
+
+        for (const item of roomItems) {
+          y = checkPage(y, 50);
+          doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(50, 50, 50);
+          const condColor: Record<string, [number, number, number]> = {
+            new: [22, 163, 74], good: [22, 163, 74], fair: [202, 138, 4], poor: [220, 38, 38],
+          };
+          const textLine = `${item.item_name} (x${item.quantity})`;
+          doc.text(textLine, MARGIN, y);
+          const cc = condColor[item.condition] || [100, 100, 100];
+          doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(cc[0], cc[1], cc[2]);
+          doc.text(`[${condLabel(item.condition)}]`, MARGIN + 80, y);
+          y += 5;
+
+          if (item.notes) {
+            doc.setFont("helvetica", "italic"); doc.setFontSize(8); doc.setTextColor(110, 110, 110);
+            const noteLines = doc.splitTextToSize(item.notes, CONTENT_W);
+            for (const nl of noteLines) {
+              y = checkPage(y, 5);
+              doc.text(nl, MARGIN, y); y += 4.5;
+            }
+          }
+
+          // Photo
+          if (item.photo_url) {
+            y = checkPage(y, 45);
+            try {
+              const b64 = await loadImageBase64(item.photo_url);
+              if (b64) {
+                doc.addImage(b64, "JPEG", MARGIN, y, 40, 32);
+                y += 35;
+              }
+            } catch {
+              doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+              doc.text("[Photo non disponible]", MARGIN, y); y += 5;
+            }
+          }
+          y += 3;
+        }
+        y += 5;
       }
-      y += 4;
+
+      // Footer on all pages
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFont("helvetica", "italic"); doc.setFontSize(7); doc.setTextColor(110, 110, 110);
+        doc.text("Document genere a titre informatif.", MARGIN, 283);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(26, 39, 68);
+        doc.text("EASY-LOCS", PAGE_W / 2 - 8, 289);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(110, 110, 110);
+        doc.text(`Page ${i}/${pageCount}`, PAGE_W - MARGIN, 289, { align: "right" });
+        doc.setFillColor(26, 39, 68); doc.rect(0, 291, PAGE_W, 6, "F");
+      }
+
+      doc.save(`inventaire_mobilier_${prop?.label || "tous"}.pdf`);
+      toast({ title: "PDF téléchargé" });
+    } catch (err: any) {
+      toast({ title: "Erreur PDF", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
     }
-    doc.setFillColor(26, 39, 68); doc.rect(0, 290, 210, 7, "F");
-    doc.save(`inventaire_mobilier_${prop?.label || "tous"}.pdf`);
   };
 
   return (
@@ -224,8 +309,8 @@ const FurnitureInventory = () => {
           </div>
           <div className="flex gap-2">
             {selectedProp && filtered.length > 0 && (
-              <button onClick={downloadPDFFile} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted">
-                <Download className="h-4 w-4" /> PDF
+              <button onClick={downloadPDFFile} disabled={uploading} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted disabled:opacity-50">
+                <Download className="h-4 w-4" /> {uploading ? "..." : "PDF"}
               </button>
             )}
             <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">

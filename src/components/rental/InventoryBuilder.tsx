@@ -442,14 +442,14 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
         <ArrowLeft className="h-3.5 w-3.5" /> {t("page.inventory.back")}
       </button>
 
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-foreground truncate">
             {reportType === "entry" ? t("page.inventory.entry") : t("page.inventory.exit")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
+          <p className="text-sm text-muted-foreground mt-0.5 truncate">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <button onClick={() => handleSave(false)} disabled={saving}
             className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
             <Save className="h-4 w-4" />{saving ? "…" : t("page.inventory.draft_btn")}
@@ -474,7 +474,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       )}
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-foreground">{rooms.length}</div>
           <div className="text-xs text-muted-foreground">{t("page.inventory.rooms_label")}</div>
@@ -575,16 +575,16 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                   const cond = conditionLabels[item.condition];
                   return (
                     <div key={item.id} className="bg-muted/20 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">{item.element_name}</span>
-                        <div className="flex items-center gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                        <span className="text-sm font-medium text-foreground truncate">{item.element_name}</span>
+                        <div className="flex items-center gap-1 flex-wrap shrink-0">
                           {(["good", "average", "bad"] as const).map(c => {
                             const cl = conditionLabels[c];
                             const Icon = cl.icon;
                             return (
                               <button key={c} onClick={() => updateItemCondition(room.id, item.id, c)}
                                 className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors ${item.condition === c ? cl.color : "border-border/50 text-muted-foreground hover:bg-muted/50"}`}>
-                                <Icon className="h-3 w-3" />{cl.label}
+                                <Icon className="h-3 w-3" /><span className="hidden sm:inline">{cl.label}</span>
                               </button>
                             );
                           })}
