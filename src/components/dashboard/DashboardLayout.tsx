@@ -10,6 +10,7 @@ import {
   Wallet, FileText, Contact, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock, Gift, Shield,
+  Layers, BookOpen, Zap, Store,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹" };
