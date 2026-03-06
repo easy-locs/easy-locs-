@@ -744,6 +744,26 @@ const pageFr: Record<string, string> = {
   "page.billing.no_commitment": "Aucun engagement – Annulation à tout moment. 3 jours d'essai gratuit inclus.",
   "page.billing.trial_ended": "Votre essai est terminé. Abonnez-vous pour continuer à utiliser Easy-Locs.",
 
+  // Plan features (i18n)
+  "plan.name": "EasyLoc Illimité",
+  "plan.subtitle": "Tout inclus",
+  "plan.description": "Accès illimité à toutes les fonctionnalités EasyLoc.",
+  "plan.interval.month": "mois",
+  "plan.interval.year": "an",
+  "plan.savings_annual": "Économisez 20€/an",
+  "plan.unlimited_label": "Illimité",
+  "plan.feat.worldwide": "Tous les pays du monde",
+  "plan.feat.unlimited_properties": "Nombre illimité de biens",
+  "plan.feat.unlimited_tenants": "Nombre illimité de locataires",
+  "plan.feat.long_short_term": "Locations longue durée + Airbnb",
+  "plan.feat.ota_sync": "Synchronisation Airbnb, Booking & OTA",
+  "plan.feat.legal_docs": "Documents juridiques multi-pays",
+  "plan.feat.leases_inventory": "Baux, états des lieux, quittances",
+  "plan.feat.e_signature": "Signature électronique",
+  "plan.feat.secure_archive": "Archivage sécurisé longue durée",
+  "plan.feat.pdf_export": "Export juridique PDF",
+  "plan.feat.priority_support": "Support prioritaire",
+
   // Assistant
   "page.ai.title": "Assistant personnel",
   "page.ai.subtitle": "Posez une question sur vos obligations administratives ou demandez-moi quoi faire.",
