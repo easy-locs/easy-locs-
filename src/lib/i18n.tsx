@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja";
 
@@ -4228,7 +4229,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Handtekening opslaan",
     "page.settings.profile_updated": "Profiel bijgewerkt",
     "page.settings.org_updated": "Organisatie bijgewerkt",
-    ...obEn,
+    ...obNl, ...pageNl,
   },
   pl: {
     "nav.dashboard": "Panel", "nav.properties": "Nieruchomości", "nav.tenants": "Najemcy",
@@ -4314,7 +4315,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Zapisz podpis",
     "page.settings.profile_updated": "Profil zaktualizowany",
     "page.settings.org_updated": "Organizacja zaktualizowana",
-    ...obEn,
+    ...obPl, ...pagePl,
   },
   tr: {
     "nav.dashboard": "Panel", "nav.properties": "Mülkler", "nav.tenants": "Kiracılar",
@@ -4400,7 +4401,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "İmzayı kaydet",
     "page.settings.profile_updated": "Profil güncellendi",
     "page.settings.org_updated": "Organizasyon güncellendi",
-    ...obEn,
+    ...obTr, ...pageTr,
   },
   ar: {
     "nav.dashboard": "لوحة التحكم", "nav.properties": "العقارات", "nav.tenants": "المستأجرون",
@@ -4486,7 +4487,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "حفظ التوقيع",
     "page.settings.profile_updated": "تم تحديث الملف الشخصي",
     "page.settings.org_updated": "تم تحديث المنظمة",
-    ...obEn,
+    ...obAr, ...pageAr,
   },
   ja: {
     "nav.dashboard": "ダッシュボード", "nav.properties": "物件", "nav.tenants": "入居者",
@@ -4572,7 +4573,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "署名を保存",
     "page.settings.profile_updated": "プロフィールが更新されました",
     "page.settings.org_updated": "組織が更新されました",
-    ...obEn,
+    ...obJa, ...pageJa,
   },
 };
 
