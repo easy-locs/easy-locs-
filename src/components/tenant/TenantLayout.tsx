@@ -125,7 +125,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
               <span>{currentLang.flag} {currentLang.label}</span>
             </button>
             {langOpen && (
-              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50">
+              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50 max-h-64 overflow-y-auto">
                 {LANGUAGES.map(lang => (
                   <button
                     key={lang.code}
