@@ -42,7 +42,7 @@ const AIAssistant = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("ai-assistant", {
-        body: { message: text.trim(), context: buildContext() },
+        body: { message: text.trim(), context: buildContext(), locale },
       });
 
       if (error) throw error;
