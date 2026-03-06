@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, subscription, activeRole, onboardingCompleted } = useAuth();
+  const { user, loading, emailVerified, activeRole, onboardingCompleted } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -17,13 +17,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
-  const isBillingPage = location.pathname === "/dashboard/billing";
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
 
-  // Redirect to onboarding if not completed (except billing & onboarding itself)
-  if (!onboardingCompleted && !isOnboarding && !isBillingPage && !isTenantRoute) {
-    return <Navigate to="/onboarding" replace />;
+  // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
+  if (isOnboarding && onboardingCompleted) {
+    return <Navigate to={activeRole === "tenant" ? "/tenant" : "/dashboard"} replace />;
   }
 
   // Use activeRole (not userType) to enforce interface separation
@@ -41,3 +40,4 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default ProtectedRoute;
+
