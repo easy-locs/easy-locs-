@@ -13,24 +13,18 @@
 ## 10. Developer Portal / API ✅
 ## 11. White-label Branding ✅
 ## 12. Auto-génération quittances ✅
+## 13. Webhooks sortants ✅
+## 14. SSO Google + Apple (re-configuré) ✅
 
-## Détails Sprint 7
+## Détails Sprint 8
 
-### Auto-génération quittances
-- [x] Trigger `trg_auto_generate_receipt` : insère automatiquement un document `rent-receipt` quand un `rent_call` est marqué payé
-- [x] Données JSON incluses : mois, montants, locataire, propriété, date de paiement
+### Webhooks sortants
+- [x] Tables `webhooks` + `webhook_deliveries` avec RLS
+- [x] Edge function `dispatch-webhook` — dispatch HMAC-SHA256 signé avec logs de livraison
+- [x] UI Webhooks intégrée au Developer Portal (création, activation, logs)
+- [x] 7 types d'événements supportés (payment, lease, tenant, intervention, booking, document, inventory)
 
-### Developer Portal
-- [x] Table `api_keys` avec RLS (org owners uniquement)
-- [x] Fonction `create_api_key` (security definer) — génère `el_xxx` + stocke hash MD5
-- [x] Page `/dashboard/developers` : gestion clés, documentation endpoints, exemples code (cURL, JS, Python)
-- [x] 10 endpoints REST documentés
-
-### White-label Branding
-- [x] Colonnes `brand_name`, `brand_primary_color`, `brand_accent_color`, `brand_favicon_url`, `custom_domain` sur `orgs`
-- [x] Section branding dans Settings avec color picker et aperçu live
-
-### DB Triggers actifs (8 total)
+### DB Triggers restaurés (7 total)
 1. `trg_notify_booking_request` → booking_requests INSERT
 2. `trg_notify_booking_created` → seasonal_bookings INSERT
 3. `trg_notify_lease_created` → leases INSERT
@@ -38,6 +32,10 @@
 5. `trg_notify_payment_received` → rent_calls UPDATE
 6. `trg_notify_inventory_completed` → inventory_reports UPDATE
 7. `trg_auto_generate_receipt` → rent_calls UPDATE (auto-quittance)
+
+### Sécurité
+- [x] Politique deny-all sur `internal_config` (service role only)
+- [x] Social auth Google + Apple re-configuré via Lovable Cloud
 
 ## Infrastructure complétée
 - [x] SSO Google + Apple
@@ -50,10 +48,10 @@
 - [x] Suite de tests (54+)
 - [x] Code-splitting (47+ pages)
 - [x] OTA SELECT RLS corrigée
+- [x] Webhooks sortants avec HMAC signing
 
 ## Prochaines priorités
 1. MFA/2FA authentication
-2. Webhooks sortants (events → URL client)
-3. Rapports PDF automatiques mensuels
-4. Mobile app stores (Capacitor build)
-5. Multi-currency conversion automatique
+2. Rapports PDF automatiques mensuels
+3. Mobile app stores (Capacitor build)
+4. Multi-currency conversion automatique
