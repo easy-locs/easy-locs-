@@ -5,6 +5,7 @@ import {
   AlertTriangle, TrendingUp, Clock, Users, Euro, Building,
   Download, PiggyBank, Percent,
 } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -176,24 +177,7 @@ const Dashboard = () => {
               transition={{ delay: 0.1 + i * 0.05 }}
               className="h-full"
             >
-              <Link
-                to={stat.path}
-                className="flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group"
-              >
-                {/* Icon + Arrow row */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors shrink-0">
-                    <stat.icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
-                </div>
-                {/* Title — fixed single line */}
-                <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{stat.label}</span>
-                {/* Value — prominent */}
-                <div className="text-xl sm:text-2xl font-bold text-foreground mt-auto">{stat.value}</div>
-                {/* Secondary info */}
-                <div className="text-[11px] sm:text-xs text-muted-foreground truncate mt-1">{stat.sub}</div>
-              </Link>
+              <StatCard {...stat} />
             </motion.div>
           ))}
         </div>

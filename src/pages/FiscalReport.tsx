@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getAllAccountingRules } from "@/lib/accounting-rules";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
 import { FileText, Download, TrendingUp, TrendingDown, Calculator, Globe, ChevronRight } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import PropertyFiscalCard from "@/components/fiscal/PropertyFiscalCard";
@@ -144,28 +145,10 @@ const FiscalReport = () => {
         ) : (
           <>
             {/* Global KPIs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="bg-gradient-to-br from-card to-muted/20">
-                <CardContent className="pt-5 pb-4 text-center">
-                  <TrendingUp className="h-5 w-5 text-primary mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-foreground">{formatCurrency(globalSummary.totalBrut, "FR")}</p>
-                  <p className="text-xs text-muted-foreground">{t("page.fiscal.gross_revenue")} ({year})</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-5 pb-4 text-center">
-                  <Globe className="h-5 w-5 text-accent mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-foreground">{globalSummary.countries}</p>
-                  <p className="text-xs text-muted-foreground">{t("page.common.country")}{globalSummary.countries > 1 ? "s" : ""}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-5 pb-4 text-center">
-                  <Calculator className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-2xl font-bold text-foreground">{globalSummary.properties}</p>
-                  <p className="text-xs text-muted-foreground">{t("page.properties.title")}</p>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <StatCard icon={TrendingUp} iconClassName="text-primary" label={`${t("page.fiscal.gross_revenue")} (${year})`} value={formatCurrency(globalSummary.totalBrut, "FR")} />
+              <StatCard icon={Globe} iconClassName="text-accent" label={`${t("page.common.country")}${globalSummary.countries > 1 ? "s" : ""}`} value={String(globalSummary.countries)} />
+              <StatCard icon={Calculator} iconClassName="text-muted-foreground" label={t("page.properties.title")} value={String(globalSummary.properties)} />
             </div>
 
             {/* Per-country groups */}
