@@ -8,29 +8,47 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
   return (
     <footer ref={ref} className="bg-navy-deep text-primary-foreground/60 py-16">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          {/* Brand */}
+          <div className="col-span-2 sm:col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <img src={logoEasylocs} alt="Easy-Locs" className="h-8 w-auto object-contain" />
               <span className="text-lg font-bold text-primary-foreground">Easy-Locs<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/60">®</sup></span>
             </Link>
             <p className="text-sm leading-relaxed">{t("landing.footer.desc")}</p>
           </div>
+
+          {/* Product */}
           <div>
             <h4 className="font-semibold text-primary-foreground text-sm mb-3">{t("landing.footer.product")}</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#features" className="hover:text-primary-foreground transition-colors">{t("landing.footer.features")}</a></li>
-              <li><a href="#pricing" className="hover:text-primary-foreground transition-colors">{t("landing.footer.pricing")}</a></li>
+              <li><a href="/#features" className="hover:text-primary-foreground transition-colors">{t("landing.footer.features")}</a></li>
+              <li><a href="/#pricing" className="hover:text-primary-foreground transition-colors">{t("landing.footer.pricing")}</a></li>
+              <li><Link to="/about" className="hover:text-primary-foreground transition-colors">{t("legal.about.title")}</Link></li>
             </ul>
           </div>
+
+          {/* Legal */}
           <div>
             <h4 className="font-semibold text-primary-foreground text-sm mb-3">{t("landing.footer.legal")}</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-primary-foreground transition-colors">{t("landing.footer.legal_notices")}</a></li>
-              <li><a href="#" className="hover:text-primary-foreground transition-colors">{t("landing.footer.privacy")}</a></li>
-              <li><a href="#" className="hover:text-primary-foreground transition-colors">{t("landing.footer.terms")}</a></li>
+              <li><Link to="/legal-notice" className="hover:text-primary-foreground transition-colors">{t("legal.notice.title")}</Link></li>
+              <li><Link to="/privacy" className="hover:text-primary-foreground transition-colors">{t("legal.privacy.title")}</Link></li>
+              <li><Link to="/terms" className="hover:text-primary-foreground transition-colors">{t("legal.terms.title")}</Link></li>
+              <li><Link to="/cookies" className="hover:text-primary-foreground transition-colors">{t("legal.cookies.title")}</Link></li>
             </ul>
           </div>
+
+          {/* Support */}
+          <div>
+            <h4 className="font-semibold text-primary-foreground text-sm mb-3">{t("legal.help.title_short")}</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/help" className="hover:text-primary-foreground transition-colors">{t("legal.help.title")}</Link></li>
+              <li><Link to="/contact" className="hover:text-primary-foreground transition-colors">{t("legal.contact.title")}</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
           <div>
             <h4 className="font-semibold text-primary-foreground text-sm mb-3">{t("landing.footer.contact")}</h4>
             <ul className="space-y-2 text-sm">
@@ -39,7 +57,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           </div>
         </div>
         <div className="border-t border-primary-foreground/10 pt-8 text-sm text-center">
-          © {new Date().getFullYear()} Easy-Locs. {t("landing.footer.copyright")}
+          © {new Date().getFullYear()} Easy-Locs®. {t("landing.footer.copyright")}
         </div>
       </div>
     </footer>
