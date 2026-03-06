@@ -5,6 +5,7 @@ import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, f
 import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
 import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
 import { pageIt as pageItFull } from "./i18n-pages-it";
+import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages, thPages, viPages, idPages, msPages, svPages, daPages, nbPages, fiPages, elPages, csPages, huPages, roPages, hrPages, bgPages, skPages, hePages, ukPages } from "./i18n-world-pages";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
@@ -4593,26 +4594,26 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.org_updated": "組織が更新されました",
     ...obJa, ...pageJa,
   },
-  ko: { ...koAll, ...koPayExtra, ...koPageExtra },
-  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra },
-  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra },
-  th: { ...thAll, ...thPayExtra, ...thPageExtra },
-  vi: { ...viAll, ...viPayExtra, ...viPageExtra },
-  id: { ...idAll, ...idPayExtra, ...idPageExtra },
-  ms: { ...msAll, ...msPayExtra, ...msPageExtra },
-  sv: { ...svAll, ...svPayExtra, ...svPageExtra },
-  da: { ...daAll, ...daPayExtra, ...daPageExtra },
-  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra },
-  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra },
-  el: { ...elAll, ...elPayExtra, ...elPageExtra },
-  cs: { ...csAll, ...csPayExtra, ...csPageExtra },
-  hu: { ...huAll, ...huPayExtra, ...huPageExtra },
-  ro: { ...roAll, ...roPayExtra, ...roPageExtra },
-  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra },
-  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra },
-  sk: { ...skAll, ...skPayExtra, ...skPageExtra },
-  he: { ...heAll, ...hePayExtra, ...hePageExtra },
-  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra },
+  ko: { ...koAll, ...koPayExtra, ...koPageExtra, ...koPages },
+  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra, ...zhPages },
+  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra, ...hiPages },
+  th: { ...thAll, ...thPayExtra, ...thPageExtra, ...thPages },
+  vi: { ...viAll, ...viPayExtra, ...viPageExtra, ...viPages },
+  id: { ...idAll, ...idPayExtra, ...idPageExtra, ...idPages },
+  ms: { ...msAll, ...msPayExtra, ...msPageExtra, ...msPages },
+  sv: { ...svAll, ...svPayExtra, ...svPageExtra, ...svPages },
+  da: { ...daAll, ...daPayExtra, ...daPageExtra, ...daPages },
+  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra, ...nbPages },
+  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra, ...fiPages },
+  el: { ...elAll, ...elPayExtra, ...elPageExtra, ...elPages },
+  cs: { ...csAll, ...csPayExtra, ...csPageExtra, ...csPages },
+  hu: { ...huAll, ...huPayExtra, ...huPageExtra, ...huPages },
+  ro: { ...roAll, ...roPayExtra, ...roPageExtra, ...roPages },
+  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra, ...hrPages },
+  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra, ...bgPages },
+  sk: { ...skAll, ...skPayExtra, ...skPageExtra, ...skPages },
+  he: { ...heAll, ...hePayExtra, ...hePageExtra, ...hePages },
+  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra, ...ukPages },
 };
 
 interface I18nContextType {
