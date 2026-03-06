@@ -617,6 +617,8 @@ const pageFr: Record<string, string> = {
   "page.leases.generated": "Baux générés",
    "page.leases.draft": "Brouillon",
    "page.leases.ready": "Prêt",
+  "page.leases.finalize": "Finaliser",
+  "page.leases.finalized": "Finalisé",
   "page.leases.signed": "Signé",
   "page.leases.no_terminated": "Aucun bail résilié",
   "page.leases.no_active": "Aucun bail actif",
