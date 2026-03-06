@@ -49,7 +49,7 @@
 - [x] Système de parrainage avec trigger PostgreSQL
 - [x] Pages SEO multi-pays
 - [x] Profils publics bailleurs (/landlord/:slug)
-- [x] Dashboard admin SaaS
+- [x] Dashboard admin SaaS **avec analytics avancés (retention, churn, conversion trial→paid)**
 - [x] Sitemap + robots.txt + JSON-LD
 - [x] Newsletter + lead capture
 - [x] Widget d'embed annonces
@@ -59,16 +59,18 @@
 - [x] Code-splitting React.lazy (40+ pages)
 - [x] Suite de tests de régression (54+ tests)
 - [x] **PWA avec service worker** (vite-plugin-pwa, manifest, page /install)
+- [x] **Système dual-rôle bailleur/locataire** avec switcher dans la sidebar
 
 ## Correctifs appliqués
 - [x] Photos publiques : fonction `get_listing_property` (security definer) pour contourner RLS
 - [x] Flux de réservation : demande → approbation bailleur → envoi lien paiement → paiement → confirmé
 - [x] Stripe Connect : ouverture dans nouvel onglet
 - [x] Google/Apple OAuth : flux validé via @lovable.dev/cloud-auth-js
-- [x] **Panel demandes de réservation** : liste complète avec actions approuver/refuser
+- [x] **Panel demandes de réservation** : liste complète avec actions approuver/refuser (bug nesting fix)
+- [x] **allRequests panel** : maintenant toujours visible indépendamment de focusedRequest
 
 ## Prochaines priorités
 1. Capacitor native mobile (iOS + Android)
 2. Webhooks Stripe avancés (paiements récurrents)
-3. Dashboard analytics avancé (rétention, churn)
-4. Système dual-rôle bailleur/locataire
+3. Système de reviews/avis locataires
+4. Channel manager OTA (Airbnb, Booking.com API)
