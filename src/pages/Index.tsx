@@ -13,7 +13,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description: "Property management software for landlords worldwide. Manage leases, receipts, tenants, and accounting in 110+ countries.",
-  url: "https://easy-locs.lovable.app",
+  url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl"],
   offers: {
     "@type": "AggregateOffer",
