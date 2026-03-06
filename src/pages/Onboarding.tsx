@@ -289,16 +289,7 @@ const Onboarding = () => {
               </div>
 
               <p className="text-sm font-semibold text-foreground mb-3">{t("ob.your_country")}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {countries.map(c => (
-                  <button key={c.code} onClick={() => c.available && setCountry(c.code)} disabled={!c.available}
-                    className={`flex items-center gap-2 p-3 rounded-lg border transition-all text-left text-sm ${country === c.code ? "border-gold bg-gold/5" : c.available ? "border-border hover:border-gold/40" : "border-border/50 opacity-40 cursor-not-allowed"}`}>
-                    <span className="text-lg">{c.flag}</span>
-                    <span className="font-medium text-foreground truncate">{c.name}</span>
-                    {!c.available && <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full ml-auto">{t("ob.soon")}</span>}
-                  </button>
-                ))}
-              </div>
+              <CountrySelect value={country || ""} onChange={(code) => setCountry(code || null)} placeholder={t("ob.your_country")} />
 
               <button disabled={!selectedType || !country || saving} onClick={handleStep0Next}
                 className="mt-6 w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">

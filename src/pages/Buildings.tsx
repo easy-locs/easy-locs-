@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight } from "lucide-react";
+import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
