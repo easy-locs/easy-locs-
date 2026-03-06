@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
+import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
 
 type AuthMode = "password" | "otp";
