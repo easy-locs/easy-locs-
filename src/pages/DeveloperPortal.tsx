@@ -1,0 +1,262 @@
+import { useState } from "react";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Key, Plus, Copy, Trash2, Code, BookOpen, Shield, Zap } from "lucide-react";
+import { format, parseISO } from "date-fns";
+
+const API_ENDPOINTS = [
+  { method: "GET", path: "/properties", desc: "Lister les biens immobiliers" },
+  { method: "GET", path: "/tenants", desc: "Lister les locataires" },
+  { method: "GET", path: "/leases", desc: "Lister les baux" },
+  { method: "GET", path: "/rent-calls", desc: "Lister les appels de loyer" },
+  { method: "GET", path: "/documents", desc: "Lister les documents" },
+  { method: "POST", path: "/properties", desc: "Créer un bien" },
+  { method: "POST", path: "/tenants", desc: "Créer un locataire" },
+  { method: "POST", path: "/documents/generate", desc: "Générer un document PDF" },
+  { method: "GET", path: "/accounting/journal", desc: "Journal comptable" },
+  { method: "GET", path: "/reservations", desc: "Lister les réservations saisonnières" },
+];
+
+const DeveloperPortal = () => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [keyName, setKeyName] = useState("Default");
+  const [newKey, setNewKey] = useState<string | null>(null);
+
+  const { data: org } = useQuery({
+    queryKey: ["org", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("org_members").select("org_id").eq("user_id", user!.id).limit(1).single();
+      if (!data) return null;
+      const { data: o } = await supabase.from("orgs").select("*").eq("id", data.org_id).single();
+      return o;
+    },
+    enabled: !!user,
+  });
+
+  const { data: apiKeys = [] } = useQuery({
+    queryKey: ["api_keys", org?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("api_keys" as any).select("*").eq("org_id", org!.id).order("created_at", { ascending: false });
+      return (data || []) as unknown as Array<{
+        id: string; name: string; key_prefix: string; scopes: string[];
+        active: boolean; last_used_at: string | null; created_at: string;
+      }>;
+    },
+    enabled: !!org,
+  });
+
+  const createMut = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("create_api_key", {
+        _org_id: org!.id,
+        _name: keyName,
+        _scopes: ["read", "write"],
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (!result.success) throw new Error(result.error);
+      return result.key as string;
+    },
+    onSuccess: (key) => {
+      setNewKey(key);
+      qc.invalidateQueries({ queryKey: ["api_keys"] });
+      toast.success("Clé API créée");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("api_keys" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Clé supprimée");
+      qc.invalidateQueries({ queryKey: ["api_keys"] });
+    },
+  });
+
+  const copyKey = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copié dans le presse-papier");
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Developer Portal</h1>
+            <p className="text-muted-foreground text-sm">API REST pour intégrer Easy-Locs dans vos outils</p>
+          </div>
+          <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) setNewKey(null); }}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-2" />Nouvelle clé API</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{newKey ? "Clé API créée !" : "Créer une clé API"}</DialogTitle></DialogHeader>
+              {newKey ? (
+                <div className="space-y-4">
+                  <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">⚠️ Copiez cette clé maintenant, elle ne sera plus affichée.</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-sm font-mono text-foreground bg-muted px-3 py-2 rounded break-all">{newKey}</code>
+                      <Button size="sm" variant="outline" onClick={() => copyKey(newKey)}><Copy className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                  <Button className="w-full" onClick={() => { setCreateOpen(false); setNewKey(null); }}>Fermer</Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Input placeholder="Nom de la clé" value={keyName} onChange={e => setKeyName(e.target.value)} />
+                  <Button className="w-full" onClick={() => createMut.mutate()} disabled={createMut.isPending}>
+                    {createMut.isPending ? "Création..." : "Générer la clé"}
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card><CardContent className="pt-4">
+            <div className="flex items-center gap-2"><Key className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Clés actives</span></div>
+            <p className="text-2xl font-bold text-foreground">{apiKeys.filter(k => k.active).length}</p>
+          </CardContent></Card>
+          <Card><CardContent className="pt-4">
+            <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Endpoints</span></div>
+            <p className="text-2xl font-bold text-foreground">{API_ENDPOINTS.length}</p>
+          </CardContent></Card>
+          <Card><CardContent className="pt-4">
+            <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Version API</span></div>
+            <p className="text-2xl font-bold text-foreground">v1.0</p>
+          </CardContent></Card>
+        </div>
+
+        <Tabs defaultValue="keys">
+          <TabsList>
+            <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" />Clés API</TabsTrigger>
+            <TabsTrigger value="docs"><BookOpen className="h-4 w-4 mr-1" />Documentation</TabsTrigger>
+            <TabsTrigger value="examples"><Code className="h-4 w-4 mr-1" />Exemples</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="keys" className="mt-4">
+            <Card>
+              <CardContent className="pt-4">
+                {apiKeys.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Aucune clé API. Créez-en une pour commencer.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {apiKeys.map(k => (
+                      <div key={k.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30">
+                        <div className="flex items-center gap-3">
+                          <Key className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{k.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{k.key_prefix}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={k.active ? "default" : "secondary"}>{k.active ? "Actif" : "Inactif"}</Badge>
+                          <span className="text-xs text-muted-foreground">{format(parseISO(k.created_at), "dd/MM/yyyy")}</span>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteMut.mutate(k.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="docs" className="mt-4">
+            <Card>
+              <CardHeader><CardTitle className="text-lg">API REST — Endpoints disponibles</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {API_ENDPOINTS.map((ep, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30">
+                      <Badge variant={ep.method === "GET" ? "secondary" : "default"} className="font-mono text-xs w-16 justify-center">
+                        {ep.method}
+                      </Badge>
+                      <code className="text-sm font-mono text-foreground">/api/v1{ep.path}</code>
+                      <span className="text-xs text-muted-foreground ml-auto">{ep.desc}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-semibold text-foreground text-sm mb-2">Authentification</h4>
+                  <p className="text-xs text-muted-foreground">Incluez votre clé API dans le header <code className="bg-muted px-1 py-0.5 rounded">Authorization: Bearer el_xxxxx</code></p>
+                  <p className="text-xs text-muted-foreground mt-1">Base URL: <code className="bg-muted px-1 py-0.5 rounded">https://api.easy-locs.com/v1</code></p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="examples" className="mt-4">
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Exemples d'intégration</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm mb-2">cURL — Lister les biens</h4>
+                  <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
+{`curl -X GET https://api.easy-locs.com/v1/properties \\
+  -H "Authorization: Bearer el_your_api_key" \\
+  -H "Content-Type: application/json"`}
+                  </pre>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm mb-2">JavaScript — Créer un locataire</h4>
+                  <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
+{`const response = await fetch('https://api.easy-locs.com/v1/tenants', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer el_your_api_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Jean Dupont',
+    email: 'jean@example.com',
+    phone: '+33612345678',
+    property_id: 'uuid-here',
+  }),
+});
+const tenant = await response.json();`}
+                  </pre>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm mb-2">Python — Journal comptable</h4>
+                  <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
+{`import requests
+
+response = requests.get(
+    'https://api.easy-locs.com/v1/accounting/journal',
+    headers={'Authorization': 'Bearer el_your_api_key'}
+)
+transactions = response.json()`}
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default DeveloperPortal;

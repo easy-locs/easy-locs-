@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          active: boolean
+          created_at: string
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          org_id: string
+          scopes: string[]
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name?: string
+          org_id: string
+          scopes?: string[]
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          org_id?: string
+          scopes?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1180,9 +1230,14 @@ export type Database = {
       orgs: {
         Row: {
           address: string | null
+          brand_accent_color: string | null
+          brand_favicon_url: string | null
+          brand_name: string | null
+          brand_primary_color: string | null
           city: string | null
           country: string
           created_at: string
+          custom_domain: string | null
           default_payment_provider: string | null
           email: string | null
           id: string
@@ -1200,9 +1255,14 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          brand_accent_color?: string | null
+          brand_favicon_url?: string | null
+          brand_name?: string | null
+          brand_primary_color?: string | null
           city?: string | null
           country?: string
           created_at?: string
+          custom_domain?: string | null
           default_payment_provider?: string | null
           email?: string | null
           id?: string
@@ -1220,9 +1280,14 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          brand_accent_color?: string | null
+          brand_favicon_url?: string | null
+          brand_name?: string | null
+          brand_primary_color?: string | null
           city?: string | null
           country?: string
           created_at?: string
+          custom_domain?: string | null
           default_payment_provider?: string | null
           email?: string | null
           id?: string
@@ -2828,6 +2893,10 @@ export type Database = {
       }
       accept_tenant_invitation: {
         Args: { _token: string; _user_id: string }
+        Returns: Json
+      }
+      create_api_key: {
+        Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
       }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
