@@ -148,7 +148,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <LogOut className="h-4 w-4" /> {L.logoutNav}
+            <LogOut className="h-4 w-4" /> {t("nav.logout") || L.logoutNav}
           </button>
         </div>
       </aside>
