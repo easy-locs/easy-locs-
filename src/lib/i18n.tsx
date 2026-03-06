@@ -2109,6 +2109,8 @@ const pageEn: Record<string, string> = {
   "page.leases.generated": "Generated leases",
    "page.leases.draft": "Draft",
    "page.leases.ready": "Ready",
+  "page.leases.finalize": "Finalize",
+  "page.leases.finalized": "Finalized",
   "page.leases.signed": "Signed",
   "page.leases.no_terminated": "No terminated leases",
   "page.leases.no_active": "No active leases",
