@@ -235,6 +235,17 @@ serve(async (req) => {
         }
         break;
       }
+      case "payment_intent.payment_failed": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const meta = pi.metadata || {};
+        if (meta.type === "rent_payment" && meta.rent_call_id) {
+          logStep("PaymentIntent failed for rent", { rentCallId: meta.rent_call_id });
+          await supabase.from("rent_calls").update({
+            payment_status: "failed",
+          }).eq("id", meta.rent_call_id);
+        }
+        break;
+      }
       default:
         logStep("Unhandled event type", { type: event.type });
     }
