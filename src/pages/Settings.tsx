@@ -30,11 +30,13 @@ const Settings = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url").eq("id", orgId).single().then(({ data }) => {
+    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single().then(({ data }) => {
       if (data) setOrg({
         name: data.name || "", address: (data as any).address || "", postal_code: (data as any).postal_code || "",
         city: (data as any).city || "", phone: (data as any).phone || "", siret: (data as any).siret || "",
         email: (data as any).email || "", logo_url: (data as any).logo_url || "", stamp_url: (data as any).stamp_url || "",
+        brand_name: (data as any).brand_name || "", brand_primary_color: (data as any).brand_primary_color || "",
+        brand_accent_color: (data as any).brand_accent_color || "",
       });
     });
   }, [orgId]);
