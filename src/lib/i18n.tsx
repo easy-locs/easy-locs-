@@ -3601,6 +3601,7 @@ const pageIt: Record<string, string> = {
   "landing.footer.desc": "Il tuo assistente per la gestione degli affitti intelligente, conforme e sicuro.", "landing.footer.product": "Prodotto", "landing.footer.features": "Funzionalità", "landing.footer.pricing": "Prezzi", "landing.footer.legal": "Legale", "landing.footer.legal_notices": "Note legali", "landing.footer.privacy": "Privacy", "landing.footer.terms": "Condizioni d'uso", "landing.footer.contact": "Contatto", "landing.footer.copyright": "Tutti i diritti riservati.",
   "landing.legal.title": "Informazioni legali", "landing.legal.text": "Questa applicazione fornisce solo assistenza amministrativa. I documenti generati sono informativi e non sostituiscono un avvocato, un notaio o un commercialista.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Resta aggiornato", "newsletter.subtitle": "Consigli sulla gestione degli affitti e aggiornamenti.", "newsletter.placeholder": "Il tuo indirizzo email", "newsletter.cta": "Iscriviti", "newsletter.success": "Grazie! Sei iscritto.", "newsletter.already_subscribed": "Già iscritto.", "newsletter.error": "Errore. Riprova.", "embed.title": "Incorpora questo annuncio", "embed.iframe_label": "Codice iframe", "embed.button_label": "Pulsante link", "embed.copied": "Codice copiato!",
+  "pagination.results": "risultati", "pagination.page": "Pagina",
 };
 
 const pagePt: Record<string, string> = {
