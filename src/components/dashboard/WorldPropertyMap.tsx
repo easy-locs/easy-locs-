@@ -130,15 +130,16 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 3, 5]} intensity={0.8} />
-      <pointLight position={[-5, -3, -5]} intensity={0.3} color="#60a5fa" />
+      <ambientLight intensity={1.0} />
+      <directionalLight position={[5, 3, 5]} intensity={1.2} />
+      <directionalLight position={[-3, 2, -4]} intensity={0.5} color="#93c5fd" />
+      <pointLight position={[-5, -3, -5]} intensity={0.5} color="#60a5fa" />
 
       <group ref={groupRef}>
         {/* Earth sphere */}
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
-          <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} />
+          <meshStandardMaterial map={texture} roughness={0.45} metalness={0.15} />
         </mesh>
 
         {/* Property markers — inside the same rotating group */}
@@ -229,7 +230,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
         {/* 3D Globe */}
-        <div className="relative w-full" style={{ height: 420 }}>
+        <div className="relative w-full" style={{ height: 320 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
           <Suspense fallback={
             <div className="w-full h-full flex items-center justify-center bg-muted/10">
@@ -237,7 +238,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
             </div>
           }>
             <Canvas
-              camera={{ position: [0, 0, 3], fov: 45 }}
+              camera={{ position: [0, 0, 2.6], fov: 42 }}
               style={{ background: "transparent" }}
               dpr={[1, 2]}
             >
