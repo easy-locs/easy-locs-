@@ -78,7 +78,7 @@ const DynamicPricing = () => {
     queryKey: ["reservations", org?.id],
     queryFn: async () => {
       const { data } = await supabase.from("reservations" as any).select("*").eq("org_id", org!.id);
-      return (data || []) as Array<{ property_id: string; check_in: string; check_out: string; amount: number }>;
+      return (data || []) as unknown as Array<{ property_id: string; check_in: string; check_out: string; amount: number }>;
     },
     enabled: !!org,
   });
