@@ -103,7 +103,7 @@ const allTemplates: DocumentTemplate[] = [
   ...allExtraWorldTemplates2,
 ];
 
-const existingCountries = new Set(allTemplates.map((t) => String(t.country)));
+const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country)}::${t.docType}`));
 
 // Generate localized templates for all countries without dedicated packs
 const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
