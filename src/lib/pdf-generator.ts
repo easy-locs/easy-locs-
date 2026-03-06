@@ -21,6 +21,7 @@ const COUNTRY_LOCALE: Record<string, string> = {
   PL: "pl-PL", SE: "sv-SE", DK: "da-DK", NO: "nb-NO", FI: "fi-FI",
   GR: "el-GR", CZ: "cs-CZ", HU: "hu-HU", RO: "ro-RO", HR: "hr-HR",
   IE: "en-IE", BG: "bg-BG", SK: "sk-SK",
+  AE: "en-AE", SA: "en-SA", QA: "en-QA",
 };
 
 const COUNTRY_CURRENCY: Record<string, string> = {
