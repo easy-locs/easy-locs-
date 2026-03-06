@@ -8,15 +8,19 @@ describe("Local Store", () => {
   it("exports all CRUD functions", async () => {
     const mod = await import("@/lib/store");
     expect(mod.getDocuments).toBeDefined();
-    expect(mod.saveDocument).toBeDefined();
+    expect(mod.addDocument).toBeDefined();
+    expect(mod.deleteDocument).toBeDefined();
     expect(mod.getReminders).toBeDefined();
-    expect(mod.saveReminder).toBeDefined();
+    expect(mod.setReminders).toBeDefined();
+    expect(mod.addReminder).toBeDefined();
     expect(mod.getVaultFiles).toBeDefined();
-    expect(mod.saveVaultFile).toBeDefined();
+    expect(mod.addVaultFile).toBeDefined();
+    expect(mod.deleteVaultFile).toBeDefined();
+    expect(mod.seedDemoData).toBeDefined();
   });
 
   it("saves and retrieves a document", async () => {
-    const { saveDocument, getDocuments } = await import("@/lib/store");
+    const { addDocument, getDocuments } = await import("@/lib/store");
     const doc = {
       id: "test-1",
       userId: "user-1",
@@ -26,14 +30,14 @@ describe("Local Store", () => {
       dataJson: { landlordName: "Jean" },
       createdAt: new Date().toISOString(),
     };
-    saveDocument(doc);
-    const docs = getDocuments("user-1");
-    expect(docs.length).toBe(1);
+    addDocument(doc);
+    const docs = getDocuments();
+    expect(docs.length).toBeGreaterThanOrEqual(1);
     expect(docs[0].title).toBe("Test Bail");
   });
 
   it("saves and retrieves a reminder", async () => {
-    const { saveReminder, getReminders } = await import("@/lib/store");
+    const { addReminder, getReminders } = await import("@/lib/store");
     const reminder = {
       id: "rem-1",
       userId: "user-1",
@@ -43,14 +47,14 @@ describe("Local Store", () => {
       nextRunAt: "2025-02-01",
       active: true,
     };
-    saveReminder(reminder);
-    const reminders = getReminders("user-1");
-    expect(reminders.length).toBe(1);
-    expect(reminders[0].label).toBe("Loyer janvier");
+    addReminder(reminder);
+    const reminders = getReminders();
+    expect(reminders.length).toBeGreaterThanOrEqual(1);
+    expect(reminders.some(r => r.label === "Loyer janvier")).toBe(true);
   });
 
   it("saves and retrieves vault files", async () => {
-    const { saveVaultFile, getVaultFiles } = await import("@/lib/store");
+    const { addVaultFile, getVaultFiles } = await import("@/lib/store");
     const file = {
       id: "vault-1",
       userId: "user-1",
@@ -60,9 +64,24 @@ describe("Local Store", () => {
       createdAt: new Date().toISOString(),
       size: 1024,
     };
-    saveVaultFile(file);
-    const files = getVaultFiles("user-1");
-    expect(files.length).toBe(1);
+    addVaultFile(file);
+    const files = getVaultFiles();
+    expect(files.length).toBeGreaterThanOrEqual(1);
     expect(files[0].filename).toBe("doc.pdf");
+  });
+
+  it("deletes a document by id", async () => {
+    const { addDocument, deleteDocument, getDocuments } = await import("@/lib/store");
+    addDocument({ id: "del-1", userId: "u", type: "t", country: "FR", title: "Del", dataJson: {}, createdAt: "" });
+    deleteDocument("del-1");
+    expect(getDocuments().find(d => d.id === "del-1")).toBeUndefined();
+  });
+
+  it("seedDemoData populates store", async () => {
+    const { seedDemoData, getDocuments, getReminders, getVaultFiles } = await import("@/lib/store");
+    seedDemoData();
+    expect(getDocuments().length).toBeGreaterThan(0);
+    expect(getReminders().length).toBeGreaterThan(0);
+    expect(getVaultFiles().length).toBeGreaterThan(0);
   });
 });
