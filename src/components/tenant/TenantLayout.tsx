@@ -35,6 +35,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages" },
     { icon: CreditCard, label: L.payRent, path: "/tenant/pay" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
+    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];
 
   const handleLogout = async () => {
