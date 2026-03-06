@@ -161,8 +161,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           {/* Language selector */}
           <div className="relative">
             <button onClick={() => setLangOpen(!langOpen)} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-              <Globe className="h-4 w-4" />
-              <span>{LOCALE_FLAGS[locale]}</span>
+              <span className="text-lg">{LOCALE_FLAGS[locale]}</span>
             </button>
             {langOpen && (
               <>
