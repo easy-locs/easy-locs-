@@ -6,7 +6,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, Globe, Star,
+  CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
@@ -35,6 +35,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages" },
     { icon: CreditCard, label: L.payRent, path: "/tenant/pay" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
+    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];
 
   const handleLogout = async () => {

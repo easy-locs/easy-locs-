@@ -3809,7 +3809,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Aucun avis pour le moment", "reviews.your_review": "Votre avis",
     "reviews.edit": "Modifier", "reviews.delete": "Supprimer", "reviews.reply": "Réponse du bailleur",
     "reviews.write_reply": "Répondre", "reviews.updated": "Avis mis à jour", "reviews.submitted": "Avis publié !",
-    "reviews.stars": "étoile(s)", "nav.reviews": "Avis",
+    "reviews.stars": "étoile(s)", "nav.reviews": "Avis", "nav.requests": "Demandes",
     ...obFr, ...pageFr,
   },
   en: {
@@ -3865,7 +3865,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "No reviews yet", "reviews.your_review": "Your review",
     "reviews.edit": "Edit", "reviews.delete": "Delete", "reviews.reply": "Landlord reply",
     "reviews.write_reply": "Reply", "reviews.updated": "Review updated", "reviews.submitted": "Review submitted!",
-    "reviews.stars": "star(s)", "nav.reviews": "Reviews",
+    "reviews.stars": "star(s)", "nav.reviews": "Reviews", "nav.requests": "Requests",
     ...obEn, ...pageEn,
   },
   es: {
@@ -3921,7 +3921,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Sin reseñas aún", "reviews.your_review": "Tu reseña",
     "reviews.edit": "Editar", "reviews.delete": "Eliminar", "reviews.reply": "Respuesta del propietario",
     "reviews.write_reply": "Responder", "reviews.updated": "Reseña actualizada", "reviews.submitted": "¡Reseña enviada!",
-    "reviews.stars": "estrella(s)", "nav.reviews": "Reseñas",
+    "reviews.stars": "estrella(s)", "nav.reviews": "Reseñas", "nav.requests": "Solicitudes",
     ...obEs, ...pageEs,
   },
   de: {
@@ -3977,7 +3977,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Noch keine Bewertungen", "reviews.your_review": "Ihre Bewertung",
     "reviews.edit": "Bearbeiten", "reviews.delete": "Löschen", "reviews.reply": "Antwort des Vermieters",
     "reviews.write_reply": "Antworten", "reviews.updated": "Bewertung aktualisiert", "reviews.submitted": "Bewertung abgegeben!",
-    "reviews.stars": "Stern(e)", "nav.reviews": "Bewertungen",
+    "reviews.stars": "Stern(e)", "nav.reviews": "Bewertungen", "nav.requests": "Anfragen",
     ...obDe, ...pageDe,
   },
   it: {
@@ -4033,7 +4033,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Nessuna recensione ancora", "reviews.your_review": "La tua recensione",
     "reviews.edit": "Modifica", "reviews.delete": "Elimina", "reviews.reply": "Risposta del proprietario",
     "reviews.write_reply": "Rispondi", "reviews.updated": "Recensione aggiornata", "reviews.submitted": "Recensione inviata!",
-    "reviews.stars": "stella/e", "nav.reviews": "Recensioni",
+    "reviews.stars": "stella/e", "nav.reviews": "Recensioni", "nav.requests": "Richieste",
     ...obIt, ...pageIt,
   },
   pt: {
@@ -4089,7 +4089,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Nenhuma avaliação ainda", "reviews.your_review": "Sua avaliação",
     "reviews.edit": "Editar", "reviews.delete": "Excluir", "reviews.reply": "Resposta do proprietário",
     "reviews.write_reply": "Responder", "reviews.updated": "Avaliação atualizada", "reviews.submitted": "Avaliação enviada!",
-    "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações",
+    "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações", "nav.requests": "Pedidos",
     ...obPt, ...pagePt,
   },
 };

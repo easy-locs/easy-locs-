@@ -52,6 +52,7 @@ const TenantPay = lazy(() => import("./pages/tenant/TenantPay"));
 const TenantSettings = lazy(() => import("./pages/tenant/TenantSettings"));
 const TenantSignup = lazy(() => import("./pages/TenantSignup"));
 const TenantReviews = lazy(() => import("./pages/tenant/TenantReviews"));
+const TenantRequests = lazy(() => import("./pages/tenant/TenantRequests"));
 const PublicListing = lazy(() => import("./pages/PublicListing"));
 const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
 const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
@@ -137,6 +138,7 @@ const App = () => (
               <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
               <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
+              <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
