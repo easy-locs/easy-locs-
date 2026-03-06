@@ -47,6 +47,7 @@ const COUNTRY_LANG: Record<string, string> = {
   PL: "en", SE: "en", DK: "en", NO: "en", FI: "en",
   GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en",
   IE: "en", BG: "en", SK: "en",
+  AE: "en", SA: "en", QA: "en",
 };
 
 function getLang(country?: string): string {
