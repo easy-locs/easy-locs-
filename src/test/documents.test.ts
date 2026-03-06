@@ -15,7 +15,7 @@ describe("Document Templates", () => {
   });
 
   it("AE template includes Ejari fields", async () => {
-    const { getTemplatesForCountry } = await import("@/lib/templates/registry");
+    const { getTemplatesByCountry } = await import("@/lib/templates/registry");
     const aeTemplates = getTemplatesForCountry("AE");
     expect(aeTemplates.length).toBeGreaterThan(0);
     const lease = aeTemplates.find((t) => t.country === "AE");
