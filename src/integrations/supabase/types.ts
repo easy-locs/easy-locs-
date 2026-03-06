@@ -488,6 +488,7 @@ export type Database = {
           item_name: string
           notes: string | null
           org_id: string
+          photo_url: string | null
           property_id: string
           quantity: number
           room_name: string
@@ -499,6 +500,7 @@ export type Database = {
           item_name: string
           notes?: string | null
           org_id: string
+          photo_url?: string | null
           property_id: string
           quantity?: number
           room_name?: string
@@ -510,6 +512,7 @@ export type Database = {
           item_name?: string
           notes?: string | null
           org_id?: string
+          photo_url?: string | null
           property_id?: string
           quantity?: number
           room_name?: string

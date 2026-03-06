@@ -1,0 +1,1 @@
+ALTER TABLE public.furniture_items ADD COLUMN IF NOT EXISTS photo_url text DEFAULT NULL;
