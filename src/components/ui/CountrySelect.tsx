@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { GLOBAL_COUNTRY_REGISTRY, type CountryEntry } from "@/lib/global-country-registry";
+import { getAllCountryEntries, type CountryEntry } from "@/lib/global-country-registry";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, ChevronDown, X } from "lucide-react";
