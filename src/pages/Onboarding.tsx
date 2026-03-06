@@ -481,7 +481,7 @@ const Onboarding = () => {
               <h2 className="text-2xl font-bold text-foreground mb-2">{t("onboarding.step4")}</h2>
               <p className="text-muted-foreground mb-6">{t("ob.add_first_tenant")}</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderInput(t("ob.full_name") + " *", tenantForm.name, v => setTenantForm(f => ({ ...f, name: v })), "text", true)}
                 {renderInput(t("ob.email"), tenantForm.email, v => setTenantForm(f => ({ ...f, email: v })), "email")}
                 {renderInput(t("ob.phone"), tenantForm.phone, v => setTenantForm(f => ({ ...f, phone: v })), "tel")}
