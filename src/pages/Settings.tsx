@@ -246,7 +246,9 @@ const Settings = () => {
         {/* Payment Providers */}
         <PaymentProvidersSettings />
 
-        {/* Signature */}
+        {/* MFA / 2FA */}
+        <MFASettings />
+
         <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
           <div className="flex items-center gap-3 mb-5">
             <PenTool className="h-5 w-5 text-muted-foreground" />
