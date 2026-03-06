@@ -61,7 +61,7 @@ const Accounting = () => {
     queryKey: ["journal", org?.id],
     queryFn: async () => {
       const { data } = await supabase.from("transaction_journal" as any).select("*").eq("org_id", org!.id).order("transaction_date", { ascending: false }).limit(500);
-      return (data || []) as Array<{
+      return (data || []) as unknown as Array<{
         id: string; label: string; category: string; debit: number; credit: number;
         transaction_date: string; currency: string; notes: string; source_type: string;
         property_id: string | null; created_at: string;

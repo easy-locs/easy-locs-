@@ -72,7 +72,7 @@ const ChannelManager = () => {
     queryKey: ["reservations", org?.id],
     queryFn: async () => {
       const { data } = await supabase.from("reservations" as any).select("*").eq("org_id", org!.id);
-      return (data || []) as Array<{
+      return (data || []) as unknown as Array<{
         id: string; property_id: string; guest_name: string; check_in: string; check_out: string;
         status: string; ota_provider: string; amount: number;
       }>;

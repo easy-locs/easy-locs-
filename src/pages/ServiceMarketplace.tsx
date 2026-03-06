@@ -70,7 +70,7 @@ const ServiceMarketplace = () => {
     queryKey: ["service_bookings", org?.id],
     queryFn: async () => {
       const { data } = await supabase.from("service_bookings" as any).select("*").eq("org_id", org!.id).order("created_at", { ascending: false });
-      return (data || []) as Array<{
+      return (data || []) as unknown as Array<{
         id: string; provider_id: string; service_date: string; service_type: string;
         status: string; amount: number; currency: string; notes: string; rating: number | null;
       }>;
