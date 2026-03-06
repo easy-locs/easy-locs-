@@ -77,6 +77,16 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/listing/:slug" element={<PublicListing />} />
+            <Route path="/landlord/:slug" element={<LandlordProfile />} />
+            <Route path="/property-management" element={<PropertyManagement />} />
+            <Route path="/property-management-france" element={<PropertyManagement />} />
+            <Route path="/property-management-uk" element={<PropertyManagement />} />
+            <Route path="/property-management-spain" element={<PropertyManagement />} />
+            <Route path="/property-management-dubai" element={<PropertyManagement />} />
+            <Route path="/property-management-germany" element={<PropertyManagement />} />
+            <Route path="/property-management-italy" element={<PropertyManagement />} />
+            <Route path="/rental-management" element={<PropertyManagement />} />
+            <Route path="/landlord-software" element={<PropertyManagement />} />
 
             {/* Protected — Landlord */}
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
