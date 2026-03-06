@@ -1329,6 +1329,22 @@ const pageFr: Record<string, string> = {
   "page.charges.balanced": "Équilibré",
   "page.charges.legal_notice": "La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).",
 
+  // Newsletter
+  "newsletter.badge": "Newsletter",
+  "newsletter.title": "Restez informé des nouveautés",
+  "newsletter.subtitle": "Recevez nos conseils de gestion locative et les mises à jour de la plateforme.",
+  "newsletter.placeholder": "Votre adresse email",
+  "newsletter.cta": "S'inscrire",
+  "newsletter.success": "Merci ! Vous êtes inscrit à notre newsletter.",
+  "newsletter.already_subscribed": "Vous êtes déjà inscrit.",
+  "newsletter.error": "Une erreur est survenue. Réessayez.",
+
+  // Embed widget
+  "embed.title": "Intégrer cette annonce",
+  "embed.iframe_label": "Code iframe (intégration complète)",
+  "embed.button_label": "Bouton lien (simple)",
+  "embed.copied": "Code copié !",
+
 
   // Data Import
   "page.import.title": "Importer mes données",
@@ -2477,6 +2493,19 @@ const pageEn: Record<string, string> = {
   "landing.legal.title": "Legal information",
   "landing.legal.text": "This application provides administrative assistance only. Generated documents are for informational purposes and do not replace a lawyer, notary or accountant.",
 
+  "newsletter.badge": "Newsletter",
+  "newsletter.title": "Stay up to date",
+  "newsletter.subtitle": "Get property management tips and platform updates.",
+  "newsletter.placeholder": "Your email address",
+  "newsletter.cta": "Subscribe",
+  "newsletter.success": "Thank you! You're subscribed to our newsletter.",
+  "newsletter.already_subscribed": "You're already subscribed.",
+  "newsletter.error": "An error occurred. Please try again.",
+  "embed.title": "Embed this listing",
+  "embed.iframe_label": "Iframe code (full embed)",
+  "embed.button_label": "Link button (simple)",
+  "embed.copied": "Code copied!",
+
   // Company page
   "page.company.title": "Company",
   "page.company.subtitle": "Create, manage and modify your company — SAS, SARL, EURL or sole proprietorship.",
@@ -3311,6 +3340,7 @@ const pageEs: Record<string, string> = {
   "landing.hero.badge": "Larga duración • Airbnb • Booking • Multi-país", "landing.hero.title": "La primera plataforma mundial", "landing.hero.title_highlight": "de gestión de alquileres", "landing.hero.subtitle": "Documentos legales automatizados de calidad profesional, adaptados a cada país. Gestione sus alquileres desde una sola plataforma.", "landing.hero.cta": "Empezar gratis", "landing.hero.pricing": "Ver precios",
   "landing.footer.desc": "Su asistente de gestión de alquileres inteligente, conforme y seguro.", "landing.footer.product": "Producto", "landing.footer.features": "Funcionalidades", "landing.footer.pricing": "Precios", "landing.footer.legal": "Legal", "landing.footer.legal_notices": "Avisos legales", "landing.footer.privacy": "Política de privacidad", "landing.footer.terms": "Condiciones de uso", "landing.footer.contact": "Contacto", "landing.footer.copyright": "Todos los derechos reservados.",
   "landing.legal.title": "Información legal", "landing.legal.text": "Esta aplicación proporciona asistencia administrativa únicamente. Los documentos generados son informativos y no sustituyen a un abogado, notario o contador.",
+  "newsletter.badge": "Newsletter", "newsletter.title": "Manténgase informado", "newsletter.subtitle": "Reciba consejos de gestión de alquileres y actualizaciones.", "newsletter.placeholder": "Su correo electrónico", "newsletter.cta": "Suscribirse", "newsletter.success": "¡Gracias! Está suscrito.", "newsletter.already_subscribed": "Ya está suscrito.", "newsletter.error": "Error. Inténtelo de nuevo.", "embed.title": "Insertar este anuncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botón enlace", "embed.copied": "¡Código copiado!",
 };
 
 const pageDe: Record<string, string> = {
@@ -3436,6 +3466,7 @@ const pageDe: Record<string, string> = {
   "landing.hero.badge": "Langzeit • Airbnb • Booking • Multi-Land", "landing.hero.title": "Die erste weltweite Plattform", "landing.hero.title_highlight": "für Mietverwaltung", "landing.hero.subtitle": "Automatisierte Rechtsdokumente in Profi-Qualität, an jedes Land angepasst. Verwalten Sie Ihre Vermietungen von einer einzigen Plattform.", "landing.hero.cta": "Kostenlos starten", "landing.hero.pricing": "Preise ansehen",
   "landing.footer.desc": "Ihr intelligenter, konformer und sicherer Mietverwaltungsassistent.", "landing.footer.product": "Produkt", "landing.footer.features": "Funktionen", "landing.footer.pricing": "Preise", "landing.footer.legal": "Rechtliches", "landing.footer.legal_notices": "Impressum", "landing.footer.privacy": "Datenschutz", "landing.footer.terms": "AGB", "landing.footer.contact": "Kontakt", "landing.footer.copyright": "Alle Rechte vorbehalten.",
   "landing.legal.title": "Rechtliche Informationen", "landing.legal.text": "Diese Anwendung bietet nur administrative Unterstützung. Erstellte Dokumente sind informativ und ersetzen keinen Anwalt, Notar oder Steuerberater.",
+  "newsletter.badge": "Newsletter", "newsletter.title": "Bleiben Sie informiert", "newsletter.subtitle": "Tipps zur Mietverwaltung und Plattform-Updates.", "newsletter.placeholder": "Ihre E-Mail-Adresse", "newsletter.cta": "Abonnieren", "newsletter.success": "Danke! Sie sind angemeldet.", "newsletter.already_subscribed": "Bereits angemeldet.", "newsletter.error": "Fehler. Versuchen Sie es erneut.", "embed.title": "Anzeige einbetten", "embed.iframe_label": "Iframe-Code", "embed.button_label": "Link-Button", "embed.copied": "Code kopiert!",
 };
 
 const pageIt: Record<string, string> = {
@@ -3561,6 +3592,7 @@ const pageIt: Record<string, string> = {
   "landing.hero.badge": "Lungo termine • Airbnb • Booking • Multi-paese", "landing.hero.title": "La prima piattaforma mondiale", "landing.hero.title_highlight": "per la gestione degli affitti", "landing.hero.subtitle": "Documenti legali automatizzati di qualità professionale, adattati a ogni paese. Gestisci i tuoi affitti da un'unica piattaforma.", "landing.hero.cta": "Inizia gratis", "landing.hero.pricing": "Vedi prezzi",
   "landing.footer.desc": "Il tuo assistente per la gestione degli affitti intelligente, conforme e sicuro.", "landing.footer.product": "Prodotto", "landing.footer.features": "Funzionalità", "landing.footer.pricing": "Prezzi", "landing.footer.legal": "Legale", "landing.footer.legal_notices": "Note legali", "landing.footer.privacy": "Privacy", "landing.footer.terms": "Condizioni d'uso", "landing.footer.contact": "Contatto", "landing.footer.copyright": "Tutti i diritti riservati.",
   "landing.legal.title": "Informazioni legali", "landing.legal.text": "Questa applicazione fornisce solo assistenza amministrativa. I documenti generati sono informativi e non sostituiscono un avvocato, un notaio o un commercialista.",
+  "newsletter.badge": "Newsletter", "newsletter.title": "Resta aggiornato", "newsletter.subtitle": "Consigli sulla gestione degli affitti e aggiornamenti.", "newsletter.placeholder": "Il tuo indirizzo email", "newsletter.cta": "Iscriviti", "newsletter.success": "Grazie! Sei iscritto.", "newsletter.already_subscribed": "Già iscritto.", "newsletter.error": "Errore. Riprova.", "embed.title": "Incorpora questo annuncio", "embed.iframe_label": "Codice iframe", "embed.button_label": "Pulsante link", "embed.copied": "Codice copiato!",
 };
 
 const pagePt: Record<string, string> = {
@@ -3686,6 +3718,7 @@ const pagePt: Record<string, string> = {
   "landing.hero.badge": "Longo prazo • Airbnb • Booking • Multi-país", "landing.hero.title": "A primeira plataforma mundial", "landing.hero.title_highlight": "de gestão de aluguéis", "landing.hero.subtitle": "Documentos jurídicos automatizados de qualidade profissional, adaptados a cada país. Gerencie seus aluguéis em uma única plataforma.", "landing.hero.cta": "Começar grátis", "landing.hero.pricing": "Ver preços",
   "landing.footer.desc": "Seu assistente de gestão de aluguéis inteligente, conforme e seguro.", "landing.footer.product": "Produto", "landing.footer.features": "Funcionalidades", "landing.footer.pricing": "Preços", "landing.footer.legal": "Legal", "landing.footer.legal_notices": "Avisos legais", "landing.footer.privacy": "Política de privacidade", "landing.footer.terms": "Termos de uso", "landing.footer.contact": "Contato", "landing.footer.copyright": "Todos os direitos reservados.",
   "landing.legal.title": "Informação legal", "landing.legal.text": "Este aplicativo fornece apenas assistência administrativa. Os documentos gerados são informativos e não substituem um advogado, tabelião ou contador.",
+  "newsletter.badge": "Newsletter", "newsletter.title": "Fique atualizado", "newsletter.subtitle": "Dicas de gestão de aluguéis e atualizações.", "newsletter.placeholder": "Seu endereço de email", "newsletter.cta": "Inscrever-se", "newsletter.success": "Obrigado! Você está inscrito.", "newsletter.already_subscribed": "Já inscrito.", "newsletter.error": "Erro. Tente novamente.", "embed.title": "Incorporar este anúncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botão de link", "embed.copied": "Código copiado!",
 };
 
 const translations: Record<Locale, Record<string, string>> = {
