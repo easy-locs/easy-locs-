@@ -360,7 +360,7 @@ const Onboarding = () => {
               <h2 className="text-2xl font-bold text-foreground mb-2">{t("onboarding.step2")}</h2>
               <p className="text-muted-foreground mb-4">{t("ob.describe_property")}</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 {renderInput(t("ob.property_name") + " *", propertyForm.label, v => setPropertyForm(f => ({ ...f, label: v })), "text", true)}
                 <div className="sm:col-span-2">
                   <AddressAutocomplete
