@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { getAllAccountingRules } from "@/lib/accounting-rules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Download, AlertTriangle, TrendingUp, TrendingDown, Calculator, PiggyBank, Globe, ChevronRight } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
