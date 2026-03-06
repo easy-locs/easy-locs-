@@ -236,6 +236,53 @@ export type Database = {
           },
         ]
       }
+      collaboration_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          org_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          org_id: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          org_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaboration_invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -2775,6 +2822,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_collaboration_invitation: {
+        Args: { _token: string; _user_id: string }
+        Returns: Json
+      }
       accept_tenant_invitation: {
         Args: { _token: string; _user_id: string }
         Returns: Json
