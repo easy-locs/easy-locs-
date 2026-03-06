@@ -13,6 +13,7 @@ import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
 import { useAutoFill } from "@/hooks/useAutoFill";
 import { getCountryEntry } from "@/lib/global-country-registry";
+import { assertTemplateCountryMatch, CountryIsolationError } from "@/lib/country-profile";
 
 interface Props {
   template: DocumentTemplate;
