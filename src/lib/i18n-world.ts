@@ -51,7 +51,7 @@ export const zhAll: Record<string, string> = {
 export const hiAll: Record<string, string> = {
   "ob.welcome": "Easy-Locs में आपका स्वागत है", "ob.landlord": "मकान मालिक / स्वामी", "ob.tenant": "किरायेदार", "ob.your_country": "आपका देश", "ob.individual": "व्यक्तिगत", "ob.company": "कंपनी", "ob.full_name": "पूरा नाम", "ob.address": "पता", "ob.phone": "फोन", "ob.email": "ईमेल", "ob.monthly_rent": "मासिक किराया", "ob.deposit": "जमा राशि", "ob.furnished": "फर्नीचर सहित", "ob.finish_title": "सेटअप पूरा!", "ob.finish_desc": "आपका कार्यक्षेत्र तैयार है।", "common.error": "त्रुटि",
   "page.dashboard.hello": "नमस्ते 👋", "page.dashboard.properties": "संपत्तियां", "page.dashboard.tenants_count": "किरायेदार", "page.dashboard.collected_month": "इस माह वसूली", "page.dashboard.unpaid_amount": "अवैतनिक", "page.dashboard.occupancy": "अधिभोग दर", "page.dashboard.vacant": "खाली",
-  "page.dashboard.quick_actions": "त्वरित कार्य", "page.dashboard.generate_receipt": "रसीद बनाएं", "page.dashboard.create_lease": "अनुबंध बनाएं", "page.dashboard.all_good": "सब अपडेट है! 🎉",
+  "page.dashboard.quick_actions": "त्वरित कार्य", "page.dashboard.generate_receipt": "रसीद बनाएं", "page.dashboard.create_lease": "अनुबंध बनाएं", "page.dashboard.all_good": "सब अपडेट है! 🎉", "page.dashboard.world_map": "मेरा वैश्विक पोर्टफोलियो",
   "page.documents.title": "दस्तावेज़", "page.documents.create": "बनाएं", "page.documents.history": "इतिहास", "page.documents.no_doc": "कोई दस्तावेज़ नहीं।",
   "page.leases.title": "किराया अनुबंध", "page.leases.finalize": "पूर्ण करें", "page.leases.finalized": "पूर्ण", "page.leases.generate_pdf": "अनुबंध PDF बनाएं",
   "page.receipts.title": "किराया रसीदें", "page.receipts.empty": "अभी कोई रसीद नहीं।",
