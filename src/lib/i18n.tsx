@@ -4033,7 +4033,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Nessuna recensione ancora", "reviews.your_review": "La tua recensione",
     "reviews.edit": "Modifica", "reviews.delete": "Elimina", "reviews.reply": "Risposta del proprietario",
     "reviews.write_reply": "Rispondi", "reviews.updated": "Recensione aggiornata", "reviews.submitted": "Recensione inviata!",
-    "reviews.stars": "stella/e", "nav.reviews": "Recensioni",
+    "reviews.stars": "stella/e", "nav.reviews": "Recensioni", "nav.requests": "Richieste",
     ...obIt, ...pageIt,
   },
   pt: {
