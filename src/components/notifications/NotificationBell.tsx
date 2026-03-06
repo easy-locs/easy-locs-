@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { fr, enUS, es, de, it, pt, nl, pl, tr, ja, ko, zhCN } from "date-fns/locale";
+import { fr, enUS, es, de, it, pt, nl, pl, tr, ja, ko, zhCN, type Locale as DfLocale } from "date-fns/locale";
 import { useI18n } from "@/lib/i18n";
 
-const dateFnsLocaleMap: Record<string, Locale> = {
+const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
 };
 
