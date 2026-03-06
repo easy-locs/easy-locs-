@@ -51,7 +51,8 @@ const Billing = () => {
   };
 
   const isSubscribed = subscription.subscribed && !subscription.isTrial;
-  const plan = PLANS.find((p) => p.interval === (billingInterval === "monthly" ? "mois" : "an"));
+  const plan = PLANS.find((p) => p.key === (billingInterval === "monthly" ? "unlimited_monthly" : "unlimited_annual"));
+  const planDisplay = plan ? getPlanDisplay(plan, t) : null;
 
   return (
     <DashboardLayout>
