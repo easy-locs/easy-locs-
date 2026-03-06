@@ -106,12 +106,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const dual = !!tenantLink && !!orgLink;
     setHasDualRole(dual);
 
-    // Auto-complete onboarding for existing accounts that already have org data
+    // Auto-complete onboarding for existing accounts that already have org data or tenant link
     let onboardingDone = data?.onboarding_completed ?? false;
-    if (!onboardingDone && !!orgLink) {
-      // User has org membership = existing account, skip onboarding
+    if (!onboardingDone && (!!orgLink || !!tenantLink)) {
+      // User has org membership or tenant link = existing account, skip onboarding
       onboardingDone = true;
-      // Persist to DB so it doesn't re-check
       supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
     }
     setOnboardingCompleted(onboardingDone);
