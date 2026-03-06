@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bell, MessageCircle, ExternalLink } from "lucide-react";
+import { Bell, MessageCircle, ExternalLink, ArrowRightLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -11,13 +11,23 @@ const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
 };
 
+/** Determine which portal a notification belongs to based on its link */
+const getNotifPortal = (n: any): "tenant" | "landlord" | "both" => {
+  const link = n.link || "";
+  if (link.startsWith("/tenant")) return "tenant";
+  if (link.startsWith("/dashboard")) return "landlord";
+  // Messages without explicit link — infer from type
+  if (n.type === "message") return "both";
+  // Generic notifications (no link) show in both
+  return "both";
+};
+
 const NotificationBell = () => {
   const { user, activeRole, hasDualRole, switchRole } = useAuth();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const unreadCount = notifications.filter((n) => !n.read).length;
   const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
 
   const fetchNotifications = useCallback(async () => {
@@ -27,8 +37,8 @@ const NotificationBell = () => {
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(20);
-    setNotifications(data || []);
+      .limit(50);
+    setAllNotifications(data || []);
   }, [user]);
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
@@ -42,18 +52,39 @@ const NotificationBell = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchNotifications]);
 
+  // Filter notifications for the current active role
+  const notifications = useMemo(() => {
+    return allNotifications.filter((n) => {
+      const portal = getNotifPortal(n);
+      if (portal === "both") return true;
+      return portal === activeRole;
+    }).slice(0, 20);
+  }, [allNotifications, activeRole]);
+
+  // Count unread in the OTHER portal for cross-portal badge
+  const otherPortalUnread = useMemo(() => {
+    if (!hasDualRole) return 0;
+    const otherRole = activeRole === "landlord" ? "tenant" : "landlord";
+    return allNotifications.filter((n) => {
+      const portal = getNotifPortal(n);
+      return !n.read && (portal === otherRole);
+    }).length;
+  }, [allNotifications, activeRole, hasDualRole]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   const markAllRead = async () => {
     if (!user) return;
-    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const currentIds = notifications.filter(n => !n.read).map(n => n.id);
+    if (currentIds.length === 0) return;
+    await supabase.from("notifications").update({ read: true }).in("id", currentIds);
+    setAllNotifications((prev) => prev.map((n) => currentIds.includes(n.id) ? { ...n, read: true } : n));
   };
 
   const markRead = (n: any) => {
     supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
-    setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
+    setAllNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
   };
-
-
 
   const handleAction = (n: any) => {
     markRead(n);
@@ -103,11 +134,38 @@ const NotificationBell = () => {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <h3 className="text-sm font-semibold text-foreground">{t("notif.title")}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground">{t("notif.title")}</h3>
+                <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-accent/10 text-accent">
+                  {activeRole === "tenant" ? (t("badge.tenant") || "Locataire") : (t("badge.landlord") || "Bailleur")}
+                </span>
+              </div>
               {unreadCount > 0 && (
                 <button onClick={markAllRead} className="text-xs text-accent hover:underline">{t("notif.mark_all_read")}</button>
               )}
             </div>
+
+            {/* Cross-portal unread indicator */}
+            {hasDualRole && otherPortalUnread > 0 && (
+              <button
+                onClick={() => {
+                  const otherRole = activeRole === "landlord" ? "tenant" : "landlord";
+                  switchRole(otherRole);
+                  navigate(otherRole === "tenant" ? "/tenant" : "/dashboard");
+                  setOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2 bg-muted/50 border-b border-border hover:bg-muted transition-colors"
+              >
+                <ArrowRightLeft className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs text-muted-foreground">
+                  {otherPortalUnread} {t("notif.in_other_portal") || (activeRole === "landlord" ? "notification(s) côté locataire" : "notification(s) côté bailleur")}
+                </span>
+                <span className="ml-auto h-4 w-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {otherPortalUnread > 9 ? "9+" : otherPortalUnread}
+                </span>
+              </button>
+            )}
+
             <div className="max-h-80 overflow-y-auto divide-y divide-border">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">{t("notif.empty")}</div>
