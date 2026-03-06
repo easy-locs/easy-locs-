@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
 import { useAutoFill } from "@/hooks/useAutoFill";
+import { getCountryEntry } from "@/lib/global-country-registry";
 
 interface Props {
   template: DocumentTemplate;
