@@ -101,16 +101,16 @@ const TenantDashboard = () => {
             </motion.div>
 
             {/* Quick access cards - uniform grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {quickCards.map((a, i) => (
-                <motion.div key={a.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }}>
-                  <Link to={a.path} className="block bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover hover:border-border transition-all h-full">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${a.color}`}>
-                      <a.icon className="h-5 w-5" />
-                    </div>
-                    <p className="text-sm font-medium text-foreground leading-tight">{a.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1 truncate">{a.value}</p>
-                  </Link>
+                <motion.div key={a.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }} className="h-full">
+                  <StatCard
+                    icon={a.icon}
+                    iconClassName={a.color.replace(/bg-\S+\s/, "")}
+                    label={a.label}
+                    value={a.value}
+                    path={a.path}
+                  />
                 </motion.div>
               ))}
             </div>
