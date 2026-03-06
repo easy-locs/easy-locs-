@@ -169,7 +169,7 @@ export interface CountryConfig {
 
 const frLabels = {
   property: "Bien", properties: "Biens", tenant: "Locataire", tenants: "Locataires",
-  rent: "Loyer HC", charges: "Charges", deposit: "Dépôt de garantie", furnished: "Meublé",
+  rent: "Loyer", charges: "Charges", deposit: "Dépôt de garantie", furnished: "Meublé",
   leaseStart: "Début du bail", leaseEnd: "Fin du bail", leaseType: "Type de bail",
   surface: "Surface", rooms: "Pièces", floor: "Étage", heating: "Chauffage",
   propertyName: "Nom du bien", propertyType: "Type", postalCode: "Code postal", city: "Ville",
