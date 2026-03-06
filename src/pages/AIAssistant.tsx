@@ -17,7 +17,7 @@ const AIAssistant = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { properties, tenants } = useRentalData();
 
   useEffect(() => {
