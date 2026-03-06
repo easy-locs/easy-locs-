@@ -474,7 +474,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
       )}
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <div className="bg-card rounded-xl p-4 shadow-card border border-border/50 text-center">
           <div className="text-2xl font-bold text-foreground">{rooms.length}</div>
           <div className="text-xs text-muted-foreground">{t("page.inventory.rooms_label")}</div>
