@@ -482,6 +482,7 @@ export const pageJa: Record<string, string> = {
   "page.dashboard.properties": "物件", "page.dashboard.tenants_count": "入居者", "page.dashboard.collected_month": "今月の回収額", "page.dashboard.unpaid_amount": "未払い", "page.dashboard.occupancy": "稼働率", "page.dashboard.vacant": "空室", "page.dashboard.vault": "金庫", "page.dashboard.files": "ファイル",
   "page.dashboard.revenue_trend": "収益トレンド（6ヶ月）", "page.dashboard.quick_actions": "クイックアクション", "page.dashboard.generate_receipt": "領収書を生成", "page.dashboard.create_lease": "契約書を作成", "page.dashboard.view_reminders": "リマインダーを表示", "page.dashboard.my_vault": "マイ金庫",
   "page.dashboard.ai_question": "今何をすべきですか？", "page.dashboard.ai_desc": "アシスタントが状況を分析してアクションを提案します。", "page.dashboard.alerts": "アラートとアクション", "page.dashboard.all_good": "すべて最新です！ 🎉", "page.dashboard.world_map": "グローバルポートフォリオ",
+  "page.dashboard.net_income": "純利益", "page.dashboard.expenses_label": "経費",
   "page.dashboard.unpaid_rents": "今月の未払い家賃", "page.dashboard.vacant_props": "空き物件", "page.dashboard.active_reminders": "アクティブなリマインダー", "page.dashboard.to_fill": "入居待ち", "page.dashboard.to_process": "処理待ち", "page.dashboard.collected": "回収済み", "page.dashboard.unpaid_label": "未払い", "page.dashboard.no_unpaid": "未払い0件",
   "page.tasks.title": "タスク", "page.tasks.subtitle": "タスクを管理", "page.tasks.new": "新しいタスク", "page.tasks.empty": "タスクはありません。",
   "page.notes.title": "メモ", "page.notes.subtitle": "個人メモ", "page.notes.new": "新しいメモ", "page.notes.empty": "メモはありません。",
