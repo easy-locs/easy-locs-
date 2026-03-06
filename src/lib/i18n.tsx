@@ -1984,6 +1984,7 @@ const pageEn: Record<string, string> = {
   "page.dashboard.collected": "Collected",
   "page.dashboard.unpaid_label": "Unpaid",
   "page.dashboard.no_unpaid": "0 unpaid",
+  "page.dashboard.world_map": "My global portfolio",
   "page.tasks.title": "Tasks",
   "page.tasks.subtitle": "Manage your tasks and actions",
   "page.tasks.new": "New task",
