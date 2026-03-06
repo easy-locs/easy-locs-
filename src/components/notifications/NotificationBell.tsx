@@ -12,7 +12,7 @@ const dateFnsLocaleMap: Record<string, DfLocale> = {
 };
 
 const NotificationBell = () => {
-  const { user } = useAuth();
+  const { user, activeRole, hasDualRole, switchRole } = useAuth();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
   const [notifications, setNotifications] = useState<any[]>([]);
