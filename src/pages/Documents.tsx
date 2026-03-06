@@ -134,7 +134,7 @@ const Documents = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" />
+            <span className="text-lg">{getCountryFlag(activeCountry)}</span>
             <span>{t("page.documents.country") !== "page.documents.country" ? t("page.documents.country") : "Pays du document"}</span>
           </div>
           <div className="w-full sm:w-[360px]">
