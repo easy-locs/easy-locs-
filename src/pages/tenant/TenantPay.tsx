@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { formatCurrency } from "@/lib/country-config";
 import { useI18n } from "@/lib/i18n";
+import { getAvailablePaymentMethods } from "@/lib/sepa-countries";
 
 type PaymentMethod = "card" | "sepa" | "bank_transfer";
 
@@ -16,7 +17,7 @@ const TenantPay = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
-  const { propertyCountry, fmt: fmtProp } = useTenantProperty();
+  const { propertyCountry, fmt: fmtProp, L } = useTenantProperty();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [orgInfo, setOrgInfo] = useState<any>(null);
   const [unpaidCalls, setUnpaidCalls] = useState<any[]>([]);
@@ -25,11 +26,14 @@ const TenantPay = () => {
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const PAYMENT_METHODS = [
-    { id: "card" as const, label: t("page.tenant_pay.card_label"), icon: CreditCard, description: t("page.tenant_pay.card_desc") },
-    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label"), icon: Banknote, description: t("page.tenant_pay.sepa_desc") },
-    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label"), icon: Building, description: t("page.tenant_pay.transfer_desc") },
+  const ALL_METHODS = [
+    { id: "card" as const, label: t("page.tenant_pay.card_label") || L.payRent, icon: CreditCard, description: t("page.tenant_pay.card_desc") || "Visa, Mastercard, Apple Pay" },
+    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "SEPA Direct Debit" },
+    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.bankTransfer || "Virement", icon: Building, description: t("page.tenant_pay.transfer_desc") || "" },
   ];
+
+  const availableMethodIds = useMemo(() => getAvailablePaymentMethods(propertyCountry), [propertyCountry]);
+  const PAYMENT_METHODS = ALL_METHODS.filter(m => availableMethodIds.includes(m.id));
 
   useEffect(() => {
     const payment = searchParams.get("payment");

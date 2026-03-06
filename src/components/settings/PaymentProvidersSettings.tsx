@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { isSepaCountry } from "@/lib/sepa-countries";
 
 const PaymentProvidersSettings = () => {
   const { orgId } = useAuth();
