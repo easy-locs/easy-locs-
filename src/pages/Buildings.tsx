@@ -80,7 +80,7 @@ const Buildings = () => {
 
   const startEdit = (b: BuildingRecord) => {
     setEditId(b.id);
-    setForm({ name: b.name, address: b.address, postal_code: b.postal_code, city: b.city, building_type: b.building_type, total_units: b.total_units, notes: b.notes });
+    setForm({ name: b.name, address: b.address, postal_code: b.postal_code, city: b.city, building_type: b.building_type, total_units: b.total_units, notes: b.notes, country: (b as any).country || "FR" });
     setShowForm(true);
   };
 
