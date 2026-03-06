@@ -5,6 +5,7 @@ import {
   AlertTriangle, TrendingUp, Clock, Users, Euro, Building,
   Download, PiggyBank, Percent,
 } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
