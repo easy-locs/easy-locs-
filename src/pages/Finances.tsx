@@ -318,34 +318,17 @@ const Finances = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-green-500" },
-            { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconColor: "text-destructive" },
-            { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
-            { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconColor: "text-destructive" },
-            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, path: "", iconColor: "text-accent", valueColor: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
-            { icon: CheckCircle, label: t("page.finances.collection_rate"), value: dataLoading ? "..." : `${kpis.occupancyRate}%`, sub: "", path: "/dashboard/rental?tab=payments", iconColor: "text-accent" },
-          ].map(kpi => {
-            const content = (
-              <Card className={`${kpi.path ? "hover:shadow-card-hover transition-all cursor-pointer" : ""} group`}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <kpi.icon className={`h-4 w-4 ${kpi.iconColor}`} />
-                    <span className="text-[10px] text-muted-foreground">{kpi.label}</span>
-                    {kpi.path && <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors ml-auto" />}
-                  </div>
-                  <p className={`text-lg font-bold ${(kpi as any).valueColor || "text-foreground"}`}>{kpi.value}</p>
-                  {kpi.sub && <p className="text-[10px] text-muted-foreground">{kpi.sub}</p>}
-                </CardContent>
-              </Card>
-            );
-            return kpi.path ? (
-              <Link key={kpi.label} to={kpi.path}>{content}</Link>
-            ) : (
-              <div key={kpi.label}>{content}</div>
-            );
-          })}
+            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-green-500" },
+            { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },
+            { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
+            { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconClassName: "text-destructive" },
+            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, iconClassName: "text-accent", valueClassName: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: CheckCircle, label: t("page.finances.collection_rate"), value: dataLoading ? "..." : `${kpis.occupancyRate}%`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
+          ].map(kpi => (
+            <StatCard key={kpi.label} {...kpi} />
+          ))}
         </div>
 
         {/* Charts */}
