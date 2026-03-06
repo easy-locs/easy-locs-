@@ -80,16 +80,17 @@ const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDat
 const COUNTRY_LANG: Record<string, string> = {
   FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt",
   NL: "nl", GB: "en", CH: "fr", AT: "de", LU: "fr",
-  PL: "pl", SE: "en", DK: "en", NO: "en", FI: "en",
-  GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en",
-  IE: "en", BG: "en", SK: "en",
+  PL: "pl", SE: "sv", DK: "da", NO: "nb", FI: "fi",
+  GR: "el", CZ: "cs", HU: "hu", RO: "ro", HR: "hr",
+  IE: "en", BG: "bg", SK: "sk",
   AE: "en", SA: "en", QA: "en",
-  TR: "tr", JP: "ja",
+  TR: "tr", JP: "ja", KR: "ko", CN: "zh", IN: "hi",
   MA: "fr", TN: "fr", DZ: "fr", SN: "fr", CI: "fr", CM: "fr",
   US: "en", CA: "en", AU: "en", NZ: "en",
   BR: "pt", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
-  IN: "en", SG: "en", MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
-  KR: "en", CN: "en", ZA: "en", NG: "en", KE: "en", GH: "en",
+  TH: "th", VN: "vi", ID: "en", MY: "en", PH: "en",
+  SG: "en", ZA: "en", NG: "en", KE: "en", GH: "en",
+  IL: "he", JO: "en", LB: "fr", UA: "uk",
 };
 
 function getLang(country?: string): string {
