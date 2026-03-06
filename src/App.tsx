@@ -117,6 +117,8 @@ const App = () => (
             <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
             <Route path="/dashboard/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
+            <Route path="/dashboard/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
             {/* Protected — Tenant portal */}
             <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />

@@ -88,7 +88,7 @@ const LandlordProfile = () => {
           <div className="flex items-center justify-center gap-2 mb-2">
             <h1 className="text-2xl font-bold text-foreground">{landlord.display_name}</h1>
             {landlord.verified && (
-              <Shield className="h-5 w-5 text-accent" title="Verified landlord" />
+              <Shield className="h-5 w-5 text-accent" aria-label="Verified landlord" />
             )}
           </div>
 
