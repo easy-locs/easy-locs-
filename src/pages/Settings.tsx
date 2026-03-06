@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette } from "lucide-react";
+import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,7 +246,9 @@ const Settings = () => {
         {/* Payment Providers */}
         <PaymentProvidersSettings />
 
-        {/* Signature */}
+        {/* MFA / 2FA */}
+        <MFASettings />
+
         <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
           <div className="flex items-center gap-3 mb-5">
             <PenTool className="h-5 w-5 text-muted-foreground" />
