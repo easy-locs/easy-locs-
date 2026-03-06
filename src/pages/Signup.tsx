@@ -86,6 +86,8 @@ const Signup = () => {
           </button>
         </form>
 
+        <SocialLoginButtons />
+
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("auth.signup.has_account")}{" "}
           <Link to="/login" className="text-foreground font-medium hover:underline">{t("auth.signup.login")}</Link>

@@ -176,6 +176,8 @@ const Login = () => {
           </form>
         )}
 
+        <SocialLoginButtons />
+
         <div className="flex items-center justify-between mt-6">
           <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground">{t("auth.login.forgot")}</Link>
           <p className="text-sm text-muted-foreground">
