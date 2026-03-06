@@ -128,8 +128,8 @@ const MFASettings = () => {
       {step === "enrolled" && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
-              <Check className="h-4 w-4 text-green-600" />
+            <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+              <Check className="h-4 w-4 text-accent" />
             </div>
             <p className="text-sm font-medium text-foreground">2FA est activé sur votre compte</p>
           </div>
