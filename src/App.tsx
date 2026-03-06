@@ -136,6 +136,7 @@ const App = () => (
               <Route path="/tenant/messages" element={<ProtectedRoute><TenantMessages /></ProtectedRoute>} />
               <Route path="/tenant/pay" element={<ProtectedRoute><TenantPay /></ProtectedRoute>} />
               <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
+              <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
