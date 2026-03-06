@@ -433,8 +433,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                       }
                       // Also set address-related keys that templates commonly use
                       const fullAddr = (propData as any).fullAddress;
-                      if (fullAddr) merged.propertyAddress = fullAddr;
-                      if (fullAddr) merged.fullAddress = fullAddr;
+                      if (fullAddr && template.fields.some((f) => f.key === "propertyAddress")) merged.propertyAddress = fullAddr;
+                      if (fullAddr && template.fields.some((f) => f.key === "fullAddress")) merged.fullAddress = fullAddr;
                     }
                     // Apply owner fields
                     if (ownerData) {
@@ -444,7 +444,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                         }
                       }
                     }
-                    return merged;
+                    return applyDerivedValues(merged);
                   });
                 }
 
