@@ -75,6 +75,41 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const [stampUrl, setStampUrl] = useState("");
   const [prefilled, setPrefilled] = useState(false);
 
+  const applyDerivedValues = (input: Record<string, unknown>) => {
+    const next = { ...input };
+    const rent = Number(next.rentAmount) || 0;
+    const charges = Number(next.chargesAmount) || 0;
+    const deposit = Number(next.depositAmount) || 0;
+
+    if ((next.totalAmount === undefined || next.totalAmount === "" || Number(next.totalAmount) === 0) && (rent > 0 || charges > 0)) {
+      next.totalAmount = rent + charges;
+    }
+    if ((next.coldRent === undefined || next.coldRent === "") && rent > 0) next.coldRent = rent;
+    if ((next.operatingCosts === undefined || next.operatingCosts === "") && charges > 0) next.operatingCosts = charges;
+    if ((next.depositMonths === undefined || next.depositMonths === "") && rent > 0 && deposit > 0) {
+      next.depositMonths = Number((deposit / rent).toFixed(2));
+    }
+    if ((next.period === undefined || next.period === "") && periodLabel) {
+      next.period = periodLabel;
+    }
+    if ((next.startDate === undefined || next.startDate === "") && typeof next.leaseStart === "string" && next.leaseStart) {
+      next.startDate = next.leaseStart;
+    }
+    if ((next.endDate === undefined || next.endDate === "") && typeof next.leaseEnd === "string" && next.leaseEnd) {
+      next.endDate = next.leaseEnd;
+    }
+
+    const landlordTax = String(next.landlordTaxId || next.taxId || "");
+    if (landlordTax) {
+      if (!next.landlordNIF) next.landlordNIF = landlordTax;
+      if (!next.landlordDNI) next.landlordDNI = landlordTax;
+      if (!next.landlordAfm) next.landlordAfm = landlordTax;
+      if (!next.landlordSiret) next.landlordSiret = landlordTax;
+    }
+
+    return next;
+  };
+
   // Auto-load owner profile data + saved signature
   useEffect(() => {
     if (!user || prefilled) return;
