@@ -4293,6 +4293,11 @@ const availableLocales: { value: Locale; label: string }[] = [
   { value: "de", label: "Deutsch" },
   { value: "it", label: "Italiano" },
   { value: "pt", label: "Português" },
+  { value: "nl", label: "Nederlands" },
+  { value: "pl", label: "Polski" },
+  { value: "tr", label: "Türkçe" },
+  { value: "ar", label: "العربية" },
+  { value: "ja", label: "日本語" },
 ];
 
 export function I18nProvider({ children }: { children: ReactNode }) {
