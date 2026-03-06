@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { isSepaCountry } from "@/lib/sepa-countries";
 
 const PaymentProvidersSettings = () => {
-  const { orgId } = useAuth();
+  const { orgId, userCountry } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   const [connectStatus, setConnectStatus] = useState<any>(null);
@@ -16,6 +16,8 @@ const PaymentProvidersSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectingStripe, setConnectingStripe] = useState(false);
+  const [orgCountry, setOrgCountry] = useState(userCountry || "FR");
+  const sepaEligible = useMemo(() => isSepaCountry(orgCountry), [orgCountry]);
 
   useEffect(() => {
     if (!orgId) return;
