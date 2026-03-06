@@ -4573,7 +4573,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "署名を保存",
     "page.settings.profile_updated": "プロフィールが更新されました",
     "page.settings.org_updated": "組織が更新されました",
-    ...obEn,
+    ...obJa, ...pageJa,
   },
 };
 
