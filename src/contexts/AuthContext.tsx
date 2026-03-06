@@ -161,42 +161,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [session?.access_token]);
 
   useEffect(() => {
+    let mounted = true;
+
+    const hydrateAuthState = async (nextSession: Session | null) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (nextSession?.user) {
+        await Promise.all([
+          fetchOrgId(nextSession.user.id),
+          fetchUserType(nextSession.user.id),
+        ]);
+        void refreshSubscription();
+      } else {
+        setOrgId(null);
+        setUserType("landlord");
+        setUserCountry("FR");
+        setUserCurrency("EUR");
+        setOnboardingCompleted(false);
+        setSubscription({ ...defaultSubscription, loading: false });
+        setActiveRole("landlord");
+        setHasDualRole(false);
+      }
+
+      if (mounted) setLoading(false);
+    };
+
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => fetchOrgId(session.user.id), 0);
-          setTimeout(() => fetchUserType(session.user.id), 0);
-          setTimeout(() => refreshSubscription(), 0);
-        } else {
-          setOrgId(null);
-          setUserType("landlord");
-          setUserCountry("FR");
-          setUserCurrency("EUR");
-          setOnboardingCompleted(false);
-          setSubscription({ ...defaultSubscription, loading: false });
-          setActiveRole("landlord");
-          setHasDualRole(false);
-        }
-        setLoading(false);
+      (_event, nextSession) => {
+        void hydrateAuthState(nextSession);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchOrgId(session.user.id);
-        fetchUserType(session.user.id);
-        refreshSubscription();
-      } else {
-        setSubscription((prev) => ({ ...prev, loading: false }));
-      }
-      setLoading(false);
+      void hydrateAuthState(session);
     });
 
-    return () => authSub.unsubscribe();
+    return () => {
+      mounted = false;
+      authSub.unsubscribe();
+    };
   }, [fetchOrgId, fetchUserType, refreshSubscription]);
 
   useEffect(() => {
