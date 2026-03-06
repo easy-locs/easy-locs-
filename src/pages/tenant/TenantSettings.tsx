@@ -81,15 +81,18 @@ const TenantSettings = () => {
                 <label className="block text-sm font-medium text-foreground mb-1">{PL.phone}</label>
                 <input type="tel" value={getVal("phone")} onChange={e => setVal("phone", e.target.value)} placeholder={cc.phoneFormat} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">{PL.dateOfBirth}</label>
-                  <input type="date" value={getVal("dateOfBirth")} onChange={e => setVal("dateOfBirth", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">{PL.nationality}</label>
-                  <input type="text" value={getVal("nationality")} onChange={e => setVal("nationality", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{PL.dateOfBirth}</label>
+                <input type="date" value={getVal("dateOfBirth")} onChange={e => setVal("dateOfBirth", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{PL.nationality}</label>
+                <select value={getVal("nationality")} onChange={e => setVal("nationality", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option value="">{PL.nationality}</option>
+                  {getAllCountryEntries().map(c => (
+                    <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{PL.idNumber}</label>
