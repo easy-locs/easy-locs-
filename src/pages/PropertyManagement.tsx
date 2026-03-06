@@ -120,7 +120,7 @@ const PropertyManagement = () => {
       <SEOHead
         title={pageTitle}
         description={pageDesc}
-        canonical={`https://easy-locs.lovable.app/property-management${countrySlug ? `-${countrySlug}` : ""}`}
+        canonical={`https://www.easy-locs.com/property-management${countrySlug ? `-${countrySlug}` : ""}`}
         jsonLd={jsonLd}
       />
       {/* Nav */}

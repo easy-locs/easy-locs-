@@ -53,7 +53,7 @@ const Index = () => {
       <SEOHead
         title="Easy-Locs — Property Management Software | 110+ Countries"
         description="All-in-one rental management for landlords worldwide. Leases, receipts, tenant portal, accounting. Free to start. Available in 31 languages."
-        canonical="https://easy-locs.lovable.app/"
+        canonical="https://www.easy-locs.com/"
         jsonLd={jsonLd}
         hreflangAlternates={hreflangAlternates}
       />
