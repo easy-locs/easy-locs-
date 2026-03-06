@@ -55,6 +55,18 @@ const Login = () => {
     navigate(route, { replace: true });
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      toast({ title: t("auth.login.error"), description: error.message, variant: "destructive" });
+    } else {
+      await redirectAfterLogin();
+    }
+  };
+
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
