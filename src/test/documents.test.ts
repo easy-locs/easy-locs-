@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 
 describe("Document Templates", () => {
-  it("registry exports getTemplatesForCountry", async () => {
+  it("registry exports getTemplatesByCountry", async () => {
     const registry = await import("@/lib/templates/registry");
-    expect(registry.getTemplatesForCountry).toBeDefined();
+    expect(registry.getTemplatesByCountry).toBeDefined();
   });
 
   it("FR templates include lease-furnished", async () => {
-    const { getTemplatesForCountry } = await import("@/lib/templates/registry");
-    const frTemplates = getTemplatesForCountry("FR");
+    const { getTemplatesByCountry } = await import("@/lib/templates/registry");
+    const frTemplates = getTemplatesByCountry("FR");
     expect(frTemplates.length).toBeGreaterThan(0);
     const furnished = frTemplates.find((t) => t.id === "fr-lease-furnished");
     expect(furnished).toBeDefined();
