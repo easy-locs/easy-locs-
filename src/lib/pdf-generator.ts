@@ -34,9 +34,17 @@ const COUNTRY_LOCALE: Record<string, string> = {
 const COUNTRY_CURRENCY: Record<string, string> = {
   FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR",
   NL: "EUR", AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR",
-  SK: "EUR", HR: "EUR", BG: "BGN", CH: "CHF", GB: "GBP",
+  SK: "EUR", HR: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR",
+  BG: "BGN", CH: "CHF", GB: "GBP",
   PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF", RO: "RON",
-  AE: "AED", SA: "SAR", QA: "QAR",
+  AE: "AED", SA: "SAR", QA: "QAR", BH: "BHD", KW: "KWD", OM: "OMR",
+  TR: "TRY", JP: "JPY", KR: "KRW", CN: "CNY", IN: "INR",
+  SG: "SGD", MY: "MYR", TH: "THB", VN: "VND", PH: "PHP", ID: "IDR",
+  AU: "AUD", NZ: "NZD", US: "USD", CA: "CAD",
+  BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF",
+  ZA: "ZAR", NG: "NGN", KE: "KES", GH: "GHS",
+  IL: "ILS", JO: "JOD", LB: "LBP",
 };
 
 const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
