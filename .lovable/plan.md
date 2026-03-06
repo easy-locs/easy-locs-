@@ -77,8 +77,13 @@
 2. ~~Channel manager iCal sync~~ ✅ (sync-ical edge function)
 3. ~~Paiements SEPA récurrents automatiques~~ ✅ (collect-sepa-rents edge function)
 4. ~~Dashboard analytics avancés~~ ✅ (résultat net, dépenses, revenus saisonniers)
-5. Channel manager OTA API (Airbnb, Booking.com)
-6. Multi-tenant collaboration (invitations co-gestionnaires)
+5. ~~Channel Manager OTA~~ ✅ (calendrier unifié, connexions OTA, détection double-booking)
+6. ~~Comptabilité pro~~ ✅ (journal transactions, cashflow dashboard, CSV export)
+7. ~~Tarification dynamique~~ ✅ (règles saisonnières/événement/occupation, prix suggérés)
+8. ~~Service Marketplace~~ ✅ (prestataires, réservations, système de notation)
+9. Multi-tenant collaboration (invitations co-gestionnaires)
+10. API publique / Developer portal
+11. White-label / Branding personnalisé
 
 ## Derniers ajouts
 - [x] Route `/tenant/requests` (demandes de documents locataire)
@@ -89,9 +94,19 @@
 - [x] **User type badges** dans la liste Recent Signups (landlord/tenant)
 - [x] **Edge function `collect-sepa-rents`** : prélèvement SEPA automatique mensuel off-session via Stripe Connect
 - [x] **Dashboard résultat net** : KPI net income (loyers + saisonnier - dépenses) sur le mois en cours
+- [x] **Channel Manager** : calendrier unifié multi-OTA, connexions iCal Airbnb/Booking/Vrbo/Expedia, détection double-bookings, dashboard réservations
+- [x] **Comptabilité** : journal des transactions (auto + manuel), cashflow 6 mois, KPIs revenus/dépenses/net, export CSV
+- [x] **Tarification dynamique** : règles prix (saisonnier, weekend, événement, occupation, last-minute), recommandations de prix, taux d'occupation
+- [x] **Service Marketplace** : catalogue prestataires (ménage, maintenance, inspection, check-in), réservation de services, ratings
+
+## Tables ajoutées (Sprint 5)
+- [x] `transaction_journal` — Journal comptable avec RLS org
+- [x] `service_providers` — Catalogue prestataires marketplace
+- [x] `service_bookings` — Réservations de services avec commissions
+- [x] `pricing_rules` — Règles de tarification dynamique
 
 ## Audit E2E (complet)
-- [x] 43 tables PostgreSQL avec RLS actif
+- [x] 47 tables PostgreSQL avec RLS actif
 - [x] 7 triggers DB actifs (booking x2, intervention, inventory, lease, payment, booking_request)
 - [x] 18 edge functions déployées et synchronisées
 - [x] Stripe SDK unifié v18.5.0 + API 2025-08-27.basil (check-subscription corrigé)
