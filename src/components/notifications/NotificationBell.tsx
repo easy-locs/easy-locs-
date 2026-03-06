@@ -1,18 +1,24 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Bell, MessageCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS, es, de, it, pt, nl, pl, tr, ja, ko, zhCN } from "date-fns/locale";
+import { useI18n } from "@/lib/i18n";
 
+const dateFnsLocaleMap: Record<string, Locale> = {
+  fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
+};
 
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -54,18 +60,17 @@ const NotificationBell = () => {
     else if (n.type === "message") navigate("/dashboard/messages");
   };
 
-
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
     document: "📄", request: "📋", info: "ℹ️",
   };
 
   const getActionLabel = (n: any): string | null => {
-    if (n.type === "message") return "Répondre";
-    if (n.type === "document") return "Voir le document";
-    if (n.type === "payment") return "Voir le paiement";
-    if (n.type === "dunning") return "Voir la relance";
-    if (n.link) return "Ouvrir";
+    if (n.type === "message") return t("notif.reply");
+    if (n.type === "document") return t("notif.view_document");
+    if (n.type === "payment") return t("notif.view_payment");
+    if (n.type === "dunning") return t("notif.view_dunning");
+    if (n.link) return t("notif.open");
     return null;
   };
 
@@ -85,14 +90,14 @@ const NotificationBell = () => {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("notif.title")}</h3>
               {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-accent hover:underline">Tout marquer lu</button>
+                <button onClick={markAllRead} className="text-xs text-accent hover:underline">{t("notif.mark_all_read")}</button>
               )}
             </div>
             <div className="max-h-80 overflow-y-auto divide-y divide-border">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-sm text-muted-foreground">Aucune notification</div>
+                <div className="p-6 text-center text-sm text-muted-foreground">{t("notif.empty")}</div>
               ) : (
                 notifications.map((n) => {
                   const label = getActionLabel(n);
@@ -106,7 +111,7 @@ const NotificationBell = () => {
 
                           <div className="flex items-center gap-3 mt-1.5">
                             <p className="text-[10px] text-muted-foreground/60">
-                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
+                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: dfLocale })}
                             </p>
                             {label && (
                               <button onClick={() => handleAction(n)} className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
