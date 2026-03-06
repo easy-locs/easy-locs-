@@ -10,6 +10,7 @@ import {
   Wallet, FileText, Contact, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Globe, Lock, Gift, Shield,
+  Layers, BookOpen, Zap, Store,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹" };
@@ -45,6 +46,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.rental"),
       items: [
         { icon: Calendar, label: t("nav.seasonal"), path: "/dashboard/seasonal" },
+        { icon: Layers, label: "Channel Manager", path: "/dashboard/channel-manager" },
+        { icon: Zap, label: "Tarification dynamique", path: "/dashboard/pricing" },
         { icon: UserSearch, label: t("nav.candidates"), path: "/dashboard/candidates" },
         { icon: Receipt, label: t("nav.notices"), path: "/dashboard/notices" },
         { icon: AlertTriangle, label: t("nav.dunning"), path: "/dashboard/dunning" },
@@ -54,6 +57,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.more"),
       items: [
         { icon: Contact, label: t("nav.company"), path: "/dashboard/company" },
+        { icon: BookOpen, label: "Comptabilité", path: "/dashboard/accounting" },
+        { icon: Store, label: "Marketplace", path: "/dashboard/marketplace" },
         { icon: Wrench, label: t("nav.interventions"), path: "/dashboard/interventions" },
         { icon: CheckSquare, label: t("nav.tasks"), path: "/dashboard/tasks" },
         { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
