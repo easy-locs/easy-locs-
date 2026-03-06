@@ -4,7 +4,7 @@ import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 import { motion } from "framer-motion";
-import { Globe, ArrowRight } from "lucide-react";
+import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
