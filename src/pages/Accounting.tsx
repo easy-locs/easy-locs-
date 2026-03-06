@@ -160,12 +160,22 @@ const Accounting = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
+      // STRICT: When a country filter is active, require a property to ensure
+      // the entry is properly isolated to a country ledger
+      if (selectedCountry !== "all" && !newEntry.property_id) {
+        throw new Error("A property must be selected to ensure correct country ledger isolation.");
+      }
+      // Determine currency from the linked property
+      const linkedProp = properties.find((p: any) => p.id === newEntry.property_id);
+      const entryCurrency = linkedProp ? (COUNTRY_CURRENCY_MAP[linkedProp.country] || "EUR") : activeRules.currency;
+
       const { error } = await supabase.from("transaction_journal" as any).insert({
         org_id: org!.id, user_id: user!.id,
         label: newEntry.label, category: newEntry.category,
         debit: Number(newEntry.debit) || 0, credit: Number(newEntry.credit) || 0,
         transaction_date: newEntry.transaction_date, notes: newEntry.notes,
         property_id: newEntry.property_id || null, source_type: "manual",
+        currency: entryCurrency,
       });
       if (error) throw error;
     },
