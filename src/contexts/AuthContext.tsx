@@ -115,10 +115,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setOnboardingCompleted(onboardingDone);
 
-    // Restore saved role preference
+    // Restore saved role preference, default to landlord for dual-role
     const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
     if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
       setActiveRole(savedRole);
+    } else if (dual) {
+      setActiveRole("landlord");
     } else {
       setActiveRole(ut === "tenant" ? "tenant" : "landlord");
     }
