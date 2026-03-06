@@ -348,7 +348,7 @@ serve(async (req) => {
                 ${br.message ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.message}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeMessage}</td></tr>` : ""}
               </table>
               <p style="text-align:center;margin-top:24px;">
-                <a href="https://easylocs.lovable.app${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
+                <a href="https://www.easy-locs.com${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
               </p>
               <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">${t.footer}</p>
             </div>`,
