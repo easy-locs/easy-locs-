@@ -28,7 +28,7 @@ const FORM_NAMES: Record<string,string> = {
   NO:"Skattemelding",DK:"Selvangivelse",FI:"Veroilmoitus",GR:"Φορολογική δήλωση",CZ:"Přiznání DPFO",HU:"SZJA",
   RO:"Declarația 212",BG:"Годишна декларация",HR:"Porezna prijava",IE:"Form 11",CA:"T776",MX:"Declaración anual",
   ZA:"ITR12",KR:"종합소득세",CN:"个人所得税申报",JP:"確定申告",BR:"IRPF",AU:"Tax Return",
-  AE:"VAT Return",US:"Schedule E",SA:"Zakat Return",
+  AE:"VAT Return",SA:"Zakat Return",
 };
 
 function buildFiscalConfig(country: string, t: (k: string) => string) {
