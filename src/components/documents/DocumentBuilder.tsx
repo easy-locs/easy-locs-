@@ -424,22 +424,26 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                 if (propData || ownerData) {
                   setData((prev) => {
                     const merged: Record<string, unknown> = { ...prev, propertyId: propId };
-                    // Apply property fields
+                    const templateKeys = new Set(template.fields.map((f) => f.key));
+                    // Apply property fields — match any template key
                     if (propData) {
                       for (const [key, val] of Object.entries(propData)) {
-                        if (val !== undefined && val !== null && val !== "" && template.fields.some((f) => f.key === key)) {
+                        if (val !== undefined && val !== null && val !== "" && templateKeys.has(key)) {
                           merged[key] = val;
                         }
                       }
-                      // Also set address-related keys that templates commonly use
+                      // Force-set common address aliases
                       const fullAddr = (propData as any).fullAddress;
-                      if (fullAddr && template.fields.some((f) => f.key === "propertyAddress")) merged.propertyAddress = fullAddr;
-                      if (fullAddr && template.fields.some((f) => f.key === "fullAddress")) merged.fullAddress = fullAddr;
+                      if (fullAddr) {
+                        for (const k of ["propertyAddress", "fullAddress", "address"]) {
+                          if (templateKeys.has(k)) merged[k] = fullAddr;
+                        }
+                      }
                     }
-                    // Apply owner fields
+                    // Apply owner fields — fill empty keys
                     if (ownerData) {
                       for (const [key, val] of Object.entries(ownerData)) {
-                        if (val && template.fields.some((f) => f.key === key) && (!merged[key] || merged[key] === "" || merged[key] === 0)) {
+                        if (val && templateKeys.has(key) && (!merged[key] || merged[key] === "" || merged[key] === 0)) {
                           merged[key] = val;
                         }
                       }
