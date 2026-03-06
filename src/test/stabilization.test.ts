@@ -306,7 +306,10 @@ describe("Document Validation", () => {
       const data: Record<string, unknown> = {};
       for (const f of receipt.fields) {
         if (f.required) {
-          data[f.key] = f.type === "number" ? 100 : f.type === "date" ? "2025-01-01" : "Test value";
+          if (f.type === "number") data[f.key] = 100;
+          else if (f.type === "date") data[f.key] = "2025-01-01";
+          else if (f.type === "select") data[f.key] = f.options?.[0]?.value ?? "option1";
+          else data[f.key] = "Test value";
         }
       }
       const result = validateDocument(receipt, data);
