@@ -16,7 +16,7 @@ const Newsletter = () => {
     if (!email || loading) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("newsletter_subscribers").insert({ email });
+      const { error } = await supabase.from("newsletter_subscribers" as any).insert({ email } as any);
       if (error && error.code === "23505") {
         toast.info(t("newsletter.already_subscribed"));
       } else if (error) {
