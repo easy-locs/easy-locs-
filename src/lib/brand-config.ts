@@ -29,7 +29,7 @@ export const BRAND = {
     brandLabel: "EASY-LOCS",
   },
   urls: {
-    app: "https://easylocs.lovable.app",
+    app: "https://www.easy-locs.com",
   },
 } as const;
 

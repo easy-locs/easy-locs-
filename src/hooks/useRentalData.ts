@@ -408,7 +408,7 @@ export function useRentalData() {
       });
       if (invError) throw invError;
 
-      const publishedOrigin = "https://easylocs.lovable.app";
+      const publishedOrigin = "https://www.easy-locs.com";
       const inviteUrl = `${publishedOrigin}/tenant-signup?token=${token}`;
 
       const canCopyInviteLink =

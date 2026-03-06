@@ -12,7 +12,7 @@ const EmbedWidget = ({ listingSlug, listingTitle }: EmbedWidgetProps) => {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
-  const embedUrl = `https://easy-locs.lovable.app/listing/${listingSlug}`;
+  const embedUrl = `https://www.easy-locs.com/listing/${listingSlug}`;
   const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" style="border:none;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.1);" title="${listingTitle}" loading="lazy"></iframe>`;
   const linkCode = `<a href="${embedUrl}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;background:#D4AF37;color:#1a1a2e;border-radius:8px;font-weight:600;text-decoration:none;">Voir l'annonce sur Easy-Locs</a>`;
 
