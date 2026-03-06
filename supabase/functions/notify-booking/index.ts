@@ -155,6 +155,15 @@ function getLocale(country: string) {
   return { ...cfg, strings };
 }
 
+/** HTML-escape user-supplied strings to prevent injection in email templates */
+const esc = (s: string | null | undefined): string =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 function tpl(template: string, vars: Record<string, string | number>) {
   return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), template);
 }
@@ -279,9 +288,16 @@ serve(async (req) => {
       }
     }
 
+    // Escape all user-supplied values for safe HTML embedding
+    const safeGuestName = esc(br.guest_name);
+    const safeGuestEmail = esc(br.guest_email);
+    const safeGuestPhone = esc(br.guest_phone);
+    const safeMessage = esc(br.message);
+    const safePropertyLabel = esc(propertyLabel);
+
     const photoBlock = mainPhoto
       ? `<div style="text-align:center;margin-bottom:20px;">
-          <img src="${mainPhoto}" alt="${propertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
+          <img src="${mainPhoto}" alt="${safePropertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
         </div>`
       : "";
 
@@ -298,7 +314,7 @@ serve(async (req) => {
         org_id: br.org_id,
         type: "info",
         title: t.ownerTitle,
-        message: `${br.guest_name} — ${propertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
+        message: `${safeGuestName} — ${safePropertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
         link: ownerDeepLink,
       });
     }
@@ -314,7 +330,7 @@ serve(async (req) => {
           personalizations: [{ to: [{ email: org.email }] }],
           from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
           reply_to: { email: "contact@easy-locs.com", name: "Easy-Locs" },
-          subject: tpl(t.ownerSubject, { guest: br.guest_name }),
+          subject: tpl(t.ownerSubject, { guest: safeGuestName }),
           content: [{
             type: "text/html",
             value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
@@ -323,13 +339,13 @@ serve(async (req) => {
               </div>
               ${photoBlock}
               <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.traveler}</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;">${br.guest_name}</td></tr>
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.email}</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.guest_email}</td></tr>
-                ${br.guest_phone ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.phone}</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.guest_phone}</td></tr>` : ""}
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.property}</td><td style="padding:8px;border-bottom:1px solid #eee;">${propertyLabel}</td></tr>
+                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.traveler}</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;">${safeGuestName}</td></tr>
+                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.email}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeGuestEmail}</td></tr>
+                ${br.guest_phone ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.phone}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeGuestPhone}</td></tr>` : ""}
+                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.property}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safePropertyLabel}</td></tr>
                 <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.dates}</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.check_in} → ${br.check_out} (${nights} ${nightsWord})</td></tr>
                 <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.amount}</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>
-                ${br.message ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.message}</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.message}</td></tr>` : ""}
+                ${br.message ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.message}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeMessage}</td></tr>` : ""}
               </table>
               <p style="text-align:center;margin-top:24px;">
                 <a href="https://easylocs.lovable.app${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
@@ -357,7 +373,7 @@ serve(async (req) => {
           personalizations: [{ to: [{ email: br.guest_email }] }],
           from: { email: "noreply@easy-locs.com", name: org?.name || "Easy-Locs" },
           reply_to: { email: org?.email || "contact@easy-locs.com", name: org?.name || "Easy-Locs" },
-          subject: tpl(t.guestSubject, { property: propertyLabel }),
+          subject: tpl(t.guestSubject, { property: safePropertyLabel }),
           content: [{
             type: "text/html",
             value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
@@ -366,8 +382,8 @@ serve(async (req) => {
               </div>
               ${photoBlock}
               ${listingBlock}
-              <p style="color:#555;font-size:15px;">${tpl(t.guestGreeting, { name: br.guest_name })}</p>
-              <p style="color:#555;font-size:15px;">${tpl(t.guestBody, { property: propertyLabel })}</p>
+              <p style="color:#555;font-size:15px;">${tpl(t.guestGreeting, { name: safeGuestName })}</p>
+              <p style="color:#555;font-size:15px;">${tpl(t.guestBody, { property: safePropertyLabel })}</p>
               <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">
                 <tr><td style="padding:10px 12px;color:#888;">${t.arrival}</td><td style="padding:10px 12px;font-weight:600;">${br.check_in}</td></tr>
                 <tr><td style="padding:10px 12px;color:#888;">${t.departure}</td><td style="padding:10px 12px;font-weight:600;">${br.check_out}</td></tr>
