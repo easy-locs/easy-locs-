@@ -64,6 +64,7 @@ const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
 const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
 const Collaboration = lazy(() => import("./pages/Collaboration"));
+const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 
 const queryClient = new QueryClient();
 
