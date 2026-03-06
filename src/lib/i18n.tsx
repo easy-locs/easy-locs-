@@ -1893,6 +1893,26 @@ const pageFr: Record<string, string> = {
   "page.finances.csv_charges": "Charges",
   "page.finances.csv_total": "Total",
   "page.finances.csv_date": "Date",
+  // ── Legal pages ──
+  "legal.terms.title": "Conditions Générales d'Utilisation",
+  "legal.privacy.title": "Politique de Confidentialité",
+  "legal.cookies.title": "Politique de Cookies",
+  "legal.notice.title": "Mentions Légales",
+  "legal.about.title": "À propos d'Easy-Locs",
+  "legal.contact.title": "Contact",
+  "legal.contact.subtitle": "Une question ? Contactez-nous, nous répondons sous 24 à 48 heures.",
+  "legal.contact.name": "Votre nom",
+  "legal.contact.email": "Votre email",
+  "legal.contact.subject": "Sujet",
+  "legal.contact.message": "Votre message…",
+  "legal.contact.send": "Envoyer",
+  "legal.contact.sent": "Message envoyé ! Nous reviendrons vers vous rapidement.",
+  "legal.contact.response": "Délai de réponse",
+  "legal.help.title": "Centre d'aide",
+  "legal.help.title_short": "Support",
+  "legal.help.subtitle": "Retrouvez les réponses aux questions les plus fréquentes.",
+  "legal.help.more": "Vous ne trouvez pas votre réponse ?",
+  "legal.help.contact_us": "Contactez notre équipe support par email.",
 };
 
 const pageEn: Record<string, string> = {
@@ -3220,6 +3240,26 @@ const pageEn: Record<string, string> = {
   "page.finances.csv_charges": "Charges",
   "page.finances.csv_total": "Total",
   "page.finances.csv_date": "Date",
+  // ── Legal pages ──
+  "legal.terms.title": "Terms and Conditions",
+  "legal.privacy.title": "Privacy Policy",
+  "legal.cookies.title": "Cookie Policy",
+  "legal.notice.title": "Legal Notice",
+  "legal.about.title": "About Easy-Locs",
+  "legal.contact.title": "Contact",
+  "legal.contact.subtitle": "Have a question? Contact us, we respond within 24 to 48 hours.",
+  "legal.contact.name": "Your name",
+  "legal.contact.email": "Your email",
+  "legal.contact.subject": "Subject",
+  "legal.contact.message": "Your message…",
+  "legal.contact.send": "Send",
+  "legal.contact.sent": "Message sent! We'll get back to you shortly.",
+  "legal.contact.response": "Response time",
+  "legal.help.title": "Help Center",
+  "legal.help.title_short": "Support",
+  "legal.help.subtitle": "Find answers to the most frequently asked questions.",
+  "legal.help.more": "Can't find your answer?",
+  "legal.help.contact_us": "Contact our support team by email.",
 };
 
 const pageEs: Record<string, string> = {

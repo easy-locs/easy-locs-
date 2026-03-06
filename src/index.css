@@ -125,3 +125,56 @@
     box-shadow: var(--shadow-gold);
   }
 }
+
+/* ── Global UI consistency ── */
+@layer base {
+  /* Standardize all inputs/selects to consistent height */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    @apply text-sm;
+  }
+
+  /* Prevent text overflow globally */
+  h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, label {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Consistent table styling */
+  table {
+    @apply w-full;
+  }
+  th, td {
+    @apply text-sm;
+  }
+}
+
+@layer components {
+  /* Standardize dashboard page headers */
+  .page-header {
+    @apply mb-6;
+  }
+  .page-header h1 {
+    @apply text-xl sm:text-2xl font-bold text-foreground truncate;
+  }
+  .page-header p {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  /* Standardize dashboard cards */
+  .stat-card {
+    @apply rounded-lg border border-border bg-card p-4 sm:p-5;
+  }
+
+  /* Consistent form layout */
+  .form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+
+  /* Prevent card overflow on mobile */
+  .overflow-safe {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

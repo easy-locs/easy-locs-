@@ -66,6 +66,15 @@ const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 
+// Legal pages
+const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
+const CookiePage = lazy(() => import("./pages/legal/CookiePage"));
+const LegalNoticePage = lazy(() => import("./pages/legal/LegalNoticePage"));
+const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
+const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
+const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
+
 const queryClient = new QueryClient();
 
 const PageLoader = () => (
@@ -104,6 +113,15 @@ const App = () => (
               <Route path="/property-management-italy" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
+
+              {/* Legal / Info pages */}
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/cookies" element={<CookiePage />} />
+              <Route path="/legal-notice" element={<LegalNoticePage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/help" element={<HelpPage />} />
 
               {/* Protected — Landlord */}
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
