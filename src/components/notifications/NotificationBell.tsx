@@ -12,7 +12,7 @@ const dateFnsLocaleMap: Record<string, DfLocale> = {
 };
 
 const NotificationBell = () => {
-  const { user } = useAuth();
+  const { user, activeRole, hasDualRole, switchRole } = useAuth();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -53,16 +53,27 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
   };
 
+
+
   const handleAction = (n: any) => {
     markRead(n);
     setOpen(false);
-    if (n.link) navigate(n.link);
-    else if (n.type === "message") navigate("/dashboard/messages");
+    const target = n.link || (n.type === "message" ? (activeRole === "tenant" ? "/tenant/messages" : "/dashboard/messages") : null);
+    if (!target) return;
+
+    // Auto-switch role if notification targets the other portal
+    const isTenantLink = target.startsWith("/tenant");
+    const isLandlordLink = target.startsWith("/dashboard");
+    if (hasDualRole) {
+      if (isTenantLink && activeRole !== "tenant") switchRole("tenant");
+      else if (isLandlordLink && activeRole !== "landlord") switchRole("landlord");
+    }
+    navigate(target);
   };
 
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
-    document: "📄", request: "📋", info: "ℹ️",
+    document: "📄", request: "📋", info: "ℹ️", receipt: "🧾",
   };
 
   const getActionLabel = (n: any): string | null => {
@@ -70,6 +81,8 @@ const NotificationBell = () => {
     if (n.type === "document") return t("notif.view_document");
     if (n.type === "payment") return t("notif.view_payment");
     if (n.type === "dunning") return t("notif.view_dunning");
+    if (n.type === "receipt") return t("notif.view_document");
+    if (n.type === "request") return t("notif.view_document");
     if (n.link) return t("notif.open");
     return null;
   };
