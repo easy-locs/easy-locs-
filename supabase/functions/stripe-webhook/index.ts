@@ -223,6 +223,18 @@ serve(async (req) => {
         await handleCheckoutCompleted(supabase, stripe, session);
         break;
       }
+      case "payment_intent.succeeded": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const meta = pi.metadata || {};
+        if (meta.type === "rent_payment" && meta.rent_call_id) {
+          logStep("PaymentIntent succeeded for rent", { rentCallId: meta.rent_call_id });
+          await handleRentPayment(supabase, meta, { payment_intent: pi.id } as any);
+        } else if (meta.type === "seasonal_booking" && meta.booking_request_id) {
+          logStep("PaymentIntent succeeded for booking", { bookingRequestId: meta.booking_request_id });
+          await handleBookingPayment(supabase, meta, { payment_intent: pi.id } as any);
+        }
+        break;
+      }
       default:
         logStep("Unhandled event type", { type: event.type });
     }

@@ -4,7 +4,7 @@
 ## 1. Traductions complètes (6 langues : FR, EN, ES, DE, IT, PT)
 
 ### État actuel
-- i18n.tsx : ~800+ clés traduites (toutes pages principales)
+- i18n.tsx : ~900+ clés traduites (toutes pages principales)
 - **Toutes les pages dashboard utilisent des clés i18n**
 
 ### Pages migrées vers i18n
@@ -18,7 +18,7 @@
 - [x] Candidates.tsx, SeasonalRentals.tsx, PaymentNotices.tsx
 - [x] DunningLetters.tsx, FurnitureInventory.tsx, Buildings.tsx, Vault.tsx
 - [x] DataImport.tsx
-- [x] Tenant portal (6 pages)
+- [x] Tenant portal (7 pages incl. reviews)
 - [x] Landing + Auth pages
 - [x] DashboardLayout sidebar
 
@@ -60,6 +60,9 @@
 - [x] Suite de tests de régression (54+ tests)
 - [x] **PWA avec service worker** (vite-plugin-pwa, manifest, page /install)
 - [x] **Système dual-rôle bailleur/locataire** avec switcher dans la sidebar
+- [x] **Système de reviews/avis locataires** (table reviews, page tenant, réponses bailleur)
+- [x] **Capacitor config** pour native iOS + Android
+- [x] **Stripe webhook avancé** (payment_intent.succeeded pour SEPA/récurrents)
 
 ## Correctifs appliqués
 - [x] Photos publiques : fonction `get_listing_property` (security definer) pour contourner RLS
@@ -70,7 +73,7 @@
 - [x] **allRequests panel** : maintenant toujours visible indépendamment de focusedRequest
 
 ## Prochaines priorités
-1. Capacitor native mobile (iOS + Android)
-2. Webhooks Stripe avancés (paiements récurrents)
-3. Système de reviews/avis locataires
-4. Channel manager OTA (Airbnb, Booking.com API)
+1. Capacitor build natif (iOS + Android) — config prête, instructions user
+2. Channel manager OTA (Airbnb, Booking.com API)
+3. Paiements SEPA récurrents automatiques
+4. Dashboard analytics avancés (heatmap, cohortes)
