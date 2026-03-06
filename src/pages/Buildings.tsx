@@ -28,7 +28,7 @@ const BUILDING_TYPES = [
   { value: "parking", labelKey: "page.buildings.type_parking" },
 ];
 
-const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "" };
+const defaultForm = { name: "", address: "", postal_code: "", city: "", building_type: "immeuble", total_units: 0, notes: "", country: "FR" };
 
 const Buildings = () => {
   const { user, orgId } = useAuth();
