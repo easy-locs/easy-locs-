@@ -171,19 +171,35 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
     if (!ownerProfile) return null;
     const ownerAddress = [ownerProfile.address, ownerProfile.postal_code, ownerProfile.city]
       .filter(Boolean).join(", ");
+    const landlordName = ownerProfile.person_type === "company"
+      ? ownerProfile.company_name || ownerProfile.full_name
+      : ownerProfile.full_name;
+
     return {
-      landlordName: ownerProfile.person_type === "company"
-        ? ownerProfile.company_name || ownerProfile.full_name
-        : ownerProfile.full_name,
+      landlordName,
+      senderName: landlordName,
+      hostName: landlordName,
+      ownerName: landlordName,
       landlordAddress: ownerAddress,
+      senderAddress: ownerAddress,
       landlordEmail: ownerProfile.email || "",
       landlordPhone: ownerProfile.phone || "",
       landlordTaxId: ownerProfile.tax_id || "",
+      taxId: ownerProfile.tax_id || "",
+      landlordNIF: ownerProfile.tax_id || "",
+      landlordDNI: ownerProfile.tax_id || "",
+      landlordAfm: ownerProfile.tax_id || "",
+      landlordSiret: ownerProfile.tax_id || "",
+      landlordTIN: ownerProfile.tax_id || "",
       landlordBankName: ownerProfile.bank_name || "",
+      bankName: ownerProfile.bank_name || "",
       landlordBankIban: ownerProfile.bank_iban || "",
+      bankIban: ownerProfile.bank_iban || "",
       landlordBankBic: ownerProfile.bank_bic || "",
+      bankBic: ownerProfile.bank_bic || "",
       landlordPersonType: ownerProfile.person_type,
       landlordCompanyName: ownerProfile.company_name || "",
+      companyName: ownerProfile.company_name || "",
     };
   }, [ownerProfile]);
 
