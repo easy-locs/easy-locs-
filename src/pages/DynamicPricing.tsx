@@ -56,7 +56,7 @@ const DynamicPricing = () => {
     queryKey: ["pricing_rules", org?.id],
     queryFn: async () => {
       const { data } = await supabase.from("pricing_rules" as any).select("*").eq("org_id", org!.id).order("priority", { ascending: false });
-      return (data || []) as Array<{
+      return (data || []) as unknown as Array<{
         id: string; name: string; rule_type: string; adjustment_type: string;
         adjustment_value: number; start_date: string | null; end_date: string | null;
         active: boolean; property_id: string; priority: number;
