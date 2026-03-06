@@ -4,7 +4,7 @@ import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 import { motion } from "framer-motion";
-import { Globe, ArrowRight } from "lucide-react";
+import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
@@ -251,24 +251,60 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
           </Suspense>
         </div>
 
-        {/* Country chips */}
-        <div className="border-t border-border/40 bg-muted/10 px-4 py-3">
-          <div className="flex flex-wrap gap-2">
+        {/* Country chips — horizontal scroll */}
+        <div className="border-t border-border/40 bg-muted/10 px-2 sm:px-4 py-3 relative group/scroll">
+          {/* Left arrow (desktop) */}
+          {propertiesByCountry.length > 4 && (
+            <button
+              onClick={() => {
+                const el = document.getElementById("country-scroll");
+                if (el) el.scrollBy({ left: -200, behavior: "smooth" });
+              }}
+              className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 h-full w-8 items-center justify-center bg-gradient-to-r from-muted/40 to-transparent opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+
+          <div
+            id="country-scroll"
+            className="flex gap-2 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth pb-1 -mx-1 px-1"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {propertiesByCountry.map((c) => (
               <Link
                 key={c.code}
                 to={`/dashboard/rental?tab=properties&country=${c.code}`}
-                className="group inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-card hover:bg-accent/10 text-sm font-medium text-foreground transition-all border border-border/60 hover:border-accent/40 hover:shadow-sm"
+                className={`group snap-start shrink-0 inline-flex items-center gap-2 min-w-[140px] max-w-[180px] px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                  hoveredCountry === c.code
+                    ? "bg-accent/10 border-accent/40 shadow-sm text-foreground"
+                    : "bg-card border-border/60 text-foreground hover:bg-accent/10 hover:border-accent/40 hover:shadow-sm"
+                }`}
                 onMouseEnter={() => setHoveredCountry(c.code)}
                 onMouseLeave={() => setHoveredCountry(null)}
               >
-                <span className="text-base">{c.flag}</span>
-                <span>{c.name}</span>
-                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold">{c.count}</span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors" />
+                <span className="text-base shrink-0">{c.flag}</span>
+                <span className="truncate flex-1">{c.name}</span>
+                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold shrink-0">{c.count}</span>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
               </Link>
             ))}
           </div>
+
+          {/* Right arrow (desktop) */}
+          {propertiesByCountry.length > 4 && (
+            <button
+              onClick={() => {
+                const el = document.getElementById("country-scroll");
+                if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+              }}
+              className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 h-full w-8 items-center justify-center bg-gradient-to-l from-muted/40 to-transparent opacity-0 group-hover/scroll:opacity-100 transition-opacity"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
