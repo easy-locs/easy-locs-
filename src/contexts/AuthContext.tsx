@@ -94,7 +94,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .single();
     const ut = (data?.user_type as UserType) ?? "landlord";
     setUserType(ut);
-    setOnboardingCompleted(data?.onboarding_completed ?? false);
     setUserCountry(data?.country ?? "FR");
     setUserCurrency(data?.currency ?? "EUR");
 
@@ -106,6 +105,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const dual = !!tenantLink && !!orgLink;
     setHasDualRole(dual);
+
+    // Auto-complete onboarding for existing accounts that already have org data
+    let onboardingDone = data?.onboarding_completed ?? false;
+    if (!onboardingDone && !!orgLink) {
+      // User has org membership = existing account, skip onboarding
+      onboardingDone = true;
+      // Persist to DB so it doesn't re-check
+      supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+    }
+    setOnboardingCompleted(onboardingDone);
 
     // Restore saved role preference
     const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
