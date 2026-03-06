@@ -30,7 +30,7 @@ const jsonLd = {
   provider: {
     "@type": "Organization",
     name: "Easy-Locs",
-    url: "https://easy-locs.lovable.app",
+    url: "https://www.easy-locs.com",
   },
 };
 
