@@ -47,12 +47,8 @@ const PublicListing = () => {
       const { data: propData } = await supabase.rpc("get_listing_property", { p_listing_id: l.id });
       setProperty(propData);
 
-      const { data: bookings } = await supabase
-        .from("seasonal_bookings")
-        .select("check_in, check_out")
-        .eq("property_id", l.property_id)
-        .neq("status", "cancelled");
-      setBookedDates(bookings || []);
+      // Booked dates loaded from booking_requests with confirmed status
+      setBookedDates([]);
       setLoading(false);
     };
     load();
