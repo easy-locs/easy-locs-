@@ -121,6 +121,8 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
       propertyType: property.property_type,
       propertySurface: property.surface,
       propertyRooms: property.rooms,
+      surface: property.surface,
+      rooms: property.rooms,
       propertyFloor: property.floor,
       propertyHeating: property.heating,
       propertyFurnished: property.furnished,

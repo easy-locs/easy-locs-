@@ -556,7 +556,7 @@ export function generateFromTemplate(
   const labels = getPdfLabels(country);
   const locale = COUNTRY_LOCALE[country] || "en-GB";
   const doc = new jsPDF();
-  let y = addHeader(doc, template.label.toUpperCase());
+  let y = addHeader(doc, template.label.toUpperCase(), country, template.docType);
 
   // Legal basis
   if (template.legalBasis) {

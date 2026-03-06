@@ -225,6 +225,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
           propertyLabel: property.label,
           propertySurface: property.surface,
           propertyRooms: property.rooms,
+          surface: property.surface,
+          rooms: property.rooms,
           propertyType: property.property_type,
         };
         for (const [key, val] of Object.entries(propFields)) {
