@@ -238,7 +238,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
             </div>
           }>
             <Canvas
-              camera={{ position: [0, 0, 3], fov: 45 }}
+              camera={{ position: [0, 0, 2.6], fov: 42 }}
               style={{ background: "transparent" }}
               dpr={[1, 2]}
             >
