@@ -116,7 +116,7 @@ const Login = () => {
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectByUserType();
+      await redirectAfterLogin();
     }
   };
 
