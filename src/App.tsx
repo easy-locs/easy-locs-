@@ -64,6 +64,7 @@ const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
 const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
 const Collaboration = lazy(() => import("./pages/Collaboration"));
+const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 
 const queryClient = new QueryClient();
 
@@ -139,6 +140,7 @@ const App = () => (
               <Route path="/dashboard/pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
               <Route path="/dashboard/marketplace" element={<ProtectedRoute><ServiceMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
+              <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />

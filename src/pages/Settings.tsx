@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +15,9 @@ const Settings = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
-  const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "" });
+  const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "", brand_name: "", brand_primary_color: "", brand_accent_color: "" });
   const [saving, setSaving] = useState(false);
+  const [savingBrand, setSavingBrand] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamp, setUploadingStamp] = useState(false);
 
@@ -29,11 +30,13 @@ const Settings = () => {
 
   useEffect(() => {
     if (!orgId) return;
-    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url").eq("id", orgId).single().then(({ data }) => {
+    supabase.from("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single().then(({ data }) => {
       if (data) setOrg({
         name: data.name || "", address: (data as any).address || "", postal_code: (data as any).postal_code || "",
         city: (data as any).city || "", phone: (data as any).phone || "", siret: (data as any).siret || "",
         email: (data as any).email || "", logo_url: (data as any).logo_url || "", stamp_url: (data as any).stamp_url || "",
+        brand_name: (data as any).brand_name || "", brand_primary_color: (data as any).brand_primary_color || "",
+        brand_accent_color: (data as any).brand_accent_color || "",
       });
     });
   }, [orgId]);
@@ -271,6 +274,62 @@ const Settings = () => {
             className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90">
             <Upload className="h-4 w-4" /> {t("page.settings.import_cta")}
           </Link>
+        </div>
+
+        {/* White-label Branding */}
+        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <Palette className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">White-label / Branding</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Personnalisez l'apparence de vos documents et du portail locataire avec votre marque.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Nom de marque</label>
+              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder="Ex: Mon Agence Immo"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur principale</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))}
+                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                  <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e"
+                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur accent</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))}
+                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                  <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227"
+                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+              </div>
+            </div>
+            {(org.brand_name || org.brand_primary_color) && (
+              <div className="p-4 rounded-lg border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
+                <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
+                <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>Aperçu du branding sur vos documents</p>
+              </div>
+            )}
+            <button onClick={async () => {
+              if (!orgId) return;
+              setSavingBrand(true);
+              await supabase.from("orgs").update({
+                brand_name: org.brand_name || null,
+                brand_primary_color: org.brand_primary_color || null,
+                brand_accent_color: org.brand_accent_color || null,
+              } as any).eq("id", orgId);
+              toast({ title: "Branding mis à jour" });
+              setSavingBrand(false);
+            }} disabled={savingBrand}
+              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+              {savingBrand ? t("page.settings.saving") : "Enregistrer le branding"}
+            </button>
+          </div>
         </div>
 
         {/* GDPR */}
