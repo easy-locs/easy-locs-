@@ -25,7 +25,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { toast } = useToast();
   const { t } = useI18n();
   const { properties, tenants } = useRentalData();
-  const { fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
+  const { fillFromTenant, fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
 
   const defaults: Record<string, unknown> = {};
   const today = new Date().toISOString().split("T")[0];
