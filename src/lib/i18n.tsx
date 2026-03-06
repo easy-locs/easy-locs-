@@ -3768,7 +3768,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.tasks": "Tâches", "nav.notes": "Notes", "nav.messages": "Messages",
     "nav.billing": "Abonnement", "nav.logout": "Déconnexion",
     "section.essential": "L'ESSENTIEL", "section.rental": "LOCATION", "section.more": "LE PLUS",
-    "badge.landlord": "Espace bailleur",
+    "badge.landlord": "Espace bailleur", "badge.tenant": "Espace locataire",
     "dashboard.hello": "Bonjour 👋", "dashboard.summary": "Voici un résumé de votre situation.",
     "dashboard.properties": "Biens", "dashboard.tenants_count": "locataire(s)",
     "dashboard.collected": "Encaissé ce mois", "dashboard.unpaid": "impayés",
