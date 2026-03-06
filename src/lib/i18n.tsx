@@ -4105,7 +4105,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Modifica", "reviews.delete": "Elimina", "reviews.reply": "Risposta del proprietario",
     "reviews.write_reply": "Rispondi", "reviews.updated": "Recensione aggiornata", "reviews.submitted": "Recensione inviata!",
     "reviews.stars": "stella/e", "nav.reviews": "Recensioni", "nav.requests": "Richieste",
-    ...obIt, ...pageIt,
+    ...obIt, ...pageIt, ...pageItFull,
   },
   pt: {
     "nav.dashboard": "Painel", "nav.properties": "Imóveis", "nav.tenants": "Inquilinos",
