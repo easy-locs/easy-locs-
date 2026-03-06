@@ -1266,9 +1266,7 @@ const RentalManagement = () => {
                         {propertyFormConfig.propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.country}</label>
-                      <select value={propertyForm.country || userCountry} onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
-                        {["FR","BE","ES","IT","DE","PT","NL","GB","CH","AT","LU","PL","SE","DK","NO","FI","GR","CZ","HU","RO","HR","IE","BG","SK"].map(c => <option key={c} value={c}>{COUNTRY_FLAGS[c] || ""} {COUNTRY_NAMES[c] || c}</option>)}
-                      </select></div>
+                      <CountrySelect value={propertyForm.country || userCountry} onChange={(code) => setPropertyForm({ ...propertyForm, country: code })} /></div>
                   </div>
                   <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.address}</label>
                     <AddressAutocomplete value={propertyForm.address} onChange={(val) => setPropertyForm({ ...propertyForm, address: val })}
