@@ -545,6 +545,9 @@ const langMap: Record<string, {
   terms: string; privacy: string; cookies: string; about: string; contact: string; help: string;
   receipts: string; messages: string; payRent: string; requests: string; reviews: string;
   newsletter: string; subscribe: string; thanksSubscribed: string;
+  hello?: string; summary?: string; properties?: string; tenants?: string; collected?: string; unpaid?: string;
+  occupancy?: string; vacant?: string; quickActions?: string; alerts?: string; allGood?: string;
+  revenueTrend?: string; generateReceipt?: string; viewReminders?: string; myVault?: string;
 }> = {
   pl: { heroTitle: "Pierwsza światowa platforma", heroHighlight: "zarządzania wynajmem", heroCta: "Zacznij za darmo", heroPricing: "Zobacz ceny", features: "Funkcje", pricing: "Cennik", login: "Zaloguj się", signup: "Zarejestruj się", monthly: "Miesięcznie", annual: "Rocznie", planName: "Easy-Locs Bez limitu", trial: "3 dni za darmo", netIncome: "Dochód netto", expenses: "wydatki", settings: "Ustawienia", profile: "Profil", dashboard: "Panel", fiscalTitle: "Raport podatkowy", simplified: "Uproszczony", actual: "Rzeczywiste koszty", grossRevenue: "Przychody brutto", taxableIncome: "DOCHÓD PODLEGAJĄCY OPODATKOWANIU", propertyTax: "Podatek od nieruchomości", insurance: "Ubezpieczenie", maintenance: "Konserwacja", mgmtFees: "Opłaty zarządzania", interests: "Odsetki kredytu", terms: "Regulamin", privacy: "Prywatność", cookies: "Cookies", about: "O nas", contact: "Kontakt", help: "Pomoc", receipts: "Rachunki", messages: "Wiadomości", payRent: "Zapłać czynsz", requests: "Wnioski", reviews: "Opinie", newsletter: "Newsletter", subscribe: "Subskrybuj", thanksSubscribed: "Dziękujemy! Jesteś zapisany." },
   tr: { heroTitle: "Dünyanın ilk platformu", heroHighlight: "kira yönetimi", heroCta: "Ücretsiz başla", heroPricing: "Fiyatları gör", features: "Özellikler", pricing: "Fiyatlar", login: "Giriş", signup: "Kayıt ol", monthly: "Aylık", annual: "Yıllık", planName: "Easy-Locs Sınırsız", trial: "3 gün ücretsiz dene", netIncome: "Net gelir", expenses: "giderler", settings: "Ayarlar", profile: "Profil", dashboard: "Panel", fiscalTitle: "Vergi raporu", simplified: "Basitleştirilmiş", actual: "Gerçek giderler", grossRevenue: "Brüt gelir", taxableIncome: "VERGİLENDİRİLEBİLİR GELİR", propertyTax: "Emlak vergisi", insurance: "Sigorta", maintenance: "Bakım", mgmtFees: "Yönetim ücretleri", interests: "Kredi faizi", terms: "Şartlar", privacy: "Gizlilik", cookies: "Çerezler", about: "Hakkımızda", contact: "İletişim", help: "Yardım", receipts: "Makbuzlar", messages: "Mesajlar", payRent: "Kira öde", requests: "Talepler", reviews: "Yorumlar", newsletter: "Bülten", subscribe: "Abone ol", thanksSubscribed: "Teşekkürler! Abone oldunuz." },
@@ -626,6 +629,21 @@ for (const [locale, l] of Object.entries(langMap)) {
     "newsletter.placeholder": base["newsletter.placeholder"], "newsletter.cta": l.subscribe,
     "newsletter.success": l.thanksSubscribed,
     "page.dashboard.net_income": l.netIncome, "page.dashboard.expenses_label": l.expenses,
+    "page.dashboard.hello": l.hello || base["page.dashboard.hello"] || "Hello 👋",
+    "page.dashboard.summary": l.summary || base["page.dashboard.summary"] || "Here's an overview.",
+    "page.dashboard.properties": l.properties || base["page.dashboard.properties"] || "Properties",
+    "page.dashboard.tenants_count": l.tenants || base["page.dashboard.tenants_count"] || "tenant(s)",
+    "page.dashboard.collected_month": l.collected || base["page.dashboard.collected_month"] || "Collected this month",
+    "page.dashboard.unpaid_amount": l.unpaid || base["page.dashboard.unpaid_amount"] || "unpaid",
+    "page.dashboard.occupancy": l.occupancy || base["page.dashboard.occupancy"] || "Occupancy rate",
+    "page.dashboard.vacant": l.vacant || base["page.dashboard.vacant"] || "vacant",
+    "page.dashboard.quick_actions": l.quickActions || base["page.dashboard.quick_actions"] || "Quick Actions",
+    "page.dashboard.alerts": l.alerts || base["page.dashboard.alerts"] || "Alerts & Actions",
+    "page.dashboard.all_good": l.allGood || base["page.dashboard.all_good"] || "Everything is up to date! 🎉",
+    "page.dashboard.revenue_trend": l.revenueTrend || base["page.dashboard.revenue_trend"] || "Revenue trend (6 months)",
+    "page.dashboard.generate_receipt": l.generateReceipt || base["page.dashboard.generate_receipt"] || "Generate receipt",
+    "page.dashboard.view_reminders": l.viewReminders || base["page.dashboard.view_reminders"] || "View reminders",
+    "page.dashboard.my_vault": l.myVault || base["page.dashboard.my_vault"] || "My vault",
     "page.dashboard.ai_question": l.heroCta, "page.dashboard.ai_desc": base["page.dashboard.ai_desc"],
     "page.fiscal.title": l.fiscalTitle, "page.fiscal.micro_label": l.simplified, "page.fiscal.real_label": l.actual,
     "page.fiscal.deficit_label": base["page.fiscal.deficit_label"],
