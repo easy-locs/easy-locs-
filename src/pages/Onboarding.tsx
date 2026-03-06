@@ -91,8 +91,11 @@ const Onboarding = () => {
   const handleStep0Next = async () => {
     if (!user || !country || !selectedType) return;
     setSaving(true);
-    const autoLocale = COUNTRY_LOCALE_MAP[country] || "en";
-    const autoCurrency = COUNTRY_CURRENCY_MAP[country] || "EUR";
+
+    const countryEntry = getCountryEntry(country);
+    const autoLocale = (countryEntry?.defaultLanguage || "en") as Locale;
+    const autoCurrency = countryEntry?.currency || "EUR";
+
     await supabase.from("profiles").update({
       country, locale: autoLocale, currency: autoCurrency, user_type: selectedType,
     }).eq("id", user.id);
