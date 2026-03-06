@@ -3860,6 +3860,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "ob.sync_ical": "Sync",
     "ob.ical_success": "reservations imported",
     "ob.ical_info": "Find the iCal URL in your Airbnb or Booking.com listing settings",
+    "reviews.title": "Reviews", "reviews.subtitle": "Share your rental experience",
+    "reviews.rating": "Rating", "reviews.comment": "Comment", "reviews.submit": "Submit review",
+    "reviews.no_reviews": "No reviews yet", "reviews.your_review": "Your review",
+    "reviews.edit": "Edit", "reviews.delete": "Delete", "reviews.reply": "Landlord reply",
+    "reviews.write_reply": "Reply", "reviews.updated": "Review updated", "reviews.submitted": "Review submitted!",
+    "reviews.stars": "star(s)", "nav.reviews": "Reviews",
     ...obEn, ...pageEn,
   },
   es: {
