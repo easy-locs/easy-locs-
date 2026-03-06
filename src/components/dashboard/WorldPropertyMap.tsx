@@ -1,7 +1,8 @@
 import { useRef, useMemo, useState, Suspense, useCallback } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
+import { TextureLoader } from "three";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
