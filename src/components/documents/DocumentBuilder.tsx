@@ -278,6 +278,51 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       return;
     }
 
+    const strictCountryDocTypes = new Set([
+      "lease-residential",
+      "lease-empty",
+      "lease-furnished",
+      "lease-commercial",
+      "rent-receipt",
+      "formal-notice",
+      "inventory",
+      "termination",
+      "deposit-return",
+      "ejari-contract",
+    ]);
+
+    if (strictCountryDocTypes.has(template.docType)) {
+      if (!template.legalBasis) {
+        toast({
+          title: t("page.common.error"),
+          description: "Modèle bloqué : base légale gouvernementale manquante.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const selectedPropertyId = String(data.propertyId || "");
+      const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
+
+      if (isLandlord && !selectedProperty) {
+        toast({
+          title: t("page.common.error"),
+          description: "Sélectionnez d'abord un bien du pays du modèle pour générer un document conforme.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedProperty && selectedProperty.country !== template.country) {
+        toast({
+          title: t("page.common.error"),
+          description: `Le bien (${selectedProperty.country}) ne correspond pas au pays du modèle (${template.country}).`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setSaving(true);
     const title = `${template.label} — ${String(data.tenantName || data.fullName || data.companyName || data.senderName || "")}`.trim();
 

@@ -10,7 +10,8 @@ import CountrySelect from "@/components/ui/CountrySelect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useI18n, COUNTRY_LOCALE_MAP, COUNTRY_CURRENCY_MAP, type Locale } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
+import { getCountryEntry } from "@/lib/global-country-registry";
 import { Progress } from "@/components/ui/progress";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 
@@ -90,8 +91,11 @@ const Onboarding = () => {
   const handleStep0Next = async () => {
     if (!user || !country || !selectedType) return;
     setSaving(true);
-    const autoLocale = COUNTRY_LOCALE_MAP[country] || "en";
-    const autoCurrency = COUNTRY_CURRENCY_MAP[country] || "EUR";
+
+    const countryEntry = getCountryEntry(country);
+    const autoLocale = (countryEntry?.defaultLanguage || "en") as Locale;
+    const autoCurrency = countryEntry?.currency || "EUR";
+
     await supabase.from("profiles").update({
       country, locale: autoLocale, currency: autoCurrency, user_type: selectedType,
     }).eq("id", user.id);
@@ -128,7 +132,10 @@ const Onboarding = () => {
     const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
     if (!orgData) { setSaving(false); return; }
     const { data: propData, error } = await supabase.from("properties").insert({
-      org_id: orgData.org_id, user_id: user.id, ...propertyForm,
+      org_id: orgData.org_id,
+      user_id: user.id,
+      country: country || "FR",
+      ...propertyForm,
       rental_mode: rentalMode || "long_term",
     }).select("id").single();
     setSaving(false);
