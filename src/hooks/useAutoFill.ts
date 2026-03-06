@@ -135,12 +135,18 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
     const property = properties.find(p => p.id === propertyId);
     if (!property) return null;
 
+    const fullAddress = `${property.address}, ${property.postal_code} ${property.city}`;
+
     return {
       propertyId: property.id,
       propertyLabel: property.label,
-      propertyAddress: property.address,
+      propertyAddress: fullAddress,
+      fullAddress,
+      address: fullAddress,
       propertyPostalCode: property.postal_code,
+      propertyZipCode: property.postal_code,
       propertyCity: property.city,
+      propertyCountry: property.country || "",
       propertyType: property.property_type,
       propertySurface: property.surface,
       propertyRooms: property.rooms,
@@ -149,12 +155,14 @@ export function useAutoFill(properties: Property[], tenants: Tenant[]) {
       propertyFloor: property.floor,
       propertyHeating: property.heating,
       propertyFurnished: property.furnished,
+      furnished: property.furnished ? "yes" : "no",
       propertyBuildingName: property.building_name || "",
       propertyLotNumber: property.lot_number || "",
-      fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
+      propertyReference: property.lot_number || property.label || "",
       rentAmount: property.monthly_rent,
       chargesAmount: property.monthly_charges,
       depositAmount: property.deposit_amount,
+      totalAmount: (Number(property.monthly_rent) || 0) + (Number(property.monthly_charges) || 0),
     };
   }, [properties]);
 
