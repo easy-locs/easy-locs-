@@ -9,6 +9,7 @@ import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n, COUNTRY_LOCALE_MAP } from "@/lib/i18n";
+import { getCountryLabelsMap } from "@/lib/global-country-registry";
 
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
@@ -19,25 +20,7 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   company: "page.documents.cat_company",
   legal: "page.documents.cat_legal",
 };
-const countryLabels: Record<string, string> = {
-  // Europe
-  FR: "🇫🇷 France", BE: "🇧🇪 Belgique", ES: "🇪🇸 España", IT: "🇮🇹 Italia", DE: "🇩🇪 Deutschland",
-  PT: "🇵🇹 Portugal", NL: "🇳🇱 Nederland", GB: "🇬🇧 United Kingdom", CH: "🇨🇭 Suisse", AT: "🇦🇹 Österreich", LU: "🇱🇺 Luxembourg",
-  PL: "🇵🇱 Polska", SE: "🇸🇪 Sverige", DK: "🇩🇰 Danmark", NO: "🇳🇴 Norge", FI: "🇫🇮 Suomi",
-  GR: "🇬🇷 Ελλάδα", CZ: "🇨🇿 Česko", HU: "🇭🇺 Magyarország", RO: "🇷🇴 România", HR: "🇭🇷 Hrvatska",
-  IE: "🇮🇪 Ireland", BG: "🇧🇬 България", SK: "🇸🇰 Slovensko",
-  // Americas
-  US: "🇺🇸 United States", CA: "🇨🇦 Canada", BR: "🇧🇷 Brasil", MX: "🇲🇽 México",
-  AR: "🇦🇷 Argentina", CL: "🇨🇱 Chile", CO: "🇨🇴 Colombia", PE: "🇵🇪 Perú",
-  // Africa
-  MA: "🇲🇦 Maroc", TN: "🇹🇳 Tunisie", DZ: "🇩🇿 Algérie", SN: "🇸🇳 Sénégal", CI: "🇨🇮 Côte d'Ivoire",
-  CM: "🇨🇲 Cameroun", NG: "🇳🇬 Nigeria", KE: "🇰🇪 Kenya", GH: "🇬🇭 Ghana", ZA: "🇿🇦 South Africa",
-  // Middle East
-  AE: "🇦🇪 UAE", SA: "🇸🇦 Saudi Arabia", QA: "🇶🇦 Qatar", IL: "🇮🇱 Israel", TR: "🇹🇷 Türkiye",
-  // Asia-Pacific
-  JP: "🇯🇵 日本", KR: "🇰🇷 대한민국", IN: "🇮🇳 India", TH: "🇹🇭 ประเทศไทย", MY: "🇲🇾 Malaysia",
-  VN: "🇻🇳 Việt Nam", PH: "🇵🇭 Philippines", ID: "🇮🇩 Indonesia", AU: "🇦🇺 Australia", SG: "🇸🇬 Singapore", NZ: "🇳🇿 New Zealand",
-};
+const countryLabels: Record<string, string> = getCountryLabelsMap();
 
 interface DocRow {
   id: string;
