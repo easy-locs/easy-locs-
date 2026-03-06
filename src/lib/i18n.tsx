@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt";
+export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja";
 
 /* ─── Country → Locale mapping ─── */
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
