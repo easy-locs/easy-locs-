@@ -3728,6 +3728,7 @@ const pagePt: Record<string, string> = {
   "page.dashboard.revenue_trend": "Tendência receita (6 meses)", "page.dashboard.quick_actions": "Ações rápidas", "page.dashboard.generate_receipt": "Gerar recibo", "page.dashboard.create_lease": "Criar contrato", "page.dashboard.view_reminders": "Ver lembretes", "page.dashboard.my_vault": "Meu cofre",
   "page.dashboard.ai_question": "O que devo fazer agora?", "page.dashboard.ai_desc": "IA analisa sua situação e sugere ações.", "page.dashboard.alerts": "Alertas e ações", "page.dashboard.all_good": "Tudo atualizado! 🎉",
   "page.dashboard.unpaid_rents": "aluguel(is) não pago(s)", "page.dashboard.vacant_props": "imóvel(is) vago(s)", "page.dashboard.active_reminders": "lembrete(s) ativo(s)", "page.dashboard.to_fill": "Para preencher", "page.dashboard.to_process": "Pendente", "page.dashboard.collected": "Recebido", "page.dashboard.unpaid_label": "Não pago", "page.dashboard.no_unpaid": "0 não pago",
+  "page.dashboard.world_map": "Meu portfólio mundial",
   "page.tasks.title": "Tarefas", "page.tasks.subtitle": "Gerencie suas tarefas", "page.tasks.new": "Nova tarefa", "page.tasks.empty": "Sem tarefas.",
   "page.notes.title": "Notas", "page.notes.subtitle": "Suas notas pessoais", "page.notes.new": "Nova nota", "page.notes.empty": "Sem notas.",
   "page.interventions.title": "Intervenções", "page.interventions.subtitle": "Acompanhamento de obras e reparos", "page.interventions.new": "Nova intervenção", "page.interventions.empty": "Nenhuma intervenção registrada.",
