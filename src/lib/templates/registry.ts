@@ -107,7 +107,6 @@ const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country
 
 // Generate localized templates for all countries without dedicated packs
 const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
-  .filter((country) => !existingCountries.has(country.code))
   .flatMap((country) => {
     const cc = country.code.toLowerCase();
     const L = getLabelsForCountry(country.code);
