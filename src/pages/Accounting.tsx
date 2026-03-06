@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { BookOpen, TrendingUp, DollarSign, Download, Plus, ArrowUpRight, ArrowDownRight, Globe } from "lucide-react";
+import { BookOpen, TrendingUp, DollarSign, Download, Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { getCountryFlag } from "@/lib/global-country-registry";
 import { format, parseISO, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { getAccountingRules, type CountryAccountingRules } from "@/lib/accounting-rules";

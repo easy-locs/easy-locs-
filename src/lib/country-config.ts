@@ -230,7 +230,7 @@ const frLabels = {
 
 const enLabels: typeof frLabels = {
   property: "Property", properties: "Properties", tenant: "Tenant", tenants: "Tenants",
-  rent: "Rent (excl. charges)", charges: "Service charges", deposit: "Security deposit", furnished: "Furnished",
+  rent: "Rent", charges: "Service charges", deposit: "Security deposit", furnished: "Furnished",
   leaseStart: "Lease start", leaseEnd: "Lease end", leaseType: "Lease type",
   surface: "Surface area", rooms: "Rooms", floor: "Floor", heating: "Heating",
   propertyName: "Property name", propertyType: "Type", postalCode: "Postal code", city: "City",
