@@ -3472,6 +3472,7 @@ const pageDe: Record<string, string> = {
   "page.dashboard.revenue_trend": "Umsatztrend (6 Monate)", "page.dashboard.quick_actions": "Schnellaktionen", "page.dashboard.generate_receipt": "Quittung erstellen", "page.dashboard.create_lease": "Mietvertrag erstellen", "page.dashboard.view_reminders": "Erinnerungen anzeigen", "page.dashboard.my_vault": "Mein Tresor",
   "page.dashboard.ai_question": "Was soll ich jetzt tun?", "page.dashboard.ai_desc": "Ihr Assistent analysiert Ihre Situation.", "page.dashboard.alerts": "Alarme & Aktionen", "page.dashboard.all_good": "Alles aktuell! 🎉",
   "page.dashboard.unpaid_rents": "unbezahlte Miete(n)", "page.dashboard.vacant_props": "leere Immobilie(n)", "page.dashboard.active_reminders": "aktive Erinnerung(en)", "page.dashboard.to_fill": "Zu besetzen", "page.dashboard.to_process": "Zu bearbeiten", "page.dashboard.collected": "Eingezogen", "page.dashboard.unpaid_label": "Unbezahlt", "page.dashboard.no_unpaid": "0 unbezahlt",
+  "page.dashboard.world_map": "Mein weltweites Portfolio",
   "page.tasks.title": "Aufgaben", "page.tasks.subtitle": "Verwalten Sie Ihre Aufgaben", "page.tasks.new": "Neue Aufgabe", "page.tasks.empty": "Keine Aufgaben.",
   "page.notes.title": "Notizen", "page.notes.subtitle": "Ihre persönlichen Notizen", "page.notes.new": "Neue Notiz", "page.notes.empty": "Keine Notizen.",
   "page.interventions.title": "Eingriffe", "page.interventions.subtitle": "Reparaturen und Wartung", "page.interventions.new": "Neuer Eingriff", "page.interventions.empty": "Keine Eingriffe.",
