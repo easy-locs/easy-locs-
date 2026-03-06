@@ -170,6 +170,15 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
+    // Update rent_call with payment_status and stripe reference
+    const paymentRef = `LOYER-${(rentCall.month || "").replace(/[^a-zA-Z0-9]/g, "")}-${rentCallId.slice(0, 8).toUpperCase()}`;
+    await supabaseClient.from("rent_calls").update({
+      payment_status: "processing",
+      payment_method: paymentMethod === "sepa" ? "sepa_debit" : "card",
+      payment_reference: paymentRef,
+      stripe_payment_intent_id: session.payment_intent || null,
+    }).eq("id", rentCallId);
+
     logStep("Checkout session created", { sessionId: session.id, currency, amount });
 
     return new Response(JSON.stringify({ url: session.url }), {

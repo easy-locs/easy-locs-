@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { CreditCard, Loader2, ExternalLink, Home, Banknote, Building, CheckCircle } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,11 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
-import { formatCurrency } from "@/lib/country-config";
 import { useI18n } from "@/lib/i18n";
 import { getAvailablePaymentMethods } from "@/lib/sepa-countries";
+import SepaPaymentFlow from "@/components/tenant/SepaPaymentFlow";
 
 type PaymentMethod = "card" | "sepa" | "bank_transfer";
+
+interface OwnerBankInfo {
+  full_name: string;
+  bank_iban: string | null;
+  bank_bic: string | null;
+  bank_name: string | null;
+}
 
 const TenantPay = () => {
   const { user } = useAuth();
@@ -20,16 +27,19 @@ const TenantPay = () => {
   const { propertyCountry, fmt: fmtProp, L } = useTenantProperty();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [orgInfo, setOrgInfo] = useState<any>(null);
+  const [ownerBank, setOwnerBank] = useState<OwnerBankInfo | null>(null);
+  const [hasStripeConnect, setHasStripeConnect] = useState(false);
   const [unpaidCalls, setUnpaidCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [expandedSepaId, setExpandedSepaId] = useState<string | null>(null);
 
   const ALL_METHODS = [
     { id: "card" as const, label: t("page.tenant_pay.card_label") || L.payRent, icon: CreditCard, description: t("page.tenant_pay.card_desc") || "Visa, Mastercard, Apple Pay" },
-    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "SEPA Direct Debit" },
-    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Virement", icon: Building, description: t("page.tenant_pay.transfer_desc") || "" },
+    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "Prélèvement ou virement SEPA" },
+    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Virement", icon: Building, description: t("page.tenant_pay.transfer_desc") || "Virement bancaire classique" },
   ];
 
   const availableMethodIds = useMemo(() => getAvailablePaymentMethods(propertyCountry), [propertyCountry]);
@@ -62,34 +72,73 @@ const TenantPay = () => {
       if (!tenant) { setLoading(false); return; }
       setTenantInfo(tenant);
 
-      const { data: org } = await supabase.from("orgs").select("name, email, phone").eq("id", tenant.org_id).single();
+      // Fetch org info + Stripe Connect status
+      const { data: org } = await supabase
+        .from("orgs")
+        .select("name, email, phone, stripe_account_id, stripe_onboarding_complete")
+        .eq("id", tenant.org_id)
+        .single();
       setOrgInfo(org);
+      setHasStripeConnect(!!(org?.stripe_account_id && org.stripe_onboarding_complete));
 
-      const { data } = await supabase.from("rent_calls").select("*").eq("tenant_id", tenant.id).eq("paid", false).order("month", { ascending: false });
+      // Fetch owner bank info for manual SEPA transfer
+      const { data: ownerProfile } = await supabase
+        .from("owner_profiles")
+        .select("full_name, bank_iban, bank_bic, bank_name")
+        .eq("org_id", tenant.org_id)
+        .limit(1)
+        .maybeSingle();
+      setOwnerBank(ownerProfile || null);
+
+      // Fetch unpaid rent calls
+      const { data } = await supabase
+        .from("rent_calls")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .eq("paid", false)
+        .order("month", { ascending: false });
       setUnpaidCalls(data || []);
       setLoading(false);
     };
     fetchData();
   }, [user]);
 
-  const handlePay = async (rentCallId: string) => {
-    if (method === "bank_transfer") {
-      toast({ title: t("page.tenant_pay.toast_transfer"), description: t("page.tenant_pay.toast_transfer_desc") });
-      return;
-    }
+  /** Generate a deterministic payment reference */
+  const getPaymentReference = useCallback((rentCallId: string, month: string) => {
+    const shortId = rentCallId.slice(0, 8).toUpperCase();
+    const monthClean = month.replace(/[^a-zA-Z0-9]/g, "");
+    return `LOYER-${monthClean}-${shortId}`;
+  }, []);
+
+  const handlePayStripe = async (rentCallId: string) => {
     setPayingId(rentCallId);
     try {
       const { data, error } = await supabase.functions.invoke("create-rent-payment", {
-        body: { rent_call_id: rentCallId, payment_method: method },
+        body: { rent_call_id: rentCallId, payment_method: method === "sepa" ? "sepa" : "card" },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Erreur", description: err.message, variant: "destructive" });
     } finally {
       setPayingId(null);
     }
+  };
+
+  const handlePay = async (rentCallId: string) => {
+    if (method === "sepa") {
+      setExpandedSepaId(expandedSepaId === rentCallId ? null : rentCallId);
+      return;
+    }
+    if (method === "bank_transfer") {
+      // Show transfer info via toast + expand SEPA manual
+      setMethod("sepa");
+      setExpandedSepaId(rentCallId);
+      return;
+    }
+    // Card payment
+    await handlePayStripe(rentCallId);
   };
 
   const fmt = (n: number) => fmtProp(n);
@@ -110,11 +159,12 @@ const TenantPay = () => {
           </div>
         )}
 
+        {/* Payment method selector */}
         <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 mb-6">
           <h2 className="font-semibold text-foreground mb-3">{t("page.tenant_pay.method_title")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {PAYMENT_METHODS.map((pm) => (
-              <button key={pm.id} onClick={() => setMethod(pm.id)}
+              <button key={pm.id} onClick={() => { setMethod(pm.id); setExpandedSepaId(null); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${method === pm.id ? "border-accent bg-accent/5 shadow-sm" : "border-border hover:border-accent/40"}`}>
                 <pm.icon className={`h-6 w-6 ${method === pm.id ? "text-accent" : "text-muted-foreground"}`} />
                 <p className="text-sm font-medium text-foreground">{pm.label}</p>
@@ -124,19 +174,30 @@ const TenantPay = () => {
           </div>
         </div>
 
+        {/* Bank transfer info (classic non-SEPA) */}
         {method === "bank_transfer" && orgInfo && (
           <div className="bg-accent/5 border border-accent/20 rounded-xl p-5 mb-6">
             <h3 className="text-sm font-semibold text-foreground mb-2">{t("page.tenant_pay.transfer_info")}</h3>
             <p className="text-sm text-muted-foreground">
               {t("page.tenant_pay.beneficiary")} : <span className="font-medium text-foreground">{orgInfo.name}</span>
             </p>
+            {ownerBank?.bank_iban && (
+              <p className="text-sm text-muted-foreground mt-1">
+                IBAN: <code className="font-mono text-foreground">{ownerBank.bank_iban}</code>
+              </p>
+            )}
+            {ownerBank?.bank_bic && (
+              <p className="text-sm text-muted-foreground mt-1">
+                BIC: <code className="font-mono text-foreground">{ownerBank.bank_bic}</code>
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mt-1">{t("page.tenant_pay.transfer_help")}</p>
             {orgInfo.email && <p className="text-sm text-accent mt-1">{orgInfo.email}</p>}
-            {orgInfo.phone && <p className="text-sm text-muted-foreground">{orgInfo.phone}</p>}
             <p className="text-xs text-muted-foreground mt-3">{t("page.tenant_pay.transfer_ref")}</p>
           </div>
         )}
 
+        {/* Rent calls list */}
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : !tenantInfo ? (
@@ -153,22 +214,71 @@ const TenantPay = () => {
         ) : (
           <div className="space-y-4">
             {unpaidCalls.map((call) => (
-              <div key={call.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                  <CreditCard className="h-6 w-6 text-destructive" />
+              <div key={call.id} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
+                {/* Rent call header */}
+                <div className="p-5 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                    <CreditCard className="h-6 w-6 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground">{call.month}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.tenant_pay.rent_line")} {fmt(call.rent_amount)} + {t("page.tenant_pay.charges_line")} {fmt(call.charges_amount)}
+                    </p>
+                    <p className="text-lg font-bold text-foreground mt-1">{fmt(call.total_amount)}</p>
+                    {call.payment_status && call.payment_status !== "unpaid" && (
+                      <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                        call.payment_status === "processing" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" :
+                        call.payment_status === "pending" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" :
+                        call.payment_status === "failed" ? "bg-destructive/10 text-destructive" :
+                        "bg-accent/10 text-accent"
+                      }`}>
+                        {call.payment_status === "processing" ? (t("status.processing") || "En cours") :
+                         call.payment_status === "pending" ? (t("status.pending") || "En attente") :
+                         call.payment_status === "failed" ? (t("status.failed") || "Échoué") :
+                         call.payment_status}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handlePay(call.id)}
+                    disabled={payingId === call.id}
+                    className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                  >
+                    {payingId === call.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : method === "sepa" ? (
+                      <Banknote className="h-4 w-4" />
+                    ) : method === "bank_transfer" ? (
+                      <Building className="h-4 w-4" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
+                       method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
+                       (t("page.tenant_pay.pay_btn") || "Payer")}
+                    </span>
+                    <span className="sm:hidden">
+                      {t("page.tenant_pay.pay_btn") || "Payer"}
+                    </span>
+                  </button>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">{call.month}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("page.tenant_pay.rent_line")} {fmt(call.rent_amount)} + {t("page.tenant_pay.charges_line")} {fmt(call.charges_amount)}
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">{fmt(call.total_amount)}</p>
-                </div>
-                <button onClick={() => handlePay(call.id)} disabled={payingId === call.id}
-                  className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
-                  {payingId === call.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-                  {method === "bank_transfer" ? t("page.tenant_pay.transfer_btn") : t("page.tenant_pay.pay_btn")}
-                </button>
+
+                {/* Expanded SEPA flow */}
+                {method === "sepa" && expandedSepaId === call.id && (
+                  <div className="border-t border-border p-5 bg-muted/20">
+                    <SepaPaymentFlow
+                      rentCall={call}
+                      ownerBank={ownerBank}
+                      hasStripeConnect={hasStripeConnect}
+                      fmt={fmt}
+                      onPayStripe={handlePayStripe}
+                      payingId={payingId}
+                      paymentReference={getPaymentReference(call.id, call.month)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

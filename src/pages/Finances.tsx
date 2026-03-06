@@ -35,6 +35,8 @@ interface RentCall {
   paid_date: string | null;
   tenant_id: string;
   property_id: string | null;
+  payment_status?: string;
+  payment_method?: string | null;
 }
 
 interface Expense {
@@ -97,7 +99,7 @@ const Finances = () => {
     if (!orgId) return;
     try {
       const [{ data: rc }, { data: exp }, { data: props }] = await Promise.all([
-        supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id").eq("org_id", orgId).order("month", { ascending: true }),
+        supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
         supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
         supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
       ]);
