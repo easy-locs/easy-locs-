@@ -111,9 +111,8 @@ serve(async (req) => {
     const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
-    const paymentMethods: string[] = paymentMethod === "sepa" && currency === "eur"
-      ? ["sepa_debit"]
-      : ["card"];
+    // Use automatic_payment_methods to enable card, Apple Pay, Google Pay, and SEPA when applicable
+    const useSepa = paymentMethod === "sepa" && currency === "eur";
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customerId = customers.data[0]?.id;
@@ -137,7 +136,12 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      payment_method_types: paymentMethods,
+      // Let Stripe auto-enable card, Apple Pay, Google Pay, and wallets
+      // For SEPA, explicitly set payment methods
+      ...(useSepa
+        ? { payment_method_types: ["sepa_debit"] }
+        : { payment_method_types: ["card", "link"] }
+      ),
       locale: "auto",
       success_url: `${origin}/tenant/pay?payment=success&rent_call_id=${rentCallId}`,
       cancel_url: `${origin}/tenant/pay?payment=cancel`,

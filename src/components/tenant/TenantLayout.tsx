@@ -54,11 +54,11 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const { L } = useTenantProperty();
 
   const navItems = [
-    { icon: LayoutDashboard, label: L.tenantSpace, path: "/tenant" },
-    { icon: Receipt, label: L.myReceipts, path: "/tenant/receipts" },
-    { icon: FileText, label: L.myDocuments, path: "/tenant/documents" },
-    { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages" },
-    { icon: CreditCard, label: L.payRent, path: "/tenant/pay" },
+    { icon: LayoutDashboard, label: t("badge.tenant") || L.tenantSpace, path: "/tenant" },
+    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
+    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
+    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
     { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];
@@ -88,7 +88,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           </div>
           <div className="mt-2">
-            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{L.tenantSpace}</span>
+            <span className="text-[10px] font-bold tracking-wider text-sidebar-foreground/40 uppercase bg-accent/10 text-accent px-2 py-0.5 rounded">{t("badge.tenant") || L.tenantSpace}</span>
           </div>
           {user && <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>}
         </div>
@@ -142,13 +142,13 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             to="/tenant/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <Settings className="h-4 w-4" /> {L.settingsNav}
+            <Settings className="h-4 w-4" /> {t("nav.settings") || L.settingsNav}
           </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
-            <LogOut className="h-4 w-4" /> {L.logoutNav}
+            <LogOut className="h-4 w-4" /> {t("nav.logout") || L.logoutNav}
           </button>
         </div>
       </aside>

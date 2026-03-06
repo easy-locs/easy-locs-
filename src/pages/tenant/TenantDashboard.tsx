@@ -54,10 +54,10 @@ const TenantDashboard = () => {
     ? L.leaseType : L.property;
 
   const quickCards = [
-    { icon: Receipt, label: L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "bg-info/10 text-info" },
-    { icon: FileText, label: L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "bg-success/10 text-success" },
-    { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "bg-warning/10 text-warning" },
-    { icon: CreditCard, label: L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "bg-accent/10 text-accent" },
+    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "bg-info/10 text-info" },
+    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "bg-success/10 text-success" },
+    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "bg-warning/10 text-warning" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "bg-accent/10 text-accent" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "bg-primary/10 text-primary" },
     { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "bg-muted-foreground/10 text-muted-foreground" },
   ];
