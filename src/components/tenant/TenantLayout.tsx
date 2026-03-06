@@ -17,6 +17,31 @@ const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
   { code: "de", label: "Deutsch", flag: "🇩🇪" },
   { code: "it", label: "Italiano", flag: "🇮🇹" },
   { code: "pt", label: "Português", flag: "🇵🇹" },
+  { code: "nl", label: "Nederlands", flag: "🇳🇱" },
+  { code: "pl", label: "Polski", flag: "🇵🇱" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "ja", label: "日本語", flag: "🇯🇵" },
+  { code: "ko", label: "한국어", flag: "🇰🇷" },
+  { code: "zh", label: "中文", flag: "🇨🇳" },
+  { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
+  { code: "th", label: "ไทย", flag: "🇹🇭" },
+  { code: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "id", label: "Bahasa Indonesia", flag: "🇮🇩" },
+  { code: "ms", label: "Bahasa Melayu", flag: "🇲🇾" },
+  { code: "sv", label: "Svenska", flag: "🇸🇪" },
+  { code: "da", label: "Dansk", flag: "🇩🇰" },
+  { code: "nb", label: "Norsk", flag: "🇳🇴" },
+  { code: "fi", label: "Suomi", flag: "🇫🇮" },
+  { code: "el", label: "Ελληνικά", flag: "🇬🇷" },
+  { code: "cs", label: "Čeština", flag: "🇨🇿" },
+  { code: "hu", label: "Magyar", flag: "🇭🇺" },
+  { code: "ro", label: "Română", flag: "🇷🇴" },
+  { code: "hr", label: "Hrvatski", flag: "🇭🇷" },
+  { code: "bg", label: "Български", flag: "🇧🇬" },
+  { code: "sk", label: "Slovenčina", flag: "🇸🇰" },
+  { code: "he", label: "עברית", flag: "🇮🇱" },
+  { code: "uk", label: "Українська", flag: "🇺🇦" },
 ];
 
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
@@ -100,7 +125,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
               <span>{currentLang.flag} {currentLang.label}</span>
             </button>
             {langOpen && (
-              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50">
+              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50 max-h-64 overflow-y-auto">
                 {LANGUAGES.map(lang => (
                   <button
                     key={lang.code}

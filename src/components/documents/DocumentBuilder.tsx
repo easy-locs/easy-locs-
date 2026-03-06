@@ -295,7 +295,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (!template.legalBasis) {
         toast({
           title: t("page.common.error"),
-          description: "Modèle bloqué : base légale gouvernementale manquante.",
+          description: t("page.doc_builder.no_legal_basis") !== "page.doc_builder.no_legal_basis"
+            ? t("page.doc_builder.no_legal_basis")
+            : "Template blocked: missing governmental legal basis.",
           variant: "destructive",
         });
         return;
@@ -307,7 +309,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (isLandlord && !selectedProperty) {
         toast({
           title: t("page.common.error"),
-          description: "Sélectionnez d'abord un bien du pays du modèle pour générer un document conforme.",
+          description: t("page.doc_builder.select_property_first") !== "page.doc_builder.select_property_first"
+            ? t("page.doc_builder.select_property_first")
+            : "Select a property in the template's country first.",
           variant: "destructive",
         });
         return;
@@ -316,7 +320,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (selectedProperty && selectedProperty.country !== template.country) {
         toast({
           title: t("page.common.error"),
-          description: `Le bien (${selectedProperty.country}) ne correspond pas au pays du modèle (${template.country}).`,
+          description: t("page.doc_builder.country_mismatch") !== "page.doc_builder.country_mismatch"
+            ? t("page.doc_builder.country_mismatch")
+            : `Property (${selectedProperty.country}) does not match template country (${template.country}).`,
           variant: "destructive",
         });
         return;
@@ -520,8 +526,16 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4 mb-4">
               <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Aucun bien dans le pays du modèle</p>
-                <p className="text-xs text-muted-foreground">Ajoutez un bien en {template.country} pour garantir un document conforme au format gouvernemental local.</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t("page.doc_builder.no_property_country") !== "page.doc_builder.no_property_country"
+                    ? t("page.doc_builder.no_property_country")
+                    : "No property found in the template's country"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.doc_builder.add_property_hint") !== "page.doc_builder.add_property_hint"
+                    ? t("page.doc_builder.add_property_hint")
+                    : `Add a property in ${template.country} for a compliant governmental document.`}
+                </p>
               </div>
             </div>
           )
