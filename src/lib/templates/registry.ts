@@ -15,6 +15,7 @@ import { frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC } from ".
 import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
+import { allExtraWorldTemplates2 } from "./world-packs-extra2";
 
 const allTemplates: DocumentTemplate[] = [
   // France — Rental
