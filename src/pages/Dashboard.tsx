@@ -148,7 +148,7 @@ const Dashboard = () => {
             { icon: Building, label: t("page.dashboard.properties"), value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} ${t("page.dashboard.tenants_count")}`, path: "/dashboard/rental?tab=properties" },
             { icon: Euro, label: t("page.dashboard.collected_month"), value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} ${t("page.dashboard.unpaid_amount")}` : t("page.dashboard.no_unpaid"), path: "/dashboard/rental?tab=payments" },
             { icon: Percent, label: t("page.dashboard.occupancy"), value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} ${t("page.dashboard.vacant")}`, path: "/dashboard/rental?tab=properties" },
-            { icon: FolderLock, label: t("page.dashboard.vault"), value: loading ? "..." : fmtSize(stats.vaultSize), sub: `${stats.vaultFiles} ${t("page.dashboard.files")}`, path: "/dashboard/vault" },
+            { icon: PiggyBank, label: t("page.dashboard.net_income") || "Résultat net", value: loading ? "..." : fmt(kpis.netIncome), sub: `${fmt(kpis.expensesThisMonth)} ${t("page.dashboard.expenses_label") || "dépenses"}`, path: "/dashboard/finances" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
