@@ -3240,6 +3240,26 @@ const pageEn: Record<string, string> = {
   "page.finances.csv_charges": "Charges",
   "page.finances.csv_total": "Total",
   "page.finances.csv_date": "Date",
+  // ── Legal pages ──
+  "legal.terms.title": "Terms and Conditions",
+  "legal.privacy.title": "Privacy Policy",
+  "legal.cookies.title": "Cookie Policy",
+  "legal.notice.title": "Legal Notice",
+  "legal.about.title": "About Easy-Locs",
+  "legal.contact.title": "Contact",
+  "legal.contact.subtitle": "Have a question? Contact us, we respond within 24 to 48 hours.",
+  "legal.contact.name": "Your name",
+  "legal.contact.email": "Your email",
+  "legal.contact.subject": "Subject",
+  "legal.contact.message": "Your message…",
+  "legal.contact.send": "Send",
+  "legal.contact.sent": "Message sent! We'll get back to you shortly.",
+  "legal.contact.response": "Response time",
+  "legal.help.title": "Help Center",
+  "legal.help.title_short": "Support",
+  "legal.help.subtitle": "Find answers to the most frequently asked questions.",
+  "legal.help.more": "Can't find your answer?",
+  "legal.help.contact_us": "Contact our support team by email.",
 };
 
 const pageEs: Record<string, string> = {
