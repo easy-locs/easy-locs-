@@ -342,7 +342,7 @@ const DeveloperPortal = () => {
                     {deliveries.slice(0, 20).map(d => (
                       <div key={d.id} className="flex items-center justify-between p-2 rounded-lg border border-border text-sm">
                         <div className="flex items-center gap-2">
-                          {d.success ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                          {d.success ? <CheckCircle2 className="h-4 w-4 text-accent" /> : <XCircle className="h-4 w-4 text-destructive" />}
                           <Badge variant="secondary" className="text-xs font-mono">{d.event_type}</Badge>
                         </div>
                         <div className="flex items-center gap-2">
