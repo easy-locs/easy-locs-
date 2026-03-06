@@ -14,6 +14,8 @@ import { format, subMonths } from "date-fns";
 import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { formatCurrency } from "@/lib/country-config";
+import WorldPropertyMap from "@/components/dashboard/WorldPropertyMap";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
