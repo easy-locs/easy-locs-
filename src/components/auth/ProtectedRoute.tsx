@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isTenantRoute = location.pathname.startsWith("/tenant");
 
   // Redirect to onboarding if not completed (except billing & onboarding itself)
-  if (!onboardingCompleted && !isOnboarding && !isBillingPage) {
+  if (!onboardingCompleted && !isOnboarding && !isBillingPage && !isTenantRoute) {
     return <Navigate to="/onboarding" replace />;
   }
 
