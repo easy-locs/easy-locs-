@@ -55,11 +55,13 @@ const Accounting = () => {
     return countries.sort();
   }, [properties]);
 
-  // Active accounting rules based on selected country
-  const activeRules: CountryAccountingRules = useMemo(() => {
-    if (selectedCountry !== "all") return getAccountingRules(selectedCountry);
-    return getAccountingRules(org?.country || "FR");
+  // Active accounting rules — STRICTLY from selected country profile
+  const activeCountryProfile = useMemo(() => {
+    const code = selectedCountry !== "all" ? selectedCountry : (org?.country || "FR");
+    return getCountryProfile(code);
   }, [selectedCountry, org]);
+
+  const activeRules: CountryAccountingRules = activeCountryProfile.accounting;
 
   const categories = useMemo(() => {
     return Object.entries(activeRules.categoryLabels).map(([value, label]) => ({ value, label }));
