@@ -15,43 +15,49 @@ interface Property { id: string; label: string; monthly_rent: number; monthly_ch
 
 // Country-specific fiscal configurations
 // Fiscal configs are built dynamically with i18n in the component below
+// Build fiscal configs dynamically from accounting-rules for ALL countries
+const accountingRulesMap = getAllAccountingRules();
+const COUNTRY_FLAGS: Record<string, string> = {
+  FR:"🇫🇷",DE:"🇩🇪",ES:"🇪🇸",IT:"🇮🇹",PT:"🇵🇹",GB:"🇬🇧",US:"🇺🇸",AE:"🇦🇪",JP:"🇯🇵",BR:"🇧🇷",MA:"🇲🇦",AU:"🇦🇺",IN:"🇮🇳",SG:"🇸🇬",SA:"🇸🇦",TR:"🇹🇷",
+  BE:"🇧🇪",NL:"🇳🇱",AT:"🇦🇹",CH:"🇨🇭",PL:"🇵🇱",SE:"🇸🇪",NO:"🇳🇴",DK:"🇩🇰",FI:"🇫🇮",GR:"🇬🇷",CZ:"🇨🇿",HU:"🇭🇺",RO:"🇷🇴",BG:"🇧🇬",HR:"🇭🇷",IE:"🇮🇪",
+  CA:"🇨🇦",MX:"🇲🇽",ZA:"🇿🇦",NG:"🇳🇬",KR:"🇰🇷",CN:"🇨🇳",EG:"🇪🇬",IL:"🇮🇱",QA:"🇶🇦",KW:"🇰🇼",PH:"🇵🇭",TH:"🇹🇭",VN:"🇻🇳",MY:"🇲🇾",ID:"🇮🇩",UA:"🇺🇦",SK:"🇸🇰",LU:"🇱🇺",NZ:"🇳🇿",
+};
+const FORM_NAMES: Record<string,string> = {
+  FR:"Formulaire 2044",DE:"Anlage V",ES:"Modelo 100",IT:"Modello 730",PT:"Modelo 3 (Anexo F)",GB:"Self Assessment",US:"Schedule E (1040)",
+  BE:"Déclaration IPP",NL:"Box 3",AT:"Einkommensteuererklärung",CH:"Steuererklärung",PL:"PIT-28",SE:"Inkomstdeklaration",
+  NO:"Skattemelding",DK:"Selvangivelse",FI:"Veroilmoitus",GR:"Φορολογική δήλωση",CZ:"Přiznání DPFO",HU:"SZJA",
+  RO:"Declarația 212",BG:"Годишна декларация",HR:"Porezna prijava",IE:"Form 11",CA:"T776",MX:"Declaración anual",
+  ZA:"ITR12",KR:"종합소득세",CN:"个人所得税申报",JP:"確定申告",BR:"IRPF",AU:"Tax Return",
+};
+
 const FISCAL_CONFIGS_STATIC: Record<string, {
   label: string; flag: string; formName: string; microThreshold: number; microRate: number; taxAuthority: string; taxUrl: string; lawDepotUrl: string;
   deficitMax: number | null;
   expenseFieldKeys: { key: string; labelKey: string; descKey: string }[];
-}> = {
-  FR: {
-    label: "France", flag: "🇫🇷", formName: "Formulaire 2044", microThreshold: 15000, microRate: 0.3,
-    deficitMax: 10700, taxAuthority: "impots.gouv.fr", taxUrl: "https://www.impots.gouv.fr", lawDepotUrl: "https://www.lawdepot.com/contracts/tax-declaration/",
-    expenseFieldKeys: [
-      { key: "taxeFonciere", labelKey: "page.fiscal.field_taxe_fonciere", descKey: "page.fiscal.field_taxe_fonciere_desc" },
-      { key: "assurance", labelKey: "page.fiscal.field_assurance", descKey: "page.fiscal.field_assurance_desc" },
-      { key: "travauxEntretien", labelKey: "page.fiscal.field_travaux", descKey: "page.fiscal.field_travaux_desc" },
-      { key: "fraisGestion", labelKey: "page.fiscal.field_gestion", descKey: "page.fiscal.field_gestion_desc" },
-      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_desc" },
-      { key: "chargesRecuperables", labelKey: "page.fiscal.field_charges_copro", descKey: "page.fiscal.field_charges_copro_desc" },
-      { key: "autresFrais", labelKey: "page.fiscal.field_autres", descKey: "page.fiscal.field_autres_desc" },
-    ],
-  },
-  BE: {
-    label: "Belgique", flag: "🇧🇪", formName: "Déclaration IPP", microThreshold: 0, microRate: 0,
-    deficitMax: null, taxAuthority: "finances.belgium.be", taxUrl: "https://finances.belgium.be", lawDepotUrl: "https://www.lawdepot.be/",
-    expenseFieldKeys: [
-      { key: "taxeFonciere", labelKey: "page.fiscal.field_precompte", descKey: "page.fiscal.field_precompte_desc" },
-      { key: "interetsEmprunt", labelKey: "page.fiscal.field_interets", descKey: "page.fiscal.field_interets_credit" },
-    ],
-  },
-};
+}> = {};
+
+// Populate from accounting rules
+for (const [code, rules] of Object.entries(accountingRulesMap)) {
+  FISCAL_CONFIGS_STATIC[code] = {
+    label: code, flag: COUNTRY_FLAGS[code] || "🌍", formName: FORM_NAMES[code] || "Tax Declaration",
+    microThreshold: code === "FR" ? 15000 : 0, microRate: code === "FR" ? 0.3 : 0,
+    deficitMax: code === "FR" ? 10700 : null,
+    taxAuthority: code.toLowerCase() + " tax authority", taxUrl: "#", lawDepotUrl: "https://www.lawdepot.com",
+    expenseFieldKeys: rules.deductibleCategories.map(cat => ({
+      key: cat, labelKey: `page.fiscal.field_${cat === "interest" ? "interests" : cat === "tax" ? "property_tax" : cat}`, descKey: "",
+    })),
+  };
+}
 
 const DEFAULT_CONFIG_STATIC = {
   label: "International", flag: "🌍", formName: "Tax Declaration", microThreshold: 0, microRate: 0,
   deficitMax: null, taxAuthority: "lawdepot.com", taxUrl: "https://www.lawdepot.com", lawDepotUrl: "https://www.lawdepot.com",
   expenseFieldKeys: [
-    { key: "taxeFonciere", labelKey: "page.fiscal.field_property_tax", descKey: "" },
-    { key: "assurance", labelKey: "page.fiscal.field_insurance", descKey: "" },
-    { key: "travauxEntretien", labelKey: "page.fiscal.field_maintenance", descKey: "" },
-    { key: "fraisGestion", labelKey: "page.fiscal.field_management", descKey: "" },
-    { key: "interetsEmprunt", labelKey: "page.fiscal.field_interests", descKey: "" },
+    { key: "tax", labelKey: "page.fiscal.field_property_tax", descKey: "" },
+    { key: "insurance", labelKey: "page.fiscal.field_insurance", descKey: "" },
+    { key: "maintenance", labelKey: "page.fiscal.field_maintenance", descKey: "" },
+    { key: "management", labelKey: "page.fiscal.field_management", descKey: "" },
+    { key: "interest", labelKey: "page.fiscal.field_interests", descKey: "" },
   ],
 };
 
