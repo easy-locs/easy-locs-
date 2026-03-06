@@ -155,6 +155,15 @@ function getLocale(country: string) {
   return { ...cfg, strings };
 }
 
+/** HTML-escape user-supplied strings to prevent injection in email templates */
+const esc = (s: string | null | undefined): string =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 function tpl(template: string, vars: Record<string, string | number>) {
   return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), template);
 }
