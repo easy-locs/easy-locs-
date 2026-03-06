@@ -442,14 +442,14 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
         <ArrowLeft className="h-3.5 w-3.5" /> {t("page.inventory.back")}
       </button>
 
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-foreground truncate">
             {reportType === "entry" ? t("page.inventory.entry") : t("page.inventory.exit")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
+          <p className="text-sm text-muted-foreground mt-0.5 truncate">{propertyLabel}{tenantName && ` — ${tenantName}`}</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <button onClick={() => handleSave(false)} disabled={saving}
             className="flex items-center gap-2 border border-border text-foreground text-sm px-4 py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
             <Save className="h-4 w-4" />{saving ? "…" : t("page.inventory.draft_btn")}
