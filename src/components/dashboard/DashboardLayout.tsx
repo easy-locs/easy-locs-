@@ -64,6 +64,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
         { icon: Bell, label: t("nav.reminders"), path: "/dashboard/reminders" },
         { icon: Gift, label: t("nav.referrals") || "Referrals", path: "/dashboard/referrals" },
+        { icon: Users, label: "Collaboration", path: "/dashboard/collaboration" },
         { icon: Shield, label: "Admin", path: "/dashboard/admin" },
       ],
     },
