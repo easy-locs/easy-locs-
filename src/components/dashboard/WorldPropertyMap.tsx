@@ -113,27 +113,47 @@ function PropertyMarker({
 }
 
 // --- Globe sphere ---
-function GlobeSphere() {
-  const meshRef = useRef<THREE.Mesh>(null);
+// --- Scene (globe + markers rotate together) ---
+function GlobeScene({ countries, hoveredCountry, onHover }: {
+  countries: (CountryData & { lat: number; lng: number })[];
+  hoveredCountry: string | null;
+  onHover: (code: string | null) => void;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
   const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
 
   useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.05;
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.05;
     }
   });
 
   return (
-    <group>
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[1, 64, 64]} />
-        <meshStandardMaterial
-          map={texture}
-          roughness={0.6}
-          metalness={0.1}
-        />
-      </mesh>
-      {/* Atmosphere glow */}
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[5, 3, 5]} intensity={0.8} />
+      <pointLight position={[-5, -3, -5]} intensity={0.3} color="#60a5fa" />
+
+      <group ref={groupRef}>
+        {/* Earth sphere */}
+        <mesh>
+          <sphereGeometry args={[1, 64, 64]} />
+          <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} />
+        </mesh>
+
+        {/* Property markers — inside the same rotating group */}
+        {countries.map(c => (
+          <PropertyMarker
+            key={c.code}
+            country={c}
+            radius={1.04}
+            onHover={onHover}
+            isHovered={hoveredCountry === c.code}
+          />
+        ))}
+      </group>
+
+      {/* Atmosphere glow (static, outside rotation) */}
       <mesh scale={1.06}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshBasicMaterial color="#60a5fa" transparent opacity={0.06} side={THREE.BackSide} />
@@ -142,33 +162,6 @@ function GlobeSphere() {
         <sphereGeometry args={[1, 64, 64]} />
         <meshBasicMaterial color="#3b82f6" transparent opacity={0.03} side={THREE.BackSide} />
       </mesh>
-    </group>
-  );
-}
-
-// --- Scene ---
-function GlobeScene({ countries, hoveredCountry, onHover }: {
-  countries: (CountryData & { lat: number; lng: number })[];
-  hoveredCountry: string | null;
-  onHover: (code: string | null) => void;
-}) {
-  return (
-    <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 3, 5]} intensity={0.8} />
-      <pointLight position={[-5, -3, -5]} intensity={0.3} color="#60a5fa" />
-
-      <GlobeSphere />
-
-      {countries.map(c => (
-        <PropertyMarker
-          key={c.code}
-          country={c}
-          radius={1.04}
-          onHover={onHover}
-          isHovered={hoveredCountry === c.code}
-        />
-      ))}
 
       <OrbitControls
         enableZoom={true}
@@ -178,6 +171,7 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
         autoRotate
         autoRotateSpeed={0.5}
         rotateSpeed={0.5}
+      />
       />
     </>
   );
