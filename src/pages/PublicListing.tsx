@@ -399,20 +399,9 @@ const PublicListing = () => {
                       {t("page.listing.send_request")}
                     </button>
 
-                    {nights > 0 && totalPrice > 0 && form.guest_email && form.guest_name && (
-                      <button
-                        type="button"
-                        onClick={handlePayNow}
-                        disabled={submitting}
-                        className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                      >
-                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                        {t("page.listing.pay_now")} {totalPrice}€
-                      </button>
-                    )}
                     {nights > 0 && totalPrice > 0 && (
                       <p className="text-[10px] text-muted-foreground text-center">
-                        {t("page.listing.stripe_note") || "Stripe · Apple Pay / Google Pay"}
+                        {t("page.listing.approval_note")}
                       </p>
                     )}
                   </form>
