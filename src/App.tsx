@@ -59,6 +59,10 @@ const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Install = lazy(() => import("./pages/Install"));
+const ChannelManager = lazy(() => import("./pages/ChannelManager"));
+const Accounting = lazy(() => import("./pages/Accounting"));
+const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
+const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
 
 const queryClient = new QueryClient();
 
