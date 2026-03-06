@@ -76,6 +76,7 @@ const Documents = () => {
   }, [orgId]);
 
   const activeCountry = selectedCountry || userCountry;
+  const activeLocale = getCountryEntry(activeCountry)?.locale || "en-GB";
   const activeTemplates = getActiveTemplates(activeCountry as any);
   const allTemplates = getAllTemplates();
   const europeTemplates = allTemplates.filter((t) => t.country !== activeCountry);
