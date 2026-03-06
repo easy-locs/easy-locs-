@@ -3918,7 +3918,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.tasks": "Aufgaben", "nav.notes": "Notizen", "nav.messages": "Nachrichten",
     "nav.billing": "Abonnement", "nav.logout": "Abmelden",
     "section.essential": "WESENTLICH", "section.rental": "VERMIETUNG", "section.more": "MEHR",
-    "badge.landlord": "Vermieterbereich",
+    "badge.landlord": "Vermieterbereich", "badge.tenant": "Mieterbereich",
     "dashboard.hello": "Hallo 👋", "dashboard.summary": "Hier ist eine Übersicht Ihrer Situation.",
     "dashboard.properties": "Immobilien", "dashboard.tenants_count": "Mieter",
     "dashboard.collected": "Diesen Monat eingezogen", "dashboard.unpaid": "unbezahlt",
