@@ -130,9 +130,10 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 3, 5]} intensity={0.8} />
-      <pointLight position={[-5, -3, -5]} intensity={0.3} color="#60a5fa" />
+      <ambientLight intensity={1.0} />
+      <directionalLight position={[5, 3, 5]} intensity={1.2} />
+      <directionalLight position={[-3, 2, -4]} intensity={0.5} color="#93c5fd" />
+      <pointLight position={[-5, -3, -5]} intensity={0.5} color="#60a5fa" />
 
       <group ref={groupRef}>
         {/* Earth sphere */}
