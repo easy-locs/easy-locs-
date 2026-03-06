@@ -3342,6 +3342,7 @@ const pageEs: Record<string, string> = {
   "page.dashboard.collected": "Cobrado",
   "page.dashboard.unpaid_label": "Impago",
   "page.dashboard.no_unpaid": "0 impago",
+  "page.dashboard.world_map": "Mi portafolio mundial",
   "page.tasks.title": "Tareas", "page.tasks.subtitle": "Gestiona tus tareas y acciones", "page.tasks.new": "Nueva tarea", "page.tasks.empty": "Sin tareas. Crea tareas para organizar tu gestión.",
   "page.notes.title": "Notas", "page.notes.subtitle": "Tus notas y recordatorios personales", "page.notes.new": "Nueva nota", "page.notes.empty": "Sin notas.",
   "page.interventions.title": "Intervenciones", "page.interventions.subtitle": "Seguimiento de obras y reparaciones", "page.interventions.new": "Nueva intervención", "page.interventions.empty": "Sin intervenciones registradas.",
