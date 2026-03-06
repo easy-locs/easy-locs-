@@ -73,10 +73,12 @@
 - [x] **allRequests panel** : maintenant toujours visible indépendamment de focusedRequest
 
 ## Prochaines priorités
-1. ~~Capacitor build natif (iOS + Android) — config prête, instructions user~~ ✅
-2. Channel manager OTA (Airbnb, Booking.com API)
-3. Paiements SEPA récurrents automatiques
-4. Dashboard analytics avancés (heatmap, cohortes)
+1. ~~Capacitor build natif (iOS + Android)~~ ✅
+2. ~~Channel manager iCal sync~~ ✅ (sync-ical edge function)
+3. ~~Paiements SEPA récurrents automatiques~~ ✅ (collect-sepa-rents edge function)
+4. ~~Dashboard analytics avancés~~ ✅ (résultat net, dépenses, revenus saisonniers)
+5. Channel manager OTA API (Airbnb, Booking.com)
+6. Multi-tenant collaboration (invitations co-gestionnaires)
 
 ## Derniers ajouts
 - [x] Route `/tenant/requests` (demandes de documents locataire)
