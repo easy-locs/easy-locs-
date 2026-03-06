@@ -1345,6 +1345,10 @@ const pageFr: Record<string, string> = {
   "embed.button_label": "Bouton lien (simple)",
   "embed.copied": "Code copié !",
 
+  // Pagination
+  "pagination.results": "résultats",
+  "pagination.page": "Page",
+
 
   // Data Import
   "page.import.title": "Importer mes données",
@@ -2505,6 +2509,8 @@ const pageEn: Record<string, string> = {
   "embed.iframe_label": "Iframe code (full embed)",
   "embed.button_label": "Link button (simple)",
   "embed.copied": "Code copied!",
+  "pagination.results": "results",
+  "pagination.page": "Page",
 
   // Company page
   "page.company.title": "Company",
@@ -3341,6 +3347,7 @@ const pageEs: Record<string, string> = {
   "landing.footer.desc": "Su asistente de gestión de alquileres inteligente, conforme y seguro.", "landing.footer.product": "Producto", "landing.footer.features": "Funcionalidades", "landing.footer.pricing": "Precios", "landing.footer.legal": "Legal", "landing.footer.legal_notices": "Avisos legales", "landing.footer.privacy": "Política de privacidad", "landing.footer.terms": "Condiciones de uso", "landing.footer.contact": "Contacto", "landing.footer.copyright": "Todos los derechos reservados.",
   "landing.legal.title": "Información legal", "landing.legal.text": "Esta aplicación proporciona asistencia administrativa únicamente. Los documentos generados son informativos y no sustituyen a un abogado, notario o contador.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Manténgase informado", "newsletter.subtitle": "Reciba consejos de gestión de alquileres y actualizaciones.", "newsletter.placeholder": "Su correo electrónico", "newsletter.cta": "Suscribirse", "newsletter.success": "¡Gracias! Está suscrito.", "newsletter.already_subscribed": "Ya está suscrito.", "newsletter.error": "Error. Inténtelo de nuevo.", "embed.title": "Insertar este anuncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botón enlace", "embed.copied": "¡Código copiado!",
+  "pagination.results": "resultados", "pagination.page": "Página",
 };
 
 const pageDe: Record<string, string> = {
@@ -3467,6 +3474,7 @@ const pageDe: Record<string, string> = {
   "landing.footer.desc": "Ihr intelligenter, konformer und sicherer Mietverwaltungsassistent.", "landing.footer.product": "Produkt", "landing.footer.features": "Funktionen", "landing.footer.pricing": "Preise", "landing.footer.legal": "Rechtliches", "landing.footer.legal_notices": "Impressum", "landing.footer.privacy": "Datenschutz", "landing.footer.terms": "AGB", "landing.footer.contact": "Kontakt", "landing.footer.copyright": "Alle Rechte vorbehalten.",
   "landing.legal.title": "Rechtliche Informationen", "landing.legal.text": "Diese Anwendung bietet nur administrative Unterstützung. Erstellte Dokumente sind informativ und ersetzen keinen Anwalt, Notar oder Steuerberater.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Bleiben Sie informiert", "newsletter.subtitle": "Tipps zur Mietverwaltung und Plattform-Updates.", "newsletter.placeholder": "Ihre E-Mail-Adresse", "newsletter.cta": "Abonnieren", "newsletter.success": "Danke! Sie sind angemeldet.", "newsletter.already_subscribed": "Bereits angemeldet.", "newsletter.error": "Fehler. Versuchen Sie es erneut.", "embed.title": "Anzeige einbetten", "embed.iframe_label": "Iframe-Code", "embed.button_label": "Link-Button", "embed.copied": "Code kopiert!",
+  "pagination.results": "Ergebnisse", "pagination.page": "Seite",
 };
 
 const pageIt: Record<string, string> = {
@@ -3593,6 +3601,7 @@ const pageIt: Record<string, string> = {
   "landing.footer.desc": "Il tuo assistente per la gestione degli affitti intelligente, conforme e sicuro.", "landing.footer.product": "Prodotto", "landing.footer.features": "Funzionalità", "landing.footer.pricing": "Prezzi", "landing.footer.legal": "Legale", "landing.footer.legal_notices": "Note legali", "landing.footer.privacy": "Privacy", "landing.footer.terms": "Condizioni d'uso", "landing.footer.contact": "Contatto", "landing.footer.copyright": "Tutti i diritti riservati.",
   "landing.legal.title": "Informazioni legali", "landing.legal.text": "Questa applicazione fornisce solo assistenza amministrativa. I documenti generati sono informativi e non sostituiscono un avvocato, un notaio o un commercialista.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Resta aggiornato", "newsletter.subtitle": "Consigli sulla gestione degli affitti e aggiornamenti.", "newsletter.placeholder": "Il tuo indirizzo email", "newsletter.cta": "Iscriviti", "newsletter.success": "Grazie! Sei iscritto.", "newsletter.already_subscribed": "Già iscritto.", "newsletter.error": "Errore. Riprova.", "embed.title": "Incorpora questo annuncio", "embed.iframe_label": "Codice iframe", "embed.button_label": "Pulsante link", "embed.copied": "Codice copiato!",
+  "pagination.results": "risultati", "pagination.page": "Pagina",
 };
 
 const pagePt: Record<string, string> = {
@@ -3719,6 +3728,7 @@ const pagePt: Record<string, string> = {
   "landing.footer.desc": "Seu assistente de gestão de aluguéis inteligente, conforme e seguro.", "landing.footer.product": "Produto", "landing.footer.features": "Funcionalidades", "landing.footer.pricing": "Preços", "landing.footer.legal": "Legal", "landing.footer.legal_notices": "Avisos legais", "landing.footer.privacy": "Política de privacidade", "landing.footer.terms": "Termos de uso", "landing.footer.contact": "Contato", "landing.footer.copyright": "Todos os direitos reservados.",
   "landing.legal.title": "Informação legal", "landing.legal.text": "Este aplicativo fornece apenas assistência administrativa. Os documentos gerados são informativos e não substituem um advogado, tabelião ou contador.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Fique atualizado", "newsletter.subtitle": "Dicas de gestão de aluguéis e atualizações.", "newsletter.placeholder": "Seu endereço de email", "newsletter.cta": "Inscrever-se", "newsletter.success": "Obrigado! Você está inscrito.", "newsletter.already_subscribed": "Já inscrito.", "newsletter.error": "Erro. Tente novamente.", "embed.title": "Incorporar este anúncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botão de link", "embed.copied": "Código copiado!",
+  "pagination.results": "resultados", "pagination.page": "Página",
 };
 
 const translations: Record<Locale, Record<string, string>> = {
