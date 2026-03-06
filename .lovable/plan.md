@@ -59,6 +59,12 @@
 - [x] Code-splitting React.lazy (40+ pages)
 - [x] Suite de tests de régression (54+ tests)
 
+## Correctifs appliqués
+- [x] Photos publiques : fonction `get_listing_property` (security definer) pour contourner RLS
+- [x] Flux de réservation : demande → approbation bailleur → envoi lien paiement → paiement → confirmé
+- [x] Stripe Connect : ouverture dans nouvel onglet
+- [x] Google/Apple OAuth : flux validé via @lovable.dev/cloud-auth-js
+
 ## Prochaines priorités
 1. Capacitor native mobile (iOS + Android)
 2. PWA avec service worker
