@@ -14,15 +14,10 @@ describe("Document Templates", () => {
     expect(furnished).toBeDefined();
   });
 
-  it("AE template exists in world packs", async () => {
+  it("AE has Ejari template", async () => {
     const { getTemplatesByCountry } = await import("@/lib/templates/registry");
     const aeTemplates = getTemplatesByCountry("AE");
-    // AE templates may be in world-packs, verify the module loads
-    const worldPacks = await import("@/lib/templates/world-packs");
-    expect(worldPacks).toBeDefined();
-    // Find AE template in all available templates
-    const allTemplates = aeTemplates.length > 0 ? aeTemplates : [];
-    expect(allTemplates).toBeDefined();
+    expect(aeTemplates.some((t) => t.docType === "ejari-contract")).toBe(true);
   });
 
   it("validation module exports validateDocument", async () => {

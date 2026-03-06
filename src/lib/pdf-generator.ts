@@ -48,6 +48,32 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   IL: "ILS", JO: "JOD", LB: "LBP",
 };
 
+const GOVERNMENT_AUTHORITIES: Record<string, string> = {
+  FR: "République Française — Service Public",
+  ES: "Gobierno de España — LAU",
+  DE: "Bundesrepublik Deutschland — BGB",
+  IT: "Repubblica Italiana — Legge 431/1998",
+  PT: "República Portuguesa — NRAU",
+  GB: "United Kingdom — Housing Act",
+  US: "United States — State Housing Forms",
+  CA: "Canada — Provincial Tenancy Board",
+  AE: "Government of Dubai — DLD/RERA",
+  JP: "日本国 — 借地借家法",
+  KR: "대한민국 — 주택임대차보호법",
+  CN: "中华人民共和国 — 租赁管理规定",
+  BR: "República Federativa do Brasil — Lei do Inquilinato",
+  MX: "Estados Unidos Mexicanos — Código Civil",
+};
+
+const COUNTRY_FORM_CODES: Record<string, string> = {
+  AE: "Ejari Unified Tenancy Contract",
+  FR: "Bail d'habitation type",
+  ES: "Contrato LAU",
+  DE: "Wohnraummietvertrag (BGB)",
+  IT: "Contratto abitativo L.431/1998",
+  PT: "Contrato NRAU",
+};
+
 const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
   fr: { legalBasis: "Base legale", signedIn: "Fait a", madeDate: "le", landlordLabel: "Le bailleur / L'expediteur", tenantLabel: "Le locataire / Le destinataire", copies: "Fait en deux exemplaires originaux.", disclaimer: "Document genere a titre informatif. Il ne remplace pas un conseil juridique." },
   en: { legalBasis: "Legal basis", signedIn: "Signed in", madeDate: "on", landlordLabel: "The landlord / Sender", tenantLabel: "The tenant / Recipient", copies: "Made in two original copies.", disclaimer: "Document generated for informational purposes. It does not replace legal advice." },

@@ -383,6 +383,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   // Determine which signature pad to show based on user type
   const isLandlord = userType === "landlord";
   const isTenant = userType === "tenant";
+  const propertiesForTemplate = useMemo(
+    () => properties.filter((p) => !template.country || p.country === template.country),
+    [properties, template.country]
+  );
 
   return (
     <DashboardLayout>
