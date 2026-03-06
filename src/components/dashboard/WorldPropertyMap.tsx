@@ -172,7 +172,6 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
         autoRotateSpeed={0.5}
         rotateSpeed={0.5}
       />
-      />
     </>
   );
 }
