@@ -209,7 +209,7 @@ const Documents = () => {
                     <div className="text-sm font-medium text-foreground truncate">{d.title}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {new Date(d.created_at).toLocaleDateString(COUNTRY_LOCALE_MAP[activeCountry] === "fr" ? "fr-FR" : COUNTRY_LOCALE_MAP[activeCountry] === "es" ? "es-ES" : COUNTRY_LOCALE_MAP[activeCountry] === "de" ? "de-DE" : COUNTRY_LOCALE_MAP[activeCountry] === "it" ? "it-IT" : COUNTRY_LOCALE_MAP[activeCountry] === "pt" ? "pt-PT" : "en-GB")}
+                      {new Date(d.created_at).toLocaleDateString(activeLocale)}
                       <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
                       {d.template_version && <span className="text-muted-foreground/60">v{d.template_version}</span>}
                     </div>
