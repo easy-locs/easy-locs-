@@ -53,11 +53,22 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
   };
 
+  const { user, activeRole, hasDualRole, switchRole } = useAuth();
+
   const handleAction = (n: any) => {
     markRead(n);
     setOpen(false);
-    if (n.link) navigate(n.link);
-    else if (n.type === "message") navigate("/dashboard/messages");
+    const target = n.link || (n.type === "message" ? (activeRole === "tenant" ? "/tenant/messages" : "/dashboard/messages") : null);
+    if (!target) return;
+
+    // Auto-switch role if notification targets the other portal
+    const isTenantLink = target.startsWith("/tenant");
+    const isLandlordLink = target.startsWith("/dashboard");
+    if (hasDualRole) {
+      if (isTenantLink && activeRole !== "tenant") switchRole("tenant");
+      else if (isLandlordLink && activeRole !== "landlord") switchRole("landlord");
+    }
+    navigate(target);
   };
 
   const typeIcon: Record<string, string> = {
