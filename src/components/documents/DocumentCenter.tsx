@@ -217,7 +217,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
                       {doc.emailed_at && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="flex items-center gap-0.5 text-xs text-green-600">
+                          <span className="flex items-center gap-0.5 text-xs text-success">
                             <Mail className="h-3 w-3" /> Envoyé
                           </span>
                         </>
