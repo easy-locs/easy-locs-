@@ -254,7 +254,7 @@ serve(async (req) => {
 
     const photoUrls: string[] = Array.isArray(property?.photo_urls) ? property.photo_urls : [];
     const mainPhoto = photoUrls.length > 0 ? photoUrls[0] : "";
-    const listingUrl = listing?.slug ? `https://easylocs.lovable.app/listing/${listing.slug}` : "";
+    const listingUrl = listing?.slug ? `https://www.easy-locs.com/listing/${listing.slug}` : "";
 
     // Deep-link to owner's calendar with focus on this request
     const ownerDeepLink = `/dashboard/seasonal?focusRequest=${br.id}&propertyId=${br.property_id}&month=${br.check_in.slice(0, 7)}`;
