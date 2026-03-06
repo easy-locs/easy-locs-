@@ -651,6 +651,7 @@ function buildCountryTemplates(country: CountryEntry): DocumentTemplate[] {
       id: `${cc}-rent-receipt`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "rent-receipt",
       label: `${L.receiptLabel} (${country.name})`, description: L.receiptDesc,
+      legalBasis,
       needsLegalReview: false, active: true,
       fields: [
         { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
