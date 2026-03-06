@@ -284,14 +284,14 @@ const PublicListing = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-8 bg-card border border-border rounded-xl p-5 shadow-card space-y-4">
               {submitted ? (
-                <div className="text-center py-8">
+              <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("page.listing.request_sent_desc")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("page.listing.payment_link_sent")}
+                    {t("page.listing.awaiting_approval")}
                   </p>
                 </div>
               ) : (
