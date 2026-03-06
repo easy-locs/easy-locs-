@@ -16,7 +16,7 @@ import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
 import { allExtraWorldTemplates2 } from "./world-packs-extra2";
-import { getAllCountryEntries, getCountryEntry } from "@/lib/global-country-registry";
+import { getAllCountryEntries, getCountryEntry, type CountryEntry } from "@/lib/global-country-registry";
 
 // ─── FULL LOCALIZED LABELS (31 languages) ───
 interface LegalLabels {
@@ -514,9 +514,24 @@ const COUNTRY_LANG_MAP: Record<string, string> = {
 };
 
 function getL(countryCode: string): LegalLabels {
-  const lang = COUNTRY_LANG_MAP[countryCode] || "en";
-  return ALL_LABELS[lang] || L_EN;
+  const mappedLang = COUNTRY_LANG_MAP[countryCode]?.toLowerCase();
+  const registryLang = getCountryEntry(countryCode)?.defaultLanguage?.toLowerCase();
+
+  const candidates = [mappedLang, registryLang, "en"];
+  for (const lang of candidates) {
+    if (lang && ALL_LABELS[lang]) return ALL_LABELS[lang];
+  }
+  return L_EN;
 }
+
+const DEFAULT_GOV_DOC_TYPES = [
+  "lease-residential",
+  "rent-receipt",
+  "formal-notice",
+  "inventory",
+  "termination",
+  "deposit-return",
+] as const;
 
 // ─── CORE TEMPLATES ───
 const allTemplates: DocumentTemplate[] = [
@@ -548,11 +563,22 @@ const allTemplates: DocumentTemplate[] = [
 const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country)}::${t.docType}`));
 
 // ─── GENERATE LOCALIZED GOVERNMENT-FORMAT TEMPLATES FOR ALL COUNTRIES ───
-function buildCountryTemplates(countryCode: string, countryName: string, currencySymbol: string, surfaceUnit: string, taxIdLabel: string): DocumentTemplate[] {
-  const cc = countryCode.toLowerCase();
-  const L = getL(countryCode);
-  const country = getCountryEntry(countryCode);
-  const legalBasis = country ? `${countryName} — ${taxIdLabel}` : countryName;
+function buildCountryTemplates(country: CountryEntry): DocumentTemplate[] {
+  const cc = country.code.toLowerCase();
+  const L = getL(country.code);
+  const legalBasis = `${country.name} — ${country.taxIdLabel}`;
+
+  const requiredDocTypes = new Set<string>([
+    ...DEFAULT_GOV_DOC_TYPES,
+    ...(country.legalDocumentTypes || []),
+  ]);
+
+  // UAE specific official format
+  if (country.code === "AE") requiredDocTypes.add("ejari-contract");
+
+  const hasDocType = (docType: string) => requiredDocTypes.has(docType);
+  const hasTemplate = (docType: string) => existingTemplateKeys.has(`${country.code}::${docType}`);
+  const surfaceUnit = country.measurementUnit === "imperial" ? "sq ft" : "m²";
 
   const baseFields = (withProperty = true): FieldSchema[] => {
     const fields: FieldSchema[] = [
@@ -562,6 +588,7 @@ function buildCountryTemplates(countryCode: string, countryName: string, currenc
       { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
       { key: "tenantAddress", label: `${L.fieldTenant} — ${L.fieldAddress}`, type: "text", required: false, group: L.clauseParties },
     ];
+
     if (withProperty) {
       fields.push(
         { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
@@ -569,33 +596,43 @@ function buildCountryTemplates(countryCode: string, countryName: string, currenc
         { key: "rooms", label: L.fieldRooms, type: "number", required: true, group: L.clauseProperty },
       );
     }
+
     return fields;
   };
 
   const templates: DocumentTemplate[] = [];
 
-  // 1. Lease
-  if (!existingTemplateKeys.has(`${countryCode}::lease-residential`)) {
+  if (hasDocType("lease-residential") && !hasTemplate("lease-residential")) {
     templates.push({
-      id: `${cc}-lease-residential`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-lease-residential`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "lease-residential",
-      label: `${L.leaseLabel} (${countryName})`, description: L.leaseDesc,
+      label: `${L.leaseLabel} (${country.name})`, description: L.leaseDesc,
       legalBasis, needsLegalReview: true, active: true,
       fields: [
         ...baseFields(),
-        { key: "rentAmount", label: `${L.fieldRent} (${currencySymbol})`, type: "number", required: true, group: L.clauseRent },
-        { key: "chargesAmount", label: `${L.fieldCharges} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
-        { key: "depositAmount", label: `${L.fieldDeposit} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "rentAmount", label: `${L.fieldRent} (${country.currencySymbol})`, type: "number", required: true, group: L.clauseRent },
+        { key: "chargesAmount", label: `${L.fieldCharges} (${country.currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "depositAmount", label: `${L.fieldDeposit} (${country.currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
         { key: "bankIban", label: L.fieldBankIban, type: "text", required: false, group: L.clauseRent },
         { key: "startDate", label: L.fieldStartDate, type: "date", required: true, group: L.clauseDuration },
         { key: "endDate", label: L.fieldEndDate, type: "date", required: false, group: L.clauseDuration },
-        { key: "duration", label: L.fieldDuration, type: "select", required: true, group: L.clauseDuration,
+        {
+          key: "duration",
+          label: L.fieldDuration,
+          type: "select",
+          required: true,
+          group: L.clauseDuration,
           options: [
-            { value: "6", label: "6" }, { value: "12", label: "12" },
-            { value: "24", label: "24" }, { value: "36", label: "36" },
-            { value: "48", label: "48" }, { value: "60", label: "60" },
+            { value: "6", label: "6" },
+            { value: "12", label: "12" },
+            { value: "24", label: "24" },
+            { value: "36", label: "36" },
+            { value: "48", label: "48" },
+            { value: "60", label: "60" },
             { value: "indefinite", label: "Open-ended / Indéterminée" },
-          ], defaultValue: "12" },
+          ],
+          defaultValue: "12",
+        },
         { key: "signaturePlace", label: L.fieldSignaturePlace, type: "text", required: false, group: L.clauseDuration },
       ],
       clauses: [
@@ -609,80 +646,79 @@ function buildCountryTemplates(countryCode: string, countryName: string, currenc
     });
   }
 
-  // 2. Receipt
-  if (!existingTemplateKeys.has(`${countryCode}::rent-receipt`)) {
+  if (hasDocType("rent-receipt") && !hasTemplate("rent-receipt")) {
     templates.push({
-      id: `${cc}-rent-receipt`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-rent-receipt`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "rent-receipt",
-      label: `${L.receiptLabel} (${countryName})`, description: L.receiptDesc,
+      label: `${L.receiptLabel} (${country.name})`, description: L.receiptDesc,
       needsLegalReview: false, active: true,
       fields: [
         { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
         { key: "landlordAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text", required: false, group: L.clauseParties },
         { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
         { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
-        { key: "rentAmount", label: `${L.fieldRent} (${currencySymbol})`, type: "number", required: true, group: L.clauseRent },
-        { key: "chargesAmount", label: `${L.fieldCharges} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
-        { key: "totalAmount", label: `Total (${currencySymbol})`, type: "number", required: false, group: L.clauseRent },
+        { key: "rentAmount", label: `${L.fieldRent} (${country.currencySymbol})`, type: "number", required: true, group: L.clauseRent },
+        { key: "chargesAmount", label: `${L.fieldCharges} (${country.currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "totalAmount", label: `Total (${country.currencySymbol})`, type: "number", required: false, group: L.clauseRent },
         { key: "period", label: L.fieldPeriod, type: "text", required: true, group: L.clauseRent },
         { key: "paymentDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseRent },
         { key: "signaturePlace", label: L.fieldSignaturePlace, type: "text", required: false, group: L.clauseRent },
       ],
-      clauses: [
-        { id: "receipt", label: L.clauseReceipt, required: true, text: L.receiptClause },
-      ],
+      clauses: [{ id: "receipt", label: L.clauseReceipt, required: true, text: L.receiptClause }],
     });
   }
 
-  // 3. Formal notice
-  if (!existingTemplateKeys.has(`${countryCode}::formal-notice`)) {
+  if (hasDocType("formal-notice") && !hasTemplate("formal-notice")) {
     templates.push({
-      id: `${cc}-formal-notice`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-formal-notice`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "formal-notice",
-      label: `${L.noticeLabel} (${countryName})`, description: L.noticeDesc,
+      label: `${L.noticeLabel} (${country.name})`, description: L.noticeDesc,
       legalBasis, needsLegalReview: true, active: true,
       fields: [
         ...baseFields(false),
         { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
-        { key: "amountDue", label: `${L.clauseDeposit} (${currencySymbol})`, type: "number", required: true, group: L.clauseNotice },
+        { key: "amountDue", label: `Amount due (${country.currencySymbol})`, type: "number", required: true, group: L.clauseNotice },
         { key: "noticeDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseNotice },
         { key: "details", label: "Details", type: "textarea", required: false, group: L.clauseNotice },
       ],
-      clauses: [
-        { id: "notice", label: L.clauseNotice, required: true, text: L.noticeClause },
-      ],
+      clauses: [{ id: "notice", label: L.clauseNotice, required: true, text: L.noticeClause }],
     });
   }
 
-  // 4. Inventory
-  if (!existingTemplateKeys.has(`${countryCode}::inventory`)) {
+  if (hasDocType("inventory") && !hasTemplate("inventory")) {
     templates.push({
-      id: `${cc}-inventory`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-inventory`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "inventory",
-      label: `${L.inventoryLabel} (${countryName})`, description: L.inventoryDesc,
+      label: `${L.inventoryLabel} (${country.name})`, description: L.inventoryDesc,
       needsLegalReview: false, active: true,
       fields: [
         { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
         { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
         { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
         { key: "reportDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseInventory },
-        { key: "reportType", label: "Type", type: "select", required: true, group: L.clauseInventory, options: [
-          { value: "entry", label: "Entry / Entrée" }, { value: "exit", label: "Exit / Sortie" },
-        ], defaultValue: "entry" },
+        {
+          key: "reportType",
+          label: "Type",
+          type: "select",
+          required: true,
+          group: L.clauseInventory,
+          options: [
+            { value: "entry", label: "Entry / Entrée" },
+            { value: "exit", label: "Exit / Sortie" },
+          ],
+          defaultValue: "entry",
+        },
         { key: "generalNotes", label: "Notes", type: "textarea", required: false, group: L.clauseInventory },
       ],
-      clauses: [
-        { id: "inventory", label: L.clauseInventory, required: true, text: L.inventoryClause },
-      ],
+      clauses: [{ id: "inventory", label: L.clauseInventory, required: true, text: L.inventoryClause }],
     });
   }
 
-  // 5. Termination notice
-  if (!existingTemplateKeys.has(`${countryCode}::termination`)) {
+  if (hasDocType("termination") && !hasTemplate("termination")) {
     templates.push({
-      id: `${cc}-termination`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-termination`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "termination",
-      label: `${L.terminationLabel} (${countryName})`, description: L.terminationDesc,
+      label: `${L.terminationLabel} (${country.name})`, description: L.terminationDesc,
       legalBasis, needsLegalReview: true, active: true,
       fields: [
         { key: "senderName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
@@ -693,31 +729,68 @@ function buildCountryTemplates(countryCode: string, countryName: string, currenc
         { key: "endDate", label: L.fieldEndDate, type: "date", required: true, group: L.clauseTermination },
         { key: "reason", label: "Reason / Motif", type: "textarea", required: false, group: L.clauseTermination },
       ],
-      clauses: [
-        { id: "termination", label: L.clauseTermination, required: true, text: L.terminationClause },
-      ],
+      clauses: [{ id: "termination", label: L.clauseTermination, required: true, text: L.terminationClause }],
     });
   }
 
-  // 6. Deposit return
-  if (!existingTemplateKeys.has(`${countryCode}::deposit-return`)) {
+  if (hasDocType("deposit-return") && !hasTemplate("deposit-return")) {
     templates.push({
-      id: `${cc}-deposit-return`, version: "1.0.0", country: countryCode as Country,
+      id: `${cc}-deposit-return`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "deposit-return",
-      label: `${L.depositReturnLabel} (${countryName})`, description: L.depositReturnDesc,
+      label: `${L.depositReturnLabel} (${country.name})`, description: L.depositReturnDesc,
       needsLegalReview: false, active: true,
       fields: [
         { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
         { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
         { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
-        { key: "depositAmount", label: `${L.fieldDeposit} (${currencySymbol})`, type: "number", required: true, group: L.clauseDeposit },
+        { key: "depositAmount", label: `${L.fieldDeposit} (${country.currencySymbol})`, type: "number", required: true, group: L.clauseDeposit },
         { key: "deductions", label: "Deductions / Retenues", type: "textarea", required: false, group: L.clauseDeposit },
         { key: "bankIban", label: L.fieldBankIban, type: "text", required: false, group: L.clauseDeposit },
         { key: "documentDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseDeposit },
       ],
-      clauses: [
-        { id: "deposit-return", label: L.clauseDeposit, required: true, text: L.depositReturnClause },
+      clauses: [{ id: "deposit-return", label: L.clauseDeposit, required: true, text: L.depositReturnClause }],
+    });
+  }
+
+  if (hasDocType("ejari-contract") && !hasTemplate("ejari-contract")) {
+    templates.push({
+      id: `${cc}-ejari-contract`,
+      version: "1.0.0",
+      country: country.code as Country,
+      category: "rental",
+      docType: "ejari-contract",
+      label: `Ejari Tenancy Contract (${country.name})`,
+      description: "Official-style UAE tenancy contract aligned with Ejari/DLD requirements.",
+      legalBasis: "UAE — Dubai Law No. 26 of 2007 / RERA",
+      needsLegalReview: true,
+      active: true,
+      fields: [
+        { key: "landlordName", label: "Landlord full name", type: "text", required: true, group: "SECTION 1 — Parties" },
+        { key: "landlordEmiratesId", label: "Landlord Emirates ID / Passport", type: "text", required: true, group: "SECTION 1 — Parties" },
+        { key: "tenantName", label: "Tenant full name", type: "text", required: true, group: "SECTION 1 — Parties" },
+        { key: "tenantEmiratesId", label: "Tenant Emirates ID / Passport", type: "text", required: true, group: "SECTION 1 — Parties" },
+        { key: "propertyAddress", label: "Property address", type: "text", required: true, group: "SECTION 2 — Property" },
+        { key: "makaniNumber", label: "Makani Number", type: "text", required: true, group: "SECTION 2 — Property" },
+        { key: "dewaNumber", label: "DEWA Premises No.", type: "text", required: true, group: "SECTION 2 — Property" },
+        { key: "surface", label: "Area (sq ft)", type: "number", required: true, group: "SECTION 2 — Property" },
+        { key: "rooms", label: "Bedrooms", type: "number", required: true, group: "SECTION 2 — Property" },
+        { key: "rentAmount", label: "Annual rent (AED)", type: "number", required: true, group: "SECTION 3 — Rent" },
+        { key: "depositAmount", label: "Security deposit (AED)", type: "number", required: true, group: "SECTION 3 — Rent" },
+        { key: "paymentMode", label: "Payment mode", type: "select", required: true, group: "SECTION 3 — Rent", options: [
+          { value: "Cheque", label: "Cheque" },
+          { value: "Bank transfer", label: "Bank transfer" },
+          { value: "Cash", label: "Cash" },
+        ], defaultValue: "Cheque" },
+        { key: "startDate", label: "Start date", type: "date", required: true, group: "SECTION 4 — Duration" },
+        { key: "endDate", label: "End date", type: "date", required: true, group: "SECTION 4 — Duration" },
+        { key: "ejariNumber", label: "Ejari registration number", type: "text", required: false, group: "SECTION 6 — Ejari" },
       ],
+      clauses: [{
+        id: "ejari-legal",
+        label: "Governing law",
+        required: true,
+        text: "This contract is governed by Dubai Law No. 26 of 2007 and related RERA regulations. Parties: {landlordName} and {tenantName}, property at {propertyAddress}.",
+      }],
     });
   }
 
@@ -726,13 +799,7 @@ function buildCountryTemplates(countryCode: string, countryName: string, currenc
 
 // Generate for all countries
 const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
-  .flatMap((country) => buildCountryTemplates(
-    country.code,
-    country.name,
-    country.currencySymbol,
-    country.measurementUnit === "imperial" ? "sq ft" : "m²",
-    country.taxIdLabel,
-  ));
+  .flatMap((country) => buildCountryTemplates(country));
 
 allTemplates.push(...generatedFallbackTemplates);
 

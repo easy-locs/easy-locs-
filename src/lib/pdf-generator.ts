@@ -48,6 +48,32 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   IL: "ILS", JO: "JOD", LB: "LBP",
 };
 
+const GOVERNMENT_AUTHORITIES: Record<string, string> = {
+  FR: "République Française — Service Public",
+  ES: "Gobierno de España — LAU",
+  DE: "Bundesrepublik Deutschland — BGB",
+  IT: "Repubblica Italiana — Legge 431/1998",
+  PT: "República Portuguesa — NRAU",
+  GB: "United Kingdom — Housing Act",
+  US: "United States — State Housing Forms",
+  CA: "Canada — Provincial Tenancy Board",
+  AE: "Government of Dubai — DLD/RERA",
+  JP: "日本国 — 借地借家法",
+  KR: "대한민국 — 주택임대차보호법",
+  CN: "中华人民共和国 — 租赁管理规定",
+  BR: "República Federativa do Brasil — Lei do Inquilinato",
+  MX: "Estados Unidos Mexicanos — Código Civil",
+};
+
+const COUNTRY_FORM_CODES: Record<string, string> = {
+  AE: "Ejari Unified Tenancy Contract",
+  FR: "Bail d'habitation type",
+  ES: "Contrato LAU",
+  DE: "Wohnraummietvertrag (BGB)",
+  IT: "Contratto abitativo L.431/1998",
+  PT: "Contrato NRAU",
+};
+
 const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
   fr: { legalBasis: "Base legale", signedIn: "Fait a", madeDate: "le", landlordLabel: "Le bailleur / L'expediteur", tenantLabel: "Le locataire / Le destinataire", copies: "Fait en deux exemplaires originaux.", disclaimer: "Document genere a titre informatif. Il ne remplace pas un conseil juridique." },
   en: { legalBasis: "Legal basis", signedIn: "Signed in", madeDate: "on", landlordLabel: "The landlord / Sender", tenantLabel: "The tenant / Recipient", copies: "Made in two original copies.", disclaimer: "Document generated for informational purposes. It does not replace legal advice." },
@@ -191,11 +217,13 @@ function addHeader(doc: jsPDF, title: string, country: string, docType: string):
   doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
 
   if (countryEntry) {
+    const authority = GOVERNMENT_AUTHORITIES[country] || `${countryEntry.name} — Housing Authority`;
+    const formCode = COUNTRY_FORM_CODES[country] || "Government housing template";
     setFont(doc, "bold", 8, COLOR_MUTED);
-    doc.text(sanitize(`${countryEntry.name} — ${countryEntry.taxIdLabel}`), PAGE_WIDTH - MARGIN, 19, { align: "right" });
+    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 19, { align: "right" });
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(
-      sanitize(`${docType === "rent-receipt" ? "Government receipt layout" : "Government lease layout"} · ${countryEntry.legalDocumentTypes.join(", ")}`),
+      sanitize(`${formCode} · ${countryEntry.taxIdLabel}`),
       PAGE_WIDTH - MARGIN,
       24,
       { align: "right" }
@@ -549,7 +577,7 @@ export function generateFromTemplate(
   const country = options?.country || template.country || "FR";
 
   // UAE Ejari: use dedicated official format
-  if (country === "AE" && template.docType === "lease-residential") {
+  if (country === "AE" && (template.docType === "lease-residential" || template.docType === "ejari-contract")) {
     return generateUaeEjariPdf(template, data, signatures, stamp, options);
   }
 
@@ -566,9 +594,17 @@ export function generateFromTemplate(
   }
 
   // Compute total for rental docs
-  const enrichedData = { ...data };
+  const countryEntry = getCountryEntry(country);
+  const enrichedData: Record<string, unknown> = {
+    ...data,
+    currency: String((countryEntry?.currencySymbol || "")).trim(),
+    noticePeriod: String(data.noticePeriod || "as required by local law"),
+  };
   if (data.rentAmount !== undefined && data.chargesAmount !== undefined) {
     enrichedData.total = Number(data.rentAmount) + Number(data.chargesAmount);
+  }
+  if (enrichedData.totalAmount === undefined && enrichedData.total !== undefined) {
+    enrichedData.totalAmount = enrichedData.total;
   }
 
   // Render clauses

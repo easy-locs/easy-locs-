@@ -383,6 +383,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   // Determine which signature pad to show based on user type
   const isLandlord = userType === "landlord";
   const isTenant = userType === "tenant";
+  const propertiesForTemplate = useMemo(
+    () => properties.filter((p) => !template.country || p.country === template.country),
+    [properties, template.country]
+  );
 
   return (
     <DashboardLayout>
@@ -408,64 +412,74 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         )}
 
         {/* Property selector for auto-fill by country */}
-        {isLandlord && properties.length > 0 && (
-          <div className="bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4">
-            <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              {t("page.doc_builder.prefill_property") !== "page.doc_builder.prefill_property" ? t("page.doc_builder.prefill_property") : "Pré-remplir depuis un bien"}
-            </label>
-            <select
-              value={String(data.propertyId ?? "")}
-              onChange={(e) => {
-                const propId = e.target.value;
-                if (!propId) return;
-                const propData = fillFromProperty(propId);
-                const ownerData = fillFromOwner();
-                if (propData || ownerData) {
-                  setData((prev) => {
-                    const merged: Record<string, unknown> = { ...prev, propertyId: propId };
-                    const templateKeys = new Set(template.fields.map((f) => f.key));
-                    // Apply property fields — match any template key
-                    if (propData) {
-                      for (const [key, val] of Object.entries(propData)) {
-                        if (val !== undefined && val !== null && val !== "" && templateKeys.has(key)) {
-                          merged[key] = val;
+        {isLandlord && (
+          propertiesForTemplate.length > 0 ? (
+            <div className="bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4">
+              <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+                {t("page.doc_builder.prefill_property") !== "page.doc_builder.prefill_property" ? t("page.doc_builder.prefill_property") : "Pré-remplir depuis un bien"}
+              </label>
+              <select
+                value={String(data.propertyId ?? "")}
+                onChange={(e) => {
+                  const propId = e.target.value;
+                  if (!propId) return;
+                  const propData = fillFromProperty(propId);
+                  const ownerData = fillFromOwner();
+                  if (propData || ownerData) {
+                    setData((prev) => {
+                      const merged: Record<string, unknown> = { ...prev, propertyId: propId };
+                      const templateKeys = new Set(template.fields.map((f) => f.key));
+                      // Apply property fields — match any template key
+                      if (propData) {
+                        for (const [key, val] of Object.entries(propData)) {
+                          if (val !== undefined && val !== null && val !== "" && templateKeys.has(key)) {
+                            merged[key] = val;
+                          }
+                        }
+                        // Force-set common address aliases
+                        const fullAddr = (propData as any).fullAddress;
+                        if (fullAddr) {
+                          for (const k of ["propertyAddress", "fullAddress", "address"]) {
+                            if (templateKeys.has(k)) merged[k] = fullAddr;
+                          }
                         }
                       }
-                      // Force-set common address aliases
-                      const fullAddr = (propData as any).fullAddress;
-                      if (fullAddr) {
-                        for (const k of ["propertyAddress", "fullAddress", "address"]) {
-                          if (templateKeys.has(k)) merged[k] = fullAddr;
+                      // Apply owner fields — fill empty keys
+                      if (ownerData) {
+                        for (const [key, val] of Object.entries(ownerData)) {
+                          if (val && templateKeys.has(key) && (!merged[key] || merged[key] === "" || merged[key] === 0)) {
+                            merged[key] = val;
+                          }
                         }
                       }
-                    }
-                    // Apply owner fields — fill empty keys
-                    if (ownerData) {
-                      for (const [key, val] of Object.entries(ownerData)) {
-                        if (val && templateKeys.has(key) && (!merged[key] || merged[key] === "" || merged[key] === 0)) {
-                          merged[key] = val;
-                        }
-                      }
-                    }
-                    return applyDerivedValues(merged);
-                  });
-                }
+                      return applyDerivedValues(merged);
+                    });
+                  }
 
-                // Auto-select first tenant linked to this property
-                const linkedTenants = tenants.filter(t => t.property_id === propId);
-                if (linkedTenants.length === 1) {
-                  updateField("tenantId", linkedTenants[0].id);
-                }
-              }}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">{t("page.doc_builder.select_property") !== "page.doc_builder.select_property" ? t("page.doc_builder.select_property") : "Sélectionner un bien"}</option>
-              {properties.map((p) => (
-                <option key={p.id} value={p.id}>{p.label} — {p.address}, {p.city} ({p.country})</option>
-              ))}
-            </select>
-          </div>
+                  // Auto-select first tenant linked to this property
+                  const linkedTenants = tenants.filter(t => t.property_id === propId);
+                  if (linkedTenants.length === 1) {
+                    updateField("tenantId", linkedTenants[0].id);
+                  }
+                }}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">{t("page.doc_builder.select_property") !== "page.doc_builder.select_property" ? t("page.doc_builder.select_property") : "Sélectionner un bien"}</option>
+                {propertiesForTemplate.map((p) => (
+                  <option key={p.id} value={p.id}>{p.label} — {p.address}, {p.city} ({p.country})</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4 mb-4">
+              <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Aucun bien dans le pays du modèle</p>
+                <p className="text-xs text-muted-foreground">Ajoutez un bien en {template.country} pour garantir un document conforme au format gouvernemental local.</p>
+              </div>
+            </div>
+          )
         )}
 
         {/* Tenant selector for auto-fill */}
