@@ -2,7 +2,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Infinity } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
-import { PLANS } from "@/lib/stripe-plans";
+import { PLANS, getPlanDisplay } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
