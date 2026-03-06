@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
 import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, fiAll, elAll, csAll, huAll, roAll, hrAll, bgAll, skAll, heAll, ukAll } from "./i18n-world";
 import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
+import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
@@ -3991,7 +3992,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Editar", "reviews.delete": "Eliminar", "reviews.reply": "Respuesta del propietario",
     "reviews.write_reply": "Responder", "reviews.updated": "Reseña actualizada", "reviews.submitted": "¡Reseña enviada!",
     "reviews.stars": "estrella(s)", "nav.reviews": "Reseñas", "nav.requests": "Solicitudes",
-    ...obEs, ...pageEs,
+    ...obEs, ...pageEs, ...pageEsExtra,
   },
   de: {
     "nav.dashboard": "Dashboard", "nav.properties": "Immobilien", "nav.tenants": "Mieter",
@@ -4047,7 +4048,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Bearbeiten", "reviews.delete": "Löschen", "reviews.reply": "Antwort des Vermieters",
     "reviews.write_reply": "Antworten", "reviews.updated": "Bewertung aktualisiert", "reviews.submitted": "Bewertung abgegeben!",
     "reviews.stars": "Stern(e)", "nav.reviews": "Bewertungen", "nav.requests": "Anfragen",
-    ...obDe, ...pageDe,
+    ...obDe, ...pageDe, ...pageDeExtra,
   },
   it: {
     "nav.dashboard": "Cruscotto", "nav.properties": "Immobili", "nav.tenants": "Inquilini",
@@ -4159,7 +4160,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Editar", "reviews.delete": "Excluir", "reviews.reply": "Resposta do proprietário",
     "reviews.write_reply": "Responder", "reviews.updated": "Avaliação atualizada", "reviews.submitted": "Avaliação enviada!",
     "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações", "nav.requests": "Pedidos",
-    ...obPt, ...pagePt,
+    ...obPt, ...pagePt, ...pagePtExtra,
   },
   nl: {
     "nav.dashboard": "Dashboard", "nav.properties": "Vastgoed", "nav.tenants": "Huurders",
@@ -4591,26 +4592,26 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.org_updated": "組織が更新されました",
     ...obJa, ...pageJa,
   },
-  ko: { ...koAll, ...koPayExtra },
-  zh: { ...zhAll, ...zhPayExtra },
-  hi: { ...hiAll, ...hiPayExtra },
-  th: { ...thAll, ...thPayExtra },
-  vi: { ...viAll, ...viPayExtra },
-  id: { ...idAll, ...idPayExtra },
-  ms: { ...msAll, ...msPayExtra },
-  sv: { ...svAll, ...svPayExtra },
-  da: { ...daAll, ...daPayExtra },
-  nb: { ...nbAll, ...nbPayExtra },
-  fi: { ...fiAll, ...fiPayExtra },
-  el: { ...elAll, ...elPayExtra },
-  cs: { ...csAll, ...csPayExtra },
-  hu: { ...huAll, ...huPayExtra },
-  ro: { ...roAll, ...roPayExtra },
-  hr: { ...hrAll, ...hrPayExtra },
-  bg: { ...bgAll, ...bgPayExtra },
-  sk: { ...skAll, ...skPayExtra },
-  he: { ...heAll, ...hePayExtra },
-  uk: { ...ukAll, ...ukPayExtra },
+  ko: { ...koAll, ...koPayExtra, ...koPageExtra },
+  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra },
+  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra },
+  th: { ...thAll, ...thPayExtra, ...thPageExtra },
+  vi: { ...viAll, ...viPayExtra, ...viPageExtra },
+  id: { ...idAll, ...idPayExtra, ...idPageExtra },
+  ms: { ...msAll, ...msPayExtra, ...msPageExtra },
+  sv: { ...svAll, ...svPayExtra, ...svPageExtra },
+  da: { ...daAll, ...daPayExtra, ...daPageExtra },
+  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra },
+  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra },
+  el: { ...elAll, ...elPayExtra, ...elPageExtra },
+  cs: { ...csAll, ...csPayExtra, ...csPageExtra },
+  hu: { ...huAll, ...huPayExtra, ...huPageExtra },
+  ro: { ...roAll, ...roPayExtra, ...roPageExtra },
+  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra },
+  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra },
+  sk: { ...skAll, ...skPayExtra, ...skPageExtra },
+  he: { ...heAll, ...hePayExtra, ...hePageExtra },
+  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra },
 };
 
 interface I18nContextType {
