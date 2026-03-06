@@ -61,7 +61,7 @@ serve(async (req) => {
       logStep("Existing customer", { customerId });
     }
 
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://easylocs.lovable.app";
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://www.easy-locs.com";
     
     const sessionParams: any = {
       customer: customerId,

@@ -33,8 +33,8 @@ serve(async (req) => {
 
     // Validate origin against allowlist to prevent open redirects
     const ALLOWED_ORIGINS = [
-      "https://easy-locs.lovable.app",
-      "https://easylocs.lovable.app",
+      "https://www.easy-locs.com",
+      "https://easy-locs.com",
       "https://id-preview--6da2f25e-3ae3-4df2-a117-4c1c3de6faf8.lovable.app",
     ];
     const safeOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];

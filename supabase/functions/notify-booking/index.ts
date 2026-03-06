@@ -254,7 +254,7 @@ serve(async (req) => {
 
     const photoUrls: string[] = Array.isArray(property?.photo_urls) ? property.photo_urls : [];
     const mainPhoto = photoUrls.length > 0 ? photoUrls[0] : "";
-    const listingUrl = listing?.slug ? `https://easylocs.lovable.app/listing/${listing.slug}` : "";
+    const listingUrl = listing?.slug ? `https://www.easy-locs.com/listing/${listing.slug}` : "";
 
     // Deep-link to owner's calendar with focus on this request
     const ownerDeepLink = `/dashboard/seasonal?focusRequest=${br.id}&propertyId=${br.property_id}&month=${br.check_in.slice(0, 7)}`;
@@ -278,7 +278,7 @@ serve(async (req) => {
             amount: totalPrice,
             nights,
             property_label: propertyLabel,
-            origin: "https://easylocs.lovable.app",
+            origin: "https://www.easy-locs.com",
           }),
         });
         const payData = await payRes.json();
@@ -348,7 +348,7 @@ serve(async (req) => {
                 ${br.message ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.message}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeMessage}</td></tr>` : ""}
               </table>
               <p style="text-align:center;margin-top:24px;">
-                <a href="https://easylocs.lovable.app${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
+                <a href="https://www.easy-locs.com${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
               </p>
               <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">${t.footer}</p>
             </div>`,
