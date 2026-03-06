@@ -110,7 +110,7 @@ const PropertyManagement = () => {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: pageDesc,
-    url: `https://easy-locs.lovable.app/property-management${countrySlug ? `-${countrySlug}` : ""}`,
+    url: `https://www.easy-locs.com/property-management${countrySlug ? `-${countrySlug}` : ""}`,
     ...(currentCountry ? { countryOfOrigin: { "@type": "Country", name: currentCountry.name } } : {}),
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Free plan available" },
   };
