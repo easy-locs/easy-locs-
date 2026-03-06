@@ -31,7 +31,7 @@ export const zhAll: Record<string, string> = {
   "ob.describe_property": "描述您的第一处房产", "ob.property_name": "房产名称", "ob.surface": "面积（㎡）", "ob.rooms": "房间数", "ob.monthly_rent": "月租金", "ob.charges": "管理费", "ob.deposit": "押金", "ob.furnished": "带家具", "ob.rental_mode": "租赁方式", "ob.long_term": "长期", "ob.long_term_desc": "标准租赁合同", "ob.short_term": "短期", "ob.short_term_desc": "Airbnb, Booking, 度假租赁", "ob.mixed": "混合", "ob.mixed_desc": "两种模式结合",
   "ob.connect": "连接", "ob.add_first_tenant": "添加第一位租户", "ob.lease_start": "合同开始日期", "ob.finish_title": "设置完成！", "ob.finish_desc": "您的工作空间已就绪。", "common.error": "错误",
   "page.dashboard.hello": "您好 👋", "page.dashboard.summary": "您的情况概览。", "page.dashboard.properties": "房产", "page.dashboard.tenants_count": "租户", "page.dashboard.collected_month": "本月收款", "page.dashboard.unpaid_amount": "未付", "page.dashboard.occupancy": "入住率", "page.dashboard.vacant": "空置",
-  "page.dashboard.quick_actions": "快捷操作", "page.dashboard.generate_receipt": "生成收据", "page.dashboard.create_lease": "创建合同", "page.dashboard.alerts": "提醒和操作", "page.dashboard.all_good": "一切最新！ 🎉",
+  "page.dashboard.quick_actions": "快捷操作", "page.dashboard.generate_receipt": "生成收据", "page.dashboard.create_lease": "创建合同", "page.dashboard.alerts": "提醒和操作", "page.dashboard.all_good": "一切最新！ 🎉", "page.dashboard.world_map": "我的全球投资组合",
   "page.tasks.title": "任务", "page.tasks.new": "新任务", "page.tasks.empty": "暂无任务。",
   "page.interventions.title": "维修", "page.interventions.new": "新维修", "page.interventions.empty": "暂无维修。",
   "page.finances.title": "财务", "page.finances.subtitle": "租金收入、支出和净利润",
