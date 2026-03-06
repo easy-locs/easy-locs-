@@ -5,6 +5,7 @@ import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, f
 import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
 import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
 import { pageIt as pageItFull } from "./i18n-pages-it";
+import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages, thPages, viPages, idPages, msPages, svPages, daPages, nbPages, fiPages, elPages, csPages, huPages, roPages, hrPages, bgPages, skPages, hePages, ukPages } from "./i18n-world-pages";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
