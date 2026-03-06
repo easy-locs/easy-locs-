@@ -32,8 +32,21 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+  const locale = getCountryEntry(template.country)?.locale || "en-GB";
+  const periodLabel = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(now);
 
-  const autoDateKeys = ["date", "documentDate", "signatureDate", "receiptDate", "noticeDate", "statementDate", "paymentDate"];
+  const autoDateKeys = [
+    "date",
+    "documentDate",
+    "signatureDate",
+    "receiptDate",
+    "noticeDate",
+    "statementDate",
+    "paymentDate",
+    "reportDate",
+    "leaseDate",
+    "commandmentDate",
+  ];
 
   for (const f of template.fields) {
     if (f.type === "date" && !f.defaultValue) {
@@ -46,6 +59,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       } else {
         defaults[f.key] = "";
       }
+    } else if (f.type === "select") {
+      defaults[f.key] = f.defaultValue ?? f.options?.[0]?.value ?? "";
+    } else if (f.key === "period" && !f.defaultValue) {
+      defaults[f.key] = periodLabel;
     } else {
       defaults[f.key] = f.defaultValue ?? (f.type === "number" ? 0 : "");
     }
