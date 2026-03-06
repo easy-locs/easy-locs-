@@ -217,11 +217,13 @@ function addHeader(doc: jsPDF, title: string, country: string, docType: string):
   doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
 
   if (countryEntry) {
+    const authority = GOVERNMENT_AUTHORITIES[country] || `${countryEntry.name} — Housing Authority`;
+    const formCode = COUNTRY_FORM_CODES[country] || "Government housing template";
     setFont(doc, "bold", 8, COLOR_MUTED);
-    doc.text(sanitize(`${countryEntry.name} — ${countryEntry.taxIdLabel}`), PAGE_WIDTH - MARGIN, 19, { align: "right" });
+    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 19, { align: "right" });
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(
-      sanitize(`${docType === "rent-receipt" ? "Government receipt layout" : "Government lease layout"} · ${countryEntry.legalDocumentTypes.join(", ")}`),
+      sanitize(`${formCode} · ${countryEntry.taxIdLabel}`),
       PAGE_WIDTH - MARGIN,
       24,
       { align: "right" }
