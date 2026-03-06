@@ -281,9 +281,23 @@ const Leases = () => {
                           <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title={t("page.leases.download_tooltip")}>
                             <Download className="h-4 w-4" />
                           </button>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${doc.status === "draft" ? "bg-accent/20 text-accent" : "bg-green-500/20 text-green-700"}`}>
-                             {doc.status === "draft" ? t("page.leases.ready") : t("page.leases.signed")}
-                          </span>
+                          {doc.status === "draft" ? (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await supabase.from("documents").update({ status: "finalized" }).eq("id", doc.id);
+                                toast({ title: t("page.leases.finalized") });
+                                loadSavedLeases();
+                              }}
+                              className="text-[10px] px-3 py-1 rounded-full font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
+                            >
+                              {t("page.leases.finalize")}
+                            </button>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-500/20 text-green-700">
+                              ✅ {t("page.leases.finalized")}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );

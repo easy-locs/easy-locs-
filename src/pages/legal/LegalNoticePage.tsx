@@ -16,7 +16,7 @@ const LegalNoticePage = () => {
               <strong>Easy-Locs SAS</strong><br />
               Société par actions simplifiée<br />
               Email : <a href="mailto:contact@easy-locs.com" className="text-accent hover:underline">contact@easy-locs.com</a><br />
-              Site web : <a href="https://easy-locs.lovable.app" className="text-accent hover:underline">easy-locs.lovable.app</a>
+              Site web : <a href="https://www.easy-locs.com" className="text-accent hover:underline">www.easy-locs.com</a>
             </p>
 
             <h2 className="text-lg font-semibold text-foreground">Directeur de la publication</h2>
