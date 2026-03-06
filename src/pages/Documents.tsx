@@ -227,7 +227,7 @@ const Documents = () => {
         {tab === "europe" && (
           <div className="space-y-6">
             <div className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-lg p-4">
-              <Globe className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+              <span className="text-xl shrink-0 mt-0.5">🌍</span>
               <div>
                 <p className="text-sm font-medium text-foreground">{t("page.documents.euro_title")}</p>
                 <p className="text-xs text-muted-foreground">{t("page.documents.euro_desc")}</p>
