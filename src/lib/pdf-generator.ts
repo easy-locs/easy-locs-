@@ -48,11 +48,17 @@ const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDat
 
 const COUNTRY_LANG: Record<string, string> = {
   FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt",
-  NL: "en", GB: "en", CH: "fr", AT: "de", LU: "fr",
-  PL: "en", SE: "en", DK: "en", NO: "en", FI: "en",
+  NL: "nl", GB: "en", CH: "fr", AT: "de", LU: "fr",
+  PL: "pl", SE: "en", DK: "en", NO: "en", FI: "en",
   GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en",
   IE: "en", BG: "en", SK: "en",
   AE: "en", SA: "en", QA: "en",
+  TR: "tr", JP: "ja",
+  MA: "fr", TN: "fr", DZ: "fr", SN: "fr", CI: "fr", CM: "fr",
+  US: "en", CA: "en", AU: "en", NZ: "en",
+  BR: "pt", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
+  IN: "en", SG: "en", MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
+  KR: "en", CN: "en", ZA: "en", NG: "en", KE: "en", GH: "en",
 };
 
 function getLang(country?: string): string {

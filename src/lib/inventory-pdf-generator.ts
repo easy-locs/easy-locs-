@@ -107,7 +107,9 @@ export async function generateInventoryPDF(
   doc.setFillColor(...COLOR_GOLD);
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
   setFont(doc, "bold", 16, COLOR_PRIMARY);
-  doc.text("Easy-Locs", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 22);
+  setFont(doc, "normal", 6, COLOR_PRIMARY);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
   setFont(doc, "normal", 10, COLOR_MUTED);
   doc.text(sanitize(typeLabel.toUpperCase()), MARGIN, 30);
   doc.setDrawColor(...COLOR_GOLD);
