@@ -8,6 +8,7 @@ export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr
 /* ─── Country → Locale mapping ─── */
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", SN: "fr", CI: "fr", MA: "fr", TN: "fr",
+  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr", LB: "fr",
   ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
   DE: "de", AT: "de",
   IT: "it",
@@ -16,15 +17,14 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   PL: "pl",
   TR: "tr",
   JP: "ja",
+  KR: "ko", CN: "zh",
+  IN: "hi", TH: "th", VN: "vi", ID: "id", MY: "ms",
+  SE: "sv", DK: "da", NO: "nb", FI: "fi",
+  GR: "el", CZ: "cs", HU: "hu", RO: "ro", HR: "hr", BG: "bg", SK: "sk",
+  IL: "he", UA: "uk",
   US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
   AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
-  KR: "en", CN: "en", IN: "en",
-  SE: "en", NO: "en", DK: "en", FI: "en",
-  GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en", BG: "en", SK: "en",
-  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr",
-  NG: "en", KE: "en", GH: "en",
-  MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
-  IL: "en", JO: "en", LB: "en",
+  NG: "en", KE: "en", GH: "en", PH: "en", JO: "en",
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
