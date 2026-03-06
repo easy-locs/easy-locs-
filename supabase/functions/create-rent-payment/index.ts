@@ -111,9 +111,8 @@ serve(async (req) => {
     const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
-    const paymentMethods: string[] = paymentMethod === "sepa" && currency === "eur"
-      ? ["sepa_debit"]
-      : ["card"];
+    // Use automatic_payment_methods to enable card, Apple Pay, Google Pay, and SEPA when applicable
+    const useSepa = paymentMethod === "sepa" && currency === "eur";
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customerId = customers.data[0]?.id;
