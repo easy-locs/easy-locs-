@@ -786,6 +786,68 @@ export type Database = {
           },
         ]
       }
+      landlord_profiles: {
+        Row: {
+          active: boolean | null
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          display_name: string
+          id: string
+          org_id: string
+          properties_count: number | null
+          rating: number | null
+          slug: string
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          active?: boolean | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          org_id: string
+          properties_count?: number | null
+          rating?: number | null
+          slug: string
+          updated_at?: string | null
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          active?: boolean | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          org_id?: string
+          properties_count?: number | null
+          rating?: number | null
+          slug?: string
+          updated_at?: string | null
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landlord_profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leases: {
         Row: {
           annexes_json: Json | null
@@ -1315,6 +1377,7 @@ export type Database = {
           name: string | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
+          referral_code: string | null
           signature_url: string | null
           updated_at: string
           user_type: string
@@ -1329,6 +1392,7 @@ export type Database = {
           name?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          referral_code?: string | null
           signature_url?: string | null
           updated_at?: string
           user_type?: string
@@ -1343,6 +1407,7 @@ export type Database = {
           name?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          referral_code?: string | null
           signature_url?: string | null
           updated_at?: string
           user_type?: string
@@ -1510,6 +1575,53 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          converted_at: string | null
+          created_at: string | null
+          id: string
+          referral_code: string
+          referred_email: string | null
+          referred_user_id: string | null
+          referrer_org_id: string | null
+          referrer_user_id: string
+          reward_applied: boolean | null
+          status: string
+        }
+        Insert: {
+          converted_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_org_id?: string | null
+          referrer_user_id: string
+          reward_applied?: boolean | null
+          status?: string
+        }
+        Update: {
+          converted_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_code?: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_org_id?: string | null
+          referrer_user_id?: string
+          reward_applied?: boolean | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_org_id_fkey"
+            columns: ["referrer_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
         ]
