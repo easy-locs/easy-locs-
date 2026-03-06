@@ -526,8 +526,16 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
             <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4 mb-4">
               <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground">Aucun bien dans le pays du modèle</p>
-                <p className="text-xs text-muted-foreground">Ajoutez un bien en {template.country} pour garantir un document conforme au format gouvernemental local.</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t("page.doc_builder.no_property_country") !== "page.doc_builder.no_property_country"
+                    ? t("page.doc_builder.no_property_country")
+                    : "No property found in the template's country"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.doc_builder.add_property_hint") !== "page.doc_builder.add_property_hint"
+                    ? t("page.doc_builder.add_property_hint")
+                    : `Add a property in ${template.country} for a compliant governmental document.`}
+                </p>
               </div>
             </div>
           )

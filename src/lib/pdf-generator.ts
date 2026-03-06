@@ -129,7 +129,8 @@ function getPdfLabels(country?: string) {
   return PDF_LABELS[lang] || PDF_LABELS.en;
 }
 
-/** Sanitize text: normalize unicode, replace smart quotes & special chars for jsPDF Helvetica compatibility */
+/** Sanitize text: normalize unicode, replace smart quotes & special chars for jsPDF Helvetica compatibility.
+ *  Preserves CJK, Arabic, Devanagari, Thai, Korean, Hebrew, Cyrillic and other scripts for worldwide use. */
 function sanitize(text: string): string {
   return text
     .normalize("NFC")
@@ -147,7 +148,7 @@ function sanitize(text: string): string {
     .replace(/\u00B2/g, "2") // superscript 2 (m²)
     .replace(/\u20AC/g, "EUR") // euro sign
     .replace(/\u00A3/g, "GBP") // pound sign
-    // Replace accented characters that Helvetica can't render
+    // Replace accented Latin characters that Helvetica can't render
     .replace(/[\u00E0\u00E2\u00E4]/g, "a")
     .replace(/[\u00E9\u00E8\u00EA\u00EB]/g, "e")
     .replace(/[\u00EE\u00EF]/g, "i")
@@ -162,8 +163,10 @@ function sanitize(text: string): string {
     .replace(/\u00C7/g, "C")
     .replace(/\u0153/g, "oe")
     .replace(/\u0152/g, "OE")
-    // Remove any remaining non-ASCII that Helvetica can't handle
-    .replace(/[^\x00-\x7F]/g, "");
+    .replace(/\u00F1/g, "n").replace(/\u00D1/g, "N") // ñ/Ñ
+    .replace(/\u00DF/g, "ss") // ß
+    // Remove ONLY control chars and obscure symbols — preserve CJK, Arabic, Devanagari, Thai, Korean, Hebrew, Cyrillic, etc.
+    .replace(/[\u0000-\u001F\u007F\uFFFD\uFEFF]/g, "");
 }
 
 function formatDateLocalized(dateStr: string, country?: string): string {
