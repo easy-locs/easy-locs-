@@ -1345,6 +1345,10 @@ const pageFr: Record<string, string> = {
   "embed.button_label": "Bouton lien (simple)",
   "embed.copied": "Code copié !",
 
+  // Pagination
+  "pagination.results": "résultats",
+  "pagination.page": "Page",
+
 
   // Data Import
   "page.import.title": "Importer mes données",
