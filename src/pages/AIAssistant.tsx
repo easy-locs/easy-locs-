@@ -3,7 +3,7 @@ import { BrainCircuit, Send, Loader2, User } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import { useRentalData } from "@/hooks/useRentalData";
 
 interface Message {
