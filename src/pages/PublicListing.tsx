@@ -138,29 +138,6 @@ const PublicListing = () => {
     }
   }, [listing]);
 
-  const handlePayNow = async () => {
-    if (!listing || !property || totalPrice <= 0) return;
-    setSubmitting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-booking-payment", {
-        body: {
-          listing_id: listing.id,
-          guest_email: form.guest_email || "guest@temp.com",
-          guest_name: form.guest_name || "Voyageur",
-          amount: totalPrice,
-          nights,
-          property_label: listing.title || property.label,
-          origin: window.location.origin,
-        },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   if (loading) {
     return (
