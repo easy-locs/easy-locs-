@@ -119,21 +119,16 @@ const Buildings = () => {
                 <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                   placeholder={t("page.buildings.placeholder_name")} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
-               <div>
-                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
-                 <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
-                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
-                   {BUILDING_TYPES.map(bt => <option key={bt.value} value={bt.value}>{t(bt.labelKey)}</option>)}
-                 </select>
-               </div>
-               <div>
-                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.country") || "Country"}</label>
-                 <CountrySelect value={form.country} onChange={code => setForm(p => ({ ...p, country: code }))} className="mt-1" />
-               </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.type")}</label>
                 <select value={form.building_type} onChange={e => setForm(p => ({ ...p, building_type: e.target.value }))}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1">
                   {BUILDING_TYPES.map(bt => <option key={bt.value} value={bt.value}>{t(bt.labelKey)}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.country") || "Country"}</label>
+                <CountrySelect value={form.country} onChange={code => setForm(p => ({ ...p, country: code }))} className="mt-1" />
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-muted-foreground">{t("page.buildings.address")}</label>
@@ -143,12 +138,6 @@ const Buildings = () => {
                   onChange={val => setForm(p => ({ ...p, address: val }))}
                   placeholder={t("page.buildings.placeholder_address")}
                   countryCode={form.country}
-                />
-              </div>
-                  value={form.address}
-                  onSelect={handleAddressSelect}
-                  onChange={val => setForm(p => ({ ...p, address: val }))}
-                  placeholder={t("page.buildings.placeholder_address")}
                 />
               </div>
               <div>
