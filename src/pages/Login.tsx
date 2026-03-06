@@ -32,8 +32,8 @@ const Login = () => {
     const hasOrg = !!orgLink;
 
     if (hasTenant && hasOrg) {
-      const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
-      return savedRole === "tenant" ? "/tenant" : "/dashboard";
+      // Dual-role: default to landlord dashboard, user can switch via sidebar
+      return "/dashboard";
     }
 
     if (hasTenant && !hasOrg) return "/tenant";
