@@ -51,6 +51,11 @@ import TenantSettings from "./pages/tenant/TenantSettings";
 // TenantRequests removed - documents available directly on tenant interface
 import TenantSignup from "./pages/TenantSignup";
 import PublicListing from "./pages/PublicListing";
+// SEO + Growth
+import PropertyManagement from "./pages/PropertyManagement";
+import LandlordProfile from "./pages/LandlordProfile";
+import Referrals from "./pages/Referrals";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
