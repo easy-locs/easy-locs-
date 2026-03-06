@@ -4,6 +4,7 @@ import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { fr, enUS, es, de, it, pt } from "date-fns/locale";
 import type { Locale as DateFnsLocale } from "date-fns";
@@ -18,6 +19,15 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
+const MESSAGE_CATEGORIES = [
+  { value: "general", label: "💬", fullLabel: "💬 Général" },
+  { value: "payment", label: "💰", fullLabel: "💰 Paiement" },
+  { value: "lease", label: "📝", fullLabel: "📝 Bail" },
+  { value: "inspection", label: "📋", fullLabel: "📋 Inspection" },
+  { value: "maintenance", label: "🔧", fullLabel: "🔧 Maintenance" },
+  { value: "legal", label: "⚖️", fullLabel: "⚖️ Juridique" },
+];
+
 const TenantMessages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,10 +36,12 @@ const TenantMessages = () => {
   const [loading, setLoading] = useState(true);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("general");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const dateLang = (getCountryConfig(propertyCountry).locale || "fr-FR").slice(0, 2);
   const dateFnsLocale = DATE_LOCALES[dateLang] || DATE_LOCALES.fr;
+  const tenantLocale = dateLang;
 
   useEffect(() => {
     if (!tenantId) return;
@@ -69,16 +81,42 @@ const TenantMessages = () => {
     const messageToSend = newMsg.trim();
     setSending(true);
     try {
+      // Translate if needed
+      let translatedContent: string | null = null;
+      const landlordLocale = "fr"; // default, will be overridden by sender_locale on landlord side
+      if (tenantLocale !== landlordLocale) {
+        try {
+          const { data: transData } = await supabase.functions.invoke("translate-message", {
+            body: { text: messageToSend, from_locale: tenantLocale, to_locale: landlordLocale },
+          });
+          if (transData?.translated) translatedContent = transData.translated;
+        } catch (e) {
+          console.error("Translation failed:", e);
+        }
+      }
+
       const { data: inserted, error } = await supabase
         .from("messages")
-        .insert({ tenant_id: tenantId, org_id: orgId, sender_id: user.id, content: messageToSend })
+        .insert({
+          tenant_id: tenantId, org_id: orgId, sender_id: user.id,
+          content: messageToSend, translated_content: translatedContent,
+          category: selectedCategory, sender_locale: tenantLocale,
+        })
         .select("*")
         .single();
+
       if (error) {
         toast({ title: T.error, description: error.message, variant: "destructive" });
       } else {
         if (inserted) setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
         setNewMsg("");
+
+        // Audit log
+        await supabase.from("audit_logs").insert({
+          user_id: user.id, org_id: orgId, action: "message_sent",
+          metadata_json: { tenant_id: tenantId, category: selectedCategory, direction: "tenant_to_landlord" },
+        });
+
         if (orgId) {
           try {
             const { data: org } = await supabase.from("orgs").select("email, owner_user_id").eq("id", orgId).single();
@@ -103,7 +141,7 @@ const TenantMessages = () => {
                     <h2 style="color:#1a1a1a;text-align:center;">📩 ${escapeEmailHtml(L.emailNewMsgFromTenant)}</h2>
                     <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailTenantSentMsg)}</p>
                     <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
+                      <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || messageToSend)}</p>
                     </div>
                     <div style="text-align:center;margin:24px 0;">
                       <a href="${appUrl}/dashboard/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
@@ -122,6 +160,8 @@ const TenantMessages = () => {
       setSending(false);
     }
   };
+
+  const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.label || "💬";
 
   return (
     <TenantLayout>
@@ -144,7 +184,12 @@ const TenantMessages = () => {
                 return (
                   <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
-                      <p className="text-sm">{m.content}</p>
+                      {m.category && m.category !== "general" && (
+                        <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(m.category)}</span>
+                      )}
+                      <p className="text-sm">
+                        {isMe ? m.content : (m.translated_content || m.content)}
+                      </p>
                       <p className={`text-[10px] mt-1 ${isMe ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
                         {format(new Date(m.created_at), "dd MMM HH:mm", { locale: dateFnsLocale })}
                       </p>
@@ -157,7 +202,17 @@ const TenantMessages = () => {
           </div>
 
           {tenantId && (
-            <form onSubmit={handleSend} className="border-t border-border p-3 flex gap-2">
+            <form onSubmit={handleSend} className="border-t border-border p-3 flex gap-2 items-center">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-12 h-9 px-2">
+                  <span className="text-sm">{getCategoryIcon(selectedCategory)}</span>
+                </SelectTrigger>
+                <SelectContent>
+                  {MESSAGE_CATEGORIES.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.fullLabel}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <input
                 type="text"
                 value={newMsg}

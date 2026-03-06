@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { MessageCircle, Send, ArrowLeft, User } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, User, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
@@ -27,24 +28,30 @@ interface Message {
   sender_id: string;
   tenant_id: string;
   content: string;
+  translated_content: string | null;
+  category: string;
   read: boolean;
   created_at: string;
 }
 
+const MESSAGE_CATEGORIES = [
+  { value: "general", label: "💬 Général", icon: "💬" },
+  { value: "payment", label: "💰 Paiement", icon: "💰" },
+  { value: "lease", label: "📝 Bail", icon: "📝" },
+  { value: "inspection", label: "📋 Inspection", icon: "📋" },
+  { value: "maintenance", label: "🔧 Maintenance", icon: "🔧" },
+  { value: "legal", label: "⚖️ Juridique", icon: "⚖️" },
+];
+
 const escapeEmailHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
 
 const normalizeEmail = (email: string | null | undefined) => (email || "").trim().toLowerCase();
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Messages = () => {
   const { user, orgId } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -52,9 +59,10 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [selectedCategory, setSelectedCategory] = useState("general");
+  const [filterCategory, setFilterCategory] = useState("all");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load tenants with their properties
   const loadTenants = useCallback(async () => {
     if (!orgId) return;
     const { data } = await supabase
@@ -64,7 +72,6 @@ const Messages = () => {
       .order("name");
 
     if (data) {
-      // Load property labels and countries
       const propertyIds = data.filter(t => t.property_id).map(t => t.property_id!);
       let propertyMap: Record<string, { label: string; country: string }> = {};
       if (propertyIds.length > 0) {
@@ -76,7 +83,6 @@ const Messages = () => {
           propertyMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
         }
       }
-
       setTenants(data.map(t => ({
         ...t,
         property_label: t.property_id ? propertyMap[t.property_id]?.label : undefined,
@@ -86,7 +92,6 @@ const Messages = () => {
     setLoading(false);
   }, [orgId]);
 
-  // Load unread counts
   const loadUnreadCounts = useCallback(async () => {
     if (!orgId || !user) return;
     const { data } = await supabase
@@ -98,14 +103,11 @@ const Messages = () => {
 
     if (data) {
       const counts: Record<string, number> = {};
-      data.forEach(m => {
-        counts[m.tenant_id] = (counts[m.tenant_id] || 0) + 1;
-      });
+      data.forEach(m => { counts[m.tenant_id] = (counts[m.tenant_id] || 0) + 1; });
       setUnreadCounts(counts);
     }
   }, [orgId, user]);
 
-  // Load messages for selected tenant
   const loadMessages = useCallback(async () => {
     if (!orgId || !selectedTenant) return;
     const { data } = await supabase
@@ -117,15 +119,9 @@ const Messages = () => {
 
     if (data) {
       setMessages(data as Message[]);
-      // Mark unread messages as read
-      const unreadIds = data
-        .filter(m => !m.read && m.sender_id !== user?.id)
-        .map(m => m.id);
+      const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
       if (unreadIds.length > 0) {
-        await supabase
-          .from("messages")
-          .update({ read: true })
-          .in("id", unreadIds);
+        await supabase.from("messages").update({ read: true }).in("id", unreadIds);
         loadUnreadCounts();
       }
     }
@@ -133,29 +129,20 @@ const Messages = () => {
 
   useEffect(() => { loadTenants(); loadUnreadCounts(); }, [loadTenants, loadUnreadCounts]);
   useEffect(() => { loadMessages(); }, [loadMessages]);
-
-  // Scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  // Realtime subscription
   useEffect(() => {
     if (!orgId) return;
     const channel = supabase
       .channel("messages-realtime")
       .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `org_id=eq.${orgId}`,
+        event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
       }, (payload) => {
         const newMsg = payload.new as Message;
         if (selectedTenant && newMsg.tenant_id === selectedTenant.id) {
-          setMessages(prev => [...prev, newMsg]);
-          // Mark as read if it's not from us
+          setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
           if (newMsg.sender_id !== user?.id) {
             supabase.from("messages").update({ read: true }).eq("id", newMsg.id).then(() => loadUnreadCounts());
           }
@@ -164,59 +151,78 @@ const Messages = () => {
         }
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [orgId, selectedTenant, user, loadUnreadCounts]);
 
-  const handleSend = async () => {
-    if (!newMessage.trim() || !selectedTenant || !orgId || !user) return;
-    const messageToSend = newMessage.trim();
-
+  const translateAndSend = async (content: string, category: string) => {
+    if (!selectedTenant || !orgId || !user) return;
     setSending(true);
-    const { error } = await supabase.from("messages").insert({
-      org_id: orgId,
-      sender_id: user.id,
-      tenant_id: selectedTenant.id,
-      content: messageToSend,
-      read: false,
-    });
+    try {
+      // Determine tenant locale from property country
+      const propCountry = selectedTenant.property_country || "FR";
+      const tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+      const senderLocale = locale;
 
-    if (error) {
-      toast.error(t("page.messages.send_error"));
-    } else {
+      let translatedContent: string | null = null;
+      if (senderLocale !== tenantLocale) {
+        try {
+          const { data: transData } = await supabase.functions.invoke("translate-message", {
+            body: { text: content, from_locale: senderLocale, to_locale: tenantLocale },
+          });
+          if (transData?.translated) translatedContent = transData.translated;
+        } catch (e) {
+          console.error("Translation failed, sending without translation:", e);
+        }
+      }
+
+      const { error } = await supabase.from("messages").insert({
+        org_id: orgId,
+        sender_id: user.id,
+        tenant_id: selectedTenant.id,
+        content,
+        translated_content: translatedContent,
+        category,
+        sender_locale: senderLocale,
+        read: false,
+      });
+
+      if (error) {
+        toast.error(t("page.messages.send_error"));
+        return;
+      }
+
       setNewMessage("");
 
+      // Audit log
+      await supabase.from("audit_logs").insert({
+        user_id: user.id, org_id: orgId, action: "message_sent",
+        metadata_json: { tenant_id: selectedTenant.id, category },
+      });
+
+      // In-app notification
       if (selectedTenant.tenant_user_id) {
-        const propCountry = selectedTenant.property_country || "FR";
         const L = getCountryConfig(propCountry).labels;
         await supabase.from("notifications").insert({
-          user_id: selectedTenant.tenant_user_id,
-          org_id: orgId,
-          type: "message",
-          title: L.notifNewMsgLandlord,
-          message: L.notifLandlordSentMsg,
-          link: "/tenant/messages",
+          user_id: selectedTenant.tenant_user_id, org_id: orgId, type: "message",
+          title: L.notifNewMsgLandlord, message: L.notifLandlordSentMsg, link: "/tenant/messages",
         });
       }
 
+      // Email notification
       const tenantEmail = normalizeEmail(selectedTenant.email);
-      const propCountry = selectedTenant.property_country || "FR";
-      const L = getCountryConfig(propCountry).labels;
       if (tenantEmail && isValidEmail(tenantEmail)) {
+        const L = getCountryConfig(propCountry).labels;
+        const appUrl = window.location.origin;
         try {
-          const appUrl = window.location.origin;
-          const { data, error: emailError } = await supabase.functions.invoke("send-email", {
+          await supabase.functions.invoke("send-email", {
             body: {
               to: tenantEmail,
               subject: L.emailNewMsgSubjectFromLandlord,
               html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                <div style="text-align:center;margin-bottom:24px;">
-                  <h2 style="color:#1a1a1a;margin:0;">📩 ${escapeEmailHtml(L.emailNewMsgFromLandlord)}</h2>
-                </div>
-                <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailHello)},</p>
+                <h2 style="color:#1a1a1a;text-align:center;">📩 ${escapeEmailHtml(L.emailNewMsgFromLandlord)}</h2>
                 <p style="color:#555;font-size:15px;">${escapeEmailHtml(L.emailYouReceivedMsg)}</p>
                 <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                  <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(messageToSend)}</p>
+                  <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || content)}</p>
                 </div>
                 <div style="text-align:center;margin:24px 0;">
                   <a href="${appUrl}/tenant/messages" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">${escapeEmailHtml(L.emailReplyInApp)}</a>
@@ -225,25 +231,29 @@ const Messages = () => {
               </div>`,
             },
           });
-
-          if (emailError || (data && data.success === false)) {
-            throw emailError || new Error(data?.error || "Échec notification email");
-          }
         } catch (mailErr: any) {
-          toast.error(`${t("page.messages.sent_no_email")}: ${mailErr.message}`);
+          console.error("Email notification failed:", mailErr);
         }
       }
+    } finally {
+      setSending(false);
     }
+  };
 
-    setSending(false);
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+    translateAndSend(newMessage.trim(), selectedCategory);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
+
+  const filteredMessages = filterCategory === "all"
+    ? messages
+    : messages.filter(m => m.category === filterCategory);
+
+  const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
   return (
     <DashboardLayout>
@@ -311,22 +321,33 @@ const Messages = () => {
           <div className={`flex-1 flex flex-col ${!selectedTenant ? "hidden md:flex" : "flex"}`}>
             {selectedTenant ? (
               <>
-                {/* Chat header */}
-                <div className="p-3 border-b border-border/50 flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
+                <div className="p-3 border-b border-border/50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{selectedTenant.name}</p>
+                      {selectedTenant.email && <p className="text-xs text-muted-foreground">{selectedTenant.email}</p>}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{selectedTenant.name}</p>
-                    {selectedTenant.email && (
-                      <p className="text-xs text-muted-foreground">{selectedTenant.email}</p>
-                    )}
-                  </div>
+                  {/* Category filter */}
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-40 h-8 text-xs">
+                      <Filter className="h-3 w-3 mr-1" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous</SelectItem>
+                      {MESSAGE_CATEGORIES.map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* Messages */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {messages.length === 0 ? (
+                  {filteredMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
                         <MessageCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
@@ -334,16 +355,19 @@ const Messages = () => {
                       </div>
                     </div>
                   ) : (
-                    messages.map(msg => {
+                    filteredMessages.map(msg => {
                       const isMe = msg.sender_id === user?.id;
                       return (
                         <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                            isMe
-                              ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-muted text-foreground rounded-bl-md"
+                            isMe ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"
                           }`}>
-                            <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                            {msg.category !== "general" && (
+                              <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
+                            )}
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {isMe ? msg.content : (msg.translated_content || msg.content)}
+                            </p>
                             <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                               {format(new Date(msg.created_at), "HH:mm", { locale: fr })}
                             </p>
@@ -354,8 +378,18 @@ const Messages = () => {
                   )}
                 </div>
 
-                {/* Input */}
-                <div className="p-3 border-t border-border/50 flex gap-2">
+                {/* Input with category selector */}
+                <div className="p-3 border-t border-border/50 flex gap-2 items-center">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-12 h-9 px-2">
+                      <span className="text-sm">{getCategoryIcon(selectedCategory)}</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MESSAGE_CATEGORIES.map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Input
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}

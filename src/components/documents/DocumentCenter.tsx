@@ -1,0 +1,268 @@
+import { useState, useEffect } from "react";
+import { FileText, Download, Mail, CheckCircle, Clock, Loader2, PenTool } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
+import { format } from "date-fns";
+
+interface DocRecord {
+  id: string;
+  title: string;
+  doc_type: string;
+  status: string;
+  pdf_url: string | null;
+  created_at: string;
+  requires_signature: boolean;
+  signed_by_owner_at: string | null;
+  signed_by_tenant_at: string | null;
+  emailed_at: string | null;
+  country: string;
+}
+
+const DOC_TYPE_LABELS: Record<string, { icon: string; label: string }> = {
+  "rent-receipt": { icon: "🧾", label: "Quittance" },
+  "lease": { icon: "📝", label: "Bail" },
+  "payment-notice": { icon: "📬", label: "Avis d'échéance" },
+  "inventory": { icon: "📋", label: "État des lieux" },
+  "dunning": { icon: "⚠️", label: "Relance" },
+  "termination": { icon: "📤", label: "Résiliation" },
+  "formal-notice": { icon: "⚖️", label: "Mise en demeure" },
+  "sworn-statement": { icon: "📜", label: "Attestation" },
+  "other": { icon: "📄", label: "Autre" },
+};
+
+interface Props {
+  propertyId?: string;
+  tenantId?: string;
+  showActions?: boolean;
+}
+
+const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => {
+  const { user, orgId } = useAuth();
+  const { toast } = useToast();
+  const { t } = useI18n();
+  const [docs, setDocs] = useState<DocRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("all");
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orgId) return;
+    const fetchDocs = async () => {
+      let query = supabase
+        .from("documents")
+        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at, country")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false });
+
+      if (propertyId) {
+        // Filter docs linked to this property via data_json
+        // We can't filter on jsonb easily, so we fetch and filter client-side
+      }
+
+      const { data } = await query;
+      setDocs((data as DocRecord[]) || []);
+      setLoading(false);
+    };
+    fetchDocs();
+  }, [orgId, propertyId]);
+
+  const filteredDocs = filterType === "all" ? docs : docs.filter(d => d.doc_type === filterType);
+
+  const openDocument = async (doc: DocRecord) => {
+    if (!doc.pdf_url) {
+      toast({ title: "Erreur", description: "Pas de PDF disponible", variant: "destructive" });
+      return;
+    }
+    setOpeningId(doc.id);
+    try {
+      const { data } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+      } else {
+        toast({ title: "Erreur", description: "Impossible d'ouvrir le document", variant: "destructive" });
+      }
+    } finally {
+      setOpeningId(null);
+    }
+  };
+
+  const emailDocument = async (doc: DocRecord) => {
+    if (!doc.pdf_url || !orgId) return;
+    setSendingId(doc.id);
+    try {
+      // Get tenant email from doc data
+      const { data: docData } = await supabase
+        .from("documents")
+        .select("data_json")
+        .eq("id", doc.id)
+        .single();
+
+      const tenantIdFromDoc = (docData?.data_json as any)?.tenant_id;
+      if (!tenantIdFromDoc) {
+        toast({ title: "Erreur", description: "Pas de locataire associé", variant: "destructive" });
+        return;
+      }
+
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("email, name")
+        .eq("id", tenantIdFromDoc)
+        .single();
+
+      if (!tenant?.email) {
+        toast({ title: "Erreur", description: "Email du locataire non disponible", variant: "destructive" });
+        return;
+      }
+
+      // Get signed URL for attachment
+      const { data: urlData } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
+
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: tenant.email,
+          subject: `📎 ${doc.title}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+            <h2 style="color:#1a1a1a;text-align:center;">📎 ${doc.title}</h2>
+            <p style="color:#555;font-size:15px;">Bonjour ${tenant.name},</p>
+            <p style="color:#555;font-size:15px;">Vous trouverez ci-joint votre document : <strong>${doc.title}</strong>.</p>
+            ${urlData?.signedUrl ? `<div style="text-align:center;margin:24px 0;">
+              <a href="${urlData.signedUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">📥 Télécharger le document</a>
+            </div>` : ""}
+            <p style="color:#888;font-size:12px;text-align:center;">E-mail envoyé automatiquement.</p>
+          </div>`,
+        },
+      });
+
+      // Update doc as emailed
+      await supabase.from("documents").update({ emailed_at: new Date().toISOString() }).eq("id", doc.id);
+
+      // Audit log
+      await supabase.from("audit_logs").insert({
+        user_id: user!.id, org_id: orgId, action: "document_emailed",
+        metadata_json: { document_id: doc.id, doc_type: doc.doc_type, tenant_email: tenant.email },
+      });
+
+      // Notify tenant in-app
+      if (tenantIdFromDoc) {
+        const { data: tenantData } = await supabase.from("tenants").select("tenant_user_id").eq("id", tenantIdFromDoc).single();
+        if (tenantData?.tenant_user_id) {
+          await supabase.from("notifications").insert({
+            user_id: tenantData.tenant_user_id, org_id: orgId, type: "document",
+            title: "📎 Nouveau document", message: `${doc.title} disponible`, link: "/tenant/documents",
+          });
+        }
+      }
+
+      setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, emailed_at: new Date().toISOString() } : d));
+      toast({ title: "✅ Envoyé", description: `Document envoyé à ${tenant.email}` });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const getTypeInfo = (type: string) => DOC_TYPE_LABELS[type] || DOC_TYPE_LABELS.other;
+
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Filter bar */}
+      <div className="flex items-center gap-3">
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-48 h-9">
+            <SelectValue placeholder="Filtrer par type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">📁 Tous les documents</SelectItem>
+            {Object.entries(DOC_TYPE_LABELS).map(([key, { icon, label }]) => (
+              <SelectItem key={key} value={key}>{icon} {label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Badge variant="secondary" className="text-xs">{filteredDocs.length} document(s)</Badge>
+      </div>
+
+      {filteredDocs.length === 0 ? (
+        <div className="bg-card rounded-xl p-8 border border-border/50 text-center">
+          <FileText className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">Aucun document</p>
+        </div>
+      ) : (
+        <ScrollArea className="max-h-[60vh]">
+          <div className="bg-card rounded-xl border border-border/50 divide-y divide-border">
+            {filteredDocs.map(doc => {
+              const typeInfo = getTypeInfo(doc.doc_type);
+              return (
+                <div key={doc.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 text-lg">
+                    {typeInfo.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-muted-foreground">{typeInfo.label}</span>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd/MM/yyyy")}</span>
+                      {doc.emailed_at && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="flex items-center gap-0.5 text-xs text-success">
+                            <Mail className="h-3 w-3" /> Envoyé
+                          </span>
+                        </>
+                      )}
+                      {doc.requires_signature && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="flex items-center gap-0.5 text-xs text-warning">
+                            <PenTool className="h-3 w-3" />
+                            {doc.signed_by_owner_at && doc.signed_by_tenant_at ? "Signé" :
+                             doc.signed_by_owner_at ? "Signé (bailleur)" :
+                             doc.signed_by_tenant_at ? "Signé (locataire)" : "À signer"}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {showActions && (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => openDocument(doc)}
+                        disabled={!doc.pdf_url || openingId === doc.id}
+                        title="Télécharger"
+                      >
+                        {openingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost" size="icon"
+                        onClick={() => emailDocument(doc)}
+                        disabled={sendingId === doc.id}
+                        title="Envoyer par email"
+                      >
+                        {sendingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
+  );
+};
+
+export default DocumentCenter;
