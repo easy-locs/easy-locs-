@@ -1329,6 +1329,22 @@ const pageFr: Record<string, string> = {
   "page.charges.balanced": "Équilibré",
   "page.charges.legal_notice": "La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).",
 
+  // Newsletter
+  "newsletter.badge": "Newsletter",
+  "newsletter.title": "Restez informé des nouveautés",
+  "newsletter.subtitle": "Recevez nos conseils de gestion locative et les mises à jour de la plateforme.",
+  "newsletter.placeholder": "Votre adresse email",
+  "newsletter.cta": "S'inscrire",
+  "newsletter.success": "Merci ! Vous êtes inscrit à notre newsletter.",
+  "newsletter.already_subscribed": "Vous êtes déjà inscrit.",
+  "newsletter.error": "Une erreur est survenue. Réessayez.",
+
+  // Embed widget
+  "embed.title": "Intégrer cette annonce",
+  "embed.iframe_label": "Code iframe (intégration complète)",
+  "embed.button_label": "Bouton lien (simple)",
+  "embed.copied": "Code copié !",
+
 
   // Data Import
   "page.import.title": "Importer mes données",
