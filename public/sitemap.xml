@@ -2,14 +2,58 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://easy-locs.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://easy-locs.lovable.app/property-management</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <!-- Europe -->
   <url><loc>https://easy-locs.lovable.app/property-management-france</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://easy-locs.lovable.app/property-management-uk</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://easy-locs.lovable.app/property-management-spain</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://easy-locs.lovable.app/property-management-dubai</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://easy-locs.lovable.app/property-management-germany</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://easy-locs.lovable.app/property-management-italy</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://easy-locs.lovable.app/rental-management</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://easy-locs.lovable.app/landlord-software</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-portugal</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-netherlands</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-belgium</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-switzerland</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-austria</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-poland</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-sweden</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-ireland</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-greece</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <!-- Americas -->
+  <url><loc>https://easy-locs.lovable.app/property-management-usa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-canada</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-brazil</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-mexico</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-argentina</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-colombia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <!-- Africa -->
+  <url><loc>https://easy-locs.lovable.app/property-management-morocco</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-tunisia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-south-africa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-nigeria</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-senegal</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <!-- Middle East -->
+  <url><loc>https://easy-locs.lovable.app/property-management-dubai</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-saudi-arabia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-turkey</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-qatar</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <!-- Asia-Pacific -->
+  <url><loc>https://easy-locs.lovable.app/property-management-japan</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-australia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-singapore</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-india</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-thailand</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://easy-locs.lovable.app/property-management-new-zealand</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <!-- SEO alt pages -->
+  <url><loc>https://easy-locs.lovable.app/rental-management</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://easy-locs.lovable.app/landlord-software</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <!-- Auth -->
   <url><loc>https://easy-locs.lovable.app/login</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://easy-locs.lovable.app/signup</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <!-- Legal -->
+  <url><loc>https://easy-locs.lovable.app/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://easy-locs.lovable.app/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://easy-locs.lovable.app/cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://easy-locs.lovable.app/legal-notice</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://easy-locs.lovable.app/about</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://easy-locs.lovable.app/contact</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://easy-locs.lovable.app/help</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
 </urlset>

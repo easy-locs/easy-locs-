@@ -4,12 +4,46 @@ import { useI18n } from "@/lib/i18n";
 import logoEasylocs from "@/assets/logo-easylocs.png";
 
 const COUNTRY_PAGES = [
+  // Europe
   { slug: "france", flag: "🇫🇷", name: "France" },
   { slug: "uk", flag: "🇬🇧", name: "United Kingdom" },
   { slug: "spain", flag: "🇪🇸", name: "Spain" },
-  { slug: "dubai", flag: "🇦🇪", name: "Dubai / UAE" },
   { slug: "germany", flag: "🇩🇪", name: "Germany" },
   { slug: "italy", flag: "🇮🇹", name: "Italy" },
+  { slug: "portugal", flag: "🇵🇹", name: "Portugal" },
+  { slug: "netherlands", flag: "🇳🇱", name: "Netherlands" },
+  { slug: "belgium", flag: "🇧🇪", name: "Belgium" },
+  { slug: "switzerland", flag: "🇨🇭", name: "Switzerland" },
+  { slug: "austria", flag: "🇦🇹", name: "Austria" },
+  { slug: "poland", flag: "🇵🇱", name: "Poland" },
+  { slug: "sweden", flag: "🇸🇪", name: "Sweden" },
+  { slug: "ireland", flag: "🇮🇪", name: "Ireland" },
+  { slug: "greece", flag: "🇬🇷", name: "Greece" },
+  // Americas
+  { slug: "usa", flag: "🇺🇸", name: "United States" },
+  { slug: "canada", flag: "🇨🇦", name: "Canada" },
+  { slug: "brazil", flag: "🇧🇷", name: "Brazil" },
+  { slug: "mexico", flag: "🇲🇽", name: "Mexico" },
+  { slug: "argentina", flag: "🇦🇷", name: "Argentina" },
+  { slug: "colombia", flag: "🇨🇴", name: "Colombia" },
+  // Africa
+  { slug: "morocco", flag: "🇲🇦", name: "Morocco" },
+  { slug: "tunisia", flag: "🇹🇳", name: "Tunisia" },
+  { slug: "south-africa", flag: "🇿🇦", name: "South Africa" },
+  { slug: "nigeria", flag: "🇳🇬", name: "Nigeria" },
+  { slug: "senegal", flag: "🇸🇳", name: "Senegal" },
+  // Middle East
+  { slug: "dubai", flag: "🇦🇪", name: "Dubai / UAE" },
+  { slug: "saudi-arabia", flag: "🇸🇦", name: "Saudi Arabia" },
+  { slug: "turkey", flag: "🇹🇷", name: "Turkey" },
+  { slug: "qatar", flag: "🇶🇦", name: "Qatar" },
+  // Asia-Pacific
+  { slug: "japan", flag: "🇯🇵", name: "Japan" },
+  { slug: "australia", flag: "🇦🇺", name: "Australia" },
+  { slug: "singapore", flag: "🇸🇬", name: "Singapore" },
+  { slug: "india", flag: "🇮🇳", name: "India" },
+  { slug: "thailand", flag: "🇹🇭", name: "Thailand" },
+  { slug: "new-zealand", flag: "🇳🇿", name: "New Zealand" },
 ];
 
 const FEATURES = [

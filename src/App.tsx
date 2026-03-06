@@ -105,14 +105,7 @@ const App = () => (
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              <Route path="/property-management-france" element={<PropertyManagement />} />
-              <Route path="/property-management-uk" element={<PropertyManagement />} />
-              <Route path="/property-management-spain" element={<PropertyManagement />} />
-              <Route path="/property-management-dubai" element={<PropertyManagement />} />
-              <Route path="/property-management-germany" element={<PropertyManagement />} />
-              <Route path="/property-management-italy" element={<PropertyManagement />} />
-              <Route path="/rental-management" element={<PropertyManagement />} />
-              <Route path="/landlord-software" element={<PropertyManagement />} />
+              <Route path="/property-management-:country" element={<PropertyManagement />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
