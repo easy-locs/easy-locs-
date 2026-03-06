@@ -2493,6 +2493,19 @@ const pageEn: Record<string, string> = {
   "landing.legal.title": "Legal information",
   "landing.legal.text": "This application provides administrative assistance only. Generated documents are for informational purposes and do not replace a lawyer, notary or accountant.",
 
+  "newsletter.badge": "Newsletter",
+  "newsletter.title": "Stay up to date",
+  "newsletter.subtitle": "Get property management tips and platform updates.",
+  "newsletter.placeholder": "Your email address",
+  "newsletter.cta": "Subscribe",
+  "newsletter.success": "Thank you! You're subscribed to our newsletter.",
+  "newsletter.already_subscribed": "You're already subscribed.",
+  "newsletter.error": "An error occurred. Please try again.",
+  "embed.title": "Embed this listing",
+  "embed.iframe_label": "Iframe code (full embed)",
+  "embed.button_label": "Link button (simple)",
+  "embed.copied": "Code copied!",
+
   // Company page
   "page.company.title": "Company",
   "page.company.subtitle": "Create, manage and modify your company — SAS, SARL, EURL or sole proprietorship.",
