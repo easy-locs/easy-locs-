@@ -56,6 +56,7 @@ const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
 const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Install = lazy(() => import("./pages/Install"));
 
 const queryClient = new QueryClient();
 
