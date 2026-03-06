@@ -112,8 +112,7 @@ const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
     const L = getLabelsForCountry(country.code);
     const surfaceUnit = country.measurementUnit === "imperial" ? "sq ft" : "m²";
 
-    return [
-      // 1. Lease
+    const candidates: DocumentTemplate[] = [
       {
         id: `${cc}-lease-residential`,
         version: "1.0.0",
