@@ -211,9 +211,10 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
     >
       <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
         <Globe className="h-5 w-5 text-accent" />
-        {t("page.dashboard.world_map") || "Portefeuille mondial"}
-        <span className="text-sm font-normal text-muted-foreground ml-2">
-          {totalProperties} {t("page.dashboard.properties_in") || "biens dans"} {propertiesByCountry.length} {t("page.dashboard.countries") || "pays"}
+        {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
+        <span className="mx-1 text-muted-foreground/40">—</span>
+        <span className="text-sm font-normal text-muted-foreground">
+          {totalProperties} {totalProperties > 1 ? (t("page.dashboard.properties_plural") || "biens") : (t("page.dashboard.properties_singular") || "bien")} · {propertiesByCountry.length} {propertiesByCountry.length > 1 ? (t("page.dashboard.countries_plural") || "pays") : (t("page.dashboard.country_singular") || "pays")}
         </span>
       </h2>
 
