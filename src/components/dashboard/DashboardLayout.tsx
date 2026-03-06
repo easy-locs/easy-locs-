@@ -46,6 +46,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.rental"),
       items: [
         { icon: Calendar, label: t("nav.seasonal"), path: "/dashboard/seasonal" },
+        { icon: Layers, label: "Channel Manager", path: "/dashboard/channel-manager" },
+        { icon: Zap, label: "Tarification dynamique", path: "/dashboard/pricing" },
         { icon: UserSearch, label: t("nav.candidates"), path: "/dashboard/candidates" },
         { icon: Receipt, label: t("nav.notices"), path: "/dashboard/notices" },
         { icon: AlertTriangle, label: t("nav.dunning"), path: "/dashboard/dunning" },
