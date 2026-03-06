@@ -13,7 +13,7 @@ const SEOHead = ({
   title = "Easy-Locs — Property Management Software for Landlords Worldwide",
   description = "Manage rental properties in 110+ countries. Leases, receipts, tenant portal, accounting — all-in-one platform for landlords. Free to start.",
   canonical,
-  ogImage = "https://easy-locs.lovable.app/pwa-512x512.png",
+  ogImage = "https://www.easy-locs.com/pwa-512x512.png",
   jsonLd,
   hreflangAlternates,
 }: SEOHeadProps) => {

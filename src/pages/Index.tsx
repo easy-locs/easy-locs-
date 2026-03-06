@@ -13,7 +13,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description: "Property management software for landlords worldwide. Manage leases, receipts, tenants, and accounting in 110+ countries.",
-  url: "https://easy-locs.lovable.app",
+  url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl"],
   offers: {
     "@type": "AggregateOffer",
@@ -30,21 +30,21 @@ const jsonLd = {
   provider: {
     "@type": "Organization",
     name: "Easy-Locs",
-    url: "https://easy-locs.lovable.app",
+    url: "https://www.easy-locs.com",
   },
 };
 
 const hreflangAlternates = [
-  { lang: "x-default", url: "https://easy-locs.lovable.app/" },
-  { lang: "fr", url: "https://easy-locs.lovable.app/" },
-  { lang: "en", url: "https://easy-locs.lovable.app/" },
-  { lang: "es", url: "https://easy-locs.lovable.app/property-management-spain" },
-  { lang: "de", url: "https://easy-locs.lovable.app/property-management-germany" },
-  { lang: "it", url: "https://easy-locs.lovable.app/property-management-italy" },
-  { lang: "pt", url: "https://easy-locs.lovable.app/property-management-portugal" },
-  { lang: "ar", url: "https://easy-locs.lovable.app/property-management-dubai" },
-  { lang: "ja", url: "https://easy-locs.lovable.app/property-management-japan" },
-  { lang: "tr", url: "https://easy-locs.lovable.app/property-management-turkey" },
+  { lang: "x-default", url: "https://www.easy-locs.com/" },
+  { lang: "fr", url: "https://www.easy-locs.com/" },
+  { lang: "en", url: "https://www.easy-locs.com/" },
+  { lang: "es", url: "https://www.easy-locs.com/property-management-spain" },
+  { lang: "de", url: "https://www.easy-locs.com/property-management-germany" },
+  { lang: "it", url: "https://www.easy-locs.com/property-management-italy" },
+  { lang: "pt", url: "https://www.easy-locs.com/property-management-portugal" },
+  { lang: "ar", url: "https://www.easy-locs.com/property-management-dubai" },
+  { lang: "ja", url: "https://www.easy-locs.com/property-management-japan" },
+  { lang: "tr", url: "https://www.easy-locs.com/property-management-turkey" },
 ];
 
 const Index = () => {
@@ -53,7 +53,7 @@ const Index = () => {
       <SEOHead
         title="Easy-Locs — Property Management Software | 110+ Countries"
         description="All-in-one rental management for landlords worldwide. Leases, receipts, tenant portal, accounting. Free to start. Available in 31 languages."
-        canonical="https://easy-locs.lovable.app/"
+        canonical="https://www.easy-locs.com/"
         jsonLd={jsonLd}
         hreflangAlternates={hreflangAlternates}
       />
