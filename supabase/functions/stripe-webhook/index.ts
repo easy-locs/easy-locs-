@@ -415,6 +415,8 @@ async function handleRentPayment(supabase: any, metadata: Record<string, string>
     paid: true,
     paid_date: new Date().toISOString(),
     payment_method: "stripe",
+    payment_status: "paid",
+    stripe_payment_intent_id: session.payment_intent || null,
   }).eq("id", rentCallId);
 
   const { data: rc } = await supabase.from("rent_calls").select("*").eq("id", rentCallId).single();
