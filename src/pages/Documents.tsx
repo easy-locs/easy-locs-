@@ -8,8 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
-import { useI18n, COUNTRY_LOCALE_MAP } from "@/lib/i18n";
-import { getCountryLabelsMap } from "@/lib/global-country-registry";
+import { useI18n } from "@/lib/i18n";
+import { getCountryEntry, getCountryLabelsMap } from "@/lib/global-country-registry";
 import CountrySelect from "@/components/ui/CountrySelect";
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
