@@ -199,13 +199,13 @@ const Accounting = () => {
             {propertyCountries.length > 1 && (
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                 <SelectTrigger className="w-[160px]">
-                  <Globe className="h-4 w-4 mr-1" />
+                  <span className="mr-1">{selectedCountry === "all" ? "🌍" : getCountryFlag(selectedCountry)}</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all_countries") || "Tous les pays"}</SelectItem>
+                  <SelectItem value="all">🌍 {t("common.all_countries") || "Tous les pays"}</SelectItem>
                   {propertyCountries.map(c => (
-                    <SelectItem key={c} value={c}>{c} — {COUNTRY_CURRENCY_MAP[c] || "EUR"}</SelectItem>
+                    <SelectItem key={c} value={c}>{getCountryFlag(c)} {c} — {COUNTRY_CURRENCY_MAP[c] || "EUR"}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
