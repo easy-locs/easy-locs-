@@ -1387,6 +1387,78 @@ export type Database = {
           },
         ]
       }
+      pricing_rules: {
+        Row: {
+          active: boolean | null
+          adjustment_type: string
+          adjustment_value: number
+          created_at: string
+          days_of_week: number[] | null
+          end_date: string | null
+          id: string
+          max_occupancy: number | null
+          min_occupancy: number | null
+          name: string
+          org_id: string
+          priority: number
+          property_id: string
+          rule_type: string
+          start_date: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          adjustment_type?: string
+          adjustment_value?: number
+          created_at?: string
+          days_of_week?: number[] | null
+          end_date?: string | null
+          id?: string
+          max_occupancy?: number | null
+          min_occupancy?: number | null
+          name: string
+          org_id: string
+          priority?: number
+          property_id: string
+          rule_type?: string
+          start_date?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          adjustment_type?: string
+          adjustment_value?: number
+          created_at?: string
+          days_of_week?: number[] | null
+          end_date?: string | null
+          id?: string
+          max_occupancy?: number | null
+          min_occupancy?: number | null
+          name?: string
+          org_id?: string
+          priority?: number
+          property_id?: string
+          rule_type?: string
+          start_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           country: string | null
@@ -2058,6 +2130,145 @@ export type Database = {
           },
         ]
       }
+      service_bookings: {
+        Row: {
+          amount: number
+          commission_rate: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          org_id: string
+          property_id: string | null
+          provider_id: string
+          rating: number | null
+          review_text: string | null
+          service_date: string
+          service_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          property_id?: string | null
+          provider_id: string
+          rating?: number | null
+          review_text?: string | null
+          service_date: string
+          service_type?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string | null
+          provider_id?: string
+          rating?: number | null
+          review_text?: string | null
+          service_date?: string
+          service_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bookings_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_providers: {
+        Row: {
+          active: boolean | null
+          avatar_url: string | null
+          category: string
+          city: string | null
+          country: string
+          created_at: string
+          currency: string
+          description: string | null
+          email: string | null
+          hourly_rate: number | null
+          id: string
+          name: string
+          phone: string | null
+          rating: number | null
+          reviews_count: number | null
+          updated_at: string
+          verified: boolean | null
+        }
+        Insert: {
+          active?: boolean | null
+          avatar_url?: string | null
+          category?: string
+          city?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          email?: string | null
+          hourly_rate?: number | null
+          id?: string
+          name: string
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          updated_at?: string
+          verified?: boolean | null
+        }
+        Update: {
+          active?: boolean | null
+          avatar_url?: string | null
+          category?: string
+          city?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          email?: string | null
+          hourly_rate?: number | null
+          id?: string
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          reviews_count?: number | null
+          updated_at?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       share_links: {
         Row: {
           created_at: string
@@ -2420,6 +2631,82 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_journal: {
+        Row: {
+          category: string
+          created_at: string
+          credit: number
+          currency: string
+          debit: number
+          id: string
+          label: string
+          notes: string | null
+          org_id: string
+          property_id: string | null
+          source_id: string | null
+          source_type: string | null
+          tenant_id: string | null
+          transaction_date: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          credit?: number
+          currency?: string
+          debit?: number
+          id?: string
+          label: string
+          notes?: string | null
+          org_id: string
+          property_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant_id?: string | null
+          transaction_date?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          credit?: number
+          currency?: string
+          debit?: number
+          id?: string
+          label?: string
+          notes?: string | null
+          org_id?: string
+          property_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant_id?: string | null
+          transaction_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_journal_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_journal_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_journal_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
