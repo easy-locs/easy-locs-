@@ -278,7 +278,7 @@ serve(async (req) => {
             amount: totalPrice,
             nights,
             property_label: propertyLabel,
-            origin: "https://easylocs.lovable.app",
+            origin: "https://www.easy-locs.com",
           }),
         });
         const payData = await payRes.json();
