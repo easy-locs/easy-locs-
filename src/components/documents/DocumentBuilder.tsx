@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Building2 } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
+import { useAutoFill } from "@/hooks/useAutoFill";
 
 interface Props {
   template: DocumentTemplate;
@@ -23,6 +24,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { toast } = useToast();
   const { t } = useI18n();
   const { properties, tenants } = useRentalData();
+  const { fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
 
   const defaults: Record<string, unknown> = {};
   const today = new Date().toISOString().split("T")[0];
@@ -384,6 +386,53 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               <p className="text-sm font-medium text-foreground">{t("page.doc_builder.legal_review_title")}</p>
               <p className="text-xs text-muted-foreground">{t("page.doc_builder.legal_review_desc")}</p>
             </div>
+          </div>
+        )}
+
+        {/* Property selector for auto-fill by country */}
+        {isLandlord && properties.length > 0 && (
+          <div className="bg-card rounded-xl shadow-card border border-border/50 p-4 mb-4">
+            <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              {t("page.doc_builder.prefill_property") !== "page.doc_builder.prefill_property" ? t("page.doc_builder.prefill_property") : "Pré-remplir depuis un bien"}
+            </label>
+            <select
+              value={String(data.propertyId ?? "")}
+              onChange={(e) => {
+                const propId = e.target.value;
+                if (!propId) return;
+                const propData = fillFromProperty(propId);
+                const ownerData = fillFromOwner();
+                if (propData || ownerData) {
+                  setData((prev) => {
+                    const merged = { ...prev, propertyId: propId };
+                    // Apply property fields
+                    if (propData) {
+                      for (const [key, val] of Object.entries(propData)) {
+                        if (val !== undefined && val !== null && val !== "" && template.fields.some((f) => f.key === key)) {
+                          merged[key] = val;
+                        }
+                      }
+                    }
+                    // Apply owner fields
+                    if (ownerData) {
+                      for (const [key, val] of Object.entries(ownerData)) {
+                        if (val && template.fields.some((f) => f.key === key) && (!merged[key] || merged[key] === "" || merged[key] === 0)) {
+                          merged[key] = val;
+                        }
+                      }
+                    }
+                    return merged;
+                  });
+                }
+              }}
+              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">{t("page.doc_builder.select_property") !== "page.doc_builder.select_property" ? t("page.doc_builder.select_property") : "Sélectionner un bien"}</option>
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.label} — {p.address}, {p.city} ({p.country})</option>
+              ))}
+            </select>
           </div>
         )}
 

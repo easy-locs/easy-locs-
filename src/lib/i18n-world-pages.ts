@@ -513,4 +513,44 @@ export const ukPages: Record<string, string> = {
   "page.common.loading": "Завантаження…", "page.common.save": "Зберегти", "page.common.cancel": "Скасувати",
   "page.common.error": "Помилка", "page.common.back": "Назад", "page.common.generate_pdf": "Створити PDF",
   "page.ai.title": "Особистий помічник", "page.vault.title": "Сейф", "page.tasks.title": "Завдання",
+  "page.doc_builder.prefill_property": "Заповнити з нерухомості", "page.doc_builder.select_property": "Виберіть нерухомість",
+  "page.seasonal.click_to_edit": "Натисніть для редагування",
+};
+
+/**
+ * Extra keys for doc_builder auto-fill and seasonal calendar edit
+ * Merged into each locale that already exists above
+ */
+export const docBuilderExtraKeys: Record<string, Record<string, string>> = {
+  fr: { "page.doc_builder.prefill_property": "Pré-remplir depuis un bien", "page.doc_builder.select_property": "Sélectionner un bien", "page.seasonal.click_to_edit": "Cliquer pour modifier" },
+  en: { "page.doc_builder.prefill_property": "Auto-fill from property", "page.doc_builder.select_property": "Select a property", "page.seasonal.click_to_edit": "Click to edit" },
+  es: { "page.doc_builder.prefill_property": "Rellenar desde propiedad", "page.doc_builder.select_property": "Seleccionar propiedad", "page.seasonal.click_to_edit": "Clic para editar" },
+  de: { "page.doc_builder.prefill_property": "Aus Immobilie ausfüllen", "page.doc_builder.select_property": "Immobilie wählen", "page.seasonal.click_to_edit": "Zum Bearbeiten klicken" },
+  it: { "page.doc_builder.prefill_property": "Compila dall'immobile", "page.doc_builder.select_property": "Seleziona un immobile", "page.seasonal.click_to_edit": "Clicca per modificare" },
+  pt: { "page.doc_builder.prefill_property": "Preencher a partir do imóvel", "page.doc_builder.select_property": "Selecionar imóvel", "page.seasonal.click_to_edit": "Clique para editar" },
+  nl: { "page.doc_builder.prefill_property": "Invullen vanuit eigendom", "page.doc_builder.select_property": "Selecteer eigendom", "page.seasonal.click_to_edit": "Klik om te bewerken" },
+  pl: { "page.doc_builder.prefill_property": "Wypełnij z nieruchomości", "page.doc_builder.select_property": "Wybierz nieruchomość", "page.seasonal.click_to_edit": "Kliknij aby edytować" },
+  tr: { "page.doc_builder.prefill_property": "Mülkten doldur", "page.doc_builder.select_property": "Mülk seçin", "page.seasonal.click_to_edit": "Düzenlemek için tıklayın" },
+  ar: { "page.doc_builder.prefill_property": "ملء من العقار", "page.doc_builder.select_property": "اختر عقاراً", "page.seasonal.click_to_edit": "انقر للتعديل" },
+  ja: { "page.doc_builder.prefill_property": "物件から入力", "page.doc_builder.select_property": "物件を選択", "page.seasonal.click_to_edit": "クリックして編集" },
+  ko: { "page.doc_builder.prefill_property": "부동산에서 자동 입력", "page.doc_builder.select_property": "부동산 선택", "page.seasonal.click_to_edit": "클릭하여 편집" },
+  zh: { "page.doc_builder.prefill_property": "从房产自动填充", "page.doc_builder.select_property": "选择房产", "page.seasonal.click_to_edit": "点击编辑" },
+  hi: { "page.doc_builder.prefill_property": "संपत्ति से भरें", "page.doc_builder.select_property": "संपत्ति चुनें", "page.seasonal.click_to_edit": "संपादित करने के लिए क्लिक करें" },
+  sv: { "page.doc_builder.prefill_property": "Fyll i från fastighet", "page.doc_builder.select_property": "Välj fastighet", "page.seasonal.click_to_edit": "Klicka för att redigera" },
+  da: { "page.doc_builder.prefill_property": "Udfyld fra ejendom", "page.doc_builder.select_property": "Vælg ejendom", "page.seasonal.click_to_edit": "Klik for at redigere" },
+  nb: { "page.doc_builder.prefill_property": "Fyll ut fra eiendom", "page.doc_builder.select_property": "Velg eiendom", "page.seasonal.click_to_edit": "Klikk for å redigere" },
+  fi: { "page.doc_builder.prefill_property": "Täytä kiinteistöstä", "page.doc_builder.select_property": "Valitse kiinteistö", "page.seasonal.click_to_edit": "Napsauta muokataksesi" },
+  el: { "page.doc_builder.prefill_property": "Συμπλήρωση από ακίνητο", "page.doc_builder.select_property": "Επιλέξτε ακίνητο", "page.seasonal.click_to_edit": "Κάντε κλικ για επεξεργασία" },
+  cs: { "page.doc_builder.prefill_property": "Vyplnit z nemovitosti", "page.doc_builder.select_property": "Vyberte nemovitost", "page.seasonal.click_to_edit": "Klikněte pro úpravu" },
+  hu: { "page.doc_builder.prefill_property": "Kitöltés ingatlanból", "page.doc_builder.select_property": "Válasszon ingatlant", "page.seasonal.click_to_edit": "Kattintson a szerkesztéshez" },
+  ro: { "page.doc_builder.prefill_property": "Completează din proprietate", "page.doc_builder.select_property": "Selectați proprietate", "page.seasonal.click_to_edit": "Click pentru editare" },
+  hr: { "page.doc_builder.prefill_property": "Popuni iz nekretnine", "page.doc_builder.select_property": "Odaberite nekretninu", "page.seasonal.click_to_edit": "Kliknite za uređivanje" },
+  bg: { "page.doc_builder.prefill_property": "Попълване от имот", "page.doc_builder.select_property": "Изберете имот", "page.seasonal.click_to_edit": "Кликнете за редактиране" },
+  sk: { "page.doc_builder.prefill_property": "Vyplniť z nehnuteľnosti", "page.doc_builder.select_property": "Vyberte nehnuteľnosť", "page.seasonal.click_to_edit": "Kliknite pre úpravu" },
+  th: { "page.doc_builder.prefill_property": "กรอกจากอสังหาริมทรัพย์", "page.doc_builder.select_property": "เลือกอสังหาริมทรัพย์", "page.seasonal.click_to_edit": "คลิกเพื่อแก้ไข" },
+  vi: { "page.doc_builder.prefill_property": "Điền từ bất động sản", "page.doc_builder.select_property": "Chọn bất động sản", "page.seasonal.click_to_edit": "Nhấp để chỉnh sửa" },
+  id: { "page.doc_builder.prefill_property": "Isi dari properti", "page.doc_builder.select_property": "Pilih properti", "page.seasonal.click_to_edit": "Klik untuk mengedit" },
+  ms: { "page.doc_builder.prefill_property": "Isi dari hartanah", "page.doc_builder.select_property": "Pilih hartanah", "page.seasonal.click_to_edit": "Klik untuk mengedit" },
+  he: { "page.doc_builder.prefill_property": "מלא מנכס", "page.doc_builder.select_property": "בחר נכס", "page.seasonal.click_to_edit": "לחץ לעריכה" },
+  uk: { "page.doc_builder.prefill_property": "Заповнити з нерухомості", "page.doc_builder.select_property": "Виберіть нерухомість", "page.seasonal.click_to_edit": "Натисніть для редагування" },
 };

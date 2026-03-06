@@ -792,10 +792,26 @@ const SeasonalRentals = () => {
                     {visible.map((b, idx) => (
                       <div
                         key={b.id}
-                        className={`text-[10px] px-1 py-px rounded truncate ${laneColors[idx % laneColors.length]}`}
-                        title={`${b.guest_name} (${b.check_in} → ${b.check_out})`}
+                        className={`text-[10px] px-1 py-px rounded truncate cursor-pointer hover:opacity-80 group/booking ${laneColors[idx % laneColors.length]}`}
+                        title={`${b.guest_name} (${b.check_in} → ${b.check_out}) — ${t("page.seasonal.click_to_edit") !== "page.seasonal.click_to_edit" ? t("page.seasonal.click_to_edit") : "Cliquer pour modifier"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(b);
+                          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                        }}
                       >
-                        {b.guest_name}
+                        <span className="flex items-center gap-0.5">
+                          {b.guest_name}
+                          <span className="hidden group-hover/booking:inline-flex items-center gap-0.5 ml-auto">
+                            <Edit className="h-2.5 w-2.5" />
+                            <button
+                              onClick={(e) => { e.stopPropagation(); remove(b.id); }}
+                              className="text-destructive hover:text-destructive/80"
+                            >
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </button>
+                          </span>
+                        </span>
                       </div>
                     ))}
                     {overflow > 0 && (
