@@ -199,11 +199,20 @@ serve(async (req) => {
       .single();
     if (brErr || !br) throw new Error("Booking request not found");
 
-    const { data: listing } = await supabase
-      .from("public_listings")
-      .select("title, price_per_night, slug")
-      .eq("id", br.listing_id)
-      .single();
+    // Second idempotency layer: check notified_at on the booking itself
+    if (br.notified_at) {
+      return new Response(JSON.stringify({ skipped: true, reason: "already_notified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Mark as notified immediately to prevent race conditions
+    await supabase
+      .from("booking_requests")
+      .update({ notified_at: new Date().toISOString() })
+      .eq("id", booking_request_id)
+      .is("notified_at", null);
 
     const { data: property } = await supabase
       .from("properties")
