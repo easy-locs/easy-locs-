@@ -616,7 +616,103 @@ const SeasonalRentals = () => {
                   <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
                 </button>
               </div>
-            )}
+        )}
+
+        {/* All Booking Requests panel */}
+        {allRequests.length > 0 && (
+          <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-3">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              📩 {t("page.seasonal.all_requests") !== "page.seasonal.all_requests" ? t("page.seasonal.all_requests") : "Demandes de réservation"}
+              <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full">{allRequests.length}</span>
+            </h3>
+            <div className="divide-y divide-border/50">
+              {allRequests.map((req) => {
+                const nights = Math.max(1, Math.ceil((new Date(req.check_out).getTime() - new Date(req.check_in).getTime()) / 86400000));
+                return (
+                  <div key={req.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                      <div>
+                        <span className="text-xs text-muted-foreground block">{t("page.seasonal.guest")}</span>
+                        <span className="font-medium text-foreground">{req.guest_name}</span>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Email</span>
+                        <span className="text-foreground text-xs truncate block">{req.guest_email}</span>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground block">{t("page.seasonal.arrival")}</span>
+                        <span className="text-foreground">{req.check_in}</span>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground block">{t("page.seasonal.departure")}</span>
+                        <span className="text-foreground">{req.check_out}</span>
+                      </div>
+                      <div>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full inline-block ${
+                          req.status === "paid" ? "bg-green-500/20 text-green-700" :
+                          req.status === "approved" ? "bg-blue-500/20 text-blue-700" :
+                          req.status === "rejected" ? "bg-destructive/20 text-destructive" :
+                          req.status === "payment_pending" ? "bg-orange-500/20 text-orange-700" :
+                          req.status === "pending" ? "bg-yellow-500/20 text-yellow-700" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {req.status === "paid" ? "✅ " + (t("page.seasonal.status_paid") !== "page.seasonal.status_paid" ? t("page.seasonal.status_paid") : "Payé") :
+                           req.status === "approved" ? "📧 " + (t("page.seasonal.status_approved") !== "page.seasonal.status_approved" ? t("page.seasonal.status_approved") : "Approuvé") :
+                           req.status === "rejected" ? "❌ " + (t("page.seasonal.status_rejected") !== "page.seasonal.status_rejected" ? t("page.seasonal.status_rejected") : "Refusé") :
+                           req.status === "payment_pending" ? "⏳ " + (t("page.seasonal.status_payment_pending") !== "page.seasonal.status_payment_pending" ? t("page.seasonal.status_payment_pending") : "Paiement en attente") :
+                           req.status === "pending" ? "🔔 " + (t("page.seasonal.status_pending_label") !== "page.seasonal.status_pending_label" ? t("page.seasonal.status_pending_label") : "En attente") :
+                           req.status}
+                        </span>
+                      </div>
+                    </div>
+                    {req.status === "pending" && (
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={async () => {
+                            await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", req.id);
+                            const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
+                            const pricePerNight = listingData?.price_per_night || 0;
+                            const totalAmount = pricePerNight * nights;
+                            const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+                            await supabase.functions.invoke("send-email", {
+                              body: {
+                                to: req.guest_email,
+                                subject: `✅ ${t("page.seasonal.approved_subject")} — ${listingData?.title || ""}`,
+                                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                                  <h2 style="color:#1a1a1a;text-align:center;">✅ ${t("page.seasonal.approved_heading")}</h2>
+                                  <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.approved_body").replace("{name}", req.guest_name).replace("{checkin}", req.check_in).replace("{checkout}", req.check_out)}</p>
+                                  <p style="text-align:center;margin:24px 0;">
+                                    <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
+                                  </p>
+                                  <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                                </div>`,
+                              },
+                            });
+                            toast({ title: t("page.seasonal.request_approved") });
+                            setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
+                          }}
+                          className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700"
+                        >
+                          <Check className="h-3.5 w-3.5" /> {t("page.seasonal.approve_btn")}
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", req.id);
+                            toast({ title: t("page.seasonal.request_rejected") });
+                            setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
+                          }}
+                          className="flex items-center gap-1 border border-destructive text-destructive px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-destructive/10"
+                        >
+                          <X className="h-3.5 w-3.5" /> {t("page.seasonal.reject_btn")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
           </div>
         )}
 
