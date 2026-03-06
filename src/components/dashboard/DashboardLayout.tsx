@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut, subscription } = useAuth();
+  const { user, signOut, subscription, activeRole, hasDualRole, switchRole } = useAuth();
   const { locale, setLocale, t, availableLocales } = useI18n();
   const { currentTier, isSubscribed } = useSubscriptionGating();
 
