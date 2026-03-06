@@ -18,6 +18,7 @@ import { format, parseISO, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { getAccountingRules, type CountryAccountingRules } from "@/lib/accounting-rules";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
+import { getCountryProfile, formatPropertyCurrency } from "@/lib/country-profile";
 
 const Accounting = () => {
   const { user } = useAuth();
@@ -54,11 +55,13 @@ const Accounting = () => {
     return countries.sort();
   }, [properties]);
 
-  // Active accounting rules based on selected country
-  const activeRules: CountryAccountingRules = useMemo(() => {
-    if (selectedCountry !== "all") return getAccountingRules(selectedCountry);
-    return getAccountingRules(org?.country || "FR");
+  // Active accounting rules — STRICTLY from selected country profile
+  const activeCountryProfile = useMemo(() => {
+    const code = selectedCountry !== "all" ? selectedCountry : (org?.country || "FR");
+    return getCountryProfile(code);
   }, [selectedCountry, org]);
+
+  const activeRules: CountryAccountingRules = activeCountryProfile.accounting;
 
   const categories = useMemo(() => {
     return Object.entries(activeRules.categoryLabels).map(([value, label]) => ({ value, label }));
@@ -120,9 +123,11 @@ const Accounting = () => {
       property_id: e.property_id,
     }));
     let all = [...manual, ...rents, ...exps];
-    // Filter by country
+    // STRICT COUNTRY ISOLATION: when a country is selected, only show
+    // transactions from properties in that country. Unlinked transactions
+    // are excluded to prevent cross-country contamination.
     if (selectedCountry !== "all") {
-      all = all.filter(tx => !tx.property_id || countryPropertyIds.has(tx.property_id));
+      all = all.filter(tx => tx.property_id && countryPropertyIds.has(tx.property_id));
     }
     all.sort((a, b) => b.date.localeCompare(a.date));
     return filterCat === "all" ? all : all.filter(t => t.category === filterCat);
@@ -155,12 +160,22 @@ const Accounting = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
+      // STRICT: When a country filter is active, require a property to ensure
+      // the entry is properly isolated to a country ledger
+      if (selectedCountry !== "all" && !newEntry.property_id) {
+        throw new Error("A property must be selected to ensure correct country ledger isolation.");
+      }
+      // Determine currency from the linked property
+      const linkedProp = properties.find((p: any) => p.id === newEntry.property_id);
+      const entryCurrency = linkedProp ? (COUNTRY_CURRENCY_MAP[linkedProp.country] || "EUR") : activeRules.currency;
+
       const { error } = await supabase.from("transaction_journal" as any).insert({
         org_id: org!.id, user_id: user!.id,
         label: newEntry.label, category: newEntry.category,
         debit: Number(newEntry.debit) || 0, credit: Number(newEntry.credit) || 0,
         transaction_date: newEntry.transaction_date, notes: newEntry.notes,
         property_id: newEntry.property_id || null, source_type: "manual",
+        currency: entryCurrency,
       });
       if (error) throw error;
     },
