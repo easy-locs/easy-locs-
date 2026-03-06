@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
+import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, fiAll, elAll, csAll, huAll, roAll, hrAll, bgAll, skAll, heAll, ukAll } from "./i18n-world";
 
-export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja";
+export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
 /* ─── Country → Locale mapping ─── */
 export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr", SN: "fr", CI: "fr", MA: "fr", TN: "fr",
+  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr", LB: "fr",
   ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
   DE: "de", AT: "de",
   IT: "it",
@@ -15,24 +17,37 @@ export const COUNTRY_LOCALE_MAP: Record<string, Locale> = {
   PL: "pl",
   TR: "tr",
   JP: "ja",
+  KR: "ko", CN: "zh",
+  IN: "hi", TH: "th", VN: "vi", ID: "id", MY: "ms",
+  SE: "sv", DK: "da", NO: "nb", FI: "fi",
+  GR: "el", CZ: "cs", HU: "hu", RO: "ro", HR: "hr", BG: "bg", SK: "sk",
+  IL: "he", UA: "uk",
   US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", SG: "en", ZA: "en",
   AE: "en", SA: "en", QA: "en", BH: "en", KW: "en", OM: "en",
-  KR: "en", CN: "en", IN: "en",
-  SE: "en", NO: "en", DK: "en", FI: "en",
-  GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en", BG: "en", SK: "en",
-  DZ: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MU: "fr",
-  NG: "en", KE: "en", GH: "en",
-  MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
-  IL: "en", JO: "en", LB: "en",
+  NG: "en", KE: "en", GH: "en", PH: "en", JO: "en",
 };
 
 export const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+  // Europe – Eurozone
   FR: "EUR", BE: "EUR", ES: "EUR", DE: "EUR", IT: "EUR", PT: "EUR", LU: "EUR", MC: "EUR", AT: "EUR", IE: "EUR", NL: "EUR", FI: "EUR", GR: "EUR",
-  SK: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR",
-  SE: "SEK", DK: "DKK", NO: "NOK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", HR: "EUR", BG: "BGN",
-  GB: "GBP", US: "USD", CH: "CHF", CA: "CAD", AU: "AUD", NZ: "NZD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP",
-  MA: "MAD", TN: "TND", SN: "XOF", CI: "XOF", ZA: "ZAR",
-  AE: "AED", SA: "SAR", TR: "TRY", JP: "JPY", SG: "SGD",
+  SK: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR", HR: "EUR",
+  // Europe – Non-euro
+  SE: "SEK", DK: "DKK", NO: "NOK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", BG: "BGN",
+  GB: "GBP", CH: "CHF", UA: "UAH", RS: "RSD", IS: "ISK", GE: "GEL", MD: "MDL",
+  // Americas
+  US: "USD", CA: "CAD", BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
+  UY: "UYU", BO: "BOB", PY: "PYG", VE: "VES", DO: "DOP", CR: "CRC", GT: "GTQ", PA: "PAB", JM: "JMD", TT: "TTD",
+  // Africa
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF", ZA: "ZAR", NG: "NGN", KE: "KES", GH: "GHS",
+  EG: "EGP", ET: "ETB", TZ: "TZS", UG: "UGX", MU: "MUR", RW: "RWF",
+  // Middle East
+  AE: "AED", SA: "SAR", QA: "QAR", BH: "BHD", KW: "KWD", OM: "OMR", JO: "JOD", IL: "ILS", LB: "LBP", IQ: "IQD",
+  TR: "TRY",
+  // Asia-Pacific
+  JP: "JPY", CN: "CNY", KR: "KRW", IN: "INR", SG: "SGD", MY: "MYR", TH: "THB", VN: "VND", PH: "PHP", ID: "IDR",
+  TW: "TWD", HK: "HKD", BD: "BDT", PK: "PKR", LK: "LKR", NP: "NPR", MM: "MMK", KH: "KHR", KZ: "KZT",
+  // Oceania
+  AU: "AUD", NZ: "NZD", FJ: "FJD", PG: "PGK",
 };
 
 /* ─── Shared onboarding keys (used by all locales) ─── */
@@ -4575,6 +4590,26 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.org_updated": "組織が更新されました",
     ...obJa, ...pageJa,
   },
+  ko: { ...koAll },
+  zh: { ...zhAll },
+  hi: { ...hiAll },
+  th: { ...thAll },
+  vi: { ...viAll },
+  id: { ...idAll },
+  ms: { ...msAll },
+  sv: { ...svAll },
+  da: { ...daAll },
+  nb: { ...nbAll },
+  fi: { ...fiAll },
+  el: { ...elAll },
+  cs: { ...csAll },
+  hu: { ...huAll },
+  ro: { ...roAll },
+  hr: { ...hrAll },
+  bg: { ...bgAll },
+  sk: { ...skAll },
+  he: { ...heAll },
+  uk: { ...ukAll },
 };
 
 interface I18nContextType {
@@ -4598,6 +4633,26 @@ const availableLocales: { value: Locale; label: string }[] = [
   { value: "tr", label: "Türkçe" },
   { value: "ar", label: "العربية" },
   { value: "ja", label: "日本語" },
+  { value: "ko", label: "한국어" },
+  { value: "zh", label: "中文" },
+  { value: "hi", label: "हिन्दी" },
+  { value: "th", label: "ไทย" },
+  { value: "vi", label: "Tiếng Việt" },
+  { value: "id", label: "Bahasa Indonesia" },
+  { value: "ms", label: "Bahasa Melayu" },
+  { value: "sv", label: "Svenska" },
+  { value: "da", label: "Dansk" },
+  { value: "nb", label: "Norsk" },
+  { value: "fi", label: "Suomi" },
+  { value: "el", label: "Ελληνικά" },
+  { value: "cs", label: "Čeština" },
+  { value: "hu", label: "Magyar" },
+  { value: "ro", label: "Română" },
+  { value: "hr", label: "Hrvatski" },
+  { value: "bg", label: "Български" },
+  { value: "sk", label: "Slovenčina" },
+  { value: "he", label: "עברית" },
+  { value: "uk", label: "Українська" },
 ];
 
 export function I18nProvider({ children }: { children: ReactNode }) {
