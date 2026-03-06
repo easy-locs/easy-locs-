@@ -740,6 +740,7 @@ function buildCountryTemplates(country: CountryEntry): DocumentTemplate[] {
       id: `${cc}-deposit-return`, version: "1.0.0", country: country.code as Country,
       category: "rental", docType: "deposit-return",
       label: `${L.depositReturnLabel} (${country.name})`, description: L.depositReturnDesc,
+      legalBasis,
       needsLegalReview: false, active: true,
       fields: [
         { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
