@@ -29,6 +29,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   NL: "EUR", AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR",
   SK: "EUR", HR: "EUR", BG: "BGN", CH: "CHF", GB: "GBP",
   PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF", RO: "RON",
+  AE: "AED", SA: "SAR", QA: "QAR",
 };
 
 const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
