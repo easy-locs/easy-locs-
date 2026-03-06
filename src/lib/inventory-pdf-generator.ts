@@ -198,24 +198,28 @@ export async function generateInventoryPDF(
         }
       }
 
-      // Photos
+      // Photos - max 3 per element to avoid PDF bloat
       if (item.photo_urls.length > 0) {
-        for (const photoUrl of item.photo_urls) {
-          y = checkPageBreak(doc, y, 55);
-          try {
-            const base64 = await loadImageAsBase64(photoUrl);
-            if (base64) {
-              doc.addImage(base64, "JPEG", MARGIN, y, 50, 40);
+        const photosToRender = item.photo_urls.slice(0, 3);
+        // Try to render photos side by side (2 per row)
+        for (let pi = 0; pi < photosToRender.length; pi += 2) {
+          y = checkPageBreak(doc, y, 38);
+          for (let pj = 0; pj < 2 && pi + pj < photosToRender.length; pj++) {
+            const photoUrl = photosToRender[pi + pj];
+            const xOffset = MARGIN + pj * 55;
+            try {
+              const base64 = await loadImageAsBase64(photoUrl);
+              if (base64) {
+                doc.addImage(base64, "JPEG", xOffset, y, 48, 32);
+              }
+            } catch {
               setFont(doc, "italic", 7, COLOR_MUTED);
-              doc.text(sanitize(`${item.element_name} - ${room.room_name}`), MARGIN + 52, y + 5);
-              y += 44;
+              doc.text("[Photo non disponible]", xOffset, y + 5);
             }
-          } catch {
-            // Skip failed image
-            setFont(doc, "italic", 7, COLOR_MUTED);
-            doc.text("[Photo non disponible]", MARGIN, y);
-            y += 6;
           }
+          setFont(doc, "italic", 7, COLOR_MUTED);
+          doc.text(sanitize(`${item.element_name} - ${room.room_name}`), MARGIN, y + 35);
+          y += 40;
         }
       }
 

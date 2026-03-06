@@ -575,16 +575,16 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                   const cond = conditionLabels[item.condition];
                   return (
                     <div key={item.id} className="bg-muted/20 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">{item.element_name}</span>
-                        <div className="flex items-center gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                        <span className="text-sm font-medium text-foreground truncate">{item.element_name}</span>
+                        <div className="flex items-center gap-1 flex-wrap shrink-0">
                           {(["good", "average", "bad"] as const).map(c => {
                             const cl = conditionLabels[c];
                             const Icon = cl.icon;
                             return (
                               <button key={c} onClick={() => updateItemCondition(room.id, item.id, c)}
                                 className={`flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors ${item.condition === c ? cl.color : "border-border/50 text-muted-foreground hover:bg-muted/50"}`}>
-                                <Icon className="h-3 w-3" />{cl.label}
+                                <Icon className="h-3 w-3" /><span className="hidden sm:inline">{cl.label}</span>
                               </button>
                             );
                           })}
