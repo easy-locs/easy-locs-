@@ -26,7 +26,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
   const { L } = useTenantProperty();
 
   const navItems = [
