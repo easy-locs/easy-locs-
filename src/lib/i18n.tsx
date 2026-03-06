@@ -4315,7 +4315,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Zapisz podpis",
     "page.settings.profile_updated": "Profil zaktualizowany",
     "page.settings.org_updated": "Organizacja zaktualizowana",
-    ...obEn,
+    ...obPl, ...pagePl,
   },
   tr: {
     "nav.dashboard": "Panel", "nav.properties": "Mülkler", "nav.tenants": "Kiracılar",
