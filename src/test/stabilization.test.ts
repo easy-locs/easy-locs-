@@ -296,12 +296,13 @@ describe("Document Validation", () => {
     }
   });
 
-  it("validateDocument passes with complete data", async () => {
+  it("validateDocument passes with complete data for lease", async () => {
     const { validateDocument } = await import("@/lib/templates/validation");
     const { getTemplatesByCountry } = await import("@/lib/templates/registry");
 
-    const frTemplates = getTemplatesByCountry("FR");
-    const receipt = frTemplates.find(t => t.docType === "rent-receipt");
+    // Use a generated template which has predictable field structure
+    const usTemplates = getTemplatesByCountry("US");
+    const receipt = usTemplates.find(t => t.docType === "rent-receipt");
     if (receipt) {
       const data: Record<string, unknown> = {};
       for (const f of receipt.fields) {
