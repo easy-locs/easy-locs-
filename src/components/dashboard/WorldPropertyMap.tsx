@@ -202,6 +202,9 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
 
   if (propertiesByCountry.length === 0) return null;
 
+  const mapTitle = t("page.dashboard.world_map");
+  const titleText = (!mapTitle || mapTitle === "page.dashboard.world_map") ? "Mon portefeuille mondial" : mapTitle;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -209,21 +212,27 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
       transition={{ delay: 0.12 }}
       className="mb-8"
     >
-      <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-        <Globe className="h-5 w-5 text-accent" />
-        {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
-        <span className="mx-1 text-muted-foreground/40">—</span>
-        <span className="text-sm font-normal text-muted-foreground">
-          {totalProperties} {totalProperties > 1 ? (t("page.dashboard.properties_plural") || "biens") : (t("page.dashboard.properties_singular") || "bien")} · {propertiesByCountry.length} {propertiesByCountry.length > 1 ? (t("page.dashboard.countries_plural") || "pays") : (t("page.dashboard.country_singular") || "pays")}
-        </span>
-      </h2>
+      {/* Clean header */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-accent/10 flex items-center justify-center">
+            <Globe className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-foreground leading-tight">{titleText}</h2>
+            <p className="text-xs text-muted-foreground">
+              {totalProperties} {totalProperties > 1 ? "biens" : "bien"} · {propertiesByCountry.length} {propertiesByCountry.length > 1 ? "pays" : "pays"}
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
         {/* 3D Globe */}
-        <div className="relative w-full" style={{ height: 400 }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/20 pointer-events-none z-10 rounded-t-2xl" />
+        <div className="relative w-full" style={{ height: 420 }}>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
           <Suspense fallback={
-            <div className="w-full h-full flex items-center justify-center bg-muted/20">
+            <div className="w-full h-full flex items-center justify-center bg-muted/10">
               <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
             </div>
           }>
@@ -242,7 +251,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
         </div>
 
         {/* Country chips */}
-        <div className="border-t border-border bg-muted/20 px-4 py-3">
+        <div className="border-t border-border/40 bg-muted/10 px-4 py-3">
           <div className="flex flex-wrap gap-2">
             {propertiesByCountry.map((c) => (
               <Link
