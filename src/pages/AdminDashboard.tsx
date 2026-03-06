@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar } from "lucide-react";
+import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface Stats {
@@ -19,6 +19,9 @@ interface Stats {
   trialConversion: number;
   bookingRequests: number;
   confirmedBookings: number;
+  revenueByMonth: { month: string; amount: number }[];
+  totalRentCollected: number;
+  totalBookingRevenue: number;
 }
 
 const AdminDashboard = () => {
@@ -30,6 +33,7 @@ const AdminDashboard = () => {
     signupsByMonth: [], subscriptionsByPlan: [], churnedUsers: 0,
     avgPropertiesPerUser: 0, trialConversion: 0,
     bookingRequests: 0, confirmedBookings: 0,
+    revenueByMonth: [], totalRentCollected: 0, totalBookingRevenue: 0,
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -43,13 +47,14 @@ const AdminDashboard = () => {
 
       Promise.all([
         supabase.from("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
-        supabase.from("subscriptions").select("id, plan, status", { count: "exact" }),
+        supabase.from("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
         supabase.from("properties").select("id", { count: "exact", head: true }),
         supabase.from("documents").select("id", { count: "exact", head: true }),
         supabase.from("referrals").select("id", { count: "exact", head: true }),
         supabase.from("booking_requests").select("id, status", { count: "exact" }),
-        supabase.from("seasonal_bookings").select("id", { count: "exact", head: true }),
-      ]).then(([users, subs, props, docs, refs, bookingReqs, bookings]) => {
+        supabase.from("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
+        supabase.from("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
+      ]).then(([users, subs, props, docs, refs, bookingReqs, paidRents, confirmedRes]) => {
         const allUsers = users.data || [];
         const allSubs = subs.data || [];
         const activeSubs = allSubs.filter(s => s.status === "active");
@@ -81,7 +86,27 @@ const AdminDashboard = () => {
         });
         const subscriptionsByPlan = Object.entries(planCounts).map(([plan, count]) => ({ plan, count }));
 
-        const allBookingReqs = bookingReqs.data || [];
+        // Revenue by month (from paid rent calls)
+        const revByMonth: Record<string, number> = {};
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          revByMonth[key] = 0;
+        }
+        const paidRentData = paidRents.data || [];
+        paidRentData.forEach((r: any) => {
+          const key = r.month?.slice(0, 7) || r.paid_date?.slice(0, 7);
+          if (key && key in revByMonth) revByMonth[key] += Number(r.total_amount) || 0;
+        });
+        const confirmedResData = confirmedRes.data || [];
+        confirmedResData.forEach((r: any) => {
+          const key = r.created_at?.slice(0, 7);
+          if (key && key in revByMonth) revByMonth[key] += Number(r.amount) || 0;
+        });
+        const revenueByMonth = Object.entries(revByMonth).map(([month, amount]) => ({ month, amount: Math.round(amount) }));
+
+        const totalRentCollected = paidRentData.reduce((sum: number, r: any) => sum + (Number(r.total_amount) || 0), 0);
+        const totalBookingRevenue = confirmedResData.reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
 
         setStats({
           totalUsers: users.count || allUsers.length,
@@ -95,8 +120,11 @@ const AdminDashboard = () => {
           churnedUsers: churned.length,
           avgPropertiesPerUser: allUsers.length > 0 ? (props.count || 0) / allUsers.length : 0,
           trialConversion: trialConverted,
-          bookingRequests: bookingReqs.count || allBookingReqs.length,
-          confirmedBookings: bookings.count || 0,
+          bookingRequests: bookingReqs.count || (bookingReqs.data || []).length,
+          confirmedBookings: confirmedResData.length,
+          revenueByMonth,
+          totalRentCollected: Math.round(totalRentCollected),
+          totalBookingRevenue: Math.round(totalBookingRevenue),
         });
         setLoading(false);
       });
@@ -129,6 +157,13 @@ const AdminDashboard = () => {
   ];
 
   const maxSignups = Math.max(...stats.signupsByMonth.map(s => s.count), 1);
+  const maxRevenue = Math.max(...stats.revenueByMonth.map(r => r.amount), 1);
+
+  // MRR estimation from last month revenue
+  const lastMonthRev = stats.revenueByMonth.length > 0 ? stats.revenueByMonth[stats.revenueByMonth.length - 1].amount : 0;
+  const prevMonthRev = stats.revenueByMonth.length > 1 ? stats.revenueByMonth[stats.revenueByMonth.length - 2].amount : 0;
+  const revGrowth = prevMonthRev > 0 ? ((lastMonthRev - prevMonthRev) / prevMonthRev * 100).toFixed(1) : "—";
+  const totalPlatformRevenue = stats.totalRentCollected + stats.totalBookingRevenue;
 
   return (
     <DashboardLayout>
@@ -156,15 +191,17 @@ const AdminDashboard = () => {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {statCards.map((s) => (
-                <div key={s.label} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
-                  <s.icon className={`h-5 w-5 ${s.color} mb-2`} />
-                  <div className="text-2xl font-bold text-foreground">{s.value}</div>
-                  <div className="text-xs text-muted-foreground">{s.label}</div>
-                </div>
-              ))}
-            </div>
+            {activeTab !== "revenue" && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {statCards.map((s) => (
+                  <div key={s.label} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                    <s.icon className={`h-5 w-5 ${s.color} mb-2`} />
+                    <div className="text-2xl font-bold text-foreground">{s.value}</div>
+                    <div className="text-xs text-muted-foreground">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -249,6 +286,98 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {/* Revenue Tab */}
+            {activeTab === "revenue" && (
+              <>
+                {/* Revenue KPI cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                    <DollarSign className="h-5 w-5 text-green-500 mb-2" />
+                    <div className="text-2xl font-bold text-foreground">{totalPlatformRevenue.toLocaleString()}€</div>
+                    <div className="text-xs text-muted-foreground">Total Revenue (platform)</div>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                    <CreditCard className="h-5 w-5 text-blue-500 mb-2" />
+                    <div className="text-2xl font-bold text-foreground">{stats.totalRentCollected.toLocaleString()}€</div>
+                    <div className="text-xs text-muted-foreground">Rent Collected</div>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                    <Calendar className="h-5 w-5 text-purple-500 mb-2" />
+                    <div className="text-2xl font-bold text-foreground">{stats.totalBookingRevenue.toLocaleString()}€</div>
+                    <div className="text-xs text-muted-foreground">Booking Revenue</div>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+                    {Number(revGrowth) >= 0 ? (
+                      <ArrowUpRight className="h-5 w-5 text-green-500 mb-2" />
+                    ) : (
+                      <ArrowDownRight className="h-5 w-5 text-destructive mb-2" />
+                    )}
+                    <div className="text-2xl font-bold text-foreground">{revGrowth === "—" ? "—" : `${revGrowth}%`}</div>
+                    <div className="text-xs text-muted-foreground">MoM Growth</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {/* Revenue by month chart */}
+                  <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                    <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4 text-accent" /> Revenue (6 months)
+                    </h2>
+                    <div className="flex items-end gap-2 h-40">
+                      {stats.revenueByMonth.map(r => (
+                        <div key={r.month} className="flex-1 flex flex-col items-center gap-1">
+                          <span className="text-[10px] font-medium text-foreground">{r.amount > 0 ? `${(r.amount / 1000).toFixed(1)}k` : "0"}</span>
+                          <div className="w-full rounded-t" style={{ height: `${(r.amount / maxRevenue) * 100}%`, minHeight: 4 }}>
+                            <div className="w-full h-full bg-green-500 rounded-t" />
+                          </div>
+                          <span className="text-[9px] text-muted-foreground">{r.month.slice(5)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Revenue breakdown */}
+                  <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                    <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-accent" /> Revenue Breakdown
+                    </h2>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-muted-foreground">Rent payments</span>
+                          <span className="font-semibold text-foreground">{stats.totalRentCollected.toLocaleString()}€</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-3">
+                          <div className="bg-blue-500 rounded-full h-3 transition-all" style={{ width: `${totalPlatformRevenue > 0 ? (stats.totalRentCollected / totalPlatformRevenue) * 100 : 0}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-muted-foreground">Seasonal bookings</span>
+                          <span className="font-semibold text-foreground">{stats.totalBookingRevenue.toLocaleString()}€</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-3">
+                          <div className="bg-purple-500 rounded-full h-3 transition-all" style={{ width: `${totalPlatformRevenue > 0 ? (stats.totalBookingRevenue / totalPlatformRevenue) * 100 : 0}%` }} />
+                        </div>
+                      </div>
+                      <div className="pt-3 border-t border-border">
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Last month</span>
+                            <p className="font-semibold text-foreground text-lg">{lastMonthRev.toLocaleString()}€</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Previous month</span>
+                            <p className="font-semibold text-foreground text-lg">{prevMonthRev.toLocaleString()}€</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
             {(activeTab === "overview" || activeTab === "users") && (
               <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                 <h2 className="font-semibold text-foreground mb-4">Recent Signups</h2>
@@ -264,9 +393,14 @@ const AdminDashboard = () => {
                           <span className="text-muted-foreground ml-2 text-xs">{u.email}</span>
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(u.created_at).toLocaleDateString()}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${u.user_type === "tenant" ? "bg-blue-500/10 text-blue-500" : "bg-accent/10 text-accent"}`}>
+                          {u.user_type || "landlord"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(u.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

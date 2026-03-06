@@ -83,3 +83,5 @@
 - [x] Triggers DB recréés (booking_request, lease_created, intervention_created, payment_received, inventory_completed, booking_created)
 - [x] Edge function `export-ical` pour export iCal des réservations
 - [x] Navigation locataire complétée (requests + reviews)
+- [x] **Admin Dashboard Revenue tab** : KPIs (total revenue, rent collected, booking revenue, MoM growth), graphique revenus 6 mois, breakdown loyers vs réservations
+- [x] **User type badges** dans la liste Recent Signups (landlord/tenant)
