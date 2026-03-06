@@ -3474,6 +3474,7 @@ const pageDe: Record<string, string> = {
   "landing.footer.desc": "Ihr intelligenter, konformer und sicherer Mietverwaltungsassistent.", "landing.footer.product": "Produkt", "landing.footer.features": "Funktionen", "landing.footer.pricing": "Preise", "landing.footer.legal": "Rechtliches", "landing.footer.legal_notices": "Impressum", "landing.footer.privacy": "Datenschutz", "landing.footer.terms": "AGB", "landing.footer.contact": "Kontakt", "landing.footer.copyright": "Alle Rechte vorbehalten.",
   "landing.legal.title": "Rechtliche Informationen", "landing.legal.text": "Diese Anwendung bietet nur administrative Unterstützung. Erstellte Dokumente sind informativ und ersetzen keinen Anwalt, Notar oder Steuerberater.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Bleiben Sie informiert", "newsletter.subtitle": "Tipps zur Mietverwaltung und Plattform-Updates.", "newsletter.placeholder": "Ihre E-Mail-Adresse", "newsletter.cta": "Abonnieren", "newsletter.success": "Danke! Sie sind angemeldet.", "newsletter.already_subscribed": "Bereits angemeldet.", "newsletter.error": "Fehler. Versuchen Sie es erneut.", "embed.title": "Anzeige einbetten", "embed.iframe_label": "Iframe-Code", "embed.button_label": "Link-Button", "embed.copied": "Code kopiert!",
+  "pagination.results": "Ergebnisse", "pagination.page": "Seite",
 };
 
 const pageIt: Record<string, string> = {
