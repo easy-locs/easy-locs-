@@ -39,6 +39,7 @@ const Dashboard = () => {
     tenantsList: [] as { property_id: string | null; lease_end: string | null }[],
     expenses: [] as { amount: number; expense_date: string }[],
     reservations: [] as { amount: number; check_in: string }[],
+    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string }[],
   });
   const [loading, setLoading] = useState(true);
 
