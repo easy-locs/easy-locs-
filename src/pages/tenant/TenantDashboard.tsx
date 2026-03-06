@@ -11,6 +11,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 const TenantDashboard = () => {
   const { user } = useAuth();
   const { tenantId, propertyCountry, L, T, fmt } = useTenantProperty();
+  const { t } = useI18n();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [receiptsCount, setReceiptsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
