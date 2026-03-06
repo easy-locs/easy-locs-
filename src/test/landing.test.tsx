@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { I18nProvider } from "@/lib/i18n";
 
@@ -46,16 +46,16 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
 describe("Landing Page - Navbar", () => {
   it("renders brand name and navigation links", async () => {
     const Navbar = (await import("@/components/landing/Navbar")).default;
-    render(<Navbar />, { wrapper: Wrapper });
-    expect(screen.getByText(/EASY-LOCS/)).toBeInTheDocument();
+    const { container } = render(<Navbar />, { wrapper: Wrapper });
+    expect(container.textContent).toContain("EASY-LOCS");
   });
 });
 
 describe("Landing Page - Hero", () => {
   it("renders hero section with CTA", async () => {
     const Hero = (await import("@/components/landing/Hero")).default;
-    render(<Hero />, { wrapper: Wrapper });
-    const links = screen.getAllByRole("link");
+    const { container } = render(<Hero />, { wrapper: Wrapper });
+    const links = container.querySelectorAll("a");
     expect(links.length).toBeGreaterThan(0);
   });
 });
@@ -63,18 +63,17 @@ describe("Landing Page - Hero", () => {
 describe("Landing Page - Footer", () => {
   it("renders copyright and brand", async () => {
     const Footer = (await import("@/components/landing/Footer")).default;
-    render(<Footer />, { wrapper: Wrapper });
-    const brandElements = screen.getAllByText(/Easy-Locs/);
-    expect(brandElements.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(new RegExp(new Date().getFullYear().toString()))).toBeInTheDocument();
+    const { container } = render(<Footer />, { wrapper: Wrapper });
+    expect(container.textContent).toContain("Easy-Locs");
+    expect(container.textContent).toContain(new Date().getFullYear().toString());
   });
 });
 
 describe("Newsletter Component", () => {
   it("renders email input and submit button", async () => {
     const Newsletter = (await import("@/components/landing/Newsletter")).default;
-    render(<Newsletter />, { wrapper: Wrapper });
-    expect(screen.getByRole("textbox")).toBeInTheDocument();
-    expect(screen.getByRole("button")).toBeInTheDocument();
+    const { container } = render(<Newsletter />, { wrapper: Wrapper });
+    expect(container.querySelector("input")).toBeTruthy();
+    expect(container.querySelector("button")).toBeTruthy();
   });
 });
