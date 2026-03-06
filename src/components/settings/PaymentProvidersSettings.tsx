@@ -124,6 +124,41 @@ const PaymentProvidersSettings = () => {
           )}
         </div>
 
+        {/* SEPA Direct Debit — only for SEPA zone */}
+        {sepaEligible && (
+          <div className="border border-border rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-[#0070ba]/10 rounded-lg flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#0070ba]">€</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">SEPA Direct Debit</p>
+                  <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_desc") || "Prélèvement SEPA automatique (zone SEPA uniquement)"}</p>
+                </div>
+              </div>
+              <span className="flex items-center gap-1 text-xs font-medium text-success">
+                <CheckCircle className="h-3.5 w-3.5" /> {t("page.settings.sepa_eligible") || "Zone SEPA"}
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_via_stripe") || "Activé via Stripe Connect. Les locataires pourront payer par prélèvement SEPA."}</p>
+          </div>
+        )}
+
+        {!sepaEligible && (
+          <div className="border border-border/50 rounded-xl p-4 bg-muted/30">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                <span className="text-sm font-bold text-muted-foreground">€</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">SEPA Direct Debit</p>
+                <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_unavailable") || "Non disponible — Votre pays n'est pas dans la zone SEPA"}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* PayPal */}
         <div className="border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -152,7 +187,8 @@ const PaymentProvidersSettings = () => {
             onChange={(e) => setDefaultProvider(e.target.value)}
             className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="stripe">Stripe</option>
+            <option value="stripe">Stripe (Card)</option>
+            {sepaEligible && <option value="sepa">SEPA Direct Debit</option>}
             <option value="paypal">PayPal</option>
             <option value="bank_transfer">{t("page.settings.bank_transfer")}</option>
           </select>
