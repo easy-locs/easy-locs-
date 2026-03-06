@@ -570,19 +570,12 @@ const SeasonalRentals = () => {
               <div className="flex items-center gap-3 pt-2 border-t border-border/50">
                 <button
                   onClick={async () => {
-                    // Approve → send payment link email
                     await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", focusedRequest.id);
-
-                    // Compute payment details
                     const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", focusedRequest.listing_id).single();
                     const nights = Math.max(1, Math.ceil((new Date(focusedRequest.check_out).getTime() - new Date(focusedRequest.check_in).getTime()) / 86400000));
                     const pricePerNight = listingData?.price_per_night || 0;
                     const totalAmount = pricePerNight * nights;
-
-                    // Build payment link URL
                     const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`;
-
-                    // Send payment link email to guest
                     await supabase.functions.invoke("send-email", {
                       body: {
                         to: focusedRequest.guest_email,
@@ -597,7 +590,6 @@ const SeasonalRentals = () => {
                         </div>`,
                       },
                     });
-
                     toast({ title: t("page.seasonal.request_approved") });
                     setFocusedRequest({ ...focusedRequest, status: "approved" });
                   }}
@@ -616,9 +608,11 @@ const SeasonalRentals = () => {
                   <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
                 </button>
               </div>
+            )}
+          </div>
         )}
 
-        {/* All Booking Requests panel */}
+        {/* All Booking Requests panel — always visible */}
         {allRequests.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -711,8 +705,6 @@ const SeasonalRentals = () => {
                 );
               })}
             </div>
-          </div>
-        )}
           </div>
         )}
 
