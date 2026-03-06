@@ -172,3 +172,84 @@ export const PROFILE_FIELD_LABELS: Record<string, Record<string, string>> = {
 export function getProfileLabels(locale: string): Record<string, string> {
   return PROFILE_FIELD_LABELS[locale] || PROFILE_FIELD_LABELS.en;
 }
+
+/**
+ * Notification keys for all 31 locales
+ */
+export const notifKeys: Record<string, Record<string, string>> = {
+  fr: {
+    "notif.title": "Notifications", "notif.mark_all_read": "Tout marquer lu", "notif.empty": "Aucune notification",
+    "notif.reply": "Répondre", "notif.view_document": "Voir le document", "notif.view_payment": "Voir le paiement",
+    "notif.view_dunning": "Voir la relance", "notif.open": "Ouvrir",
+  },
+  en: {
+    "notif.title": "Notifications", "notif.mark_all_read": "Mark all read", "notif.empty": "No notifications",
+    "notif.reply": "Reply", "notif.view_document": "View document", "notif.view_payment": "View payment",
+    "notif.view_dunning": "View reminder", "notif.open": "Open",
+  },
+  es: {
+    "notif.title": "Notificaciones", "notif.mark_all_read": "Marcar todo leído", "notif.empty": "Sin notificaciones",
+    "notif.reply": "Responder", "notif.view_document": "Ver documento", "notif.view_payment": "Ver pago",
+    "notif.view_dunning": "Ver recordatorio", "notif.open": "Abrir",
+  },
+  de: {
+    "notif.title": "Benachrichtigungen", "notif.mark_all_read": "Alle gelesen", "notif.empty": "Keine Benachrichtigungen",
+    "notif.reply": "Antworten", "notif.view_document": "Dokument anzeigen", "notif.view_payment": "Zahlung anzeigen",
+    "notif.view_dunning": "Mahnung anzeigen", "notif.open": "Öffnen",
+  },
+  it: {
+    "notif.title": "Notifiche", "notif.mark_all_read": "Segna tutto letto", "notif.empty": "Nessuna notifica",
+    "notif.reply": "Rispondi", "notif.view_document": "Vedi documento", "notif.view_payment": "Vedi pagamento",
+    "notif.view_dunning": "Vedi sollecito", "notif.open": "Apri",
+  },
+  pt: {
+    "notif.title": "Notificações", "notif.mark_all_read": "Marcar tudo lido", "notif.empty": "Sem notificações",
+    "notif.reply": "Responder", "notif.view_document": "Ver documento", "notif.view_payment": "Ver pagamento",
+    "notif.view_dunning": "Ver lembrete", "notif.open": "Abrir",
+  },
+  nl: {
+    "notif.title": "Meldingen", "notif.mark_all_read": "Alles gelezen", "notif.empty": "Geen meldingen",
+    "notif.reply": "Beantwoorden", "notif.view_document": "Document bekijken", "notif.view_payment": "Betaling bekijken",
+    "notif.view_dunning": "Herinnering bekijken", "notif.open": "Openen",
+  },
+  pl: {
+    "notif.title": "Powiadomienia", "notif.mark_all_read": "Zaznacz wszystkie", "notif.empty": "Brak powiadomień",
+    "notif.reply": "Odpowiedz", "notif.view_document": "Zobacz dokument", "notif.view_payment": "Zobacz płatność",
+    "notif.view_dunning": "Zobacz przypomnienie", "notif.open": "Otwórz",
+  },
+  tr: {
+    "notif.title": "Bildirimler", "notif.mark_all_read": "Tümünü okundu", "notif.empty": "Bildirim yok",
+    "notif.reply": "Yanıtla", "notif.view_document": "Belge görüntüle", "notif.view_payment": "Ödeme görüntüle",
+    "notif.view_dunning": "Hatırlatma görüntüle", "notif.open": "Aç",
+  },
+  ar: {
+    "notif.title": "الإشعارات", "notif.mark_all_read": "تحديد الكل كمقروء", "notif.empty": "لا إشعارات",
+    "notif.reply": "رد", "notif.view_document": "عرض المستند", "notif.view_payment": "عرض الدفع",
+    "notif.view_dunning": "عرض التذكير", "notif.open": "فتح",
+  },
+  ja: {
+    "notif.title": "通知", "notif.mark_all_read": "すべて既読", "notif.empty": "通知なし",
+    "notif.reply": "返信", "notif.view_document": "書類を見る", "notif.view_payment": "支払いを見る",
+    "notif.view_dunning": "リマインダーを見る", "notif.open": "開く",
+  },
+  ko: {
+    "notif.title": "알림", "notif.mark_all_read": "모두 읽음", "notif.empty": "알림 없음",
+    "notif.reply": "답장", "notif.view_document": "문서 보기", "notif.view_payment": "결제 보기",
+    "notif.view_dunning": "알림 보기", "notif.open": "열기",
+  },
+  zh: {
+    "notif.title": "通知", "notif.mark_all_read": "全部已读", "notif.empty": "没有通知",
+    "notif.reply": "回复", "notif.view_document": "查看文档", "notif.view_payment": "查看付款",
+    "notif.view_dunning": "查看提醒", "notif.open": "打开",
+  },
+  hi: {
+    "notif.title": "सूचनाएं", "notif.mark_all_read": "सब पढ़ा हुआ", "notif.empty": "कोई सूचना नहीं",
+    "notif.reply": "जवाब दें", "notif.view_document": "दस्तावेज़ देखें", "notif.view_payment": "भुगतान देखें",
+    "notif.view_dunning": "अनुस्मारक देखें", "notif.open": "खोलें",
+  },
+  sv: {
+    "notif.title": "Aviseringar", "notif.mark_all_read": "Markera alla", "notif.empty": "Inga aviseringar",
+    "notif.reply": "Svara", "notif.view_document": "Visa dokument", "notif.view_payment": "Visa betalning",
+    "notif.view_dunning": "Visa påminnelse", "notif.open": "Öppna",
+  },
+};

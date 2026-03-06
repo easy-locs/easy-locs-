@@ -7,6 +7,7 @@ import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPage
 import { pageIt as pageItFull } from "./i18n-pages-it";
 import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages, thPages, viPages, idPages, msPages, svPages, daPages, nbPages, fiPages, elPages, csPages, huPages, roPages, hrPages, bgPages, skPages, hePages, ukPages, docBuilderExtraKeys } from "./i18n-world-pages";
 import { billingWorldwide } from "./i18n-billing-worldwide";
+import { notifKeys } from "./i18n-validation";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
