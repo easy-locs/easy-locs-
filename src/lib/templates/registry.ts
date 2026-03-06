@@ -71,6 +71,8 @@ const allTemplates: DocumentTemplate[] = [
   ...allWorldTemplates,
   // Extra world packs (Indonesia, NZ, Egypt, Pakistan, Bangladesh, China, Ukraine, Jordan, Kuwait)
   ...allExtraWorldTemplates,
+  // Extra world packs 2 (Bahrain, Oman, Ethiopia, Tanzania, Uganda, Rwanda, Mauritius, Lebanon, Iraq, Nepal, Sri Lanka, Cambodia, Taiwan, HK, DR, Costa Rica, Panama)
+  ...allExtraWorldTemplates2,
 ];
 
 export function getTemplateById(id: string): DocumentTemplate | undefined {
