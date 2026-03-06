@@ -115,6 +115,7 @@ function PropertyMarker({
 // --- Globe sphere ---
 function GlobeSphere() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
 
   useFrame((_, delta) => {
     if (meshRef.current) {
@@ -123,26 +124,25 @@ function GlobeSphere() {
   });
 
   return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[1, 64, 64]} />
-      <meshStandardMaterial
-        color="#1a2332"
-        transparent
-        opacity={0.9}
-        roughness={0.8}
-        metalness={0.1}
-      />
-      {/* Wireframe overlay */}
-      <mesh>
-        <sphereGeometry args={[1.002, 36, 18]} />
-        <meshBasicMaterial color="#334155" wireframe transparent opacity={0.15} />
+    <group>
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[1, 64, 64]} />
+        <meshStandardMaterial
+          map={texture}
+          roughness={0.6}
+          metalness={0.1}
+        />
       </mesh>
       {/* Atmosphere glow */}
-      <mesh scale={1.08}>
+      <mesh scale={1.06}>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.04} side={THREE.BackSide} />
+        <meshBasicMaterial color="#60a5fa" transparent opacity={0.06} side={THREE.BackSide} />
       </mesh>
-    </mesh>
+      <mesh scale={1.12}>
+        <sphereGeometry args={[1, 64, 64]} />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.03} side={THREE.BackSide} />
+      </mesh>
+    </group>
   );
 }
 
