@@ -35,6 +35,8 @@ interface RentCall {
   paid_date: string | null;
   tenant_id: string;
   property_id: string | null;
+  payment_status?: string;
+  payment_method?: string | null;
 }
 
 interface Expense {
