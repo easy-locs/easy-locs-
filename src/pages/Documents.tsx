@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
-import { FileText, Download, Clock, ChevronRight, Globe, Building2, Scale, Home, AlertTriangle } from "lucide-react";
+import { FileText, Download, Clock, ChevronRight, Building2, Scale, Home, AlertTriangle } from "lucide-react";
+import { getCountryFlag } from "@/lib/global-country-registry";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getActiveTemplates, getAllTemplates } from "@/lib/templates/registry";
@@ -133,7 +134,7 @@ const Documents = () => {
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" />
+            <span className="text-lg">{getCountryFlag(activeCountry)}</span>
             <span>{t("page.documents.country") !== "page.documents.country" ? t("page.documents.country") : "Pays du document"}</span>
           </div>
           <div className="w-full sm:w-[360px]">
@@ -226,7 +227,7 @@ const Documents = () => {
         {tab === "europe" && (
           <div className="space-y-6">
             <div className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-lg p-4">
-              <Globe className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+              <span className="text-xl shrink-0 mt-0.5">🌍</span>
               <div>
                 <p className="text-sm font-medium text-foreground">{t("page.documents.euro_title")}</p>
                 <p className="text-xs text-muted-foreground">{t("page.documents.euro_desc")}</p>
@@ -280,7 +281,7 @@ const Documents = () => {
                     <button key={t.id} onClick={() => setSelectedTemplate(t)}
                       className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
-                        <Globe className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
+                        <span className="text-xl">{getCountryFlag(country)}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-foreground text-sm">{t.label}</div>
