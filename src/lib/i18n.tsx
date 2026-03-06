@@ -4693,8 +4693,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string): string => {
-    // Fallback chain: locale → en → fr → key (never empty)
-    const val = translations[locale]?.[key] || translations.en?.[key] || translations.fr?.[key];
+    // Fallback chain: locale → docBuilderExtra → en → fr → key (never empty)
+    const val = translations[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || docBuilderExtraKeys.fr?.[key];
     if (val) return val;
     if (import.meta.env.DEV) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     return key;
