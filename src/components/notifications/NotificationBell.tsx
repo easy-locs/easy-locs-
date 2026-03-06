@@ -73,7 +73,7 @@ const NotificationBell = () => {
 
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
-    document: "📄", request: "📋", info: "ℹ️",
+    document: "📄", request: "📋", info: "ℹ️", receipt: "🧾",
   };
 
   const getActionLabel = (n: any): string | null => {
