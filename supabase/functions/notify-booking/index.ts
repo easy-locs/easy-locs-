@@ -314,7 +314,7 @@ serve(async (req) => {
         org_id: br.org_id,
         type: "info",
         title: t.ownerTitle,
-        message: `${br.guest_name} — ${propertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
+        message: `${safeGuestName} — ${safePropertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
         link: ownerDeepLink,
       });
     }
