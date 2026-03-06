@@ -659,6 +659,8 @@ for (const [locale, l] of Object.entries(langMap)) {
     "page.dashboard.view_reminders": l.viewReminders || base["page.dashboard.view_reminders"] || "View reminders",
     "page.dashboard.my_vault": l.myVault || base["page.dashboard.my_vault"] || "My vault",
     "page.dashboard.ai_question": l.heroCta, "page.dashboard.ai_desc": base["page.dashboard.ai_desc"],
+    "page.ai.title": base["page.ai.title"], "page.ai.subtitle": base["page.ai.subtitle"],
+    "page.ai.placeholder": base["page.ai.placeholder"], "page.ai.hint": base["page.ai.hint"], "page.ai.hint2": base["page.ai.hint2"],
     "page.fiscal.title": l.fiscalTitle, "page.fiscal.micro_label": l.simplified, "page.fiscal.real_label": l.actual,
     "page.fiscal.deficit_label": base["page.fiscal.deficit_label"],
     "page.fiscal.allowance_text": base["page.fiscal.allowance_text"],
