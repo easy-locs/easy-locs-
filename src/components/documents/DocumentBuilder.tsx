@@ -187,6 +187,8 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         guestName: tenant.name,
         tenantEmail: tenant.email,
         tenantPhone: tenant.phone,
+        tenantAddress: tenant.current_address,
+        currentAddress: tenant.current_address,
         // Personal info
         tenantBirthDate: tenant.birth_date,
         birthDate: tenant.birth_date,
@@ -197,8 +199,6 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
         tenantProfession: tenant.profession,
         profession: tenant.profession,
         // Address
-        tenantAddress: tenant.current_address,
-        currentAddress: tenant.current_address,
         recipientAddress: tenant.current_address,
         // Guarantor
         guarantorName: tenant.guarantor_name,

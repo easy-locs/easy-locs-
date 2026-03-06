@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import type { DocumentTemplate } from "./templates/types";
+import { getCountryEntry } from "@/lib/global-country-registry";
 
 const MARGIN = 20;
 const PAGE_WIDTH = 210;

@@ -16,6 +16,7 @@ import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
 import { allExtraWorldTemplates2 } from "./world-packs-extra2";
+import { getAllCountryEntries } from "@/lib/global-country-registry";
 
 const allTemplates: DocumentTemplate[] = [
   // France — Rental
