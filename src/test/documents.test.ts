@@ -31,16 +31,16 @@ describe("Document Templates", () => {
     expect(validation.validateDocument).toBeDefined();
   });
 
-  it("country-module exports getCountryRules", async () => {
+  it("country-module exports getCountryModule", async () => {
     const countryModule = await import("@/lib/templates/country-module");
-    expect(countryModule.getCountryRules).toBeDefined();
+    expect(countryModule.getCountryModule).toBeDefined();
   });
 
-  it("FR country rules have correct deposit cap", async () => {
-    const { getCountryRules } = await import("@/lib/templates/country-module");
-    const rules = getCountryRules("FR");
-    if (rules) {
-      expect(rules.depositCapMonths).toBeDefined();
+  it("FR country module has rules", async () => {
+    const { getCountryModule } = await import("@/lib/templates/country-module");
+    const mod = getCountryModule("FR");
+    if (mod) {
+      expect(mod.rules).toBeDefined();
     }
   });
 });
