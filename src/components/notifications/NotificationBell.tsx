@@ -81,6 +81,8 @@ const NotificationBell = () => {
     if (n.type === "document") return t("notif.view_document");
     if (n.type === "payment") return t("notif.view_payment");
     if (n.type === "dunning") return t("notif.view_dunning");
+    if (n.type === "receipt") return t("notif.view_document");
+    if (n.type === "request") return t("notif.view_document");
     if (n.link) return t("notif.open");
     return null;
   };
