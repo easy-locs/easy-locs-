@@ -182,6 +182,11 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* World Map */}
+        {!loading && stats.propertiesByCountry.length > 0 && (
+          <WorldPropertyMap propertiesByCountry={stats.propertiesByCountry} userCountry={userCountry} />
+        )}
+
         {/* Revenue chart */}
         {!loading && revenueChart.some(m => m.paid > 0 || m.unpaid > 0) && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">

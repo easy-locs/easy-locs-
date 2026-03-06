@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { getAllAccountingRules } from "@/lib/accounting-rules";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
 import { FileText, Download, TrendingUp, TrendingDown, Calculator, Globe, ChevronRight } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
 import PropertyFiscalCard from "@/components/fiscal/PropertyFiscalCard";
