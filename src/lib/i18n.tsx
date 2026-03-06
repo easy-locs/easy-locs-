@@ -3728,6 +3728,7 @@ const pagePt: Record<string, string> = {
   "landing.footer.desc": "Seu assistente de gestão de aluguéis inteligente, conforme e seguro.", "landing.footer.product": "Produto", "landing.footer.features": "Funcionalidades", "landing.footer.pricing": "Preços", "landing.footer.legal": "Legal", "landing.footer.legal_notices": "Avisos legais", "landing.footer.privacy": "Política de privacidade", "landing.footer.terms": "Termos de uso", "landing.footer.contact": "Contato", "landing.footer.copyright": "Todos os direitos reservados.",
   "landing.legal.title": "Informação legal", "landing.legal.text": "Este aplicativo fornece apenas assistência administrativa. Os documentos gerados são informativos e não substituem um advogado, tabelião ou contador.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Fique atualizado", "newsletter.subtitle": "Dicas de gestão de aluguéis e atualizações.", "newsletter.placeholder": "Seu endereço de email", "newsletter.cta": "Inscrever-se", "newsletter.success": "Obrigado! Você está inscrito.", "newsletter.already_subscribed": "Já inscrito.", "newsletter.error": "Erro. Tente novamente.", "embed.title": "Incorporar este anúncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botão de link", "embed.copied": "Código copiado!",
+  "pagination.results": "resultados", "pagination.page": "Página",
 };
 
 const translations: Record<Locale, Record<string, string>> = {
