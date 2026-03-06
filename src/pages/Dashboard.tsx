@@ -230,17 +230,17 @@ const Dashboard = () => {
         {/* Quick actions */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
           <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.quick_actions")}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action) => (
               <Link
                 key={action.label}
                 to={action.path}
-                className="group bg-card rounded-xl p-4 shadow-card border border-border/50 hover:shadow-card-hover transition-all flex flex-col items-center text-center gap-3"
+                className="group flex flex-col items-center text-center gap-3 bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all h-full"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.color}`}>
-                  <action.icon className="h-6 w-6" />
+                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
+                  <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <span className="text-sm font-medium text-foreground">{action.label}</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground leading-tight">{action.label}</span>
               </Link>
             ))}
           </div>
