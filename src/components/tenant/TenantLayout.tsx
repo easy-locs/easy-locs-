@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
-import { useTenantProperty } from "@/hooks/useTenantProperty";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
