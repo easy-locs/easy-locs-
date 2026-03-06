@@ -225,7 +225,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
                       {doc.requires_signature && (
                         <>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="flex items-center gap-0.5 text-xs text-amber-600">
+                          <span className="flex items-center gap-0.5 text-xs text-warning">
                             <PenTool className="h-3 w-3" />
                             {doc.signed_by_owner_at && doc.signed_by_tenant_at ? "Signé" :
                              doc.signed_by_owner_at ? "Signé (bailleur)" :
