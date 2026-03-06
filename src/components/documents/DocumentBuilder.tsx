@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Building2 } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import SignaturePad from "@/components/ui/SignaturePad";
 import { useRentalData } from "@/hooks/useRentalData";
+import { useAutoFill } from "@/hooks/useAutoFill";
 
 interface Props {
   template: DocumentTemplate;
@@ -23,6 +24,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   const { toast } = useToast();
   const { t } = useI18n();
   const { properties, tenants } = useRentalData();
+  const { fillFromProperty, fillFromOwner, ownerProfile } = useAutoFill(properties, tenants);
 
   const defaults: Record<string, unknown> = {};
   const today = new Date().toISOString().split("T")[0];
