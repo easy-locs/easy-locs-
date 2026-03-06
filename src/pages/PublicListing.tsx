@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle, CreditCard } from "lucide-react";
+import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle } from "lucide-react";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -43,19 +43,12 @@ const PublicListing = () => {
       if (!l) { setNotFound(true); setLoading(false); return; }
       setListing(l);
 
-      const { data: p } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("id", l.property_id)
-        .maybeSingle();
-      setProperty(p);
+      // Use security definer function to bypass RLS for public access
+      const { data: propData } = await supabase.rpc("get_listing_property", { p_listing_id: l.id });
+      setProperty(propData);
 
-      const { data: bookings } = await supabase
-        .from("seasonal_bookings")
-        .select("check_in, check_out")
-        .eq("property_id", l.property_id)
-        .neq("status", "cancelled");
-      setBookedDates(bookings || []);
+      // Booked dates loaded from booking_requests with confirmed status
+      setBookedDates([]);
       setLoading(false);
     };
     load();
@@ -112,18 +105,21 @@ const PublicListing = () => {
     setSubmitted(true);
   };
 
-  const handlePayNow = async () => {
-    if (!listing || !property || totalPrice <= 0) return;
+  // Handle payment when redirected from email payment link
+  const handlePayFromLink = async () => {
+    const requestId = searchParams.get("pay_request");
+    if (!requestId || !listing) return;
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-booking-payment", {
         body: {
+          booking_request_id: requestId,
           listing_id: listing.id,
-          guest_email: form.guest_email || "guest@temp.com",
-          guest_name: form.guest_name || "Voyageur",
-          amount: totalPrice,
-          nights,
-          property_label: listing.title || property.label,
+          guest_email: searchParams.get("email") || "",
+          guest_name: searchParams.get("name") || "Guest",
+          amount: Number(searchParams.get("amount")) || 0,
+          nights: Number(searchParams.get("nights")) || 1,
+          property_label: listing.title || property?.label,
           origin: window.location.origin,
         },
       });
@@ -135,6 +131,13 @@ const PublicListing = () => {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (listing && searchParams.get("pay_request")) {
+      handlePayFromLink();
+    }
+  }, [listing]);
+
 
   if (loading) {
     return (
@@ -281,14 +284,14 @@ const PublicListing = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-8 bg-card border border-border rounded-xl p-5 shadow-card space-y-4">
               {submitted ? (
-                <div className="text-center py-8">
+              <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("page.listing.request_sent_desc")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("page.listing.payment_link_sent")}
+                    {t("page.listing.awaiting_approval")}
                   </p>
                 </div>
               ) : (
@@ -396,20 +399,9 @@ const PublicListing = () => {
                       {t("page.listing.send_request")}
                     </button>
 
-                    {nights > 0 && totalPrice > 0 && form.guest_email && form.guest_name && (
-                      <button
-                        type="button"
-                        onClick={handlePayNow}
-                        disabled={submitting}
-                        className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                      >
-                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                        {t("page.listing.pay_now")} {totalPrice}€
-                      </button>
-                    )}
                     {nights > 0 && totalPrice > 0 && (
                       <p className="text-[10px] text-muted-foreground text-center">
-                        {t("page.listing.stripe_note") || "Stripe · Apple Pay / Google Pay"}
+                        {t("page.listing.approval_note")}
                       </p>
                     )}
                   </form>
