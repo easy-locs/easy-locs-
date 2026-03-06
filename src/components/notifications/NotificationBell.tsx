@@ -53,7 +53,7 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
   };
 
-  const { user, activeRole, hasDualRole, switchRole } = useAuth();
+
 
   const handleAction = (n: any) => {
     markRead(n);
