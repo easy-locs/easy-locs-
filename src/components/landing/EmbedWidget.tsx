@@ -41,7 +41,7 @@ const EmbedWidget = ({ listingSlug, listingTitle }: EmbedWidgetProps) => {
               onClick={() => handleCopy(embedCode)}
               className="absolute top-2 right-2 p-1.5 rounded bg-background border border-border hover:bg-muted transition-colors"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
             </button>
           </div>
         </div>
@@ -56,7 +56,7 @@ const EmbedWidget = ({ listingSlug, listingTitle }: EmbedWidgetProps) => {
               onClick={() => handleCopy(linkCode)}
               className="absolute top-2 right-2 p-1.5 rounded bg-background border border-border hover:bg-muted transition-colors"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
             </button>
           </div>
         </div>

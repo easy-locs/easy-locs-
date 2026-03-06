@@ -58,7 +58,7 @@ const Newsletter = () => {
               animate={{ scale: 1, opacity: 1 }}
               className="flex items-center justify-center gap-2 text-green-600 font-medium"
             >
-              <CheckCircle className="h-5 w-5" />
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
               {t("newsletter.success")}
             </motion.div>
           ) : (
