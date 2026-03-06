@@ -3600,6 +3600,7 @@ const pageIt: Record<string, string> = {
   "page.dashboard.revenue_trend": "Tendenza ricavi (6 mesi)", "page.dashboard.quick_actions": "Azioni rapide", "page.dashboard.generate_receipt": "Genera ricevuta", "page.dashboard.create_lease": "Crea contratto", "page.dashboard.view_reminders": "Vedi promemoria", "page.dashboard.my_vault": "La mia cassaforte",
   "page.dashboard.ai_question": "Cosa devo fare adesso?", "page.dashboard.ai_desc": "Il tuo assistente analizza la tua situazione.", "page.dashboard.alerts": "Avvisi e azioni", "page.dashboard.all_good": "Tutto aggiornato! 🎉",
   "page.dashboard.unpaid_rents": "affitto/i non pagato/i", "page.dashboard.vacant_props": "immobile/i vacante/i", "page.dashboard.active_reminders": "promemoria attivo/i", "page.dashboard.to_fill": "Da occupare", "page.dashboard.to_process": "Da elaborare", "page.dashboard.collected": "Incassato", "page.dashboard.unpaid_label": "Non pagato", "page.dashboard.no_unpaid": "0 non pagati",
+  "page.dashboard.world_map": "Il mio portafoglio mondiale",
   "page.tasks.title": "Attività", "page.tasks.subtitle": "Gestisci le tue attività", "page.tasks.new": "Nuova attività", "page.tasks.empty": "Nessuna attività.",
   "page.notes.title": "Note", "page.notes.subtitle": "Le tue note personali", "page.notes.new": "Nuova nota", "page.notes.empty": "Nessuna nota.",
   "page.interventions.title": "Interventi", "page.interventions.subtitle": "Monitoraggio lavori e riparazioni", "page.interventions.new": "Nuovo intervento", "page.interventions.empty": "Nessun intervento registrato.",
