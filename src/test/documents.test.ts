@@ -45,7 +45,7 @@ describe("Document Templates", () => {
     expect(esTemplates.some((t) => t.docType === "inventory")).toBe(true);
   });
 
-  it("every registered country has lease and rent receipt templates", async () => {
+  it("every registered country has mandatory governmental templates", async () => {
     const { getTemplatesByCountry } = await import("@/lib/templates/registry");
     const { getAllCountryEntries } = await import("@/lib/global-country-registry");
 
@@ -53,6 +53,9 @@ describe("Document Templates", () => {
       const templates = getTemplatesByCountry(country.code);
       expect(templates.some((t) => t.docType === "lease-residential")).toBe(true);
       expect(templates.some((t) => t.docType === "rent-receipt")).toBe(true);
+      if (country.legalDocumentTypes.includes("ejari-contract")) {
+        expect(templates.some((t) => t.docType === "ejari-contract")).toBe(true);
+      }
     }
   });
 });
