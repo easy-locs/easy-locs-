@@ -64,7 +64,8 @@ describe("Landing Page - Footer", () => {
   it("renders copyright and brand", async () => {
     const Footer = (await import("@/components/landing/Footer")).default;
     render(<Footer />, { wrapper: Wrapper });
-    expect(screen.getByText(/Easy-Locs/)).toBeInTheDocument();
+    const brandElements = screen.getAllByText(/Easy-Locs/);
+    expect(brandElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(new RegExp(new Date().getFullYear().toString()))).toBeInTheDocument();
   });
 });
