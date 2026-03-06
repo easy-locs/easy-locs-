@@ -18,6 +18,7 @@ import { format, parseISO, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { getAccountingRules, type CountryAccountingRules } from "@/lib/accounting-rules";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
+import { getCountryProfile, formatPropertyCurrency } from "@/lib/country-profile";
 
 const Accounting = () => {
   const { user } = useAuth();
