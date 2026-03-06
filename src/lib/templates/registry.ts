@@ -16,7 +16,7 @@ import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
 import { allExtraWorldTemplates2 } from "./world-packs-extra2";
-import { getAllCountryEntries, getCountryEntry } from "@/lib/global-country-registry";
+import { getAllCountryEntries, getCountryEntry, type CountryEntry } from "@/lib/global-country-registry";
 
 // ─── FULL LOCALIZED LABELS (31 languages) ───
 interface LegalLabels {
