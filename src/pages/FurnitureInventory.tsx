@@ -113,9 +113,13 @@ const FurnitureInventory = () => {
         </div>
 
         <div className="mb-4">
-          <select value={selectedProp} onChange={e => setSelectedProp(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
             <option value="">{t("page.furniture.all_properties")}</option>
-            {properties.map(p => <option key={p.id} value={p.id}>{p.label} {p.furnished ? t("page.furniture.furnished") : ""}</option>)}
+            {properties.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.label} {p.furnished ? t("page.furniture.furnished") : ""} ({(groupedByProp[p.id] || []).length})
+              </option>
+            ))}
           </select>
         </div>
 
@@ -135,7 +139,37 @@ const FurnitureInventory = () => {
         )}
 
         {loading ? <p className="text-center text-muted-foreground py-8">{t("page.common.loading")}</p> :
-          Object.keys(grouped).length === 0 ? (
+          !selectedProp ? (
+            /* Overview: show all properties with item counts */
+            properties.length === 0 ? (
+              <div className="text-center py-12">
+                <Sofa className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">{t("page.furniture.no_items")}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {properties.map(p => {
+                  const propItems = groupedByProp[p.id] || [];
+                  const roomCount = new Set(propItems.map(i => i.room_name)).size;
+                  return (
+                    <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
+                      className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{p.label}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {p.furnished ? `${t("page.furniture.furnished")} · ` : ""}
+                            {propItems.length} {t("page.furniture.item").toLowerCase()}(s) · {roomCount} {t("page.furniture.room").toLowerCase()}(s)
+                          </p>
+                        </div>
+                        <Sofa className="h-5 w-5 text-accent/60" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )
+          ) : Object.keys(grouped).length === 0 ? (
             <div className="text-center py-12">
               <Sofa className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">{t("page.furniture.no_items")}</p>
@@ -148,7 +182,7 @@ const FurnitureInventory = () => {
                   <div key={item.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{item.item_name} <span className="text-muted-foreground">x{item.quantity}</span></p>
-                      <p className="text-xs text-muted-foreground">{condLabel(item.condition)} {item.notes && `· ${item.notes}`} · {propName(item.property_id)}</p>
+                      <p className="text-xs text-muted-foreground">{condLabel(item.condition)} {item.notes && `· ${item.notes}`}</p>
                     </div>
                     <button onClick={() => remove(item.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button>
                   </div>
