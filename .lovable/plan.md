@@ -89,3 +89,15 @@
 - [x] **User type badges** dans la liste Recent Signups (landlord/tenant)
 - [x] **Edge function `collect-sepa-rents`** : prélèvement SEPA automatique mensuel off-session via Stripe Connect
 - [x] **Dashboard résultat net** : KPI net income (loyers + saisonnier - dépenses) sur le mois en cours
+
+## Audit E2E (complet)
+- [x] 43 tables PostgreSQL avec RLS actif
+- [x] 7 triggers DB actifs (booking x2, intervention, inventory, lease, payment, booking_request)
+- [x] 18 edge functions déployées et synchronisées
+- [x] Stripe SDK unifié v18.5.0 + API 2025-08-27.basil (check-subscription corrigé)
+- [x] CORS headers normalisés sur toutes les fonctions (tenant-signup corrigé)
+- [x] furniture_items.photo_url : colonne DB confirmée, upload via property-photos bucket
+- [x] seasonal_bookings : trigger notify_event('booking_created') actif
+- [x] Vitest installé, suite de tests configurée
+- [x] Auth dual-rôle (landlord/tenant) avec switchRole + persistence localStorage
+- [x] Subscription check : trial local + Stripe distant + upsync DB
