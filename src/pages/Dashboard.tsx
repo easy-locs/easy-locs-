@@ -46,7 +46,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (!orgId) return;
     Promise.all([
-      supabase.from("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("properties").select("id, country", { count: "exact" }).eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
@@ -57,8 +57,23 @@ const Dashboard = () => {
     ]).then(([props, tenantsRes, docs, rc, rem, vault, expRes, resRes]) => {
       const vaultFiles = vault.data || [];
       const tenantsList = (tenantsRes.data || []) as any[];
+      const propData = (props.data || []) as { id: string; country: string }[];
+
+      // Aggregate properties by country
+      const countryMap = new Map<string, number>();
+      propData.forEach(p => {
+        const c = p.country || "FR";
+        countryMap.set(c, (countryMap.get(c) || 0) + 1);
+      });
+      const propertiesByCountry = Array.from(countryMap.entries())
+        .map(([code, count]) => {
+          const entry = getCountryEntryOrDefault(code);
+          return { code, count, flag: entry.flag, name: entry.name };
+        })
+        .sort((a, b) => b.count - a.count);
+
       setStats({
-        properties: props.count || 0,
+        properties: props.count || propData.length,
         tenants: tenantsList.length,
         documents: docs.count || 0,
         rentCalls: (rc.data || []) as any,
@@ -68,6 +83,7 @@ const Dashboard = () => {
         tenantsList,
         expenses: (expRes.data || []) as any,
         reservations: (resRes.data || []) as any,
+        propertiesByCountry,
       });
       setLoading(false);
     });
