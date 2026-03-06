@@ -391,15 +391,21 @@ export type Database = {
           data_json: Json
           doc_hash: string | null
           doc_type: string
+          emailed_at: string | null
           id: string
           lease_id: string | null
           org_id: string
+          owner_signature_url: string | null
           pdf_url: string | null
           qr_verification_url: string | null
+          requires_signature: boolean | null
           sent_to_emails: Json | null
+          signed_by_owner_at: string | null
+          signed_by_tenant_at: string | null
           status: string
           template_id: string | null
           template_version: string | null
+          tenant_signature_url: string | null
           title: string
           user_id: string
         }
@@ -409,15 +415,21 @@ export type Database = {
           data_json?: Json
           doc_hash?: string | null
           doc_type: string
+          emailed_at?: string | null
           id?: string
           lease_id?: string | null
           org_id: string
+          owner_signature_url?: string | null
           pdf_url?: string | null
           qr_verification_url?: string | null
+          requires_signature?: boolean | null
           sent_to_emails?: Json | null
+          signed_by_owner_at?: string | null
+          signed_by_tenant_at?: string | null
           status?: string
           template_id?: string | null
           template_version?: string | null
+          tenant_signature_url?: string | null
           title: string
           user_id: string
         }
@@ -427,15 +439,21 @@ export type Database = {
           data_json?: Json
           doc_hash?: string | null
           doc_type?: string
+          emailed_at?: string | null
           id?: string
           lease_id?: string | null
           org_id?: string
+          owner_signature_url?: string | null
           pdf_url?: string | null
           qr_verification_url?: string | null
+          requires_signature?: boolean | null
           sent_to_emails?: Json | null
+          signed_by_owner_at?: string | null
+          signed_by_tenant_at?: string | null
           status?: string
           template_id?: string | null
           template_version?: string | null
+          tenant_signature_url?: string | null
           title?: string
           user_id?: string
         }
@@ -1063,31 +1081,40 @@ export type Database = {
       }
       messages: {
         Row: {
+          category: string
           content: string
           created_at: string
           id: string
           org_id: string
           read: boolean
           sender_id: string
+          sender_locale: string | null
           tenant_id: string
+          translated_content: string | null
         }
         Insert: {
+          category?: string
           content: string
           created_at?: string
           id?: string
           org_id: string
           read?: boolean
           sender_id: string
+          sender_locale?: string | null
           tenant_id: string
+          translated_content?: string | null
         }
         Update: {
+          category?: string
           content?: string
           created_at?: string
           id?: string
           org_id?: string
           read?: boolean
           sender_id?: string
+          sender_locale?: string | null
           tenant_id?: string
+          translated_content?: string | null
         }
         Relationships: [
           {
