@@ -837,6 +837,13 @@ const pageFr: Record<string, string> = {
   "page.doc_builder.landlord_signed": "Le bailleur a signé ce document",
   "page.doc_builder.landlord_will_sign": "La signature du bailleur sera ajoutée depuis son interface.",
   "page.doc_builder.generated": "Document généré et sauvegardé dans l'historique.",
+  "page.doc_builder.no_legal_basis": "Modèle bloqué : base légale gouvernementale manquante.",
+  "page.doc_builder.select_property_first": "Sélectionnez d'abord un bien du pays du modèle pour générer un document conforme.",
+  "page.doc_builder.country_mismatch": "Le pays du bien ne correspond pas au pays du modèle.",
+  "page.doc_builder.no_property_country": "Aucun bien dans le pays du modèle",
+  "page.doc_builder.add_property_hint": "Ajoutez un bien dans le pays du modèle pour garantir un document conforme au format gouvernemental.",
+  "page.doc_builder.prefill_property": "Pré-remplir depuis un bien",
+  "page.doc_builder.select_property": "Sélectionner un bien",
 
   // UpgradeBanner
   "page.upgrade.desc": "Abonnez-vous à Easy-Locs Illimité pour accéder à cette fonctionnalité.",
