@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getTenantLabels, type TenantLabels } from "@/lib/tenant-i18n";
+import { getCountryProfile, type CountryProfile } from "@/lib/country-profile";
 
 interface TenantPropertyInfo {
   tenantId: string | null;
@@ -19,6 +20,10 @@ interface TenantPropertyInfo {
   fmt: (n: number) => string;
   /** date-fns locale string e.g. "fr-FR" */
   locale: string;
+  /** Full country profile for strict isolation */
+  profile: CountryProfile;
+  /** Languages available for the tenant in this property's country */
+  tenantLanguages: string[];
 }
 
 export function useTenantProperty(): TenantPropertyInfo {
@@ -64,6 +69,8 @@ export function useTenantProperty(): TenantPropertyInfo {
   const L = config.labels;
   const T = useMemo(() => getTenantLabels(propertyCountry), [propertyCountry]);
   const fmt = (n: number) => formatCurrency(n, propertyCountry);
+  const profile = useMemo(() => getCountryProfile(propertyCountry), [propertyCountry]);
+  const tenantLanguages = profile.tenantLanguages;
 
-  return { tenantId, tenantName, orgId, propertyId, propertyCountry, loading, L, T, fmt, locale: config.locale };
+  return { tenantId, tenantName, orgId, propertyId, propertyCountry, loading, L, T, fmt, locale: config.locale, profile, tenantLanguages };
 }
