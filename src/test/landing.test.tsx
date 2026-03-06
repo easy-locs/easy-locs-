@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { I18nProvider } from "@/lib/i18n";
 
 // Mock supabase
 vi.mock("@/integrations/supabase/client", () => ({
@@ -25,7 +26,6 @@ vi.mock("@/integrations/lovable/index", () => ({
   lovable: { auth: { signInWithOAuth: vi.fn() } },
 }));
 
-// Mock framer-motion to avoid animation issues in tests
 vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
@@ -37,14 +37,16 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
+const Wrapper = ({ children }: { children: React.ReactNode }) => (
+  <I18nProvider>
+    <MemoryRouter>{children}</MemoryRouter>
+  </I18nProvider>
+);
+
 describe("Landing Page - Navbar", () => {
   it("renders brand name and navigation links", async () => {
     const Navbar = (await import("@/components/landing/Navbar")).default;
-    render(
-      <MemoryRouter>
-        <Navbar />
-      </MemoryRouter>
-    );
+    render(<Navbar />, { wrapper: Wrapper });
     expect(screen.getByText(/EASY-LOCS/)).toBeInTheDocument();
   });
 });
@@ -52,12 +54,7 @@ describe("Landing Page - Navbar", () => {
 describe("Landing Page - Hero", () => {
   it("renders hero section with CTA", async () => {
     const Hero = (await import("@/components/landing/Hero")).default;
-    render(
-      <MemoryRouter>
-        <Hero />
-      </MemoryRouter>
-    );
-    // Hero should have at least one link (CTA)
+    render(<Hero />, { wrapper: Wrapper });
     const links = screen.getAllByRole("link");
     expect(links.length).toBeGreaterThan(0);
   });
@@ -66,11 +63,7 @@ describe("Landing Page - Hero", () => {
 describe("Landing Page - Footer", () => {
   it("renders copyright and brand", async () => {
     const Footer = (await import("@/components/landing/Footer")).default;
-    render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>
-    );
+    render(<Footer />, { wrapper: Wrapper });
     expect(screen.getByText(/Easy-Locs/)).toBeInTheDocument();
     expect(screen.getByText(new RegExp(new Date().getFullYear().toString()))).toBeInTheDocument();
   });
@@ -79,11 +72,7 @@ describe("Landing Page - Footer", () => {
 describe("Newsletter Component", () => {
   it("renders email input and submit button", async () => {
     const Newsletter = (await import("@/components/landing/Newsletter")).default;
-    render(
-      <MemoryRouter>
-        <Newsletter />
-      </MemoryRouter>
-    );
+    render(<Newsletter />, { wrapper: Wrapper });
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     expect(screen.getByRole("button")).toBeInTheDocument();
   });
