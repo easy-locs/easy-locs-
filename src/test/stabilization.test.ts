@@ -387,12 +387,13 @@ describe("Template Language Coverage", () => {
     }
   });
 
-  it("Arabic-speaking countries get Arabic labels", async () => {
+  it("Arabic-speaking countries get Arabic labels for generated templates", async () => {
     const { getTemplatesByCountry } = await import("@/lib/templates/registry");
-    const aeTemplates = getTemplatesByCountry("AE");
-    const lease = aeTemplates.find(t => t.docType === "lease-residential");
+    // Test a country that only has generated (not handcrafted) templates
+    const saTemplates = getTemplatesByCountry("SA");
+    const lease = saTemplates.find(t => t.docType === "lease-residential");
     if (lease) {
-      // AE maps to Arabic labels
+      // SA maps to Arabic labels via COUNTRY_LANG_MAP
       expect(lease.label).toContain("عقد إيجار");
     }
   });
