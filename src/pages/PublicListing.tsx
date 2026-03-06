@@ -105,6 +105,39 @@ const PublicListing = () => {
     setSubmitted(true);
   };
 
+  // Handle payment when redirected from email payment link
+  const handlePayFromLink = async () => {
+    const requestId = searchParams.get("pay_request");
+    if (!requestId || !listing) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+        body: {
+          booking_request_id: requestId,
+          listing_id: listing.id,
+          guest_email: searchParams.get("email") || "",
+          guest_name: searchParams.get("name") || "Guest",
+          amount: Number(searchParams.get("amount")) || 0,
+          nights: Number(searchParams.get("nights")) || 1,
+          property_label: listing.title || property?.label,
+          origin: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (listing && searchParams.get("pay_request")) {
+      handlePayFromLink();
+    }
+  }, [listing]);
+
   const handlePayNow = async () => {
     if (!listing || !property || totalPrice <= 0) return;
     setSubmitting(true);
