@@ -132,7 +132,10 @@ const Onboarding = () => {
     const { data: orgData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).single();
     if (!orgData) { setSaving(false); return; }
     const { data: propData, error } = await supabase.from("properties").insert({
-      org_id: orgData.org_id, user_id: user.id, ...propertyForm,
+      org_id: orgData.org_id,
+      user_id: user.id,
+      country: country || "FR",
+      ...propertyForm,
       rental_mode: rentalMode || "long_term",
     }).select("id").single();
     setSaving(false);
