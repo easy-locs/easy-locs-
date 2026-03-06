@@ -206,6 +206,277 @@ function addParagraph(doc: jsPDF, text: string, y: number): number {
   return y + 3;
 }
 
+// ====== UAE EJARI OFFICIAL FORMAT ======
+const COLOR_UAE_GREEN: [number, number, number] = [0, 100, 60];
+const COLOR_UAE_RED: [number, number, number] = [190, 30, 45];
+
+function addUaeTableRow(doc: jsPDF, label: string, value: string, y: number, labelWidth: number = 55): number {
+  y = checkPageBreak(doc, y, 12);
+  // Draw row border
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.2);
+  doc.rect(MARGIN, y - 4.5, CONTENT_WIDTH, 10);
+  doc.line(MARGIN + labelWidth, y - 4.5, MARGIN + labelWidth, y + 5.5);
+
+  setFont(doc, "bold", 8.5, COLOR_PRIMARY);
+  doc.text(sanitize(label), MARGIN + 2, y);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  const lines = doc.splitTextToSize(sanitize(value || "—"), CONTENT_WIDTH - labelWidth - 4);
+  doc.text(lines[0] || "—", MARGIN + labelWidth + 2, y);
+  return y + 10;
+}
+
+function generateUaeEjariPdf(
+  template: DocumentTemplate,
+  data: Record<string, unknown>,
+  signatures?: { landlord?: string; tenant?: string },
+  stamp?: string,
+  options?: { skipTenantSignature?: boolean; country?: string }
+): jsPDF {
+  const doc = new jsPDF();
+  let y = 0;
+
+  // === TOP BANNER: UAE Government style ===
+  doc.setFillColor(0, 100, 60); // UAE green
+  doc.rect(0, 0, PAGE_WIDTH, 12, "F");
+
+  // Red accent stripe
+  doc.setFillColor(190, 30, 45);
+  doc.rect(0, 12, PAGE_WIDTH, 2, "F");
+
+  // Title area
+  setFont(doc, "bold", 8, [255, 255, 255]);
+  doc.text("GOVERNMENT OF DUBAI", PAGE_WIDTH / 2, 5, { align: "center" });
+  setFont(doc, "normal", 6.5, [255, 255, 255]);
+  doc.text("Dubai Land Department — Real Estate Regulatory Agency (RERA)", PAGE_WIDTH / 2, 9.5, { align: "center" });
+
+  y = 22;
+
+  // Document title
+  setFont(doc, "bold", 16, COLOR_PRIMARY);
+  doc.text("TENANCY CONTRACT", PAGE_WIDTH / 2, y, { align: "center" });
+  y += 6;
+  setFont(doc, "normal", 9, COLOR_MUTED);
+  doc.text("Unified Tenancy Contract — Ejari Registration", PAGE_WIDTH / 2, y, { align: "center" });
+  y += 4;
+
+  // Contract number & Ejari ref
+  doc.setDrawColor(...COLOR_UAE_GREEN);
+  doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
+  y += 6;
+
+  const ejariNum = String(data.ejariNumber || "Pending registration");
+  setFont(doc, "bold", 8.5, COLOR_MUTED);
+  doc.text("Ejari No.:", MARGIN, y);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  doc.text(sanitize(ejariNum), MARGIN + 22, y);
+
+  const todayFormatted = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  setFont(doc, "bold", 8.5, COLOR_MUTED);
+  doc.text("Date:", PAGE_WIDTH - MARGIN - 50, y);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  doc.text(todayFormatted, PAGE_WIDTH - MARGIN - 38, y);
+  y += 10;
+
+  // === SECTION 1: PARTIES ===
+  y = addUaeSection(doc, "SECTION 1 — PARTIES TO THE CONTRACT", y);
+
+  // Landlord sub-header
+  setFont(doc, "bold", 9, COLOR_UAE_GREEN);
+  doc.text("LANDLORD (First Party)", MARGIN, y);
+  y += 6;
+  y = addUaeTableRow(doc, "Full Name", String(data.landlordName || ""), y);
+  y = addUaeTableRow(doc, "Nationality", String(data.landlordNationality || ""), y);
+  y = addUaeTableRow(doc, "Emirates ID / Passport", String(data.landlordEmiratesId || ""), y);
+  y = addUaeTableRow(doc, "Address", String(data.landlordAddress || ""), y);
+  if (data.landlordPhone) y = addUaeTableRow(doc, "Phone", String(data.landlordPhone), y);
+  if (data.landlordEmail) y = addUaeTableRow(doc, "Email", String(data.landlordEmail), y);
+  y += 4;
+
+  // Tenant sub-header
+  setFont(doc, "bold", 9, COLOR_UAE_GREEN);
+  doc.text("TENANT (Second Party)", MARGIN, y);
+  y += 6;
+  y = addUaeTableRow(doc, "Full Name", String(data.tenantName || ""), y);
+  y = addUaeTableRow(doc, "Nationality", String(data.tenantNationality || ""), y);
+  y = addUaeTableRow(doc, "Emirates ID / Passport", String(data.tenantEmiratesId || ""), y);
+  if (data.tenantAddress) y = addUaeTableRow(doc, "Address", String(data.tenantAddress), y);
+  if (data.tenantPhone) y = addUaeTableRow(doc, "Phone", String(data.tenantPhone), y);
+  if (data.tenantEmail) y = addUaeTableRow(doc, "Email", String(data.tenantEmail), y);
+  y += 6;
+
+  // === SECTION 2: PROPERTY ===
+  y = addUaeSection(doc, "SECTION 2 — PROPERTY DETAILS", y);
+  y = addUaeTableRow(doc, "Property Address", String(data.propertyAddress || ""), y);
+  y = addUaeTableRow(doc, "Property Type", String(data.propertyType || ""), y);
+  y = addUaeTableRow(doc, "Area (sq ft)", String(data.surface || ""), y);
+  y = addUaeTableRow(doc, "Bedrooms", String(data.rooms || ""), y);
+  y = addUaeTableRow(doc, "Condition", String(data.furnished || ""), y);
+  if (data.makaniNumber) y = addUaeTableRow(doc, "Makani Number", String(data.makaniNumber), y);
+  if (data.dewaNumber) y = addUaeTableRow(doc, "DEWA Premises No.", String(data.dewaNumber), y);
+  y += 6;
+
+  // === SECTION 3: RENT ===
+  y = addUaeSection(doc, "SECTION 3 — RENT & PAYMENT TERMS", y);
+  const rentAmt = Number(data.rentAmount || 0);
+  y = addUaeTableRow(doc, "Annual Rent", `AED ${rentAmt.toLocaleString("en-AE")}`, y);
+  y = addUaeTableRow(doc, "Payment Mode", String(data.paymentMode || ""), y);
+  y = addUaeTableRow(doc, "Security Deposit", `AED ${Number(data.depositAmount || 0).toLocaleString("en-AE")}`, y);
+  y += 2;
+  setFont(doc, "italic", 8, COLOR_MUTED);
+  const depositNote = sanitize("The security deposit shall be refunded upon vacating the property in its original condition, less any deductions for damages.");
+  doc.text(depositNote, MARGIN, y);
+  y += 8;
+
+  // === SECTION 4: DURATION ===
+  y = addUaeSection(doc, "SECTION 4 — CONTRACT DURATION", y);
+  const startFmt = data.startDate ? formatDateLocalized(String(data.startDate), "AE") : "";
+  const endFmt = data.endDate ? formatDateLocalized(String(data.endDate), "AE") : "";
+  y = addUaeTableRow(doc, "Start Date", startFmt, y);
+  y = addUaeTableRow(doc, "End Date", endFmt, y);
+  y += 6;
+
+  // === SECTION 5: TERMS & CONDITIONS ===
+  y = addUaeSection(doc, "SECTION 5 — TERMS & CONDITIONS", y);
+
+  const terms = [
+    "5.1 Either party must provide 90 days' written notice before the end of the tenancy period as per RERA regulations.",
+    "5.2 Early termination by the tenant requires payment of 2 months' rent as penalty unless otherwise agreed in writing.",
+    "5.3 The landlord shall not increase the rent during the contract period unless permitted by RERA's rental index.",
+    "5.4 The landlord is responsible for structural maintenance and major repairs.",
+    "5.5 The tenant is responsible for minor repairs and maintenance of fixtures and fittings.",
+    "5.6 Sub-letting is not permitted without the written consent of the landlord.",
+  ];
+  for (const term of terms) {
+    y = checkPageBreak(doc, y, 12);
+    setFont(doc, "normal", 9, COLOR_BODY);
+    const lines = doc.splitTextToSize(sanitize(term), CONTENT_WIDTH);
+    for (const line of lines) {
+      doc.text(line, MARGIN, y);
+      y += LINE_HEIGHT;
+    }
+    y += 2;
+  }
+  y += 4;
+
+  // === SECTION 6: EJARI ===
+  y = addUaeSection(doc, "SECTION 6 — EJARI REGISTRATION", y);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  const ejariText = sanitize("This contract must be registered with the Ejari system within 14 days of signing, as required by Dubai Land Department regulations.");
+  const ejariLines = doc.splitTextToSize(ejariText, CONTENT_WIDTH);
+  for (const line of ejariLines) {
+    doc.text(line, MARGIN, y);
+    y += LINE_HEIGHT;
+  }
+  y += 4;
+
+  // === SECTION 7: LEGAL ===
+  y = checkPageBreak(doc, y, 20);
+  y = addUaeSection(doc, "SECTION 7 — GOVERNING LAW", y);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  const govText = sanitize("This contract is governed by the laws of the United Arab Emirates, specifically Dubai Law No. 26 of 2007 concerning the regulation of the relationship between landlords and tenants. Any disputes shall be referred to the Rental Disputes Settlement Centre (RDSC).");
+  const govLines = doc.splitTextToSize(govText, CONTENT_WIDTH);
+  for (const line of govLines) {
+    y = checkPageBreak(doc, y, LINE_HEIGHT + 2);
+    doc.text(line, MARGIN, y);
+    y += LINE_HEIGHT;
+  }
+  y += 10;
+
+  // === SIGNATURES ===
+  y = checkPageBreak(doc, y, 60);
+  doc.setDrawColor(...COLOR_UAE_GREEN);
+  doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, PAGE_WIDTH - MARGIN, y);
+  y += 8;
+
+  const colWidth = CONTENT_WIDTH / 2 - 5;
+  const sigY = y;
+
+  // Landlord
+  setFont(doc, "bold", 9, COLOR_PRIMARY);
+  doc.text("FIRST PARTY (Landlord)", MARGIN, sigY);
+  setFont(doc, "normal", 9, COLOR_BODY);
+  doc.text(sanitize(String(data.landlordName || "")), MARGIN, sigY + 6);
+  setFont(doc, "normal", 8, COLOR_MUTED);
+  doc.text("Signature:", MARGIN, sigY + 14);
+  if (signatures?.landlord) {
+    try { doc.addImage(signatures.landlord, "PNG", MARGIN, sigY + 17, colWidth, 22); } catch {}
+  } else {
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.rect(MARGIN, sigY + 17, colWidth, 22);
+    doc.setLineDashPattern([], 0);
+  }
+  if (stamp) {
+    try { doc.addImage(stamp, "PNG", MARGIN + colWidth - 26, sigY + 15, 24, 24); } catch {}
+  }
+
+  // Tenant
+  if (!options?.skipTenantSignature) {
+    const col2X = MARGIN + colWidth + 10;
+    setFont(doc, "bold", 9, COLOR_PRIMARY);
+    doc.text("SECOND PARTY (Tenant)", col2X, sigY);
+    setFont(doc, "normal", 9, COLOR_BODY);
+    doc.text(sanitize(String(data.tenantName || "")), col2X, sigY + 6);
+    setFont(doc, "normal", 8, COLOR_MUTED);
+    doc.text("Signature:", col2X, sigY + 14);
+    if (signatures?.tenant) {
+      try { doc.addImage(signatures.tenant, "PNG", col2X, sigY + 17, colWidth, 22); } catch {}
+    } else {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineDashPattern([2, 2], 0);
+      doc.rect(col2X, sigY + 17, colWidth, 22);
+      doc.setLineDashPattern([], 0);
+    }
+  }
+
+  // Footer
+  addUaeFooter(doc);
+  return doc;
+}
+
+function addUaeSection(doc: jsPDF, title: string, y: number): number {
+  y = checkPageBreak(doc, y, 18);
+  doc.setFillColor(240, 245, 240);
+  doc.rect(MARGIN, y - 5, CONTENT_WIDTH, 9, "F");
+  setFont(doc, "bold", 10, COLOR_UAE_GREEN);
+  doc.text(sanitize(title), MARGIN + 2, y);
+  doc.setDrawColor(...COLOR_UAE_GREEN);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y + 4, PAGE_WIDTH - MARGIN, y + 4);
+  return y + 10;
+}
+
+function addUaeFooter(doc: jsPDF) {
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    // Bottom stripe
+    doc.setFillColor(0, 100, 60);
+    doc.rect(0, 286, PAGE_WIDTH, 2, "F");
+    doc.setFillColor(190, 30, 45);
+    doc.rect(0, 288, PAGE_WIDTH, 1.5, "F");
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 289.5, PAGE_WIDTH, 7.5, "F");
+
+    // Footer text
+    setFont(doc, "normal", 6.5, [255, 255, 255]);
+    doc.text("Unified Tenancy Contract — Ejari System — Dubai Land Department", PAGE_WIDTH / 2, 294, { align: "center" });
+
+    // Page number
+    setFont(doc, "normal", 7, [200, 200, 200]);
+    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 294, { align: "right" });
+
+    // Easy-Locs branding
+    setFont(doc, "bold", 7, [255, 255, 255]);
+    doc.text("EASY-LOCS", MARGIN, 294);
+    setFont(doc, "normal", 4.5, [255, 255, 255]);
+    doc.text("(R)", MARGIN + 18, 292);
+  }
+}
+
 // ====== UNIVERSAL TEMPLATE-BASED GENERATOR ======
 export function generateFromTemplate(
   template: DocumentTemplate,
@@ -215,6 +486,12 @@ export function generateFromTemplate(
   options?: { skipTenantSignature?: boolean; country?: string }
 ): jsPDF {
   const country = options?.country || template.country || "FR";
+
+  // UAE Ejari: use dedicated official format
+  if (country === "AE" && template.docType === "lease-residential") {
+    return generateUaeEjariPdf(template, data, signatures, stamp, options);
+  }
+
   const labels = getPdfLabels(country);
   const locale = COUNTRY_LOCALE[country] || "en-GB";
   const doc = new jsPDF();
