@@ -1,4 +1,4 @@
-import type { DocumentTemplate, Country } from "./types";
+import type { DocumentTemplate, Country, FieldSchema } from "./types";
 import { frRentReceipt } from "./fr/rent-receipt";
 import { frLeaseEmpty } from "./fr/lease-empty";
 import { frLeaseFurnished } from "./fr/lease-furnished";
@@ -18,65 +18,507 @@ import { allExtraWorldTemplates } from "./world-packs-extra";
 import { allExtraWorldTemplates2 } from "./world-packs-extra2";
 import { getAllCountryEntries, getCountryEntry } from "@/lib/global-country-registry";
 
-// ─── COUNTRY-SPECIFIC LEGAL LABELS ───
-const COUNTRY_LEGAL_LABELS: Record<string, {
-  leaseLabel: string;
-  leaseDesc: string;
-  receiptLabel: string;
-  receiptDesc: string;
-  noticeLabel: string;
-  noticeDesc: string;
-  inventoryLabel: string;
-  inventoryDesc: string;
+// ─── FULL LOCALIZED LABELS (31 languages) ───
+interface LegalLabels {
+  leaseLabel: string; leaseDesc: string;
+  receiptLabel: string; receiptDesc: string;
+  noticeLabel: string; noticeDesc: string;
+  inventoryLabel: string; inventoryDesc: string;
+  terminationLabel: string; terminationDesc: string;
+  depositReturnLabel: string; depositReturnDesc: string;
   lang: string;
-  clauseParties: string;
-  clauseProperty: string;
-  clauseRent: string;
-  clauseDuration: string;
-  clauseReceipt: string;
-  clauseNotice: string;
-  clauseInventory: string;
-  fieldLandlord: string;
-  fieldTenant: string;
-  fieldAddress: string;
-  fieldSurface: string;
-  fieldRooms: string;
-  fieldRent: string;
-  fieldCharges: string;
-  fieldDeposit: string;
-  fieldStartDate: string;
-  fieldDuration: string;
-  fieldPeriod: string;
-  fieldPaymentDate: string;
-}> = {
-  fr: { leaseLabel: "Contrat de bail résidentiel", leaseDesc: "Bail d'habitation conforme à la législation locale.", receiptLabel: "Quittance de loyer", receiptDesc: "Attestation de paiement du loyer.", noticeLabel: "Mise en demeure", noticeDesc: "Courrier de mise en demeure.", inventoryLabel: "État des lieux", inventoryDesc: "Constat d'entrée/sortie.", lang: "fr", clauseParties: "§1 — Parties", clauseProperty: "§2 — Bien loué", clauseRent: "§3 — Loyer", clauseDuration: "§4 — Durée", clauseReceipt: "Quittance", clauseNotice: "Mise en demeure", clauseInventory: "État des lieux", fieldLandlord: "Bailleur", fieldTenant: "Locataire", fieldAddress: "Adresse du bien", fieldSurface: "Surface", fieldRooms: "Pièces", fieldRent: "Loyer", fieldCharges: "Charges", fieldDeposit: "Dépôt de garantie", fieldStartDate: "Date de début", fieldDuration: "Durée", fieldPeriod: "Période", fieldPaymentDate: "Date de paiement" },
-  en: { leaseLabel: "Residential Lease Agreement", leaseDesc: "Tenancy agreement compliant with local law.", receiptLabel: "Rent Receipt", receiptDesc: "Proof of rent payment.", noticeLabel: "Formal Notice", noticeDesc: "Legal notice letter.", inventoryLabel: "Property Inventory", inventoryDesc: "Check-in/check-out report.", lang: "en", clauseParties: "§1 — Parties", clauseProperty: "§2 — Property", clauseRent: "§3 — Rent", clauseDuration: "§4 — Term", clauseReceipt: "Receipt", clauseNotice: "Notice", clauseInventory: "Inventory", fieldLandlord: "Landlord", fieldTenant: "Tenant", fieldAddress: "Property address", fieldSurface: "Surface area", fieldRooms: "Rooms", fieldRent: "Rent", fieldCharges: "Charges", fieldDeposit: "Security deposit", fieldStartDate: "Start date", fieldDuration: "Duration", fieldPeriod: "Period", fieldPaymentDate: "Payment date" },
-  es: { leaseLabel: "Contrato de arrendamiento", leaseDesc: "Contrato de alquiler conforme a la ley local.", receiptLabel: "Recibo de alquiler", receiptDesc: "Comprobante de pago de alquiler.", noticeLabel: "Requerimiento formal", noticeDesc: "Carta de requerimiento legal.", inventoryLabel: "Inventario del inmueble", inventoryDesc: "Acta de entrega/devolución.", lang: "es", clauseParties: "§1 — Partes", clauseProperty: "§2 — Inmueble", clauseRent: "§3 — Renta", clauseDuration: "§4 — Plazo", clauseReceipt: "Recibo", clauseNotice: "Requerimiento", clauseInventory: "Inventario", fieldLandlord: "Arrendador", fieldTenant: "Arrendatario", fieldAddress: "Dirección del inmueble", fieldSurface: "Superficie", fieldRooms: "Habitaciones", fieldRent: "Renta mensual", fieldCharges: "Gastos comunes", fieldDeposit: "Depósito de garantía", fieldStartDate: "Fecha de inicio", fieldDuration: "Duración", fieldPeriod: "Periodo", fieldPaymentDate: "Fecha de pago" },
-  de: { leaseLabel: "Wohnungsmietvertrag", leaseDesc: "Mietvertrag gemäß lokaler Gesetzgebung.", receiptLabel: "Mietquittung", receiptDesc: "Zahlungsbestätigung der Miete.", noticeLabel: "Abmahnung", noticeDesc: "Formelles Mahnschreiben.", inventoryLabel: "Übergabeprotokoll", inventoryDesc: "Ein-/Auszugsprotokoll.", lang: "de", clauseParties: "§1 — Vertragsparteien", clauseProperty: "§2 — Mietobjekt", clauseRent: "§3 — Miete", clauseDuration: "§4 — Mietdauer", clauseReceipt: "Quittung", clauseNotice: "Mahnung", clauseInventory: "Protokoll", fieldLandlord: "Vermieter", fieldTenant: "Mieter", fieldAddress: "Adresse des Mietobjekts", fieldSurface: "Fläche", fieldRooms: "Zimmer", fieldRent: "Kaltmiete", fieldCharges: "Nebenkosten", fieldDeposit: "Kaution", fieldStartDate: "Mietbeginn", fieldDuration: "Laufzeit", fieldPeriod: "Zeitraum", fieldPaymentDate: "Zahlungsdatum" },
-  it: { leaseLabel: "Contratto di locazione", leaseDesc: "Contratto di affitto conforme alla normativa locale.", receiptLabel: "Ricevuta di affitto", receiptDesc: "Attestazione di pagamento del canone.", noticeLabel: "Diffida formale", noticeDesc: "Lettera di diffida.", inventoryLabel: "Verbale di consegna", inventoryDesc: "Verbale di consegna/riconsegna.", lang: "it", clauseParties: "§1 — Parti", clauseProperty: "§2 — Immobile", clauseRent: "§3 — Canone", clauseDuration: "§4 — Durata", clauseReceipt: "Ricevuta", clauseNotice: "Diffida", clauseInventory: "Verbale", fieldLandlord: "Locatore", fieldTenant: "Conduttore", fieldAddress: "Indirizzo dell'immobile", fieldSurface: "Superficie", fieldRooms: "Vani", fieldRent: "Canone mensile", fieldCharges: "Spese condominiali", fieldDeposit: "Deposito cauzionale", fieldStartDate: "Data di inizio", fieldDuration: "Durata", fieldPeriod: "Periodo", fieldPaymentDate: "Data di pagamento" },
-  pt: { leaseLabel: "Contrato de arrendamento", leaseDesc: "Contrato de arrendamento conforme à lei local.", receiptLabel: "Recibo de renda", receiptDesc: "Comprovativo de pagamento de renda.", noticeLabel: "Notificação formal", noticeDesc: "Carta de notificação legal.", inventoryLabel: "Auto de vistoria", inventoryDesc: "Auto de vistoria de entrada/saída.", lang: "pt", clauseParties: "§1 — Partes", clauseProperty: "§2 — Imóvel", clauseRent: "§3 — Renda", clauseDuration: "§4 — Prazo", clauseReceipt: "Recibo", clauseNotice: "Notificação", clauseInventory: "Vistoria", fieldLandlord: "Senhorio", fieldTenant: "Inquilino", fieldAddress: "Morada do imóvel", fieldSurface: "Área", fieldRooms: "Divisões", fieldRent: "Renda mensal", fieldCharges: "Encargos", fieldDeposit: "Caução", fieldStartDate: "Data de início", fieldDuration: "Duração", fieldPeriod: "Período", fieldPaymentDate: "Data de pagamento" },
-  ar: { leaseLabel: "عقد إيجار سكني", leaseDesc: "عقد إيجار متوافق مع القانون المحلي.", receiptLabel: "إيصال إيجار", receiptDesc: "إثبات دفع الإيجار.", noticeLabel: "إنذار رسمي", noticeDesc: "خطاب إنذار قانوني.", inventoryLabel: "محضر تسليم", inventoryDesc: "محضر استلام/تسليم.", lang: "ar", clauseParties: "§1 — الأطراف", clauseProperty: "§2 — العقار", clauseRent: "§3 — الإيجار", clauseDuration: "§4 — المدة", clauseReceipt: "إيصال", clauseNotice: "إنذار", clauseInventory: "محضر", fieldLandlord: "المؤجر", fieldTenant: "المستأجر", fieldAddress: "عنوان العقار", fieldSurface: "المساحة", fieldRooms: "الغرف", fieldRent: "الإيجار الشهري", fieldCharges: "الرسوم", fieldDeposit: "التأمين", fieldStartDate: "تاريخ البدء", fieldDuration: "المدة", fieldPeriod: "الفترة", fieldPaymentDate: "تاريخ الدفع" },
-  nl: { leaseLabel: "Huurovereenkomst", leaseDesc: "Huurcontract conform lokale wetgeving.", receiptLabel: "Huurkwitantie", receiptDesc: "Betalingsbewijs van huur.", noticeLabel: "Ingebrekestelling", noticeDesc: "Formele aanmaning.", inventoryLabel: "Opnamestaat", inventoryDesc: "Opname bij aanvang/einde huur.", lang: "nl", clauseParties: "§1 — Partijen", clauseProperty: "§2 — Gehuurde", clauseRent: "§3 — Huurprijs", clauseDuration: "§4 — Duur", clauseReceipt: "Kwitantie", clauseNotice: "Aanmaning", clauseInventory: "Opname", fieldLandlord: "Verhuurder", fieldTenant: "Huurder", fieldAddress: "Adres van het gehuurde", fieldSurface: "Oppervlakte", fieldRooms: "Kamers", fieldRent: "Huurprijs", fieldCharges: "Servicekosten", fieldDeposit: "Waarborgsom", fieldStartDate: "Ingangsdatum", fieldDuration: "Looptijd", fieldPeriod: "Periode", fieldPaymentDate: "Betaaldatum" },
-  tr: { leaseLabel: "Konut Kira Sözleşmesi", leaseDesc: "Yerel mevzuata uygun kira sözleşmesi.", receiptLabel: "Kira Makbuzu", receiptDesc: "Kira ödeme belgesi.", noticeLabel: "İhtar", noticeDesc: "Resmi ihtar mektubu.", inventoryLabel: "Teslim Tutanağı", inventoryDesc: "Giriş/çıkış tutanağı.", lang: "tr", clauseParties: "§1 — Taraflar", clauseProperty: "§2 — Kiralanan", clauseRent: "§3 — Kira Bedeli", clauseDuration: "§4 — Süre", clauseReceipt: "Makbuz", clauseNotice: "İhtar", clauseInventory: "Tutanak", fieldLandlord: "Kiraya Veren", fieldTenant: "Kiracı", fieldAddress: "Taşınmaz adresi", fieldSurface: "Yüzölçümü", fieldRooms: "Oda", fieldRent: "Aylık kira", fieldCharges: "Aidat", fieldDeposit: "Depozito", fieldStartDate: "Başlangıç tarihi", fieldDuration: "Süre", fieldPeriod: "Dönem", fieldPaymentDate: "Ödeme tarihi" },
-  ja: { leaseLabel: "賃貸借契約書", leaseDesc: "現地法に準拠した賃貸契約。", receiptLabel: "家賃領収書", receiptDesc: "家賃支払いの証明。", noticeLabel: "催告書", noticeDesc: "法的通知。", inventoryLabel: "物件確認書", inventoryDesc: "入退去時の物件状態記録。", lang: "ja", clauseParties: "§1 — 当事者", clauseProperty: "§2 — 物件", clauseRent: "§3 — 賃料", clauseDuration: "§4 — 期間", clauseReceipt: "領収書", clauseNotice: "催告", clauseInventory: "確認書", fieldLandlord: "貸主", fieldTenant: "借主", fieldAddress: "物件所在地", fieldSurface: "面積", fieldRooms: "部屋数", fieldRent: "月額賃料", fieldCharges: "共益費", fieldDeposit: "敷金", fieldStartDate: "契約開始日", fieldDuration: "契約期間", fieldPeriod: "対象期間", fieldPaymentDate: "支払日" },
-  ko: { leaseLabel: "주거용 임대차 계약서", leaseDesc: "현지 법률에 따른 임대차 계약.", receiptLabel: "임대료 영수증", receiptDesc: "임대료 납부 증명.", noticeLabel: "최고서", noticeDesc: "법적 통지서.", inventoryLabel: "물건 확인서", inventoryDesc: "입퇴거 시 물건 상태 기록.", lang: "ko", clauseParties: "§1 — 당사자", clauseProperty: "§2 — 부동산", clauseRent: "§3 — 임대료", clauseDuration: "§4 — 기간", clauseReceipt: "영수증", clauseNotice: "최고", clauseInventory: "확인서", fieldLandlord: "임대인", fieldTenant: "임차인", fieldAddress: "부동산 주소", fieldSurface: "면적", fieldRooms: "방 수", fieldRent: "월 임대료", fieldCharges: "관리비", fieldDeposit: "보증금", fieldStartDate: "시작일", fieldDuration: "기간", fieldPeriod: "기간", fieldPaymentDate: "납부일" },
-  zh: { leaseLabel: "住宅租赁合同", leaseDesc: "符合当地法律的租赁合同。", receiptLabel: "租金收据", receiptDesc: "租金支付证明。", noticeLabel: "催告函", noticeDesc: "法律通知函。", inventoryLabel: "房屋交接单", inventoryDesc: "入住/退房记录。", lang: "zh", clauseParties: "§1 — 双方", clauseProperty: "§2 — 房屋", clauseRent: "§3 — 租金", clauseDuration: "§4 — 期限", clauseReceipt: "收据", clauseNotice: "催告", clauseInventory: "交接单", fieldLandlord: "出租人", fieldTenant: "承租人", fieldAddress: "房屋地址", fieldSurface: "面积", fieldRooms: "房间数", fieldRent: "月租金", fieldCharges: "物业费", fieldDeposit: "押金", fieldStartDate: "起始日期", fieldDuration: "租期", fieldPeriod: "期间", fieldPaymentDate: "付款日期" },
-  hi: { leaseLabel: "आवासीय किराया अनुबंध", leaseDesc: "स्थानीय कानून के अनुसार किराया अनुबंध।", receiptLabel: "किराया रसीद", receiptDesc: "किराया भुगतान का प्रमाण।", noticeLabel: "कानूनी नोटिस", noticeDesc: "कानूनी सूचना पत्र।", inventoryLabel: "संपत्ति सूची", inventoryDesc: "प्रवेश/निकास रिपोर्ट।", lang: "hi", clauseParties: "§1 — पक्ष", clauseProperty: "§2 — संपत्ति", clauseRent: "§3 — किराया", clauseDuration: "§4 — अवधि", clauseReceipt: "रसीद", clauseNotice: "नोटिस", clauseInventory: "सूची", fieldLandlord: "मकान मालिक", fieldTenant: "किरायेदार", fieldAddress: "संपत्ति का पता", fieldSurface: "क्षेत्रफल", fieldRooms: "कमरे", fieldRent: "मासिक किराया", fieldCharges: "शुल्क", fieldDeposit: "जमानत राशि", fieldStartDate: "प्रारंभ तिथि", fieldDuration: "अवधि", fieldPeriod: "अवधि", fieldPaymentDate: "भुगतान तिथि" },
-};
-
-// Map country default language to label set
-const COUNTRY_LANG_MAP: Record<string, string> = {
-  FR: "fr", BE: "fr", CH: "fr", LU: "fr", SN: "fr", CI: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr", MA: "fr", TN: "fr", DZ: "fr", BF: "fr", ML: "fr", NE: "fr", TD: "fr", BJ: "fr", TG: "fr", GN: "fr", RW: "fr", MU: "fr", LB: "fr",
-  ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es", UY: "es", EC: "es", VE: "es", DO: "es", CR: "es", PA: "es", GT: "es", HN: "es", SV: "es", NI: "es", CU: "es", BO: "es", PY: "es",
-  IT: "it", DE: "de", AT: "de", PT: "pt", BR: "pt", NL: "nl", TR: "tr", JP: "ja", KR: "ko", CN: "zh", IN: "hi",
-  AE: "ar", SA: "ar", QA: "ar", BH: "ar", KW: "ar", OM: "ar", JO: "ar", IQ: "ar", EG: "ar", LY: "ar", SD: "ar",
-};
-
-function getLabelsForCountry(countryCode: string): typeof COUNTRY_LEGAL_LABELS["en"] {
-  const lang = COUNTRY_LANG_MAP[countryCode] || "en";
-  return COUNTRY_LEGAL_LABELS[lang] || COUNTRY_LEGAL_LABELS.en;
+  clauseParties: string; clauseProperty: string; clauseRent: string;
+  clauseDuration: string; clauseReceipt: string; clauseNotice: string;
+  clauseInventory: string; clauseTermination: string; clauseDeposit: string;
+  fieldLandlord: string; fieldTenant: string; fieldAddress: string;
+  fieldSurface: string; fieldRooms: string; fieldRent: string;
+  fieldCharges: string; fieldDeposit: string; fieldStartDate: string;
+  fieldEndDate: string; fieldDuration: string; fieldPeriod: string;
+  fieldPaymentDate: string; fieldTaxId: string; fieldBankIban: string;
+  fieldSignaturePlace: string;
+  // Clause text templates (government-aligned)
+  leaseClauseParties: string; leaseClauseProperty: string;
+  leaseClauseRent: string; leaseClauseDuration: string;
+  leaseClauseDeposit: string; leaseClauseTermination: string;
+  receiptClause: string; noticeClause: string;
+  inventoryClause: string; terminationClause: string;
+  depositReturnClause: string;
+  legalFooter: string;
 }
 
+const L_FR: LegalLabels = {
+  leaseLabel: "Contrat de bail résidentiel", leaseDesc: "Bail d'habitation conforme à la législation en vigueur.",
+  receiptLabel: "Quittance de loyer", receiptDesc: "Attestation de paiement du loyer mensuel.",
+  noticeLabel: "Mise en demeure", noticeDesc: "Courrier de mise en demeure pour loyers impayés.",
+  inventoryLabel: "État des lieux", inventoryDesc: "Constat contradictoire d'entrée ou de sortie.",
+  terminationLabel: "Congé / Résiliation", terminationDesc: "Notification de fin de bail.",
+  depositReturnLabel: "Restitution du dépôt de garantie", depositReturnDesc: "Courrier de restitution du dépôt.",
+  lang: "fr",
+  clauseParties: "Article 1 — Désignation des parties", clauseProperty: "Article 2 — Désignation du bien",
+  clauseRent: "Article 3 — Loyer et charges", clauseDuration: "Article 4 — Durée du bail",
+  clauseReceipt: "Quittance", clauseNotice: "Mise en demeure",
+  clauseInventory: "État des lieux", clauseTermination: "Congé", clauseDeposit: "Dépôt de garantie",
+  fieldLandlord: "Bailleur", fieldTenant: "Locataire", fieldAddress: "Adresse du bien",
+  fieldSurface: "Surface habitable (m²)", fieldRooms: "Nombre de pièces principales",
+  fieldRent: "Loyer mensuel hors charges", fieldCharges: "Provision pour charges",
+  fieldDeposit: "Dépôt de garantie", fieldStartDate: "Date de prise d'effet",
+  fieldEndDate: "Date de fin", fieldDuration: "Durée du bail",
+  fieldPeriod: "Période", fieldPaymentDate: "Date de paiement",
+  fieldTaxId: "SIRET / NIF", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Fait à",
+  leaseClauseParties: "Entre les soussignés :\n{landlordName}, demeurant {landlordAddress}, ci-après dénommé « le Bailleur »,\net\n{tenantName}, ci-après dénommé « le Locataire »,\nil a été convenu ce qui suit :",
+  leaseClauseProperty: "Le Bailleur donne en location au Locataire le bien situé :\n{propertyAddress}\nSurface habitable : {surface} m² — Nombre de pièces : {rooms}",
+  leaseClauseRent: "Le loyer mensuel est fixé à {rentAmount} {currency}, charges comprises pour {chargesAmount} {currency}.\nLe loyer est payable mensuellement, d'avance, le 1er de chaque mois.",
+  leaseClauseDuration: "Le présent bail est consenti pour une durée de {duration}, prenant effet le {startDate}.",
+  leaseClauseDeposit: "Un dépôt de garantie de {depositAmount} {currency} est versé à la signature du bail.",
+  leaseClauseTermination: "Le bail peut être résilié conformément aux dispositions légales en vigueur, avec un préavis de {noticePeriod}.",
+  receiptClause: "Je soussigné(e) {landlordName}, bailleur, déclare avoir reçu de {tenantName}, locataire du bien sis {propertyAddress}, la somme de {totalAmount} {currency} au titre du loyer et des charges pour la période de {period}.\n\nDétail : Loyer {rentAmount} {currency} + Charges {chargesAmount} {currency}.\n\nFait à {signaturePlace}, le {paymentDate}.",
+  noticeClause: "Par la présente, {landlordName}, demeurant {landlordAddress}, met en demeure {tenantName} de régler la somme de {amountDue} {currency} correspondant aux loyers et charges impayés pour le bien situé {propertyAddress}.\n\nÀ défaut de régularisation sous 8 jours, des poursuites judiciaires pourront être engagées.",
+  inventoryClause: "État des lieux ({reportType}) établi contradictoirement le {reportDate} entre {landlordName} (bailleur) et {tenantName} (locataire) pour le bien situé {propertyAddress}.\n\nObservations : {generalNotes}",
+  terminationClause: "Par la présente, {senderName} notifie à {recipientName} sa décision de mettre fin au bail du bien situé {propertyAddress}, avec effet au {endDate}, conformément aux dispositions légales.",
+  depositReturnClause: "Le bailleur {landlordName} restitue au locataire {tenantName} le dépôt de garantie d'un montant de {depositAmount} {currency}, déduction faite des retenues éventuelles.",
+  legalFooter: "Document établi conformément à la législation en vigueur.",
+};
+
+const L_EN: LegalLabels = {
+  leaseLabel: "Residential Tenancy Agreement", leaseDesc: "Lease agreement compliant with local tenancy law.",
+  receiptLabel: "Rent Receipt", receiptDesc: "Official proof of rent payment.",
+  noticeLabel: "Formal Notice / Demand Letter", noticeDesc: "Legal notice for overdue rent.",
+  inventoryLabel: "Property Inventory Report", inventoryDesc: "Check-in / check-out condition report.",
+  terminationLabel: "Notice of Termination", terminationDesc: "Formal termination of tenancy.",
+  depositReturnLabel: "Security Deposit Return", depositReturnDesc: "Statement of deposit return.",
+  lang: "en",
+  clauseParties: "Section 1 — Parties", clauseProperty: "Section 2 — Premises",
+  clauseRent: "Section 3 — Rent & Charges", clauseDuration: "Section 4 — Term",
+  clauseReceipt: "Receipt", clauseNotice: "Notice",
+  clauseInventory: "Inventory", clauseTermination: "Termination", clauseDeposit: "Security Deposit",
+  fieldLandlord: "Landlord / Lessor", fieldTenant: "Tenant / Lessee", fieldAddress: "Property address",
+  fieldSurface: "Floor area", fieldRooms: "Number of rooms",
+  fieldRent: "Monthly rent", fieldCharges: "Service charges",
+  fieldDeposit: "Security deposit", fieldStartDate: "Commencement date",
+  fieldEndDate: "End date", fieldDuration: "Duration",
+  fieldPeriod: "Period", fieldPaymentDate: "Payment date",
+  fieldTaxId: "Tax ID", fieldBankIban: "IBAN / Account No.",
+  fieldSignaturePlace: "Signed at",
+  leaseClauseParties: "This Tenancy Agreement is made between:\nThe Landlord: {landlordName}, of {landlordAddress},\nand\nThe Tenant: {tenantName}.\nThe parties agree as follows:",
+  leaseClauseProperty: "The Landlord lets to the Tenant the premises at:\n{propertyAddress}\nFloor area: {surface} — Rooms: {rooms}",
+  leaseClauseRent: "The monthly rent is {rentAmount} {currency}, with service charges of {chargesAmount} {currency}.\nRent is payable monthly in advance on the first day of each month.",
+  leaseClauseDuration: "This tenancy is for a term of {duration}, commencing on {startDate}.",
+  leaseClauseDeposit: "A security deposit of {depositAmount} {currency} is payable upon signing.",
+  leaseClauseTermination: "Either party may terminate this agreement in accordance with applicable law, providing {noticePeriod} notice.",
+  receiptClause: "I, {landlordName}, landlord, hereby acknowledge receipt from {tenantName}, tenant at {propertyAddress}, of the sum of {totalAmount} {currency} for rent and charges for the period {period}.\n\nBreakdown: Rent {rentAmount} {currency} + Charges {chargesAmount} {currency}.\n\nSigned at {signaturePlace}, on {paymentDate}.",
+  noticeClause: "{landlordName}, of {landlordAddress}, hereby gives formal notice to {tenantName} to pay the outstanding amount of {amountDue} {currency} for the property at {propertyAddress}.\n\nFailure to pay within 14 days may result in legal proceedings.",
+  inventoryClause: "Inventory report ({reportType}) prepared on {reportDate} by {landlordName} (landlord) and {tenantName} (tenant) for the property at {propertyAddress}.\n\nNotes: {generalNotes}",
+  terminationClause: "{senderName} hereby gives notice to {recipientName} of termination of the tenancy at {propertyAddress}, effective {endDate}, in accordance with applicable law.",
+  depositReturnClause: "The landlord {landlordName} returns to the tenant {tenantName} the security deposit of {depositAmount} {currency}, less any deductions.",
+  legalFooter: "This document is prepared in accordance with applicable tenancy legislation.",
+};
+
+const L_ES: LegalLabels = {
+  leaseLabel: "Contrato de arrendamiento de vivienda", leaseDesc: "Contrato conforme a la Ley de Arrendamientos Urbanos (LAU).",
+  receiptLabel: "Recibo de alquiler", receiptDesc: "Justificante de pago de la renta mensual.",
+  noticeLabel: "Requerimiento de pago", noticeDesc: "Carta formal de reclamación de rentas impagadas.",
+  inventoryLabel: "Inventario del inmueble", inventoryDesc: "Acta de entrega y devolución del inmueble.",
+  terminationLabel: "Comunicación de resolución", terminationDesc: "Notificación de finalización del contrato.",
+  depositReturnLabel: "Devolución de la fianza", depositReturnDesc: "Comunicación de devolución de fianza.",
+  lang: "es",
+  clauseParties: "Cláusula 1ª — Partes contratantes", clauseProperty: "Cláusula 2ª — Inmueble arrendado",
+  clauseRent: "Cláusula 3ª — Renta y gastos", clauseDuration: "Cláusula 4ª — Duración del contrato",
+  clauseReceipt: "Recibo", clauseNotice: "Requerimiento",
+  clauseInventory: "Inventario", clauseTermination: "Resolución", clauseDeposit: "Fianza",
+  fieldLandlord: "Arrendador", fieldTenant: "Arrendatario", fieldAddress: "Dirección del inmueble",
+  fieldSurface: "Superficie útil (m²)", fieldRooms: "Habitaciones",
+  fieldRent: "Renta mensual", fieldCharges: "Gastos comunes",
+  fieldDeposit: "Fianza", fieldStartDate: "Fecha de inicio",
+  fieldEndDate: "Fecha de finalización", fieldDuration: "Duración",
+  fieldPeriod: "Periodo", fieldPaymentDate: "Fecha de pago",
+  fieldTaxId: "NIF / CIF", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Firmado en",
+  leaseClauseParties: "De una parte, D./Dña. {landlordName}, con domicilio en {landlordAddress}, en calidad de ARRENDADOR.\nDe otra parte, D./Dña. {tenantName}, en calidad de ARRENDATARIO.\nAmbas partes se reconocen capacidad legal y acuerdan lo siguiente:",
+  leaseClauseProperty: "El arrendador cede en arrendamiento al arrendatario la vivienda sita en:\n{propertyAddress}\nSuperficie útil: {surface} m² — Habitaciones: {rooms}",
+  leaseClauseRent: "La renta mensual se fija en {rentAmount} {currency}, más gastos comunes de {chargesAmount} {currency}.\nEl pago se realizará por mensualidades anticipadas dentro de los 7 primeros días de cada mes.",
+  leaseClauseDuration: "El presente contrato tendrá una duración de {duration}, comenzando el {startDate}.",
+  leaseClauseDeposit: "Se deposita como fianza la cantidad de {depositAmount} {currency} conforme al art. 36 LAU.",
+  leaseClauseTermination: "El contrato podrá resolverse conforme a los artículos 9, 10 y 11 de la LAU.",
+  receiptClause: "D./Dña. {landlordName}, arrendador del inmueble sito en {propertyAddress}, declara haber recibido de D./Dña. {tenantName} la cantidad de {totalAmount} {currency} en concepto de renta y gastos del periodo {period}.\n\nDesglose: Renta {rentAmount} {currency} + Gastos {chargesAmount} {currency}.",
+  noticeClause: "D./Dña. {landlordName}, con domicilio en {landlordAddress}, requiere formalmente a D./Dña. {tenantName} el pago de {amountDue} {currency} correspondiente a rentas impagadas del inmueble sito en {propertyAddress}.",
+  inventoryClause: "Acta de inventario ({reportType}) del inmueble sito en {propertyAddress}, realizada el {reportDate} por {landlordName} y {tenantName}.\n\nObservaciones: {generalNotes}",
+  terminationClause: "{senderName} comunica a {recipientName} la resolución del contrato de arrendamiento del inmueble sito en {propertyAddress}, con efectos a partir del {endDate}.",
+  depositReturnClause: "El arrendador {landlordName} procede a la devolución de la fianza de {depositAmount} {currency} al arrendatario {tenantName}.",
+  legalFooter: "Documento conforme a la Ley de Arrendamientos Urbanos (LAU).",
+};
+
+const L_DE: LegalLabels = {
+  leaseLabel: "Wohnungsmietvertrag", leaseDesc: "Mietvertrag gemäß BGB §§ 535 ff.",
+  receiptLabel: "Mietquittung", receiptDesc: "Bestätigung des Mieteingangs.",
+  noticeLabel: "Abmahnung / Zahlungsaufforderung", noticeDesc: "Schriftliche Mahnung wegen Mietrückstand.",
+  inventoryLabel: "Übergabeprotokoll", inventoryDesc: "Wohnungsübergabeprotokoll bei Ein-/Auszug.",
+  terminationLabel: "Kündigung des Mietverhältnisses", terminationDesc: "Formelle Kündigung.",
+  depositReturnLabel: "Kautionsrückgabe", depositReturnDesc: "Abrechnung der Mietkaution.",
+  lang: "de",
+  clauseParties: "§1 Vertragsparteien", clauseProperty: "§2 Mietobjekt",
+  clauseRent: "§3 Miete und Nebenkosten", clauseDuration: "§4 Mietdauer",
+  clauseReceipt: "Quittung", clauseNotice: "Mahnung",
+  clauseInventory: "Übergabeprotokoll", clauseTermination: "Kündigung", clauseDeposit: "Kaution",
+  fieldLandlord: "Vermieter", fieldTenant: "Mieter", fieldAddress: "Anschrift des Mietobjekts",
+  fieldSurface: "Wohnfläche (m²)", fieldRooms: "Zimmeranzahl",
+  fieldRent: "Kaltmiete", fieldCharges: "Nebenkosten / Betriebskosten",
+  fieldDeposit: "Mietkaution", fieldStartDate: "Mietbeginn",
+  fieldEndDate: "Mietende", fieldDuration: "Laufzeit",
+  fieldPeriod: "Zeitraum", fieldPaymentDate: "Zahlungsdatum",
+  fieldTaxId: "Steuer-Nr. / USt-IdNr.", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Ort",
+  leaseClauseParties: "Zwischen dem Vermieter:\n{landlordName}, wohnhaft in {landlordAddress},\nund dem Mieter:\n{tenantName},\nwird folgender Mietvertrag geschlossen:",
+  leaseClauseProperty: "Der Vermieter vermietet dem Mieter die Wohnung:\n{propertyAddress}\nWohnfläche: {surface} m² — Zimmer: {rooms}",
+  leaseClauseRent: "Die monatliche Kaltmiete beträgt {rentAmount} {currency}.\nNebenkosten (Vorauszahlung): {chargesAmount} {currency}.\nDie Miete ist monatlich im Voraus bis zum 3. Werktag zu zahlen.",
+  leaseClauseDuration: "Das Mietverhältnis beginnt am {startDate} und wird auf {duration} geschlossen.",
+  leaseClauseDeposit: "Der Mieter zahlt eine Kaution von {depositAmount} {currency} gemäß § 551 BGB.",
+  leaseClauseTermination: "Das Mietverhältnis kann unter Einhaltung der gesetzlichen Kündigungsfristen gemäß § 573c BGB gekündigt werden.",
+  receiptClause: "Hiermit bestätigt {landlordName} (Vermieter) den Erhalt von {totalAmount} {currency} von {tenantName} (Mieter) für die Wohnung {propertyAddress} für den Zeitraum {period}.\n\nKaltmiete: {rentAmount} {currency} + Nebenkosten: {chargesAmount} {currency}.\n\n{signaturePlace}, den {paymentDate}.",
+  noticeClause: "{landlordName}, wohnhaft {landlordAddress}, mahnt hiermit {tenantName} zur Zahlung des ausstehenden Betrags von {amountDue} {currency} für die Wohnung {propertyAddress}.",
+  inventoryClause: "Übergabeprotokoll ({reportType}) vom {reportDate} für die Wohnung {propertyAddress}.\nVermieter: {landlordName} — Mieter: {tenantName}.\nAnmerkungen: {generalNotes}",
+  terminationClause: "{senderName} kündigt hiermit das Mietverhältnis für die Wohnung {propertyAddress} zum {endDate} gemäß den gesetzlichen Bestimmungen.",
+  depositReturnClause: "Der Vermieter {landlordName} erstattet dem Mieter {tenantName} die Kaution von {depositAmount} {currency} abzüglich etwaiger Einbehalte.",
+  legalFooter: "Erstellt gemäß BGB §§ 535 ff.",
+};
+
+const L_IT: LegalLabels = {
+  leaseLabel: "Contratto di locazione abitativa", leaseDesc: "Contratto conforme alla Legge 431/1998.",
+  receiptLabel: "Ricevuta di pagamento canone", receiptDesc: "Attestazione di pagamento del canone di locazione.",
+  noticeLabel: "Diffida ad adempiere", noticeDesc: "Intimazione formale per canoni insoluti.",
+  inventoryLabel: "Verbale di consegna immobile", inventoryDesc: "Verbale di consegna e riconsegna dell'immobile.",
+  terminationLabel: "Disdetta del contratto", terminationDesc: "Comunicazione di recesso dal contratto.",
+  depositReturnLabel: "Restituzione del deposito cauzionale", depositReturnDesc: "Comunicazione di restituzione cauzione.",
+  lang: "it",
+  clauseParties: "Art. 1 — Parti contraenti", clauseProperty: "Art. 2 — Immobile locato",
+  clauseRent: "Art. 3 — Canone e oneri accessori", clauseDuration: "Art. 4 — Durata della locazione",
+  clauseReceipt: "Ricevuta", clauseNotice: "Diffida",
+  clauseInventory: "Verbale", clauseTermination: "Disdetta", clauseDeposit: "Deposito cauzionale",
+  fieldLandlord: "Locatore", fieldTenant: "Conduttore", fieldAddress: "Indirizzo dell'immobile",
+  fieldSurface: "Superficie (m²)", fieldRooms: "Numero vani",
+  fieldRent: "Canone mensile", fieldCharges: "Spese condominiali",
+  fieldDeposit: "Deposito cauzionale", fieldStartDate: "Data di decorrenza",
+  fieldEndDate: "Data di scadenza", fieldDuration: "Durata",
+  fieldPeriod: "Periodo", fieldPaymentDate: "Data di pagamento",
+  fieldTaxId: "Codice fiscale / P.IVA", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Luogo",
+  leaseClauseParties: "Tra il Sig./Sig.ra {landlordName}, residente in {landlordAddress}, di seguito « Locatore »,\ne il Sig./Sig.ra {tenantName}, di seguito « Conduttore »,\nsi conviene quanto segue:",
+  leaseClauseProperty: "Il Locatore concede in locazione al Conduttore l'immobile sito in:\n{propertyAddress}\nSuperficie: {surface} m² — Vani: {rooms}",
+  leaseClauseRent: "Il canone mensile di locazione è fissato in {rentAmount} {currency}, oltre a spese condominiali di {chargesAmount} {currency}.\nIl pagamento è dovuto entro il 5 di ogni mese.",
+  leaseClauseDuration: "La locazione ha durata di {duration}, con decorrenza dal {startDate}.",
+  leaseClauseDeposit: "Il conduttore versa un deposito cauzionale di {depositAmount} {currency} ai sensi dell'art. 11 L. 392/1978.",
+  leaseClauseTermination: "Il contratto può essere risolto nel rispetto dei termini previsti dalla Legge 431/1998.",
+  receiptClause: "Il/La sottoscritto/a {landlordName}, locatore dell'immobile sito in {propertyAddress}, dichiara di aver ricevuto dal conduttore {tenantName} la somma di {totalAmount} {currency} per il periodo {period}.\n\nCanone: {rentAmount} {currency} + Spese: {chargesAmount} {currency}.",
+  noticeClause: "Il/La Sig./Sig.ra {landlordName}, residente in {landlordAddress}, intima formalmente al conduttore {tenantName} il pagamento della somma di {amountDue} {currency} relativa ai canoni insoluti per l'immobile sito in {propertyAddress}.",
+  inventoryClause: "Verbale di consegna ({reportType}) redatto il {reportDate} tra {landlordName} (locatore) e {tenantName} (conduttore) per l'immobile sito in {propertyAddress}.\n\nNote: {generalNotes}",
+  terminationClause: "{senderName} comunica al {recipientName} la disdetta del contratto di locazione dell'immobile sito in {propertyAddress}, con effetto dal {endDate}.",
+  depositReturnClause: "Il locatore {landlordName} restituisce al conduttore {tenantName} il deposito cauzionale di {depositAmount} {currency}, al netto di eventuali trattenute.",
+  legalFooter: "Documento conforme alla Legge 431/1998 e al Codice Civile.",
+};
+
+const L_PT: LegalLabels = {
+  leaseLabel: "Contrato de arrendamento habitacional", leaseDesc: "Conforme ao NRAU (Lei n.º 6/2006).",
+  receiptLabel: "Recibo de renda", receiptDesc: "Comprovativo de pagamento de renda.",
+  noticeLabel: "Notificação judicial avulsa", noticeDesc: "Interpelação para pagamento de rendas em atraso.",
+  inventoryLabel: "Auto de vistoria", inventoryDesc: "Auto de vistoria de entrada/saída do imóvel.",
+  terminationLabel: "Denúncia do contrato", terminationDesc: "Comunicação de cessação do contrato.",
+  depositReturnLabel: "Restituição da caução", depositReturnDesc: "Comunicação de restituição da caução.",
+  lang: "pt",
+  clauseParties: "Artigo 1.º — Partes", clauseProperty: "Artigo 2.º — Imóvel arrendado",
+  clauseRent: "Artigo 3.º — Renda e encargos", clauseDuration: "Artigo 4.º — Prazo",
+  clauseReceipt: "Recibo", clauseNotice: "Notificação",
+  clauseInventory: "Vistoria", clauseTermination: "Denúncia", clauseDeposit: "Caução",
+  fieldLandlord: "Senhorio", fieldTenant: "Inquilino/Arrendatário", fieldAddress: "Morada do imóvel",
+  fieldSurface: "Área útil (m²)", fieldRooms: "Divisões",
+  fieldRent: "Renda mensal", fieldCharges: "Encargos",
+  fieldDeposit: "Caução", fieldStartDate: "Data de início",
+  fieldEndDate: "Data de termo", fieldDuration: "Duração",
+  fieldPeriod: "Período", fieldPaymentDate: "Data de pagamento",
+  fieldTaxId: "NIF", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Local",
+  leaseClauseParties: "Entre:\nPrimeiro Outorgante (Senhorio): {landlordName}, com domicílio em {landlordAddress},\nSegundo Outorgante (Arrendatário): {tenantName},\nÉ celebrado o presente contrato de arrendamento:",
+  leaseClauseProperty: "O Senhorio arrenda ao Arrendatário o imóvel sito em:\n{propertyAddress}\nÁrea: {surface} m² — Divisões: {rooms}",
+  leaseClauseRent: "A renda mensal é de {rentAmount} {currency}, acrescida de encargos de {chargesAmount} {currency}.\nA renda é devida até ao 8.º dia útil de cada mês.",
+  leaseClauseDuration: "O contrato tem a duração de {duration}, com início em {startDate}.",
+  leaseClauseDeposit: "O arrendatário entrega uma caução de {depositAmount} {currency} nos termos do art. 1076.º CC.",
+  leaseClauseTermination: "O contrato pode cessar nos termos previstos no NRAU.",
+  receiptClause: "{landlordName}, senhorio do imóvel sito em {propertyAddress}, declara ter recebido de {tenantName} a quantia de {totalAmount} {currency} referente ao período {period}.\n\nRenda: {rentAmount} {currency} + Encargos: {chargesAmount} {currency}.",
+  noticeClause: "{landlordName}, com domicílio em {landlordAddress}, notifica {tenantName} para proceder ao pagamento de {amountDue} {currency} referente a rendas em atraso do imóvel sito em {propertyAddress}.",
+  inventoryClause: "Auto de vistoria ({reportType}) realizado em {reportDate} entre {landlordName} e {tenantName} para o imóvel sito em {propertyAddress}.\n\nObservações: {generalNotes}",
+  terminationClause: "{senderName} comunica a {recipientName} a denúncia do contrato de arrendamento do imóvel sito em {propertyAddress}, com efeitos a partir de {endDate}.",
+  depositReturnClause: "O senhorio {landlordName} restitui ao arrendatário {tenantName} a caução de {depositAmount} {currency}.",
+  legalFooter: "Documento elaborado ao abrigo do NRAU (Lei n.º 6/2006).",
+};
+
+const L_NL: LegalLabels = {
+  leaseLabel: "Huurovereenkomst woonruimte", leaseDesc: "Conform het Burgerlijk Wetboek Boek 7, Titel 4.",
+  receiptLabel: "Huurkwitantie", receiptDesc: "Betalingsbewijs van de maandelijkse huur.",
+  noticeLabel: "Ingebrekestelling", noticeDesc: "Formele aanmaning voor achterstallige huur.",
+  inventoryLabel: "Opnamestaat", inventoryDesc: "Staat van oplevering bij aanvang/einde huur.",
+  terminationLabel: "Huuropzegging", terminationDesc: "Opzegging van de huurovereenkomst.",
+  depositReturnLabel: "Teruggave waarborgsom", depositReturnDesc: "Afrekening waarborgsom.",
+  lang: "nl",
+  clauseParties: "Artikel 1 — Partijen", clauseProperty: "Artikel 2 — Het gehuurde",
+  clauseRent: "Artikel 3 — Huurprijs en servicekosten", clauseDuration: "Artikel 4 — Duur",
+  clauseReceipt: "Kwitantie", clauseNotice: "Aanmaning",
+  clauseInventory: "Opnamestaat", clauseTermination: "Opzegging", clauseDeposit: "Waarborgsom",
+  fieldLandlord: "Verhuurder", fieldTenant: "Huurder", fieldAddress: "Adres van het gehuurde",
+  fieldSurface: "Woonoppervlakte (m²)", fieldRooms: "Kamers",
+  fieldRent: "Kale huurprijs", fieldCharges: "Servicekosten",
+  fieldDeposit: "Waarborgsom", fieldStartDate: "Ingangsdatum",
+  fieldEndDate: "Einddatum", fieldDuration: "Looptijd",
+  fieldPeriod: "Periode", fieldPaymentDate: "Betaaldatum",
+  fieldTaxId: "BTW-nummer / BSN", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "Plaats",
+  leaseClauseParties: "Ondergetekenden:\nVerhuurder: {landlordName}, wonende te {landlordAddress},\nHuurder: {tenantName},\nKomen het volgende overeen:",
+  leaseClauseProperty: "De verhuurder verhuurt aan de huurder de woonruimte gelegen te:\n{propertyAddress}\nOppervlakte: {surface} m² — Kamers: {rooms}",
+  leaseClauseRent: "De kale huurprijs bedraagt {rentAmount} {currency} per maand.\nServicekosten: {chargesAmount} {currency}.\nDe huur is bij vooruitbetaling verschuldigd vóór de eerste van elke maand.",
+  leaseClauseDuration: "De huurovereenkomst wordt aangegaan voor {duration}, ingaande {startDate}.",
+  leaseClauseDeposit: "De huurder betaalt een waarborgsom van {depositAmount} {currency}.",
+  leaseClauseTermination: "Opzegging geschiedt conform de wettelijke bepalingen (BW Boek 7).",
+  receiptClause: "Verhuurder {landlordName} verklaart van huurder {tenantName} te hebben ontvangen {totalAmount} {currency} voor huur en servicekosten van {propertyAddress} over de periode {period}.\n\nHuur: {rentAmount} {currency} + Servicekosten: {chargesAmount} {currency}.",
+  noticeClause: "{landlordName}, wonende te {landlordAddress}, stelt {tenantName} hierbij in gebreke voor het bedrag van {amountDue} {currency} wegens achterstallige huur voor {propertyAddress}.",
+  inventoryClause: "Opnamestaat ({reportType}) opgemaakt op {reportDate} door {landlordName} en {tenantName} voor {propertyAddress}.\n\nOpmerkingen: {generalNotes}",
+  terminationClause: "{senderName} zegt hierbij de huurovereenkomst voor {propertyAddress} op per {endDate}.",
+  depositReturnClause: "Verhuurder {landlordName} retourneert aan huurder {tenantName} de waarborgsom van {depositAmount} {currency}.",
+  legalFooter: "Opgesteld conform BW Boek 7, Titel 4.",
+};
+
+const L_AR: LegalLabels = {
+  leaseLabel: "عقد إيجار سكني", leaseDesc: "عقد إيجار متوافق مع قانون الإيجارات المحلي.",
+  receiptLabel: "إيصال دفع الإيجار", receiptDesc: "إثبات رسمي لدفع الإيجار الشهري.",
+  noticeLabel: "إنذار رسمي بالدفع", noticeDesc: "إنذار قانوني بسداد الإيجارات المتأخرة.",
+  inventoryLabel: "محضر تسليم العقار", inventoryDesc: "محضر استلام وتسليم العقار.",
+  terminationLabel: "إشعار إنهاء العقد", terminationDesc: "إخطار رسمي بإنهاء عقد الإيجار.",
+  depositReturnLabel: "رد مبلغ التأمين", depositReturnDesc: "بيان رد مبلغ التأمين.",
+  lang: "ar",
+  clauseParties: "البند الأول — الأطراف المتعاقدة", clauseProperty: "البند الثاني — وصف العقار",
+  clauseRent: "البند الثالث — بدل الإيجار", clauseDuration: "البند الرابع — مدة العقد",
+  clauseReceipt: "إيصال", clauseNotice: "إنذار",
+  clauseInventory: "محضر تسليم", clauseTermination: "إنهاء", clauseDeposit: "مبلغ التأمين",
+  fieldLandlord: "المؤجر", fieldTenant: "المستأجر", fieldAddress: "عنوان العقار",
+  fieldSurface: "المساحة (م²)", fieldRooms: "عدد الغرف",
+  fieldRent: "الإيجار الشهري", fieldCharges: "رسوم الخدمات",
+  fieldDeposit: "مبلغ التأمين", fieldStartDate: "تاريخ بدء العقد",
+  fieldEndDate: "تاريخ انتهاء العقد", fieldDuration: "مدة العقد",
+  fieldPeriod: "الفترة", fieldPaymentDate: "تاريخ الدفع",
+  fieldTaxId: "الرقم الضريبي / رقم الهوية", fieldBankIban: "رقم الحساب البنكي (IBAN)",
+  fieldSignaturePlace: "مكان التوقيع",
+  leaseClauseParties: "أُبرم هذا العقد بين:\nالطرف الأول (المؤجر): {landlordName}، المقيم في {landlordAddress}\nالطرف الثاني (المستأجر): {tenantName}\nواتفقا على ما يلي:",
+  leaseClauseProperty: "يؤجر الطرف الأول للطرف الثاني العقار الكائن في:\n{propertyAddress}\nالمساحة: {surface} م² — الغرف: {rooms}",
+  leaseClauseRent: "بدل الإيجار الشهري: {rentAmount} {currency}.\nرسوم الخدمات: {chargesAmount} {currency}.\nيُدفع الإيجار شهرياً مقدماً في اليوم الأول من كل شهر.",
+  leaseClauseDuration: "مدة هذا العقد {duration}، اعتباراً من {startDate}.",
+  leaseClauseDeposit: "يدفع المستأجر مبلغ تأمين قدره {depositAmount} {currency}.",
+  leaseClauseTermination: "يجوز لأي من الطرفين إنهاء العقد وفقاً للقانون المعمول به.",
+  receiptClause: "يقر {landlordName} (المؤجر) بتسلمه من {tenantName} (المستأجر) مبلغ {totalAmount} {currency} عن إيجار العقار الكائن في {propertyAddress} عن الفترة {period}.\n\nالإيجار: {rentAmount} {currency} + الخدمات: {chargesAmount} {currency}.",
+  noticeClause: "ينذر {landlordName}، المقيم في {landlordAddress}، السيد/السيدة {tenantName} بسداد مبلغ {amountDue} {currency} المستحق عن العقار الكائن في {propertyAddress}.",
+  inventoryClause: "محضر تسليم ({reportType}) محرر بتاريخ {reportDate} بين {landlordName} و{tenantName} للعقار الكائن في {propertyAddress}.\n\nملاحظات: {generalNotes}",
+  terminationClause: "يخطر {senderName} السيد/السيدة {recipientName} بإنهاء عقد إيجار العقار الكائن في {propertyAddress} اعتباراً من {endDate}.",
+  depositReturnClause: "يرد المؤجر {landlordName} للمستأجر {tenantName} مبلغ التأمين البالغ {depositAmount} {currency}.",
+  legalFooter: "وُقّع هذا المستند وفقاً للقوانين واللوائح المعمول بها.",
+};
+
+const L_TR: LegalLabels = {
+  leaseLabel: "Konut Kira Sözleşmesi", leaseDesc: "Türk Borçlar Kanunu'na uygun kira sözleşmesi.",
+  receiptLabel: "Kira Makbuzu", receiptDesc: "Kira ödemesi belgesi.",
+  noticeLabel: "İhtarname", noticeDesc: "Kira borcu için resmi ihtar.",
+  inventoryLabel: "Teslim Tutanağı", inventoryDesc: "Giriş/çıkış teslim tutanağı.",
+  terminationLabel: "Kira Fesih Bildirimi", terminationDesc: "Sözleşme fesih bildirimi.",
+  depositReturnLabel: "Depozito İadesi", depositReturnDesc: "Depozito iade bildirimi.",
+  lang: "tr",
+  clauseParties: "Madde 1 — Taraflar", clauseProperty: "Madde 2 — Kiralanan",
+  clauseRent: "Madde 3 — Kira Bedeli", clauseDuration: "Madde 4 — Süre",
+  clauseReceipt: "Makbuz", clauseNotice: "İhtar",
+  clauseInventory: "Tutanak", clauseTermination: "Fesih", clauseDeposit: "Depozito",
+  fieldLandlord: "Kiraya Veren", fieldTenant: "Kiracı", fieldAddress: "Taşınmaz adresi",
+  fieldSurface: "Kullanım alanı (m²)", fieldRooms: "Oda sayısı",
+  fieldRent: "Aylık kira bedeli", fieldCharges: "Aidat/Ortak giderler",
+  fieldDeposit: "Depozito", fieldStartDate: "Başlangıç tarihi",
+  fieldEndDate: "Bitiş tarihi", fieldDuration: "Süre",
+  fieldPeriod: "Dönem", fieldPaymentDate: "Ödeme tarihi",
+  fieldTaxId: "T.C. Kimlik No / Vergi No", fieldBankIban: "IBAN",
+  fieldSignaturePlace: "İmza yeri",
+  leaseClauseParties: "Aşağıda bilgileri yazılı taraflar arasında kira sözleşmesi akdedilmiştir:\nKiraya Veren: {landlordName}, adres: {landlordAddress}\nKiracı: {tenantName}",
+  leaseClauseProperty: "Kiralanan taşınmaz:\n{propertyAddress}\nKullanım alanı: {surface} m² — Oda: {rooms}",
+  leaseClauseRent: "Aylık kira bedeli {rentAmount} {currency}, aidat {chargesAmount} {currency} olarak belirlenmiştir.\nKira, her ayın ilk 5 günü içinde ödenecektir.",
+  leaseClauseDuration: "Sözleşme süresi {duration} olup {startDate} tarihinde başlar.",
+  leaseClauseDeposit: "Kiracı, {depositAmount} {currency} tutarında depozito öder.",
+  leaseClauseTermination: "Sözleşme, TBK hükümlerine uygun olarak feshedilebilir.",
+  receiptClause: "{landlordName} (kiraya veren), {tenantName} (kiracı) tarafından {propertyAddress} adresindeki taşınmaz için {period} dönemi kira bedeli olarak {totalAmount} {currency} aldığını beyan eder.\n\nKira: {rentAmount} {currency} + Aidat: {chargesAmount} {currency}.",
+  noticeClause: "{landlordName}, {landlordAddress} adresinden, {tenantName}'e {propertyAddress} adresindeki taşınmaz için {amountDue} {currency} tutarındaki gecikmiş kira bedelini ödemesi konusunda ihtarda bulunur.",
+  inventoryClause: "Teslim tutanağı ({reportType}), {reportDate} tarihinde {landlordName} ve {tenantName} tarafından {propertyAddress} için düzenlenmiştir.\n\nNotlar: {generalNotes}",
+  terminationClause: "{senderName}, {recipientName}'e {propertyAddress} adresindeki taşınmazın kira sözleşmesinin {endDate} tarihinden itibaren feshedildiğini bildirir.",
+  depositReturnClause: "Kiraya veren {landlordName}, kiracı {tenantName}'e {depositAmount} {currency} tutarındaki depozitoyu iade eder.",
+  legalFooter: "Türk Borçlar Kanunu'na uygun olarak düzenlenmiştir.",
+};
+
+const L_JA: LegalLabels = {
+  leaseLabel: "賃貸借契約書", leaseDesc: "借地借家法に準拠した賃貸契約。",
+  receiptLabel: "家賃領収書", receiptDesc: "家賃支払いの公式証明。",
+  noticeLabel: "催告書", noticeDesc: "未払い賃料の法的通知。",
+  inventoryLabel: "物件引渡確認書", inventoryDesc: "入退去時の物件状態確認書。",
+  terminationLabel: "契約解除通知", terminationDesc: "賃貸契約の解除通知。",
+  depositReturnLabel: "敷金返還通知", depositReturnDesc: "敷金返還の明細書。",
+  lang: "ja",
+  clauseParties: "第1条 当事者", clauseProperty: "第2条 目的物件",
+  clauseRent: "第3条 賃料", clauseDuration: "第4条 契約期間",
+  clauseReceipt: "領収書", clauseNotice: "催告",
+  clauseInventory: "確認書", clauseTermination: "解除", clauseDeposit: "敷金",
+  fieldLandlord: "賃貸人（貸主）", fieldTenant: "賃借人（借主）", fieldAddress: "物件所在地",
+  fieldSurface: "専有面積（m²）", fieldRooms: "部屋数",
+  fieldRent: "月額賃料", fieldCharges: "共益費・管理費",
+  fieldDeposit: "敷金", fieldStartDate: "契約開始日",
+  fieldEndDate: "契約終了日", fieldDuration: "契約期間",
+  fieldPeriod: "対象期間", fieldPaymentDate: "支払日",
+  fieldTaxId: "法人番号 / マイナンバー", fieldBankIban: "口座番号",
+  fieldSignaturePlace: "署名場所",
+  leaseClauseParties: "賃貸人（甲）：{landlordName}（住所：{landlordAddress}）\n賃借人（乙）：{tenantName}\n甲乙間において、以下の通り賃貸借契約を締結する。",
+  leaseClauseProperty: "甲は乙に対し、以下の物件を賃貸する。\n所在地：{propertyAddress}\n専有面積：{surface} m² ／ 部屋数：{rooms}",
+  leaseClauseRent: "月額賃料：{rentAmount} {currency}\n共益費：{chargesAmount} {currency}\n毎月末日までに翌月分を支払うものとする。",
+  leaseClauseDuration: "契約期間：{duration}（{startDate}より開始）",
+  leaseClauseDeposit: "敷金として {depositAmount} {currency} を契約時に預託する。",
+  leaseClauseTermination: "本契約は借地借家法の規定に従い解除することができる。",
+  receiptClause: "賃貸人 {landlordName} は、賃借人 {tenantName} より、{propertyAddress} の {period} 分の賃料として {totalAmount} {currency} を受領したことを証する。\n\n内訳：賃料 {rentAmount} {currency} ＋ 共益費 {chargesAmount} {currency}",
+  noticeClause: "{landlordName}（{landlordAddress}）は、{tenantName} に対し、{propertyAddress} の未払い賃料 {amountDue} {currency} の支払いを催告する。",
+  inventoryClause: "物件確認書（{reportType}）：{reportDate}作成\n物件：{propertyAddress}\n賃貸人：{landlordName} ／ 賃借人：{tenantName}\n備考：{generalNotes}",
+  terminationClause: "{senderName} は {recipientName} に対し、{propertyAddress} の賃貸借契約を {endDate} をもって解除することを通知する。",
+  depositReturnClause: "賃貸人 {landlordName} は賃借人 {tenantName} に敷金 {depositAmount} {currency} を返還する。",
+  legalFooter: "借地借家法に基づき作成。",
+};
+
+const L_KO: LegalLabels = {
+  leaseLabel: "주거용 임대차 계약서", leaseDesc: "주택임대차보호법에 따른 임대차 계약.",
+  receiptLabel: "임대료 영수증", receiptDesc: "월 임대료 납부 증명.",
+  noticeLabel: "최고서 / 독촉장", noticeDesc: "미납 임대료에 대한 법적 최고.",
+  inventoryLabel: "물건 인도 확인서", inventoryDesc: "입퇴거 시 물건 상태 확인.",
+  terminationLabel: "계약 해지 통보서", terminationDesc: "임대차 계약 해지 통보.",
+  depositReturnLabel: "보증금 반환 통보서", depositReturnDesc: "보증금 반환 내역서.",
+  lang: "ko",
+  clauseParties: "제1조 계약 당사자", clauseProperty: "제2조 임대 목적물",
+  clauseRent: "제3조 차임", clauseDuration: "제4조 계약 기간",
+  clauseReceipt: "영수증", clauseNotice: "최고서",
+  clauseInventory: "확인서", clauseTermination: "해지", clauseDeposit: "보증금",
+  fieldLandlord: "임대인", fieldTenant: "임차인", fieldAddress: "부동산 소재지",
+  fieldSurface: "전용면적 (m²)", fieldRooms: "방 수",
+  fieldRent: "월 차임", fieldCharges: "관리비",
+  fieldDeposit: "보증금", fieldStartDate: "계약 개시일",
+  fieldEndDate: "계약 종료일", fieldDuration: "계약 기간",
+  fieldPeriod: "대상 기간", fieldPaymentDate: "납부일",
+  fieldTaxId: "사업자등록번호 / 주민등록번호", fieldBankIban: "계좌번호",
+  fieldSignaturePlace: "서명 장소",
+  leaseClauseParties: "임대인(갑): {landlordName} (주소: {landlordAddress})\n임차인(을): {tenantName}\n갑과 을은 다음과 같이 임대차 계약을 체결한다.",
+  leaseClauseProperty: "갑은 을에게 아래 부동산을 임대한다.\n소재지: {propertyAddress}\n전용면적: {surface} m² / 방 수: {rooms}",
+  leaseClauseRent: "월 차임: {rentAmount} {currency}\n관리비: {chargesAmount} {currency}\n매월 말일까지 익월분을 납부한다.",
+  leaseClauseDuration: "계약 기간: {duration} ({startDate}부터)",
+  leaseClauseDeposit: "보증금으로 {depositAmount} {currency}을 계약 시 납부한다.",
+  leaseClauseTermination: "본 계약은 주택임대차보호법에 따라 해지할 수 있다.",
+  receiptClause: "임대인 {landlordName}은(는) 임차인 {tenantName}으로부터 {propertyAddress}의 {period} 차임 {totalAmount} {currency}을 수령하였음을 확인합니다.\n\n내역: 차임 {rentAmount} {currency} + 관리비 {chargesAmount} {currency}",
+  noticeClause: "{landlordName} ({landlordAddress})은(는) {tenantName}에게 {propertyAddress}의 미납 차임 {amountDue} {currency}의 납부를 최고합니다.",
+  inventoryClause: "물건 확인서 ({reportType}): {reportDate} 작성\n물건: {propertyAddress}\n임대인: {landlordName} / 임차인: {tenantName}\n비고: {generalNotes}",
+  terminationClause: "{senderName}은(는) {recipientName}에게 {propertyAddress}의 임대차 계약을 {endDate}부로 해지함을 통보합니다.",
+  depositReturnClause: "임대인 {landlordName}은(는) 임차인 {tenantName}에게 보증금 {depositAmount} {currency}을 반환합니다.",
+  legalFooter: "주택임대차보호법에 의거하여 작성.",
+};
+
+const L_ZH: LegalLabels = {
+  leaseLabel: "住宅租赁合同", leaseDesc: "符合当地租赁法规的租赁合同。",
+  receiptLabel: "租金收据", receiptDesc: "月租金支付证明。",
+  noticeLabel: "催缴通知书", noticeDesc: "拖欠租金的法律催告。",
+  inventoryLabel: "房屋交接清单", inventoryDesc: "入住/退房验收记录。",
+  terminationLabel: "合同解除通知", terminationDesc: "租赁合同终止通知。",
+  depositReturnLabel: "押金退还通知", depositReturnDesc: "押金退还明细。",
+  lang: "zh",
+  clauseParties: "第一条 合同双方", clauseProperty: "第二条 租赁房屋",
+  clauseRent: "第三条 租金及费用", clauseDuration: "第四条 租赁期限",
+  clauseReceipt: "收据", clauseNotice: "催告",
+  clauseInventory: "交接单", clauseTermination: "解除", clauseDeposit: "押金",
+  fieldLandlord: "出租人（甲方）", fieldTenant: "承租人（乙方）", fieldAddress: "房屋地址",
+  fieldSurface: "建筑面积（m²）", fieldRooms: "房间数",
+  fieldRent: "月租金", fieldCharges: "物业管理费",
+  fieldDeposit: "押金", fieldStartDate: "起租日期",
+  fieldEndDate: "到期日期", fieldDuration: "租期",
+  fieldPeriod: "期间", fieldPaymentDate: "付款日期",
+  fieldTaxId: "纳税人识别号 / 身份证号", fieldBankIban: "银行账号",
+  fieldSignaturePlace: "签署地点",
+  leaseClauseParties: "出租人（甲方）：{landlordName}，地址：{landlordAddress}\n承租人（乙方）：{tenantName}\n甲乙双方经协商一致，签订本合同：",
+  leaseClauseProperty: "甲方将以下房屋出租给乙方：\n地址：{propertyAddress}\n面积：{surface} m² / 房间数：{rooms}",
+  leaseClauseRent: "月租金：{rentAmount} {currency}\n物业费：{chargesAmount} {currency}\n租金于每月1日前支付。",
+  leaseClauseDuration: "租赁期限为{duration}，自{startDate}起。",
+  leaseClauseDeposit: "乙方于签约时支付押金{depositAmount} {currency}。",
+  leaseClauseTermination: "本合同可依据相关法律法规解除。",
+  receiptClause: "出租人{landlordName}确认收到承租人{tenantName}支付的{propertyAddress}{period}期间租金{totalAmount} {currency}。\n\n明细：租金{rentAmount} {currency} + 物业费{chargesAmount} {currency}。",
+  noticeClause: "{landlordName}（{landlordAddress}）特此催告{tenantName}支付{propertyAddress}的欠租{amountDue} {currency}。",
+  inventoryClause: "房屋交接清单（{reportType}）：{reportDate}\n房屋：{propertyAddress}\n甲方：{landlordName} / 乙方：{tenantName}\n备注：{generalNotes}",
+  terminationClause: "{senderName}通知{recipientName}，{propertyAddress}的租赁合同于{endDate}解除。",
+  depositReturnClause: "出租人{landlordName}向承租人{tenantName}退还押金{depositAmount} {currency}。",
+  legalFooter: "依据相关租赁法律法规订立。",
+};
+
+const L_HI: LegalLabels = {
+  leaseLabel: "आवासीय किराया अनुबंध", leaseDesc: "स्थानीय किराया नियंत्रण कानून के अनुसार।",
+  receiptLabel: "किराया रसीद", receiptDesc: "मासिक किराया भुगतान का प्रमाण।",
+  noticeLabel: "कानूनी नोटिस", noticeDesc: "बकाया किराये की कानूनी सूचना।",
+  inventoryLabel: "संपत्ति हस्तांतरण रिपोर्ट", inventoryDesc: "प्रवेश/निकास स्थिति रिपोर्ट।",
+  terminationLabel: "अनुबंध समाप्ति सूचना", terminationDesc: "किराया अनुबंध की समाप्ति सूचना।",
+  depositReturnLabel: "जमानत राशि वापसी", depositReturnDesc: "जमानत राशि वापसी विवरण।",
+  lang: "hi",
+  clauseParties: "धारा 1 — पक्षकार", clauseProperty: "धारा 2 — संपत्ति",
+  clauseRent: "धारा 3 — किराया एवं शुल्क", clauseDuration: "धारा 4 — अवधि",
+  clauseReceipt: "रसीद", clauseNotice: "नोटिस",
+  clauseInventory: "सूची", clauseTermination: "समाप्ति", clauseDeposit: "जमानत",
+  fieldLandlord: "मकान मालिक", fieldTenant: "किरायेदार", fieldAddress: "संपत्ति का पता",
+  fieldSurface: "क्षेत्रफल (वर्ग फुट)", fieldRooms: "कमरों की संख्या",
+  fieldRent: "मासिक किराया", fieldCharges: "रखरखाव शुल्क",
+  fieldDeposit: "जमानत राशि", fieldStartDate: "प्रारंभ तिथि",
+  fieldEndDate: "समाप्ति तिथि", fieldDuration: "अवधि",
+  fieldPeriod: "अवधि", fieldPaymentDate: "भुगतान तिथि",
+  fieldTaxId: "पैन / आधार", fieldBankIban: "बैंक खाता संख्या",
+  fieldSignaturePlace: "हस्ताक्षर स्थान",
+  leaseClauseParties: "मकान मालिक: {landlordName}, पता: {landlordAddress}\nकिरायेदार: {tenantName}\nदोनों पक्ष निम्नलिखित शर्तों पर सहमत हैं:",
+  leaseClauseProperty: "मकान मालिक किरायेदार को निम्न संपत्ति किराये पर देता है:\nपता: {propertyAddress}\nक्षेत्रफल: {surface} / कमरे: {rooms}",
+  leaseClauseRent: "मासिक किराया: {rentAmount} {currency}\nरखरखाव: {chargesAmount} {currency}\nकिराया प्रत्येक माह की 5 तारीख तक देय है।",
+  leaseClauseDuration: "अनुबंध की अवधि: {duration}, {startDate} से प्रभावी।",
+  leaseClauseDeposit: "किरायेदार {depositAmount} {currency} जमानत राशि के रूप में देगा।",
+  leaseClauseTermination: "अनुबंध लागू कानून के अनुसार समाप्त किया जा सकता है।",
+  receiptClause: "{landlordName} (मकान मालिक) प्रमाणित करता है कि {tenantName} (किरायेदार) से {propertyAddress} के {period} का किराया {totalAmount} {currency} प्राप्त हुआ।\n\nविवरण: किराया {rentAmount} {currency} + रखरखाव {chargesAmount} {currency}।",
+  noticeClause: "{landlordName} ({landlordAddress}) {tenantName} को {propertyAddress} के बकाया किराये {amountDue} {currency} के भुगतान हेतु कानूनी नोटिस देता है।",
+  inventoryClause: "संपत्ति सूची ({reportType}): {reportDate}\nसंपत्ति: {propertyAddress}\nमकान मालिक: {landlordName} / किरायेदार: {tenantName}\nटिप्पणी: {generalNotes}",
+  terminationClause: "{senderName} {recipientName} को {propertyAddress} के किराया अनुबंध की {endDate} से समाप्ति की सूचना देता है।",
+  depositReturnClause: "मकान मालिक {landlordName} किरायेदार {tenantName} को {depositAmount} {currency} जमानत राशि वापस करता है।",
+  legalFooter: "लागू किराया नियंत्रण कानून के अनुसार तैयार।",
+};
+
+// ─── LABEL MAP ───
+const ALL_LABELS: Record<string, LegalLabels> = {
+  fr: L_FR, en: L_EN, es: L_ES, de: L_DE, it: L_IT, pt: L_PT,
+  nl: L_NL, ar: L_AR, tr: L_TR, ja: L_JA, ko: L_KO, zh: L_ZH, hi: L_HI,
+};
+
+const COUNTRY_LANG_MAP: Record<string, string> = {
+  FR: "fr", BE: "fr", CH: "fr", LU: "fr", MC: "fr",
+  SN: "fr", CI: "fr", CM: "fr", GA: "fr", CG: "fr", CD: "fr", MG: "fr",
+  MA: "fr", TN: "fr", DZ: "fr", BF: "fr", ML: "fr", NE: "fr", TD: "fr",
+  BJ: "fr", TG: "fr", GN: "fr", RW: "fr", MU: "fr", LB: "fr",
+  ES: "es", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
+  UY: "es", EC: "es", VE: "es", DO: "es", CR: "es", PA: "es",
+  GT: "es", HN: "es", SV: "es", NI: "es", CU: "es", BO: "es", PY: "es",
+  IT: "it",
+  DE: "de", AT: "de",
+  PT: "pt", BR: "pt",
+  NL: "nl",
+  TR: "tr",
+  JP: "ja", KR: "ko", CN: "zh", TW: "zh", HK: "zh",
+  IN: "hi",
+  AE: "ar", SA: "ar", QA: "ar", BH: "ar", KW: "ar", OM: "ar",
+  JO: "ar", IQ: "ar", EG: "ar", LY: "ar", SD: "ar",
+};
+
+function getL(countryCode: string): LegalLabels {
+  const lang = COUNTRY_LANG_MAP[countryCode] || "en";
+  return ALL_LABELS[lang] || L_EN;
+}
+
+// ─── CORE TEMPLATES ───
 const allTemplates: DocumentTemplate[] = [
   // France — Rental
   frRentReceipt, frLeaseEmpty, frLeaseFurnished, frLeaseCommercial,
@@ -105,129 +547,196 @@ const allTemplates: DocumentTemplate[] = [
 
 const existingTemplateKeys = new Set(allTemplates.map((t) => `${String(t.country)}::${t.docType}`));
 
-// Generate localized templates for all countries without dedicated packs
-const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
-  .flatMap((country) => {
-    const cc = country.code.toLowerCase();
-    const L = getLabelsForCountry(country.code);
-    const surfaceUnit = country.measurementUnit === "imperial" ? "sq ft" : "m²";
+// ─── GENERATE LOCALIZED GOVERNMENT-FORMAT TEMPLATES FOR ALL COUNTRIES ───
+function buildCountryTemplates(countryCode: string, countryName: string, currencySymbol: string, surfaceUnit: string, taxIdLabel: string): DocumentTemplate[] {
+  const cc = countryCode.toLowerCase();
+  const L = getL(countryCode);
+  const country = getCountryEntry(countryCode);
+  const legalBasis = country ? `${countryName} — ${taxIdLabel}` : countryName;
 
-    const candidates: DocumentTemplate[] = [
-      {
-        id: `${cc}-lease-residential`,
-        version: "1.0.0",
-        country: country.code as Country,
-        category: "rental" as const,
-        docType: "lease-residential",
-        label: `${L.leaseLabel} (${country.name})`,
-        description: `${L.leaseDesc}`,
-        legalBasis: `${country.name} — ${country.taxIdLabel}`,
-        needsLegalReview: true,
-        active: true,
-        fields: [
-          { key: "landlordName", label: L.fieldLandlord, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "landlordAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantName", label: L.fieldTenant, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantAddress", label: `${L.fieldTenant} — ${L.fieldAddress}`, type: "text" as const, required: false, group: L.clauseParties },
-          { key: "propertyAddress", label: L.fieldAddress, type: "text" as const, required: true, group: L.clauseProperty },
-          { key: "surface", label: `${L.fieldSurface} (${surfaceUnit})`, type: "number" as const, required: true, group: L.clauseProperty },
-          { key: "rooms", label: L.fieldRooms, type: "number" as const, required: true, group: L.clauseProperty },
-          { key: "rentAmount", label: `${L.fieldRent} (${country.currencySymbol})`, type: "number" as const, required: true, group: L.clauseRent },
-          { key: "chargesAmount", label: `${L.fieldCharges} (${country.currencySymbol})`, type: "number" as const, required: false, defaultValue: 0, group: L.clauseRent },
-          { key: "depositAmount", label: `${L.fieldDeposit} (${country.currencySymbol})`, type: "number" as const, required: false, defaultValue: 0, group: L.clauseRent },
-          { key: "startDate", label: L.fieldStartDate, type: "date" as const, required: true, group: L.clauseDuration },
-          { key: "duration", label: L.fieldDuration, type: "select" as const, required: true, group: L.clauseDuration, options: [
-            { value: "6", label: "6 months" }, { value: "12", label: "12 months" }, { value: "24", label: "24 months" }, { value: "36", label: "36 months" }, { value: "indefinite", label: "Open-ended" },
-          ], defaultValue: "12" },
-        ],
-        clauses: [
-          { id: "parties", label: L.clauseParties, required: true, text: `Between {landlordName}, at {landlordAddress}, and {tenantName}.` },
-          { id: "property", label: L.clauseProperty, required: true, text: `Property at {propertyAddress}, ${surfaceUnit}: {surface}, {rooms} room(s).` },
-          { id: "rent", label: L.clauseRent, required: true, text: `${L.fieldRent}: {rentAmount} ${country.currencySymbol}. ${L.fieldCharges}: {chargesAmount} ${country.currencySymbol}. ${L.fieldDeposit}: {depositAmount} ${country.currencySymbol}.` },
-          { id: "term", label: L.clauseDuration, required: true, text: `Starts {startDate}, duration: {duration}.` },
-        ],
-      },
-      // 2. Rent receipt
-      {
-        id: `${cc}-rent-receipt`,
-        version: "1.0.0",
-        country: country.code as Country,
-        category: "rental" as const,
-        docType: "rent-receipt",
-        label: `${L.receiptLabel} (${country.name})`,
-        description: `${L.receiptDesc}`,
-        needsLegalReview: false,
-        active: true,
-        fields: [
-          { key: "landlordName", label: L.fieldLandlord, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantName", label: L.fieldTenant, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "propertyAddress", label: L.fieldAddress, type: "text" as const, required: true, group: L.clauseProperty },
-          { key: "rentAmount", label: `${L.fieldRent} (${country.currencySymbol})`, type: "number" as const, required: true, group: L.clauseRent },
-          { key: "chargesAmount", label: `${L.fieldCharges} (${country.currencySymbol})`, type: "number" as const, required: false, defaultValue: 0, group: L.clauseRent },
-          { key: "period", label: L.fieldPeriod, type: "text" as const, required: true, group: L.clauseRent },
-          { key: "paymentDate", label: L.fieldPaymentDate, type: "date" as const, required: true, group: L.clauseRent },
-        ],
-        clauses: [
-          { id: "receipt", label: L.clauseReceipt, required: true, text: `{landlordName} acknowledges receipt from {tenantName} for {period}. ${L.fieldRent}: {rentAmount} ${country.currencySymbol}. ${L.fieldCharges}: {chargesAmount} ${country.currencySymbol}.` },
-        ],
-      },
-      // 3. Formal notice
-      {
-        id: `${cc}-formal-notice`,
-        version: "1.0.0",
-        country: country.code as Country,
-        category: "rental" as const,
-        docType: "formal-notice",
-        label: `${L.noticeLabel} (${country.name})`,
-        description: `${L.noticeDesc}`,
-        needsLegalReview: true,
-        active: true,
-        fields: [
-          { key: "landlordName", label: L.fieldLandlord, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "landlordAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantName", label: L.fieldTenant, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantAddress", label: `${L.fieldTenant} — ${L.fieldAddress}`, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "propertyAddress", label: L.fieldAddress, type: "text" as const, required: true, group: L.clauseProperty },
-          { key: "amountDue", label: `Amount due (${country.currencySymbol})`, type: "number" as const, required: true, group: L.clauseRent },
-          { key: "noticeDate", label: "Date", type: "date" as const, required: true, group: L.clauseNotice },
-          { key: "details", label: "Details", type: "textarea" as const, required: false, group: L.clauseNotice },
-        ],
-        clauses: [
-          { id: "notice", label: L.clauseNotice, required: true, text: `{landlordName} formally notifies {tenantName} regarding unpaid amount of {amountDue} ${country.currencySymbol} for property at {propertyAddress}.` },
-        ],
-      },
-      // 4. Property inventory
-      {
-        id: `${cc}-inventory`,
-        version: "1.0.0",
-        country: country.code as Country,
-        category: "rental" as const,
-        docType: "inventory",
-        label: `${L.inventoryLabel} (${country.name})`,
-        description: `${L.inventoryDesc}`,
-        needsLegalReview: false,
-        active: true,
-        fields: [
-          { key: "landlordName", label: L.fieldLandlord, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "tenantName", label: L.fieldTenant, type: "text" as const, required: true, group: L.clauseParties },
-          { key: "propertyAddress", label: L.fieldAddress, type: "text" as const, required: true, group: L.clauseProperty },
-          { key: "reportDate", label: "Date", type: "date" as const, required: true, group: L.clauseInventory },
-          { key: "reportType", label: "Type", type: "select" as const, required: true, group: L.clauseInventory, options: [
-            { value: "entry", label: "Entry" }, { value: "exit", label: "Exit" },
-          ], defaultValue: "entry" },
-          { key: "generalNotes", label: "Notes", type: "textarea" as const, required: false, group: L.clauseInventory },
-        ],
-        clauses: [
-          { id: "inventory", label: L.clauseInventory, required: true, text: `Inventory report for {propertyAddress} — {reportType} on {reportDate}. Parties: {landlordName} and {tenantName}. Notes: {generalNotes}.` },
-        ],
-      },
+  const baseFields = (withProperty = true): FieldSchema[] => {
+    const fields: FieldSchema[] = [
+      { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
+      { key: "landlordAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text", required: true, group: L.clauseParties },
+      { key: "landlordTaxId", label: L.fieldTaxId, type: "text", required: false, group: L.clauseParties },
+      { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
+      { key: "tenantAddress", label: `${L.fieldTenant} — ${L.fieldAddress}`, type: "text", required: false, group: L.clauseParties },
     ];
+    if (withProperty) {
+      fields.push(
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "surface", label: `${L.fieldSurface} (${surfaceUnit})`, type: "number", required: true, group: L.clauseProperty },
+        { key: "rooms", label: L.fieldRooms, type: "number", required: true, group: L.clauseProperty },
+      );
+    }
+    return fields;
+  };
 
-    return candidates.filter((template) => !existingTemplateKeys.has(`${country.code}::${template.docType}`));
-  });
+  const templates: DocumentTemplate[] = [];
+
+  // 1. Lease
+  if (!existingTemplateKeys.has(`${countryCode}::lease-residential`)) {
+    templates.push({
+      id: `${cc}-lease-residential`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "lease-residential",
+      label: `${L.leaseLabel} (${countryName})`, description: L.leaseDesc,
+      legalBasis, needsLegalReview: true, active: true,
+      fields: [
+        ...baseFields(),
+        { key: "rentAmount", label: `${L.fieldRent} (${currencySymbol})`, type: "number", required: true, group: L.clauseRent },
+        { key: "chargesAmount", label: `${L.fieldCharges} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "depositAmount", label: `${L.fieldDeposit} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "bankIban", label: L.fieldBankIban, type: "text", required: false, group: L.clauseRent },
+        { key: "startDate", label: L.fieldStartDate, type: "date", required: true, group: L.clauseDuration },
+        { key: "endDate", label: L.fieldEndDate, type: "date", required: false, group: L.clauseDuration },
+        { key: "duration", label: L.fieldDuration, type: "select", required: true, group: L.clauseDuration,
+          options: [
+            { value: "6", label: "6" }, { value: "12", label: "12" },
+            { value: "24", label: "24" }, { value: "36", label: "36" },
+            { value: "48", label: "48" }, { value: "60", label: "60" },
+            { value: "indefinite", label: "Open-ended / Indéterminée" },
+          ], defaultValue: "12" },
+        { key: "signaturePlace", label: L.fieldSignaturePlace, type: "text", required: false, group: L.clauseDuration },
+      ],
+      clauses: [
+        { id: "parties", label: L.clauseParties, required: true, text: L.leaseClauseParties },
+        { id: "property", label: L.clauseProperty, required: true, text: L.leaseClauseProperty },
+        { id: "rent", label: L.clauseRent, required: true, text: L.leaseClauseRent },
+        { id: "term", label: L.clauseDuration, required: true, text: L.leaseClauseDuration },
+        { id: "deposit", label: L.clauseDeposit, required: true, text: L.leaseClauseDeposit },
+        { id: "termination", label: L.clauseTermination, required: false, text: L.leaseClauseTermination },
+      ],
+    });
+  }
+
+  // 2. Receipt
+  if (!existingTemplateKeys.has(`${countryCode}::rent-receipt`)) {
+    templates.push({
+      id: `${cc}-rent-receipt`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "rent-receipt",
+      label: `${L.receiptLabel} (${countryName})`, description: L.receiptDesc,
+      needsLegalReview: false, active: true,
+      fields: [
+        { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
+        { key: "landlordAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text", required: false, group: L.clauseParties },
+        { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "rentAmount", label: `${L.fieldRent} (${currencySymbol})`, type: "number", required: true, group: L.clauseRent },
+        { key: "chargesAmount", label: `${L.fieldCharges} (${currencySymbol})`, type: "number", required: false, defaultValue: 0, group: L.clauseRent },
+        { key: "totalAmount", label: `Total (${currencySymbol})`, type: "number", required: false, group: L.clauseRent },
+        { key: "period", label: L.fieldPeriod, type: "text", required: true, group: L.clauseRent },
+        { key: "paymentDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseRent },
+        { key: "signaturePlace", label: L.fieldSignaturePlace, type: "text", required: false, group: L.clauseRent },
+      ],
+      clauses: [
+        { id: "receipt", label: L.clauseReceipt, required: true, text: L.receiptClause },
+      ],
+    });
+  }
+
+  // 3. Formal notice
+  if (!existingTemplateKeys.has(`${countryCode}::formal-notice`)) {
+    templates.push({
+      id: `${cc}-formal-notice`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "formal-notice",
+      label: `${L.noticeLabel} (${countryName})`, description: L.noticeDesc,
+      legalBasis, needsLegalReview: true, active: true,
+      fields: [
+        ...baseFields(false),
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "amountDue", label: `${L.clauseDeposit} (${currencySymbol})`, type: "number", required: true, group: L.clauseNotice },
+        { key: "noticeDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseNotice },
+        { key: "details", label: "Details", type: "textarea", required: false, group: L.clauseNotice },
+      ],
+      clauses: [
+        { id: "notice", label: L.clauseNotice, required: true, text: L.noticeClause },
+      ],
+    });
+  }
+
+  // 4. Inventory
+  if (!existingTemplateKeys.has(`${countryCode}::inventory`)) {
+    templates.push({
+      id: `${cc}-inventory`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "inventory",
+      label: `${L.inventoryLabel} (${countryName})`, description: L.inventoryDesc,
+      needsLegalReview: false, active: true,
+      fields: [
+        { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
+        { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "reportDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseInventory },
+        { key: "reportType", label: "Type", type: "select", required: true, group: L.clauseInventory, options: [
+          { value: "entry", label: "Entry / Entrée" }, { value: "exit", label: "Exit / Sortie" },
+        ], defaultValue: "entry" },
+        { key: "generalNotes", label: "Notes", type: "textarea", required: false, group: L.clauseInventory },
+      ],
+      clauses: [
+        { id: "inventory", label: L.clauseInventory, required: true, text: L.inventoryClause },
+      ],
+    });
+  }
+
+  // 5. Termination notice
+  if (!existingTemplateKeys.has(`${countryCode}::termination`)) {
+    templates.push({
+      id: `${cc}-termination`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "termination",
+      label: `${L.terminationLabel} (${countryName})`, description: L.terminationDesc,
+      legalBasis, needsLegalReview: true, active: true,
+      fields: [
+        { key: "senderName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
+        { key: "senderAddress", label: `${L.fieldLandlord} — ${L.fieldAddress}`, type: "text", required: true, group: L.clauseParties },
+        { key: "recipientName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
+        { key: "recipientAddress", label: `${L.fieldTenant} — ${L.fieldAddress}`, type: "text", required: false, group: L.clauseParties },
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "endDate", label: L.fieldEndDate, type: "date", required: true, group: L.clauseTermination },
+        { key: "reason", label: "Reason / Motif", type: "textarea", required: false, group: L.clauseTermination },
+      ],
+      clauses: [
+        { id: "termination", label: L.clauseTermination, required: true, text: L.terminationClause },
+      ],
+    });
+  }
+
+  // 6. Deposit return
+  if (!existingTemplateKeys.has(`${countryCode}::deposit-return`)) {
+    templates.push({
+      id: `${cc}-deposit-return`, version: "1.0.0", country: countryCode as Country,
+      category: "rental", docType: "deposit-return",
+      label: `${L.depositReturnLabel} (${countryName})`, description: L.depositReturnDesc,
+      needsLegalReview: false, active: true,
+      fields: [
+        { key: "landlordName", label: L.fieldLandlord, type: "text", required: true, group: L.clauseParties },
+        { key: "tenantName", label: L.fieldTenant, type: "text", required: true, group: L.clauseParties },
+        { key: "propertyAddress", label: L.fieldAddress, type: "text", required: true, group: L.clauseProperty },
+        { key: "depositAmount", label: `${L.fieldDeposit} (${currencySymbol})`, type: "number", required: true, group: L.clauseDeposit },
+        { key: "deductions", label: "Deductions / Retenues", type: "textarea", required: false, group: L.clauseDeposit },
+        { key: "bankIban", label: L.fieldBankIban, type: "text", required: false, group: L.clauseDeposit },
+        { key: "documentDate", label: L.fieldPaymentDate, type: "date", required: true, group: L.clauseDeposit },
+      ],
+      clauses: [
+        { id: "deposit-return", label: L.clauseDeposit, required: true, text: L.depositReturnClause },
+      ],
+    });
+  }
+
+  return templates;
+}
+
+// Generate for all countries
+const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
+  .flatMap((country) => buildCountryTemplates(
+    country.code,
+    country.name,
+    country.currencySymbol,
+    country.measurementUnit === "imperial" ? "sq ft" : "m²",
+    country.taxIdLabel,
+  ));
 
 allTemplates.push(...generatedFallbackTemplates);
 
+// ─── EXPORTS ───
 export function getTemplateById(id: string): DocumentTemplate | undefined {
   return allTemplates.find((t) => t.id === id);
 }
