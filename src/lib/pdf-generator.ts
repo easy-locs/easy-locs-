@@ -21,7 +21,14 @@ const COUNTRY_LOCALE: Record<string, string> = {
   PL: "pl-PL", SE: "sv-SE", DK: "da-DK", NO: "nb-NO", FI: "fi-FI",
   GR: "el-GR", CZ: "cs-CZ", HU: "hu-HU", RO: "ro-RO", HR: "hr-HR",
   IE: "en-IE", BG: "bg-BG", SK: "sk-SK",
-  AE: "en-AE", SA: "en-SA", QA: "en-QA",
+  AE: "en-AE", SA: "en-SA", QA: "en-QA", BH: "en-BH", KW: "en-KW", OM: "en-OM",
+  TR: "tr-TR", JP: "ja-JP", KR: "ko-KR", CN: "zh-CN", IN: "en-IN",
+  SG: "en-SG", MY: "en-MY", TH: "th-TH", VN: "vi-VN", PH: "en-PH", ID: "id-ID",
+  AU: "en-AU", NZ: "en-NZ", US: "en-US", CA: "en-CA",
+  BR: "pt-BR", MX: "es-MX", AR: "es-AR", CL: "es-CL", CO: "es-CO", PE: "es-PE",
+  MA: "fr-MA", TN: "fr-TN", DZ: "fr-DZ", SN: "fr-SN", CI: "fr-CI", CM: "fr-CM",
+  ZA: "en-ZA", NG: "en-NG", KE: "en-KE", GH: "en-GH",
+  IL: "he-IL", JO: "en-JO", LB: "fr-LB",
 };
 
 const COUNTRY_CURRENCY: Record<string, string> = {
