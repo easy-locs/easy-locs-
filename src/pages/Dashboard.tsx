@@ -83,7 +83,15 @@ const Dashboard = () => {
     const occupancyRate = stats.properties > 0 ? Math.round((occupiedProperties / stats.properties) * 100) : 0;
     const vacantCount = stats.properties - occupiedProperties;
 
-    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount };
+    const expensesThisMonth = stats.expenses
+      .filter(e => e.expense_date?.startsWith(currentMonth))
+      .reduce((s, e) => s + Number(e.amount), 0);
+    const seasonalThisMonth = stats.reservations
+      .filter(r => r.check_in?.startsWith(currentMonth))
+      .reduce((s, r) => s + Number(r.amount), 0);
+    const netIncome = revenueThisMonth + seasonalThisMonth - expensesThisMonth;
+
+    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount, netIncome, expensesThisMonth };
   }, [stats]);
 
   const revenueChart = useMemo(() => {
