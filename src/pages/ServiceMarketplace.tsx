@@ -58,7 +58,7 @@ const ServiceMarketplace = () => {
       let q = supabase.from("service_providers" as any).select("*").eq("active", true);
       if (filterCat !== "all") q = q.eq("category", filterCat);
       const { data } = await q.order("rating", { ascending: false }).limit(50);
-      return (data || []) as Array<{
+      return (data || []) as unknown as Array<{
         id: string; name: string; email: string; phone: string; category: string;
         description: string; hourly_rate: number; currency: string; city: string;
         country: string; rating: number; reviews_count: number; verified: boolean;
