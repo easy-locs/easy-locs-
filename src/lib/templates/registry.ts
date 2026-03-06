@@ -222,6 +222,8 @@ const generatedFallbackTemplates: DocumentTemplate[] = getAllCountryEntries()
         ],
       },
     ];
+
+    return candidates.filter((template) => !existingTemplateKeys.has(`${country.code}::${template.docType}`));
   });
 
 allTemplates.push(...generatedFallbackTemplates);
