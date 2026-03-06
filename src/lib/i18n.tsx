@@ -3809,7 +3809,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.no_reviews": "Aucun avis pour le moment", "reviews.your_review": "Votre avis",
     "reviews.edit": "Modifier", "reviews.delete": "Supprimer", "reviews.reply": "Réponse du bailleur",
     "reviews.write_reply": "Répondre", "reviews.updated": "Avis mis à jour", "reviews.submitted": "Avis publié !",
-    "reviews.stars": "étoile(s)", "nav.reviews": "Avis",
+    "reviews.stars": "étoile(s)", "nav.reviews": "Avis", "nav.requests": "Demandes",
     ...obFr, ...pageFr,
   },
   en: {
