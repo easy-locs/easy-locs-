@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, subscription, userType, onboardingCompleted } = useAuth();
+  const { user, loading, emailVerified, subscription, activeRole, onboardingCompleted } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -26,20 +26,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Tenant users should only access /tenant/* routes
-  if (userType === "tenant" && !isTenantRoute && !isOnboarding) {
+  // Use activeRole (not userType) to enforce interface separation
+  // Tenant role users should only access /tenant/* routes
+  if (activeRole === "tenant" && !isTenantRoute && !isOnboarding) {
     return <Navigate to="/tenant" replace />;
   }
 
-  // Landlord users should not access /tenant/* routes
-  if (userType === "landlord" && isTenantRoute) {
+  // Landlord role users should not access /tenant/* routes
+  if (activeRole === "landlord" && isTenantRoute) {
     return <Navigate to="/dashboard" replace />;
   }
-
-  // Stripe disabled — skip subscription check
-  // if (userType === "landlord" && !subscription.loading && !subscription.subscribed && !isBillingPage && !isOnboarding) {
-  //   return <Navigate to="/dashboard/billing" replace />;
-  // }
 
   return <>{children}</>;
 };

@@ -405,7 +405,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                 const ownerData = fillFromOwner();
                 if (propData || ownerData) {
                   setData((prev) => {
-                    const merged = { ...prev, propertyId: propId };
+                    const merged: Record<string, unknown> = { ...prev, propertyId: propId };
                     // Apply property fields
                     if (propData) {
                       for (const [key, val] of Object.entries(propData)) {
@@ -413,6 +413,10 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                           merged[key] = val;
                         }
                       }
+                      // Also set address-related keys that templates commonly use
+                      const fullAddr = (propData as any).fullAddress;
+                      if (fullAddr) merged.propertyAddress = fullAddr;
+                      if (fullAddr) merged.fullAddress = fullAddr;
                     }
                     // Apply owner fields
                     if (ownerData) {
@@ -424,6 +428,12 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     }
                     return merged;
                   });
+                }
+
+                // Auto-select first tenant linked to this property
+                const linkedTenants = tenants.filter(t => t.property_id === propId);
+                if (linkedTenants.length === 1) {
+                  updateField("tenantId", linkedTenants[0].id);
                 }
               }}
               className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
