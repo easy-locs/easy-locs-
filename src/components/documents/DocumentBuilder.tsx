@@ -294,7 +294,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   }, [data.tenantId, tenants, properties, template.fields]);
 
   const updateField = (key: string, value: unknown) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+    setData((prev) => applyDerivedValues({ ...prev, [key]: value }));
     setValidation(null);
     setGenerated(false);
   };
