@@ -288,9 +288,16 @@ serve(async (req) => {
       }
     }
 
+    // Escape all user-supplied values for safe HTML embedding
+    const safeGuestName = esc(br.guest_name);
+    const safeGuestEmail = esc(br.guest_email);
+    const safeGuestPhone = esc(br.guest_phone);
+    const safeMessage = esc(br.message);
+    const safePropertyLabel = esc(propertyLabel);
+
     const photoBlock = mainPhoto
       ? `<div style="text-align:center;margin-bottom:20px;">
-          <img src="${mainPhoto}" alt="${propertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
+          <img src="${mainPhoto}" alt="${safePropertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
         </div>`
       : "";
 
