@@ -214,6 +214,12 @@ serve(async (req) => {
       .eq("id", booking_request_id)
       .is("notified_at", null);
 
+    const { data: listing } = await supabase
+      .from("public_listings")
+      .select("title, price_per_night, slug")
+      .eq("id", br.listing_id)
+      .single();
+
     const { data: property } = await supabase
       .from("properties")
       .select("label, address, city, country, photo_urls")
