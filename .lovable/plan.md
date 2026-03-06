@@ -58,15 +58,17 @@
 - [x] Pagination réutilisable
 - [x] Code-splitting React.lazy (40+ pages)
 - [x] Suite de tests de régression (54+ tests)
+- [x] **PWA avec service worker** (vite-plugin-pwa, manifest, page /install)
 
 ## Correctifs appliqués
 - [x] Photos publiques : fonction `get_listing_property` (security definer) pour contourner RLS
 - [x] Flux de réservation : demande → approbation bailleur → envoi lien paiement → paiement → confirmé
 - [x] Stripe Connect : ouverture dans nouvel onglet
 - [x] Google/Apple OAuth : flux validé via @lovable.dev/cloud-auth-js
+- [x] **Panel demandes de réservation** : liste complète avec actions approuver/refuser
 
 ## Prochaines priorités
 1. Capacitor native mobile (iOS + Android)
-2. PWA avec service worker
-3. Webhooks Stripe avancés (paiements récurrents)
-4. Dashboard analytics avancé (rétention, churn)
+2. Webhooks Stripe avancés (paiements récurrents)
+3. Dashboard analytics avancé (rétention, churn)
+4. Système dual-rôle bailleur/locataire
