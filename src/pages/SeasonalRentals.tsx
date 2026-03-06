@@ -145,6 +145,7 @@ const SeasonalRentals = () => {
   const [copiedExport, setCopiedExport] = useState(false);
   const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
   const [focusedRequest, setFocusedRequest] = useState<any>(null);
+  const [allRequests, setAllRequests] = useState<any[]>([]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
