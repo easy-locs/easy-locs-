@@ -215,83 +215,46 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
     const tenant = tenants.find((t) => t.id === tenantId);
     if (!tenant) return;
 
-    const property = tenant.property_id ? properties.find((p) => p.id === tenant.property_id) : null;
+    const tenantAutoData = fillFromTenant(tenantId);
+    if (tenantAutoData) {
+      setData((prev) => {
+        const merged = { ...prev };
+        for (const [key, val] of Object.entries(tenantAutoData)) {
+          if (val !== undefined && val !== null && val !== "" && template.fields.some((f) => f.key === key)) {
+            merged[key] = val;
+          }
+        }
+        return applyDerivedValues(merged);
+      });
+    }
 
-    // Load tenant's saved signature if they have a user account
     if (tenant.tenant_user_id) {
       supabase
         .from("profiles")
-        .select("signature_url")
+        .select("signature_url, id_number")
         .eq("id", tenant.tenant_user_id)
         .single()
         .then(({ data: tenantProfile }) => {
           if (tenantProfile?.signature_url) {
             setSignatures((s) => ({ ...s, tenant: tenantProfile.signature_url! }));
           }
+
+          const tenantIdNumber = tenantProfile?.id_number || "";
+          if (!tenantIdNumber) return;
+
+          setData((prev) => {
+            const merged = { ...prev };
+            const tenantTaxKeys = ["tenantDNI", "tenantNIF", "tenantTaxId", "tenantAfm", "tenantIdNumber", "tenantEmiratesId"];
+            for (const key of tenantTaxKeys) {
+              if (template.fields.some((f) => f.key === key) && (!merged[key] || merged[key] === "")) {
+                merged[key] = tenantIdNumber;
+              }
+            }
+            return applyDerivedValues(merged);
+          });
         });
     }
-
-    setData((prev) => {
-      const merged = { ...prev };
-      const tenantFields: Record<string, unknown> = {
-        // Identity
-        tenantName: tenant.name,
-        recipientName: tenant.name,
-        guestName: tenant.name,
-        tenantEmail: tenant.email,
-        tenantPhone: tenant.phone,
-        tenantAddress: tenant.current_address,
-        currentAddress: tenant.current_address,
-        // Personal info
-        tenantBirthDate: tenant.birth_date,
-        birthDate: tenant.birth_date,
-        tenantBirthPlace: tenant.birth_place,
-        birthPlace: tenant.birth_place,
-        tenantNationality: tenant.nationality,
-        nationality: tenant.nationality,
-        tenantProfession: tenant.profession,
-        profession: tenant.profession,
-        // Address
-        recipientAddress: tenant.current_address,
-        // Guarantor
-        guarantorName: tenant.guarantor_name,
-        guarantorPhone: tenant.guarantor_phone,
-        // Lease & financial
-        leaseStart: tenant.lease_start,
-        leaseEnd: tenant.lease_end,
-        leaseType: tenant.lease_type,
-        rentAmount: tenant.rent_amount,
-        chargesAmount: tenant.charges_amount,
-        depositAmount: tenant.deposit_amount,
-      };
-
-      for (const [key, val] of Object.entries(tenantFields)) {
-        if (val && template.fields.some((f) => f.key === key)) {
-          merged[key] = val;
-        }
-      }
-
-      if (property) {
-        const propFields: Record<string, unknown> = {
-          propertyAddress: `${property.address}, ${property.postal_code} ${property.city}`,
-          fullAddress: `${property.address}, ${property.postal_code} ${property.city}`,
-          propertyLabel: property.label,
-          propertySurface: property.surface,
-          propertyRooms: property.rooms,
-          surface: property.surface,
-          rooms: property.rooms,
-          propertyType: property.property_type,
-        };
-        for (const [key, val] of Object.entries(propFields)) {
-          if (val && template.fields.some((f) => f.key === key)) {
-            merged[key] = val;
-          }
-        }
-      }
-
-      return merged;
-    });
-  }, [data.tenantId, tenants, properties, template.fields]);
+  }, [data.tenantId, tenants, template.fields, fillFromTenant]);
 
   const updateField = (key: string, value: unknown) => {
     setData((prev) => applyDerivedValues({ ...prev, [key]: value }));
