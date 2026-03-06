@@ -2509,6 +2509,8 @@ const pageEn: Record<string, string> = {
   "embed.iframe_label": "Iframe code (full embed)",
   "embed.button_label": "Link button (simple)",
   "embed.copied": "Code copied!",
+  "pagination.results": "results",
+  "pagination.page": "Page",
 
   // Company page
   "page.company.title": "Company",
