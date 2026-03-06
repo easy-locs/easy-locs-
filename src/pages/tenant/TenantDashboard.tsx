@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Receipt, FileText, MessageCircle, CreditCard, Home, Star, ClipboardList } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 const TenantDashboard = () => {
   const { user } = useAuth();
   const { tenantId, propertyCountry, L, T, fmt } = useTenantProperty();
+  const { t } = useI18n();
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [receiptsCount, setReceiptsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -56,8 +58,8 @@ const TenantDashboard = () => {
     { icon: FileText, label: L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "bg-success/10 text-success" },
     { icon: MessageCircle, label: L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "bg-warning/10 text-warning" },
     { icon: CreditCard, label: L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "bg-accent/10 text-accent" },
-    { icon: Star, label: T.settingsTitle?.replace("Paramètres", "Avis") || "Reviews", path: "/tenant/reviews", value: "—", color: "bg-primary/10 text-primary" },
-    { icon: ClipboardList, label: T.requestsTitle, path: "/tenant/requests", value: "—", color: "bg-muted-foreground/10 text-muted-foreground" },
+    { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "bg-primary/10 text-primary" },
+    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "bg-muted-foreground/10 text-muted-foreground" },
   ];
 
   return (
