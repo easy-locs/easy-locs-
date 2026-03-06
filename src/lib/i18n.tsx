@@ -4084,6 +4084,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "ob.sync_ical": "Sincronizar",
     "ob.ical_success": "reservas importadas",
     "ob.ical_info": "Encontre a URL iCal nas configurações do seu anúncio Airbnb ou Booking.com",
+    "reviews.title": "Avaliações", "reviews.subtitle": "Compartilhe sua experiência de aluguel",
+    "reviews.rating": "Nota", "reviews.comment": "Comentário", "reviews.submit": "Enviar avaliação",
+    "reviews.no_reviews": "Nenhuma avaliação ainda", "reviews.your_review": "Sua avaliação",
+    "reviews.edit": "Editar", "reviews.delete": "Excluir", "reviews.reply": "Resposta do proprietário",
+    "reviews.write_reply": "Responder", "reviews.updated": "Avaliação atualizada", "reviews.submitted": "Avaliação enviada!",
+    "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações",
     ...obPt, ...pagePt,
   },
 };
