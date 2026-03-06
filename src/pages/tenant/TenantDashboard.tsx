@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Receipt, FileText, MessageCircle, CreditCard, Home, Star, ClipboardList } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
