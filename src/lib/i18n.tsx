@@ -753,7 +753,7 @@ const pageFr: Record<string, string> = {
   "page.billing.trial_ended": "Votre essai est terminé. Abonnez-vous pour continuer à utiliser Easy-Locs.",
 
   // Plan features (i18n)
-  "plan.name": "EasyLoc Illimité",
+  "plan.name": "Easy-Locs® Illimité",
   "plan.subtitle": "Tout inclus",
   "plan.description": "Accès illimité à toutes les fonctionnalités EasyLoc.",
   "plan.interval.month": "mois",

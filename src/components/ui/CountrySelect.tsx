@@ -27,17 +27,18 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
   const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
-  const selected = useMemo(() => GLOBAL_COUNTRY_REGISTRY.find(c => c.code === value), [value]);
+  const allCountries = useMemo(() => getAllCountryEntries(), []);
+  const selected = useMemo(() => allCountries.find(c => c.code === value), [value, allCountries]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return GLOBAL_COUNTRY_REGISTRY;
-    return GLOBAL_COUNTRY_REGISTRY.filter(c =>
+    if (!q) return allCountries;
+    return allCountries.filter(c =>
       c.name.toLowerCase().includes(q) ||
       c.code.toLowerCase().includes(q) ||
       c.flag.includes(q)
     );
-  }, [search]);
+  }, [search, allCountries]);
 
   const grouped = useMemo(() => {
     const map: Record<string, CountryEntry[]> = {};
