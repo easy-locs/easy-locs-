@@ -140,7 +140,9 @@ function addHeader(doc: jsPDF, title: string): number {
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
 
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
-  doc.text("Easy-Locs", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 22);
+  setFont(doc, "normal", 6, COLOR_PRIMARY);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
 
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);

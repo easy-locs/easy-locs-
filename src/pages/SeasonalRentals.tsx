@@ -683,6 +683,24 @@ const SeasonalRentals = () => {
                         <button
                           onClick={async () => {
                             await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", req.id);
+                            // Create seasonal_booking for calendar
+                            if (orgId && user) {
+                              await supabase.from("seasonal_bookings").insert({
+                                org_id: orgId,
+                                user_id: user.id,
+                                property_id: req.property_id,
+                                guest_name: req.guest_name,
+                                guest_email: req.guest_email,
+                                guest_phone: req.guest_phone || "",
+                                check_in: req.check_in,
+                                check_out: req.check_out,
+                                total_price: 0,
+                                cleaning_fee: 0,
+                                deposit_amount: 0,
+                                notes: req.message || "",
+                                status: "confirmed",
+                              } as any);
+                            }
                             const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
                             const pricePerNight = listingData?.price_per_night || 0;
                             const totalAmount = pricePerNight * nights;
@@ -703,6 +721,7 @@ const SeasonalRentals = () => {
                             });
                             toast({ title: t("page.seasonal.request_approved") });
                             setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
+                            await load();
                           }}
                           className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700"
                         >
