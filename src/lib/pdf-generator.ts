@@ -595,7 +595,7 @@ export function generateFromTemplate(
 
   // Compute total for rental docs
   const countryEntry = getCountryEntry(country);
-  const enrichedData = {
+  const enrichedData: Record<string, unknown> = {
     ...data,
     currency: String((countryEntry?.currencySymbol || "")).trim(),
     noticePeriod: String(data.noticePeriod || "as required by local law"),
@@ -603,8 +603,8 @@ export function generateFromTemplate(
   if (data.rentAmount !== undefined && data.chargesAmount !== undefined) {
     enrichedData.total = Number(data.rentAmount) + Number(data.chargesAmount);
   }
-  if ((enrichedData as Record<string, unknown>).totalAmount === undefined && enrichedData.total !== undefined) {
-    (enrichedData as Record<string, unknown>).totalAmount = enrichedData.total;
+  if (enrichedData.totalAmount === undefined && enrichedData.total !== undefined) {
+    enrichedData.totalAmount = enrichedData.total;
   }
 
   // Render clauses
