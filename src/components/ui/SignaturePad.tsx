@@ -79,6 +79,7 @@ const SignaturePad = ({ label, value, onChange, width = 400, height = 150, class
   };
 
   const clear = () => {
+    if (!window.confirm("Êtes-vous sûr de vouloir effacer la signature ?")) return;
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, width, height);

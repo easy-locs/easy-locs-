@@ -21,33 +21,59 @@ const COUNTRY_LOCALE: Record<string, string> = {
   PL: "pl-PL", SE: "sv-SE", DK: "da-DK", NO: "nb-NO", FI: "fi-FI",
   GR: "el-GR", CZ: "cs-CZ", HU: "hu-HU", RO: "ro-RO", HR: "hr-HR",
   IE: "en-IE", BG: "bg-BG", SK: "sk-SK",
-  AE: "en-AE", SA: "en-SA", QA: "en-QA",
+  AE: "en-AE", SA: "en-SA", QA: "en-QA", BH: "en-BH", KW: "en-KW", OM: "en-OM",
+  TR: "tr-TR", JP: "ja-JP", KR: "ko-KR", CN: "zh-CN", IN: "en-IN",
+  SG: "en-SG", MY: "en-MY", TH: "th-TH", VN: "vi-VN", PH: "en-PH", ID: "id-ID",
+  AU: "en-AU", NZ: "en-NZ", US: "en-US", CA: "en-CA",
+  BR: "pt-BR", MX: "es-MX", AR: "es-AR", CL: "es-CL", CO: "es-CO", PE: "es-PE",
+  MA: "fr-MA", TN: "fr-TN", DZ: "fr-DZ", SN: "fr-SN", CI: "fr-CI", CM: "fr-CM",
+  ZA: "en-ZA", NG: "en-NG", KE: "en-KE", GH: "en-GH",
+  IL: "he-IL", JO: "en-JO", LB: "fr-LB",
 };
 
 const COUNTRY_CURRENCY: Record<string, string> = {
   FR: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", DE: "EUR", PT: "EUR",
   NL: "EUR", AT: "EUR", LU: "EUR", FI: "EUR", GR: "EUR", IE: "EUR",
-  SK: "EUR", HR: "EUR", BG: "BGN", CH: "CHF", GB: "GBP",
+  SK: "EUR", HR: "EUR", SI: "EUR", EE: "EUR", LV: "EUR", LT: "EUR", MT: "EUR", CY: "EUR",
+  BG: "BGN", CH: "CHF", GB: "GBP",
   PL: "PLN", SE: "SEK", DK: "DKK", NO: "NOK", CZ: "CZK", HU: "HUF", RO: "RON",
-  AE: "AED", SA: "SAR", QA: "QAR",
+  AE: "AED", SA: "SAR", QA: "QAR", BH: "BHD", KW: "KWD", OM: "OMR",
+  TR: "TRY", JP: "JPY", KR: "KRW", CN: "CNY", IN: "INR",
+  SG: "SGD", MY: "MYR", TH: "THB", VN: "VND", PH: "PHP", ID: "IDR",
+  AU: "AUD", NZ: "NZD", US: "USD", CA: "CAD",
+  BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
+  MA: "MAD", TN: "TND", DZ: "DZD", SN: "XOF", CI: "XOF", CM: "XAF",
+  ZA: "ZAR", NG: "NGN", KE: "KES", GH: "GHS",
+  IL: "ILS", JO: "JOD", LB: "LBP",
 };
 
 const PDF_LABELS: Record<string, { legalBasis: string; signedIn: string; madeDate: string; landlordLabel: string; tenantLabel: string; copies: string; disclaimer: string }> = {
-  fr: { legalBasis: "Base légale", signedIn: "Fait à", madeDate: "le", landlordLabel: "Le bailleur / L'expéditeur", tenantLabel: "Le locataire / Le destinataire", copies: "Fait en deux exemplaires originaux.", disclaimer: "Document généré à titre informatif. Il ne remplace pas un conseil juridique." },
+  fr: { legalBasis: "Base legale", signedIn: "Fait a", madeDate: "le", landlordLabel: "Le bailleur / L'expediteur", tenantLabel: "Le locataire / Le destinataire", copies: "Fait en deux exemplaires originaux.", disclaimer: "Document genere a titre informatif. Il ne remplace pas un conseil juridique." },
   en: { legalBasis: "Legal basis", signedIn: "Signed in", madeDate: "on", landlordLabel: "The landlord / Sender", tenantLabel: "The tenant / Recipient", copies: "Made in two original copies.", disclaimer: "Document generated for informational purposes. It does not replace legal advice." },
-  es: { legalBasis: "Base legal", signedIn: "Firmado en", madeDate: "el", landlordLabel: "El arrendador / Remitente", tenantLabel: "El inquilino / Destinatario", copies: "Hecho en dos ejemplares originales.", disclaimer: "Documento generado con fines informativos. No sustituye el asesoramiento jurídico." },
-  de: { legalBasis: "Rechtsgrundlage", signedIn: "Erstellt in", madeDate: "am", landlordLabel: "Der Vermieter / Absender", tenantLabel: "Der Mieter / Empfänger", copies: "Erstellt in zwei Originalausfertigungen.", disclaimer: "Dokument zu Informationszwecken erstellt. Es ersetzt keine Rechtsberatung." },
+  es: { legalBasis: "Base legal", signedIn: "Firmado en", madeDate: "el", landlordLabel: "El arrendador / Remitente", tenantLabel: "El inquilino / Destinatario", copies: "Hecho en dos ejemplares originales.", disclaimer: "Documento generado con fines informativos. No sustituye el asesoramiento juridico." },
+  de: { legalBasis: "Rechtsgrundlage", signedIn: "Erstellt in", madeDate: "am", landlordLabel: "Der Vermieter / Absender", tenantLabel: "Der Mieter / Empfanger", copies: "Erstellt in zwei Originalausfertigungen.", disclaimer: "Dokument zu Informationszwecken erstellt. Es ersetzt keine Rechtsberatung." },
   it: { legalBasis: "Base giuridica", signedIn: "Fatto a", madeDate: "il", landlordLabel: "Il locatore / Mittente", tenantLabel: "Il conduttore / Destinatario", copies: "Fatto in due copie originali.", disclaimer: "Documento generato a scopo informativo. Non sostituisce la consulenza legale." },
-  pt: { legalBasis: "Base legal", signedIn: "Feito em", madeDate: "em", landlordLabel: "O senhorio / Remetente", tenantLabel: "O inquilino / Destinatário", copies: "Feito em dois exemplares originais.", disclaimer: "Documento gerado para fins informativos. Não substitui aconselhamento jurídico." },
+  pt: { legalBasis: "Base legal", signedIn: "Feito em", madeDate: "em", landlordLabel: "O senhorio / Remetente", tenantLabel: "O inquilino / Destinatario", copies: "Feito em dois exemplares originais.", disclaimer: "Documento gerado para fins informativos. Nao substitui aconselhamento juridico." },
+  nl: { legalBasis: "Rechtsgrondslag", signedIn: "Opgesteld te", madeDate: "op", landlordLabel: "De verhuurder / Afzender", tenantLabel: "De huurder / Ontvanger", copies: "Opgesteld in twee originele exemplaren.", disclaimer: "Document gegenereerd voor informatieve doeleinden. Het vervangt geen juridisch advies." },
+  pl: { legalBasis: "Podstawa prawna", signedIn: "Sporzadzono w", madeDate: "dnia", landlordLabel: "Wynajmujacy / Nadawca", tenantLabel: "Najemca / Odbiorca", copies: "Sporzadzono w dwoch oryginalnych egzemplarzach.", disclaimer: "Dokument wygenerowany w celach informacyjnych. Nie zastepuje porady prawnej." },
+  tr: { legalBasis: "Yasal dayanak", signedIn: "Imzalanan yer", madeDate: "tarih", landlordLabel: "Ev sahibi / Gonderen", tenantLabel: "Kiraci / Alici", copies: "Iki orijinal kopya halinde duzenlenmistir.", disclaimer: "Bu belge bilgi amacli olusturulmustur. Hukuki danismanligin yerini almaz." },
+  ar: { legalBasis: "Al-asas al-qanuni", signedIn: "Muharrar fi", madeDate: "bi-tarikh", landlordLabel: "Al-mu'ajjir / Al-mursil", tenantLabel: "Al-musta'jir / Al-mursil ilayh", copies: "Hurrirat min nuskhatain asliyatayn.", disclaimer: "Wathiqa li-aghrad al-ma'lumat faqat. La tahllu mahall al-istishara al-qanuniyya." },
+  ja: { legalBasis: "Hoteki konkyo", signedIn: "Sakusei basho", madeDate: "hi", landlordLabel: "Kashiushi / Sashidashinin", tenantLabel: "Karinushi / Jushinsha", copies: "Honjo 2-bu sakusei.", disclaimer: "Kono bunsho wa joho mokuteki de sakusei saremashita. Horitsu sodan no kawari ni wa narimasen." },
 };
 
 const COUNTRY_LANG: Record<string, string> = {
   FR: "fr", BE: "fr", ES: "es", IT: "it", DE: "de", PT: "pt",
-  NL: "en", GB: "en", CH: "fr", AT: "de", LU: "fr",
-  PL: "en", SE: "en", DK: "en", NO: "en", FI: "en",
+  NL: "nl", GB: "en", CH: "fr", AT: "de", LU: "fr",
+  PL: "pl", SE: "en", DK: "en", NO: "en", FI: "en",
   GR: "en", CZ: "en", HU: "en", RO: "en", HR: "en",
   IE: "en", BG: "en", SK: "en",
   AE: "en", SA: "en", QA: "en",
+  TR: "tr", JP: "ja",
+  MA: "fr", TN: "fr", DZ: "fr", SN: "fr", CI: "fr", CM: "fr",
+  US: "en", CA: "en", AU: "en", NZ: "en",
+  BR: "pt", MX: "es", AR: "es", CL: "es", CO: "es", PE: "es",
+  IN: "en", SG: "en", MY: "en", TH: "en", VN: "en", PH: "en", ID: "en",
+  KR: "en", CN: "en", ZA: "en", NG: "en", KE: "en", GH: "en",
 };
 
 function getLang(country?: string): string {
@@ -140,7 +166,9 @@ function addHeader(doc: jsPDF, title: string): number {
   doc.rect(0, 0, PAGE_WIDTH, 8, "F");
 
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
-  doc.text("Easy-Locs", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 22);
+  setFont(doc, "normal", 6, COLOR_PRIMARY);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
 
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);
