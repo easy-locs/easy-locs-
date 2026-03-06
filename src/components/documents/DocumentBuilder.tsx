@@ -414,8 +414,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                         }
                       }
                       // Also set address-related keys that templates commonly use
-                      if (propData.fullAddress) merged.propertyAddress = propData.fullAddress;
-                      if (propData.fullAddress) merged.fullAddress = propData.fullAddress;
+                      const fullAddr = (propData as any).fullAddress;
+                      if (fullAddr) merged.propertyAddress = fullAddr;
+                      if (fullAddr) merged.fullAddress = fullAddr;
                     }
                     // Apply owner fields
                     if (ownerData) {
