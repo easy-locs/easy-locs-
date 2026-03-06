@@ -197,7 +197,7 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
               merged[key] = val;
             }
           }
-          return merged;
+          return applyDerivedValues(merged);
         });
       }
 
