@@ -66,6 +66,9 @@ const FurnitureInventory = () => {
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
   const condLabel = (c: string) => CONDITIONS.find(x => x.value === c)?.label || c;
 
+  // Group items by property for overview
+  const groupedByProp = items.reduce((acc, item) => { if (!acc[item.property_id]) acc[item.property_id] = []; acc[item.property_id].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
+
   const downloadPDFFile = () => {
     const prop = properties.find(p => p.id === selectedProp);
     const doc = new jsPDF();
