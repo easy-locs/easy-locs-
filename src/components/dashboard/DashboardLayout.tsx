@@ -57,6 +57,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.more"),
       items: [
         { icon: Contact, label: t("nav.company"), path: "/dashboard/company" },
+        { icon: BookOpen, label: "Comptabilité", path: "/dashboard/accounting" },
+        { icon: Store, label: "Marketplace", path: "/dashboard/marketplace" },
         { icon: Wrench, label: t("nav.interventions"), path: "/dashboard/interventions" },
         { icon: CheckSquare, label: t("nav.tasks"), path: "/dashboard/tasks" },
         { icon: MessageCircle, label: t("nav.messages"), path: "/dashboard/messages" },
