@@ -83,7 +83,7 @@ const TenantSettings = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{PL.dateOfBirth}</label>
-                <input type="date" value={getVal("dateOfBirth")} onChange={e => setVal("dateOfBirth", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                <input type="date" value={getVal("dateOfBirth")} onChange={e => setVal("dateOfBirth", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring appearance-none min-h-[44px]" style={{ WebkitAppearance: 'none' }} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{PL.nationality}</label>
