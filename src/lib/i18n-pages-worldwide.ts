@@ -201,6 +201,8 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "newsletter.cta": "Suscribirse", "newsletter.success": "¡Gracias! Está suscrito.",
     "page.dashboard.net_income": "Ingreso neto", "page.dashboard.expenses_label": "gastos",
     "page.dashboard.ai_question": "¿Qué debo hacer ahora?", "page.dashboard.ai_desc": "Su asistente analiza su situación.",
+    "page.ai.title": "Asistente IA", "page.ai.subtitle": "Pregunte sobre sus obligaciones administrativas.", "page.ai.placeholder": "Haga su pregunta…",
+    "page.ai.hint": "Haga clic en « ¿Qué debo hacer? » o escriba su pregunta.", "page.ai.hint2": "El asistente analizará su perfil y documentos.",
     "page.fiscal.title": "Informe fiscal — Ingresos inmobiliarios",
     "page.fiscal.micro_label": "Régimen simplificado", "page.fiscal.real_label": "Gastos reales",
     "page.fiscal.deficit_label": "Déficit inmobiliario",
