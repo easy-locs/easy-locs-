@@ -295,7 +295,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (!template.legalBasis) {
         toast({
           title: t("page.common.error"),
-          description: "Modèle bloqué : base légale gouvernementale manquante.",
+          description: t("page.doc_builder.no_legal_basis") !== "page.doc_builder.no_legal_basis"
+            ? t("page.doc_builder.no_legal_basis")
+            : "Template blocked: missing governmental legal basis.",
           variant: "destructive",
         });
         return;
@@ -307,7 +309,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (isLandlord && !selectedProperty) {
         toast({
           title: t("page.common.error"),
-          description: "Sélectionnez d'abord un bien du pays du modèle pour générer un document conforme.",
+          description: t("page.doc_builder.select_property_first") !== "page.doc_builder.select_property_first"
+            ? t("page.doc_builder.select_property_first")
+            : "Select a property in the template's country first.",
           variant: "destructive",
         });
         return;
@@ -316,7 +320,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
       if (selectedProperty && selectedProperty.country !== template.country) {
         toast({
           title: t("page.common.error"),
-          description: `Le bien (${selectedProperty.country}) ne correspond pas au pays du modèle (${template.country}).`,
+          description: t("page.doc_builder.country_mismatch") !== "page.doc_builder.country_mismatch"
+            ? t("page.doc_builder.country_mismatch")
+            : `Property (${selectedProperty.country}) does not match template country (${template.country}).`,
           variant: "destructive",
         });
         return;
