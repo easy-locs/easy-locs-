@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle, CreditCard } from "lucide-react";
+import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle } from "lucide-react";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();

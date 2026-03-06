@@ -48,7 +48,7 @@ const PaymentProvidersSettings = () => {
     try {
       const { data, error } = await supabase.functions.invoke("create-connect-account");
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {

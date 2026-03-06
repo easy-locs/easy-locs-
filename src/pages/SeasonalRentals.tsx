@@ -549,12 +549,71 @@ const SeasonalRentals = () => {
             <div className="flex items-center gap-2">
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                 focusedRequest.status === "paid" ? "bg-green-500/20 text-green-700" :
+                focusedRequest.status === "approved" ? "bg-blue-500/20 text-blue-700" :
+                focusedRequest.status === "rejected" ? "bg-destructive/20 text-destructive" :
+                focusedRequest.status === "payment_pending" ? "bg-orange-500/20 text-orange-700" :
                 focusedRequest.status === "pending" ? "bg-yellow-500/20 text-yellow-700" :
                 "bg-muted text-muted-foreground"
               }`}>
-                {focusedRequest.status === "paid" ? t("page.seasonal.status_paid") : focusedRequest.status === "pending" ? t("page.seasonal.status_pending_label") : focusedRequest.status}
+                {focusedRequest.status === "paid" ? t("page.seasonal.status_paid") :
+                 focusedRequest.status === "approved" ? t("page.seasonal.status_approved") :
+                 focusedRequest.status === "rejected" ? t("page.seasonal.status_rejected") :
+                 focusedRequest.status === "payment_pending" ? t("page.seasonal.status_payment_pending") :
+                 focusedRequest.status === "pending" ? t("page.seasonal.status_pending_label") :
+                 focusedRequest.status}
               </span>
             </div>
+            {focusedRequest.status === "pending" && (
+              <div className="flex items-center gap-3 pt-2 border-t border-border/50">
+                <button
+                  onClick={async () => {
+                    // Approve → send payment link email
+                    await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", focusedRequest.id);
+
+                    // Compute payment details
+                    const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", focusedRequest.listing_id).single();
+                    const nights = Math.max(1, Math.ceil((new Date(focusedRequest.check_out).getTime() - new Date(focusedRequest.check_in).getTime()) / 86400000));
+                    const pricePerNight = listingData?.price_per_night || 0;
+                    const totalAmount = pricePerNight * nights;
+
+                    // Build payment link URL
+                    const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+
+                    // Send payment link email to guest
+                    await supabase.functions.invoke("send-email", {
+                      body: {
+                        to: focusedRequest.guest_email,
+                        subject: `✅ ${t("page.seasonal.approved_subject")} — ${listingData?.title || ""}`,
+                        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                          <h2 style="color:#1a1a1a;text-align:center;">✅ ${t("page.seasonal.approved_heading")}</h2>
+                          <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.approved_body").replace("{name}", focusedRequest.guest_name).replace("{checkin}", focusedRequest.check_in).replace("{checkout}", focusedRequest.check_out)}</p>
+                          <p style="text-align:center;margin:24px 0;">
+                            <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
+                          </p>
+                          <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                        </div>`,
+                      },
+                    });
+
+                    toast({ title: t("page.seasonal.request_approved") });
+                    setFocusedRequest({ ...focusedRequest, status: "approved" });
+                  }}
+                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+                >
+                  <Check className="h-4 w-4" /> {t("page.seasonal.approve_btn")}
+                </button>
+                <button
+                  onClick={async () => {
+                    await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", focusedRequest.id);
+                    toast({ title: t("page.seasonal.request_rejected") });
+                    setFocusedRequest({ ...focusedRequest, status: "rejected" });
+                  }}
+                  className="flex items-center gap-2 border border-destructive text-destructive px-4 py-2 rounded-lg text-sm font-medium hover:bg-destructive/10"
+                >
+                  <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
