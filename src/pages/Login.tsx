@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
@@ -20,12 +20,39 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useI18n();
+  const hasRedirected = useRef(false);
 
-  const redirectByUserType = async () => {
+  const getPostLoginRoute = async (userId: string) => {
+    const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
+      supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+      supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+    ]);
+
+    const hasTenant = !!tenantLink;
+    const hasOrg = !!orgLink;
+
+    if (hasTenant && hasOrg) {
+      const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
+      return savedRole === "tenant" ? "/tenant" : "/dashboard";
+    }
+
+    if (hasTenant && !hasOrg) return "/tenant";
+    return "/dashboard";
+  };
+
+  const redirectAfterLogin = async () => {
+    if (hasRedirected.current) return;
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { navigate("/dashboard"); return; }
-    const { data } = await supabase.from("profiles").select("user_type").eq("id", user.id).single();
-    navigate(data?.user_type === "tenant" ? "/tenant" : "/dashboard");
+    if (!user) {
+      hasRedirected.current = true;
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    const route = await getPostLoginRoute(user.id);
+    hasRedirected.current = true;
+    navigate(route, { replace: true });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,19 +63,19 @@ const Login = () => {
     if (error) {
       toast({ title: t("auth.login.error"), description: error.message, variant: "destructive" });
     } else {
-      await redirectByUserType();
+      await redirectAfterLogin();
     }
   };
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) await redirectByUserType();
+      if (session?.user) await redirectAfterLogin();
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === "SIGNED_IN") await redirectByUserType();
+      if (event === "SIGNED_IN") await redirectAfterLogin();
     });
 
     return () => subscription.unsubscribe();
@@ -89,7 +116,7 @@ const Login = () => {
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectByUserType();
+      await redirectAfterLogin();
     }
   };
 
