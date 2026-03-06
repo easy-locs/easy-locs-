@@ -63,6 +63,7 @@ const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
 const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
+const Collaboration = lazy(() => import("./pages/Collaboration"));
 
 const queryClient = new QueryClient();
 
