@@ -6,7 +6,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, Globe,
+  CreditCard, Settings, LogOut, Menu, X, Globe, Star,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
