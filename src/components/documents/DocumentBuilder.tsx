@@ -413,6 +413,9 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                           merged[key] = val;
                         }
                       }
+                      // Also set address-related keys that templates commonly use
+                      if (propData.fullAddress) merged.propertyAddress = propData.fullAddress;
+                      if (propData.fullAddress) merged.fullAddress = propData.fullAddress;
                     }
                     // Apply owner fields
                     if (ownerData) {
@@ -424,6 +427,12 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
                     }
                     return merged;
                   });
+                }
+
+                // Auto-select first tenant linked to this property
+                const linkedTenants = tenants.filter(t => t.property_id === propId);
+                if (linkedTenants.length === 1) {
+                  updateField("tenantId", linkedTenants[0].id);
                 }
               }}
               className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"

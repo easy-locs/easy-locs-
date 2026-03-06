@@ -85,6 +85,7 @@ const PageLoader = () => (
 );
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
     <TooltipProvider>
@@ -175,6 +176,7 @@ const App = () => (
     </TooltipProvider>
     </I18nProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
