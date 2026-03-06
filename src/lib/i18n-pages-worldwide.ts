@@ -517,6 +517,8 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "newsletter.placeholder": "Uw email", "newsletter.cta": "Abonneren", "newsletter.success": "Bedankt! U bent ingeschreven.",
     "page.dashboard.net_income": "Netto-inkomen", "page.dashboard.expenses_label": "uitgaven",
     "page.dashboard.ai_question": "Wat moet ik nu doen?", "page.dashboard.ai_desc": "Uw assistent analyseert uw situatie.",
+    "page.ai.title": "AI-Assistent", "page.ai.subtitle": "Vraag naar uw administratieve verplichtingen.", "page.ai.placeholder": "Stel uw vraag…",
+    "page.ai.hint": "Klik op « Wat moet ik doen? » of stel uw vraag.", "page.ai.hint2": "De assistent analyseert uw profiel en documenten.",
     "page.fiscal.title": "Fiscaal rapport", "page.fiscal.micro_label": "Vereenvoudigd", "page.fiscal.real_label": "Werkelijke kosten",
     "page.fiscal.deficit_label": "Vastgoedtekort", "page.fiscal.gross_revenue": "Bruto-inkomsten", "page.fiscal.paid_calls": "betaald",
     "page.fiscal.deductible_expenses": "Aftrekbare uitgaven", "page.fiscal.taxable_income": "BELASTBAAR INKOMEN",
