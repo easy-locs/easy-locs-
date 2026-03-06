@@ -1,24 +1,74 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Plus, Trash2, Download, Sofa } from "lucide-react";
+import { Plus, Trash2, Download, Sofa, Camera, X, Image as ImageIcon, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 
-interface FurnitureItem { id: string; property_id: string; room_name: string; item_name: string; quantity: number; condition: string; notes: string; }
+interface FurnitureItem {
+  id: string; property_id: string; room_name: string; item_name: string;
+  quantity: number; condition: string; notes: string; photo_url: string | null;
+}
 interface Property { id: string; label: string; furnished: boolean | null; }
+
+const PRESET_FURNITURE: Record<string, string[]> = {
+  salon: [
+    "Canapé", "Canapé d'angle", "Fauteuil", "Table basse", "Meuble TV", "Bibliothèque",
+    "Étagère", "Lampadaire", "Lampe de table", "Tapis", "Rideau", "Store",
+    "Console", "Pouf", "Table d'appoint", "Cadre / Tableau", "Miroir", "Coussin décoratif",
+  ],
+  bedroom: [
+    "Lit (sommier + matelas)", "Lit simple", "Lit double", "Table de chevet", "Commode",
+    "Armoire", "Penderie", "Bureau", "Chaise de bureau", "Lampe de chevet",
+    "Miroir", "Rideau", "Store", "Tapis", "Couette", "Oreillers", "Linge de lit",
+  ],
+  kitchen: [
+    "Réfrigérateur", "Congélateur", "Four", "Micro-ondes", "Plaque de cuisson",
+    "Hotte aspirante", "Lave-vaisselle", "Grille-pain", "Bouilloire", "Cafetière",
+    "Table", "Chaises", "Tabourets de bar", "Vaisselle (set)", "Couverts (set)",
+    "Casseroles (set)", "Poêles (set)", "Verres (set)", "Tasses (set)",
+    "Ustensiles de cuisine", "Poubelle", "Égouttoir",
+  ],
+  bathroom: [
+    "Meuble vasque", "Miroir", "Douche", "Baignoire", "WC", "Lave-linge",
+    "Sèche-linge", "Sèche-serviettes", "Rideau de douche", "Tapis de bain",
+    "Porte-serviettes", "Poubelle", "Étagère de rangement",
+  ],
+  entrance: [
+    "Porte-manteau", "Meuble à chaussures", "Miroir", "Console d'entrée",
+    "Tapis d'entrée", "Porte-parapluie", "Patère murale",
+  ],
+  office: [
+    "Bureau", "Chaise de bureau", "Étagère", "Lampe de bureau", "Caisson de rangement",
+    "Imprimante", "Corbeille à papier",
+  ],
+};
+
+const ROOM_KEY_MAP: Record<string, string> = {
+  "page.furniture.room_salon": "salon",
+  "page.furniture.room_bedroom": "bedroom",
+  "page.furniture.room_kitchen": "kitchen",
+  "page.furniture.room_bathroom": "bathroom",
+  "page.furniture.room_entrance": "entrance",
+  "page.furniture.room_office": "office",
+};
 
 const FurnitureInventory = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<FurnitureItem[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProp, setSelectedProp] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const CONDITIONS = [
     { value: "new", label: t("page.furniture.cond_new") },
@@ -27,12 +77,20 @@ const FurnitureInventory = () => {
     { value: "poor", label: t("page.furniture.cond_poor") },
   ];
 
-  const DEFAULT_ROOMS = [
-    t("page.furniture.room_salon"), t("page.furniture.room_bedroom"), t("page.furniture.room_kitchen"),
-    t("page.furniture.room_bathroom"), t("page.furniture.room_entrance"), t("page.furniture.room_office"),
+  const ROOM_KEYS = [
+    "page.furniture.room_salon", "page.furniture.room_bedroom", "page.furniture.room_kitchen",
+    "page.furniture.room_bathroom", "page.furniture.room_entrance", "page.furniture.room_office",
   ];
+  const DEFAULT_ROOMS = ROOM_KEYS.map(k => t(k));
 
-  const [form, setForm] = useState({ property_id: "", room_name: DEFAULT_ROOMS[0], item_name: "", quantity: 1, condition: "good", notes: "" });
+  const [form, setForm] = useState({ property_id: "", room_name: "", item_name: "", quantity: 1, condition: "good", notes: "" });
+
+  // Set default room after translations load
+  useEffect(() => {
+    if (!form.room_name && DEFAULT_ROOMS[0]) {
+      setForm(f => ({ ...f, room_name: DEFAULT_ROOMS[0] }));
+    }
+  }, [DEFAULT_ROOMS[0]]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -47,26 +105,90 @@ const FurnitureInventory = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const getCurrentRoomKey = () => {
+    const idx = DEFAULT_ROOMS.indexOf(form.room_name);
+    if (idx >= 0) return ROOM_KEY_MAP[ROOM_KEYS[idx]] || "salon";
+    return "salon";
+  };
+
+  const suggestions = PRESET_FURNITURE[getCurrentRoomKey()] || [];
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Fichier trop volumineux (max 5 Mo)", variant: "destructive" });
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const uploadPhoto = async (itemId: string): Promise<string | null> => {
+    if (!photoFile || !orgId) return null;
+    const ext = photoFile.name.split(".").pop() || "jpg";
+    const path = `${orgId}/furniture/${itemId}.${ext}`;
+    const { error } = await supabase.storage.from("property-photos").upload(path, photoFile, { upsert: true });
+    if (error) {
+      console.error("Upload error:", error.message);
+      return null;
+    }
+    const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const save = async () => {
     if (!orgId || !form.property_id || !form.item_name) return;
-    const { error } = await supabase.from("furniture_items").insert({
+    setUploading(true);
+    const { data, error } = await supabase.from("furniture_items").insert({
       org_id: orgId, property_id: form.property_id, room_name: form.room_name,
       item_name: form.item_name, quantity: form.quantity, condition: form.condition, notes: form.notes,
-    });
-    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    } as any).select().single();
+    if (error) {
+      toast({ title: t("page.common.error"), description: error.message, variant: "destructive" });
+      setUploading(false);
+      return;
+    }
+    // Upload photo if selected
+    if (photoFile && data) {
+      const photoUrl = await uploadPhoto(data.id);
+      if (photoUrl) {
+        await supabase.from("furniture_items").update({ photo_url: photoUrl } as any).eq("id", data.id);
+      }
+    }
     toast({ title: t("page.furniture.added") });
     setForm(f => ({ ...f, item_name: "", quantity: 1, notes: "" }));
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setShowSuggestions(false);
+    setUploading(false);
     await load();
   };
 
-  const remove = async (id: string) => { await supabase.from("furniture_items").delete().eq("id", id); await load(); };
+  const uploadPhotoForItem = async (itemId: string, file: File) => {
+    if (!orgId) return;
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${orgId}/furniture/${itemId}.${ext}`;
+    const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
+    const { data } = supabase.storage.from("property-photos").getPublicUrl(path);
+    await supabase.from("furniture_items").update({ photo_url: data.publicUrl } as any).eq("id", itemId);
+    toast({ title: "Photo ajoutée" });
+    await load();
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("furniture_items").delete().eq("id", id);
+    // Also try to remove photo
+    if (orgId) {
+      await supabase.storage.from("property-photos").remove([`${orgId}/furniture/${id}.jpg`, `${orgId}/furniture/${id}.png`, `${orgId}/furniture/${id}.webp`]);
+    }
+    await load();
+  };
 
   const filtered = selectedProp ? items.filter(i => i.property_id === selectedProp) : items;
   const grouped = filtered.reduce((acc, item) => { if (!acc[item.room_name]) acc[item.room_name] = []; acc[item.room_name].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
-  const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
   const condLabel = (c: string) => CONDITIONS.find(x => x.value === c)?.label || c;
-
-  // Group items by property for overview
   const groupedByProp = items.reduce((acc, item) => { if (!acc[item.property_id]) acc[item.property_id] = []; acc[item.property_id].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
 
   const downloadPDFFile = () => {
@@ -112,6 +234,7 @@ const FurnitureInventory = () => {
           </div>
         </div>
 
+        {/* Property selector */}
         <div className="mb-4">
           <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
             <option value="">{t("page.furniture.all_properties")}</option>
@@ -123,24 +246,85 @@ const FurnitureInventory = () => {
           </select>
         </div>
 
+        {/* Add form */}
         {showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <h3 className="font-semibold text-foreground">{t("page.furniture.add_furniture")}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.property")} *</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">{t("page.common.select")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.room")}</label><select value={form.room_name} onChange={e => setForm(f => ({ ...f, room_name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">{DEFAULT_ROOMS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.item")} *</label><input value={form.item_name} onChange={e => setForm(f => ({ ...f, item_name: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" placeholder={t("page.furniture.item_placeholder")} /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.quantity")}</label><input type="number" min={1} value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.condition")}</label><select value={form.condition} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">{CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.notes")}</label><input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.property")} *</label>
+                <select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+                  <option value="">{t("page.common.select")}</option>
+                  {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.room")}</label>
+                <select value={form.room_name} onChange={e => { setForm(f => ({ ...f, room_name: e.target.value })); setShowSuggestions(false); }} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+                  {DEFAULT_ROOMS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div className="relative">
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.item")} *</label>
+                <div className="flex gap-2">
+                  <input value={form.item_name} onChange={e => setForm(f => ({ ...f, item_name: e.target.value }))} className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm" placeholder={t("page.furniture.item_placeholder")} />
+                  <button type="button" onClick={() => setShowSuggestions(!showSuggestions)} className="border border-border rounded-lg px-2 hover:bg-muted" title="Suggestions">
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {suggestions.map(s => (
+                      <button key={s} type="button" onClick={() => { setForm(f => ({ ...f, item_name: s })); setShowSuggestions(false); }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors">
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.quantity")}</label>
+                <input type="number" min={1} value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.condition")}</label>
+                <select value={form.condition} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+                  {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.notes")}</label>
+                <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              {/* Photo upload */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-1">Photo</label>
+                {photoPreview ? (
+                  <div className="relative inline-block">
+                    <img src={photoPreview} alt="Preview" className="h-24 w-24 object-cover rounded-lg border border-border" />
+                    <button onClick={() => { setPhotoFile(null); setPhotoPreview(null); }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 border border-dashed border-border rounded-lg px-4 py-3 text-sm text-muted-foreground hover:border-accent hover:text-foreground transition-colors">
+                    <Camera className="h-4 w-4" /> Ajouter une photo
+                  </button>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+              </div>
             </div>
-            <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{t("page.furniture.add")}</button>
+            <button onClick={save} disabled={uploading} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90 disabled:opacity-50">
+              {uploading ? "..." : t("page.furniture.add")}
+            </button>
           </div>
         )}
 
+        {/* Content */}
         {loading ? <p className="text-center text-muted-foreground py-8">{t("page.common.loading")}</p> :
           !selectedProp ? (
-            /* Overview: show all properties with item counts */
             properties.length === 0 ? (
               <div className="text-center py-12">
                 <Sofa className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -180,6 +364,18 @@ const FurnitureInventory = () => {
               <div className="bg-card rounded-xl border border-border/50 divide-y divide-border/30">
                 {roomItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                    {/* Photo thumbnail or add-photo button */}
+                    {item.photo_url ? (
+                      <img src={item.photo_url} alt={item.item_name} className="h-12 w-12 rounded-lg object-cover border border-border shrink-0" />
+                    ) : (
+                      <label className="h-12 w-12 rounded-lg border border-dashed border-border flex items-center justify-center cursor-pointer hover:border-accent transition-colors shrink-0">
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        <input type="file" accept="image/*" className="hidden" onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (f) uploadPhotoForItem(item.id, f);
+                        }} />
+                      </label>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{item.item_name} <span className="text-muted-foreground">x{item.quantity}</span></p>
                       <p className="text-xs text-muted-foreground">{condLabel(item.condition)} {item.notes && `· ${item.notes}`}</p>
