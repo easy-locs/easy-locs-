@@ -4,9 +4,14 @@ export type Country = "FR" | "BE" | "ES" | "IT" | "DE" | "PT" | "NL" | "CH" | "L
   | "PL" | "SE" | "DK" | "NO" | "FI" | "GR" | "CZ" | "HU" | "RO" | "HR" | "IE" | "BG" | "SK"
   | "SI" | "LT" | "LV" | "EE" | "CY" | "MT"
   | "US" | "CA" | "BR" | "MX" | "AR" | "CL" | "CO" | "PE"
+  | "UY" | "EC" | "VE" | "DO" | "CR" | "PA" | "GT" | "JM" | "TT" | "BO" | "PY" | "HN" | "SV" | "NI" | "CU"
   | "MA" | "TN" | "DZ" | "SN" | "CI" | "CM" | "GA" | "CG" | "CD" | "MG" | "MU" | "ZA" | "NG" | "KE" | "GH"
-  | "AE" | "SA" | "QA" | "BH" | "KW" | "OM" | "LB" | "JO" | "IL" | "TR"
-  | "JP" | "KR" | "CN" | "IN" | "SG" | "MY" | "TH" | "VN" | "PH" | "ID" | "AU" | "NZ";
+  | "EG" | "ET" | "TZ" | "UG" | "RW" | "BF" | "ML" | "NE" | "TD" | "BJ" | "TG" | "GN" | "MW" | "ZM" | "ZW" | "BW" | "NA" | "MZ" | "AO" | "LY" | "SD"
+  | "AE" | "SA" | "QA" | "BH" | "KW" | "OM" | "LB" | "JO" | "IL" | "TR" | "IQ"
+  | "JP" | "KR" | "CN" | "IN" | "SG" | "MY" | "TH" | "VN" | "PH" | "ID" | "AU" | "NZ"
+  | "PK" | "BD" | "LK" | "NP" | "KH" | "MM" | "TW" | "HK" | "KZ"
+  | "UA" | "RS" | "GE" | "AL" | "MK" | "BA" | "ME" | "XK" | "MD" | "IS"
+  | string; // Allow any country code for dynamic worldwide support
 
 export type DocCategory = "rental" | "administrative" | "company" | "legal";
 

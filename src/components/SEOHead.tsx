@@ -6,6 +6,7 @@ interface SEOHeadProps {
   canonical?: string;
   ogImage?: string;
   jsonLd?: Record<string, unknown>;
+  hreflangAlternates?: { lang: string; url: string }[];
 }
 
 const SEOHead = ({
@@ -14,6 +15,7 @@ const SEOHead = ({
   canonical,
   ogImage = "https://easy-locs.lovable.app/pwa-512x512.png",
   jsonLd,
+  hreflangAlternates,
 }: SEOHeadProps) => {
   useEffect(() => {
     document.title = title;
@@ -34,10 +36,13 @@ const SEOHead = ({
     setMeta("og:description", description, true);
     setMeta("og:type", "website", true);
     setMeta("og:image", ogImage, true);
+    setMeta("og:site_name", "Easy-Locs", true);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
     setMeta("twitter:description", description);
     setMeta("twitter:image", ogImage);
+    // Robots
+    setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1");
 
     if (canonical) {
       let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -47,6 +52,21 @@ const SEOHead = ({
         document.head.appendChild(link);
       }
       link.href = canonical;
+      setMeta("og:url", canonical, true);
+    }
+
+    // hreflang alternates
+    if (hreflangAlternates?.length) {
+      // Remove old hreflang links
+      document.querySelectorAll('link[data-hreflang]').forEach(el => el.remove());
+      for (const alt of hreflangAlternates) {
+        const link = document.createElement("link");
+        link.rel = "alternate";
+        link.setAttribute("hreflang", alt.lang);
+        link.href = alt.url;
+        link.setAttribute("data-hreflang", "true");
+        document.head.appendChild(link);
+      }
     }
 
     if (jsonLd) {
@@ -63,8 +83,9 @@ const SEOHead = ({
     return () => {
       const script = document.getElementById("json-ld-seo");
       if (script) script.remove();
+      document.querySelectorAll('link[data-hreflang]').forEach(el => el.remove());
     };
-  }, [title, description, canonical, ogImage, jsonLd]);
+  }, [title, description, canonical, ogImage, jsonLd, hreflangAlternates]);
 
   return null;
 };

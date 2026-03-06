@@ -76,7 +76,16 @@ const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
 const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
 const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 min cache
+      gcTime: 10 * 60 * 1000,   // 10 min garbage collection
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
