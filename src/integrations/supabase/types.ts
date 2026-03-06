@@ -53,6 +53,7 @@ export type Database = {
           id: string
           listing_id: string
           message: string | null
+          notified_at: string | null
           org_id: string
           property_id: string
           status: string
@@ -68,6 +69,7 @@ export type Database = {
           id?: string
           listing_id: string
           message?: string | null
+          notified_at?: string | null
           org_id: string
           property_id: string
           status?: string
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           listing_id?: string
           message?: string | null
+          notified_at?: string | null
           org_id?: string
           property_id?: string
           status?: string

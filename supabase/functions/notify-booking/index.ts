@@ -168,11 +168,29 @@ serve(async (req) => {
     const { booking_request_id } = await req.json();
     if (!booking_request_id) throw new Error("booking_request_id required");
 
+    // Validate UUID format to prevent injection
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(booking_request_id)) throw new Error("Invalid booking_request_id format");
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
+
+    // Idempotency check: skip if notification was already sent for this booking
+    const { data: existing } = await supabase
+      .from("notifications")
+      .select("id")
+      .eq("type", "info")
+      .ilike("message", `%${booking_request_id}%`)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      return new Response(JSON.stringify({ skipped: true, reason: "already_notified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const { data: br, error: brErr } = await supabase
       .from("booking_requests")
@@ -180,6 +198,21 @@ serve(async (req) => {
       .eq("id", booking_request_id)
       .single();
     if (brErr || !br) throw new Error("Booking request not found");
+
+    // Second idempotency layer: check notified_at on the booking itself
+    if (br.notified_at) {
+      return new Response(JSON.stringify({ skipped: true, reason: "already_notified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Mark as notified immediately to prevent race conditions
+    await supabase
+      .from("booking_requests")
+      .update({ notified_at: new Date().toISOString() })
+      .eq("id", booking_request_id)
+      .is("notified_at", null);
 
     const { data: listing } = await supabase
       .from("public_listings")
