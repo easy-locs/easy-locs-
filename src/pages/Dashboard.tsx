@@ -1,277 +1,217 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  FileText, Home, Bell, FolderLock, BrainCircuit, ArrowRight,
-  AlertTriangle, TrendingUp, Clock, Users, Euro, Building,
-  Download, PiggyBank, Percent,
+  Globe, ArrowRight, Building, Users, TrendingUp,
+  BrainCircuit, Clock, PiggyBank, Percent, Euro,
 } from "lucide-react";
-import { StatCard } from "@/components/ui/stat-card";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subMonths } from "date-fns";
-import { fr, enUS, es, de, it, pt, type Locale as DateFnsLocale } from "date-fns/locale";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { format } from "date-fns";
 import { formatCurrency } from "@/lib/country-config";
-import WorldPropertyMap from "@/components/dashboard/WorldPropertyMap";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
-
-const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
 
 const Dashboard = () => {
   const { orgId, userCountry } = useAuth();
-  const { t, locale } = useI18n();
-  const dateFnsLocale = DATE_LOCALES[locale] || fr;
+  const { t } = useI18n();
   const fmt = (n: number) => formatCurrency(n, userCountry);
 
-  const quickActions = [
-    { icon: Euro, label: t("page.dashboard.generate_receipt"), path: "/dashboard/rental?tab=payments", color: "bg-info/10 text-info" },
-    { icon: Users, label: t("page.rental.add_tenant"), path: "/dashboard/rental?tab=tenants", color: "bg-success/10 text-success" },
-    { icon: Bell, label: t("page.dashboard.view_reminders"), path: "/dashboard/reminders", color: "bg-warning/10 text-warning" },
-    { icon: FolderLock, label: t("page.dashboard.my_vault"), path: "/dashboard/vault", color: "bg-accent/10 text-gold-dark" },
-  ];
-
   const [stats, setStats] = useState({
-    properties: 0, tenants: 0, documents: 0,
-    rentCalls: [] as { month: string; paid: boolean; total_amount: number }[],
-    reminders: 0, vaultFiles: 0, vaultSize: 0,
-    tenantsList: [] as { property_id: string | null; lease_end: string | null }[],
-    expenses: [] as { amount: number; expense_date: string }[],
-    reservations: [] as { amount: number; check_in: string }[],
-    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string }[],
+    totalProperties: 0,
+    totalTenants: 0,
+    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string; tenants: number; buildings: number }[],
+    revenueThisMonth: 0,
+    unpaidTotal: 0,
+    occupancyRate: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!orgId) return;
     Promise.all([
-      supabase.from("properties").select("id, country", { count: "exact" }).eq("org_id", orgId),
+      supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
-      supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("buildings").select("id, org_id").eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-      supabase.from("reminders").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true),
-      supabase.from("vault_files").select("size").eq("org_id", orgId),
-      supabase.from("expenses").select("amount, expense_date").eq("org_id", orgId),
-      supabase.from("reservations").select("amount, check_in").eq("org_id", orgId),
-    ]).then(([props, tenantsRes, docs, rc, rem, vault, expRes, resRes]) => {
-      const vaultFiles = vault.data || [];
-      const tenantsList = (tenantsRes.data || []) as any[];
+    ]).then(([props, tenantsRes, buildingsRes, rc]) => {
       const propData = (props.data || []) as { id: string; country: string }[];
+      const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
+      const buildingsData = (buildingsRes.data || []);
 
-      // Aggregate properties by country
-      const countryMap = new Map<string, number>();
+      // Aggregate by country
+      const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
       propData.forEach(p => {
         const c = p.country || "FR";
-        countryMap.set(c, (countryMap.get(c) || 0) + 1);
+        const existing = countryMap.get(c) || { count: 0, propIds: new Set<string>() };
+        existing.count++;
+        existing.propIds.add(p.id);
+        countryMap.set(c, existing);
       });
+
+      const today = new Date().toISOString().split("T")[0];
       const propertiesByCountry = Array.from(countryMap.entries())
-        .map(([code, count]) => {
+        .map(([code, data]) => {
           const entry = getCountryEntryOrDefault(code);
-          return { code, count, flag: entry.flag, name: entry.name };
+          const countryTenants = tenantsList.filter(
+            t => t.property_id && data.propIds.has(t.property_id) && (!t.lease_end || t.lease_end >= today)
+          );
+          return {
+            code,
+            count: data.count,
+            flag: entry.flag,
+            name: entry.name,
+            tenants: countryTenants.length,
+            buildings: 0, // simplified
+          };
         })
         .sort((a, b) => b.count - a.count);
 
+      const currentMonth = format(new Date(), "yyyy-MM");
+      const monthCalls = ((rc.data || []) as any[]).filter((r: any) => r.month === currentMonth);
+      const revenueThisMonth = monthCalls.filter((r: any) => r.paid).reduce((s: number, r: any) => s + Number(r.total_amount), 0);
+      const unpaidTotal = ((rc.data || []) as any[]).filter((r: any) => !r.paid).reduce((s: number, r: any) => s + Number(r.total_amount), 0);
+
+      const occupiedProps = new Set(
+        tenantsList.filter(t => t.property_id && (!t.lease_end || t.lease_end >= today)).map(t => t.property_id)
+      ).size;
+      const occupancyRate = propData.length > 0 ? Math.round((occupiedProps / propData.length) * 100) : 0;
+
       setStats({
-        properties: props.count || propData.length,
-        tenants: tenantsList.length,
-        documents: docs.count || 0,
-        rentCalls: (rc.data || []) as any,
-        reminders: rem.count || 0,
-        vaultFiles: vaultFiles.length,
-        vaultSize: vaultFiles.reduce((s, f) => s + (Number(f.size) || 0), 0),
-        tenantsList,
-        expenses: (expRes.data || []) as any,
-        reservations: (resRes.data || []) as any,
+        totalProperties: propData.length,
+        totalTenants: tenantsList.length,
         propertiesByCountry,
+        revenueThisMonth,
+        unpaidTotal,
+        occupancyRate,
       });
       setLoading(false);
     });
   }, [orgId]);
 
-  const kpis = useMemo(() => {
-    const currentMonth = format(new Date(), "yyyy-MM");
-    const monthCalls = stats.rentCalls.filter(r => r.month === currentMonth);
-    const revenueThisMonth = monthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-    const unpaidTotal = stats.rentCalls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0);
-
-    const today = new Date().toISOString().split("T")[0];
-    const occupiedProperties = new Set(
-      stats.tenantsList.filter(t => t.property_id && (!t.lease_end || t.lease_end >= today)).map(t => t.property_id)
-    ).size;
-    const occupancyRate = stats.properties > 0 ? Math.round((occupiedProperties / stats.properties) * 100) : 0;
-    const vacantCount = stats.properties - occupiedProperties;
-
-    const expensesThisMonth = stats.expenses
-      .filter(e => e.expense_date?.startsWith(currentMonth))
-      .reduce((s, e) => s + Number(e.amount), 0);
-    const seasonalThisMonth = stats.reservations
-      .filter(r => r.check_in?.startsWith(currentMonth))
-      .reduce((s, r) => s + Number(r.amount), 0);
-    const netIncome = revenueThisMonth + seasonalThisMonth - expensesThisMonth;
-
-    return { revenueThisMonth, unpaidTotal, occupancyRate, vacantCount, netIncome, expensesThisMonth };
-  }, [stats]);
-
-  const revenueChart = useMemo(() => {
-    const now = new Date();
-    const months: { month: string; label: string; paid: number; unpaid: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = subMonths(now, i);
-      const key = format(d, "yyyy-MM");
-      const label = format(d, "MMM", { locale: dateFnsLocale });
-      const monthCalls = stats.rentCalls.filter(r => r.month === key);
-      months.push({
-        month: key,
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        paid: monthCalls.filter(r => r.paid).reduce((s, r) => s + Number(r.total_amount), 0),
-        unpaid: monthCalls.filter(r => !r.paid).reduce((s, r) => s + Number(r.total_amount), 0),
-      });
-    }
-    return months;
-  }, [stats.rentCalls, dateFnsLocale]);
-
-  const fmtSize = (bytes: number) => bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
-
-  const upcomingActions = useMemo(() => {
-    const actions: { label: string; date: string; urgent: boolean; path: string }[] = [];
-    const now = new Date();
-    const currentMonth = format(now, "yyyy-MM");
-    const unpaidThisMonth = stats.rentCalls.filter(r => r.month === currentMonth && !r.paid).length;
-    if (unpaidThisMonth > 0) {
-      actions.push({ label: `${unpaidThisMonth} ${t("page.dashboard.unpaid_rents")}`, date: format(now, "MMMM yyyy", { locale: dateFnsLocale }), urgent: true, path: "/dashboard/dunning" });
-    }
-    if (kpis.vacantCount > 0) {
-      actions.push({ label: `${kpis.vacantCount} ${t("page.dashboard.vacant_props")}`, date: t("page.dashboard.to_fill"), urgent: kpis.vacantCount > 1, path: "/dashboard/rental" });
-    }
-    if (stats.reminders > 0) {
-      actions.push({ label: `${stats.reminders} ${t("page.dashboard.active_reminders")}`, date: t("page.dashboard.to_process"), urgent: false, path: "/dashboard/reminders" });
-    }
-    if (actions.length === 0) {
-      actions.push({ label: t("page.dashboard.all_good"), date: "", urgent: false, path: "" });
-    }
-    return actions;
-  }, [stats, kpis, t, dateFnsLocale]);
-
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.dashboard.hello")}</h1>
-          <p className="text-muted-foreground mb-8">{t("page.dashboard.summary")}</p>
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="flex items-center gap-3 mb-1">
+            <Globe className="h-6 w-6 text-accent" />
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm ml-9">
+            {loading ? "..." : `${stats.totalProperties} ${stats.totalProperties > 1 ? "biens" : "bien"} · ${stats.propertiesByCountry.length} ${stats.propertiesByCountry.length > 1 ? "pays" : "pays"} · ${stats.totalTenants} ${t("page.dashboard.tenants_count") || "locataires"}`}
+          </p>
         </motion.div>
 
-        {/* Stats cards */}
+        {/* Global KPIs - compact row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Building, label: t("page.dashboard.properties"), value: loading ? "..." : String(stats.properties), sub: `${stats.tenants} ${t("page.dashboard.tenants_count")}`, path: "/dashboard/rental?tab=properties" },
-            { icon: Euro, label: t("page.dashboard.collected_month"), value: loading ? "..." : fmt(kpis.revenueThisMonth), sub: kpis.unpaidTotal > 0 ? `${fmt(kpis.unpaidTotal)} ${t("page.dashboard.unpaid_amount")}` : t("page.dashboard.no_unpaid"), path: "/dashboard/rental?tab=payments" },
-            { icon: Percent, label: t("page.dashboard.occupancy"), value: loading ? "..." : `${kpis.occupancyRate}%`, sub: `${kpis.vacantCount} ${t("page.dashboard.vacant")}`, path: "/dashboard/rental?tab=properties" },
-            { icon: PiggyBank, label: t("page.dashboard.net_income") || "Résultat net", value: loading ? "..." : fmt(kpis.netIncome), sub: `${fmt(kpis.expensesThisMonth)} ${t("page.dashboard.expenses_label") || "dépenses"}`, path: "/dashboard/finances" },
+            { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties) },
+            { icon: Euro, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
+            { icon: Percent, label: t("page.dashboard.occupancy") || "Occupation", value: loading ? "..." : `${stats.occupancyRate}%` },
+            { icon: PiggyBank, label: t("page.dashboard.unpaid_amount") || "Impayés", value: loading ? "..." : fmt(stats.unpaidTotal) },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.05 }}
-              className="h-full"
+              transition={{ delay: 0.05 + i * 0.03 }}
+              className="stat-card"
             >
-              <StatCard {...stat} />
+              <div className="flex items-center gap-2 mb-2">
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground font-medium truncate">{stat.label}</span>
+              </div>
+              <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
             </motion.div>
           ))}
         </div>
 
-        {/* World Map */}
-        {!loading && stats.propertiesByCountry.length > 0 && (
-          <WorldPropertyMap propertiesByCountry={stats.propertiesByCountry} userCountry={userCountry} />
-        )}
+        {/* Country Cards — Main Hub */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+            {t("page.dashboard.select_country") || "Sélectionnez un pays"}
+          </h2>
 
-        {/* Revenue chart */}
-        {!loading && revenueChart.some(m => m.paid > 0 || m.unpaid > 0) && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-accent" />{t("page.dashboard.revenue_trend")}
-            </h2>
-            <div className="bg-card rounded-xl p-5 shadow-card border border-border/50">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={revenueChart} barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
-                    formatter={(value: number, name: string) => [fmt(value), name === "paid" ? t("page.dashboard.collected") : t("page.dashboard.unpaid_label")]}
-                  />
-                  <Bar dataKey="paid" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="paid" />
-                  <Bar dataKey="unpaid" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name="unpaid" />
-                </BarChart>
-              </ResponsiveContainer>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-28 rounded-xl bg-muted/30 animate-pulse" />
+              ))}
             </div>
-          </motion.div>
-        )}
-
-        {/* Quick actions */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.quick_actions")}</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <Link
-                key={action.label}
-                to={action.path}
-                className="group flex flex-col items-center text-center gap-3 bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all h-full"
-              >
-                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
-                  <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium text-foreground leading-tight">{action.label}</span>
+          ) : stats.propertiesByCountry.length === 0 ? (
+            <div className="text-center py-16 bg-card rounded-xl border border-border/50">
+              <Globe className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {t("page.dashboard.no_properties") || "Aucun bien enregistré"}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                {t("page.dashboard.add_first") || "Ajoutez votre premier bien pour commencer"}
+              </p>
+              <Link to="/dashboard/rental" className="btn-primary">
+                {t("page.rental.add_property") || "Ajouter un bien"}
               </Link>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stats.propertiesByCountry.map((c, i) => (
+                <motion.div
+                  key={c.code}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.04 }}
+                >
+                  <Link
+                    to={`/dashboard/country/${c.code.toLowerCase()}`}
+                    className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/40 transition-all"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-4xl shrink-0">{c.flag}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
+                          {c.name}
+                        </h3>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Building className="h-3.5 w-3.5" />
+                            {c.count} {c.count > 1 ? "biens" : "bien"}
+                          </span>
+                          {c.tenants > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3.5 w-3.5" />
+                              {c.tenants}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* AI Assistant CTA */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-8">
           <Link
             to="/dashboard/assistant"
-            className="flex items-center gap-4 bg-hero rounded-xl p-6 text-primary-foreground hover:opacity-95 transition-opacity"
+            className="flex items-center gap-4 bg-hero rounded-xl p-5 text-primary-foreground hover:opacity-95 transition-opacity"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-              <BrainCircuit className="h-6 w-6 text-accent-foreground" />
+            <div className="w-11 h-11 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
+              <BrainCircuit className="h-5 w-5 text-accent-foreground" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg">{t("page.dashboard.ai_question")}</h3>
-              <p className="text-sm text-primary-foreground/60">{t("page.dashboard.ai_desc")}</p>
+              <h3 className="font-semibold">{t("page.dashboard.ai_question") || "Posez une question"}</h3>
+              <p className="text-sm text-primary-foreground/60">{t("page.dashboard.ai_desc") || "Assistant IA immobilier"}</p>
             </div>
-            <ArrowRight className="h-5 w-5 text-primary-foreground/60" />
+            <ArrowRight className="h-5 w-5 text-primary-foreground/40" />
           </Link>
         </motion.div>
-
-        {/* Alerts & actions */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4">{t("page.dashboard.alerts")}</h2>
-          <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
-            {upcomingActions.map((r, i) => {
-              const Wrapper = r.path ? Link : "div" as any;
-              const wrapperProps = r.path ? { to: r.path } : {};
-              return (
-                <Wrapper key={i} {...wrapperProps} className={`flex items-center gap-4 p-4 ${r.path ? "hover:bg-muted/50 cursor-pointer transition-colors" : ""}`}>
-                  {r.urgent ? (
-                    <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
-                  ) : (
-                    <Bell className="h-5 w-5 text-muted-foreground shrink-0" />
-                  )}
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-foreground">{r.label}</div>
-                    {r.date && <div className="text-xs text-muted-foreground">{r.date}</div>}
-                  </div>
-                  {r.path && <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
-                </Wrapper>
-              );
-            })}
-          </div>
-        </motion.div>
-
       </div>
     </DashboardLayout>
   );
