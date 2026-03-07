@@ -1575,7 +1575,7 @@ const RentalManagement = () => {
                               </button>
                             ) : (
                               <div className="flex items-center justify-end gap-2">
-                                <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                                <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
                                    {L.markPaid}
                                  </button>
                                  <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
