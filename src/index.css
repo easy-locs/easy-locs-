@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ══════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS — Single Source of Truth
    ══════════════════════════════════════════════════ */
 
 @layer base {
@@ -77,6 +77,18 @@
     --space-lg: 1.5rem;    /* 24px */
     --space-xl: 2rem;      /* 32px */
     --space-2xl: 3rem;     /* 48px */
+
+    /* ── Component sizing ── */
+    --input-height: 2.75rem;       /* 44px — iOS touch target */
+    --input-height-sm: 2.25rem;    /* 36px */
+    --input-radius: 0.75rem;       /* 12px */
+    --btn-radius: 0.75rem;
+    --card-radius: 0.75rem;
+    --card-padding: 1.25rem;
+    --modal-radius: 1rem;
+    --label-gap: 0.375rem;         /* 6px */
+    --field-gap: 1rem;             /* 16px */
+    --section-gap: 1.5rem;         /* 24px */
   }
 
   .dark {
@@ -149,7 +161,7 @@
   }
 }
 
-/* ── Typography ── */
+/* ── Typography — strict hierarchy ── */
 @layer base {
   h1 {
     @apply text-xl sm:text-2xl font-bold leading-tight tracking-tight;
@@ -164,26 +176,38 @@
     @apply leading-relaxed;
   }
 
-  /* Prevent text overflow (exclude table cells and amounts) */
+  /* Prevent text overflow */
   h1, h2, h3, h4, h5, h6, p, li {
     overflow-wrap: break-word;
     word-break: break-word;
   }
 }
 
-/* ── Form elements ── */
+/* ── Global form element normalization ── */
 @layer base {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
   select,
   textarea {
-    @apply text-sm h-10 rounded-xl;
+    @apply text-sm;
+    height: var(--input-height);
+    border-radius: var(--input-radius);
     color-scheme: inherit;
+  }
+
+  textarea {
+    height: auto;
+    min-height: 5rem;
   }
 
   .dark input[type="date"],
   .dark input[type="time"],
   .dark input[type="datetime-local"] {
     color-scheme: dark;
+  }
+
+  label {
+    @apply block text-sm font-medium text-foreground;
+    margin-bottom: var(--label-gap);
   }
 
   table {
@@ -230,7 +254,7 @@
 
   /* ── Page header ── */
   .page-header {
-    @apply mb-6;
+    margin-bottom: var(--section-gap);
   }
   .page-header h1 {
     @apply text-xl sm:text-2xl font-bold text-foreground;
@@ -239,7 +263,7 @@
     @apply text-sm text-muted-foreground mt-1;
   }
 
-  /* ── Page content wrapper — consistent max-width + padding ── */
+  /* ── Page content wrapper ── */
   .page-content {
     @apply max-w-5xl mx-auto w-full;
   }
@@ -247,10 +271,12 @@
   /* ── Buttons ── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
-           h-10 px-4 rounded-xl text-sm font-semibold
+           px-4 text-sm font-semibold
            transition-all duration-150 ease-in-out
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
            disabled:opacity-50 disabled:pointer-events-none;
+    height: var(--input-height);
+    border-radius: var(--btn-radius);
   }
   .btn-primary {
     @apply btn bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90;
@@ -268,18 +294,28 @@
     @apply btn bg-success text-success-foreground hover:bg-success/90;
   }
   .btn-sm {
-    @apply h-8 px-3 text-xs rounded-lg;
+    height: var(--input-height-sm);
+    @apply px-3 text-xs;
+    border-radius: 0.5rem;
   }
   .btn-icon {
-    @apply h-9 w-9 p-0 rounded-lg;
+    @apply p-0;
+    height: var(--input-height);
+    width: var(--input-height);
+    border-radius: 0.5rem;
   }
 
   /* ── Cards — unified structure ── */
   .ui-card {
-    @apply rounded-xl border border-border bg-card p-4 sm:p-5 shadow-card transition-shadow hover:shadow-card-hover;
+    @apply border border-border bg-card shadow-card transition-shadow hover:shadow-card-hover;
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
   }
   .stat-card {
-    @apply rounded-xl border border-border/50 bg-card p-4 sm:p-5 shadow-card flex flex-col min-h-[6rem];
+    @apply border border-border/50 bg-card shadow-card flex flex-col;
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
+    min-height: 6rem;
   }
 
   /* ── Card row: icon | content | actions ── */
@@ -329,24 +365,36 @@
 
   /* ── Form layout ── */
   .form-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2;
+    gap: var(--field-gap);
   }
   .form-label {
-    @apply block text-sm font-medium text-foreground mb-1.5;
+    @apply block text-sm font-medium text-foreground;
+    margin-bottom: var(--label-gap);
   }
   .form-input {
-    @apply w-full bg-background border border-border rounded-xl px-3 h-10 text-sm
+    @apply w-full bg-background border border-border px-3 text-sm
            text-foreground placeholder:text-muted-foreground
            focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1
            transition-colors;
+    height: var(--input-height);
+    border-radius: var(--input-radius);
   }
   .form-select {
     @apply form-input appearance-none cursor-pointer;
   }
+  .form-group {
+    @apply flex flex-col;
+  }
+  .form-group > label {
+    margin-bottom: var(--label-gap);
+  }
 
   /* ── Tables ── */
   .table-container {
-    @apply bg-card rounded-xl border border-border/50 overflow-hidden;
+    @apply bg-card overflow-hidden;
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--card-radius);
   }
   .table-scroll {
     @apply overflow-x-auto;
@@ -382,20 +430,23 @@
 
   /* ── Uniform section spacing ── */
   .section-gap {
-    @apply space-y-6;
+    gap: var(--section-gap);
+    @apply flex flex-col;
   }
 
   /* ── Tab lists — consistent height and spacing ── */
   .tabs-uniform [role="tablist"] {
-    @apply h-10 rounded-lg bg-muted/50 p-1;
+    @apply rounded-lg bg-muted/50 p-1;
+    height: var(--input-height);
   }
   .tabs-uniform [role="tab"] {
-    @apply h-8 px-3 text-xs sm:text-sm rounded-md font-medium transition-colors shrink-0;
+    @apply px-3 text-xs sm:text-sm rounded-md font-medium transition-colors shrink-0;
+    height: var(--input-height-sm);
   }
 
   /* ── Floating AI button safe zone ── */
   .floating-safe-zone {
-    @apply pb-20;
+    @apply pb-24;
   }
 }
 
@@ -464,21 +515,28 @@
 
   /* Generic 2-col / 3-col content grids */
   .content-grid-2 {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2;
+    gap: var(--field-gap);
   }
   .content-grid-3 {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+    gap: var(--field-gap);
   }
 
   /* List rows — consistent height */
   .list-row {
-    @apply flex items-center gap-3 px-4 py-3 border-b border-border/30 hover:bg-muted/20 transition-colors min-h-[3.25rem];
+    @apply flex items-center gap-3 px-4 border-b border-border/30 hover:bg-muted/20 transition-colors;
+    min-height: 3.25rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
   }
 
   /* Action card — consistent clickable card */
   .action-card {
-    @apply rounded-xl border border-border/50 bg-card p-4 sm:p-5 shadow-card
+    @apply border border-border/50 bg-card shadow-card
            hover:shadow-card-hover hover:border-accent/30 transition-all cursor-pointer;
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
   }
 }
 
@@ -487,15 +545,16 @@
    ══════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
-  /* Tighter main content padding on mobile */
+  /* Consistent main content padding on mobile */
   main {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-bottom: 5rem !important; /* FAB safe zone */
   }
 
   /* Ensure modals/dialogs don't overflow */
   [role="dialog"] {
-    max-width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 2rem) !important;
     max-height: calc(100dvh - 2rem) !important;
     overflow-y: auto;
   }
@@ -509,6 +568,20 @@
   img, video, svg, canvas {
     max-width: 100%;
     height: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   FLOATING AI BUTTON — MOBILE SAFE POSITIONING
+   ══════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  /* Push FAB above the safe area on mobile to avoid covering fields */
+  .floating-ai-btn {
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
+    right: 1rem !important;
+    width: 3rem !important;
+    height: 3rem !important;
   }
 }
 
