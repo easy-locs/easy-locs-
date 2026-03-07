@@ -76,6 +76,9 @@ const AddProperty = lazy(() => import("./pages/AddProperty"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
+const ConciergeServices = lazy(() => import("./pages/ConciergeServices"));
+const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
+const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
@@ -129,6 +132,7 @@ const App = () => (
               <Route path="/rentals/:country" element={<RentalCatalog />} />
               <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
               <Route path="/host/:hostSlug" element={<HostCatalog />} />
+              <Route path="/guest" element={<GuestPortal />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
@@ -186,6 +190,8 @@ const App = () => (
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/local-services" element={<ProtectedRoute><CountryGuard><LocalServices /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/concierge" element={<ProtectedRoute><ConciergeServices /></ProtectedRoute>} />
+              <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
