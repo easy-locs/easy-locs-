@@ -155,7 +155,7 @@ const TenantSettings = () => {
               <SignaturePad label={PL.signature} value={getVal("signatureUrl") || profile.signatureUrl} onChange={v => setVal("signatureUrl", v)} />
             </div>
 
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
+            <button onClick={handleSave} disabled={saving} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {saving ? PL.saving : PL.save}
             </button>
