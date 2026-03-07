@@ -188,15 +188,15 @@ const PaymentNotices = () => {
           </div>
         )}
 
-        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="table-container">
+          <div className="table-scroll">
             <table className="w-full text-sm min-w-[680px]">
-              <thead><tr className="border-b border-border/50 bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.month")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.tenant")}</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.notices.total")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.status")}</th>
-                <th className="px-4 py-3"></th>
+              <thead><tr className="table-head-row">
+                <th className="table-head-cell">{t("page.notices.month")}</th>
+                <th className="table-head-cell">{t("page.notices.tenant")}</th>
+                <th className="table-head-cell text-right">{t("page.notices.total")}</th>
+                <th className="table-head-cell">{t("page.notices.status")}</th>
+                <th className="table-head-cell"></th>
               </tr></thead>
               <tbody>
                 {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
