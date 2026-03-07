@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
@@ -19,9 +20,10 @@ const COUNTRY_FLAGS: Record<string, string> = {
 const ChargesRegularization = () => {
   const { orgId, userCountry } = useAuth();
   const { t } = useI18n();
-  const fmt = (n: number) => formatCurrency(n, userCountry);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
+  const countryFilter = useCountryFilter();
+  const fmt = (n: number, country?: string) => formatCurrency(n, country || userCountry);
+  const [allTenants, setAllTenants] = useState<Tenant[]>([]);
+  const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [year, setYear] = useState(new Date().getFullYear() - 1);
   const [realCharges, setRealCharges] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -32,11 +34,23 @@ const ChargesRegularization = () => {
       supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId),
       supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId),
     ]).then(([tData, pData]) => {
-      setTenants((tData.data || []) as Tenant[]);
-      setProperties((pData.data || []) as Property[]);
+      setAllTenants((tData.data || []) as Tenant[]);
+      setAllProperties((pData.data || []) as Property[]);
       setLoading(false);
     });
   }, [orgId]);
+
+  // Filter by country workspace if active
+  const properties = useMemo(() => {
+    if (!countryFilter) return allProperties;
+    return allProperties.filter(p => (p.country || "").toUpperCase() === countryFilter.toUpperCase());
+  }, [allProperties, countryFilter]);
+
+  const tenants = useMemo(() => {
+    const propIds = new Set(properties.map(p => p.id));
+    if (!countryFilter) return allTenants;
+    return allTenants.filter(t => t.property_id && propIds.has(t.property_id));
+  }, [allTenants, properties, countryFilter]);
 
   const results = useMemo(() => {
     return tenants.map(tenant => {
