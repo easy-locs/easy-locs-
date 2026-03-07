@@ -62,6 +62,7 @@ const GLOBAL_PAGES = [
   "/dashboard/audit",
   "/dashboard/import",
   "/dashboard/install",
+  "/dashboard/communication",
 ];
 
 export function isGlobalPage(pathname: string): boolean {

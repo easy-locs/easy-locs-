@@ -36,6 +36,7 @@ const Finances = lazy(() => import("./pages/Finances"));
 const Interventions = lazy(() => import("./pages/Interventions"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const Messages = lazy(() => import("./pages/Messages"));
+const CommunicationCenter = lazy(() => import("./pages/CommunicationCenter"));
 const ChargesRegularization = lazy(() => import("./pages/ChargesRegularization"));
 const FiscalReport = lazy(() => import("./pages/FiscalReport"));
 const Expenses = lazy(() => import("./pages/Expenses"));
@@ -162,6 +163,7 @@ const App = () => (
               <Route path="/dashboard/interventions" element={<ProtectedRoute><CountryGuard><Interventions /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/tasks" element={<ProtectedRoute><CountryGuard><Tasks /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/messages" element={<ProtectedRoute><CountryGuard><Messages /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/communication" element={<ProtectedRoute><CommunicationCenter /></ProtectedRoute>} />
               <Route path="/dashboard/charges" element={<ProtectedRoute><CountryGuard><ChargesRegularization /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/fiscal" element={<ProtectedRoute><CountryGuard><FiscalReport /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/expenses" element={<ProtectedRoute><CountryGuard><Expenses /></CountryGuard></ProtectedRoute>} />

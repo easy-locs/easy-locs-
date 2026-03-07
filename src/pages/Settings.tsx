@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
+import NotificationPreferences from "@/components/communication/NotificationPreferences";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -239,6 +240,9 @@ const Settings = () => {
 
         {/* Payment Providers */}
         <PaymentProvidersSettings />
+
+        {/* Notification Preferences */}
+        <NotificationPreferences />
 
         {/* MFA / 2FA */}
         <MFASettings />

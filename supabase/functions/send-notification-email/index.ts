@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
@@ -11,7 +11,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 interface EmailRequest {
-  event_type: "new_tenant" | "rent_due" | "payment_received" | "receipt_ready" | "lease_signed" | "intervention" | "booking_request" | "dunning";
+  event_type: string;
   recipient_email: string;
   recipient_name?: string;
   data: Record<string, any>;
@@ -82,6 +82,62 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     de: { subject: "Mietrückstand — {month}", title: "⚠️ Mietrückstand", body: "Die Miete für {month} ist noch offen. Fälliger Betrag: {amount}. Bitte begleichen Sie umgehend." },
     it: { subject: "Sollecito affitto non pagato — {month}", title: "⚠️ Sollecito affitto", body: "L'affitto di {month} è ancora non pagato. Importo dovuto: {amount}. Si prega di regolarizzare." },
     pt: { subject: "Lembrete de aluguel em atraso — {month}", title: "⚠️ Lembrete de aluguel", body: "O aluguel de {month} continua em aberto. Valor devido: {amount}. Favor regularizar." },
+  },
+  document_signed: {
+    fr: { subject: "Document signé — {title}", title: "✅ Document signé", body: "Le document « {title} » a été signé avec succès." },
+    en: { subject: "Document Signed — {title}", title: "✅ Document Signed", body: 'The document "{title}" has been successfully signed.' },
+    es: { subject: "Documento firmado — {title}", title: "✅ Documento firmado", body: "El documento « {title} » ha sido firmado con éxito." },
+    de: { subject: "Dokument unterzeichnet — {title}", title: "✅ Dokument unterzeichnet", body: 'Das Dokument „{title}" wurde erfolgreich unterzeichnet.' },
+    it: { subject: "Documento firmato — {title}", title: "✅ Documento firmato", body: "Il documento « {title} » è stato firmato con successo." },
+    pt: { subject: "Documento assinado — {title}", title: "✅ Documento assinado", body: "O documento « {title} » foi assinado com sucesso." },
+  },
+  document_uploaded: {
+    fr: { subject: "Nouveau document disponible — {title}", title: "📄 Nouveau document", body: "Un nouveau document est disponible : {title}. Consultez-le dans votre espace." },
+    en: { subject: "New Document Available — {title}", title: "📄 New Document", body: "A new document is available: {title}. Check your portal." },
+    es: { subject: "Nuevo documento disponible — {title}", title: "📄 Nuevo documento", body: "Un nuevo documento está disponible: {title}. Consúltelo en su portal." },
+    de: { subject: "Neues Dokument verfügbar — {title}", title: "📄 Neues Dokument", body: "Ein neues Dokument ist verfügbar: {title}. Prüfen Sie es in Ihrem Portal." },
+    it: { subject: "Nuovo documento disponibile — {title}", title: "📄 Nuovo documento", body: "Un nuovo documento è disponibile: {title}. Consultalo nel tuo portale." },
+    pt: { subject: "Novo documento disponível — {title}", title: "📄 Novo documento", body: "Um novo documento está disponível: {title}. Confira no seu portal." },
+  },
+  maintenance_update: {
+    fr: { subject: "Mise à jour maintenance — {title}", title: "🔧 Mise à jour maintenance", body: "La demande de maintenance « {title} » a été mise à jour. Statut : {status}." },
+    en: { subject: "Maintenance Update — {title}", title: "🔧 Maintenance Update", body: 'Maintenance request "{title}" has been updated. Status: {status}.' },
+    es: { subject: "Actualización de mantenimiento — {title}", title: "🔧 Actualización mantenimiento", body: "La solicitud de mantenimiento « {title} » ha sido actualizada. Estado: {status}." },
+    de: { subject: "Wartungsupdate — {title}", title: "🔧 Wartungsupdate", body: 'Die Wartungsanfrage „{title}" wurde aktualisiert. Status: {status}.' },
+    it: { subject: "Aggiornamento manutenzione — {title}", title: "🔧 Aggiornamento manutenzione", body: "La richiesta di manutenzione « {title} » è stata aggiornata. Stato: {status}." },
+    pt: { subject: "Atualização de manutenção — {title}", title: "🔧 Atualização manutenção", body: "A solicitação de manutenção « {title} » foi atualizada. Status: {status}." },
+  },
+  booking_confirmed: {
+    fr: { subject: "Réservation confirmée — {check_in} au {check_out}", title: "🏖️ Réservation confirmée", body: "Votre réservation du {check_in} au {check_out} est confirmée. Bienvenue !" },
+    en: { subject: "Booking Confirmed — {check_in} to {check_out}", title: "🏖️ Booking Confirmed", body: "Your booking from {check_in} to {check_out} is confirmed. Welcome!" },
+    es: { subject: "Reserva confirmada — {check_in} al {check_out}", title: "🏖️ Reserva confirmada", body: "Su reserva del {check_in} al {check_out} está confirmada. ¡Bienvenido!" },
+    de: { subject: "Buchung bestätigt — {check_in} bis {check_out}", title: "🏖️ Buchung bestätigt", body: "Ihre Buchung vom {check_in} bis {check_out} ist bestätigt. Willkommen!" },
+    it: { subject: "Prenotazione confermata — {check_in} al {check_out}", title: "🏖️ Prenotazione confermata", body: "La tua prenotazione dal {check_in} al {check_out} è confermata. Benvenuto!" },
+    pt: { subject: "Reserva confirmada — {check_in} a {check_out}", title: "🏖️ Reserva confirmada", body: "Sua reserva de {check_in} a {check_out} está confirmada. Bem-vindo!" },
+  },
+  booking_cancelled: {
+    fr: { subject: "Réservation annulée", title: "❌ Réservation annulée", body: "La réservation du {check_in} au {check_out} a été annulée." },
+    en: { subject: "Booking Cancelled", title: "❌ Booking Cancelled", body: "The booking from {check_in} to {check_out} has been cancelled." },
+    es: { subject: "Reserva cancelada", title: "❌ Reserva cancelada", body: "La reserva del {check_in} al {check_out} ha sido cancelada." },
+    de: { subject: "Buchung storniert", title: "❌ Buchung storniert", body: "Die Buchung vom {check_in} bis {check_out} wurde storniert." },
+    it: { subject: "Prenotazione cancellata", title: "❌ Prenotazione cancellata", body: "La prenotazione dal {check_in} al {check_out} è stata cancellata." },
+    pt: { subject: "Reserva cancelada", title: "❌ Reserva cancelada", body: "A reserva de {check_in} a {check_out} foi cancelada." },
+  },
+  signature_request: {
+    fr: { subject: "Signature requise — {title}", title: "✍️ Signature requise", body: "Le document « {title} » nécessite votre signature. Connectez-vous pour signer." },
+    en: { subject: "Signature Required — {title}", title: "✍️ Signature Required", body: 'The document "{title}" requires your signature. Log in to sign.' },
+    es: { subject: "Firma requerida — {title}", title: "✍️ Firma requerida", body: "El documento « {title} » requiere su firma. Inicie sesión para firmar." },
+    de: { subject: "Unterschrift erforderlich — {title}", title: "✍️ Unterschrift erforderlich", body: 'Das Dokument „{title}" erfordert Ihre Unterschrift. Melden Sie sich an, um zu unterschreiben.' },
+    it: { subject: "Firma richiesta — {title}", title: "✍️ Firma richiesta", body: "Il documento « {title} » richiede la tua firma. Accedi per firmare." },
+    pt: { subject: "Assinatura necessária — {title}", title: "✍️ Assinatura necessária", body: "O documento « {title} » requer sua assinatura. Faça login para assinar." },
+  },
+  account_alert: {
+    fr: { subject: "Alerte compte — {message}", title: "🔔 Alerte compte", body: "{message}" },
+    en: { subject: "Account Alert — {message}", title: "🔔 Account Alert", body: "{message}" },
+    es: { subject: "Alerta de cuenta — {message}", title: "🔔 Alerta de cuenta", body: "{message}" },
+    de: { subject: "Kontowarnung — {message}", title: "🔔 Kontowarnung", body: "{message}" },
+    it: { subject: "Avviso account — {message}", title: "🔔 Avviso account", body: "{message}" },
+    pt: { subject: "Alerta de conta — {message}", title: "🔔 Alerta de conta", body: "{message}" },
   },
 };
 
