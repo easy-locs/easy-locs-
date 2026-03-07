@@ -76,6 +76,9 @@ const AddProperty = lazy(() => import("./pages/AddProperty"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
+const ConciergeServices = lazy(() => import("./pages/ConciergeServices"));
+const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
+const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
