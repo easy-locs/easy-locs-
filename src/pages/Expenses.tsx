@@ -90,16 +90,16 @@ const Expenses = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.expenses.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.expenses.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.expenses.title")}</h1>
+            <p>{t("page.expenses.subtitle")}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted">
+          <div className="flex gap-2 shrink-0">
+            <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
               <Download className="h-4 w-4" /> {t("page.expenses.export")}
             </button>
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.expenses.add")}
             </button>
           </div>
@@ -107,11 +107,11 @@ const Expenses = () => {
 
         {/* Filters */}
         <div className="flex gap-3 mb-4">
-          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-auto">
             <option value="">{t("page.expenses.all_properties")}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-auto">
             <option value="">{t("page.expenses.all_categories")}</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
@@ -137,35 +137,35 @@ const Expenses = () => {
               <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
             <div className="flex gap-3">
-              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{t("page.common.save")}</button>
-              <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">{t("page.common.cancel")}</button>
+              <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
+              <button onClick={() => setShowForm(false)} className="btn-secondary">{t("page.common.cancel")}</button>
             </div>
           </div>
         )}
 
         {/* List */}
-        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="table-container">
+          <div className="table-scroll">
           <table className="w-full text-sm min-w-[600px]">
-            <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.date")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.label")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.category")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.property")}</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.amount")}</th>
-              <th className="px-4 py-3"></th>
+            <thead><tr className="table-head-row">
+              <th className="table-head-cell">{t("page.expenses.date")}</th>
+              <th className="table-head-cell">{t("page.expenses.label")}</th>
+              <th className="table-head-cell">{t("page.expenses.category")}</th>
+              <th className="table-head-cell">{t("page.expenses.property")}</th>
+              <th className="table-head-cell text-right">{t("page.expenses.amount")}</th>
+              <th className="table-head-cell"></th>
             </tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
                 filtered.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.expenses.no_expense")}</td></tr> :
                   filtered.map(e => (
-                    <tr key={e.id} className="border-b border-border/30 hover:bg-muted/20">
-                      <td className="px-4 py-3 text-foreground">{e.expense_date}</td>
-                      <td className="px-4 py-3 text-foreground font-medium">{e.label}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{catName(e.category)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{propName(e.property_id)}</td>
-                      <td className="px-4 py-3 text-right text-foreground font-semibold currency-value whitespace-nowrap">{fmt(e.amount)}</td>
-                      <td className="px-4 py-3"><button onClick={() => remove(e.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button></td>
+                    <tr key={e.id} className="table-body-row">
+                      <td className="table-cell whitespace-nowrap">{e.expense_date}</td>
+                      <td className="table-cell font-medium">{e.label}</td>
+                      <td className="table-cell-muted">{catName(e.category)}</td>
+                      <td className="table-cell-muted">{propName(e.property_id)}</td>
+                      <td className="table-cell-amount">{fmt(e.amount)}</td>
+                      <td className="table-cell-actions"><button onClick={() => remove(e.id)} className="text-destructive hover:text-destructive/80 p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
             </tbody>

@@ -96,10 +96,10 @@ const Receipts = () => {
     <DashboardLayout>
        <FeatureGate feature="receipts" featureLabel={t("page.receipts.title")}>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.receipts.title")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("page.receipts.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.receipts.title")}</h1>
+            <p>{t("page.receipts.subtitle")}</p>
           </div>
         </div>
 
@@ -124,16 +124,16 @@ const Receipts = () => {
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">{t("page.common.loading")}</div>
         ) : receipts.length > 0 ? (
-          <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="table-container">
+            <div className="table-scroll">
               <table className="w-full min-w-[580px]">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.tenant")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.owner")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.period")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.amount")}</th>
-                     <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.actions")}</th>
+                  <tr className="table-head-row">
+                     <th className="table-head-cell">{t("page.receipts.tenant")}</th>
+                     <th className="table-head-cell">{t("page.receipts.owner")}</th>
+                     <th className="table-head-cell">{t("page.receipts.period")}</th>
+                     <th className="table-head-cell">{t("page.receipts.amount")}</th>
+                     <th className="table-head-cell text-right">{t("page.receipts.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -141,13 +141,13 @@ const Receipts = () => {
                     const data = r.data_json as Record<string, unknown>;
                     const total = (Number(data.rentAmount) || 0) + (Number(data.chargesAmount) || 0);
                     return (
-                      <tr key={r.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{String(data.tenantName || "—")}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{String(data.landlordName || ownerName || "—")}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{r.title}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-foreground currency-value whitespace-nowrap">{formatCurrency(total, userCountry)}</td>
-                        <td className="px-4 py-3 text-right">
-                          <button onClick={() => handleDownload(r)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <tr key={r.id} className="table-body-row">
+                        <td className="table-cell font-medium">{String(data.tenantName || "—")}</td>
+                        <td className="table-cell-muted">{String(data.landlordName || ownerName || "—")}</td>
+                        <td className="table-cell-muted">{r.title}</td>
+                        <td className="table-cell-amount text-left">{formatCurrency(total, userCountry)}</td>
+                        <td className="table-cell-actions">
+                          <button onClick={() => handleDownload(r)} className="btn-ghost btn-icon">
                             <Download className="h-4 w-4" />
                           </button>
                         </td>

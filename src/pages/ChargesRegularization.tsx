@@ -71,16 +71,16 @@ const ChargesRegularization = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.charges.title")}>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.charges.title")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("page.charges.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="page-header mb-0">
+            <h1>{t("page.charges.title")}</h1>
+            <p>{t("page.charges.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <select value={year} onChange={e => setYear(Number(e.target.value))} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <div className="flex items-center gap-3 shrink-0">
+            <select value={year} onChange={e => setYear(Number(e.target.value))} className="form-select w-auto">
               {[...Array(5)].map((_, i) => { const y = new Date().getFullYear() - i; return <option key={y} value={y}>{y}</option>; })}
             </select>
-            <button onClick={handleExport} className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90">
+            <button onClick={handleExport} className="btn-secondary btn-sm">
               <Download className="h-4 w-4" /> {t("page.charges.export_csv")}
             </button>
           </div>
@@ -130,25 +130,25 @@ const ChargesRegularization = () => {
             <Card>
               <CardHeader><CardTitle className="text-base">{t("page.charges.result_title")}</CardTitle></CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
+                <div className="table-scroll">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.receipts.tenant")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.provisions")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.real_charges")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.balance")}</th>
-                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.charges.result")}</th>
+                      <tr className="table-head-row">
+                        <th className="table-head-cell">{t("page.receipts.tenant")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.provisions")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.real_charges")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.balance")}</th>
+                        <th className="table-head-cell">{t("page.charges.result")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {results.map(r => (
-                        <tr key={r.tenantId} className="border-b border-border/50">
-                          <td className="py-3"><p className="font-medium text-foreground">{r.tenantName}</p><p className="text-xs text-muted-foreground">{r.propertyLabel}</p></td>
-                          <td className="text-right py-3 text-foreground">{fmt(r.provisionsAnnuelles)}</td>
-                          <td className="text-right py-3 text-foreground">{fmt(r.chargesReelles)}</td>
-                          <td className={`text-right py-3 font-semibold ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
-                          <td className="py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${r.solde > 0 ? "bg-success/10 text-success" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>{r.type}</span></td>
+                        <tr key={r.tenantId} className="table-body-row">
+                          <td className="table-cell"><p className="font-medium text-foreground">{r.tenantName}</p><p className="text-xs text-muted-foreground">{r.propertyLabel}</p></td>
+                          <td className="table-cell-amount">{fmt(r.provisionsAnnuelles)}</td>
+                          <td className="table-cell-amount">{fmt(r.chargesReelles)}</td>
+                          <td className={`table-cell-amount ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
+                          <td className="table-cell"><span className={`badge-status ${r.solde > 0 ? "badge-success" : r.solde < 0 ? "badge-danger" : "badge-neutral"}`}>{r.type}</span></td>
                         </tr>
                       ))}
                     </tbody>

@@ -90,6 +90,7 @@
   }
 }
 
+/* ── Reset ── */
 @layer base {
   * {
     @apply border-border;
@@ -99,6 +100,45 @@
   }
 }
 
+/* ── Typography ── */
+@layer base {
+  h1 {
+    @apply text-xl sm:text-2xl font-bold leading-tight tracking-tight;
+  }
+  h2 {
+    @apply text-lg sm:text-xl font-semibold leading-tight;
+  }
+  h3 {
+    @apply text-base font-semibold leading-snug;
+  }
+  p {
+    @apply leading-relaxed;
+  }
+
+  /* Prevent text overflow (exclude table cells) */
+  h1, h2, h3, h4, h5, h6, p, li {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
+/* ── Form elements ── */
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    @apply text-sm h-10;
+  }
+
+  table {
+    @apply w-full;
+  }
+  th, td {
+    @apply text-sm align-middle;
+  }
+}
+
+/* ── Gradient & shadow utilities ── */
 @layer utilities {
   .text-gradient-gold {
     background: var(--gradient-gold);
@@ -126,90 +166,62 @@
   }
 }
 
-/* ── Global UI consistency ── */
-@layer base {
-  /* Consistent font sizing + mobile tap targets for form elements */
-  input:not([type="checkbox"]):not([type="radio"]),
-  select,
-  textarea {
-    @apply text-sm min-h-11;
-  }
-
-  /* Typography scale */
-  h1 {
-    @apply text-2xl sm:text-3xl font-bold leading-tight tracking-tight;
-  }
-  h2 {
-    @apply text-xl sm:text-2xl font-semibold leading-tight;
-  }
-  h3 {
-    @apply text-lg font-semibold leading-snug;
-  }
-  p {
-    @apply leading-relaxed;
-  }
-
-  /* Prevent text overflow globally (exclude table cells to preserve nowrap) */
-  h1, h2, h3, h4, h5, h6, p, li {
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
-
-  /* Consistent table styling */
-  table {
-    @apply w-full;
-  }
-  th, td {
-    @apply text-sm align-middle;
-  }
-}
+/* ══════════════════════════════════════════════════
+   UNIFIED DESIGN SYSTEM — Components
+   ══════════════════════════════════════════════════ */
 
 @layer components {
-  /* Standardize dashboard page headers */
+
+  /* ── Page header ── */
   .page-header {
     @apply mb-6;
   }
   .page-header h1 {
-    @apply text-xl sm:text-2xl font-bold text-foreground truncate;
+    @apply text-xl sm:text-2xl font-bold text-foreground;
   }
   .page-header p {
     @apply text-sm text-muted-foreground mt-1;
   }
 
-  /* Standardize dashboard cards — equal height via flex */
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
+           h-10 px-4 rounded-xl text-sm font-semibold
+           transition-all duration-150 ease-in-out
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90;
+  }
+  .btn-secondary {
+    @apply btn border border-border bg-background text-foreground hover:bg-muted;
+  }
+  .btn-destructive {
+    @apply btn bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-foreground hover:bg-muted;
+  }
+  .btn-success {
+    @apply btn bg-success text-success-foreground hover:bg-success/90;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-xs rounded-lg;
+  }
+  .btn-icon {
+    @apply h-9 w-9 p-0 rounded-lg;
+  }
+
+  /* ── Cards ── */
+  .ui-card {
+    @apply rounded-xl border border-border bg-card p-5 shadow-card transition-shadow hover:shadow-card-hover;
+  }
   .stat-card {
     @apply rounded-xl border border-border bg-card p-4 sm:p-5 shadow-card flex flex-col h-full;
   }
 
-  /* Consistent form layout */
-  .form-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
-  }
-
-  /* Prevent card overflow on mobile */
-  .overflow-safe {
-    @apply overflow-x-auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Uniform card component */
-  .ui-card {
-    @apply rounded-xl border border-border bg-card p-5 shadow-card transition-shadow hover:shadow-card-hover;
-  }
-
-  /* Uniform section spacing */
-  .section-gap {
-    @apply space-y-6;
-  }
-
-  /* ── Currency / price nowrap ── */
-  .amount,
-  .price,
-  .currency-value {
-    @apply whitespace-nowrap;
-  }
-
-  /* ── Card row grid: icon | content | actions ── */
+  /* ── Card row: icon | content | actions ── */
   .card-row {
     display: grid;
     grid-template-columns: 2.5rem 1fr auto;
@@ -217,11 +229,98 @@
     gap: 1rem;
   }
 
-  /* ── Uniform status badge baseline ── */
+  /* ── Badges ── */
   .badge-row {
     @apply flex items-center gap-1.5 flex-wrap;
   }
   .badge-row > * {
-    @apply inline-flex items-center justify-center whitespace-nowrap h-5 text-[10px] px-2 rounded-full font-medium leading-none;
+    @apply inline-flex items-center justify-center whitespace-nowrap
+           h-6 text-xs px-2.5 rounded-full font-medium leading-none;
+  }
+
+  /* ── Status badges ── */
+  .badge-status {
+    @apply inline-flex items-center justify-center gap-1 whitespace-nowrap
+           h-6 text-xs px-2.5 rounded-full font-medium leading-none;
+  }
+  .badge-success {
+    @apply badge-status bg-success/10 text-success;
+  }
+  .badge-warning {
+    @apply badge-status bg-warning/10 text-warning;
+  }
+  .badge-danger {
+    @apply badge-status bg-destructive/10 text-destructive;
+  }
+  .badge-info {
+    @apply badge-status bg-info/10 text-info;
+  }
+  .badge-neutral {
+    @apply badge-status bg-muted text-muted-foreground;
+  }
+
+  /* ── Currency / financial values ── */
+  .amount,
+  .price,
+  .currency-value {
+    @apply whitespace-nowrap font-semibold tabular-nums;
+  }
+
+  /* ── Form layout ── */
+  .form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-foreground mb-1.5;
+  }
+  .form-input {
+    @apply w-full bg-background border border-border rounded-xl px-3 h-10 text-sm
+           text-foreground placeholder:text-muted-foreground
+           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1
+           transition-colors;
+  }
+  .form-select {
+    @apply form-input appearance-none cursor-pointer;
+  }
+
+  /* ── Tables ── */
+  .table-container {
+    @apply bg-card rounded-xl border border-border/50 overflow-hidden;
+  }
+  .table-scroll {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-head-row {
+    @apply border-b border-border bg-muted/30;
+  }
+  .table-head-cell {
+    @apply px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap;
+  }
+  .table-body-row {
+    @apply border-b border-border/30 hover:bg-muted/20 transition-colors;
+  }
+  .table-cell {
+    @apply px-4 py-3 text-sm text-foreground;
+  }
+  .table-cell-muted {
+    @apply px-4 py-3 text-sm text-muted-foreground;
+  }
+  .table-cell-amount {
+    @apply px-4 py-3 text-sm text-right font-semibold text-foreground whitespace-nowrap tabular-nums;
+  }
+  .table-cell-actions {
+    @apply px-4 py-3 text-right whitespace-nowrap;
+  }
+
+  /* ── Overflow safe scrolling ── */
+  .overflow-safe {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Uniform section spacing ── */
+  .section-gap {
+    @apply space-y-6;
   }
 }

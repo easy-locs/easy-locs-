@@ -486,16 +486,16 @@ const SeasonalRentals = () => {
     <DashboardLayout>
       <FeatureGate feature="ota_sync" featureLabel={t("page.seasonal.feature_label")}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.seasonal.title_page")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.seasonal.subtitle_page")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.seasonal.title_page")}</h1>
+            <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors">
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
               <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
             </button>
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
@@ -545,7 +545,7 @@ const SeasonalRentals = () => {
                     <Download className="h-3.5 w-3.5" /> {t("page.seasonal.download_ics")}
                   </button>
                   <button onClick={handleCopyIcalContent} className="flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted">
-                    {copiedExport ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                     {copiedExport ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                     {copiedExport ? t("page.seasonal.copied") : t("page.seasonal.copy")}
                   </button>
                 </div>
@@ -633,7 +633,7 @@ const SeasonalRentals = () => {
                     setFocusedRequest({ ...focusedRequest, status: "approved" });
                     await load();
                   }}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+                  className="btn-success btn-sm"
                 >
                   <Check className="h-4 w-4" /> {t("page.seasonal.approve_btn")}
                 </button>
@@ -643,7 +643,7 @@ const SeasonalRentals = () => {
                     toast({ title: t("page.seasonal.request_rejected") });
                     setFocusedRequest({ ...focusedRequest, status: "rejected" });
                   }}
-                  className="flex items-center gap-2 border border-destructive text-destructive px-4 py-2 rounded-lg text-sm font-medium hover:bg-destructive/10"
+                  className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                 >
                   <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
                 </button>
@@ -682,13 +682,13 @@ const SeasonalRentals = () => {
                         <span className="text-foreground">{req.check_out}</span>
                       </div>
                       <div>
-                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${
-                          req.status === "paid" ? "bg-success/10 text-success" :
-                          req.status === "approved" ? "bg-info/10 text-info" :
-                          req.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                          req.status === "payment_pending" ? "bg-warning/10 text-warning" :
-                          req.status === "pending" ? "bg-warning/10 text-warning" :
-                          "bg-muted text-muted-foreground"
+                        <span className={`badge-status ${
+                          req.status === "paid" ? "badge-success" :
+                          req.status === "approved" ? "badge-info" :
+                          req.status === "rejected" ? "badge-danger" :
+                          req.status === "payment_pending" ? "badge-warning" :
+                          req.status === "pending" ? "badge-warning" :
+                          "badge-neutral"
                         }`}>
                           {req.status === "paid" ? "✅ " + (t("page.seasonal.status_paid") !== "page.seasonal.status_paid" ? t("page.seasonal.status_paid") : "Payé") :
                            req.status === "approved" ? "📧 " + (t("page.seasonal.status_approved") !== "page.seasonal.status_approved" ? t("page.seasonal.status_approved") : "Approuvé") :
@@ -744,7 +744,7 @@ const SeasonalRentals = () => {
                             setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
                             await load();
                           }}
-                          className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700"
+                          className="btn-success btn-sm"
                         >
                           <Check className="h-3.5 w-3.5" /> {t("page.seasonal.approve_btn")}
                         </button>
@@ -754,7 +754,7 @@ const SeasonalRentals = () => {
                             toast({ title: t("page.seasonal.request_rejected") });
                             setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
                           }}
-                          className="flex items-center gap-1 border border-destructive text-destructive px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-destructive/10"
+                          className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                         >
                           <X className="h-3.5 w-3.5" /> {t("page.seasonal.reject_btn")}
                         </button>
