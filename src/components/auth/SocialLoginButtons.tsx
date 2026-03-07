@@ -14,7 +14,7 @@ const SocialLoginButtons = () => {
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/login`,
+      redirect_uri: buildAppUrl("/login"),
     });
     if (result?.error) {
       toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });
