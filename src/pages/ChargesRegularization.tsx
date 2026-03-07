@@ -101,8 +101,6 @@ const ChargesRegularization = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            <Card>
-              <CardHeader>
              {/* Group tenants by country then property */}
              {(() => {
                // Build structure: country → property → tenants
