@@ -115,7 +115,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     load();
   };
 
-  const getPublicUrl = () => `${window.location.origin}/listing/${listing?.slug}`;
+  const getPublicUrl = () => buildAppUrl(`/listing/${listing?.slug}`);
 
   const copyLink = () => {
     navigator.clipboard.writeText(getPublicUrl());

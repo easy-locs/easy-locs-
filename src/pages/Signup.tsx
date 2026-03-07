@@ -29,7 +29,7 @@ const Signup = () => {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: buildAppUrl("/"),
         data: { name },
       },
     });

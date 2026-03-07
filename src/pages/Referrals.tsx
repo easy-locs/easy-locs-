@@ -31,7 +31,7 @@ const Referrals = () => {
       });
   }, [user]);
 
-  const referralLink = `${window.location.origin}/signup?ref=${referralCode}`;
+  const referralLink = buildAppUrl(`/signup?ref=${referralCode}`);
   const converted = referrals.filter((r) => r.status === "converted").length;
   const pending = referrals.filter((r) => r.status === "pending").length;
 

@@ -25,7 +25,7 @@ const SocialLoginButtons = () => {
   const handleApple = async () => {
     setLoadingApple(true);
     const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: `${window.location.origin}/login`,
+      redirect_uri: buildAppUrl("/login"),
     });
     if (result?.error) {
       toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });

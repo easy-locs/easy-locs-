@@ -93,7 +93,7 @@ const Login = () => {
       email,
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: `${window.location.origin}/login?otp=1`,
+        emailRedirectTo: buildAppUrl("/login?otp=1"),
       },
     });
     setLoading(false);

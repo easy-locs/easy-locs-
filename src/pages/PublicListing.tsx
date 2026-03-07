@@ -121,7 +121,7 @@ const PublicListing = () => {
           amount: Number(searchParams.get("amount")) || 0,
           nights: Number(searchParams.get("nights")) || 1,
           property_label: listing.title || property?.label,
-          origin: window.location.origin,
+          origin: buildAppUrl("/"),
         },
       });
       if (error) throw error;
