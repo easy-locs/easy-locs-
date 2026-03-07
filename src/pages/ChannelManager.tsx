@@ -383,7 +383,7 @@ const ChannelManager = () => {
             <p className="text-muted-foreground text-sm">Calendrier unifié, synchronisation OTA & gestion des réservations</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/seasonal-rentals")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal")}>
               <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/dynamic-pricing")}>
