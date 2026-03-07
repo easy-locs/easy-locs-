@@ -691,6 +691,17 @@ const pageFr: Record<string, string> = {
   "page.buildings.modified": "Immeuble modifié",
   "page.buildings.added": "Immeuble ajouté",
   "page.buildings.deleted": "Supprimé",
+  "page.buildings.country": "Pays",
+  "page.install.title": "Installer Easy-Locs",
+  "page.install.desc": "Accédez à Easy-Locs directement depuis votre écran d'accueil, comme une application native.",
+  "page.install.installed": "Application installée !",
+  "page.install.install_btn": "Installer l'application",
+  "page.install.ios_title": "Sur iPhone / iPad :",
+  "page.install.ios_step": "Appuyez sur le bouton Partager en bas de Safari, puis sélectionnez « Sur l'écran d'accueil ».",
+  "page.install.browser_hint": "Ouvrez cette page dans Chrome ou Edge pour installer l'application.",
+  "page.install.feature_offline": "Accès hors-ligne",
+  "page.install.feature_fast": "Lancement rapide",
+  "page.install.feature_native": "Expérience native",
 
   // Candidates
   "page.candidates.title": "Candidats",
