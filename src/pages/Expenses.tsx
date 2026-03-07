@@ -159,13 +159,13 @@ const Expenses = () => {
               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
                 filtered.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.expenses.no_expense")}</td></tr> :
                   filtered.map(e => (
-                    <tr key={e.id} className="border-b border-border/30 hover:bg-muted/20">
-                      <td className="px-4 py-3 text-foreground">{e.expense_date}</td>
-                      <td className="px-4 py-3 text-foreground font-medium">{e.label}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{catName(e.category)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{propName(e.property_id)}</td>
-                      <td className="px-4 py-3 text-right text-foreground font-semibold currency-value whitespace-nowrap">{fmt(e.amount)}</td>
-                      <td className="px-4 py-3"><button onClick={() => remove(e.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button></td>
+                    <tr key={e.id} className="table-body-row">
+                      <td className="table-cell whitespace-nowrap">{e.expense_date}</td>
+                      <td className="table-cell font-medium">{e.label}</td>
+                      <td className="table-cell-muted">{catName(e.category)}</td>
+                      <td className="table-cell-muted">{propName(e.property_id)}</td>
+                      <td className="table-cell-amount">{fmt(e.amount)}</td>
+                      <td className="table-cell-actions"><button onClick={() => remove(e.id)} className="text-destructive hover:text-destructive/80 p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
             </tbody>

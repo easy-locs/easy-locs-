@@ -204,23 +204,23 @@ const PaymentNotices = () => {
                     notices.map(n => {
                       const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
                       return (
-                        <tr key={n.id} className="border-b border-border/30 hover:bg-muted/20">
-                          <td className="px-4 py-3 text-foreground whitespace-nowrap">{n.month}</td>
-                          <td className="px-4 py-3 text-foreground font-medium">{tenantName(n.tenant_id)}</td>
-                          <td className="px-4 py-3 text-right text-foreground font-semibold currency-value whitespace-nowrap">{fmt(n.total_amount)}</td>
-                          <td className="px-4 py-3">
+                        <tr key={n.id} className="table-body-row">
+                          <td className="table-cell whitespace-nowrap">{n.month}</td>
+                          <td className="table-cell font-medium">{tenantName(n.tenant_id)}</td>
+                          <td className="table-cell-amount">{fmt(n.total_amount)}</td>
+                          <td className="table-cell">
                             {isPaid ? (
-                              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-xs font-medium text-success bg-success/10 whitespace-nowrap">
+                              <span className="badge-success">
                                 <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-xs font-medium text-destructive bg-destructive/10 whitespace-nowrap">
+                              <span className="badge-danger">
                                 <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-right">
-                            <button onClick={() => downloadNoticePDF(n)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-primary hover:bg-muted hover:text-primary/80 transition-colors"><Download className="h-4 w-4" /></button>
+                          <td className="table-cell-actions">
+                            <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon"><Download className="h-4 w-4" /></button>
                           </td>
                         </tr>
                       );
