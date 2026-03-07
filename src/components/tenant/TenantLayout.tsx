@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
-const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
+// Languages are dynamically filtered based on property country + English
+const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "es", label: "Español", flag: "🇪🇸" },
@@ -51,7 +52,12 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
   const { locale, setLocale, t } = useI18n();
-  const { L } = useTenantProperty();
+  const { L, tenantLanguages } = useTenantProperty();
+
+  // Filter languages: only property country language + English
+  const LANGUAGES = ALL_LANGUAGES.filter(
+    l => tenantLanguages.includes(l.code) || l.code === "en"
+  );
 
   const navItems = [
     { icon: LayoutDashboard, label: t("badge.tenant") || L.tenantSpace, path: "/tenant" },
