@@ -24,6 +24,7 @@ import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-gener
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import {
   Home, FileText, ChevronRight, Plus, Users, Send, X,
   Phone, MapPin, Calendar, Download, Receipt, ClipboardList,
