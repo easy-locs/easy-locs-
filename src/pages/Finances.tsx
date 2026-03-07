@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, CheckCircle, Loader2, ExternalLink, AlertTriangle, Link2, BarChart3, Download, Home, ArrowRight } from "lucide-react";
@@ -57,7 +58,9 @@ interface Property {
 const COLORS = ["hsl(var(--accent))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
 
 const Finances = () => {
-  const { user, orgId, userCountry } = useAuth();
+  const countryFilter = useCountryFilter();
+  const { user, orgId, userCountry: authCountry } = useAuth();
+  const activeCountry = countryFilter || authCountry;
   const { toast } = useToast();
   const { t, locale } = useI18n();
   const dateFnsLocale = DATE_LOCALES[locale] || fr;
@@ -72,7 +75,7 @@ const Finances = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [propertyFilter, setPropertyFilter] = useState("");
 
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const fmt = (n: number) => formatCurrency(n, activeCountry);
 
   const EXPENSE_CATEGORIES: Record<string, string> = {
     travaux: t("page.finances.cat_travaux"), assurance: t("page.finances.cat_assurance"), taxe_fonciere: t("page.finances.cat_taxe_fonciere"),
@@ -99,14 +102,31 @@ const Finances = () => {
   const fetchData = async () => {
     if (!orgId) return;
     try {
-      const [{ data: rc }, { data: exp }, { data: props }] = await Promise.all([
-        supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
-        supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
-        supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-      ]);
-      setRentCalls(rc || []);
-      setExpenses(exp || []);
-      setProperties(props || []);
+      let propsQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+      if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
+      const { data: props } = await propsQuery;
+      const filteredProps = props || [];
+      setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
+
+      const propIds = filteredProps.map(p => p.id);
+      if (propIds.length > 0) {
+        const [{ data: rc }, { data: exp }] = await Promise.all([
+          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).in("property_id", propIds).order("month", { ascending: true }),
+          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false }),
+        ]);
+        setRentCalls(rc || []);
+        setExpenses(exp || []);
+      } else if (!countryFilter) {
+        const [{ data: rc }, { data: exp }] = await Promise.all([
+          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
+          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
+        ]);
+        setRentCalls(rc || []);
+        setExpenses(exp || []);
+      } else {
+        setRentCalls([]);
+        setExpenses([]);
+      }
     } catch {
       setRentCalls([]);
       setExpenses([]);

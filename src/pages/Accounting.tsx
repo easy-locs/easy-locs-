@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,12 +23,13 @@ import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 import { getCountryProfile, formatPropertyCurrency } from "@/lib/country-profile";
 
 const Accounting = () => {
+  const countryFilter = useCountryFilter();
   const { user } = useAuth();
   const { t } = useI18n();
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
-  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState(countryFilter || "all");
   const [newEntry, setNewEntry] = useState({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
 
   const { data: org } = useQuery({
@@ -42,9 +44,11 @@ const Accounting = () => {
   });
 
   const { data: properties = [] } = useQuery({
-    queryKey: ["properties", org?.id],
+    queryKey: ["properties", org?.id, countryFilter],
     queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", org!.id);
+      let query = supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", org!.id);
+      if (countryFilter) query = query.eq("country", countryFilter);
+      const { data } = await query;
       return data || [];
     },
     enabled: !!org,

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +57,7 @@ function buildFiscalConfig(country: string, t: (k: string) => string) {
 }
 
 const FiscalReport = () => {
+  const countryFilter = useCountryFilter();
   const { orgId, user } = useAuth();
   const { t } = useI18n();
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
@@ -65,15 +67,25 @@ const FiscalReport = () => {
 
   useEffect(() => {
     if (!orgId) return;
+    let propQuery = supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+
     Promise.all([
       supabase.from("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId),
+      propQuery,
     ]).then(([rc, p]) => {
-      setRentCalls((rc.data || []) as RentCall[]);
-      setProperties((p.data || []) as Property[]);
+      const propsData = (p.data || []) as Property[];
+      setProperties(propsData);
+      // Filter rent calls to only include properties in the filtered set
+      const propIds = new Set(propsData.map(pr => pr.id));
+      let calls = (rc.data || []) as RentCall[];
+      if (countryFilter) {
+        calls = calls.filter(r => r.property_id && propIds.has(r.property_id));
+      }
+      setRentCalls(calls);
       setLoading(false);
     });
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   // Group properties by country
   const grouped = useMemo(() => {

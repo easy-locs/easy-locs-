@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Wrench, Plus, Pencil, Trash2, Calendar, Phone, Euro, CheckCircle2, Clock, AlertTriangle, X } from "lucide-react";
@@ -56,6 +57,7 @@ const emptyForm = {
 };
 
 const Interventions = () => {
+  const countryFilter = useCountryFilter();
   const { t } = useI18n();
   const { user, orgId } = useAuth();
   const { toast } = useToast();
@@ -76,16 +78,33 @@ const Interventions = () => {
   const load = useCallback(async () => {
     if (!orgId) return;
     setLoading(true);
-    const [{ data: intData }, { data: propData }, { data: tenData }] = await Promise.all([
-      supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-      supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-      supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId).order("name"),
-    ]);
+    let propQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    const { data: propData } = await propQuery;
+    const filteredProps = propData || [];
+    setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
+    const propIds = filteredProps.map(p => p.id);
+
+    let intQuery = supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+    if (countryFilter && propIds.length > 0) {
+      intQuery = intQuery.in("property_id", propIds);
+    } else if (countryFilter) {
+      setInterventions([]); setTenants([]); setLoading(false); return;
+    }
+    const { data: intData } = await intQuery;
+
+    let tenQuery = supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId).order("name");
+    const { data: tenData } = await tenQuery;
+    let filteredTenants = tenData || [];
+    if (countryFilter) {
+      const propIdSet = new Set(propIds);
+      filteredTenants = filteredTenants.filter(t => t.property_id && propIdSet.has(t.property_id));
+    }
+
     if (intData) setInterventions(intData as any);
-    if (propData) setProperties(propData);
-    if (tenData) setTenants(tenData);
+    setTenants(filteredTenants);
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { load(); }, [load]);
 

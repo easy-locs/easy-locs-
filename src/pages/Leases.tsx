@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
@@ -44,7 +45,8 @@ const Leases = () => {
   const [selectedLeaseType, setSelectedLeaseType] = useState<string>("empty");
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [generating, setGenerating] = useState(false);
-  const { properties, tenants, loading } = useRentalData();
+  const countryFilter = useCountryFilter();
+  const { properties, tenants, loading } = useRentalData(countryFilter);
   const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
   const { user, orgId, userCountry } = useAuth();
   const { toast } = useToast();

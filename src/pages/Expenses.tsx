@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,10 +24,12 @@ interface Expense {
 interface Property { id: string; label: string; }
 
 const Expenses = () => {
-  const { user, orgId, userCountry } = useAuth();
+  const countryFilter = useCountryFilter();
+  const { user, orgId, userCountry: authCountry } = useAuth();
+  const activeCountry = countryFilter || authCountry;
   const { toast } = useToast();
   const { t } = useI18n();
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const fmt = (n: number) => formatCurrency(n, activeCountry);
 
   const CATEGORIES = [
     { value: "travaux", label: t("page.finances.cat_travaux") },
@@ -50,14 +53,24 @@ const Expenses = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: e }, { data: p }] = await Promise.all([
-      supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false }),
-      supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-    ]);
-    if (e) setExpenses(e as Expense[]);
-    if (p) setProperties(p);
+    let propQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    const [{ data: p }] = await Promise.all([propQuery]);
+    const filteredProps = p || [];
+    setProperties(filteredProps.map(pr => ({ id: pr.id, label: pr.label })));
+    
+    const propIds = filteredProps.map(pr => pr.id);
+    if (countryFilter && propIds.length > 0) {
+      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false });
+      if (e) setExpenses(e as Expense[]);
+    } else if (!countryFilter) {
+      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
+      if (e) setExpenses(e as Expense[]);
+    } else {
+      setExpenses([]);
+    }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { load(); }, [load]);
 

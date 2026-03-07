@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
@@ -35,6 +36,7 @@ interface DocRow {
 }
 
 const Documents = () => {
+  const countryFilter = useCountryFilter();
   const [tab, setTab] = useState<"create" | "history" | "europe">("create");
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [docs, setDocs] = useState<DocRow[]>([]);
@@ -43,9 +45,9 @@ const Documents = () => {
   const { t } = useI18n();
 
   // Detect user country from profile + property countries
-  const [userCountry, setUserCountry] = useState<string>("FR");
+  const [userCountry, setUserCountry] = useState<string>(countryFilter || "FR");
   const [propertyCountries, setPropertyCountries] = useState<string[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>(countryFilter || "");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -84,11 +86,13 @@ const Documents = () => {
 
   const fetchDocs = async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
-      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at")
+      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query;
     setDocs((data as DocRow[]) ?? []);
     setLoading(false);
   };

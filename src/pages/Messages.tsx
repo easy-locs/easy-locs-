@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { MessageCircle, Send, ArrowLeft, User, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +52,7 @@ const normalizeEmail = (email: string | null | undefined) => (email || "").trim(
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Messages = () => {
+  const countryFilter = useCountryFilter();
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -84,14 +86,19 @@ const Messages = () => {
           propertyMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
         }
       }
-      setTenants(data.map(t => ({
+      let mapped = data.map(t => ({
         ...t,
         property_label: t.property_id ? propertyMap[t.property_id]?.label : undefined,
         property_country: t.property_id ? propertyMap[t.property_id]?.country : undefined,
-      })));
+      }));
+      // Filter tenants by country if country filter active
+      if (countryFilter) {
+        mapped = mapped.filter(t => t.property_country === countryFilter);
+      }
+      setTenants(mapped);
     }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   const loadUnreadCounts = useCallback(async () => {
     if (!orgId || !user) return;

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams } from "react-router-dom";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useI18n } from "@/lib/i18n";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
@@ -108,13 +109,14 @@ const RentalManagement = () => {
     diagnostics: t("page.rental.expense_diag"), honoraires: t("page.rental.expense_fees"),
     other: t("page.rental.expense_other"),
   }), [t]);
+  const countryFilter = useCountryFilter();
   const {
     properties, tenants, rentCalls, loading,
     saveProperty, deleteProperty,
     saveTenant, deleteTenant, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
     assignTenantToProperty,
-  } = useRentalData();
+  } = useRentalData(countryFilter);
 
   const { requiresUpgrade } = useSubscriptionGating();
   const [searchParams] = useSearchParams();

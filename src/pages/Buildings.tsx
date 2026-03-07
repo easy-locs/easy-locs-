@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +34,8 @@ const defaultForm = { name: "", address: "", postal_code: "", city: "", building
 const Buildings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
-  const { properties } = useRentalData();
+  const countryFilter = useCountryFilter();
+  const { properties } = useRentalData(countryFilter);
   const { t } = useI18n();
   const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
   const [loading, setLoading] = useState(true);

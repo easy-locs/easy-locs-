@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ interface Property { id: string; label: string; address: string; city: string; }
 interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; }
 
 const DunningLetters = () => {
+  const countryFilter = useCountryFilter();
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
@@ -31,18 +33,44 @@ const DunningLetters = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: d }, { data: t }, { data: p }, { data: r }] = await Promise.all([
-      supabase.from("dunning_letters").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
-      supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, address, city").eq("org_id", orgId),
-      supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false),
-    ]);
-    if (d) setLetters(d as DunningLetter[]);
-    if (t) setTenants(t as Tenant[]);
-    if (p) setProperties(p as Property[]);
-    if (r) setUnpaid(r as RentCall[]);
+    // Load properties first for country filtering
+    let propQuery = supabase.from("properties").select("id, label, address, city, country").eq("org_id", orgId);
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    const { data: p } = await propQuery;
+    const filteredProps = (p || []) as (Property & { country: string })[];
+    setProperties(filteredProps);
+    const propIds = filteredProps.map(pr => pr.id);
+
+    // Filter tenants by country properties
+    const { data: t } = await supabase.from("tenants").select("id, name, property_id").eq("org_id", orgId);
+    let filteredTenants = (t || []) as Tenant[];
+    if (countryFilter) {
+      const propIdSet = new Set(propIds);
+      filteredTenants = filteredTenants.filter(ten => ten.property_id && propIdSet.has(ten.property_id));
+    }
+    setTenants(filteredTenants);
+    const tenantIds = filteredTenants.map(ten => ten.id);
+
+    // Dunning letters filtered by tenants in this country
+    if (tenantIds.length > 0) {
+      const [{ data: d }, { data: r }] = await Promise.all([
+        supabase.from("dunning_letters").select("*").eq("org_id", orgId).in("tenant_id", tenantIds).order("created_at", { ascending: false }),
+        supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false).in("tenant_id", tenantIds),
+      ]);
+      if (d) setLetters(d as DunningLetter[]);
+      if (r) setUnpaid(r as RentCall[]);
+    } else if (!countryFilter) {
+      const [{ data: d }, { data: r }] = await Promise.all([
+        supabase.from("dunning_letters").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
+        supabase.from("rent_calls").select("id, tenant_id, month, total_amount, paid").eq("org_id", orgId).eq("paid", false),
+      ]);
+      if (d) setLetters(d as DunningLetter[]);
+      if (r) setUnpaid(r as RentCall[]);
+    } else {
+      setLetters([]); setUnpaid([]);
+    }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { load(); }, [load]);
 
