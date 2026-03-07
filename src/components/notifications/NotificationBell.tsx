@@ -89,7 +89,7 @@ const NotificationBell = () => {
   const handleAction = (n: any) => {
     markRead(n);
     setOpen(false);
-    const target = n.link || (n.type === "message" ? (activeRole === "tenant" ? "/tenant/messages" : "/dashboard/messages") : null);
+    const target = n.link || (n.type === "message" ? (activeRole === "tenant" ? "/tenant/messages" : "/dashboard/communication") : null);
     if (!target) return;
 
     // Auto-switch role if notification targets the other portal
