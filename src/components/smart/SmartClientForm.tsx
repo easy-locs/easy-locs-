@@ -180,7 +180,7 @@ export default function SmartClientForm({
             <Input
               value={form.idNumber}
               onChange={(e) => updateField("idNumber", e.target.value)}
-              placeholder={cc.labels?.taxIdLabel || "ID Number"}
+              placeholder="ID Number"
             />
           </div>
         </div>
