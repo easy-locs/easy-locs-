@@ -134,7 +134,68 @@ export function useRentalData(countryFilter?: string | null) {
       paid: r.paid || false, paid_date: r.paid_date, payment_method: r.payment_method || null,
       receipt_validated: r.receipt_validated || false, receipt_pdf_url: r.receipt_pdf_url,
     })));
-  }, [orgId]);
+  }, [orgId, countryFilter]);
+
+  const loadTenants = useCallback(async () => {
+    if (!orgId) return;
+    const { data } = await supabase
+      .from("tenants")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("name");
+    if (data) {
+      let filtered = data;
+      // If country filter, we need to filter tenants by their property's country
+      if (countryFilter) {
+        const { data: countryProps } = await supabase
+          .from("properties")
+          .select("id")
+          .eq("org_id", orgId)
+          .eq("country", countryFilter);
+        const propIds = new Set((countryProps || []).map(p => p.id));
+        filtered = data.filter(t => t.property_id && propIds.has(t.property_id));
+      }
+      setTenants(filtered.map(t => ({
+        id: t.id, name: t.name, email: t.email || "", phone: t.phone || "",
+        property_id: t.property_id, lease_start: t.lease_start, lease_end: t.lease_end,
+        rent_amount: Number(t.rent_amount) || 0, charges_amount: Number(t.charges_amount) || 0,
+        deposit_amount: Number(t.deposit_amount) || 0, lease_type: t.lease_type || "empty",
+        notes: t.notes || "", birth_date: t.birth_date, birth_place: t.birth_place,
+        nationality: t.nationality, profession: t.profession,
+        guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
+        current_address: t.current_address,
+        tenant_user_id: t.tenant_user_id,
+        caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
+      })));
+    }
+  }, [orgId, countryFilter]);
+
+  const loadRentCalls = useCallback(async () => {
+    if (!orgId) return;
+    let rentCallData: any[] = [];
+    const { data } = await supabase
+      .from("rent_calls")
+      .select("*")
+      .eq("org_id", orgId)
+      .order("month", { ascending: false });
+    rentCallData = data || [];
+    if (countryFilter && rentCallData.length > 0) {
+      const { data: countryProps } = await supabase
+        .from("properties")
+        .select("id")
+        .eq("org_id", orgId)
+        .eq("country", countryFilter);
+      const propIds = new Set((countryProps || []).map(p => p.id));
+      rentCallData = rentCallData.filter(r => r.property_id && propIds.has(r.property_id));
+    }
+    setRentCalls(rentCallData.map(r => ({
+      id: r.id, tenant_id: r.tenant_id, property_id: r.property_id,
+      month: r.month, rent_amount: Number(r.rent_amount) || 0,
+      charges_amount: Number(r.charges_amount) || 0, total_amount: Number(r.total_amount) || 0,
+      paid: r.paid || false, paid_date: r.paid_date, payment_method: r.payment_method || null,
+      receipt_validated: r.receipt_validated || false, receipt_pdf_url: r.receipt_pdf_url,
+    })));
+  }, [orgId, countryFilter]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
