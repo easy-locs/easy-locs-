@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { MessageCircle, Send, ArrowLeft, User, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

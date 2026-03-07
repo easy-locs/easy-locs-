@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams } from "react-router-dom";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useI18n } from "@/lib/i18n";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
