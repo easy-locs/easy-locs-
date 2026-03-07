@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   Home, MessageSquare, FileSignature, CreditCard,
