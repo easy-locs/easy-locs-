@@ -24,21 +24,22 @@ const Login = () => {
   const hasRedirected = useRef(false);
 
   const getPostLoginRoute = async (userId: string) => {
-    const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
-      supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
-      supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
-    ]);
+    try {
+      const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
+        supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+        supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+      ]);
 
-    const hasTenant = !!tenantLink;
-    const hasOrg = !!orgLink;
+      const hasTenant = !!tenantLink;
+      const hasOrg = !!orgLink;
 
-    if (hasTenant && hasOrg) {
-      // Dual-role: default to landlord dashboard, user can switch via sidebar
+      if (hasTenant && hasOrg) return "/dashboard";
+      if (hasTenant && !hasOrg) return "/tenant";
+      return "/dashboard";
+    } catch (err) {
+      console.warn("[Login] getPostLoginRoute failed:", err);
       return "/dashboard";
     }
-
-    if (hasTenant && !hasOrg) return "/tenant";
-    return "/dashboard";
   };
 
   const redirectAfterLogin = async () => {
