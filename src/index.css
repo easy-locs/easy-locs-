@@ -128,11 +128,25 @@
 
 /* ── Global UI consistency ── */
 @layer base {
-  /* Consistent font sizing for form elements */
+  /* Consistent font sizing + mobile tap targets for form elements */
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
-    @apply text-sm;
+    @apply text-sm min-h-11;
+  }
+
+  /* Typography scale */
+  h1 {
+    @apply text-2xl sm:text-3xl font-bold leading-tight tracking-tight;
+  }
+  h2 {
+    @apply text-xl sm:text-2xl font-semibold leading-tight;
+  }
+  h3 {
+    @apply text-lg font-semibold leading-snug;
+  }
+  p {
+    @apply leading-relaxed;
   }
 
   /* Prevent text overflow globally */
@@ -146,7 +160,7 @@
     @apply w-full;
   }
   th, td {
-    @apply text-sm;
+    @apply text-sm align-middle;
   }
 }
 

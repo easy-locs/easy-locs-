@@ -145,7 +145,7 @@ const Receipts = () => {
                         <td className="px-4 py-3 text-sm font-medium text-foreground">{String(data.tenantName || "—")}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{String(data.landlordName || ownerName || "—")}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">{r.title}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{formatCurrency(total, userCountry)}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground currency-value whitespace-nowrap">{formatCurrency(total, userCountry)}</td>
                         <td className="px-4 py-3 text-right">
                           <button onClick={() => handleDownload(r)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
                             <Download className="h-4 w-4" />

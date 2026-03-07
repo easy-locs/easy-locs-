@@ -216,53 +216,61 @@ const TenantPay = () => {
             {unpaidCalls.map((call) => (
               <div key={call.id} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
                 {/* Rent call header */}
-                <div className="p-5 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                    <CreditCard className="h-6 w-6 text-destructive" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground">{call.month}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.tenant_pay.rent_line")} {fmt(call.rent_amount)} + {t("page.tenant_pay.charges_line")} {fmt(call.charges_amount)}
-                    </p>
-                    <p className="text-lg font-bold text-foreground mt-1">{fmt(call.total_amount)}</p>
-                    {call.payment_status && call.payment_status !== "unpaid" && (
-                      <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium mt-1 ${
-                        call.payment_status === "processing" ? "bg-warning/10 text-warning" :
-                        call.payment_status === "pending" ? "bg-info/10 text-info" :
-                        call.payment_status === "failed" ? "bg-destructive/10 text-destructive" :
-                        "bg-accent/10 text-accent"
-                      }`}>
-                        {call.payment_status === "processing" ? (t("status.processing") || "En cours") :
-                         call.payment_status === "pending" ? (t("status.pending") || "En attente") :
-                         call.payment_status === "failed" ? (t("status.failed") || "Échoué") :
-                         call.payment_status}
+                <div className="p-4 sm:p-5">
+                  <div className="card-row">
+                    <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                      <CreditCard className="h-5 w-5 text-destructive" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground whitespace-nowrap">{call.month}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5 flex flex-wrap items-center gap-2">
+                        <span>{t("page.tenant_pay.rent_line")}</span>
+                        <span className="currency-value whitespace-nowrap">{fmt(call.rent_amount)}</span>
+                        <span>+</span>
+                        <span>{t("page.tenant_pay.charges_line")}</span>
+                        <span className="currency-value whitespace-nowrap">{fmt(call.charges_amount)}</span>
+                      </p>
+                      <p className="text-lg font-bold text-foreground mt-1 currency-value whitespace-nowrap">{fmt(call.total_amount)}</p>
+                      {call.payment_status && call.payment_status !== "unpaid" && (
+                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium mt-1 ${
+                          call.payment_status === "processing" ? "bg-warning/10 text-warning" :
+                          call.payment_status === "pending" ? "bg-info/10 text-info" :
+                          call.payment_status === "failed" ? "bg-destructive/10 text-destructive" :
+                          "bg-accent/10 text-accent"
+                        }`}>
+                          {call.payment_status === "processing" ? (t("status.processing") || "En cours") :
+                           call.payment_status === "pending" ? (t("status.pending") || "En attente") :
+                           call.payment_status === "failed" ? (t("status.failed") || "Échoué") :
+                           call.payment_status}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => handlePay(call.id)}
+                      disabled={payingId === call.id}
+                      className="inline-flex items-center gap-2 h-10 bg-gradient-gold text-accent-foreground font-semibold px-4 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                    >
+                      {payingId === call.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : method === "sepa" ? (
+                        <Banknote className="h-4 w-4" />
+                      ) : method === "bank_transfer" ? (
+                        <Building className="h-4 w-4" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4" />
+                      )}
+                      <span className="hidden sm:inline">
+                        {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
+                         method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
+                         (t("page.tenant_pay.pay_btn") || "Payer")}
                       </span>
-                    )}
+                      <span className="sm:hidden">
+                        {t("page.tenant_pay.pay_btn") || "Payer"}
+                      </span>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handlePay(call.id)}
-                    disabled={payingId === call.id}
-                    className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
-                  >
-                    {payingId === call.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : method === "sepa" ? (
-                      <Banknote className="h-4 w-4" />
-                    ) : method === "bank_transfer" ? (
-                      <Building className="h-4 w-4" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4" />
-                    )}
-                    <span className="hidden sm:inline">
-                      {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
-                       method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
-                       (t("page.tenant_pay.pay_btn") || "Payer")}
-                    </span>
-                    <span className="sm:hidden">
-                      {t("page.tenant_pay.pay_btn") || "Payer"}
-                    </span>
-                  </button>
                 </div>
 
                 {/* Expanded SEPA flow */}

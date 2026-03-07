@@ -1577,8 +1577,8 @@ const RentalManagement = () => {
                         <tr key={p.id} className="hover:bg-muted/20 transition-colors">
                           <td className="px-4 py-3 text-sm font-medium text-foreground">{tenant?.name || "—"}</td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">{prop?.label || "—"}</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{p.month}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">{fmt(p.total_amount)}</td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">{p.month}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-foreground currency-value whitespace-nowrap">{fmt(p.total_amount)}</td>
                           <td className="px-4 py-3 text-right relative">
                             {p.paid ? (
                                <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">

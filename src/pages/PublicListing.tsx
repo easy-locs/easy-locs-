@@ -163,7 +163,7 @@ const PublicListing = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md px-4">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.payment_confirmed")}</h1>
           <p className="text-muted-foreground">{t("page.listing.payment_confirmed_desc")}</p>
         </div>
@@ -228,7 +228,7 @@ const PublicListing = () => {
             <div className="flex flex-wrap gap-4 text-sm">
               {listing.price_per_night > 0 && (
                 <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-1.5 rounded-full font-medium">
-                  <Euro className="h-4 w-4" /> {listing.price_per_night}€ {t("page.listing.per_night")}
+                  <Euro className="h-4 w-4" /> <span className="currency-value whitespace-nowrap">{listing.price_per_night} €</span> {t("page.listing.per_night")}
                 </span>
               )}
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
@@ -286,7 +286,7 @@ const PublicListing = () => {
             <div className="sticky top-8 bg-card border border-border rounded-xl p-5 shadow-card space-y-4">
               {submitted ? (
               <div className="text-center py-8">
-                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                  <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("page.listing.request_sent_desc")}

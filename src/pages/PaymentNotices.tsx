@@ -159,7 +159,7 @@ const PaymentNotices = () => {
             <h1 className="text-2xl font-bold text-foreground">{t("page.notices.title")}</h1>
             <p className="text-sm text-muted-foreground">{t("page.notices.subtitle")}</p>
           </div>
-          <button onClick={generateNotices} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+          <button onClick={generateNotices} className="inline-flex items-center gap-2 h-10 bg-gradient-gold text-accent-foreground px-4 rounded-xl text-sm font-semibold shadow-gold hover:opacity-90">
             <Plus className="h-4 w-4" /> {t("page.notices.generate")}
           </button>
         </div>
@@ -189,41 +189,45 @@ const PaymentNotices = () => {
         )}
 
         <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <table className="w-full text-sm">
-             <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.month")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.tenant")}</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.notices.total")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.status")}</th>
-              <th className="px-4 py-3"></th>
-            </tr></thead>
-            <tbody>
-               {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
-                notices.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.notices.no_notice")}</td></tr> :
-                  notices.map(n => {
-                    const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
-                    return (
-                      <tr key={n.id} className="border-b border-border/30 hover:bg-muted/20">
-                        <td className="px-4 py-3 text-foreground">{n.month}</td>
-                        <td className="px-4 py-3 text-foreground font-medium">{tenantName(n.tenant_id)}</td>
-                        <td className="px-4 py-3 text-right text-foreground font-semibold">{fmt(n.total_amount)}</td>
-                        <td className="px-4 py-3">
-                          {isPaid ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
-                              <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                              <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3"><button onClick={() => downloadNoticePDF(n)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
-                      </tr>
-                    );
-                  })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[680px]">
+              <thead><tr className="border-b border-border/50 bg-muted/30">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.month")}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.tenant")}</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.notices.total")}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.notices.status")}</th>
+                <th className="px-4 py-3"></th>
+              </tr></thead>
+              <tbody>
+                {loading ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
+                  notices.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.notices.no_notice")}</td></tr> :
+                    notices.map(n => {
+                      const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                      return (
+                        <tr key={n.id} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="px-4 py-3 text-foreground whitespace-nowrap">{n.month}</td>
+                          <td className="px-4 py-3 text-foreground font-medium">{tenantName(n.tenant_id)}</td>
+                          <td className="px-4 py-3 text-right text-foreground font-semibold currency-value whitespace-nowrap">{fmt(n.total_amount)}</td>
+                          <td className="px-4 py-3">
+                            {isPaid ? (
+                              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-xs font-medium text-success bg-success/10 whitespace-nowrap">
+                                <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-xs font-medium text-destructive bg-destructive/10 whitespace-nowrap">
+                                <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button onClick={() => downloadNoticePDF(n)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-primary hover:bg-muted hover:text-primary/80 transition-colors"><Download className="h-4 w-4" /></button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       </FeatureGate>

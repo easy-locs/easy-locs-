@@ -120,7 +120,7 @@ const Expenses = () => {
         {/* Summary */}
         <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
           <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
-          <p className="text-2xl font-bold text-foreground">{fmt(total)}</p>
+          <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap">{fmt(total)}</p>
           <p className="text-xs text-muted-foreground">{filtered.length} {t("page.finances.expense_count")}</p>
         </div>
 
@@ -164,7 +164,7 @@ const Expenses = () => {
                       <td className="px-4 py-3 text-foreground font-medium">{e.label}</td>
                       <td className="px-4 py-3 text-muted-foreground">{catName(e.category)}</td>
                       <td className="px-4 py-3 text-muted-foreground">{propName(e.property_id)}</td>
-                      <td className="px-4 py-3 text-right text-foreground font-semibold">{fmt(e.amount)}</td>
+                      <td className="px-4 py-3 text-right text-foreground font-semibold currency-value whitespace-nowrap">{fmt(e.amount)}</td>
                       <td className="px-4 py-3"><button onClick={() => remove(e.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
