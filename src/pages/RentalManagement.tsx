@@ -1629,7 +1629,7 @@ const RentalManagement = () => {
                           </td>
                           <td className="px-4 py-3 text-right">
                             {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
-                            {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
+                            {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
                             {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground ml-2"><Download className="h-3.5 w-3.5" /></button>}
                           </td>
                         </tr>

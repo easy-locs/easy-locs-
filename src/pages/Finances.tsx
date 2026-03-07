@@ -324,7 +324,7 @@ const Finances = () => {
             { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },
             { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
             { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconClassName: "text-destructive" },
-            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, iconClassName: "text-accent", valueClassName: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, iconClassName: "text-accent", valueClassName: kpis.netResult >= 0 ? "text-success" : "text-destructive" },
             { icon: CheckCircle, label: t("page.finances.collection_rate"), value: dataLoading ? "..." : `${kpis.occupancyRate}%`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
           ].map(kpi => (
             <StatCard key={kpi.label} {...kpi} />

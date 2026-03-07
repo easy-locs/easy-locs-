@@ -47,8 +47,8 @@ const StatCard = ({
       </div>
       {/* Row 2: Label — single line */}
       <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{label}</span>
-      {/* Row 3: Value — prominent, pushed to bottom */}
-      <div className={cn("text-xl sm:text-2xl font-bold text-foreground mt-auto", valueClassName)}>
+      {/* Row 3: Value — prominent, pushed to bottom, never wrap currency */}
+      <div className={cn("text-xl sm:text-2xl font-bold text-foreground mt-auto whitespace-nowrap", valueClassName)}>
         {value}
       </div>
       {/* Row 4: Secondary info */}
