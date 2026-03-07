@@ -90,11 +90,11 @@ const Referrals = () => {
 
           <div className="flex gap-3 mt-4">
             <button onClick={shareWhatsApp}
-              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+              className="inline-flex items-center justify-center whitespace-nowrap h-10 px-4 rounded-xl text-sm font-semibold bg-success text-success-foreground hover:opacity-90 transition-opacity">
               <MessageCircle className="h-4 w-4" /> WhatsApp
             </button>
             <button onClick={shareLinkedIn}
-              className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors">
+              className="inline-flex items-center justify-center whitespace-nowrap h-10 px-4 rounded-xl text-sm font-semibold bg-info text-info-foreground hover:opacity-90 transition-opacity">
               <Share2 className="h-4 w-4" /> LinkedIn
             </button>
           </div>

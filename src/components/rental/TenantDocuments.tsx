@@ -104,7 +104,18 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
     try {
       const signedUrl = await getSignedDocumentUrl(doc.file_url);
       if (!signedUrl) throw new Error("Document unavailable");
-      window.open(signedUrl, "_blank", "noopener,noreferrer");
+
+      const response = await fetch(signedUrl);
+      if (!response.ok) throw new Error("Download failed");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = doc.filename || `${doc.label}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {

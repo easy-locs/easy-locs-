@@ -83,11 +83,24 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
     setOpeningId(doc.id);
     try {
       const { data } = await supabase.storage.from("rental-docs").createSignedUrl(doc.pdf_url, 3600);
-      if (data?.signedUrl) {
-        window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-      } else {
+      if (!data?.signedUrl) {
         toast({ title: "Erreur", description: "Impossible d'ouvrir le document", variant: "destructive" });
+        return;
       }
+
+      const response = await fetch(data.signedUrl);
+      if (!response.ok) throw new Error("Téléchargement impossible");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${doc.title || "document"}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({ title: "Erreur", description: "Impossible d'ouvrir le document", variant: "destructive" });
     } finally {
       setOpeningId(null);
     }
