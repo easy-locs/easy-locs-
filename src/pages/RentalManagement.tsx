@@ -1570,7 +1570,7 @@ const RentalManagement = () => {
                           <td className="px-4 py-3 text-sm font-medium text-foreground">{fmt(p.total_amount)}</td>
                           <td className="px-4 py-3 text-right relative">
                             {p.paid ? (
-                               <button onClick={() => togglePayment(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-700">
+                               <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
                                  ✓ {L.paid} {p.payment_method === "online" ? `(${L.online})` : p.payment_method === "bank_transfer" ? `(${L.transfer})` : p.payment_method === "cash" ? `(${L.cash})` : ""}
                               </button>
                             ) : (
