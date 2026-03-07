@@ -44,6 +44,11 @@ interface LegalLabels {
   inventoryClause: string; terminationClause: string;
   depositReturnClause: string;
   legalFooter: string;
+  // Extended clauses for comprehensive government-aligned templates
+  clauseObligationsTenant: string; clauseObligationsLandlord: string;
+  clauseMaintenance: string; clauseGoverningLaw: string;
+  leaseClauseObligationsTenant: string; leaseClauseObligationsLandlord: string;
+  leaseClauseMaintenance: string; leaseClauseGoverningLaw: string;
 }
 
 const L_FR: LegalLabels = {
