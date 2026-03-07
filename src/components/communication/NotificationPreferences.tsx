@@ -41,11 +41,11 @@ export default function NotificationPreferences() {
   useEffect(() => {
     if (!user) return;
     supabase
-      .from("notification_preferences" as any)
+      .from("notification_preferences")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         if (data) {
           setPrefs({
             email_messages: data.email_messages ?? true,
