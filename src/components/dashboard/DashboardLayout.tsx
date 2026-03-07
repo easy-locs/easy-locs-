@@ -45,7 +45,46 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Dashboard",
       icon: LayoutDashboard,
       items: [
-        { icon: LayoutDashboard, label: t("nav.dashboard") || "Portefeuille mondial", path: "/dashboard" },
+        { icon: LayoutDashboard, label: t("nav.dashboard") || "Tableau de bord", path: "/dashboard" },
+      ],
+    },
+    {
+      key: "property",
+      title: t("section.property") || "Gestion locative",
+      icon: Home,
+      items: [
+        { icon: Home, label: t("nav.properties") || "Biens", path: "/dashboard/rental" },
+        { icon: Building, label: t("nav.buildings") || "Immeubles", path: "/dashboard/buildings" },
+        { icon: Users, label: t("nav.tenants") || "Locataires", path: "/dashboard/tenants" },
+        { icon: KeyRound, label: t("nav.leases") || "Baux", path: "/dashboard/leases" },
+        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: "/dashboard/rental?tab=inventory" },
+        { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: "/dashboard/furniture" },
+        { icon: FileText, label: t("nav.documents") || "Documents", path: "/dashboard/documents" },
+      ],
+    },
+    {
+      key: "finance",
+      title: "Finance",
+      icon: Wallet,
+      items: [
+        { icon: Wallet, label: t("nav.finances") || "Finances", path: "/dashboard/finances" },
+        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: "/dashboard/expenses" },
+        { icon: Layers, label: t("nav.charges") || "Régul. charges", path: "/dashboard/charges" },
+        { icon: Bell, label: t("nav.notices") || "Avis d'échéance", path: "/dashboard/notices" },
+        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: "/dashboard/dunning" },
+        { icon: FileCheck, label: t("nav.fiscal") || "Bilan fiscal", path: "/dashboard/fiscal" },
+        { icon: BookOpen, label: t("nav.accounting") || "Comptabilité", path: "/dashboard/accounting" },
+      ],
+    },
+    {
+      key: "communication",
+      title: "Communication",
+      icon: MessageCircle,
+      items: [
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/messages" },
+        { icon: Clock, label: t("nav.reminders") || "Rappels", path: "/dashboard/reminders" },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: "/dashboard/tasks" },
+        { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: "/dashboard/candidates" },
       ],
     },
     {
@@ -54,8 +93,30 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Calendar,
       items: [
         { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
-        { icon: Layers, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
-        { icon: MapPin, label: "Activités & Services", path: "/dashboard/local-services" },
+        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
+        { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
+      ],
+    },
+    {
+      key: "services",
+      title: "Services",
+      icon: Store,
+      items: [
+        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: "/dashboard/local-services" },
+        { icon: Store, label: t("nav.marketplace") || "Marketplace", path: "/dashboard/marketplace" },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: "/dashboard/interventions" },
+        { icon: Handshake, label: t("nav.collaboration") || "Collaboration", path: "/dashboard/collaboration" },
+        { icon: Gift, label: t("nav.referrals") || "Parrainage", path: "/dashboard/referrals" },
+      ],
+    },
+    {
+      key: "company",
+      title: t("nav.company") || "Entreprise",
+      icon: Shield,
+      items: [
+        { icon: Contact, label: t("nav.company") || "Entreprise", path: "/dashboard/company" },
+        { icon: Code, label: "API & Webhooks", path: "/dashboard/developers" },
+        { icon: Shield, label: "Admin", path: "/dashboard/admin" },
       ],
     },
   ];
