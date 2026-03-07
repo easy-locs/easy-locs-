@@ -107,11 +107,11 @@ const Expenses = () => {
 
         {/* Filters */}
         <div className="flex gap-3 mb-4">
-          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-auto">
             <option value="">{t("page.expenses.all_properties")}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-auto">
             <option value="">{t("page.expenses.all_categories")}</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
