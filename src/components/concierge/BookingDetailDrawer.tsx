@@ -168,7 +168,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
               <p className="font-medium text-foreground text-sm">{service?.title || "Unknown service"}</p>
               {service?.category && <Badge variant="outline" className="text-[10px]">{service.category}</Badge>}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {booking.service_date && (
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{booking.service_date}</span>
                 )}
