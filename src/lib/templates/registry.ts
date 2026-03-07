@@ -658,7 +658,15 @@ function buildCountryTemplates(country: CountryEntry): DocumentTemplate[] {
         { id: "rent", label: L.clauseRent, required: true, text: L.leaseClauseRent },
         { id: "term", label: L.clauseDuration, required: true, text: L.leaseClauseDuration },
         { id: "deposit", label: L.clauseDeposit, required: true, text: L.leaseClauseDeposit },
-        { id: "termination", label: L.clauseTermination, required: false, text: L.leaseClauseTermination },
+        { id: "obligations-tenant", label: L.clauseObligationsTenant || "Tenant Obligations", required: true,
+          text: L.leaseClauseObligationsTenant || "The tenant shall pay rent on time, maintain the property in good condition, not sublet without consent, allow inspections with notice, report damages promptly, and return the property in its original condition accounting for normal wear and tear." },
+        { id: "obligations-landlord", label: L.clauseObligationsLandlord || "Landlord Obligations", required: true,
+          text: L.leaseClauseObligationsLandlord || "The landlord shall deliver the property in habitable condition, maintain structural integrity and essential systems, carry out major repairs, respect the tenant's quiet enjoyment, provide required certificates, and comply with housing regulations." },
+        { id: "maintenance", label: L.clauseMaintenance || "Maintenance", required: true,
+          text: L.leaseClauseMaintenance || "The tenant is responsible for minor maintenance. The landlord is responsible for structural repairs and essential installations. The tenant shall not make alterations without prior written consent." },
+        { id: "termination", label: L.clauseTermination, required: true, text: L.leaseClauseTermination },
+        { id: "governing-law", label: L.clauseGoverningLaw || "Governing Law", required: true,
+          text: L.leaseClauseGoverningLaw || `This agreement is governed by applicable law. Disputes shall be submitted to the competent courts where the property is located.` },
       ],
     });
   }
