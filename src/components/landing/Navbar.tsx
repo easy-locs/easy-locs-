@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import logoEasylocs from "@/assets/logo-easylocs.png";
 import { useI18n } from "@/lib/i18n";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import AppLogo from "@/components/AppLogo";
 import { Building2, KeyRound } from "lucide-react";
 
 const Navbar = () => {
@@ -9,12 +9,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-navy-deep/90 backdrop-blur-xl border-b border-primary-foreground/5">
       <div className="container flex items-center justify-between h-14 px-4">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src={logoEasylocs} alt="EASY-LOCS" className="h-8 w-auto object-contain" />
-          <span className="text-base font-bold tracking-tight text-primary-foreground whitespace-nowrap">
-            EASY-LOCS<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/40">®</sup>
-          </span>
-        </Link>
+        <AppLogo variant="landing" linkTo="/" />
         <div className="hidden md:flex items-center gap-6 text-sm text-primary-foreground/50">
           <a href="#features" className="hover:text-primary-foreground transition-colors">{t("landing.nav.features")}</a>
           <a href="#pricing" className="hover:text-primary-foreground transition-colors">{t("landing.nav.pricing")}</a>
