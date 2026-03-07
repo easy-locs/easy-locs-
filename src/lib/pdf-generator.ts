@@ -206,7 +206,7 @@ function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, 
 }
 
 function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
-  if (y + needed > 275) { doc.addPage(); return 25; }
+  if (y + needed > FOOTER_SAFE_Y) { doc.addPage(); return HEADER_HEIGHT - 17; }
   return y;
 }
 
