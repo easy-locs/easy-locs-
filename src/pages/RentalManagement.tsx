@@ -41,20 +41,8 @@ type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  FR: "🇫🇷", BE: "🇧🇪", ES: "🇪🇸", IT: "🇮🇹", DE: "🇩🇪", PT: "🇵🇹", NL: "🇳🇱", GB: "🇬🇧",
-  CH: "🇨🇭", AT: "🇦🇹", LU: "🇱🇺", PL: "🇵🇱", SE: "🇸🇪", DK: "🇩🇰", NO: "🇳🇴", FI: "🇫🇮",
-  GR: "🇬🇷", CZ: "🇨🇿", HU: "🇭🇺", RO: "🇷🇴", HR: "🇭🇷", IE: "🇮🇪", BG: "🇧🇬", SK: "🇸🇰",
-  US: "🇺🇸", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽", MA: "🇲🇦", TN: "🇹🇳", ZA: "🇿🇦", TR: "🇹🇷",
-  JP: "🇯🇵", AU: "🇦🇺", SG: "🇸🇬", AE: "🇦🇪", SA: "🇸🇦",
-};
-const COUNTRY_NAMES: Record<string, string> = {
-  FR: "France", BE: "Belgique", ES: "España", IT: "Italia", DE: "Deutschland", PT: "Portugal",
-  NL: "Nederland", GB: "United Kingdom", CH: "Suisse", AT: "Österreich", LU: "Luxembourg",
-  PL: "Polska", SE: "Sverige", DK: "Danmark", NO: "Norge", FI: "Suomi",
-  GR: "Ελλάδα", CZ: "Česko", HU: "Magyarország", RO: "România", HR: "Hrvatska",
-  IE: "Ireland", BG: "България", SK: "Slovensko",
-};
+const getFlag = (code: string) => getCountryEntryOrDefault(code).flag;
+const getCountryName = (code: string) => getCountryEntryOrDefault(code).name;
 
 // CONDITIONS_LABEL now uses i18n - see render usage
 const defaultPropertyForm = {
