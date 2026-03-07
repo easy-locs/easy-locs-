@@ -79,6 +79,7 @@ const HostCatalog = lazy(() => import("./pages/HostCatalog"));
 const ConciergeServices = lazy(() => import("./pages/ConciergeServices"));
 const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
 const GuestPortal = lazy(() => import("./pages/GuestPortal"));
+const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
