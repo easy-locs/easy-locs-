@@ -241,6 +241,9 @@ const Settings = () => {
         {/* Payment Providers */}
         <PaymentProvidersSettings />
 
+        {/* Notification Preferences */}
+        <NotificationPreferences />
+
         {/* MFA / 2FA */}
         <MFASettings />
 
