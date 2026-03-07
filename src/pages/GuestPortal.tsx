@@ -1,20 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import AppLogo from "@/components/AppLogo";
-import { Loader2, CalendarDays, MapPin, Users, Euro, MessageSquare, FileText, Sparkles, Send, CheckCircle2, Clock, CreditCard } from "lucide-react";
+import { Loader2, CalendarDays, MapPin, Users, Euro, MessageSquare, Sparkles, Send, CheckCircle2, Clock, CreditCard, ShoppingBag, Phone, Mail } from "lucide-react";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 const GuestPortal = () => {
   const [params] = useSearchParams();
   const bookingId = params.get("booking");
-  const email = params.get("email");
   const { t, setLocale } = useI18n();
   const { locale, changeLocale, supportedLocales } = usePublicLocale();
   const [booking, setBooking] = useState<any>(null);
   const [property, setProperty] = useState<any>(null);
+  const [org, setOrg] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +24,24 @@ const GuestPortal = () => {
   const [tab, setTab] = useState<"stay" | "services" | "activities" | "messages">("stay");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [orderingServiceId, setOrderingServiceId] = useState<string | null>(null);
+  const [orderingActivityId, setOrderingActivityId] = useState<string | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
 
   useEffect(() => { setLocale(locale); }, [locale, setLocale]);
+
+  const loadMessages = useCallback(async (orgId: string, guestEmail: string) => {
+    // Load guest messages from booking_requests messages or concierge_orders notes
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("org_id", orgId)
+      .ilike("message", `%${guestEmail}%`)
+      .order("created_at", { ascending: true })
+      .limit(50);
+    setMessages(data || []);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -31,60 +49,191 @@ const GuestPortal = () => {
 
       // Try seasonal_bookings first
       const { data: b } = await supabase
-        .from("seasonal_bookings")
+        .from("seasonal_bookings" as any)
         .select("*")
         .eq("id", bookingId)
         .maybeSingle();
 
+      let bookingData = b;
+      let source = "seasonal";
+
       if (!b) {
-        // Try booking_requests
         const { data: br } = await supabase
           .from("booking_requests")
           .select("*")
           .eq("id", bookingId)
           .maybeSingle();
         if (!br) { setNotFound(true); setLoading(false); return; }
-        setBooking({ ...br, source: "request" });
-
-        // Load property
-        const { data: p } = await supabase.from("properties").select("*").eq("id", br.property_id).maybeSingle();
-        setProperty(p);
-
-        // Load services & activities for this org
-        const [{ data: svc }, { data: act }] = await Promise.all([
-          supabase.from("concierge_services").select("*").eq("org_id", br.org_id).eq("active", true).order("sort_order"),
-          supabase.from("activities").select("*").eq("org_id", br.org_id).eq("active", true).order("sort_order"),
-        ]);
-        setServices(svc || []);
-        setActivities(act || []);
-        setLoading(false);
-        return;
+        bookingData = br;
+        source = "request";
       }
 
-      setBooking({ ...b, source: "seasonal" });
+      setBooking({ ...bookingData, source });
 
-      const [{ data: p }, { data: svc }, { data: act }] = await Promise.all([
-        supabase.from("properties").select("*").eq("id", b.property_id).maybeSingle(),
-        supabase.from("concierge_services").select("*").eq("org_id", b.org_id).eq("active", true).order("sort_order"),
-        supabase.from("activities").select("*").eq("org_id", b.org_id).eq("active", true).order("sort_order"),
+      const [{ data: p }, { data: svc }, { data: act }, { data: orgData }] = await Promise.all([
+        supabase.from("properties").select("*").eq("id", bookingData.property_id).maybeSingle(),
+        supabase.from("concierge_services").select("*").eq("org_id", bookingData.org_id).eq("active", true).order("sort_order"),
+        supabase.from("activities").select("*").eq("org_id", bookingData.org_id).eq("active", true).order("sort_order"),
+        supabase.from("orgs").select("name, email, phone, logo_url, brand_name").eq("id", bookingData.org_id).maybeSingle(),
       ]);
       setProperty(p);
       setServices(svc || []);
       setActivities(act || []);
+      setOrg(orgData);
+
+      if (bookingData.guest_email && bookingData.org_id) {
+        await loadMessages(bookingData.org_id, bookingData.guest_email);
+      }
       setLoading(false);
     };
     load();
-  }, [bookingId]);
+  }, [bookingId, loadMessages]);
 
   const nights = booking
     ? Math.max(1, Math.ceil((new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / 86400000))
     : 0;
 
   const statusColor = (s: string) => {
-    if (["confirmed", "paid", "checked_in"].includes(s)) return "bg-success/10 text-success";
-    if (["pending", "awaiting_payment", "payment_pending"].includes(s)) return "bg-warning/10 text-warning";
+    if (["confirmed", "paid", "checked_in"].includes(s)) return "bg-emerald-500/10 text-emerald-600";
+    if (["pending", "awaiting_payment", "payment_pending"].includes(s)) return "bg-amber-500/10 text-amber-600";
     if (["cancelled", "refunded"].includes(s)) return "bg-destructive/10 text-destructive";
     return "bg-muted text-muted-foreground";
+  };
+
+  // Order a concierge service
+  const orderService = async (service: any) => {
+    if (!booking || orderingServiceId) return;
+    setOrderingServiceId(service.id);
+    try {
+      const { error } = await supabase.from("concierge_orders").insert({
+        org_id: booking.org_id,
+        service_id: service.id,
+        property_id: booking.property_id,
+        booking_id: booking.id,
+        guest_name: booking.guest_name,
+        guest_email: booking.guest_email || "",
+        guest_phone: booking.guest_phone || "",
+        quantity: 1,
+        unit_price: service.price,
+        total_price: service.price,
+        currency: service.currency || "EUR",
+        scheduled_at: booking.check_in,
+        status: "pending",
+        payment_status: "unpaid",
+        notes: `Requested via Guest Portal for booking ${booking.id}`,
+      } as any);
+      if (error) throw error;
+
+      // Notify the owner
+      await supabase.from("notifications").insert({
+        user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
+        org_id: booking.org_id,
+        type: "info",
+        title: "🛎️ New service request",
+        message: `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
+        link: "/dashboard/concierge",
+      });
+
+      setOrderSuccess(service.id);
+      setTimeout(() => setOrderSuccess(null), 3000);
+      toast.success(`"${service.title}" requested successfully!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to request service");
+    } finally {
+      setOrderingServiceId(null);
+    }
+  };
+
+  // Book an activity
+  const bookActivity = async (activity: any) => {
+    if (!booking || orderingActivityId) return;
+    setOrderingActivityId(activity.id);
+    try {
+      const { error } = await supabase.from("concierge_orders").insert({
+        org_id: booking.org_id,
+        service_id: activity.id,
+        property_id: booking.property_id,
+        booking_id: booking.id,
+        guest_name: booking.guest_name,
+        guest_email: booking.guest_email || "",
+        guest_phone: booking.guest_phone || "",
+        quantity: 1,
+        unit_price: activity.price,
+        total_price: activity.price,
+        currency: activity.currency || "EUR",
+        status: "pending",
+        payment_status: "unpaid",
+        notes: `Activity booking via Guest Portal: ${activity.title}`,
+      } as any);
+      if (error) throw error;
+
+      await supabase.from("notifications").insert({
+        user_id: (await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single()).data?.owner_user_id || "",
+        org_id: booking.org_id,
+        type: "info",
+        title: "🎯 New activity booking",
+        message: `${booking.guest_name} wants to book "${activity.title}" (${activity.price}${activity.currency || "€"})`,
+        link: "/dashboard/activities",
+      });
+
+      setOrderSuccess(activity.id);
+      setTimeout(() => setOrderSuccess(null), 3000);
+      toast.success(`"${activity.title}" booked successfully!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to book activity");
+    } finally {
+      setOrderingActivityId(null);
+    }
+  };
+
+  // Send guest message
+  const sendGuestMessage = async () => {
+    if (!message.trim() || !booking || sendingMessage) return;
+    setSendingMessage(true);
+    try {
+      // Send via email to the org owner
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: org?.email || "",
+          subject: `💬 Message from ${booking.guest_name}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+            <h2 style="color:#1a1a1a;">💬 Guest Message</h2>
+            <p style="background:#f5f5f5;padding:16px;border-radius:8px;color:#333;font-size:15px;">${message}</p>
+            <p style="color:#888;font-size:13px;margin-top:12px;">From: ${booking.guest_name} (${booking.guest_email})<br/>
+            Booking: ${booking.check_in} → ${booking.check_out}<br/>
+            Property: ${property?.label || "—"}</p>
+            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
+          </div>`,
+        },
+      });
+
+      // Create in-app notification for owner
+      const { data: orgOwner } = await supabase.from("orgs").select("owner_user_id").eq("id", booking.org_id).single();
+      if (orgOwner?.owner_user_id) {
+        await supabase.from("notifications").insert({
+          user_id: orgOwner.owner_user_id,
+          org_id: booking.org_id,
+          type: "info",
+          title: `💬 ${booking.guest_name}`,
+          message: message.slice(0, 200),
+          link: "/dashboard/communication",
+        });
+      }
+
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        created_at: new Date().toISOString(),
+        title: `💬 You`,
+        message: message,
+        type: "guest",
+      }]);
+      setMessage("");
+      toast.success("Message sent!");
+    } catch (err: any) {
+      toast.error("Failed to send message");
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   if (loading) {
@@ -139,36 +288,42 @@ const GuestPortal = () => {
             )}
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="bg-muted/30 rounded-xl p-3 text-center">
-                <CalendarDays className="h-4 w-4 text-accent mx-auto mb-1" />
-                <div className="text-xs text-muted-foreground">Check-in</div>
-                <div className="text-sm font-semibold text-foreground">{booking.check_in}</div>
-              </div>
-              <div className="bg-muted/30 rounded-xl p-3 text-center">
-                <CalendarDays className="h-4 w-4 text-accent mx-auto mb-1" />
-                <div className="text-xs text-muted-foreground">Check-out</div>
-                <div className="text-sm font-semibold text-foreground">{booking.check_out}</div>
-              </div>
-              <div className="bg-muted/30 rounded-xl p-3 text-center">
-                <Clock className="h-4 w-4 text-accent mx-auto mb-1" />
-                <div className="text-xs text-muted-foreground">Nights</div>
-                <div className="text-sm font-semibold text-foreground">{nights}</div>
-              </div>
-              <div className="bg-muted/30 rounded-xl p-3 text-center">
-                <Euro className="h-4 w-4 text-accent mx-auto mb-1" />
-                <div className="text-xs text-muted-foreground">Total</div>
-                <div className="text-sm font-semibold text-foreground">{booking.total_price || 0}€</div>
-              </div>
+              {[
+                { icon: CalendarDays, label: "Check-in", value: booking.check_in },
+                { icon: CalendarDays, label: "Check-out", value: booking.check_out },
+                { icon: Clock, label: "Nights", value: String(nights) },
+                { icon: Euro, label: "Total", value: `${booking.total_price || 0}€` },
+              ].map(item => (
+                <div key={item.label} className="bg-muted/30 rounded-xl p-3 text-center">
+                  <item.icon className="h-4 w-4 text-accent mx-auto mb-1" />
+                  <div className="text-xs text-muted-foreground">{item.label}</div>
+                  <div className="text-sm font-semibold text-foreground">{item.value}</div>
+                </div>
+              ))}
             </div>
+
+            {/* Host contact */}
+            {org && (
+              <div className="flex items-center gap-3 pt-2 border-t border-border/30">
+                {org.logo_url && <img src={org.logo_url} alt="" className="w-8 h-8 rounded-full object-cover" />}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{org.brand_name || org.name}</p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {org.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{org.email}</span>}
+                    {org.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{org.phone}</span>}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
           {[
-            { key: "stay" as const, label: "Stay Details", icon: CalendarDays },
+            { key: "stay" as const, label: "Stay", icon: CalendarDays },
             { key: "services" as const, label: `Services (${services.length})`, icon: Sparkles },
-            { key: "activities" as const, label: `Activities (${activities.length})`, icon: Sparkles },
+            { key: "activities" as const, label: `Activities (${activities.length})`, icon: ShoppingBag },
             { key: "messages" as const, label: "Messages", icon: MessageSquare },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
@@ -181,7 +336,6 @@ const GuestPortal = () => {
         {/* Stay Details */}
         {tab === "stay" && (
           <div className="space-y-4">
-            {/* Guest Info */}
             <div className="bg-card rounded-xl border border-border/50 p-4 space-y-2">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Users className="h-4 w-4 text-accent" /> Guest Information
@@ -192,7 +346,6 @@ const GuestPortal = () => {
               </div>
             </div>
 
-            {/* Property Details */}
             {property && (
               <div className="bg-card rounded-xl border border-border/50 p-4 space-y-2">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -206,7 +359,6 @@ const GuestPortal = () => {
               </div>
             )}
 
-            {/* Check-in Instructions */}
             <div className="bg-accent/5 rounded-xl border border-accent/20 p-4 space-y-2">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-accent" /> Check-in Instructions
@@ -225,7 +377,7 @@ const GuestPortal = () => {
           </div>
         )}
 
-        {/* Services Tab */}
+        {/* Services Tab - FUNCTIONAL */}
         {tab === "services" && (
           <div className="space-y-3">
             {services.length === 0 ? (
@@ -235,36 +387,57 @@ const GuestPortal = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {services.map(s => (
-                  <div key={s.id} className="bg-card rounded-xl border border-border/50 p-4 space-y-2 hover:shadow-md transition-shadow">
+                {services.map((s, i) => (
+                  <motion.div key={s.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className="bg-card rounded-xl border border-border/50 p-4 space-y-2 hover:shadow-md transition-shadow">
+                    {s.photo_url && (
+                      <div className="aspect-[16/9] bg-muted rounded-lg overflow-hidden -mx-1 -mt-1 mb-2">
+                        <img src={s.photo_url} alt={s.title} className="w-full h-full object-cover" loading="lazy" />
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold text-foreground">{s.title}</h4>
                       <span className="text-sm font-bold text-accent">{s.price}€</span>
                     </div>
                     {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
                     {s.duration_minutes && <p className="text-xs text-muted-foreground">⏱ {s.duration_minutes} min</p>}
-                    <button className="w-full bg-accent/10 text-accent text-xs font-medium py-2 rounded-lg hover:bg-accent/20 transition-colors flex items-center justify-center gap-1">
-                      <CreditCard className="h-3 w-3" /> Request Service
-                    </button>
-                  </div>
+                    {s.provider_name && <p className="text-xs text-muted-foreground">By: {s.provider_name}</p>}
+
+                    <AnimatePresence mode="wait">
+                      {orderSuccess === s.id ? (
+                        <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                          className="w-full bg-emerald-500/10 text-emerald-600 text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Requested!
+                        </motion.div>
+                      ) : (
+                        <motion.button key="btn" onClick={() => orderService(s)}
+                          disabled={orderingServiceId === s.id}
+                          className="w-full bg-accent/10 text-accent text-xs font-medium py-2.5 rounded-lg hover:bg-accent/20 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50">
+                          {orderingServiceId === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                          Request Service
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 ))}
               </div>
             )}
           </div>
         )}
 
-        {/* Activities Tab */}
+        {/* Activities Tab - FUNCTIONAL */}
         {tab === "activities" && (
           <div className="space-y-3">
             {activities.length === 0 ? (
               <div className="text-center py-12 bg-card rounded-xl border border-border/50">
-                <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                <ShoppingBag className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground text-sm">No activities available</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {activities.map(a => (
-                  <div key={a.id} className="bg-card rounded-xl border border-border/50 overflow-hidden hover:shadow-md transition-shadow">
+                {activities.map((a, i) => (
+                  <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className="bg-card rounded-xl border border-border/50 overflow-hidden hover:shadow-md transition-shadow">
                     {a.photo_url && (
                       <div className="aspect-[16/9] bg-muted overflow-hidden">
                         <img src={a.photo_url} alt={a.title} className="w-full h-full object-cover" loading="lazy" />
@@ -282,33 +455,62 @@ const GuestPortal = () => {
                         <span className="text-sm font-bold text-accent">{a.price}€</span>
                         {a.duration_minutes && <span className="text-xs text-muted-foreground">⏱ {a.duration_minutes} min</span>}
                       </div>
-                      <button className="w-full bg-accent/10 text-accent text-xs font-medium py-2 rounded-lg hover:bg-accent/20 transition-colors flex items-center justify-center gap-1">
-                        <CreditCard className="h-3 w-3" /> Book Activity
-                      </button>
+
+                      <AnimatePresence mode="wait">
+                        {orderSuccess === a.id ? (
+                          <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                            className="w-full bg-emerald-500/10 text-emerald-600 text-xs font-medium py-2 rounded-lg flex items-center justify-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Booked!
+                          </motion.div>
+                        ) : (
+                          <motion.button key="btn" onClick={() => bookActivity(a)}
+                            disabled={orderingActivityId === a.id}
+                            className="w-full bg-accent/10 text-accent text-xs font-medium py-2.5 rounded-lg hover:bg-accent/20 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50">
+                            {orderingActivityId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                            Book Activity
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
           </div>
         )}
 
-        {/* Messages Tab */}
+        {/* Messages Tab - FUNCTIONAL */}
         {tab === "messages" && (
           <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-            <div className="h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Message your host directly</p>
-                <p className="text-xs text-muted-foreground mt-1">Sign in or use the contact form below</p>
-              </div>
+            <div className="h-64 overflow-y-auto p-4 space-y-3">
+              {messages.length === 0 ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No messages yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Send a message to your host below</p>
+                  </div>
+                </div>
+              ) : (
+                messages.map(m => (
+                  <div key={m.id} className={`max-w-[80%] p-3 rounded-xl text-sm ${m.type === "guest" ? "ml-auto bg-accent/10 text-foreground" : "bg-muted/50 text-foreground"}`}>
+                    <p className="text-xs text-muted-foreground mb-1">{m.title || "Host"}</p>
+                    <p>{m.message}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(m.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
             <div className="border-t border-border/50 p-3 flex gap-2">
               <input value={message} onChange={e => setMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-              <button disabled={!message.trim()} className="btn-primary btn-sm shrink-0">
-                <Send className="h-4 w-4" />
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendGuestMessage()}
+                placeholder="Type your message to your host..."
+                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground" />
+              <button onClick={sendGuestMessage} disabled={!message.trim() || sendingMessage}
+                className="bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 shrink-0 flex items-center gap-1.5">
+                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           </div>
