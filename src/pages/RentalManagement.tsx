@@ -923,15 +923,17 @@ const RentalManagement = () => {
 
           {/* Tabs — horizontal scroll on mobile */}
           <div className="detail-tab-row mb-6">
-            {([
-               { key: "info" as const, label: L.overview, icon: FileText },
-               { key: "payments" as const, label: L.payments, icon: Euro },
-               { key: "messages" as const, label: "Messages", icon: MessageSquare },
-               { key: "documents" as const, label: "Documents", icon: Upload },
-            ]).map((tab) => (
-              <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                <tab.icon className="h-4 w-4 shrink-0" />{tab.label}
+             {([
+               { key: "info" as const, label: L.overview, short: L.overview.slice(0, 8), icon: FileText },
+               { key: "payments" as const, label: L.payments, short: L.payments.slice(0, 8), icon: Euro },
+               { key: "messages" as const, label: "Messages", short: "Msgs", icon: MessageSquare },
+               { key: "documents" as const, label: "Documents", short: "Docs", icon: Upload },
+             ]).map((tab) => (
+               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
+                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                 <tab.icon className="h-4 w-4 shrink-0" />
+                 <span className="sm:hidden">{tab.short}</span>
+                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>
