@@ -14,9 +14,6 @@ import { exportToCSV } from "@/lib/csv-export";
 interface Tenant { id: string; name: string; charges_amount: number; property_id: string | null; }
 interface Property { id: string; label: string; monthly_charges: number; country: string; }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  FR: "🇫🇷", DE: "🇩🇪", ES: "🇪🇸", IT: "🇮🇹", PT: "🇵🇹", GB: "🇬🇧", BE: "🇧🇪", CH: "🇨🇭", AT: "🇦🇹", NL: "🇳🇱", LU: "🇱🇺", IE: "🇮🇪", PL: "🇵🇱", CZ: "🇨🇿", SK: "🇸🇰", HU: "🇭🇺", RO: "🇷🇴", BG: "🇧🇬", HR: "🇭🇷", GR: "🇬🇷", DK: "🇩🇰", SE: "🇸🇪", NO: "🇳🇴", FI: "🇫🇮",
-};
 
 const ChargesRegularization = () => {
   const { orgId, userCountry } = useAuth();

@@ -33,7 +33,7 @@ function buildFiscalConfig(country: string, t: (k: string) => string) {
   const rules = accountingRulesMap[country];
   const categories = rules?.deductibleCategories || ["tax", "insurance", "maintenance", "management", "interest"];
   return {
-    flag: COUNTRY_FLAGS[country] || "🌍",
+    flag: getCountryEntryOrDefault(country).flag,
     formName: FORM_NAMES[country] || "Tax Declaration",
     microThreshold: country === "FR" ? 15000 : 0,
     microRate: country === "FR" ? 0.3 : 0,
