@@ -306,6 +306,29 @@
     max-width: var(--container-xl);
   }
 
+  /* ── Detail/profile header layout (global mobile pattern) ── */
+  .detail-header {
+    @apply flex flex-col gap-4;
+  }
+  .detail-header-main {
+    @apply flex items-start gap-3 min-w-0 flex-1;
+  }
+  .detail-header-actions {
+    @apply flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end;
+  }
+
+  /* ── Detail rows: avoid crushed right columns on mobile ── */
+  .detail-row {
+    @apply flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  /* ── Scrollable tab rows for custom tab UIs ── */
+  .detail-tab-row {
+    @apply flex w-full gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1 scrollbar-thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+
   /* ── Buttons ── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
