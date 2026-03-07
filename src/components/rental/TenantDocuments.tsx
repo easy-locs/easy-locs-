@@ -68,10 +68,10 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   ];
 
   const statusConfig: Record<string, { label: string; icon: typeof Clock; className: string }> = {
-    pending: { label: t("comp.docs.status_pending"), icon: Clock, className: "text-yellow-600 bg-yellow-500/20" },
-    validated: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
-    approved: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
-    rejected: { label: t("comp.docs.status_rejected"), icon: XCircle, className: "text-red-600 bg-red-500/20" },
+    pending: { label: t("comp.docs.status_pending"), icon: Clock, className: "text-warning bg-warning/10" },
+    validated: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-success bg-success/10" },
+    approved: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-success bg-success/10" },
+    rejected: { label: t("comp.docs.status_rejected"), icon: XCircle, className: "text-destructive bg-destructive/10" },
   };
 
   const loadDocs = async () => {

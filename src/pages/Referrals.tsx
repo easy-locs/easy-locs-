@@ -62,12 +62,12 @@ const Referrals = () => {
             <div className="text-xs text-muted-foreground">{t("referral.invited") || "Invited"}</div>
           </div>
           <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 text-center">
-            <CheckCircle2 className="h-6 w-6 text-green-500 mx-auto mb-2" />
+            <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
             <div className="text-2xl font-bold text-foreground">{converted}</div>
             <div className="text-xs text-muted-foreground">{t("referral.converted") || "Converted"}</div>
           </div>
           <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 text-center">
-            <Gift className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
+            <Gift className="h-6 w-6 text-warning mx-auto mb-2" />
             <div className="text-2xl font-bold text-foreground">{converted}</div>
             <div className="text-xs text-muted-foreground">{t("referral.months_earned") || "Free months"}</div>
           </div>
