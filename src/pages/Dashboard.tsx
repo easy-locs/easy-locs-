@@ -190,7 +190,7 @@ const Dashboard = () => {
                 transition={{ delay: 0.2 + stats.propertiesByCountry.length * 0.04 }}
               >
                 <Link
-                  to="/dashboard/rental"
+                  to="/dashboard/add-property"
                   className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all h-full min-h-[5rem]"
                 >
                   <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
