@@ -11,7 +11,7 @@ interface FurnitureItem {
   id: string; property_id: string; room_name: string; item_name: string;
   quantity: number; condition: string; notes: string; photo_url: string | null;
 }
-interface Property { id: string; label: string; furnished: boolean | null; }
+interface Property { id: string; label: string; furnished: boolean | null; country: string; }
 
 const PRESET_FURNITURE: Record<string, string[]> = {
   salon: [
