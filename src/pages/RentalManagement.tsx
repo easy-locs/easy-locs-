@@ -1609,7 +1609,7 @@ const RentalManagement = () => {
                               <button
                                 onClick={() => handleNotifyRentCall(p)}
                                 disabled={notifyingRentId === p.id}
-                                className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
                               >
                                 {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
                                 {t("page.rental.notify")}
