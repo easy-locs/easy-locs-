@@ -59,8 +59,40 @@ const RentalCatalog = () => {
     ? `${country.charAt(0).toUpperCase() + country.slice(1)} — ${t("page.catalog.title")}`
     : t("page.catalog.title");
 
+  const seoTitle = city
+    ? `Vacation Rentals in ${city.charAt(0).toUpperCase() + city.slice(1).replace(/-/g, " ")} | Easy-Locs`
+    : country
+    ? `Vacation Rentals in ${country.charAt(0).toUpperCase() + country.slice(1)} | Easy-Locs`
+    : "Vacation Rentals Worldwide | Easy-Locs — Book Direct";
+  const seoDesc = city
+    ? `Browse vacation rental properties in ${city.replace(/-/g, " ")}. Book directly from verified landlords on Easy-Locs.`
+    : country
+    ? `Find vacation rentals in ${country}. Book directly with verified property owners. No commission fees.`
+    : "Discover vacation rentals in 110+ countries. Book directly from verified landlords. Best prices, no middleman.";
+
+  const catalogJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: seoTitle,
+    description: seoDesc,
+    numberOfItems: filtered.length,
+    url: `https://www.easy-locs.com/rentals${country ? `/${country}` : ""}${city ? `/${city}` : ""}`,
+    itemListElement: filtered.slice(0, 10).map((l, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `https://www.easy-locs.com/listing/${l.slug}`,
+      name: l.title,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        canonical={`https://www.easy-locs.com/rentals${country ? `/${country}` : ""}${city ? `/${city}` : ""}`}
+        jsonLd={catalogJsonLd}
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
