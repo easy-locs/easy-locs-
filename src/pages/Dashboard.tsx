@@ -131,6 +131,14 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* 3D Globe — Interactive world portfolio */}
+        {!loading && stats.propertiesByCountry.length > 0 && (
+          <WorldPropertyMap
+            propertiesByCountry={stats.propertiesByCountry}
+            userCountry={userCountry}
+          />
+        )}
+
         {/* Country Cards — Main Hub */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
