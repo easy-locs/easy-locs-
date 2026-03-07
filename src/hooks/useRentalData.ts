@@ -97,44 +97,8 @@ export function useRentalData(countryFilter?: string | null) {
       notes: p.notes || "", building_name: (p as any).building_name || null, lot_number: (p as any).lot_number || null,
       building_id: (p as any).building_id || null, country: p.country || "FR",
     })));
-  }, [orgId]);
-
-  const loadTenants = useCallback(async () => {
-    if (!orgId) return;
-    const { data } = await supabase
-      .from("tenants")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("name");
-    if (data) setTenants(data.map(t => ({
-      id: t.id, name: t.name, email: t.email || "", phone: t.phone || "",
-      property_id: t.property_id, lease_start: t.lease_start, lease_end: t.lease_end,
-      rent_amount: Number(t.rent_amount) || 0, charges_amount: Number(t.charges_amount) || 0,
-      deposit_amount: Number(t.deposit_amount) || 0, lease_type: t.lease_type || "empty",
-      notes: t.notes || "", birth_date: t.birth_date, birth_place: t.birth_place,
-      nationality: t.nationality, profession: t.profession,
-      guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
-      current_address: t.current_address,
-      tenant_user_id: t.tenant_user_id,
-      caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
-    })));
-  }, [orgId]);
-
-  const loadRentCalls = useCallback(async () => {
-    if (!orgId) return;
-    const { data } = await supabase
-      .from("rent_calls")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("month", { ascending: false });
-    if (data) setRentCalls(data.map(r => ({
-      id: r.id, tenant_id: r.tenant_id, property_id: r.property_id,
-      month: r.month, rent_amount: Number(r.rent_amount) || 0,
-      charges_amount: Number(r.charges_amount) || 0, total_amount: Number(r.total_amount) || 0,
-      paid: r.paid || false, paid_date: r.paid_date, payment_method: r.payment_method || null,
-      receipt_validated: r.receipt_validated || false, receipt_pdf_url: r.receipt_pdf_url,
-    })));
   }, [orgId, countryFilter]);
+
 
   const loadTenants = useCallback(async () => {
     if (!orgId) return;
