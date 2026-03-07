@@ -147,6 +147,8 @@ const SeasonalRentals = () => {
   const [selectedPropertyForPhotos, setSelectedPropertyForPhotos] = useState<string | null>(null);
   const [focusedRequest, setFocusedRequest] = useState<any>(null);
   const [allRequests, setAllRequests] = useState<any[]>([]);
+  const [showEditRequestModal, setShowEditRequestModal] = useState(false);
+  const [editingRequestDates, setEditingRequestDates] = useState<{ check_in: string; check_out: string }>({ check_in: "", check_out: "" });
 
   const load = useCallback(async () => {
     if (!orgId) return;
