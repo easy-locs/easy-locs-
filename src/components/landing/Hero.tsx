@@ -172,7 +172,7 @@ const QuickLoginCard = () => {
               type={showPw ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("auth.password_placeholder") || "Password"}
+              placeholder="••••••••"
               className="w-full h-12 pl-11 pr-11 rounded-xl text-sm font-medium outline-none transition-all"
               style={{
                 background: "hsl(var(--primary-foreground) / 0.05)",
