@@ -51,7 +51,7 @@ const defaultPropertyForm = {
   surface: 0, rooms: 0, heating: "individual-gas", furnished: false,
   monthly_rent: 0, monthly_charges: 0, deposit_amount: 0, notes: "", floor: undefined as number | undefined,
   building_name: "" as string, lot_number: "" as string, country: "FR" as string,
-  payment_day: 5,
+  payment_day: 1,
 };
 
 const defaultTenantForm = {
