@@ -170,6 +170,7 @@ const Expenses = () => {
                   ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
       </FeatureGate>
