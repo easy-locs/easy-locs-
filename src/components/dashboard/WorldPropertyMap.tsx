@@ -154,6 +154,7 @@ function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
             country={c}
             radius={1.04}
             onHover={onHover}
+            onSelect={onSelect}
             isHovered={hoveredCountry === c.code}
           />
         ))}
