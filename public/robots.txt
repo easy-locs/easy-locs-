@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Twitterbot
 Allow: /
@@ -10,7 +12,21 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
 
-Sitemap: https://easy-locs.lovable.app/sitemap.xml
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /tenant/
+Disallow: /onboarding
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://www.easy-locs.com/sitemap.xml
