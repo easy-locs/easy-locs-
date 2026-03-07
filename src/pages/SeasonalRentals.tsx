@@ -744,7 +744,7 @@ const SeasonalRentals = () => {
                             setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
                             await load();
                           }}
-                          className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700"
+                          className="btn-success btn-sm"
                         >
                           <Check className="h-3.5 w-3.5" /> {t("page.seasonal.approve_btn")}
                         </button>
