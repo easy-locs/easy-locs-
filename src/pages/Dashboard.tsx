@@ -70,6 +70,9 @@ const Dashboard = () => {
         propertiesByCountry,
       });
       setLoading(false);
+    }).catch((err) => {
+      console.error("[Dashboard] data fetch error:", err);
+      setLoading(false);
     });
   }, [orgId]);
 
