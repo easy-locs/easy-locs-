@@ -1773,6 +1773,15 @@ const pageFr: Record<string, string> = {
   "page.listing.error_payment": "Erreur de paiement",
   "page.listing.stripe_note": "Paiement sécurisé par Stripe · Carte & Apple Pay acceptés",
   "page.listing.powered_by_brand": "Gestion locative intelligente",
+  // ── Catalog & Host ──
+  "page.catalog.title": "Locations saisonnières",
+  "page.catalog.search_placeholder": "Rechercher une destination…",
+  "page.catalog.all_guests": "Tous les voyageurs",
+  "page.catalog.no_results": "Aucune annonce trouvée",
+  "page.host.not_found": "Hôte introuvable",
+  "page.host.not_found_desc": "Ce profil n'existe pas ou n'est plus actif.",
+  "page.host.listings_count": "annonce(s) disponible(s)",
+  "page.host.no_listings": "Aucune annonce disponible",
   // ── Listing Manager ──
   "page.listing_mgr.title": "Annonce publique",
   "page.listing_mgr.listing_title": "Titre de l'annonce",
