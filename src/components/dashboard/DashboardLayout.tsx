@@ -134,8 +134,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const navSections = activeCountry
-    ? [...globalSections, ...countrySections, ...alwaysSections]
-    : [...globalSections, ...alwaysSections];
+    ? [...globalSections, ...countrySections, ...seasonalSection, ...alwaysSections]
+    : [...globalSections, ...seasonalSection, ...alwaysSections];
 
   // Determine active items
   const isItemActive = (item: NavItem) => {
