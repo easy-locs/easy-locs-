@@ -146,12 +146,12 @@ const Interventions = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.interventions.title")}>
         <div className="space-y-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{t("page.interventions.title")}</h1>
-              <p className="text-muted-foreground mt-1">{t("page.interventions.subtitle")}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="page-header mb-0">
+              <h1>{t("page.interventions.title")}</h1>
+              <p>{t("page.interventions.subtitle")}</p>
             </div>
-            <Button onClick={openNew} className="bg-accent text-accent-foreground hover:opacity-90">
+            <Button onClick={openNew} className="btn-primary shrink-0">
               <Plus className="h-4 w-4 mr-2" />{t("page.interventions.new")}
             </Button>
           </div>

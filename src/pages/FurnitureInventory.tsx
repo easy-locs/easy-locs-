@@ -321,7 +321,7 @@ const FurnitureInventory = () => {
 
         {/* Property selector */}
         <div className="mb-4">
-          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="form-select w-auto">
             <option value="">{t("page.furniture.all_properties")}</option>
             {properties.map(p => (
               <option key={p.id} value={p.id}>

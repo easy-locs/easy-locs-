@@ -78,12 +78,12 @@ const Candidates = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-             <h1 className="text-2xl font-bold text-foreground">{t("page.candidates.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.candidates.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.candidates.title")}</h1>
+            <p>{t("page.candidates.subtitle")}</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+          <button onClick={() => setShowForm(true)} className="btn-primary shrink-0">
             <Plus className="h-4 w-4" /> {t("page.candidates.add")}
           </button>
         </div>

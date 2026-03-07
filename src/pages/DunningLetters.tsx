@@ -175,28 +175,28 @@ const DunningLetters = () => {
         )}
 
         {/* Letters history */}
-        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="table-container">
+          <div className="table-scroll">
             <table className="w-full text-sm min-w-[580px]">
-               <thead><tr className="border-b border-border/50 bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.date")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.tenant")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.level")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.month")}</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.amount")}</th>
-                <th className="px-4 py-3"></th>
+               <thead><tr className="table-head-row">
+                <th className="table-head-cell">{t("page.dunning.date")}</th>
+                <th className="table-head-cell">{t("page.dunning.tenant")}</th>
+                <th className="table-head-cell">{t("page.dunning.level")}</th>
+                <th className="table-head-cell">{t("page.dunning.month")}</th>
+                <th className="table-head-cell text-right">{t("page.dunning.amount")}</th>
+                <th className="table-head-cell"></th>
               </tr></thead>
               <tbody>
                  {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
                   letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.dunning.no_letter")}</td></tr> :
                     letters.map(l => (
-                      <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
-                        <td className="px-4 py-3 text-foreground font-medium whitespace-nowrap">{tenantName(l.tenant_id)}</td>
-                        <td className="px-4 py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-info/10 text-info"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{l.month}</td>
-                        <td className="px-4 py-3 text-right text-foreground font-semibold whitespace-nowrap">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
-                        <td className="px-4 py-3"><button onClick={() => downloadPDF(l)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
+                      <tr key={l.id} className="table-body-row">
+                        <td className="table-cell-muted whitespace-nowrap">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
+                        <td className="table-cell font-medium whitespace-nowrap">{tenantName(l.tenant_id)}</td>
+                        <td className="table-cell"><span className={`badge-status ${l.level === 3 ? "badge-danger" : l.level === 2 ? "badge-warning" : "badge-info"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
+                        <td className="table-cell-muted whitespace-nowrap">{l.month}</td>
+                        <td className="table-cell-amount">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
+                        <td className="table-cell-actions"><button onClick={() => downloadPDF(l)} className="btn-ghost btn-icon"><Download className="h-4 w-4" /></button></td>
                       </tr>
                     ))}
               </tbody>
