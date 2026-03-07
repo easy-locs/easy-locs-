@@ -2,85 +2,100 @@ import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n } from "@/lib/i18n";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, X, Check, Sparkles, Briefcase, ShoppingBag, Clock, DollarSign, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
+import BookingLinkShare from "@/components/concierge/BookingLinkShare";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus, Trash2, Edit, Sparkles, DollarSign, ShoppingBag, Clock, CheckCircle2,
+  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp
+} from "lucide-react";
+import { format } from "date-fns";
 
 const SERVICE_CATEGORIES = [
-  { value: "cleaning", label: "🧹 Cleaning", icon: "🧹" },
-  { value: "laundry", label: "👔 Laundry", icon: "👔" },
-  { value: "transfer", label: "✈️ Airport Transfer", icon: "✈️" },
-  { value: "chauffeur", label: "🚗 Chauffeur", icon: "🚗" },
-  { value: "grocery", label: "🛒 Grocery Delivery", icon: "🛒" },
-  { value: "welcome", label: "🎁 Welcome Pack", icon: "🎁" },
-  { value: "chef", label: "👨‍🍳 Private Chef", icon: "👨‍🍳" },
-  { value: "baby", label: "👶 Baby Equipment", icon: "👶" },
-  { value: "maintenance", label: "🔧 Maintenance", icon: "🔧" },
-  { value: "key_handover", label: "🔑 Key Handover", icon: "🔑" },
-  { value: "late_checkin", label: "🌙 Late Check-in", icon: "🌙" },
-  { value: "early_checkin", label: "☀️ Early Check-in", icon: "☀️" },
-  { value: "late_checkout", label: "🕐 Late Check-out", icon: "🕐" },
-  { value: "flowers", label: "💐 Flowers", icon: "💐" },
-  { value: "romantic", label: "❤️ Romantic Setup", icon: "❤️" },
-  { value: "birthday", label: "🎂 Birthday Setup", icon: "🎂" },
-  { value: "security", label: "🛡️ Security", icon: "🛡️" },
-  { value: "events", label: "🎉 Events Support", icon: "🎉" },
-  { value: "other", label: "📦 Other", icon: "📦" },
+  { value: "transfer", label: "✈️ Airport Transfer" },
+  { value: "car_rental", label: "🚗 Car Rental" },
+  { value: "yacht", label: "⛵ Yacht Booking" },
+  { value: "excursion", label: "🏔️ Excursion" },
+  { value: "chef", label: "👨‍🍳 Private Chef" },
+  { value: "cleaning", label: "🧹 Cleaning" },
+  { value: "babysitting", label: "👶 Babysitting" },
+  { value: "vip", label: "🌟 VIP Service" },
+  { value: "maintenance", label: "🔧 Maintenance" },
+  { value: "laundry", label: "👔 Laundry" },
+  { value: "chauffeur", label: "🚘 Chauffeur" },
+  { value: "grocery", label: "🛒 Grocery Delivery" },
+  { value: "welcome", label: "🎁 Welcome Pack" },
+  { value: "spa", label: "🧖 Spa & Wellness" },
+  { value: "security", label: "🛡️ Security" },
+  { value: "key_handover", label: "🔑 Key Handover" },
+  { value: "events", label: "🎉 Events" },
+  { value: "other", label: "📦 Other" },
 ];
 
+const BOOKING_STATUSES: Record<string, { label: string; cls: string }> = {
+  pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-600" },
+  awaiting_payment: { label: "Awaiting Payment", cls: "bg-orange-500/10 text-orange-600" },
+  paid: { label: "Paid", cls: "bg-emerald-500/10 text-emerald-600" },
+  confirmed: { label: "Confirmed", cls: "bg-blue-500/10 text-blue-600" },
+  in_progress: { label: "In Progress", cls: "bg-accent/10 text-accent" },
+  completed: { label: "Completed", cls: "bg-emerald-500/10 text-emerald-600" },
+  cancelled: { label: "Cancelled", cls: "bg-destructive/10 text-destructive" },
+  refunded: { label: "Refunded", cls: "bg-muted text-muted-foreground" },
+};
+
 interface ServiceForm {
-  category: string;
-  title: string;
-  description: string;
-  price: number;
-  currency: string;
-  duration_minutes: number | null;
-  provider_name: string;
-  provider_phone: string;
-  country: string;
-  city: string;
-  active: boolean;
+  category: string; title: string; description: string; price: number; currency: string;
+  duration_minutes: number | null; provider_name: string; provider_phone: string;
+  country: string; city: string; active: boolean; photo_urls: string[];
+  location: string; conditions: string; booking_type: string;
+  payment_methods: string[]; bank_details: any; commission_type: string; commission_amount: number;
+  paypal_email: string; booking_slug: string;
+  time_slots: { start: string; end: string }[]; blocked_dates: string[];
 }
 
 const emptyForm: ServiceForm = {
-  category: "cleaning",
-  title: "",
-  description: "",
-  price: 0,
-  currency: "EUR",
-  duration_minutes: null,
-  provider_name: "",
-  provider_phone: "",
-  country: "",
-  city: "",
-  active: true,
+  category: "transfer", title: "", description: "", price: 0, currency: "EUR",
+  duration_minutes: null, provider_name: "", provider_phone: "", country: "", city: "",
+  active: true, photo_urls: [], location: "", conditions: "", booking_type: "instant",
+  payment_methods: ["stripe"], bank_details: {}, commission_type: "percentage",
+  commission_amount: 0, paypal_email: "", booking_slug: "",
+  time_slots: [], blocked_dates: [],
 };
+
+const generateSlug = (title: string) =>
+  title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
 
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
-  const { t } = useI18n();
-  const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ServiceForm>(emptyForm);
-  const [tab, setTab] = useState<"services" | "orders" | "tasks">("services");
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tab, setTab] = useState("services");
   const [filterCategory, setFilterCategory] = useState("");
+  const [showLinks, setShowLinks] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: s }, { data: o }, { data: bt }] = await Promise.all([
+    const [{ data: s }, { data: o }] = await Promise.all([
       supabase.from("concierge_services").select("*").eq("org_id", orgId).order("sort_order"),
-      supabase.from("concierge_orders").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(100),
-      supabase.from("booking_tasks").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(100),
+      supabase.from("concierge_orders").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
     ]);
     setServices(s || []);
-    setOrders(o || []);
-    setTasks(bt || []);
+    setOrders((o || []) as any[]);
     setLoading(false);
   }, [orgId]);
 
@@ -88,377 +103,526 @@ const ConciergeServices = () => {
 
   const save = async () => {
     if (!orgId || !user || !form.title) return;
-    const record = { ...form, org_id: orgId, user_id: user.id };
+    const slug = form.booking_slug || generateSlug(form.title);
+    const record: any = {
+      ...form, org_id: orgId, user_id: user.id, booking_slug: slug,
+      photo_urls: form.photo_urls, time_slots: form.time_slots,
+      blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
+      bank_details: form.bank_details,
+    };
     if (editingId) {
-      await supabase.from("concierge_services").update(record as any).eq("id", editingId);
-      toast({ title: "Service updated" });
+      await supabase.from("concierge_services").update(record).eq("id", editingId);
+      toast.success("Service updated");
     } else {
-      await supabase.from("concierge_services").insert(record as any);
-      toast({ title: "Service created" });
+      await supabase.from("concierge_services").insert(record);
+      toast.success("Service created");
     }
-    setShowForm(false);
-    setEditingId(null);
-    setForm(emptyForm);
+    setShowForm(false); setEditingId(null); setForm(emptyForm);
     await load();
   };
 
   const startEdit = (s: any) => {
     setEditingId(s.id);
     setForm({
-      category: s.category,
-      title: s.title,
-      description: s.description || "",
-      price: s.price,
-      currency: s.currency || "EUR",
-      duration_minutes: s.duration_minutes,
-      provider_name: s.provider_name || "",
-      provider_phone: s.provider_phone || "",
-      country: s.country || "",
-      city: s.city || "",
-      active: s.active,
+      category: s.category, title: s.title, description: s.description || "",
+      price: s.price, currency: s.currency || "EUR", duration_minutes: s.duration_minutes,
+      provider_name: s.provider_name || "", provider_phone: s.provider_phone || "",
+      country: s.country || "", city: s.city || "", active: s.active,
+      photo_urls: Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [],
+      location: s.location || "", conditions: s.conditions || "",
+      booking_type: s.booking_type || "instant",
+      payment_methods: Array.isArray(s.payment_methods) ? s.payment_methods : ["stripe"],
+      bank_details: typeof s.bank_details === "object" ? s.bank_details : {},
+      commission_type: s.commission_type || "percentage",
+      commission_amount: s.commission_amount || 0,
+      paypal_email: s.paypal_email || "",
+      booking_slug: s.booking_slug || "",
+      time_slots: Array.isArray(s.time_slots) ? s.time_slots : [],
+      blocked_dates: Array.isArray(s.blocked_dates) ? s.blocked_dates : [],
     });
     setShowForm(true);
   };
 
   const remove = async (id: string) => {
     await supabase.from("concierge_services").delete().eq("id", id);
-    toast({ title: "Service deleted" });
-    await load();
-  };
-
-  const updateTaskStatus = async (taskId: string, status: string) => {
-    const updates: any = { status };
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    await supabase.from("booking_tasks").update(updates).eq("id", taskId);
-    toast({ title: `Task ${status}` });
+    toast.success("Service deleted");
     await load();
   };
 
   const updateOrderStatus = async (orderId: string, status: string) => {
-    await supabase.from("concierge_orders").update({ status } as any).eq("id", orderId);
-    toast({ title: `Order ${status}` });
+    const updates: any = { status };
+    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
+    if (status === "completed") updates.completed_at = new Date().toISOString();
+    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
+    if (status === "refunded") updates.refunded_at = new Date().toISOString();
+    await supabase.from("concierge_orders").update(updates).eq("id", orderId);
+    toast.success(`Order ${status}`);
     await load();
   };
 
-  const catIcon = (cat: string) => SERVICE_CATEGORIES.find(c => c.value === cat)?.icon || "📦";
-  const filteredServices = filterCategory ? services.filter(s => s.category === filterCategory) : services;
+  const markPaid = async (orderId: string) => {
+    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
+    toast.success("Payment confirmed");
+    await load();
+  };
 
-  // Stats
+  const catIcon = (cat: string) => SERVICE_CATEGORIES.find(c => c.value === cat)?.label?.split(" ")[0] || "📦";
+  const filtered = filterCategory ? services.filter(s => s.category === filterCategory) : services;
+
+  // KPIs
   const activeServices = services.filter(s => s.active).length;
-  const pendingOrders = orders.filter(o => o.status === "pending").length;
-  const pendingTasks = tasks.filter(t => t.status === "pending" || t.status === "assigned").length;
-  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + Number(o.total_price), 0);
+  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
+  const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "awaiting_payment").length;
+  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.commission_amount || 0), 0);
+  const completedCount = orders.filter(o => o.status === "completed").length;
+  const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent" /> Concierge & Services
+              <Sparkles className="h-6 w-6 text-accent" /> Concierge Pro
             </h1>
-            <p className="text-sm text-muted-foreground">Manage concierge services, orders, and operational tasks</p>
+            <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
           </div>
-          <button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }} className="btn-primary">
-            <Plus className="h-4 w-4" /> Add Service
-          </button>
+          <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
+            <Plus className="h-4 w-4 mr-1" /> New Service
+          </Button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {[
-            { icon: Briefcase, label: "Active Services", value: String(activeServices), cls: "text-accent" },
-            { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-warning" },
-            { icon: Clock, label: "Pending Tasks", value: String(pendingTasks), cls: "text-info" },
-            { icon: DollarSign, label: "Revenue", value: `${totalRevenue.toFixed(0)}€`, cls: "text-success" },
+            { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
+            { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
+            { icon: DollarSign, label: "Total Revenue", value: `${totalRevenue.toLocaleString()}€`, cls: "text-emerald-500" },
+            { icon: TrendingUp, label: "Commission Earned", value: `${commissionEarned.toLocaleString()}€`, cls: "text-blue-500" },
+            { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
+            { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
-            <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-              className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-              <div className="flex items-center gap-2 mb-2">
-                <kpi.icon className={`h-4 w-4 ${kpi.cls}`} />
-                <span className="text-xs text-muted-foreground">{kpi.label}</span>
-              </div>
-              <div className="text-xl font-bold text-foreground tabular-nums">{kpi.value}</div>
+            <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+              <Card>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <kpi.icon className={`h-4 w-4 ${kpi.cls}`} />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
+                  </div>
+                  <p className="text-xl font-bold text-foreground tabular-nums">{kpi.value}</p>
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
-          {(["services", "orders", "tasks"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              {t === "services" ? `Services (${services.length})` : t === "orders" ? `Orders (${orders.length})` : `Tasks (${tasks.length})`}
-            </button>
-          ))}
-        </div>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="services"><Sparkles className="h-4 w-4 mr-1" />Services ({services.length})</TabsTrigger>
+            <TabsTrigger value="bookings"><ShoppingBag className="h-4 w-4 mr-1" />Bookings ({orders.length})</TabsTrigger>
+            <TabsTrigger value="revenue"><TrendingUp className="h-4 w-4 mr-1" />Revenue</TabsTrigger>
+          </TabsList>
 
-        {/* Services Tab */}
-        {tab === "services" && (
-          <>
-            {/* Category filter */}
+          {/* SERVICES TAB */}
+          <TabsContent value="services" className="mt-4">
             <div className="flex flex-wrap gap-2 mb-4">
-              <button onClick={() => setFilterCategory("")}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!filterCategory ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                All
-              </button>
+              <Button size="sm" variant={!filterCategory ? "default" : "outline"} onClick={() => setFilterCategory("")}>All</Button>
               {SERVICE_CATEGORIES.filter(c => services.some(s => s.category === c.value)).map(c => (
-                <button key={c.value} onClick={() => setFilterCategory(c.value)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCategory === c.value ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                  {c.icon} {c.value}
-                </button>
+                <Button key={c.value} size="sm" variant={filterCategory === c.value ? "default" : "outline"} onClick={() => setFilterCategory(c.value)}>
+                  {c.label}
+                </Button>
               ))}
             </div>
 
-            {filteredServices.length === 0 ? (
-              <div className="text-center py-16 bg-card rounded-xl border border-border/50">
+            {filtered.length === 0 ? (
+              <Card><CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No services yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">Add concierge services for your guests</p>
-                <button onClick={() => setShowForm(true)} className="btn-primary"><Plus className="h-4 w-4" /> Add Service</button>
-              </div>
+                <p className="text-muted-foreground mb-4">No services yet</p>
+                <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" /> Create Service</Button>
+              </CardContent></Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredServices.map((s, i) => (
-                  <motion.div key={s.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-                    className="bg-card rounded-xl border border-border/50 shadow-card overflow-hidden group">
-                    {s.photo_url && (
-                      <div className="aspect-[16/9] bg-muted overflow-hidden">
-                        <img src={s.photo_url} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                      </div>
-                    )}
-                    <div className="p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg">{catIcon(s.category)}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                          {s.active ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-foreground text-sm line-clamp-1">{s.title}</h3>
-                      {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-accent">{s.price}€</span>
-                        {s.duration_minutes && <span className="text-muted-foreground">{s.duration_minutes}min</span>}
-                      </div>
-                      {s.provider_name && <p className="text-xs text-muted-foreground">Provider: {s.provider_name}</p>}
-                      <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                        <button onClick={() => startEdit(s)} className="text-xs text-accent hover:underline flex items-center gap-1">
-                          <Edit className="h-3 w-3" /> Edit
-                        </button>
-                        <button onClick={() => remove(s.id)} className="text-xs text-destructive hover:underline flex items-center gap-1 ml-auto">
-                          <Trash2 className="h-3 w-3" /> Delete
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Orders Tab */}
-        {tab === "orders" && (
-          <div className="space-y-3">
-            {orders.length === 0 ? (
-              <div className="text-center py-16 bg-card rounded-xl border border-border/50">
-                <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No orders yet</h3>
-                <p className="text-sm text-muted-foreground">Orders will appear when guests book services</p>
-              </div>
-            ) : (
-              <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border/50 bg-muted/30">
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Guest</th>
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Service</th>
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Total</th>
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Payment</th>
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Status</th>
-                        <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {orders.map(o => {
-                        const svc = services.find(s => s.id === o.service_id);
-                        return (
-                          <tr key={o.id} className="hover:bg-muted/20">
-                            <td className="px-4 py-3 font-medium text-foreground">{o.guest_name}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{svc?.title || "—"}</td>
-                            <td className="px-4 py-3 font-medium text-foreground">{o.total_price}€</td>
-                            <td className="px-4 py-3">
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${o.payment_status === "paid" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                                {o.payment_status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                o.status === "completed" ? "bg-success/10 text-success" :
-                                o.status === "in_progress" ? "bg-info/10 text-info" :
-                                o.status === "cancelled" ? "bg-destructive/10 text-destructive" :
-                                "bg-warning/10 text-warning"
-                              }`}>{o.status}</span>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-1">
-                                {o.status === "pending" && (
-                                  <>
-                                    <button onClick={() => updateOrderStatus(o.id, "in_progress")} className="text-xs text-accent hover:underline">Start</button>
-                                    <button onClick={() => updateOrderStatus(o.id, "cancelled")} className="text-xs text-destructive hover:underline ml-2">Cancel</button>
-                                  </>
-                                )}
-                                {o.status === "in_progress" && (
-                                  <button onClick={() => updateOrderStatus(o.id, "completed")} className="text-xs text-success hover:underline">Complete</button>
-                                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filtered.map((s, i) => {
+                  const photos: string[] = Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [];
+                  return (
+                    <motion.div key={s.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
+                      <Card className="overflow-hidden group">
+                        {photos.length > 0 && (
+                          <div className="aspect-[16/9] overflow-hidden bg-muted">
+                            <img src={photos[0]} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                            {photos.length > 1 && (
+                              <div className="absolute bottom-2 right-2">
+                                <Badge variant="secondary" className="text-[10px]">{photos.length} photos</Badge>
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            )}
+                          </div>
+                        )}
+                        <CardContent className="pt-4 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg">{catIcon(s.category)}</span>
+                            <Badge variant={s.active ? "default" : "outline"} className="text-[10px]">{s.active ? "Active" : "Inactive"}</Badge>
+                          </div>
+                          <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
+                          {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-accent">{s.price} {s.currency || "EUR"}</span>
+                            {s.duration_minutes && <span className="text-muted-foreground"><Clock className="h-3 w-3 inline mr-0.5" />{s.duration_minutes}min</span>}
+                          </div>
+                          {s.commission_amount > 0 && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Commission: {s.commission_type === "fixed" ? `${s.commission_amount}€` : `${s.commission_amount}%`}
+                            </p>
+                          )}
+                          <Separator />
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => startEdit(s)}>
+                              <Edit className="h-3 w-3 mr-1" /> Edit
+                            </Button>
+                            {s.booking_slug && (
+                              <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setShowLinks(s.id)}>
+                                <Link2 className="h-3 w-3 mr-1" /> Share
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => window.open(`/book/${s.booking_slug}`, "_blank")}>
+                              <Eye className="h-3 w-3 mr-1" /> Preview
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-xs h-7 text-destructive" onClick={() => remove(s.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
-          </div>
-        )}
+          </TabsContent>
 
-        {/* Tasks Tab */}
-        {tab === "tasks" && (
-          <div className="space-y-3">
-            {tasks.length === 0 ? (
-              <div className="text-center py-16 bg-card rounded-xl border border-border/50">
-                <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No operational tasks</h3>
-                <p className="text-sm text-muted-foreground">Tasks for cleaning, turnover, and operations will appear here</p>
+          {/* BOOKINGS TAB */}
+          <TabsContent value="bookings" className="mt-4">
+            <Card>
+              <CardContent className="pt-4">
+                {orders.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No bookings yet. Share your service links to get started.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Guest</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Service</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Date</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Amount</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Payment</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Status</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {orders.map((o: any) => {
+                          const svc = services.find(s => s.id === o.service_id);
+                          const statusInfo = BOOKING_STATUSES[o.status] || BOOKING_STATUSES.pending;
+                          return (
+                            <tr key={o.id} className="hover:bg-muted/20">
+                              <td className="px-3 py-3">
+                                <p className="font-medium text-foreground">{o.guest_name}</p>
+                                <p className="text-[10px] text-muted-foreground">{o.guest_email}</p>
+                              </td>
+                              <td className="px-3 py-3 text-muted-foreground text-xs">{svc?.title || "—"}</td>
+                              <td className="px-3 py-3 text-xs text-foreground">
+                                {o.service_date || "—"}
+                                {o.service_time && <span className="text-muted-foreground ml-1">{o.service_time}</span>}
+                              </td>
+                              <td className="px-3 py-3 font-medium text-foreground">{o.total_price} {o.currency}</td>
+                              <td className="px-3 py-3">
+                                <Badge variant="outline" className={`text-[10px] ${o.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}`}>
+                                  {o.payment_status}
+                                </Badge>
+                                {o.payment_method && (
+                                  <span className="text-[9px] text-muted-foreground block mt-0.5">{o.payment_method}</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-3">
+                                <Badge className={`text-[10px] ${statusInfo.cls}`}>{statusInfo.label}</Badge>
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {o.payment_status !== "paid" && o.status !== "cancelled" && (
+                                    <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
+                                      <CreditCard className="h-3 w-3 mr-0.5" /> Mark Paid
+                                    </Button>
+                                  )}
+                                  {o.status === "pending" && (
+                                    <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "confirmed")}>
+                                      <CheckCircle2 className="h-3 w-3 mr-0.5" /> Confirm
+                                    </Button>
+                                  )}
+                                  {(o.status === "confirmed" || o.status === "in_progress") && (
+                                    <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "completed")}>
+                                      <CheckCircle2 className="h-3 w-3 mr-0.5" /> Complete
+                                    </Button>
+                                  )}
+                                  {o.status !== "cancelled" && o.status !== "completed" && (
+                                    <Button size="sm" variant="ghost" className="text-[10px] h-6 text-destructive" onClick={() => updateOrderStatus(o.id, "cancelled")}>
+                                      <XCircle className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* REVENUE TAB */}
+          <TabsContent value="revenue" className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader><CardTitle className="text-base">Revenue by Service</CardTitle></CardHeader>
+                <CardContent>
+                  {services.map(s => {
+                    const svcOrders = orders.filter(o => o.service_id === s.id && o.payment_status === "paid");
+                    const rev = svcOrders.reduce((sum: number, o: any) => sum + Number(o.total_price || 0), 0);
+                    const comm = svcOrders.reduce((sum: number, o: any) => sum + Number(o.commission_amount || 0), 0);
+                    if (rev === 0) return null;
+                    return (
+                      <div key={s.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{catIcon(s.category)} {s.title}</p>
+                          <p className="text-[10px] text-muted-foreground">{svcOrders.length} bookings</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-foreground">{rev.toLocaleString()}€</p>
+                          {comm > 0 && <p className="text-[10px] text-muted-foreground">Commission: {comm.toLocaleString()}€</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle className="text-base">Pending Bank Transfers</CardTitle></CardHeader>
+                <CardContent>
+                  {orders.filter(o => o.payment_method === "bank_transfer" && o.payment_status !== "paid" && o.status !== "cancelled").length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No pending transfers</p>
+                  ) : (
+                    orders.filter(o => o.payment_method === "bank_transfer" && o.payment_status !== "paid" && o.status !== "cancelled").map((o: any) => (
+                      <div key={o.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{o.guest_name}</p>
+                          <p className="text-[10px] text-muted-foreground">{o.service_date || "—"}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-foreground">{o.total_price}€</span>
+                          <Button size="sm" variant="outline" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
+                            Confirm
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Booking Links Dialog */}
+        <Dialog open={!!showLinks} onOpenChange={() => setShowLinks(null)}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Share Booking Link</DialogTitle></DialogHeader>
+            {showLinks && (() => {
+              const svc = services.find(s => s.id === showLinks);
+              return svc?.booking_slug ? (
+                <BookingLinkShare serviceSlug={svc.booking_slug} serviceTitle={svc.title} />
+              ) : <p className="text-muted-foreground text-sm">No booking link configured for this service</p>;
+            })()}
+          </DialogContent>
+        </Dialog>
+
+        {/* Service Form Dialog */}
+        <Dialog open={showForm} onOpenChange={v => { setShowForm(v); if (!v) setEditingId(null); }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingId ? "Edit Service" : "New Service"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Photos */}
+              {orgId && (
+                <ServicePhotoManager
+                  photos={form.photo_urls}
+                  onChange={(urls) => setForm(f => ({ ...f, photo_urls: urls }))}
+                  orgId={orgId}
+                />
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Category</label>
+                  <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SERVICE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Title *</label>
+                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((task, i) => (
-                  <motion.div key={task.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
-                    className="bg-card rounded-xl border border-border/50 p-4 flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${
-                      task.status === "completed" ? "bg-success" :
-                      task.status === "in_progress" ? "bg-info" :
-                      task.status === "urgent" ? "bg-destructive" :
-                      "bg-warning"
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-foreground truncate">{task.title}</h4>
-                      <p className="text-xs text-muted-foreground">{task.task_type} • {task.priority}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {task.status === "pending" && (
-                        <button onClick={() => updateTaskStatus(task.id, "in_progress")} className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20">Start</button>
-                      )}
-                      {task.status === "in_progress" && (
-                        <button onClick={() => updateTaskStatus(task.id, "completed")} className="text-xs bg-success/10 text-success px-3 py-1.5 rounded-lg hover:bg-success/20">Done</button>
-                      )}
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        task.status === "completed" ? "bg-success/10 text-success" :
-                        task.status === "in_progress" ? "bg-info/10 text-info" :
-                        task.status === "urgent" ? "bg-destructive/10 text-destructive" :
-                        "bg-warning/10 text-warning"
-                      }`}>{task.status}</span>
-                    </div>
-                  </motion.div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">Description</label>
+                <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Price</label>
+                  <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Currency</label>
+                  <Select value={form.currency} onValueChange={v => setForm(f => ({ ...f, currency: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "TND"].map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Duration (min)</label>
+                  <Input type="number" value={form.duration_minutes || ""} onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))} />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">Location</label>
+                <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Service location" />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">Conditions</label>
+                <Textarea value={form.conditions} onChange={e => setForm(f => ({ ...f, conditions: e.target.value }))} rows={2} placeholder="Cancellation policy, requirements..." />
+              </div>
+
+              <Separator />
+              <h3 className="text-sm font-semibold text-foreground">Provider</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Provider Name</label>
+                  <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Phone</label>
+                  <Input value={form.provider_phone} onChange={e => setForm(f => ({ ...f, provider_phone: e.target.value }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Country</label>
+                  <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">City</label>
+                  <Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+                </div>
+              </div>
+
+              <Separator />
+              <h3 className="text-sm font-semibold text-foreground">Commission</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Type</label>
+                  <Select value={form.commission_type} onValueChange={v => setForm(f => ({ ...f, commission_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Percentage %</SelectItem>
+                      <SelectItem value="fixed">Fixed Amount</SelectItem>
+                      <SelectItem value="none">No Commission</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Amount</label>
+                  <Input type="number" value={form.commission_amount} onChange={e => setForm(f => ({ ...f, commission_amount: Number(e.target.value) }))} />
+                </div>
+              </div>
+
+              <Separator />
+              <h3 className="text-sm font-semibold text-foreground">Payment Methods</h3>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { key: "stripe", label: "💳 Stripe" },
+                  { key: "paypal", label: "🅿️ PayPal" },
+                  { key: "bank_transfer", label: "🏦 Bank Transfer" },
+                ].map(pm => (
+                  <label key={pm.key} className="flex items-center gap-2 text-sm text-foreground">
+                    <Switch checked={form.payment_methods.includes(pm.key)}
+                      onCheckedChange={checked => setForm(f => ({
+                        ...f,
+                        payment_methods: checked ? [...f.payment_methods, pm.key] : f.payment_methods.filter(p => p !== pm.key),
+                      }))} />
+                    {pm.label}
+                  </label>
                 ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Service Form Modal */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-foreground">{editingId ? "Edit Service" : "New Service"}</h2>
-                  <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+              {form.payment_methods.includes("bank_transfer") && (
+                <div className="space-y-2 bg-muted/30 rounded-xl p-4">
+                  <h4 className="text-xs font-semibold text-foreground">Bank Details</h4>
+                  <Input placeholder="Bank Name" value={form.bank_details.bank_name || ""} onChange={e => setForm(f => ({ ...f, bank_details: { ...f.bank_details, bank_name: e.target.value } }))} />
+                  <Input placeholder="IBAN" value={form.bank_details.iban || ""} onChange={e => setForm(f => ({ ...f, bank_details: { ...f.bank_details, iban: e.target.value } }))} />
+                  <Input placeholder="SWIFT / BIC" value={form.bank_details.swift || ""} onChange={e => setForm(f => ({ ...f, bank_details: { ...f.bank_details, swift: e.target.value } }))} />
+                  <Input placeholder="Account Holder" value={form.bank_details.account_holder || ""} onChange={e => setForm(f => ({ ...f, bank_details: { ...f.bank_details, account_holder: e.target.value } }))} />
+                  <Textarea placeholder="Payment instructions" value={form.bank_details.instructions || ""} onChange={e => setForm(f => ({ ...f, bank_details: { ...f.bank_details, instructions: e.target.value } }))} rows={2} />
                 </div>
+              )}
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Category</label>
-                    <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground">
-                      {SERVICE_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Title *</label>
-                    <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" placeholder="Service name" />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Description</label>
-                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-none" rows={2} />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Price</label>
-                      <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Duration (min)</label>
-                      <input type="number" value={form.duration_minutes || ""} onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Provider Name</label>
-                      <input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Provider Phone</label>
-                      <input value={form.provider_phone} onChange={e => setForm(f => ({ ...f, provider_phone: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Country</label>
-                      <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">City</label>
-                      <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-2 text-sm text-foreground">
-                    <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
-                    Active
-                  </label>
+              {form.payment_methods.includes("paypal") && (
+                <div>
+                  <label className="text-xs text-muted-foreground">PayPal Email</label>
+                  <Input value={form.paypal_email} onChange={e => setForm(f => ({ ...f, paypal_email: e.target.value }))} />
                 </div>
+              )}
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
-                  <button onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
-                  <button onClick={save} disabled={!form.title} className="btn-primary">
-                    <Check className="h-4 w-4" /> {editingId ? "Update" : "Create"}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <Separator />
+              <div>
+                <label className="text-xs text-muted-foreground">Booking Type</label>
+                <Select value={form.booking_type} onValueChange={v => setForm(f => ({ ...f, booking_type: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="instant">Instant Booking</SelectItem>
+                    <SelectItem value="request">Request Booking (manual approval)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <Switch checked={form.active} onCheckedChange={checked => setForm(f => ({ ...f, active: checked }))} />
+                Active
+              </label>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
+                <Button onClick={save} disabled={!form.title}>
+                  {editingId ? "Update" : "Create"} Service
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
