@@ -59,6 +59,7 @@ const TenantSignup = lazy(() => import("./pages/TenantSignup"));
 const TenantReviews = lazy(() => import("./pages/tenant/TenantReviews"));
 const TenantRequests = lazy(() => import("./pages/tenant/TenantRequests"));
 const PublicListing = lazy(() => import("./pages/PublicListing"));
+const PublicServiceBooking = lazy(() => import("./pages/PublicServiceBooking"));
 const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
 const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
