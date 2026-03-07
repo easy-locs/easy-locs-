@@ -173,7 +173,7 @@ const App = () => (
               <Route path="/dashboard/fiscal" element={<ProtectedRoute><CountryGuard><FiscalReport /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/expenses" element={<ProtectedRoute><CountryGuard><Expenses /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/candidates" element={<ProtectedRoute><CountryGuard><Candidates /></CountryGuard></ProtectedRoute>} />
-              <Route path="/dashboard/seasonal" element={<ProtectedRoute><CountryGuard><SeasonalRentals /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/seasonal" element={<ProtectedRoute><SeasonalRentals /></ProtectedRoute>} />
               <Route path="/dashboard/notices" element={<ProtectedRoute><CountryGuard><PaymentNotices /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/dunning" element={<ProtectedRoute><CountryGuard><DunningLetters /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/furniture" element={<ProtectedRoute><CountryGuard><FurnitureInventory /></CountryGuard></ProtectedRoute>} />
@@ -183,14 +183,14 @@ const App = () => (
               <Route path="/dashboard/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
               <Route path="/dashboard/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/channel-manager" element={<ProtectedRoute><CountryGuard><ChannelManager /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/channel-manager" element={<ProtectedRoute><ChannelManager /></ProtectedRoute>} />
               <Route path="/dashboard/accounting" element={<ProtectedRoute><CountryGuard><Accounting /></CountryGuard></ProtectedRoute>} />
-              <Route path="/dashboard/pricing" element={<ProtectedRoute><CountryGuard><DynamicPricing /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
               <Route path="/dashboard/marketplace" element={<ProtectedRoute><ServiceMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
-              <Route path="/dashboard/local-services" element={<ProtectedRoute><CountryGuard><LocalServices /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/local-services" element={<ProtectedRoute><LocalServices /></ProtectedRoute>} />
               <Route path="/dashboard/concierge" element={<ProtectedRoute><ConciergeServices /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/operations" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
