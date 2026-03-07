@@ -50,14 +50,15 @@ const TenantDocuments = () => {
   ];
 
   const statusBadge = (status: string) => {
+    const base = "inline-flex items-center justify-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium";
     switch (status) {
       case "approved":
       case "validated":
-        return <span className="flex items-center gap-1 text-xs text-success"><CheckCircle className="h-3 w-3" /> {T.statusApproved}</span>;
+        return <span className={`${base} bg-success/10 text-success`}><CheckCircle className="h-3 w-3" /> {T.statusApproved}</span>;
       case "rejected":
-        return <span className="flex items-center gap-1 text-xs text-destructive"><XCircle className="h-3 w-3" /> {T.statusRejected}</span>;
+        return <span className={`${base} bg-destructive/10 text-destructive`}><XCircle className="h-3 w-3" /> {T.statusRejected}</span>;
       default:
-        return <span className="flex items-center gap-1 text-xs text-warning"><Clock className="h-3 w-3" /> {T.statusPending}</span>;
+        return <span className={`${base} bg-warning/10 text-warning`}><Clock className="h-3 w-3" /> {T.statusPending}</span>;
     }
   };
 

@@ -756,7 +756,7 @@ const RentalManagement = () => {
                       <p className="text-sm font-medium text-foreground">{t.name}</p>
                       <p className="text-xs text-muted-foreground">{t.lease_start || "—"} → {t.lease_end || "—"} · {fmt(t.rent_amount)}/mois</p>
                     </div>
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${isLeaseActive(t) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
+                    <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                       {isLeaseActive(t) ? L.active : L.terminated}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
@@ -776,13 +776,13 @@ const RentalManagement = () => {
                   return (
                     <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
                       <div className="flex items-center gap-3">
-                        <span className={`w-2 h-2 rounded-full ${p.paid ? "bg-green-500" : "bg-red-400"}`} />
+                        <span className={`w-2 h-2 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm text-foreground">{p.month}</span>
                         <span className="text-xs text-muted-foreground">{tenant?.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>{p.paid ? L.paid : L.unpaid}</span>
+                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${p.paid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{p.paid ? L.paid : L.unpaid}</span>
                       </div>
                     </div>
                   );
@@ -830,7 +830,7 @@ const RentalManagement = () => {
                          <p className="text-sm font-medium text-foreground">{inv.report_type === "entry" ? L.entry : L.exit} — {inv.report_date}</p>
                          {invTenant && <p className="text-xs text-muted-foreground">{L.tenant_label} : {invTenant.name}</p>}
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${inv.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                      <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${inv.status === "completed" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {inv.status === "completed" ? L.completed : L.draft}
                       </span>
                     </div>
@@ -887,11 +887,11 @@ const RentalManagement = () => {
               <p className="text-sm text-muted-foreground">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
             </div>
             <div className="flex items-center gap-2">
-                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isLeaseActive(selectedTenant) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
+                 <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                    {isLeaseActive(selectedTenant) ? L.active : L.terminated}
               </span>
               {selectedTenant.tenant_user_id ? (
-                <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
               ) : (
                 <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
                   className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50">
@@ -967,17 +967,17 @@ const RentalManagement = () => {
                   {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
                     <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 relative">
                       <div className="flex items-center gap-3">
-                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-green-500" : "bg-red-400"}`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
                         {p.paid ? (
-                           <button onClick={() => togglePayment(p.id)} className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-700">
+                           <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
                              {L.paid}
                            </button>
                         ) : (
-                           <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-2 py-1 rounded bg-red-400/20 text-red-600">
+                           <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-destructive/10 text-destructive">
                              {L.unpaid}
                            </button>
                         )}
@@ -1546,7 +1546,8 @@ const RentalManagement = () => {
               </div>
             ) : (
               <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
                        <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.tenant}</th>
@@ -1626,6 +1627,7 @@ const RentalManagement = () => {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
