@@ -494,7 +494,15 @@ export type Database = {
       }
       concierge_orders: {
         Row: {
+          bank_transfer_reference: string | null
           booking_id: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          commission_amount: number | null
+          commission_rate: number | null
+          commission_type: string | null
+          completed_at: string | null
+          confirmed_at: string | null
           created_at: string
           currency: string
           guest_email: string
@@ -504,18 +512,32 @@ export type Database = {
           notes: string | null
           org_id: string
           payment_link_url: string | null
+          payment_method: string | null
+          payment_proof_url: string | null
           payment_status: string
           property_id: string | null
           quantity: number
+          refunded_at: string | null
           scheduled_at: string | null
+          service_date: string | null
           service_id: string
+          service_time: string | null
           status: string
+          stripe_session_id: string | null
           total_price: number
           unit_price: number
           updated_at: string
         }
         Insert: {
+          bank_transfer_reference?: string | null
           booking_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          commission_type?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           currency?: string
           guest_email?: string
@@ -525,18 +547,32 @@ export type Database = {
           notes?: string | null
           org_id: string
           payment_link_url?: string | null
+          payment_method?: string | null
+          payment_proof_url?: string | null
           payment_status?: string
           property_id?: string | null
           quantity?: number
+          refunded_at?: string | null
           scheduled_at?: string | null
+          service_date?: string | null
           service_id: string
+          service_time?: string | null
           status?: string
+          stripe_session_id?: string | null
           total_price?: number
           unit_price?: number
           updated_at?: string
         }
         Update: {
+          bank_transfer_reference?: string | null
           booking_id?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          commission_type?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           currency?: string
           guest_email?: string
@@ -546,12 +582,18 @@ export type Database = {
           notes?: string | null
           org_id?: string
           payment_link_url?: string | null
+          payment_method?: string | null
+          payment_proof_url?: string | null
           payment_status?: string
           property_id?: string | null
           quantity?: number
+          refunded_at?: string | null
           scheduled_at?: string | null
+          service_date?: string | null
           service_id?: string
+          service_time?: string | null
           status?: string
+          stripe_session_id?: string | null
           total_price?: number
           unit_price?: number
           updated_at?: string
@@ -583,63 +625,102 @@ export type Database = {
       concierge_services: {
         Row: {
           active: boolean
+          bank_details: Json | null
+          blocked_dates: Json | null
+          booking_slug: string | null
+          booking_type: string
           category: string
           city: string
+          commission_amount: number
+          commission_type: string
+          conditions: string | null
           country: string
           created_at: string
           currency: string
           description: string | null
           duration_minutes: number | null
           id: string
+          location: string | null
+          max_capacity: number | null
           org_id: string
+          payment_methods: Json | null
+          paypal_email: string | null
           photo_url: string | null
+          photo_urls: Json | null
           price: number
           property_id: string | null
           provider_name: string | null
           provider_phone: string | null
           sort_order: number
+          time_slots: Json | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           active?: boolean
+          bank_details?: Json | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          booking_type?: string
           category?: string
           city?: string
+          commission_amount?: number
+          commission_type?: string
+          conditions?: string | null
           country?: string
           created_at?: string
           currency?: string
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          location?: string | null
+          max_capacity?: number | null
           org_id: string
+          payment_methods?: Json | null
+          paypal_email?: string | null
           photo_url?: string | null
+          photo_urls?: Json | null
           price?: number
           property_id?: string | null
           provider_name?: string | null
           provider_phone?: string | null
           sort_order?: number
+          time_slots?: Json | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           active?: boolean
+          bank_details?: Json | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          booking_type?: string
           category?: string
           city?: string
+          commission_amount?: number
+          commission_type?: string
+          conditions?: string | null
           country?: string
           created_at?: string
           currency?: string
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          location?: string | null
+          max_capacity?: number | null
           org_id?: string
+          payment_methods?: Json | null
+          paypal_email?: string | null
           photo_url?: string | null
+          photo_urls?: Json | null
           price?: number
           property_id?: string | null
           provider_name?: string | null
           provider_phone?: string | null
           sort_order?: number
+          time_slots?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
