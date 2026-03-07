@@ -505,6 +505,8 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           currency: string
+          document_urls: Json | null
+          end_time: string | null
           guest_email: string
           guest_name: string
           guest_phone: string | null
@@ -516,6 +518,7 @@ export type Database = {
           payment_proof_url: string | null
           payment_status: string
           property_id: string | null
+          property_label: string | null
           quantity: number
           refunded_at: string | null
           scheduled_at: string | null
@@ -540,6 +543,8 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           currency?: string
+          document_urls?: Json | null
+          end_time?: string | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
@@ -551,6 +556,7 @@ export type Database = {
           payment_proof_url?: string | null
           payment_status?: string
           property_id?: string | null
+          property_label?: string | null
           quantity?: number
           refunded_at?: string | null
           scheduled_at?: string | null
@@ -575,6 +581,8 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           currency?: string
+          document_urls?: Json | null
+          end_time?: string | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
@@ -586,6 +594,7 @@ export type Database = {
           payment_proof_url?: string | null
           payment_status?: string
           property_id?: string | null
+          property_label?: string | null
           quantity?: number
           refunded_at?: string | null
           scheduled_at?: string | null

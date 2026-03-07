@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,11 +14,13 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 import BookingLinkShare from "@/components/concierge/BookingLinkShare";
+import BookingDetailDrawer from "@/components/concierge/BookingDetailDrawer";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Trash2, Edit, Sparkles, DollarSign, ShoppingBag, Clock, CheckCircle2,
-  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp
+  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp,
+  Search, ExternalLink, FileText, MessageCircle, Copy
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -87,6 +89,16 @@ const ConciergeServices = () => {
   const [tab, setTab] = useState("services");
   const [filterCategory, setFilterCategory] = useState("");
   const [showLinks, setShowLinks] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [landlordProfile, setLandlordProfile] = useState<any>(null);
+
+  // Load landlord profile for showcase link
+  useEffect(() => {
+    if (!orgId) return;
+    supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
+      .then(({ data }) => { if (data) setLandlordProfile(data); });
+  }, [orgId]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -169,6 +181,23 @@ const ConciergeServices = () => {
   const catIcon = (cat: string) => SERVICE_CATEGORIES.find(c => c.value === cat)?.label?.split(" ")[0] || "📦";
   const filtered = filterCategory ? services.filter(s => s.category === filterCategory) : services;
 
+  // Filtered orders by search
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery) return orders;
+    const q = searchQuery.toLowerCase();
+    return orders.filter((o: any) => {
+      const svc = services.find(s => s.id === o.service_id);
+      return (
+        (o.guest_name || "").toLowerCase().includes(q) ||
+        (o.guest_email || "").toLowerCase().includes(q) ||
+        (svc?.title || "").toLowerCase().includes(q) ||
+        (o.service_date || "").includes(q) ||
+        (o.status || "").toLowerCase().includes(q) ||
+        (o.payment_status || "").toLowerCase().includes(q)
+      );
+    });
+  }, [orders, searchQuery, services]);
+
   // KPIs
   const activeServices = services.filter(s => s.active).length;
   const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
@@ -176,6 +205,8 @@ const ConciergeServices = () => {
   const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.commission_amount || 0), 0);
   const completedCount = orders.filter(o => o.status === "completed").length;
   const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
+
+  const showcaseUrl = landlordProfile?.slug ? `/showcase/${landlordProfile.slug}` : null;
 
   return (
     <DashboardLayout>
@@ -188,9 +219,27 @@ const ConciergeServices = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
           </div>
-          <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
-            <Plus className="h-4 w-4 mr-1" /> New Service
-          </Button>
+          <div className="flex items-center gap-2">
+            {showcaseUrl && (
+              <Button variant="outline" size="sm" onClick={() => {
+                navigator.clipboard.writeText(window.location.origin + showcaseUrl);
+                toast.success("Showcase link copied!");
+              }}>
+                <ExternalLink className="h-4 w-4 mr-1" /> Showcase
+              </Button>
+            )}
+            {showcaseUrl && (
+              <Button variant="outline" size="sm" onClick={() => {
+                const url = window.location.origin + showcaseUrl;
+                window.open(`https://wa.me/?text=${encodeURIComponent("Check out our services: " + url)}`, "_blank");
+              }}>
+                <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+              </Button>
+            )}
+            <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
+              <Plus className="h-4 w-4 mr-1" /> New Service
+            </Button>
+          </div>
         </div>
 
         {/* KPIs */}
@@ -301,11 +350,24 @@ const ConciergeServices = () => {
           </TabsContent>
 
           {/* BOOKINGS TAB */}
-          <TabsContent value="bookings" className="mt-4">
+          <TabsContent value="bookings" className="mt-4 space-y-4">
+            {/* Search Bar */}
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search guest, service, date, status..."
+                className="pl-10"
+              />
+            </div>
+
             <Card>
               <CardContent className="pt-4">
-                {orders.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No bookings yet. Share your service links to get started.</p>
+                {filteredOrders.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {searchQuery ? "No bookings match your search." : "No bookings yet. Share your service links to get started."}
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -316,19 +378,22 @@ const ConciergeServices = () => {
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Date</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Amount</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Payment</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Docs</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Status</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {orders.map((o: any) => {
+                        {filteredOrders.map((o: any) => {
                           const svc = services.find(s => s.id === o.service_id);
                           const statusInfo = BOOKING_STATUSES[o.status] || BOOKING_STATUSES.pending;
+                          const docCount = Array.isArray(o.document_urls) ? o.document_urls.length : 0;
                           return (
-                            <tr key={o.id} className="hover:bg-muted/20">
+                            <tr key={o.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => setSelectedBooking(o)}>
                               <td className="px-3 py-3">
                                 <p className="font-medium text-foreground">{o.guest_name}</p>
                                 <p className="text-[10px] text-muted-foreground">{o.guest_email}</p>
+                                {o.guest_phone && <p className="text-[10px] text-muted-foreground">{o.guest_phone}</p>}
                               </td>
                               <td className="px-3 py-3 text-muted-foreground text-xs">{svc?.title || "—"}</td>
                               <td className="px-3 py-3 text-xs text-foreground">
@@ -345,23 +410,30 @@ const ConciergeServices = () => {
                                 )}
                               </td>
                               <td className="px-3 py-3">
-                                <Badge className={`text-[10px] ${statusInfo.cls}`}>{statusInfo.label}</Badge>
+                                {docCount > 0 ? (
+                                  <Badge variant="outline" className="text-[10px] text-blue-600">
+                                    <FileText className="h-3 w-3 mr-0.5" />{docCount}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground">—</span>
+                                )}
                               </td>
                               <td className="px-3 py-3">
+                                <Badge className={`text-[10px] ${statusInfo.cls}`}>{statusInfo.label}</Badge>
+                              </td>
+                              <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex flex-wrap gap-1">
+                                  <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => setSelectedBooking(o)}>
+                                    <Eye className="h-3 w-3 mr-0.5" /> View
+                                  </Button>
                                   {o.payment_status !== "paid" && o.status !== "cancelled" && (
                                     <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
-                                      <CreditCard className="h-3 w-3 mr-0.5" /> Mark Paid
+                                      <CreditCard className="h-3 w-3 mr-0.5" /> Paid
                                     </Button>
                                   )}
                                   {o.status === "pending" && (
                                     <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "confirmed")}>
                                       <CheckCircle2 className="h-3 w-3 mr-0.5" /> Confirm
-                                    </Button>
-                                  )}
-                                  {(o.status === "confirmed" || o.status === "in_progress") && (
-                                    <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "completed")}>
-                                      <CheckCircle2 className="h-3 w-3 mr-0.5" /> Complete
                                     </Button>
                                   )}
                                   {o.status !== "cancelled" && o.status !== "completed" && (
@@ -623,6 +695,18 @@ const ConciergeServices = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Booking Detail Drawer */}
+        {orgId && (
+          <BookingDetailDrawer
+            booking={selectedBooking}
+            service={selectedBooking ? services.find(s => s.id === selectedBooking.service_id) : null}
+            open={!!selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            onUpdate={() => { load(); setSelectedBooking(null); }}
+            orgId={orgId}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
