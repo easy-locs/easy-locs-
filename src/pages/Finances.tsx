@@ -280,12 +280,12 @@ const Finances = () => {
                 </div>
               ) : connectStatus?.onboarding_complete ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-success text-sm font-medium">
                     <CheckCircle className="h-4 w-4" /> {t("page.finances.stripe_connected")}
                   </div>
                   <div className="flex gap-3 text-xs text-muted-foreground">
-                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payments_enabled")}</span>}
-                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payouts_enabled")}</span>}
+                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payments_enabled")}</span>}
+                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payouts_enabled")}</span>}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="text-sm text-accent hover:underline flex items-center gap-1 mt-2">
                     {onboardingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
