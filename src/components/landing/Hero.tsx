@@ -73,10 +73,6 @@ const FloatingOrb = ({ className, delay = 0 }: { className: string; delay?: numb
 
 const Hero = () => {
   const { t } = useI18n();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const words = [
     t("landing.hero.tw_tenants") || "Tenants & Bookings",
@@ -93,9 +89,9 @@ const Hero = () => {
   ];
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center overflow-hidden bg-navy-deep">
-      {/* Parallax background */}
-      <motion.div className="absolute inset-0" style={{ y: bgY }}>
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy-deep">
+      {/* Background */}
+      <div className="absolute inset-0">
         {/* Cyber grid */}
         <div className="absolute inset-0 opacity-[0.04]" style={{
           backgroundImage: `linear-gradient(hsl(var(--accent) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.3) 1px, transparent 1px)`,
