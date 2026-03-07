@@ -1122,6 +1122,8 @@ const pageFr: Record<string, string> = {
   "landing.nav.pricing": "Tarifs",
   "landing.nav.login": "Connexion",
   "landing.nav.signup": "S'inscrire",
+  "landing.nav.tenant_access": "Espace locataire",
+  "landing.nav.pro_signup": "Créer mon compte pro",
 
   "page.fiscal.title": "Bilan fiscal — Revenus fonciers",
   "page.fiscal.subtitle": "Analysez vos revenus et dépenses pour votre déclaration fiscale.",
