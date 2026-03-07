@@ -871,6 +871,8 @@ const pageFr: Record<string, string> = {
   "page.common.generate_pdf": "Générer le PDF",
   "page.common.select": "— Sélectionner —",
   "page.common.enter_address": "Saisissez une adresse…",
+  "page.common.country": "Pays",
+  "page.properties.title": "Biens",
   "page.doc_builder.prefill_tenant": "Pré-remplir à partir d'un locataire",
   "page.doc_builder.select_tenant": "— Sélectionner un locataire —",
   "page.doc_builder.legal_basis": "Base légale",
