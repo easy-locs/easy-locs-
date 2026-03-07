@@ -1607,7 +1607,7 @@ const RentalManagement = () => {
                       const unpaid = propPayments.filter(p => !p.paid).sort((a, b) => a.month.localeCompare(b.month));
                       const paid = propPayments.filter(p => p.paid).sort((a, b) => b.month.localeCompare(a.month));
                       const propCountry = prop?.country?.toUpperCase() || "";
-                      const flag = COUNTRY_FLAGS[propCountry] || "🏠";
+                      const flag = getFlag(propCountry);
 
                       return (
                         <div key={propId} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
