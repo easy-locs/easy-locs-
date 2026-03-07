@@ -58,7 +58,9 @@ interface Property {
 const COLORS = ["hsl(var(--accent))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
 
 const Finances = () => {
-  const { user, orgId, userCountry } = useAuth();
+  const countryFilter = useCountryFilter();
+  const { user, orgId, userCountry: authCountry } = useAuth();
+  const activeCountry = countryFilter || authCountry;
   const { toast } = useToast();
   const { t, locale } = useI18n();
   const dateFnsLocale = DATE_LOCALES[locale] || fr;
@@ -73,7 +75,7 @@ const Finances = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [propertyFilter, setPropertyFilter] = useState("");
 
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const fmt = (n: number) => formatCurrency(n, activeCountry);
 
   const EXPENSE_CATEGORIES: Record<string, string> = {
     travaux: t("page.finances.cat_travaux"), assurance: t("page.finances.cat_assurance"), taxe_fonciere: t("page.finances.cat_taxe_fonciere"),
