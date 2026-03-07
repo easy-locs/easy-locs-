@@ -18,6 +18,13 @@ export const nlPages: Record<string, string> = {
   "page.dashboard.view_reminders": "Herinneringen bekijken", "page.dashboard.my_vault": "Mijn kluis",
   "page.dashboard.alerts": "Waarschuwingen", "page.dashboard.all_good": "Alles is bij! 🎉",
   "page.dashboard.unpaid_rents": "onbetaalde huur deze maand", "page.dashboard.vacant_props": "leegstaand(e)",
+  "page.dashboard.world_map": "Mijn wereldwijd portfolio",
+  "page.dashboard.countries": "Landen",
+  "page.dashboard.select_country": "Selecteer een land om te beheren",
+  "page.dashboard.global_overview": "Overzicht van uw vastgoedportfolio",
+  "page.dashboard.owners": "Eigenaren",
+  "page.dashboard.no_properties": "Geen vastgoed geregistreerd",
+  "page.dashboard.add_first": "Voeg uw eerste woning toe om te beginnen",
   // Finances
   "page.finances.title": "Financiën", "page.finances.subtitle": "Huurinkomsten, uitgaven en nettoresultaat",
   "page.finances.all_properties": "Alle woningen", "page.finances.collected_month": "Geïnd deze maand",
