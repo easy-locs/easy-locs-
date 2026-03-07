@@ -5,7 +5,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
-import logoEasyloc from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
