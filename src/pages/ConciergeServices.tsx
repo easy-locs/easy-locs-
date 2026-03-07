@@ -350,11 +350,24 @@ const ConciergeServices = () => {
           </TabsContent>
 
           {/* BOOKINGS TAB */}
-          <TabsContent value="bookings" className="mt-4">
+          <TabsContent value="bookings" className="mt-4 space-y-4">
+            {/* Search Bar */}
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search guest, service, date, status..."
+                className="pl-10"
+              />
+            </div>
+
             <Card>
               <CardContent className="pt-4">
-                {orders.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No bookings yet. Share your service links to get started.</p>
+                {filteredOrders.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {searchQuery ? "No bookings match your search." : "No bookings yet. Share your service links to get started."}
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -365,19 +378,22 @@ const ConciergeServices = () => {
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Date</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Amount</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Payment</th>
+                          <th className="text-left px-3 py-2 text-xs text-muted-foreground">Docs</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Status</th>
                           <th className="text-left px-3 py-2 text-xs text-muted-foreground">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {orders.map((o: any) => {
+                        {filteredOrders.map((o: any) => {
                           const svc = services.find(s => s.id === o.service_id);
                           const statusInfo = BOOKING_STATUSES[o.status] || BOOKING_STATUSES.pending;
+                          const docCount = Array.isArray(o.document_urls) ? o.document_urls.length : 0;
                           return (
-                            <tr key={o.id} className="hover:bg-muted/20">
+                            <tr key={o.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => setSelectedBooking(o)}>
                               <td className="px-3 py-3">
                                 <p className="font-medium text-foreground">{o.guest_name}</p>
                                 <p className="text-[10px] text-muted-foreground">{o.guest_email}</p>
+                                {o.guest_phone && <p className="text-[10px] text-muted-foreground">{o.guest_phone}</p>}
                               </td>
                               <td className="px-3 py-3 text-muted-foreground text-xs">{svc?.title || "—"}</td>
                               <td className="px-3 py-3 text-xs text-foreground">
@@ -394,23 +410,30 @@ const ConciergeServices = () => {
                                 )}
                               </td>
                               <td className="px-3 py-3">
-                                <Badge className={`text-[10px] ${statusInfo.cls}`}>{statusInfo.label}</Badge>
+                                {docCount > 0 ? (
+                                  <Badge variant="outline" className="text-[10px] text-blue-600">
+                                    <FileText className="h-3 w-3 mr-0.5" />{docCount}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground">—</span>
+                                )}
                               </td>
                               <td className="px-3 py-3">
+                                <Badge className={`text-[10px] ${statusInfo.cls}`}>{statusInfo.label}</Badge>
+                              </td>
+                              <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex flex-wrap gap-1">
+                                  <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => setSelectedBooking(o)}>
+                                    <Eye className="h-3 w-3 mr-0.5" /> View
+                                  </Button>
                                   {o.payment_status !== "paid" && o.status !== "cancelled" && (
                                     <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
-                                      <CreditCard className="h-3 w-3 mr-0.5" /> Mark Paid
+                                      <CreditCard className="h-3 w-3 mr-0.5" /> Paid
                                     </Button>
                                   )}
                                   {o.status === "pending" && (
                                     <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "confirmed")}>
                                       <CheckCircle2 className="h-3 w-3 mr-0.5" /> Confirm
-                                    </Button>
-                                  )}
-                                  {(o.status === "confirmed" || o.status === "in_progress") && (
-                                    <Button size="sm" variant="ghost" className="text-[10px] h-6" onClick={() => updateOrderStatus(o.id, "completed")}>
-                                      <CheckCircle2 className="h-3 w-3 mr-0.5" /> Complete
                                     </Button>
                                   )}
                                   {o.status !== "cancelled" && o.status !== "completed" && (
