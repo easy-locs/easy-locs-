@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Globe, Shield, FileText, Building2, Users, Zap, Star } from "lucide-react";
+import { ArrowRight, Globe, Shield, FileText, Building2, Users, Star, KeyRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
@@ -7,10 +7,10 @@ const Hero = () => {
   const { t } = useI18n();
 
   const trustItems = [
-    { icon: Globe, label: "110+ pays" },
-    { icon: Shield, label: "Conforme RGPD" },
-    { icon: FileText, label: "Documents légaux" },
-    { icon: Users, label: "Portail locataire" },
+    { icon: Globe, label: t("landing.hero.trust_countries") || "110+ pays" },
+    { icon: Shield, label: t("landing.hero.trust_gdpr") || "Conforme RGPD" },
+    { icon: FileText, label: t("landing.hero.trust_legal") || "Documents légaux" },
+    { icon: Users, label: t("landing.hero.trust_portal") || "Portail locataire" },
   ];
 
   return (
@@ -42,15 +42,26 @@ const Hero = () => {
             {t("landing.hero.subtitle") || "Baux, quittances, comptabilité — conformes à la législation de chaque pays. Simple, rapide, professionnel."}
           </motion.p>
 
+          {/* Two CTAs: Pro + Tenant */}
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.22 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
+            className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <Link to="/onboarding"
               className="inline-flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-8 py-3.5 rounded-xl shadow-gold hover:opacity-90 transition-opacity text-base">
-              {t("landing.hero.cta") || "Commencer gratuitement"}
+              <Building2 className="h-4 w-4" />
+              {t("landing.hero.cta_pro") || "Espace propriétaire"}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="#pricing"
+            <Link to="/tenant-signup"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/15 text-primary-foreground/80 font-medium px-8 py-3.5 rounded-xl hover:bg-primary-foreground/5 transition-colors text-base">
+              <KeyRound className="h-4 w-4" />
+              {t("landing.hero.cta_tenant") || "Espace locataire"}
+            </Link>
+          </motion.div>
+
+          {/* Pricing link */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.28 }}
+            className="mb-14">
+            <a href="#pricing" className="text-sm text-primary-foreground/40 hover:text-primary-foreground/60 transition-colors underline underline-offset-4">
               {t("landing.hero.pricing") || "Voir les tarifs"}
             </a>
           </motion.div>
