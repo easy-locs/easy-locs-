@@ -25,6 +25,12 @@ const ContactPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Contact Easy-Locs — Support & Inquiries"
+        description="Get in touch with the Easy-Locs team. Support, partnerships, and inquiries for our property management platform."
+        canonical="https://www.easy-locs.com/contact"
+        jsonLd={{ "@context": "https://schema.org", "@type": "ContactPage", name: "Contact Easy-Locs", url: "https://www.easy-locs.com/contact" }}
+      />
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-2xl">

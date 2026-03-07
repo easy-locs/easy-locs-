@@ -1,6 +1,7 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 import { HelpCircle, FileText, CreditCard, Users, Home, Shield, Mail } from "lucide-react";
 
 const HelpPage = () => {
@@ -15,8 +16,24 @@ const HelpPage = () => {
     { icon: Mail, q: "Comment contacter le support ?", a: "Envoyez un email à contact@easy-locs.com ou utilisez le formulaire de contact. Nous répondons sous 24 à 48 heures." },
   ];
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map(f => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Help & FAQ — Easy-Locs Property Management"
+        description="Find answers to common questions about Easy-Locs. How to add properties, invite tenants, generate receipts and more."
+        canonical="https://www.easy-locs.com/help"
+        jsonLd={faqJsonLd}
+      />
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">
