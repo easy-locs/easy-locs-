@@ -390,7 +390,12 @@
     @apply h-10 rounded-lg bg-muted/50 p-1;
   }
   .tabs-uniform [role="tab"] {
-    @apply h-8 px-3 text-xs sm:text-sm rounded-md font-medium transition-colors;
+    @apply h-8 px-3 text-xs sm:text-sm rounded-md font-medium transition-colors shrink-0;
+  }
+
+  /* ── Floating AI button safe zone ── */
+  .floating-safe-zone {
+    @apply pb-20;
   }
 }
 
