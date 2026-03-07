@@ -204,10 +204,11 @@
     @apply leading-relaxed;
   }
 
-  /* Prevent text overflow */
+  /* Prevent text overflow without breaking every character */
   h1, h2, h3, h4, h5, h6, p, li {
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
+    text-wrap: pretty;
   }
 }
 
