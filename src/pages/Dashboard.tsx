@@ -142,7 +142,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground mb-6">
                 {t("page.dashboard.add_first") || "Ajoutez votre premier bien pour commencer"}
               </p>
-              <Link to="/dashboard/rental" className="btn-primary">
+              <Link to="/dashboard/add-property" className="btn-primary">
                 {t("page.rental.add_property") || "Ajouter un bien"}
               </Link>
             </div>
