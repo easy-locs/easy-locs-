@@ -181,6 +181,23 @@ const ConciergeServices = () => {
   const catIcon = (cat: string) => SERVICE_CATEGORIES.find(c => c.value === cat)?.label?.split(" ")[0] || "📦";
   const filtered = filterCategory ? services.filter(s => s.category === filterCategory) : services;
 
+  // Filtered orders by search
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery) return orders;
+    const q = searchQuery.toLowerCase();
+    return orders.filter((o: any) => {
+      const svc = services.find(s => s.id === o.service_id);
+      return (
+        (o.guest_name || "").toLowerCase().includes(q) ||
+        (o.guest_email || "").toLowerCase().includes(q) ||
+        (svc?.title || "").toLowerCase().includes(q) ||
+        (o.service_date || "").includes(q) ||
+        (o.status || "").toLowerCase().includes(q) ||
+        (o.payment_status || "").toLowerCase().includes(q)
+      );
+    });
+  }, [orders, searchQuery, services]);
+
   // KPIs
   const activeServices = services.filter(s => s.active).length;
   const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
@@ -188,6 +205,8 @@ const ConciergeServices = () => {
   const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.commission_amount || 0), 0);
   const completedCount = orders.filter(o => o.status === "completed").length;
   const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
+
+  const showcaseUrl = landlordProfile?.slug ? `/showcase/${landlordProfile.slug}` : null;
 
   return (
     <DashboardLayout>
