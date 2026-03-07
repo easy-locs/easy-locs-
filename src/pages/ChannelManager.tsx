@@ -386,7 +386,7 @@ const ChannelManager = () => {
             <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal")}>
               <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/dynamic-pricing")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/pricing")}>
               <TrendingUp className="h-4 w-4 mr-1" />Dynamic Pricing
             </Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
