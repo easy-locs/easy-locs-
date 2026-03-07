@@ -1,76 +1,108 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Globe, Shield, FileText, Building2, Users, Star, KeyRound } from "lucide-react";
+import { ArrowRight, Building2, KeyRound, UserPlus, Globe, Shield, Zap, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useI18n } from "@/lib/i18n";
 
 const Hero = () => {
-  const { t } = useI18n();
-
-  const trustItems = [
-    { icon: Globe, label: t("landing.hero.trust_countries") || "110+ pays" },
-    { icon: Shield, label: t("landing.hero.trust_gdpr") || "Conforme RGPD" },
-    { icon: FileText, label: t("landing.hero.trust_legal") || "Documents légaux" },
-    { icon: Users, label: t("landing.hero.trust_portal") || "Portail locataire" },
-  ];
-
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden" style={{ background: 'hsl(var(--navy-deep))' }}>
-      <div className="absolute inset-0 bg-gradient-to-br from-navy-deep via-navy-deep/95 to-navy/80" />
-      
-      {/* Subtle grid pattern */}
+    <section className="relative min-h-[92vh] flex items-center overflow-hidden" style={{ background: 'hsl(var(--navy-deep))' }}>
+      {/* Animated gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-accent/8 blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-info/6 blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/4 blur-[200px]" />
+      </div>
+
+      {/* Grid pattern */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--primary-foreground)) 1px, transparent 0)',
-        backgroundSize: '40px 40px',
+        backgroundSize: '48px 48px',
       }} />
 
-      <div className="container relative z-10 py-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 text-sm text-gold-light mb-8">
-            <Star className="h-3.5 w-3.5" />
-            <span>{t("landing.hero.badge") || "Gestion immobilière mondiale"}</span>
+      <div className="container relative z-10 py-24 sm:py-32">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-5 py-2 text-sm font-medium mb-8"
+            style={{ color: 'hsl(var(--gold-light))' }}
+          >
+            <Globe className="h-4 w-4" />
+            Global Property Management Platform
           </motion.div>
 
-          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-primary-foreground leading-[1.1] mb-6">
-            {t("landing.hero.title") || "Gérez vos biens"}{" "}
-            <span className="text-gradient-gold">{t("landing.hero.title_highlight") || "partout dans le monde"}</span>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.08 }}
+            className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6"
+            style={{ color: 'hsl(var(--primary-foreground))' }}
+          >
+            The Global Platform for{" "}
+            <span className="text-gradient-gold">Property Management</span>{" "}
+            and Rentals
           </motion.h1>
 
-          <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}
-            className="text-lg text-primary-foreground/60 mb-10 max-w-xl mx-auto leading-relaxed">
-            {t("landing.hero.subtitle") || "Baux, quittances, comptabilité — conformes à la législation de chaque pays. Simple, rapide, professionnel."}
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.16 }}
+            className="text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
+            style={{ color: 'hsl(var(--primary-foreground) / 0.55)' }}
+          >
+            Manage properties, tenants, bookings and concierge services worldwide from one platform.
           </motion.p>
 
-          {/* Two CTAs: Pro + Tenant */}
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.22 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
-            <Link to="/onboarding"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-8 py-3.5 rounded-xl shadow-gold hover:opacity-90 transition-opacity text-base">
-              <Building2 className="h-4 w-4" />
-              {t("landing.hero.cta_pro") || "Espace propriétaire"}
+          {/* Three CTA buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.24 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+          >
+            <Link
+              to="/login"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-gradient-gold text-accent-foreground font-bold px-8 py-4 rounded-xl shadow-gold hover:opacity-90 transition-all text-base min-w-[220px]"
+            >
+              <Building2 className="h-5 w-5" />
+              Owner / Landlord Login
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/tenant-signup"
-              className="inline-flex items-center justify-center gap-2 border border-primary-foreground/15 text-primary-foreground/80 font-medium px-8 py-3.5 rounded-xl hover:bg-primary-foreground/5 transition-colors text-base">
-              <KeyRound className="h-4 w-4" />
-              {t("landing.hero.cta_tenant") || "Espace locataire"}
+            <Link
+              to="/tenant-signup"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border-2 border-primary-foreground/15 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/5 transition-all text-base min-w-[220px]"
+              style={{ color: 'hsl(var(--primary-foreground) / 0.8)' }}
+            >
+              <KeyRound className="h-5 w-5" />
+              Tenant Login
             </Link>
-          </motion.div>
-
-          {/* Pricing link */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.28 }}
-            className="mb-14">
-            <a href="#pricing" className="text-sm text-primary-foreground/40 hover:text-primary-foreground/60 transition-colors underline underline-offset-4">
-              {t("landing.hero.pricing") || "Voir les tarifs"}
-            </a>
+            <Link
+              to="/signup"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-primary-foreground/10 border border-primary-foreground/10 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/15 transition-all text-base min-w-[220px]"
+              style={{ color: 'hsl(var(--primary-foreground) / 0.9)' }}
+            >
+              <UserPlus className="h-5 w-5" />
+              Create Account
+            </Link>
           </motion.div>
 
           {/* Trust bar */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.35 }}
-            className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
-            {trustItems.map((item) => (
-              <div key={item.label} className="flex items-center gap-2 text-primary-foreground/40 text-sm">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap"
+          >
+            {[
+              { icon: Globe, label: "110+ Countries" },
+              { icon: Shield, label: "GDPR Compliant" },
+              { icon: Zap, label: "AI Powered" },
+              { icon: Users, label: "Tenant Portal" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--primary-foreground) / 0.35)' }}>
                 <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
               </div>
@@ -78,6 +110,9 @@ const Hero = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
