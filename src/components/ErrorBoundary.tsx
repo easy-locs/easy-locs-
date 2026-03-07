@@ -22,7 +22,8 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("[ErrorBoundary]", error, info.componentStack);
+    console.error("[ErrorBoundary] Error:", error.message, error.stack);
+    console.error("[ErrorBoundary] Component Stack:", info.componentStack);
   }
 
   handleReset = () => {
