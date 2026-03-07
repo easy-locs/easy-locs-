@@ -8,6 +8,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import FloatingAIAssistant from "@/components/ai/FloatingAIAssistant";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 
