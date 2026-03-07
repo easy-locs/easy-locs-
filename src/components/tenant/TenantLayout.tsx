@@ -183,6 +183,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <ThemeSwitcher />
           <NotificationBell />
         </header>
         <main className="flex-1 p-3 sm:p-6">{children}</main>

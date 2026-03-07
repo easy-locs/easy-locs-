@@ -18,7 +18,8 @@ const Navbar = () => {
           <a href="#features" className="hover:text-primary-foreground transition-colors">{t("landing.nav.features")}</a>
           <a href="#pricing" className="hover:text-primary-foreground transition-colors">{t("landing.nav.pricing")}</a>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <ThemeSwitcher />
           <Link to="/login" className="text-sm font-medium text-primary-foreground/60 hover:text-primary-foreground transition-colors whitespace-nowrap">
             {t("landing.nav.login")}
           </Link>
