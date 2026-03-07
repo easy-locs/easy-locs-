@@ -425,26 +425,37 @@ const FurnitureInventory = () => {
                 <p className="text-muted-foreground">{t("page.furniture.no_items")}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {properties.map(p => {
-                  const propItems = groupedByProp[p.id] || [];
-                  const roomCount = new Set(propItems.map(i => i.room_name)).size;
-                  return (
-                    <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
-                      className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-foreground">{p.label}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {p.furnished ? `${t("page.furniture.furnished")} · ` : ""}
-                            {propItems.length} {t("page.furniture.item").toLowerCase()}(s) · {roomCount} {t("page.furniture.room").toLowerCase()}(s)
-                          </p>
-                        </div>
-                        <Sofa className="h-5 w-5 text-accent/60" />
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="space-y-6">
+                {Object.entries(propsByCountry).sort(([a], [b]) => a.localeCompare(b)).map(([country, countryProps]) => (
+                  <div key={country}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">{countryCodes[country] || "🌍"}</span>
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{country}</h3>
+                      <span className="text-xs text-muted-foreground">({countryProps.length})</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {countryProps.map(p => {
+                        const propItems = groupedByProp[p.id] || [];
+                        const roomCount = new Set(propItems.map(i => i.room_name)).size;
+                        return (
+                          <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
+                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-foreground">{p.label}</h3>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {p.furnished ? `${t("page.furniture.furnished")} · ` : ""}
+                                  {propItems.length} {t("page.furniture.item").toLowerCase()}(s) · {roomCount} {t("page.furniture.room").toLowerCase()}(s)
+                                </p>
+                              </div>
+                              <Sofa className="h-5 w-5 text-accent/60" />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )
           ) : Object.keys(grouped).length === 0 ? (
