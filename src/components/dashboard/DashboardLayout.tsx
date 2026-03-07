@@ -104,23 +104,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cPath("/dashboard/candidates") },
       ],
     },
+  ];
+
+  // Seasonal / Concierge — global module (not country-dependent)
+  const seasonalSection: NavSection[] = [
     {
       key: "seasonal",
       title: t("section.rental") || "Saisonnier",
       icon: Calendar,
       items: [
-        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: cPath("/dashboard/seasonal") },
-        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: cPath("/dashboard/channel-manager") },
-        { icon: Zap, label: t("nav.pricing") || "Tarification", path: cPath("/dashboard/pricing") },
-      ],
-    },
-    {
-      key: "services",
-      title: "Services",
-      icon: Store,
-      items: [
-        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: cPath("/dashboard/local-services") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
+        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
+        { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
+        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: "/dashboard/local-services" },
       ],
     },
   ];
@@ -138,8 +134,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const navSections = activeCountry
-    ? [...globalSections, ...countrySections, ...alwaysSections]
-    : [...globalSections, ...alwaysSections];
+    ? [...globalSections, ...countrySections, ...seasonalSection, ...alwaysSections]
+    : [...globalSections, ...seasonalSection, ...alwaysSections];
 
   // Determine active items
   const isItemActive = (item: NavItem) => {
