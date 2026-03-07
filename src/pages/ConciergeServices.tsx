@@ -695,6 +695,18 @@ const ConciergeServices = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Booking Detail Drawer */}
+        {orgId && (
+          <BookingDetailDrawer
+            booking={selectedBooking}
+            service={selectedBooking ? services.find(s => s.id === selectedBooking.service_id) : null}
+            open={!!selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            onUpdate={() => { load(); setSelectedBooking(null); }}
+            orgId={orgId}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
