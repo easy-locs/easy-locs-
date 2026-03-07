@@ -92,6 +92,8 @@
     <script>
       // Prevent flash of wrong theme
       (function(){try{var t=localStorage.getItem('easylocs-theme');if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches)||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();
+      // Force clear legacy service worker caches on load
+      (function(){try{if('serviceWorker' in navigator){caches.keys().then(function(names){names.forEach(function(name){if(name.indexOf('workbox-precache')!==-1||name.indexOf('supabase-api')!==-1){caches.delete(name)}})});navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(reg){reg.update()})})}}catch(e){}})();
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
