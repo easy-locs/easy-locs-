@@ -907,7 +907,7 @@ const SeasonalRentals = () => {
                     <p className="text-xs text-muted-foreground">{propName(b.property_id)} · {b.check_in} → {b.check_out}</p>
                     {b.notes && <p className="text-xs text-muted-foreground italic mt-0.5">{b.notes}</p>}
                   </div>
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full self-start ${b.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-green-500/20 text-green-700"}`}>
+                  <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium self-start ${b.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"}`}>
                     {b.status === "cancelled" ? t("page.seasonal.status_cancelled_label") : t("page.seasonal.status_confirmed_label")}
                   </span>
                   <p className="text-sm font-bold text-foreground">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(b.total_price)}</p>
