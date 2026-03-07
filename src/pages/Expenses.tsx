@@ -90,16 +90,16 @@ const Expenses = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.expenses.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.expenses.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.expenses.title")}</h1>
+            <p>{t("page.expenses.subtitle")}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted">
+          <div className="flex gap-2 shrink-0">
+            <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
               <Download className="h-4 w-4" /> {t("page.expenses.export")}
             </button>
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.expenses.add")}
             </button>
           </div>
