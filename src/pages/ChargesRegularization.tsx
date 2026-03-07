@@ -130,25 +130,25 @@ const ChargesRegularization = () => {
             <Card>
               <CardHeader><CardTitle className="text-base">{t("page.charges.result_title")}</CardTitle></CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
+                <div className="table-scroll">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.receipts.tenant")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.provisions")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.real_charges")}</th>
-                        <th className="text-right py-2 font-medium text-muted-foreground">{t("page.charges.balance")}</th>
-                        <th className="text-left py-2 font-medium text-muted-foreground">{t("page.charges.result")}</th>
+                      <tr className="table-head-row">
+                        <th className="table-head-cell">{t("page.receipts.tenant")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.provisions")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.real_charges")}</th>
+                        <th className="table-head-cell text-right">{t("page.charges.balance")}</th>
+                        <th className="table-head-cell">{t("page.charges.result")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {results.map(r => (
-                        <tr key={r.tenantId} className="border-b border-border/50">
-                          <td className="py-3"><p className="font-medium text-foreground">{r.tenantName}</p><p className="text-xs text-muted-foreground">{r.propertyLabel}</p></td>
-                          <td className="text-right py-3 text-foreground">{fmt(r.provisionsAnnuelles)}</td>
-                          <td className="text-right py-3 text-foreground">{fmt(r.chargesReelles)}</td>
-                          <td className={`text-right py-3 font-semibold ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
-                          <td className="py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${r.solde > 0 ? "bg-success/10 text-success" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>{r.type}</span></td>
+                        <tr key={r.tenantId} className="table-body-row">
+                          <td className="table-cell"><p className="font-medium text-foreground">{r.tenantName}</p><p className="text-xs text-muted-foreground">{r.propertyLabel}</p></td>
+                          <td className="table-cell-amount">{fmt(r.provisionsAnnuelles)}</td>
+                          <td className="table-cell-amount">{fmt(r.chargesReelles)}</td>
+                          <td className={`table-cell-amount ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
+                          <td className="table-cell"><span className={`badge-status ${r.solde > 0 ? "badge-success" : r.solde < 0 ? "badge-danger" : "badge-neutral"}`}>{r.type}</span></td>
                         </tr>
                       ))}
                     </tbody>

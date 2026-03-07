@@ -545,7 +545,7 @@ const SeasonalRentals = () => {
                     <Download className="h-3.5 w-3.5" /> {t("page.seasonal.download_ics")}
                   </button>
                   <button onClick={handleCopyIcalContent} className="flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-lg text-sm hover:bg-muted">
-                    {copiedExport ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                     {copiedExport ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                     {copiedExport ? t("page.seasonal.copied") : t("page.seasonal.copy")}
                   </button>
                 </div>
