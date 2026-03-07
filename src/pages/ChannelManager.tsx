@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
@@ -12,7 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Calendar, Link2, RefreshCw, Globe, AlertTriangle, CheckCircle2, Plus, Trash2, ExternalLink } from "lucide-react";
+import {
+  Calendar, Link2, RefreshCw, Globe, AlertTriangle, CheckCircle2, Plus, Trash2,
+  ExternalLink, XCircle, Edit, Mail, TrendingUp, ArrowRight
+} from "lucide-react";
 import { format, parseISO, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
 
 const OTA_PLATFORMS = [
@@ -23,14 +27,31 @@ const OTA_PLATFORMS = [
   { id: "direct", name: "Direct", color: "bg-[hsl(var(--accent))]", icon: "📅" },
 ];
 
+interface Reservation {
+  id: string;
+  property_id: string;
+  guest_name: string;
+  guest_email?: string;
+  check_in: string;
+  check_out: string;
+  status: string;
+  ota_provider: string;
+  amount: number;
+  source_table: "seasonal_bookings" | "booking_requests";
+}
+
 const ChannelManager = () => {
   const { user } = useAuth();
   const { t } = useI18n();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [addOpen, setAddOpen] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [newConn, setNewConn] = useState({ provider: "airbnb", ical_url: "", property_id: "" });
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [editModalRes, setEditModalRes] = useState<Reservation | null>(null);
+  const [editDates, setEditDates] = useState({ check_in: "", check_out: "" });
 
   // Fetch org
   const { data: org } = useQuery({
@@ -48,7 +69,7 @@ const ChannelManager = () => {
   const { data: properties = [] } = useQuery({
     queryKey: ["properties", org?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, city").eq("org_id", org!.id);
+      const { data } = await supabase.from("properties").select("id, label, city, country").eq("org_id", org!.id);
       return data || [];
     },
     enabled: !!org,
@@ -67,7 +88,17 @@ const ChannelManager = () => {
     enabled: !!org,
   });
 
-  // Fetch all reservations: seasonal_bookings + booking_requests (merged as unified view)
+  // Fetch pricing rules for dynamic pricing indicators
+  const { data: pricingRules = [] } = useQuery({
+    queryKey: ["pricing_rules", org?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("pricing_rules").select("*").eq("org_id", org!.id).eq("active", true);
+      return data || [];
+    },
+    enabled: !!org,
+  });
+
+  // Fetch all reservations: seasonal_bookings + booking_requests (merged)
   const { data: reservations = [] } = useQuery({
     queryKey: ["channel_reservations", org?.id],
     queryFn: async () => {
@@ -76,52 +107,54 @@ const ChannelManager = () => {
         supabase.from("booking_requests").select("*").eq("org_id", org!.id),
       ]);
 
-      const seasonal = (seasonalData || []).map((b: any) => ({
+      const seasonal: Reservation[] = (seasonalData || []).map((b: any) => ({
         id: b.id,
         property_id: b.property_id,
         guest_name: b.guest_name,
+        guest_email: b.guest_email || "",
         check_in: b.check_in,
         check_out: b.check_out,
         status: b.status || "confirmed",
         ota_provider: "direct",
         amount: Number(b.total_price) || 0,
+        source_table: "seasonal_bookings" as const,
       }));
 
-      const requests = (requestsData || [])
-        .filter((r: any) => r.status === "paid" || r.status === "approved" || r.status === "confirmed")
+      const requests: Reservation[] = (requestsData || [])
+        .filter((r: any) => ["paid", "approved", "confirmed", "pending", "payment_pending"].includes(r.status))
         .map((r: any) => ({
           id: r.id,
           property_id: r.property_id,
           guest_name: r.guest_name,
+          guest_email: r.guest_email || "",
           check_in: r.check_in,
           check_out: r.check_out,
           status: r.status,
           ota_provider: "direct",
           amount: 0,
+          source_table: "booking_requests" as const,
         }));
 
-      // Deduplicate by key
       const seen = new Set<string>();
-      const all = [...seasonal, ...requests].filter(r => {
+      return [...seasonal, ...requests].filter(r => {
         const key = `${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       });
-
-      return all as Array<{
-        id: string; property_id: string; guest_name: string; check_in: string; check_out: string;
-        status: string; ota_provider: string; amount: number;
-      }>;
     },
     enabled: !!org,
   });
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ["channel_reservations"] });
+    qc.invalidateQueries({ queryKey: ["ota_connections"] });
+  };
 
   // Sync iCal
   const syncMut = useMutation({
     mutationFn: async (conn: any) => {
       setSyncingId(conn.id);
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke("sync-ical", {
         body: {
           ical_url: conn.linked_properties?.[0]?.ical_url || "",
@@ -135,31 +168,24 @@ const ChannelManager = () => {
     },
     onSuccess: (data) => {
       toast.success(`Sync terminée : ${data.inserted} nouvelles, ${data.skipped} existantes`);
-      qc.invalidateQueries({ queryKey: ["reservations"] });
-      qc.invalidateQueries({ queryKey: ["ota_connections"] });
+      invalidateAll();
       setSyncingId(null);
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
-      setSyncingId(null);
-    },
+    onError: (err: Error) => { toast.error(err.message); setSyncingId(null); },
   });
 
   // Add connection
   const addMut = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("ota_connections").insert({
-        org_id: org!.id,
-        user_id: user!.id,
-        provider: newConn.provider,
-        status: "active",
-        linked_properties: [{ property_id: newConn.property_id, ical_url: newConn.ical_url }],
+        org_id: org!.id, user_id: user!.id, provider: newConn.provider,
+        status: "active", linked_properties: [{ property_id: newConn.property_id, ical_url: newConn.ical_url }],
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Connexion OTA ajoutée");
-      qc.invalidateQueries({ queryKey: ["ota_connections"] });
+      invalidateAll();
       setAddOpen(false);
       setNewConn({ provider: "airbnb", ical_url: "", property_id: "" });
     },
@@ -172,11 +198,110 @@ const ChannelManager = () => {
       const { error } = await supabase.from("ota_connections").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Connexion supprimée");
-      qc.invalidateQueries({ queryKey: ["ota_connections"] });
-    },
+    onSuccess: () => { toast.success("Connexion supprimée"); invalidateAll(); },
   });
+
+  // Cancel reservation with email
+  const cancelReservation = async (res: Reservation) => {
+    setCancellingId(res.id);
+    try {
+      if (res.source_table === "seasonal_bookings") {
+        await supabase.from("seasonal_bookings").update({ status: "cancelled" } as any).eq("id", res.id);
+      } else {
+        await supabase.from("booking_requests").update({ status: "cancelled" } as any).eq("id", res.id);
+        // Also remove matching seasonal_booking
+        if (org?.id) {
+          await supabase.from("seasonal_bookings").delete()
+            .eq("org_id", org.id).eq("property_id", res.property_id)
+            .eq("check_in", res.check_in).eq("check_out", res.check_out)
+            .eq("guest_name", res.guest_name);
+        }
+      }
+
+      // Send cancellation email
+      if (res.guest_email) {
+        await supabase.functions.invoke("send-email", {
+          body: {
+            to: res.guest_email,
+            subject: `🚫 Réservation annulée — ${res.check_in} → ${res.check_out}`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+              <h2 style="color:#dc2626;text-align:center;">🚫 Réservation annulée</h2>
+              <p style="color:#555;font-size:15px;text-align:center;">Bonjour ${res.guest_name},<br/>Votre réservation du ${res.check_in} au ${res.check_out} a été annulée.</p>
+              <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
+            </div>`,
+          },
+        });
+      }
+
+      // Notify owner
+      if (org?.id && user) {
+        await supabase.from("notifications").insert({
+          user_id: user.id, org_id: org.id, type: "info",
+          title: "🚫 Réservation annulée",
+          message: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
+          link: "/channel-manager",
+        });
+      }
+
+      toast.success("Réservation annulée et e-mail envoyé");
+      invalidateAll();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  // Modify dates with email
+  const modifyDates = async () => {
+    if (!editModalRes || !editDates.check_in || !editDates.check_out) return;
+    if (editDates.check_out <= editDates.check_in) {
+      toast.error("La date de départ doit être après l'arrivée");
+      return;
+    }
+
+    const oldCheckIn = editModalRes.check_in;
+    const oldCheckOut = editModalRes.check_out;
+
+    if (editModalRes.source_table === "seasonal_bookings") {
+      await supabase.from("seasonal_bookings").update({
+        check_in: editDates.check_in, check_out: editDates.check_out,
+      } as any).eq("id", editModalRes.id);
+    } else {
+      await supabase.from("booking_requests").update({
+        check_in: editDates.check_in, check_out: editDates.check_out,
+      } as any).eq("id", editModalRes.id);
+      // Update matching seasonal_booking
+      if (org?.id) {
+        await supabase.from("seasonal_bookings").update({
+          check_in: editDates.check_in, check_out: editDates.check_out,
+        } as any)
+          .eq("org_id", org.id).eq("property_id", editModalRes.property_id)
+          .eq("check_in", oldCheckIn).eq("check_out", oldCheckOut)
+          .eq("guest_name", editModalRes.guest_name);
+      }
+    }
+
+    // Send modification email
+    if (editModalRes.guest_email) {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: editModalRes.guest_email,
+          subject: `📅 Dates modifiées — ${editDates.check_in} → ${editDates.check_out}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+            <h2 style="color:#1a1a1a;text-align:center;">📅 Dates de réservation modifiées</h2>
+            <p style="color:#555;font-size:15px;text-align:center;">Bonjour ${editModalRes.guest_name},<br/>
+            Vos nouvelles dates : du <strong>${editDates.check_in}</strong> au <strong>${editDates.check_out}</strong>.</p>
+            <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">EASY-LOCS®</p>
+          </div>`,
+        },
+      });
+    }
+
+    toast.success("Dates modifiées et e-mail envoyé");
+    setEditModalRes(null);
+    invalidateAll();
+  };
 
   // Calendar grid
   const calendarDays = useMemo(() => {
@@ -190,14 +315,35 @@ const ChannelManager = () => {
   const getReservationsForDay = (day: Date) =>
     reservations.filter(r => {
       try {
-        return isWithinInterval(day, { start: parseISO(r.check_in), end: parseISO(r.check_out) });
+        return r.status !== "cancelled" && isWithinInterval(day, { start: parseISO(r.check_in), end: parseISO(r.check_out) });
       } catch { return false; }
     });
 
+  // Check if a day has dynamic pricing active
+  const getDayPricingAdjustment = (day: Date) => {
+    const dateStr = format(day, "yyyy-MM-dd");
+    const dayOfWeek = day.getDay();
+    for (const rule of pricingRules) {
+      if (rule.rule_type === "seasonal" && rule.start_date && rule.end_date) {
+        if (dateStr >= rule.start_date && dateStr <= rule.end_date) {
+          return { type: rule.adjustment_type, value: rule.adjustment_value, name: rule.name };
+        }
+      }
+      if (rule.rule_type === "day_of_week" && Array.isArray(rule.days_of_week)) {
+        if ((rule.days_of_week as number[]).includes(dayOfWeek)) {
+          return { type: rule.adjustment_type, value: rule.adjustment_value, name: rule.name };
+        }
+      }
+    }
+    return null;
+  };
+
   const getPlatformInfo = (provider: string) => OTA_PLATFORMS.find(p => p.id === provider) || OTA_PLATFORMS[4];
 
-  const totalRevenue = reservations.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  const totalRevenue = reservations.filter(r => r.status !== "cancelled").reduce((s, r) => s + (Number(r.amount) || 0), 0);
   const activeConns = connections.filter(c => c.status === "active").length;
+  const activeReservations = reservations.filter(r => r.status !== "cancelled");
+
   const conflicts = useMemo(() => {
     const issues: string[] = [];
     for (const day of calendarDays) {
@@ -208,82 +354,106 @@ const ChannelManager = () => {
         list.push(r.guest_name);
         propMap.set(r.property_id, list);
       });
-      propMap.forEach((guests, pid) => {
+      propMap.forEach((guests) => {
         if (guests.length > 1) issues.push(`${format(day, "dd/MM")} — ${guests.join(" vs ")}`);
       });
     }
     return issues;
   }, [calendarDays, reservations]);
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmed": case "paid": return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">✅ Confirmé</Badge>;
+      case "approved": return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">📧 Approuvé</Badge>;
+      case "pending": return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">🔔 En attente</Badge>;
+      case "payment_pending": return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">⏳ Paiement</Badge>;
+      case "cancelled": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">🚫 Annulé</Badge>;
+      default: return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Channel Manager</h1>
-            <p className="text-muted-foreground text-sm">Synchronisez vos calendriers OTA et gérez vos réservations</p>
+            <p className="text-muted-foreground text-sm">Calendrier unifié, synchronisation OTA & gestion des réservations</p>
           </div>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />Ajouter une connexion</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Nouvelle connexion OTA</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <Select value={newConn.provider} onValueChange={v => setNewConn(p => ({ ...p, provider: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {OTA_PLATFORMS.filter(p => p.id !== "direct").map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.icon} {p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={newConn.property_id} onValueChange={v => setNewConn(p => ({ ...p, property_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
-                  <SelectContent>
-                    {properties.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.label} — {p.city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input placeholder="URL iCal (https://...)" value={newConn.ical_url} onChange={e => setNewConn(p => ({ ...p, ical_url: e.target.value }))} />
-                <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newConn.ical_url || !newConn.property_id || addMut.isPending}>
-                  {addMut.isPending ? "Ajout..." : "Ajouter"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/seasonal-rentals")}>
+              <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dynamic-pricing")}>
+              <TrendingUp className="h-4 w-4 mr-1" />Dynamic Pricing
+            </Button>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" />Ajouter une connexion</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Nouvelle connexion OTA</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <Select value={newConn.provider} onValueChange={v => setNewConn(p => ({ ...p, provider: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {OTA_PLATFORMS.filter(p => p.id !== "direct").map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.icon} {p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={newConn.property_id} onValueChange={v => setNewConn(p => ({ ...p, property_id: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                    <SelectContent>
+                      {properties.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.label} — {p.city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input placeholder="URL iCal (https://...)" value={newConn.ical_url} onChange={e => setNewConn(p => ({ ...p, ical_url: e.target.value }))} />
+                  <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newConn.ical_url || !newConn.property_id || addMut.isPending}>
+                    {addMut.isPending ? "Ajout..." : "Ajouter"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Connexions actives</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Connexions</p>
             <p className="text-2xl font-bold text-foreground">{activeConns}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Réservations</p>
-            <p className="text-2xl font-bold text-foreground">{reservations.length}</p>
+            <p className="text-2xl font-bold text-foreground">{activeReservations.length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenus OTA</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenus</p>
             <p className="text-2xl font-bold text-foreground">{totalRevenue.toLocaleString()} €</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">Conflits</p>
-            <p className={`text-2xl font-bold ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>
-              {conflicts.length}
-            </p>
+            <p className={`text-2xl font-bold ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
+          </CardContent></Card>
+          <Card><CardContent className="pt-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Règles prix</p>
+            <p className="text-2xl font-bold text-accent">{pricingRules.length}</p>
           </CardContent></Card>
         </div>
 
         <Tabs defaultValue="calendar">
           <TabsList>
-            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier unifié</TabsTrigger>
+            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
             <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
-            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Réservations</TabsTrigger>
+            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Réservations ({reservations.length})</TabsTrigger>
           </TabsList>
 
+          {/* ─── Calendar Tab ─── */}
           <TabsContent value="calendar" className="mt-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -299,21 +469,29 @@ const ChannelManager = () => {
                   {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(d => (
                     <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
                   ))}
-                  {/* pad start */}
                   {Array.from({ length: (calendarDays[0]?.getDay() + 6) % 7 }).map((_, i) => (
                     <div key={`pad-${i}`} />
                   ))}
                   {calendarDays.map(day => {
                     const dayRes = getReservationsForDay(day);
                     const isToday = isSameDay(day, new Date());
+                    const pricing = getDayPricingAdjustment(day);
                     return (
-                      <div key={day.toISOString()} className={`min-h-[60px] border border-border rounded p-1 ${isToday ? "bg-accent/10 border-accent" : "bg-card"}`}>
-                        <span className={`text-xs font-medium ${isToday ? "text-accent" : "text-foreground"}`}>{day.getDate()}</span>
+                      <div key={day.toISOString()} className={`min-h-[68px] border rounded p-1 relative ${isToday ? "bg-accent/10 border-accent" : "bg-card border-border"}`}>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-medium ${isToday ? "text-accent" : "text-foreground"}`}>{day.getDate()}</span>
+                          {pricing && (
+                            <span className={`text-[8px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}>
+                              {pricing.value > 0 ? "+" : ""}{pricing.value}{pricing.type === "percentage" ? "%" : "€"}
+                            </span>
+                          )}
+                        </div>
                         <div className="space-y-0.5 mt-0.5">
                           {dayRes.slice(0, 2).map(r => {
                             const plat = getPlatformInfo(r.ota_provider);
                             return (
-                              <div key={r.id} className={`text-[9px] text-white px-1 py-0.5 rounded truncate ${plat.color}`}>
+                              <div key={r.id} className={`text-[9px] text-white px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${plat.color}`}
+                                onClick={() => { setEditModalRes(r); setEditDates({ check_in: r.check_in, check_out: r.check_out }); }}>
                                 {r.guest_name}
                               </div>
                             );
@@ -332,6 +510,12 @@ const ChannelManager = () => {
                       <span className="text-xs text-muted-foreground">{p.name}</span>
                     </div>
                   ))}
+                  {pricingRules.length > 0 && (
+                    <div className="flex items-center gap-1.5 ml-2 border-l border-border pl-2">
+                      <TrendingUp className="h-3 w-3 text-accent" />
+                      <span className="text-xs text-muted-foreground">Dynamic Pricing actif</span>
+                    </div>
+                  )}
                 </div>
                 {conflicts.length > 0 && (
                   <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
@@ -348,10 +532,13 @@ const ChannelManager = () => {
             </Card>
           </TabsContent>
 
+          {/* ─── Connections Tab ─── */}
           <TabsContent value="connections" className="mt-4">
             <div className="space-y-3">
               {connections.length === 0 && (
-                <Card><CardContent className="py-8 text-center text-muted-foreground">Aucune connexion OTA. Cliquez "Ajouter une connexion" pour commencer.</CardContent></Card>
+                <Card><CardContent className="py-8 text-center text-muted-foreground">
+                  Aucune connexion OTA. Cliquez "Ajouter une connexion" pour synchroniser Airbnb, Booking.com, etc.
+                </CardContent></Card>
               )}
               {connections.map(conn => {
                 const plat = getPlatformInfo(conn.provider);
@@ -388,35 +575,58 @@ const ChannelManager = () => {
             </div>
           </TabsContent>
 
+          {/* ─── Reservations Tab (with cancel/modify/email) ─── */}
           <TabsContent value="reservations" className="mt-4">
             <Card>
               <CardContent className="pt-4">
                 {reservations.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune réservation importée</p>
+                  <p className="text-center text-muted-foreground py-8">Aucune réservation. Synchronisez vos calendriers ou ajoutez des réservations manuelles.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
                           <th className="text-left py-2 text-muted-foreground font-medium">Voyageur</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Bien</th>
                           <th className="text-left py-2 text-muted-foreground font-medium">Plateforme</th>
                           <th className="text-left py-2 text-muted-foreground font-medium">Arrivée</th>
                           <th className="text-left py-2 text-muted-foreground font-medium">Départ</th>
                           <th className="text-left py-2 text-muted-foreground font-medium">Statut</th>
                           <th className="text-right py-2 text-muted-foreground font-medium">Montant</th>
+                          <th className="text-right py-2 text-muted-foreground font-medium">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {reservations.map(r => {
                           const plat = getPlatformInfo(r.ota_provider);
+                          const isCancelled = r.status === "cancelled";
                           return (
-                            <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30">
-                              <td className="py-2 font-medium text-foreground">{r.guest_name}</td>
+                            <tr key={r.id} className={`border-b border-border/50 hover:bg-muted/30 ${isCancelled ? "opacity-50" : ""}`}>
+                              <td className="py-2">
+                                <span className="font-medium text-foreground">{r.guest_name}</span>
+                                {r.guest_email && <span className="block text-[10px] text-muted-foreground">{r.guest_email}</span>}
+                              </td>
+                              <td className="py-2 text-muted-foreground text-xs">{propName(r.property_id)}</td>
                               <td className="py-2"><Badge variant="outline" className="text-xs">{plat.icon} {plat.name}</Badge></td>
                               <td className="py-2 text-muted-foreground">{r.check_in}</td>
                               <td className="py-2 text-muted-foreground">{r.check_out}</td>
-                              <td className="py-2"><Badge variant={r.status === "confirmed" ? "default" : "secondary"}>{r.status}</Badge></td>
+                              <td className="py-2">{getStatusBadge(r.status)}</td>
                               <td className="py-2 text-right font-medium text-foreground">{Number(r.amount || 0).toLocaleString()} €</td>
+                              <td className="py-2 text-right">
+                                {!isCancelled && (
+                                  <div className="flex items-center justify-end gap-1">
+                                    <Button size="sm" variant="ghost" className="h-7 px-2"
+                                      onClick={() => { setEditModalRes(r); setEditDates({ check_in: r.check_in, check_out: r.check_out }); }}>
+                                      <Edit className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive hover:text-destructive"
+                                      disabled={cancellingId === r.id}
+                                      onClick={() => { if (confirm(`Annuler la réservation de ${r.guest_name} ?`)) cancelReservation(r); }}>
+                                      <XCircle className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </td>
                             </tr>
                           );
                         })}
@@ -429,6 +639,47 @@ const ChannelManager = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* ─── Edit Dates Modal ─── */}
+      {editModalRes && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setEditModalRes(null)}>
+          <div className="bg-card rounded-2xl border border-border p-6 max-w-md w-full space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground">Modifier la réservation</h3>
+              <button onClick={() => setEditModalRes(null)} className="text-muted-foreground hover:text-foreground">
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="font-medium text-foreground">{editModalRes.guest_name}</p>
+              <p className="text-xs text-muted-foreground">{propName(editModalRes.property_id)} • {getPlatformInfo(editModalRes.ota_provider).name}</p>
+              {editModalRes.guest_email && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <Mail className="h-3 w-3" />{editModalRes.guest_email}
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Arrivée</label>
+                <Input type="date" value={editDates.check_in} onChange={e => setEditDates(d => ({ ...d, check_in: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Départ</label>
+                <Input type="date" value={editDates.check_out} onChange={e => setEditDates(d => ({ ...d, check_out: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={modifyDates}>
+                <Mail className="h-4 w-4 mr-1" />Modifier & notifier
+              </Button>
+              <Button variant="destructive" onClick={() => { if (confirm(`Annuler la réservation de ${editModalRes.guest_name} ?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
+                <XCircle className="h-4 w-4 mr-1" />Annuler
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };
