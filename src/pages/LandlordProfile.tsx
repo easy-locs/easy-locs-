@@ -104,7 +104,7 @@ const LandlordProfile = () => {
             </div>
             {landlord.rating && (
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Star className="h-4 w-4 text-yellow-500 shrink-0" />
+                <Star className="h-4 w-4 text-warning shrink-0" />
                 <span className="font-semibold text-foreground">{landlord.rating}</span>/5
               </div>
             )}
