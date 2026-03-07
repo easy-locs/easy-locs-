@@ -164,7 +164,7 @@ const DunningLetters = () => {
                       <p className="font-medium text-foreground">{tenantName(call.tenant_id)}</p>
                       <p className="text-xs text-muted-foreground">{call.month} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(call.total_amount)}</p>
                     </div>
-                    <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
+                    <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="btn-destructive btn-sm">
                       <Plus className="h-3 w-3" /> {t(LEVELS.find(l => l.value === nextLevel)?.labelKey || "page.dunning.level_1")}
                     </button>
                   </div>
