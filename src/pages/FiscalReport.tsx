@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { getAllAccountingRules } from "@/lib/accounting-rules";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
