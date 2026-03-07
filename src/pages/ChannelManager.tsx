@@ -423,26 +423,26 @@ const ChannelManager = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Connexions</p>
-            <p className="text-2xl font-bold text-foreground">{activeConns}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Card><CardContent className="pt-4 pb-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
           </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Réservations</p>
-            <p className="text-2xl font-bold text-foreground">{activeReservations.length}</p>
+          <Card><CardContent className="pt-4 pb-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Réservations</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
           </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenus</p>
-            <p className="text-2xl font-bold text-foreground">{totalRevenue.toLocaleString()} €</p>
+          <Card><CardContent className="pt-4 pb-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
           </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Conflits</p>
-            <p className={`text-2xl font-bold ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
+          <Card><CardContent className="pt-4 pb-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
+            <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
           </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Règles prix</p>
-            <p className="text-2xl font-bold text-accent">{pricingRules.length}</p>
+          <Card><CardContent className="pt-4 pb-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
+            <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
           </CardContent></Card>
         </div>
 
