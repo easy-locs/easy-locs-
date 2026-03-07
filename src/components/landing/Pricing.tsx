@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Sparkles, Infinity } from "lucide-react";
+import { Check, Sparkles, Infinity as InfinityIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
