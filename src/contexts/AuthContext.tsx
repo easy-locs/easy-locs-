@@ -77,13 +77,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hasDualRole, setHasDualRole] = useState(false);
 
   const fetchOrgId = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", userId)
-      .limit(1)
-      .single();
-    setOrgId(data?.org_id ?? null);
+    try {
+      const { data } = await supabase
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+      setOrgId(data?.org_id ?? null);
+    } catch (err) {
+      console.warn("[AuthContext] fetchOrgId failed:", err);
+      setOrgId(null);
+    }
   }, []);
 
   const fetchUserType = useCallback(async (userId: string) => {
