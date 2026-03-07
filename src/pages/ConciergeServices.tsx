@@ -591,7 +591,7 @@ const ConciergeServices = () => {
 
               <Separator />
               <h3 className="text-sm font-semibold text-foreground">Provider</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Provider Name</label>
                   <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} />
