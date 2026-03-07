@@ -232,15 +232,15 @@ const Finances = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.finances.title")}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.finances.title")}</h1>
-            <p className="text-muted-foreground mt-1">{t("page.finances.subtitle")}</p>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="page-header mb-0">
+            <h1>{t("page.finances.title")}</h1>
+            <p>{t("page.finances.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+              className="form-select w-auto">
               <option value="">{t("page.finances.all_properties")}</option>
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
@@ -265,7 +265,7 @@ const Finances = () => {
                     { key: "paid_date", label: "Date" },
                   ]
                 )}
-                className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
+                className="btn-secondary btn-sm"
               >
                 <Download className="h-4 w-4" /> {t("page.common.export_csv")}
               </button>
