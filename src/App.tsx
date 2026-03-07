@@ -198,6 +198,7 @@ const App = () => (
     </TooltipProvider>
     </I18nProvider>
   </QueryClientProvider>
+  </ThemeProvider>
   </ErrorBoundary>
 );
 
