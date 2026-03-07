@@ -40,11 +40,11 @@ const ConciergeOperations = () => {
     queryFn: async () => {
       const [{ data: seasonal }, { data: requests }] = await Promise.all([
         supabase.from("seasonal_bookings" as any).select("*").eq("org_id", org!.id),
-        supabase.from("booking_requests").select("*").eq("org_id", org!.id).in("status", ["confirmed", "paid", "approved"]),
+        supabase.from("booking_requests").select("*").eq("org_id", org!.id).in("status", ["confirmed", "paid", "approved"]) as any,
       ]);
       const merged: any[] = [];
       const seen = new Set<string>();
-      for (const b of [...(seasonal || []), ...(requests || [])]) {
+      for (const b of [...(seasonal || []), ...(requests || [])] as any[]) {
         const key = `${b.property_id}-${b.check_in}-${b.check_out}-${b.guest_name}`;
         if (!seen.has(key)) { seen.add(key); merged.push(b); }
       }

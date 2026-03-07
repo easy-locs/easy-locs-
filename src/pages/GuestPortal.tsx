@@ -54,7 +54,7 @@ const GuestPortal = () => {
         .eq("id", bookingId)
         .maybeSingle();
 
-      let bookingData = b;
+      let bookingData: any = b;
       let source = "seasonal";
 
       if (!b) {
@@ -62,7 +62,7 @@ const GuestPortal = () => {
           .from("booking_requests")
           .select("*")
           .eq("id", bookingId)
-          .maybeSingle();
+          .maybeSingle() as any;
         if (!br) { setNotFound(true); setLoading(false); return; }
         bookingData = br;
         source = "request";
