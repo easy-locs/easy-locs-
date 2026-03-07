@@ -207,6 +207,9 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   );
 
   const handleHover = useCallback((code: string | null) => setHoveredCountry(code), []);
+  const handleSelect = useCallback((code: string) => {
+    navigate(`/dashboard/country/${code.toLowerCase()}`);
+  }, [navigate]);
 
   if (propertiesByCountry.length === 0) return null;
 
