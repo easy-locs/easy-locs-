@@ -296,25 +296,25 @@ const Accounting = () => {
                 </Select>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <table className="w-full text-sm min-w-[600px]">
                     <thead><tr className="border-b border-border">
-                      <th className="text-left py-2 text-muted-foreground font-medium">Date</th>
-                      <th className="text-left py-2 text-muted-foreground font-medium">{t("page.accounting.label") || "Libellé"}</th>
-                      <th className="text-left py-2 text-muted-foreground font-medium">{t("page.accounting.category") || "Catégorie"}</th>
-                      <th className="text-right py-2 text-muted-foreground font-medium">{t("page.accounting.debit") || "Débit"}</th>
-                      <th className="text-right py-2 text-muted-foreground font-medium">{t("page.accounting.credit") || "Crédit"}</th>
-                      <th className="text-center py-2 text-muted-foreground font-medium">Source</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">Date</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.label")}</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.category")}</th>
+                      <th className="text-right py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.debit")}</th>
+                      <th className="text-right py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.credit")}</th>
+                      <th className="text-center py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">Source</th>
                     </tr></thead>
                     <tbody>
                       {allTransactions.slice(0, 100).map(tx => (
                         <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/30">
-                          <td className="py-2 text-muted-foreground">{tx.date}</td>
-                          <td className="py-2 font-medium text-foreground">{tx.label}</td>
-                          <td className="py-2"><Badge variant="outline" className="text-xs">{activeRules.categoryLabels[tx.category] || tx.category}</Badge></td>
-                          <td className="py-2 text-right">{tx.debit > 0 ? <span className="text-destructive">{tx.debit.toLocaleString()} {sym}</span> : "—"}</td>
-                          <td className="py-2 text-right">{tx.credit > 0 ? <span className="text-accent">{tx.credit.toLocaleString()} {sym}</span> : "—"}</td>
-                          <td className="py-2 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[10px]">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
+                          <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{tx.date}</td>
+                          <td className="py-2.5 px-3 font-medium text-foreground max-w-[200px] truncate">{tx.label}</td>
+                          <td className="py-2.5 px-3"><Badge variant="outline" className="text-xs whitespace-nowrap h-6 px-2.5">{activeRules.categoryLabels[tx.category] || tx.category}</Badge></td>
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.debit > 0 ? <span className="text-destructive">{tx.debit.toLocaleString()} {sym}</span> : "—"}</td>
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.credit > 0 ? <span className="text-accent">{tx.credit.toLocaleString()} {sym}</span> : "—"}</td>
+                          <td className="py-2.5 px-3 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[10px] whitespace-nowrap h-5 px-2">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
