@@ -967,7 +967,7 @@ const RentalManagement = () => {
                   {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
                     <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 relative">
                       <div className="flex items-center gap-3">
-                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-green-500" : "bg-red-400"}`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
                       <div className="flex items-center gap-3">
