@@ -306,7 +306,7 @@ export default function ConciergeShowcase() {
                 </Button>
               )}
             </div>
-            <AppLogo size="sm" />
+            <AppLogo />
           </div>
         </footer>
       </div>
