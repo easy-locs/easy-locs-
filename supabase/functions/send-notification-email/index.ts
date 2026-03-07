@@ -87,7 +87,7 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     fr: { subject: "Document signé — {title}", title: "✅ Document signé", body: "Le document « {title} » a été signé avec succès." },
     en: { subject: "Document Signed — {title}", title: "✅ Document Signed", body: 'The document "{title}" has been successfully signed.' },
     es: { subject: "Documento firmado — {title}", title: "✅ Documento firmado", body: "El documento « {title} » ha sido firmado con éxito." },
-    de: { subject: "Dokument unterzeichnet — {title}", title: "✅ Dokument unterzeichnet", body: "Das Dokument „{title}" wurde erfolgreich unterzeichnet." },
+    de: { subject: "Dokument unterzeichnet — {title}", title: "✅ Dokument unterzeichnet", body: 'Das Dokument „{title}" wurde erfolgreich unterzeichnet.' },
     it: { subject: "Documento firmato — {title}", title: "✅ Documento firmato", body: "Il documento « {title} » è stato firmato con successo." },
     pt: { subject: "Documento assinado — {title}", title: "✅ Documento assinado", body: "O documento « {title} » foi assinado com sucesso." },
   },
