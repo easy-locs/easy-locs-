@@ -701,6 +701,10 @@
   h2 { font-size: 1.0625rem; line-height: 1.35; }
   h3 { font-size: 0.95rem; line-height: 1.4; }
 
+  .detail-header-actions .detail-action-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 
   /* Ensure modals/dialogs don't overflow */
   [role="dialog"] {
