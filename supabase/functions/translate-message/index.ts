@@ -170,7 +170,7 @@ serve(async (req) => {
       });
     }
 
-    // Cascade: DeepL → Google Cloud → Lovable AI
+    // Cascade: DeepL → Google Cloud → Built-in AI
     let translated: string | null = null;
     let engine = "none";
 
