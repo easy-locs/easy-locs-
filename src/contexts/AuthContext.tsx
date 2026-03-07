@@ -208,10 +208,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(nextSession?.user ?? null);
 
       if (nextSession?.user) {
-        await Promise.all([
-          fetchOrgId(nextSession.user.id),
-          fetchUserType(nextSession.user.id),
-        ]);
+        try {
+          await Promise.all([
+            fetchOrgId(nextSession.user.id),
+            fetchUserType(nextSession.user.id),
+          ]);
+        } catch (err) {
+          console.error("[AuthContext] hydrateAuthState failed:", err);
+          // Safe defaults already set by individual catch blocks
+        }
         void refreshSubscription();
       } else {
         setOrgId(null);
