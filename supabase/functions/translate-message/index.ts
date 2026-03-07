@@ -105,9 +105,9 @@ async function translateWithGoogle(text: string, from: string, to: string): Prom
 }
 
 /**
- * Strategy 3: Lovable AI (ultimate fallback, always available)
+ * Strategy 3: Built-in AI (ultimate fallback, always available)
  */
-async function translateWithLovableAI(text: string, from: string, to: string): Promise<string | null> {
+async function translateWithBuiltInAI(text: string, from: string, to: string): Promise<string | null> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) return null;
 
