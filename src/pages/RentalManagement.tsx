@@ -990,7 +990,7 @@ const RentalManagement = () => {
                         <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
                         <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
                         {p.paid ? (
                            <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
