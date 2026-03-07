@@ -108,10 +108,10 @@ const ServiceMarketplace = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Marketplace Services</h1>
-            <p className="text-muted-foreground text-sm">Trouvez et réservez des prestataires pour vos biens</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-foreground break-words">Marketplace Services</h1>
+            <p className="text-muted-foreground text-sm break-words">Trouvez et réservez des prestataires pour vos biens</p>
           </div>
         </div>
 
