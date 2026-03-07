@@ -644,20 +644,22 @@ const RentalManagement = () => {
             <ArrowLeft className="h-3.5 w-3.5" /> {L.properties}
           </button>
 
-          {/* Header */}
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-              <Home className="h-6 w-6 text-accent-foreground" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <span>{getFlag(selectedProperty.country)}</span>
-                {selectedProperty.label}
-              </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" />{L.editProperty}</button>
+          {/* Header — responsive */}
+          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
+                <Home className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap">
+                  <span>{getFlag(selectedProperty.country)}</span>
+                  <span className="break-words">{selectedProperty.label}</span>
+                </h1>
+                <p className="text-sm text-muted-foreground flex items-center gap-1 break-words"><MapPin className="h-3 w-3 shrink-0" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" />{L.editProperty}</button>
+              </div>
             </div>
           </div>
 
