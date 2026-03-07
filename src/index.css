@@ -4,6 +4,10 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS
+   ══════════════════════════════════════════════════ */
+
 @layer base {
   :root {
     --background: 220 20% 97%;
@@ -65,6 +69,14 @@
     --shadow-card: 0 1px 3px hsl(220 40% 13% / 0.06), 0 4px 12px hsl(220 40% 13% / 0.04);
     --shadow-card-hover: 0 4px 12px hsl(220 40% 13% / 0.1), 0 8px 24px hsl(220 40% 13% / 0.06);
     --shadow-gold: 0 4px 16px hsl(38 65% 56% / 0.3);
+
+    /* ── Spacing scale ── */
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;    /* 8px */
+    --space-md: 1rem;      /* 16px */
+    --space-lg: 1.5rem;    /* 24px */
+    --space-xl: 2rem;      /* 32px */
+    --space-2xl: 3rem;     /* 48px */
   }
 
   .dark {
@@ -123,13 +135,17 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
   html {
     transition: color-scheme 0.3s ease;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
   }
 }
 
@@ -148,7 +164,7 @@
     @apply leading-relaxed;
   }
 
-  /* Prevent text overflow (exclude table cells) */
+  /* Prevent text overflow (exclude table cells and amounts) */
   h1, h2, h3, h4, h5, h6, p, li {
     overflow-wrap: break-word;
     word-break: break-word;
@@ -164,7 +180,6 @@
     color-scheme: inherit;
   }
 
-  /* Dark mode native date/time input styling */
   .dark input[type="date"],
   .dark input[type="time"],
   .dark input[type="datetime-local"] {
@@ -224,6 +239,11 @@
     @apply text-sm text-muted-foreground mt-1;
   }
 
+  /* ── Page content wrapper — consistent max-width + padding ── */
+  .page-content {
+    @apply max-w-5xl mx-auto w-full;
+  }
+
   /* ── Buttons ── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
@@ -254,12 +274,12 @@
     @apply h-9 w-9 p-0 rounded-lg;
   }
 
-  /* ── Cards ── */
+  /* ── Cards — unified structure ── */
   .ui-card {
-    @apply rounded-xl border border-border bg-card p-5 shadow-card transition-shadow hover:shadow-card-hover;
+    @apply rounded-xl border border-border bg-card p-4 sm:p-5 shadow-card transition-shadow hover:shadow-card-hover;
   }
   .stat-card {
-    @apply rounded-xl border border-border bg-card p-4 sm:p-5 shadow-card flex flex-col h-full;
+    @apply rounded-xl border border-border/50 bg-card p-4 sm:p-5 shadow-card flex flex-col min-h-[6rem];
   }
 
   /* ── Card row: icon | content | actions ── */
@@ -267,7 +287,7 @@
     display: grid;
     grid-template-columns: 2.5rem 1fr auto;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   /* ── Badges ── */
@@ -364,6 +384,14 @@
   .section-gap {
     @apply space-y-6;
   }
+
+  /* ── Tab lists — consistent height and spacing ── */
+  .tabs-uniform [role="tablist"] {
+    @apply h-10 rounded-lg bg-muted/50 p-1;
+  }
+  .tabs-uniform [role="tab"] {
+    @apply h-8 px-3 text-xs sm:text-sm rounded-md font-medium transition-colors;
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -413,10 +441,83 @@
   }
 }
 
-/* Responsive stat cards grid */
+/* ══════════════════════════════════════════════════
+   LAYOUT GRIDS
+   ══════════════════════════════════════════════════ */
+
 @layer components {
+  /* Responsive stat cards grid — equal-height cards */
   .stats-grid {
-    @apply grid gap-4;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    @apply grid gap-3 sm:gap-4;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    .stats-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Generic 2-col / 3-col content grids */
+  .content-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  .content-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  /* List rows — consistent height */
+  .list-row {
+    @apply flex items-center gap-3 px-4 py-3 border-b border-border/30 hover:bg-muted/20 transition-colors min-h-[3.25rem];
+  }
+
+  /* Action card — consistent clickable card */
+  .action-card {
+    @apply rounded-xl border border-border/50 bg-card p-4 sm:p-5 shadow-card
+           hover:shadow-card-hover hover:border-accent/30 transition-all cursor-pointer;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   MOBILE-SPECIFIC LAYOUT FIXES
+   ══════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  /* Tighter main content padding on mobile */
+  main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Ensure modals/dialogs don't overflow */
+  [role="dialog"] {
+    max-width: calc(100vw - 1.5rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    overflow-y: auto;
+  }
+
+  /* Charts should not overflow */
+  .recharts-wrapper {
+    max-width: 100% !important;
+  }
+
+  /* Prevent any element from exceeding viewport */
+  img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Scrollbar thin for all scroll areas */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
   }
 }
