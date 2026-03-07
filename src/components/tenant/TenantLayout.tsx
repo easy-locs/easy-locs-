@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
-const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
+// Languages are dynamically filtered based on property country + English
+const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "es", label: "Español", flag: "🇪🇸" },
