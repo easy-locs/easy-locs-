@@ -96,10 +96,10 @@ const Receipts = () => {
     <DashboardLayout>
        <FeatureGate feature="receipts" featureLabel={t("page.receipts.title")}>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.receipts.title")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("page.receipts.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.receipts.title")}</h1>
+            <p>{t("page.receipts.subtitle")}</p>
           </div>
         </div>
 
