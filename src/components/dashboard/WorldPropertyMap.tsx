@@ -56,11 +56,13 @@ function PropertyMarker({
   country,
   radius,
   onHover,
+  onSelect,
   isHovered,
 }: {
   country: CountryData & { lat: number; lng: number };
   radius: number;
   onHover: (code: string | null) => void;
+  onSelect: (code: string) => void;
   isHovered: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
