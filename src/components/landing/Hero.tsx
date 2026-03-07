@@ -3,7 +3,6 @@ import { ArrowRight, Play, LogIn, Globe, Shield, Zap, Users, Sparkles } from "lu
 import { Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
-import { useI18n } from "@/lib/i18n";
 
 const TypeWriter = ({ words }: { words: string[] }) => {
   const [idx, setIdx] = useState(0);
