@@ -143,7 +143,7 @@ async function translateWithBuiltInAI(text: string, from: string, to: string): P
     const data = await response.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
   } catch (err) {
-    console.error("Lovable AI exception:", err);
+    console.error("AI translation exception:", err);
     return null;
   }
 }
