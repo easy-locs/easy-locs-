@@ -63,7 +63,7 @@ const TenantSettings = () => {
                 <User className="h-5 w-5 text-muted-foreground" />
                 <h2 className="font-semibold text-foreground">{PL.identitySection}</h2>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">{PL.firstName}</label>
                   <input type="text" value={getVal("firstName")} onChange={e => setVal("firstName", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
