@@ -220,8 +220,8 @@ function addHeader(doc: jsPDF, title: string, country: string, docType: string):
   // Brand name — left aligned, consistent position
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
   doc.text("EASY-LOCS", MARGIN, 20);
-  setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
+  setFont(doc, "normal", 5, COLOR_PRIMARY);
+  doc.text("\u00AE", MARGIN + doc.getTextWidth("EASY-LOCS") + 0.5, 17);
 
   // Authority info — right aligned
   if (countryEntry) {
