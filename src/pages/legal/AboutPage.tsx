@@ -1,6 +1,7 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 import { Building, Globe, Shield, Users } from "lucide-react";
 
 const AboutPage = () => {
@@ -14,6 +15,12 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="About Easy-Locs — Global Property Management Platform"
+        description="Discover Easy-Locs, the all-in-one SaaS platform for property management across 110+ countries. Leases, receipts, tenant portals and more."
+        canonical="https://www.easy-locs.com/about"
+        jsonLd={{ "@context": "https://schema.org", "@type": "AboutPage", name: "About Easy-Locs", url: "https://www.easy-locs.com/about", description: "Easy-Locs is a global property management SaaS platform." }}
+      />
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">

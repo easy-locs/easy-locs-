@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
+import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Euro, Loader2, Star } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 
@@ -64,8 +65,29 @@ const HostCatalog = () => {
     );
   }
 
+  const hostName = host?.display_name || "Host";
+  const hostCity = host?.city || "";
+  const hostSeoTitle = `${hostName} — Properties on Easy-Locs`.slice(0, 60);
+  const hostSeoDesc = `Browse ${listings.length} vacation rentals by ${hostName}${hostCity ? ` in ${hostCity}` : ""}. Book directly with this verified host on Easy-Locs.`.slice(0, 160);
+  const hostJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: hostName,
+    url: `https://www.easy-locs.com/host/${hostSlug}`,
+    image: host?.avatar_url,
+    description: host?.bio?.slice(0, 200) || hostSeoDesc,
+    ...(host?.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: host.rating, bestRating: 5 } } : {}),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={hostSeoTitle}
+        description={hostSeoDesc}
+        canonical={`https://www.easy-locs.com/host/${hostSlug}`}
+        ogImage={host?.avatar_url}
+        jsonLd={hostJsonLd}
+      />
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
           <AppLogo variant="header" linkTo="/" />

@@ -7,6 +7,7 @@ import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
 import ListingLocalServices from "@/components/public/ListingLocalServices";
+import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
 import AppLogo from "@/components/AppLogo";
@@ -129,8 +130,42 @@ const PublicListing = () => {
     );
   }
 
+  const listingTitle = listing.title || property?.label || "Vacation Rental";
+  const listingCity = property?.city || listing.city || "";
+  const listingCountry = property?.country || listing.country || "";
+  const seoTitle = `${listingTitle} — ${listingCity} | Easy-Locs`.slice(0, 60);
+  const seoDesc = `${listingTitle} in ${listingCity}${listingCountry ? `, ${listingCountry}` : ""}. ${listing.max_guests ? `Up to ${listing.max_guests} guests.` : ""} Book directly on Easy-Locs.`.slice(0, 160);
+  const listingUrl = `https://www.easy-locs.com/listing/${listingSlug}`;
+  const listingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    name: listingTitle,
+    description: listing.description?.slice(0, 300) || seoDesc,
+    url: listingUrl,
+    image: listing.cover_url || photos[0],
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: property?.address,
+      addressLocality: listingCity,
+      postalCode: property?.postal_code,
+      addressCountry: listingCountry,
+    },
+    ...(listing.price_per_night > 0 ? {
+      priceRange: `€${listing.price_per_night}/night`,
+      offers: { "@type": "Offer", price: listing.price_per_night, priceCurrency: listing.currency || "EUR" },
+    } : {}),
+    ...(listing.max_guests ? { amenityFeature: { "@type": "LocationFeatureSpecification", name: "Max guests", value: listing.max_guests } } : {}),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        canonical={listingUrl}
+        ogImage={listing.cover_url || photos[0]}
+        jsonLd={listingJsonLd}
+      />
       {/* Top bar with logo + language */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
