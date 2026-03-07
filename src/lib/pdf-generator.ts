@@ -268,8 +268,8 @@ function addFooter(doc: jsPDF, country?: string) {
     const brandWidth = doc.getTextWidth(brandText);
     const brandX = (PAGE_WIDTH - brandWidth) / 2;
     doc.text(brandText, brandX, 284);
-    setFont(doc, "normal", 5, COLOR_PRIMARY);
-    doc.text("(R)", brandX + brandWidth + 1, 281.5);
+    setFont(doc, "normal", 4, COLOR_PRIMARY);
+    doc.text("\u00AE", brandX + brandWidth + 0.5, 281.5);
 
     // Page number — right
     setFont(doc, "normal", 7, COLOR_MUTED);
