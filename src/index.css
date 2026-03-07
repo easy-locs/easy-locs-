@@ -525,19 +525,28 @@
     @apply grid gap-3 sm:gap-4;
     grid-template-columns: repeat(2, 1fr);
   }
+  @media (min-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
   @media (min-width: 1024px) {
     .stats-grid {
       grid-template-columns: repeat(4, 1fr);
     }
   }
 
-  /* Generic 2-col / 3-col content grids */
+  /* Generic 2-col / 3-col / 4-col content grids */
   .content-grid-2 {
     @apply grid grid-cols-1 sm:grid-cols-2;
     gap: var(--field-gap);
   }
   .content-grid-3 {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+    gap: var(--field-gap);
+  }
+  .content-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
     gap: var(--field-gap);
   }
 
@@ -555,6 +564,48 @@
            hover:shadow-card-hover hover:border-accent/30 transition-all cursor-pointer;
     border-radius: var(--card-radius);
     padding: var(--card-padding);
+  }
+
+  /* ── Responsive page layout ── */
+  .page-layout {
+    @apply mx-auto w-full;
+    max-width: var(--container-page);
+    padding-left: var(--page-padding-x);
+    padding-right: var(--page-padding-x);
+  }
+  @media (min-width: 640px) {
+    .page-layout {
+      padding-left: var(--page-padding-x-sm);
+      padding-right: var(--page-padding-x-sm);
+    }
+  }
+
+  /* ── Icon containers — uniform sizing ── */
+  .icon-box {
+    @apply flex items-center justify-center shrink-0 rounded-lg bg-muted;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .icon-box-sm {
+    @apply flex items-center justify-center shrink-0 rounded-md bg-muted;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .icon-box-lg {
+    @apply flex items-center justify-center shrink-0 rounded-xl bg-muted;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center text-center py-12 px-6;
+  }
+  .empty-state-icon {
+    @apply h-12 w-12 text-muted-foreground/20 mb-4;
+  }
+  .empty-state-text {
+    @apply text-sm text-muted-foreground max-w-xs;
   }
 }
 
