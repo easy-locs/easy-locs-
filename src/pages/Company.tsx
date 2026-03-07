@@ -447,13 +447,15 @@ const Company = () => {
               {t("page.company.subtitle")}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          {selectedCountry === "FR" && (
             <button
-              onClick={() => setShowJALPanel(true)}
-              className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setWizardMode(true)}
+              className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
             >
-              <Newspaper className="h-4 w-4" />
-          </div>
+              <Rocket className="h-4 w-4" />
+              {t("page.company.create_company")}
+            </button>
+          )}
         </div>
 
         {/* Country selector */}
@@ -492,6 +494,44 @@ const Company = () => {
           </div>
         ) : (
         <>
+        {sections.map((section) => {
+          const templates = companyTemplates.filter(section.filter);
+          if (templates.length === 0) return null;
+          const SectionIcon = section.icon;
+          return (
+            <div key={section.title} className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <SectionIcon className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">{section.title}</h2>
+                  <p className="text-xs text-muted-foreground">{section.description}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {templates.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => setSelectedTemplate(tpl)}
+                    className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
+                      <FileText className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-foreground text-sm">{tpl.label}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{tpl.description}</div>
+                      {tpl.legalBasis && <div className="text-xs text-muted-foreground/60 mt-1 italic">{tpl.legalBasis}</div>}
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 mt-1 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
         <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
           <Building2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground leading-relaxed">
