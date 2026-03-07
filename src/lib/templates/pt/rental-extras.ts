@@ -1,0 +1,136 @@
+import type { DocumentTemplate } from "../types";
+
+/* ─── Auto de vistoria detalhado ─── */
+export const ptAutoVistoria: DocumentTemplate = {
+  id: "pt-auto-vistoria",
+  version: "1.0.0",
+  country: "PT",
+  category: "rental",
+  docType: "inventory",
+  label: "Auto de vistoria do imóvel",
+  description: "Auto de vistoria detalhado para entrada e saída do locado conforme o Código Civil.",
+  legalBasis: "Código Civil arts. 1043.º, 1074.º; NRAU (Lei 6/2006)",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "reportType", label: "Tipo de vistoria", type: "select", required: true, options: [
+      { value: "entrada", label: "Entrada (início do arrendamento)" },
+      { value: "saida", label: "Saída (fim do arrendamento)" },
+    ], group: "Tipo" },
+    { key: "propertyAddress", label: "Morada do imóvel", type: "text", required: true, group: "Imóvel" },
+    { key: "landlordName", label: "Senhorio", type: "text", required: true, group: "Partes" },
+    { key: "tenantName", label: "Arrendatário", type: "text", required: true, group: "Partes" },
+    { key: "reportDate", label: "Data da vistoria", type: "date", required: true, group: "Data" },
+    { key: "meterElec", label: "Leitura contador eletricidade", type: "text", required: false, group: "Contadores" },
+    { key: "meterGas", label: "Leitura contador gás", type: "text", required: false, group: "Contadores" },
+    { key: "meterWater", label: "Leitura contador água", type: "text", required: false, group: "Contadores" },
+    { key: "keysCount", label: "Número de chaves entregues", type: "number", required: true, group: "Chaves" },
+    { key: "keysDetail", label: "Detalhe das chaves", type: "textarea", required: false, group: "Chaves" },
+    { key: "roomsDescription", label: "Descrição divisão a divisão", type: "textarea", required: true, validation: { minLength: 20 }, group: "Estado" },
+    { key: "observations", label: "Observações e reservas", type: "textarea", required: false, group: "Observações" },
+  ],
+  clauses: [
+    { id: "header", label: "Cabeçalho", required: true,
+      text: "AUTO DE VISTORIA — {reportType}\n\nData: {reportDate}\nImóvel: {propertyAddress}\n\nSenhorio: {landlordName}\nArrendatário: {tenantName}" },
+    { id: "contadores", label: "Leituras", required: true,
+      text: "LEITURAS DOS CONTADORES\n\n• Eletricidade: {meterElec}\n• Gás: {meterGas}\n• Água: {meterWater}" },
+    { id: "chaves", label: "Chaves", required: true,
+      text: "CHAVES ENTREGUES: {keysCount}\n\n{keysDetail}" },
+    { id: "estado", label: "Estado do imóvel", required: true,
+      text: "DESCRIÇÃO DO ESTADO — DIVISÃO A DIVISÃO\n\n{roomsDescription}" },
+    { id: "observacoes", label: "Observações", required: false,
+      conditional: (data) => !!data.observations && String(data.observations).length > 3,
+      text: "OBSERVAÇÕES\n\n{observations}" },
+    { id: "assinaturas", label: "Assinaturas", required: true,
+      text: "Ambas as partes declaram a conformidade do presente auto.\n\nLocal e data: ____________\n\nSenhorio: _______________          Arrendatário: _______________" },
+  ],
+};
+
+/* ─── Atualização de renda ─── */
+export const ptAtualizacaoRenda: DocumentTemplate = {
+  id: "pt-atualizacao-renda",
+  version: "1.0.0",
+  country: "PT",
+  category: "rental",
+  docType: "rent-revision",
+  label: "Atualização anual da renda",
+  description: "Comunicação de atualização da renda conforme o coeficiente legal (Portaria anual).",
+  legalBasis: "Código Civil art. 1077.º; NRAU (Lei 6/2006); Portaria anual de atualização de rendas",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Nome do senhorio", type: "text", required: true, group: "Senhorio" },
+    { key: "landlordAddress", label: "Morada", type: "text", required: true, group: "Senhorio" },
+    { key: "tenantName", label: "Nome do arrendatário", type: "text", required: true, group: "Arrendatário" },
+    { key: "tenantAddress", label: "Morada", type: "text", required: true, group: "Arrendatário" },
+    { key: "propertyAddress", label: "Morada do imóvel", type: "text", required: true, group: "Imóvel" },
+    { key: "currentRent", label: "Renda atual (€)", type: "number", required: true, group: "Renda" },
+    { key: "coefficient", label: "Coeficiente de atualização", type: "number", required: true, group: "Cálculo" },
+    { key: "effectiveDate", label: "Data de efeito", type: "date", required: true, group: "Datas" },
+    { key: "sendDate", label: "Data da comunicação", type: "date", required: true, group: "Datas" },
+  ],
+  clauses: [
+    { id: "comunicacao", label: "Comunicação", required: true,
+      text: "{landlordName}\n{landlordAddress}\n\nExmo./a Sr./a {tenantName}\n{tenantAddress}\n\nData: {sendDate}\n\nAssunto: Atualização anual da renda — Imóvel {propertyAddress}\n\nExmo./a Senhor/a,\n\nNos termos do artigo 1077.º do Código Civil e da Portaria de atualização de rendas em vigor, comunico a atualização anual da renda do contrato de arrendamento.\n\nCoeficiente de atualização: {coefficient}\nRenda atual: {currentRent} €\nFórmula: Nova renda = Renda atual × Coeficiente\n\nA nova renda entrará em vigor a partir de {effectiveDate}.\n\nNota: A comunicação deve ser feita por escrito com antecedência mínima de 30 dias (art. 1077.º, n.º 3 do CC).\n\nCom os melhores cumprimentos," },
+  ],
+};
+
+/* ─── Denúncia pelo arrendatário ─── */
+export const ptDenunciaArrendatario: DocumentTemplate = {
+  id: "pt-denuncia-arrendatario",
+  version: "1.0.0",
+  country: "PT",
+  category: "rental",
+  docType: "conges-locataire",
+  label: "Denúncia pelo arrendatário",
+  description: "Comunicação de denúncia do contrato pelo arrendatário conforme o art. 1098.º do CC.",
+  legalBasis: "Código Civil art. 1098.º; NRAU (Lei 6/2006)",
+  needsLegalReview: false,
+  active: true,
+  fields: [
+    { key: "tenantName", label: "Nome do arrendatário", type: "text", required: true, group: "Arrendatário" },
+    { key: "tenantNIF", label: "NIF", type: "text", required: true, group: "Arrendatário" },
+    { key: "tenantAddress", label: "Morada atual", type: "text", required: true, group: "Arrendatário" },
+    { key: "landlordName", label: "Nome do senhorio", type: "text", required: true, group: "Senhorio" },
+    { key: "landlordAddress", label: "Morada do senhorio", type: "text", required: true, group: "Senhorio" },
+    { key: "propertyAddress", label: "Morada do imóvel", type: "text", required: true, group: "Imóvel" },
+    { key: "contractDate", label: "Data do contrato", type: "date", required: true, group: "Contrato" },
+    { key: "departureDate", label: "Data de saída prevista", type: "date", required: true, group: "Datas" },
+    { key: "newAddress", label: "Nova morada (para caução)", type: "text", required: false, group: "Datas" },
+    { key: "sendDate", label: "Data de envio", type: "date", required: true, group: "Datas" },
+  ],
+  clauses: [
+    { id: "denuncia", label: "Comunicação de denúncia", required: true,
+      text: "CARTA REGISTADA COM AVISO DE RECEÇÃO\n\n{tenantName}\nNIF: {tenantNIF}\n{tenantAddress}\n\nExmo./a Sr./a {landlordName}\n{landlordAddress}\n\nData: {sendDate}\n\nAssunto: Denúncia do contrato de arrendamento — {propertyAddress}\n\nExmo./a Senhor/a,\n\nNos termos do artigo 1098.º do Código Civil, venho por este meio comunicar a denúncia do contrato de arrendamento celebrado em {contractDate} para o imóvel sito em {propertyAddress}.\n\nPrazos legais de pré-aviso:\n• Contratos com prazo ≥ 1 ano: 120 dias de antecedência\n• Contratos com prazo < 1 ano: 60 dias de antecedência\n• Prazo indeterminado: 120 dias\n\nPrevejo desocupar o imóvel até {departureDate}.\n\nSolicito:\n• Marcação de vistoria de saída\n• Restituição da caução no prazo de 30 dias após entrega das chaves\n• Emissão de quitação dos valores pagos\n\nNova morada: {newAddress}\n\nCom os melhores cumprimentos," },
+  ],
+};
+
+/* ─── Oposição à renovação pelo senhorio ─── */
+export const ptOposicaoSenhorio: DocumentTemplate = {
+  id: "pt-oposicao-senhorio",
+  version: "1.0.0",
+  country: "PT",
+  category: "rental",
+  docType: "conges-bailleur",
+  label: "Oposição à renovação pelo senhorio",
+  description: "Comunicação de oposição à renovação automática do contrato pelo senhorio.",
+  legalBasis: "Código Civil arts. 1096.º, 1097.º; NRAU (Lei 6/2006)",
+  needsLegalReview: true,
+  active: true,
+  fields: [
+    { key: "landlordName", label: "Nome do senhorio", type: "text", required: true, group: "Senhorio" },
+    { key: "landlordNIF", label: "NIF", type: "text", required: true, group: "Senhorio" },
+    { key: "landlordAddress", label: "Morada", type: "text", required: true, group: "Senhorio" },
+    { key: "tenantName", label: "Nome do arrendatário", type: "text", required: true, group: "Arrendatário" },
+    { key: "tenantAddress", label: "Morada", type: "text", required: true, group: "Arrendatário" },
+    { key: "propertyAddress", label: "Morada do imóvel", type: "text", required: true, group: "Imóvel" },
+    { key: "contractDate", label: "Data do contrato", type: "date", required: true, group: "Contrato" },
+    { key: "contractEndDate", label: "Data de renovação", type: "date", required: true, group: "Contrato" },
+    { key: "motivo", label: "Motivo (se aplicável)", type: "textarea", required: false, group: "Motivo" },
+    { key: "sendDate", label: "Data de envio", type: "date", required: true, group: "Datas" },
+  ],
+  clauses: [
+    { id: "oposicao", label: "Comunicação", required: true,
+      text: "CARTA REGISTADA COM AVISO DE RECEÇÃO\n\n{landlordName}\nNIF: {landlordNIF}\n{landlordAddress}\n\nExmo./a Sr./a {tenantName}\n{tenantAddress}\n\nData: {sendDate}\n\nAssunto: Oposição à renovação do contrato de arrendamento — {propertyAddress}\n\nExmo./a Senhor/a,\n\nNos termos dos artigos 1096.º e 1097.º do Código Civil e do NRAU, venho comunicar a minha oposição à renovação automática do contrato de arrendamento celebrado em {contractDate} para o imóvel sito em {propertyAddress}, com renovação prevista para {contractEndDate}.\n\nPRAZOS LEGAIS DE PRÉ-AVISO PELO SENHORIO:\n• Contratos ≥ 6 anos de duração: 240 dias de antecedência\n• Contratos ≥ 1 ano e < 6 anos: 120 dias\n• Contratos ≥ 6 meses e < 1 ano: 60 dias\n• Contratos < 6 meses: 1/3 do prazo\n\nMotivo:\n{motivo}\n\nA caução será restituída no prazo de 30 dias após a entrega das chaves, deduzidos eventuais importes devidos.\n\nCom os melhores cumprimentos," },
+  ],
+};
