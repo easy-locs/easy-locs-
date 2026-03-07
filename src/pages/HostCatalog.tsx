@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
+import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Euro, Loader2, Star } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 
