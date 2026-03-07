@@ -213,36 +213,43 @@ function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
 function addHeader(doc: jsPDF, title: string, country: string, docType: string): number {
   const countryEntry = getCountryEntry(country);
 
+  // Gold top bar
   doc.setFillColor(...COLOR_GOLD);
-  doc.rect(0, 0, PAGE_WIDTH, 8, "F");
+  doc.rect(0, 0, PAGE_WIDTH, 7, "F");
 
+  // Brand name — left aligned, consistent position
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
-  doc.text("EASY-LOCS", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 20);
   setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
 
+  // Authority info — right aligned
   if (countryEntry) {
     const authority = GOVERNMENT_AUTHORITIES[country] || `${countryEntry.name} — Housing Authority`;
     const formCode = COUNTRY_FORM_CODES[country] || "Government housing template";
     setFont(doc, "bold", 8, COLOR_MUTED);
-    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 19, { align: "right" });
+    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 17, { align: "right" });
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(
       sanitize(`${formCode} · ${countryEntry.taxIdLabel}`),
       PAGE_WIDTH - MARGIN,
-      24,
+      22,
       { align: "right" }
     );
   }
 
+  // Document title — below brand
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);
-  doc.text(titleClean, MARGIN, 30);
+  const titleLines = doc.splitTextToSize(titleClean, CONTENT_WIDTH);
+  doc.text(titleLines[0] || "", MARGIN, 28);
 
+  // Separator line
   doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, 34, PAGE_WIDTH - MARGIN, 34);
-  return 42;
+  doc.line(MARGIN, 32, PAGE_WIDTH - MARGIN, 32);
+
+  return HEADER_HEIGHT - 2; /* 40 — safe start Y for content */
 }
 
 function addFooter(doc: jsPDF, country?: string) {
