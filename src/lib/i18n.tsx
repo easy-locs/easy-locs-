@@ -1179,7 +1179,13 @@ const pageFr: Record<string, string> = {
   "landing.hero.title_highlight": "de gestion locative",
   "landing.hero.subtitle": "Documents juridiques automatisés de qualité professionnelle, adaptés à chaque pays. Gérez vos locations longue durée, Airbnb et Booking depuis une seule plateforme.",
   "landing.hero.cta": "Commencer gratuitement",
+  "landing.hero.cta_pro": "Espace propriétaire",
+  "landing.hero.cta_tenant": "Espace locataire",
   "landing.hero.pricing": "Voir les tarifs",
+  "landing.hero.trust_countries": "110+ pays",
+  "landing.hero.trust_gdpr": "Conforme RGPD",
+  "landing.hero.trust_legal": "Documents légaux",
+  "landing.hero.trust_portal": "Portail locataire",
 
   "landing.footer.desc": "Votre assistant de gestion locative intelligent, conforme et sécurisé.",
   "landing.footer.product": "Produit",
