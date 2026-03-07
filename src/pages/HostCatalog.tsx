@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import { MapPin, Users, Euro, Loader2, Star } from "lucide-react";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const HostCatalog = () => {
   const { hostSlug } = useParams<{ hostSlug: string }>();
