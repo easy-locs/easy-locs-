@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
-import logoEasyloc from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
   CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
@@ -86,10 +86,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col transition-transform duration-300 ease-in-out safe-bottom ${sidebarOpen ? "translate-x-0 sidebar-slide-in" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="px-5 pt-5 pb-3 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src={logoEasyloc} alt="Easy-Locs" className="h-8 w-8 object-contain" />
-              <span className="text-lg font-bold text-sidebar-foreground">Easy-Locs</span>
-            </div>
+            <AppLogo variant="sidebar" linkTo="/tenant" />
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground">
               <X className="h-5 w-5" />
             </button>

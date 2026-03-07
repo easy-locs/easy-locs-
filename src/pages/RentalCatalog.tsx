@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import { MapPin, Users, Euro, Loader2, Search, SlidersHorizontal } from "lucide-react";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const RentalCatalog = () => {
   const { country, city } = useParams<{ country?: string; city?: string }>();
@@ -63,10 +63,7 @@ const RentalCatalog = () => {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoEasylocs} alt="EASY-LOCS" className="h-6 w-auto" />
-            <span className="text-sm font-bold text-foreground tracking-tight">EASY-LOCS<sup className="text-[7px] ml-0.5 text-muted-foreground">®</sup></span>
-          </Link>
+          <AppLogo variant="header" linkTo="/" />
           <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
         </div>
       </header>

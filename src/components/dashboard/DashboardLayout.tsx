@@ -5,7 +5,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
-import logoEasyloc from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
@@ -188,17 +188,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Header: Logo + role switch */}
         <div className="px-4 pt-4 pb-3 border-b border-sidebar-border shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <img
-                src={logoEasyloc}
-                alt="EASY-LOCS"
-                className="h-9 w-auto object-contain drop-shadow-md"
-                style={{ filter: "none", border: "none", outline: "none" }}
-              />
-              <span className="text-lg font-bold tracking-tight text-sidebar-foreground whitespace-nowrap">
-                EASY-LOCS<sup className="text-[8px] align-super ml-0.5 text-sidebar-foreground/60">®</sup>
-              </span>
-            </div>
+            <AppLogo variant="sidebar" linkTo="/dashboard" />
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"

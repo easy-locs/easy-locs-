@@ -9,7 +9,7 @@ import BookingForm from "@/components/public/BookingForm";
 import ListingLocalServices from "@/components/public/ListingLocalServices";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -133,10 +133,7 @@ const PublicListing = () => {
       {/* Top bar with logo + language */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={logoEasylocs} alt="EASY-LOCS" className="h-6 w-auto" />
-            <span className="text-sm font-bold text-foreground tracking-tight">EASY-LOCS<sup className="text-[7px] ml-0.5 text-muted-foreground">®</sup></span>
-          </div>
+          <AppLogo variant="header" linkTo="/" />
           <div className="flex items-center gap-3">
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Share">
               <Share2 className="h-4 w-4 text-muted-foreground" />

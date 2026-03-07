@@ -5,7 +5,7 @@ import {
   Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
 } from "lucide-react";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -247,9 +247,8 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4 overflow-y-auto">
-      <div className="absolute top-6 left-6 flex items-center gap-2">
-        <img src={logoEasylocs} alt="Easy-Locs" className="h-10 w-auto object-contain" />
-        <span className="text-xl font-bold text-primary-foreground">Easy-Locs<sup className="text-[8px] align-super ml-0.5 text-primary-foreground/60">®</sup></span>
+      <div className="absolute top-6 left-6">
+        <AppLogo variant="auth" linkTo="/" />
       </div>
 
       <motion.div className="bg-card rounded-2xl shadow-card-hover p-5 sm:p-10 max-w-2xl w-full my-16"
