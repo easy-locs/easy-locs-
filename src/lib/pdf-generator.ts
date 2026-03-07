@@ -257,21 +257,27 @@ function addFooter(doc: jsPDF, country?: string) {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+
+    // Disclaimer line
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text(
-      sanitize(labels.disclaimer),
-      MARGIN, 283
-    );
-    // EASY-LOCS® branding
+    doc.text(sanitize(labels.disclaimer), MARGIN, 278);
+
+    // Brand centered
     setFont(doc, "bold", 8, COLOR_PRIMARY);
-    doc.text("EASY-LOCS", PAGE_WIDTH / 2 - 8, 289);
+    const brandText = "EASY-LOCS";
+    const brandWidth = doc.getTextWidth(brandText);
+    const brandX = (PAGE_WIDTH - brandWidth) / 2;
+    doc.text(brandText, brandX, 284);
     setFont(doc, "normal", 5, COLOR_PRIMARY);
-    doc.text("\u00AE", PAGE_WIDTH / 2 + 11, 286.5);
-    // Page number
+    doc.text("(R)", brandX + brandWidth + 1, 281.5);
+
+    // Page number — right
     setFont(doc, "normal", 7, COLOR_MUTED);
-    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 289, { align: "right" });
+    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
+
+    // Bottom bar
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 291, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
   }
 }
 
