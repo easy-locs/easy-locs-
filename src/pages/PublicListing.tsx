@@ -9,7 +9,7 @@ import BookingForm from "@/components/public/BookingForm";
 import ListingLocalServices from "@/components/public/ListingLocalServices";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
