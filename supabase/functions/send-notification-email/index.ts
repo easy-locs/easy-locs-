@@ -101,7 +101,7 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
   },
   maintenance_update: {
     fr: { subject: "Mise à jour maintenance — {title}", title: "🔧 Mise à jour maintenance", body: "La demande de maintenance « {title} » a été mise à jour. Statut : {status}." },
-    en: { subject: "Maintenance Update — {title}", title: "🔧 Maintenance Update", body: "Maintenance request \"{title}\" has been updated. Status: {status}." },
+    en: { subject: "Maintenance Update — {title}", title: "🔧 Maintenance Update", body: 'Maintenance request "{title}" has been updated. Status: {status}.' },
     es: { subject: "Actualización de mantenimiento — {title}", title: "🔧 Actualización mantenimiento", body: "La solicitud de mantenimiento « {title} » ha sido actualizada. Estado: {status}." },
     de: { subject: "Wartungsupdate — {title}", title: "🔧 Wartungsupdate", body: "Die Wartungsanfrage „{title}" wurde aktualisiert. Status: {status}." },
     it: { subject: "Aggiornamento manutenzione — {title}", title: "🔧 Aggiornamento manutenzione", body: "La richiesta di manutenzione « {title} » è stata aggiornata. Stato: {status}." },
