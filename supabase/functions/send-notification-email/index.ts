@@ -127,7 +127,7 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     fr: { subject: "Signature requise — {title}", title: "✍️ Signature requise", body: "Le document « {title} » nécessite votre signature. Connectez-vous pour signer." },
     en: { subject: "Signature Required — {title}", title: "✍️ Signature Required", body: 'The document "{title}" requires your signature. Log in to sign.' },
     es: { subject: "Firma requerida — {title}", title: "✍️ Firma requerida", body: "El documento « {title} » requiere su firma. Inicie sesión para firmar." },
-    de: { subject: "Unterschrift erforderlich — {title}", title: "✍️ Unterschrift erforderlich", body: "Das Dokument „{title}" erfordert Ihre Unterschrift. Melden Sie sich an, um zu unterschreiben." },
+    de: { subject: "Unterschrift erforderlich — {title}", title: "✍️ Unterschrift erforderlich", body: 'Das Dokument „{title}" erfordert Ihre Unterschrift. Melden Sie sich an, um zu unterschreiben.' },
     it: { subject: "Firma richiesta — {title}", title: "✍️ Firma richiesta", body: "Il documento « {title} » richiede la tua firma. Accedi per firmare." },
     pt: { subject: "Assinatura necessária — {title}", title: "✍️ Assinatura necessária", body: "O documento « {title} » requer sua assinatura. Faça login para assinar." },
   },
