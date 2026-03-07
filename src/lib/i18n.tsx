@@ -2574,6 +2574,10 @@ const pageEn: Record<string, string> = {
   "page.settings.default_provider": "Default provider",
   "page.settings.bank_transfer": "Bank transfer",
   "page.settings.saas_disclaimer": "Easy-Locs does not hold, block, or transfer any funds. Payments go directly from your tenant to your account.",
+  "page.settings.sepa_desc": "Automatic SEPA Direct Debit (SEPA zone only)",
+  "page.settings.sepa_eligible": "SEPA zone eligible",
+  "page.settings.sepa_via_stripe": "Enabled via Stripe Connect. Tenants can pay by SEPA Direct Debit.",
+  "page.settings.sepa_unavailable": "Not available — Your country is not in the SEPA zone",
 
   "auth.login.title": "Login",
   "auth.login.subtitle": "Access your Easy-Locs workspace.",
