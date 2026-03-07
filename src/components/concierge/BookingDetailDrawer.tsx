@@ -140,13 +140,13 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
           <section className="space-y-2">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client</h3>
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-medium text-foreground">{booking.guest_name}</span>
+              <div className="flex items-start gap-2 text-sm">
+                <User className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                <span className="font-medium text-foreground break-words">{booking.guest_name}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-foreground">{booking.guest_email}</span>
+              <div className="flex items-start gap-2 text-sm min-w-0">
+                <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                <span className="text-foreground break-all">{booking.guest_email}</span>
                 <Button size="sm" variant="ghost" className="h-5 w-5 p-0" onClick={() => copyToClipboard(booking.guest_email)}>
                   <Copy className="h-3 w-3" />
                 </Button>
