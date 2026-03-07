@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const Footer = React.forwardRef<HTMLElement>((_, ref) => {
   const { t } = useI18n();
