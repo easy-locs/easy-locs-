@@ -159,7 +159,7 @@ const PaymentNotices = () => {
             <h1 className="text-2xl font-bold text-foreground">{t("page.notices.title")}</h1>
             <p className="text-sm text-muted-foreground">{t("page.notices.subtitle")}</p>
           </div>
-          <button onClick={generateNotices} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+          <button onClick={generateNotices} className="inline-flex items-center gap-2 h-10 bg-gradient-gold text-accent-foreground px-4 rounded-xl text-sm font-semibold shadow-gold hover:opacity-90">
             <Plus className="h-4 w-4" /> {t("page.notices.generate")}
           </button>
         </div>
