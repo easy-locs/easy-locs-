@@ -1082,19 +1082,21 @@ const RentalManagement = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm">{COUNTRY_FLAGS[p.country] || "🌍"}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
-              {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {propTenants.length > 0 ? L.occupied : (
-                  <span
-                    className="cursor-pointer hover:underline"
-                    onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
-                  >
-                    {L.vacantAssign}
-                  </span>
-                )}
-              </span>
-              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
-              {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} {L.unpaidN}</span>}
+              <div className="badge-row">
+                {p.lot_number && <span className="bg-accent/10 text-accent">Lot {p.lot_number}</span>}
+                <span className={propTenants.length > 0 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}>
+                  {propTenants.length > 0 ? L.occupied : (
+                    <span
+                      className="cursor-pointer hover:underline"
+                      onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
+                    >
+                      {L.vacantAssign}
+                    </span>
+                  )}
+                </span>
+                {p.furnished && <span className="bg-accent/10 text-accent">{L.furnished}</span>}
+                {propUnpaid > 0 && <span className="bg-destructive/15 text-destructive">{propUnpaid} {L.unpaidN}</span>}
+              </div>
             </div>
             <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
