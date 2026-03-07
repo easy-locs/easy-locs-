@@ -2,42 +2,88 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Language prompts for worldwide support
 const LANG_PROMPTS: Record<string, string> = {
-  fr: "Tu es l'assistant personnel d'Easy-Locs, une plateforme de gestion locative immobilière. Réponds toujours en français.",
-  en: "You are the personal assistant of Easy-Locs, a property management platform. Always respond in English.",
-  es: "Eres el asistente personal de Easy-Locs, una plataforma de gestión de alquileres. Responde siempre en español.",
-  de: "Du bist der persönliche Assistent von Easy-Locs, einer Immobilienverwaltungsplattform. Antworte immer auf Deutsch.",
-  it: "Sei l'assistente personale di Easy-Locs, una piattaforma di gestione immobiliare. Rispondi sempre in italiano.",
-  pt: "Você é o assistente pessoal do Easy-Locs, uma plataforma de gestão imobiliária. Responda sempre em português.",
-  nl: "Je bent de persoonlijke assistent van Easy-Locs, een vastgoedbeheersplatform. Antwoord altijd in het Nederlands.",
-  pl: "Jesteś osobistym asystentem Easy-Locs, platformy do zarządzania nieruchomościami. Zawsze odpowiadaj po polsku.",
-  tr: "Easy-Locs'un kişisel asistanısınız. Her zaman Türkçe yanıt verin.",
-  ar: "أنت المساعد الشخصي لمنصة Easy-Locs لإدارة العقارات. أجب دائماً بالعربية.",
-  ja: "あなたはEasy-Locsの不動産管理プラットフォームのパーソナルアシスタントです。常に日本語で回答してください。",
-  ko: "Easy-Locs 부동산 관리 플랫폼의 개인 비서입니다. 항상 한국어로 답변하세요.",
-  zh: "你是Easy-Locs房产管理平台的个人助手。请始终用中文回答。",
-  hi: "आप Easy-Locs संपत्ति प्रबंधन प्लेटफ़ॉर्म के व्यक्तिगत सहायक हैं। हमेशा हिंदी में उत्तर दें।",
-  th: "คุณคือผู้ช่วยส่วนตัวของ Easy-Locs แพลตฟอร์มจัดการอสังหาริมทรัพย์ ตอบเป็นภาษาไทยเสมอ",
-  vi: "Bạn là trợ lý cá nhân của Easy-Locs. Luôn trả lời bằng tiếng Việt.",
-  id: "Anda adalah asisten pribadi Easy-Locs. Selalu jawab dalam Bahasa Indonesia.",
-  ms: "Anda adalah pembantu peribadi Easy-Locs. Sentiasa jawab dalam Bahasa Melayu.",
-  sv: "Du är Easy-Locs personliga assistent. Svara alltid på svenska.",
-  da: "Du er Easy-Locs personlige assistent. Svar altid på dansk.",
-  nb: "Du er Easy-Locs personlige assistent. Svar alltid på norsk.",
-  fi: "Olet Easy-Locsin henkilökohtainen avustaja. Vastaa aina suomeksi.",
-  el: "Είσαι ο προσωπικός βοηθός του Easy-Locs. Απάντα πάντα στα ελληνικά.",
-  cs: "Jste osobní asistent Easy-Locs. Vždy odpovídejte česky.",
-  hu: "Ön az Easy-Locs személyes asszisztense. Mindig magyarul válaszoljon.",
-  ro: "Ești asistentul personal Easy-Locs. Răspunde întotdeauna în română.",
-  hr: "Vi ste osobni asistent Easy-Locsa. Uvijek odgovarajte na hrvatskom.",
-  bg: "Вие сте личният асистент на Easy-Locs. Винаги отговаряйте на български.",
-  sk: "Ste osobný asistent Easy-Locs. Vždy odpovedajte po slovensky.",
-  he: "אתה העוזר האישי של Easy-Locs. ענה תמיד בעברית.",
-  uk: "Ви — персональний асистент Easy-Locs. Завжди відповідайте українською.",
+  fr: "Réponds toujours en français.",
+  en: "Always respond in English.",
+  es: "Responde siempre en español.",
+  de: "Antworte immer auf Deutsch.",
+  it: "Rispondi sempre in italiano.",
+  pt: "Responda sempre em português.",
+  nl: "Antwoord altijd in het Nederlands.",
+  pl: "Zawsze odpowiadaj po polsku.",
+  tr: "Her zaman Türkçe yanıt verin.",
+  ar: "أجب دائماً بالعربية.",
+  ja: "常に日本語で回答してください。",
+  ko: "항상 한국어로 답변하세요.",
+  zh: "请始终用中文回答。",
+  hi: "हमेशा हिंदी में उत्तर दें।",
+  th: "ตอบเป็นภาษาไทยเสมอ",
+  vi: "Luôn trả lời bằng tiếng Việt.",
+  id: "Selalu jawab dalam Bahasa Indonesia.",
+  ms: "Sentiasa jawab dalam Bahasa Melayu.",
+  sv: "Svara alltid på svenska.",
+  da: "Svar altid på dansk.",
+  nb: "Svar alltid på norsk.",
+  fi: "Vastaa aina suomeksi.",
+  el: "Απάντα πάντα στα ελληνικά.",
+  cs: "Vždy odpovídejte česky.",
+  hu: "Mindig magyarul válaszoljon.",
+  ro: "Răspunde întotdeauna în română.",
+  hr: "Uvijek odgovarajte na hrvatskom.",
+  bg: "Винаги отговаряйте на български.",
+  sk: "Vždy odpovedajte po slovensky.",
+  he: "ענה תמיד בעברית.",
+  uk: "Завжди відповідайте українською.",
+};
+
+const TASK_PROMPTS: Record<string, string> = {
+  chat: `You are the AI Copilot of Easy-Locs, a next-generation property management platform.
+You help landlords and property managers with:
+- Property management advice and best practices
+- Legal obligations by country
+- Tenant communication strategies
+- Financial optimization for rentals
+- Marketing and listing improvements
+- Booking management tips
+
+Be concise, professional, and actionable. Provide specific advice based on the user's context.
+Never mention "AI", "artificial intelligence", "Lovable", or "Supabase".
+Present yourself as the "Easy-Locs Copilot".`,
+
+  listing_description: `You are a property listing copywriter for Easy-Locs.
+Generate an attractive, SEO-friendly property listing description.
+Use engaging language that highlights the property's best features.
+Structure: catchy intro → key features → neighborhood highlights → call to action.
+Keep it between 150-250 words. Use short paragraphs.`,
+
+  listing_title: `You are a property listing title expert.
+Generate 3 compelling, SEO-friendly listing titles (max 80 characters each).
+Each title should emphasize a different angle: luxury/comfort, location, or unique features.
+Return them numbered 1-3.`,
+
+  translate: `You are a professional real estate translator.
+Translate the provided text accurately while adapting it culturally for the target market.
+Maintain the marketing appeal and SEO quality.
+Only return the translation, nothing else.`,
+
+  guest_reply: `You are a hospitality communication expert for Easy-Locs.
+Draft a professional, warm reply to a guest message.
+Be helpful, courteous, and solution-oriented.
+Keep the tone professional but friendly. Keep it concise (2-4 sentences).`,
+
+  seo_improve: `You are an SEO expert for vacation rental listings.
+Analyze the provided listing content and suggest specific improvements for:
+- Title optimization
+- Description keywords
+- Structure improvements
+Return actionable suggestions in a numbered list.`,
+
+  summarize: `You are a business intelligence assistant for Easy-Locs.
+Summarize the provided data or activity in a clear, concise business report format.
+Use bullet points and highlight key metrics and actionable insights.`,
 };
 
 Deno.serve(async (req) => {
@@ -46,9 +92,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { message, context, locale } = await req.json();
+    const { messages, message, context, locale, task, taskContext, stream } = await req.json();
 
-    // Get user from auth
     const authHeader = req.headers.get("Authorization");
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -64,65 +109,80 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Detect language: explicit locale > user profile > default fr
-    const userLocale = locale || "fr";
-    const langIntro = LANG_PROMPTS[userLocale] || LANG_PROMPTS.en;
-
-    const systemPrompt = `${langIntro}
-
-Tu aides les propriétaires et bailleurs à gérer leurs biens, locataires, baux, quittances et obligations administratives dans le monde entier.
-
-Contexte utilisateur:
-${context ? JSON.stringify(context) : "Aucun contexte supplémentaire."}
-
-Règles:
-- Réponds toujours dans la langue demandée (${userLocale})
-- Sois concis, professionnel et actionnable
-- Propose des actions concrètes basées sur la situation du propriétaire
-- Cite les articles de loi pertinents du pays concerné quand applicable
-- Ne mentionne jamais "IA", "intelligence artificielle" ou "Lovable"
-- Présente-toi comme "l'assistant personnel Easy-Locs"`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message },
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("AI Gateway error:", err);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
-      return new Response(JSON.stringify({ error: "Service error" }), {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const userLocale = locale || "fr";
+    const langRule = LANG_PROMPTS[userLocale] || LANG_PROMPTS.en;
+    const taskType = task || "chat";
+    const basePrompt = TASK_PROMPTS[taskType] || TASK_PROMPTS.chat;
+
+    const systemPrompt = `${basePrompt}
+
+${langRule}
+
+${context ? `User context:\n${JSON.stringify(context)}` : ""}
+${taskContext ? `Task context:\n${taskContext}` : ""}`;
+
+    // Build messages array: support both legacy single-message and full conversation
+    const chatMessages: Array<{ role: string; content: string }> = [
+      { role: "system", content: systemPrompt },
+    ];
+
+    if (messages && Array.isArray(messages)) {
+      chatMessages.push(...messages);
+    } else if (message) {
+      chatMessages.push({ role: "user", content: message });
+    }
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: chatMessages,
+        max_tokens: 2000,
+        temperature: 0.7,
+        stream: !!stream,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("AI Gateway error:", response.status, err);
+
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: "Service error" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Streaming mode
+    if (stream) {
+      return new Response(response.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
+    // Non-streaming mode
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 

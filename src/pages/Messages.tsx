@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { MessageCircle, Send, ArrowLeft, User, Filter } from "lucide-react";
+import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -405,6 +406,12 @@ const Messages = () => {
                     placeholder={t("page.messages.placeholder")}
                     className="flex-1"
                     disabled={sending}
+                  />
+                  <AIGenerateButton
+                    task="guest_reply"
+                    taskContext={messages.length > 0 ? `Last message from tenant: "${messages[messages.length - 1]?.content}"` : "Draft a professional message to the tenant."}
+                    onApply={(text) => setNewMessage(text)}
+                    variant="icon"
                   />
                   <Button onClick={handleSend} disabled={!newMessage.trim() || sending} size="icon">
                     <Send className="h-4 w-4" />
