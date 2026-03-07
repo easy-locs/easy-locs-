@@ -13,10 +13,16 @@ import {
   ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList,
   Newspaper, CreditCard, ExternalLink, Loader2, Search
 } from "lucide-react";
+import CountrySelect from "@/components/ui/CountrySelect";
+import { getCountryFlag } from "@/lib/global-country-registry";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Company = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  const { orgId } = useAuth();
+  const countryFilter = useCountryFilter();
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [wizardMode, setWizardMode] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
@@ -27,7 +33,20 @@ const Company = () => {
   const [payingJAL, setPayingJAL] = useState(false);
   const [registeredAddress, setRegisteredAddress] = useState("");
   const [detectedDepartment, setDetectedDepartment] = useState("");
-  const companyTemplates = getTemplatesByCategory("company", "FR");
+  const [selectedCountry, setSelectedCountry] = useState<string>(countryFilter || "FR");
+
+  // Load user's country from profile
+  useEffect(() => {
+    if (countryFilter) { setSelectedCountry(countryFilter); return; }
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.id) {
+        supabase.from("profiles").select("country").eq("id", data.user.id).single()
+          .then(({ data: p }) => { if (p?.country) setSelectedCountry(p.country); });
+      }
+    });
+  }, [countryFilter]);
+
+  const companyTemplates = getTemplatesByCategory("company", selectedCountry as any);
 
   // Entity types for wizard
   const entityTypes = [
@@ -428,14 +447,7 @@ const Company = () => {
               {t("page.company.subtitle")}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowJALPanel(true)}
-              className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors"
-            >
-              <Newspaper className="h-4 w-4" />
-              {t("page.company.legal_notice_btn")}
-            </button>
+          {selectedCountry === "FR" && (
             <button
               onClick={() => setWizardMode(true)}
               className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
@@ -443,9 +455,45 @@ const Company = () => {
               <Rocket className="h-4 w-4" />
               {t("page.company.create_company")}
             </button>
+          )}
+        </div>
+
+        {/* Country selector */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="text-lg">{getCountryFlag(selectedCountry)}</span>
+            <span>Pays des documents</span>
+          </div>
+          <div className="w-full sm:w-[360px]">
+            <CountrySelect
+              value={selectedCountry}
+              onChange={(code) => setSelectedCountry(code || "FR")}
+              placeholder="Choisir un pays"
+            />
           </div>
         </div>
 
+        {/* JAL panel only for France */}
+        {selectedCountry === "FR" && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowJALPanel(true)}
+              className="flex items-center gap-2 border border-border text-foreground text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Newspaper className="h-4 w-4" />
+              {t("page.company.legal_notice_btn")}
+            </button>
+          </div>
+        )}
+
+        {companyTemplates.length === 0 ? (
+          <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
+            <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+            <p className="text-muted-foreground text-sm">Aucun document entreprise disponible pour {getCountryFlag(selectedCountry)} {selectedCountry}</p>
+            <p className="text-muted-foreground/60 text-xs mt-2">Les modèles entreprise sont disponibles pour la France. D'autres pays seront ajoutés prochainement.</p>
+          </div>
+        ) : (
+        <>
         {sections.map((section) => {
           const templates = companyTemplates.filter(section.filter);
           if (templates.length === 0) return null;
@@ -490,6 +538,8 @@ const Company = () => {
             {t("page.company.disclaimer")}
           </p>
         </div>
+        </>
+        )}
       </div>
     </DashboardLayout>
   );
