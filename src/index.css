@@ -324,3 +324,58 @@
     @apply space-y-6;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   ══════════════════════════════════════════════════ */
+
+/* Mobile-first safe area for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Ensure no horizontal overflow on mobile */
+@layer utilities {
+  .mobile-safe {
+    @apply max-w-full overflow-x-hidden;
+  }
+}
+
+/* Smooth sidebar overlay backdrop */
+@layer components {
+  .sidebar-overlay {
+    @apply fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm;
+    animation: fadeIn 200ms ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  .sidebar-slide-in {
+    animation: slideIn 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Mobile touch targets — minimum 44px */
+@media (max-width: 640px) {
+  .btn, .btn-primary, .btn-secondary, .btn-destructive, .btn-ghost, .btn-success {
+    min-height: 44px;
+  }
+  .btn-sm {
+    min-height: 36px;
+  }
+}
+
+/* Responsive stat cards grid */
+@layer components {
+  .stats-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+}
