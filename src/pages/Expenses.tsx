@@ -137,8 +137,8 @@ const Expenses = () => {
               <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
             <div className="flex gap-3">
-              <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">{t("page.common.save")}</button>
-              <button onClick={() => setShowForm(false)} className="border border-border text-foreground px-6 py-2 rounded-lg text-sm hover:bg-muted">{t("page.common.cancel")}</button>
+              <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
+              <button onClick={() => setShowForm(false)} className="btn-secondary">{t("page.common.cancel")}</button>
             </div>
           </div>
         )}
