@@ -1545,6 +1545,36 @@ const RentalManagement = () => {
               </button>
             </div>
 
+            {/* KPI summary */}
+            {(() => {
+              const unpaidCalls = filteredPayments.filter(p => !p.paid);
+              const paidCalls = filteredPayments.filter(p => p.paid);
+              const unpaidTotal = unpaidCalls.reduce((s, p) => s + p.total_amount, 0);
+              const paidTotal = paidCalls.reduce((s, p) => s + p.total_amount, 0);
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-card rounded-xl border border-border/50 p-4">
+                    <p className="text-xs text-muted-foreground">{L.calls}</p>
+                    <p className="text-xl font-bold text-foreground">{filteredPayments.length}</p>
+                  </div>
+                  <div className="bg-card rounded-xl border border-destructive/20 p-4">
+                    <p className="text-xs text-destructive">{t("page.rental.unpaid")}</p>
+                    <p className="text-xl font-bold text-destructive">{unpaidCalls.length}</p>
+                    <p className="text-xs text-muted-foreground">{fmt(unpaidTotal)}</p>
+                  </div>
+                  <div className="bg-card rounded-xl border border-success/20 p-4">
+                    <p className="text-xs text-success">{L.paid}</p>
+                    <p className="text-xl font-bold text-success">{paidCalls.length}</p>
+                    <p className="text-xs text-muted-foreground">{fmt(paidTotal)}</p>
+                  </div>
+                  <div className="bg-card rounded-xl border border-border/50 p-4">
+                    <p className="text-xs text-muted-foreground">{L.properties}</p>
+                    <p className="text-xl font-bold text-foreground">{new Set(filteredPayments.map(p => p.property_id).filter(Boolean)).size}</p>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Property filter */}
             <div className="flex items-center gap-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -1562,90 +1592,155 @@ const RentalManagement = () => {
                 <p className="text-muted-foreground text-sm">{L.noRentCall}</p>
               </div>
             ) : (
-              <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-                <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.tenant}</th>
-                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.property}</th>
-                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.month}</th>
-                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.rent}</th>
-                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{L.status}</th>
-                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
-                       <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {filteredPayments.map(p => {
-                      const tenant = tenants.find(t => t.id === p.tenant_id);
-                      const prop = tenant ? getPropertyForTenant(tenant) : undefined;
+              /* Group payments by property, unpaid properties first */
+              (() => {
+                // Group by property
+                const byProperty: Record<string, typeof filteredPayments> = {};
+                filteredPayments.forEach(p => {
+                  const key = p.property_id || "no-property";
+                  if (!byProperty[key]) byProperty[key] = [];
+                  byProperty[key].push(p);
+                });
+
+                // Sort: properties with unpaid first
+                const sortedEntries = Object.entries(byProperty).sort(([, a], [, b]) => {
+                  const aUnpaid = a.some(p => !p.paid);
+                  const bUnpaid = b.some(p => !p.paid);
+                  if (aUnpaid && !bUnpaid) return -1;
+                  if (!aUnpaid && bUnpaid) return 1;
+                  return 0;
+                });
+
+                return (
+                  <div className="space-y-6">
+                    {sortedEntries.map(([propId, propPayments]) => {
+                      const prop = properties.find(p => p.id === propId);
+                      const unpaid = propPayments.filter(p => !p.paid).sort((a, b) => a.month.localeCompare(b.month));
+                      const paid = propPayments.filter(p => p.paid).sort((a, b) => b.month.localeCompare(a.month));
+                      const propCountry = prop?.country?.toUpperCase() || "";
+                      const flag = COUNTRY_FLAGS[propCountry] || "🏠";
+
                       return (
-                        <tr key={p.id} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">{tenant?.name || "—"}</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{prop?.label || "—"}</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">{p.month}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-foreground currency-value whitespace-nowrap">{fmt(p.total_amount)}</td>
-                          <td className="px-4 py-3 text-right relative">
-                            {p.paid ? (
-                               <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
-                                 ✓ {L.paid} {p.payment_method === "online" ? `(${L.online})` : p.payment_method === "bank_transfer" ? `(${L.transfer})` : p.payment_method === "cash" ? `(${L.cash})` : ""}
-                              </button>
-                            ) : (
-                              <div className="flex items-center justify-end gap-2">
-                                <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
-                                   {L.markPaid}
-                                 </button>
-                                 <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                   className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
-                                   {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-                                   {L.online}
-                                </button>
+                        <div key={propId} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
+                          {/* Property header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border/30">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base">{flag}</span>
+                              <h3 className="text-sm font-semibold text-foreground truncate">{prop?.label || t("page.rental.no_property")}</h3>
+                              {prop?.city && <span className="text-xs text-muted-foreground hidden sm:inline">· {prop.city}</span>}
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              {unpaid.length > 0 && (
+                                <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                                  {unpaid.length} {t("page.rental.unpaid")}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">{propPayments.length} {L.calls}</span>
+                            </div>
+                          </div>
+
+                          {/* Unpaid section */}
+                          {unpaid.length > 0 && (
+                            <div>
+                              <div className="px-4 py-2 bg-destructive/5 border-b border-destructive/10">
+                                <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  {t("page.rental.unpaid")} ({fmt(unpaid.reduce((s, p) => s + p.total_amount, 0))})
+                                </p>
                               </div>
-                            )}
-                            {/* Payment method dialog */}
-                            {paymentMethodDialog === p.id && (
-                              <div className="absolute right-0 mt-2 bg-card border border-border rounded-xl shadow-lg p-4 z-50 w-56">
-                                <p className="text-xs font-semibold text-foreground mb-3">{t("page.rental.payment_method")}</p>
-                                {[
-                                  { id: "online", label: t("page.rental.payment_method_online"), icon: CreditCard },
-                                  { id: "bank_transfer", label: t("page.rental.payment_method_transfer"), icon: Wallet },
-                                  { id: "cash", label: t("page.rental.payment_method_cash"), icon: Euro },
-                                ].map(m => (
-                                  <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                    className="flex items-center gap-2 w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors">
-                                    <m.icon className="h-4 w-4 text-muted-foreground" />
-                                    {m.label}
-                                  </button>
-                                ))}
-                                <button onClick={() => setPaymentMethodDialog(null)} className="mt-2 text-xs text-muted-foreground hover:text-foreground w-full text-center">{t("page.rental.cancel")}</button>
+                              <div className="divide-y divide-border/30">
+                                {unpaid.map(p => {
+                                  const tenant = tenants.find(t => t.id === p.tenant_id);
+                                  return (
+                                    <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
+                                        <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0 relative">
+                                        <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center h-7 text-xs px-3 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                                          {L.markPaid}
+                                        </button>
+                                        <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
+                                          className="inline-flex items-center gap-1 h-7 text-xs px-3 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
+                                          {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+                                          {L.online}
+                                        </button>
+                                        <button
+                                          onClick={() => handleNotifyRentCall(p)}
+                                          disabled={notifyingRentId === p.id}
+                                          className="inline-flex items-center gap-1 h-7 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50">
+                                          {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                                        </button>
+                                        {/* Payment method dialog */}
+                                        {paymentMethodDialog === p.id && (
+                                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-52">
+                                            <p className="text-xs font-semibold text-foreground mb-2">{t("page.rental.payment_method")}</p>
+                                            {[
+                                              { id: "online", label: t("page.rental.payment_method_online"), icon: CreditCard },
+                                              { id: "bank_transfer", label: t("page.rental.payment_method_transfer"), icon: Wallet },
+                                              { id: "cash", label: t("page.rental.payment_method_cash"), icon: Euro },
+                                            ].map(m => (
+                                              <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
+                                                className="flex items-center gap-2 w-full text-left text-sm px-3 py-1.5 rounded-lg hover:bg-muted transition-colors">
+                                                <m.icon className="h-3.5 w-3.5 text-muted-foreground" /> {m.label}
+                                              </button>
+                                            ))}
+                                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-xs text-muted-foreground hover:text-foreground w-full text-center">{t("page.rental.cancel")}</button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            {!p.paid && (
-                              <button
-                                onClick={() => handleNotifyRentCall(p)}
-                                disabled={notifyingRentId === p.id}
-                                className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
-                              >
-                                {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-                                {t("page.rental.notify")}
-                              </button>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
-                            {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
-                            {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground ml-2"><Download className="h-3.5 w-3.5" /></button>}
-                          </td>
-                        </tr>
+                            </div>
+                          )}
+
+                          {/* Paid section */}
+                          {paid.length > 0 && (
+                            <div>
+                              {unpaid.length > 0 && (
+                                <div className="px-4 py-2 bg-success/5 border-b border-success/10 border-t border-border/20">
+                                  <p className="text-xs font-semibold text-success flex items-center gap-1.5">
+                                    <CheckCircle className="h-3 w-3" />
+                                    {L.paid} ({fmt(paid.reduce((s, p) => s + p.total_amount, 0))})
+                                  </p>
+                                </div>
+                              )}
+                              <div className="divide-y divide-border/30">
+                                {paid.map(p => {
+                                  const tenant = tenants.find(t => t.id === p.tenant_id);
+                                  return (
+                                    <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {p.month} · {fmt(p.total_amount)}
+                                          {p.payment_method === "online" ? ` · ${L.online}` : p.payment_method === "bank_transfer" ? ` · ${L.transfer}` : p.payment_method === "cash" ? ` · ${L.cash}` : ""}
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="inline-flex items-center h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">✓ {L.paid}</span>
+                                        <button onClick={() => togglePayment(p.id)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.unpaid")}>
+                                          <X className="h-3.5 w-3.5" />
+                                        </button>
+                                        {!p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
+                                        {p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" /></span>}
+                                        <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
-                  </tbody>
-                </table>
-                </div>
-              </div>
+                  </div>
+                );
+              })()
             )}
           </div>
         )}
