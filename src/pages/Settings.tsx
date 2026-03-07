@@ -116,7 +116,7 @@ const Settings = () => {
         </div>
 
         {/* Organization & Document customization */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Building2 className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.org_title")}</h2>
@@ -125,7 +125,7 @@ const Settings = () => {
           <div className="space-y-4">
             {/* Logo */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.logo")}</label>
+              <label className="form-label">{t("page.settings.logo")}</label>
               <div className="flex items-center gap-4">
                 {org.logo_url ? (
                   <img src={org.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
@@ -134,7 +134,7 @@ const Settings = () => {
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
-                <label className="cursor-pointer bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted/80">
+                <label className="btn-secondary btn-sm cursor-pointer">
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.change_logo")}
                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 </label>
@@ -143,7 +143,7 @@ const Settings = () => {
 
             {/* Company Stamp */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.stamp")}</label>
+              <label className="form-label">{t("page.settings.stamp")}</label>
               <p className="text-xs text-muted-foreground mb-2">{t("page.settings.stamp_desc")}</p>
               <div className="flex items-center gap-4">
                 {org.stamp_url ? (
@@ -153,7 +153,7 @@ const Settings = () => {
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
-                <label className="cursor-pointer bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted/80">
+                <label className="btn-secondary btn-sm cursor-pointer">
                   {uploadingStamp ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.add_stamp")}
                   <input type="file" accept="image/*" onChange={async (e) => {
                     const file = e.target.files?.[0];
@@ -185,12 +185,12 @@ const Settings = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.org_name")}</label>
+              <label className="form-label">{t("page.settings.org_name")}</label>
               <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.address")}</label>
+              <label className="form-label">{t("page.settings.address")}</label>
               <AddressAutocomplete
                 value={org.address}
                 onChange={(val) => setOrg(o => ({ ...o, address: val }))}
@@ -202,37 +202,36 @@ const Settings = () => {
                 }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.postal_code")}</label>
+                <label className="form-label">{t("page.settings.postal_code")}</label>
                 <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.city")}</label>
+                <label className="form-label">{t("page.settings.city")}</label>
                 <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.phone")}</label>
+                <label className="form-label">{t("page.settings.phone")}</label>
                 <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.contact_email")}</label>
+                <label className="form-label">{t("page.settings.contact_email")}</label>
                 <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.siret")}</label>
+              <label className="form-label">{t("page.settings.siret")}</label>
               <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
-            <button onClick={saveOrg} disabled={saving}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            <button onClick={saveOrg} disabled={saving} className="btn-primary">
               {saving ? t("page.settings.saving") : t("page.settings.save_org")}
             </button>
           </div>
