@@ -319,13 +319,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Bottom actions */}
         <div className="p-2 border-t border-sidebar-border space-y-0.5 shrink-0">
           <Link
+            to="/dashboard/assistant"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
+          >
+            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "Assistant IA"}
+          </Link>
+          <Link
             to="/dashboard/billing"
+            onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
             <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing")}
           </Link>
           <Link
             to="/dashboard/settings"
+            onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
             <Settings className="h-4 w-4 shrink-0" /> {t("nav.settings")}
