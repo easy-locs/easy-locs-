@@ -28,7 +28,7 @@ describe("Routing - All lazy imports resolve", () => {
     "SeasonalRentals", "PaymentNotices", "DunningLetters", "Buildings",
     "Vault", "DataImport", "Referrals", "AdminDashboard", "PropertyManagement",
     "NotFound", "CommunicationCenter", "ConciergeServices", "ActivitiesMarketplace",
-    "GuestPortal",
+    "GuestPortal", "ConciergeOperations",
   ];
 
   pages.forEach((page) => {
