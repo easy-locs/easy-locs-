@@ -73,7 +73,7 @@ function ErrorFallback() {
 /* ── Exported component ── */
 const LandingGlobe = ({ onError }: { onError?: () => void }) => {
   return (
-    <ErrorBoundary fallback={<ErrorFallback />} onError={onError}>
+    <GlobeErrorBoundary fallback={<ErrorFallback />} onError={onError}>
       <Canvas
         camera={{ position: [0, 0, 2.8], fov: 40 }}
         style={{ width: "100%", height: "100%" }}
@@ -84,7 +84,7 @@ const LandingGlobe = ({ onError }: { onError?: () => void }) => {
       >
         <GlobeScene />
       </Canvas>
-    </ErrorBoundary>
+    </GlobeErrorBoundary>
   );
 };
 
