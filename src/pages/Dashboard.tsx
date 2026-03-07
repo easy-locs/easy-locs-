@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import WorldPropertyMap from "@/components/dashboard/WorldPropertyMap";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +130,14 @@ const Dashboard = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* 3D Globe — Interactive world portfolio */}
+        {!loading && stats.propertiesByCountry.length > 0 && (
+          <WorldPropertyMap
+            propertiesByCountry={stats.propertiesByCountry}
+            userCountry={userCountry}
+          />
+        )}
 
         {/* Country Cards — Main Hub */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>

@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { TextureLoader } from "three";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
 // Convert lat/lng to 3D sphere position
@@ -56,11 +56,13 @@ function PropertyMarker({
   country,
   radius,
   onHover,
+  onSelect,
   isHovered,
 }: {
   country: CountryData & { lat: number; lng: number };
   radius: number;
   onHover: (code: string | null) => void;
+  onSelect: (code: string) => void;
   isHovered: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -86,6 +88,7 @@ function PropertyMarker({
         ref={meshRef}
         onPointerEnter={() => onHover(country.code)}
         onPointerLeave={() => onHover(null)}
+        onClick={(e) => { e.stopPropagation(); onSelect(country.code); }}
       >
         <sphereGeometry args={[markerSize, 16, 16]} />
         <meshStandardMaterial
@@ -114,10 +117,11 @@ function PropertyMarker({
 
 // --- Globe sphere ---
 // --- Scene (globe + markers rotate together) ---
-function GlobeScene({ countries, hoveredCountry, onHover }: {
+function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
   countries: (CountryData & { lat: number; lng: number })[];
   hoveredCountry: string | null;
   onHover: (code: string | null) => void;
+  onSelect: (code: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
@@ -149,6 +153,7 @@ function GlobeScene({ countries, hoveredCountry, onHover }: {
             country={c}
             radius={1.04}
             onHover={onHover}
+            onSelect={onSelect}
             isHovered={hoveredCountry === c.code}
           />
         ))}
@@ -185,6 +190,7 @@ interface Props {
 
 export default function WorldPropertyMap({ propertiesByCountry, userCountry }: Props) {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
 
   const totalProperties = useMemo(
@@ -200,6 +206,9 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   );
 
   const handleHover = useCallback((code: string | null) => setHoveredCountry(code), []);
+  const handleSelect = useCallback((code: string) => {
+    navigate(`/dashboard/country/${code.toLowerCase()}`);
+  }, [navigate]);
 
   if (propertiesByCountry.length === 0) return null;
 
@@ -246,6 +255,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
                 countries={countriesWithCoords}
                 hoveredCountry={hoveredCountry}
                 onHover={handleHover}
+                onSelect={handleSelect}
               />
             </Canvas>
           </Suspense>
