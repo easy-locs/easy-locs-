@@ -784,7 +784,7 @@ const RentalManagement = () => {
                   const tenant = tenants.find(t => t.id === p.tenant_id);
                   return (
                     <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <span className={`w-2 h-2 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm text-foreground">{p.month}</span>
                         <span className="text-xs text-muted-foreground">{tenant?.name}</span>
