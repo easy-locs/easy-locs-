@@ -21,6 +21,7 @@ interface Property { id: string; label: string; address: string; city: string; }
 interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; }
 
 const DunningLetters = () => {
+  const countryFilter = useCountryFilter();
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
