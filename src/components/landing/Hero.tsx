@@ -1,238 +1,313 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Play, LogIn, Globe, Shield, Zap, Users, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { ArrowRight, Building2, KeyRound, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
+import AppLogo from "@/components/AppLogo";
 
-const TypeWriter = ({ words }: { words: string[] }) => {
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState("");
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    const word = words[idx];
-    const timeout = deleting ? 40 : 80;
-    if (!deleting && text === word) { setTimeout(() => setDeleting(true), 2000); return; }
-    if (deleting && text === "") { setDeleting(false); setIdx((i) => (i + 1) % words.length); return; }
-    const timer = setTimeout(() => {
-      setText(deleting ? word.slice(0, text.length - 1) : word.slice(0, text.length + 1));
-    }, timeout);
-    return () => clearTimeout(timer);
-  }, [text, deleting, idx, words]);
-
-  return (
-    <span className="text-gradient-gold">
-      {text}<span className="animate-pulse">|</span>
-    </span>
-  );
-};
-
-/* Particle system */
-const Particles = () => {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 3 + 1,
-    duration: Math.random() * 15 + 10,
-    delay: Math.random() * 5,
-  }));
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            background: 'hsl(var(--accent) / 0.4)',
-          }}
-          animate={{
-            y: [0, -60, 0],
-            opacity: [0, 0.8, 0],
-            scale: [0, 1, 0],
-          }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
-        />
-      ))}
-    </div>
-  );
-};
-
-const FloatingOrb = ({ className, delay = 0 }: { className: string; delay?: number }) => (
-  <motion.div
-    className={className}
-    animate={{ y: [0, -30, 0], scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
-    transition={{ duration: 6, repeat: Infinity, delay, ease: "easeInOut" }}
-  />
+/* ── Animated background orbs ── */
+const BackgroundEffects = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {/* Primary gradient glow */}
+    <div
+      className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20"
+      style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.3) 0%, transparent 70%)" }}
+    />
+    {/* Secondary orb */}
+    <motion.div
+      className="absolute top-[20%] right-[15%] w-64 h-64 rounded-full blur-[120px] opacity-15"
+      style={{ background: "hsl(var(--info))" }}
+      animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+    />
+    <motion.div
+      className="absolute bottom-[25%] left-[10%] w-48 h-48 rounded-full blur-[100px] opacity-10"
+      style={{ background: "hsl(var(--success))" }}
+      animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.15, 0.08] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+    />
+    {/* Subtle grid */}
+    <div
+      className="absolute inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage: `linear-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.4) 1px, transparent 1px)`,
+        backgroundSize: "80px 80px",
+      }}
+    />
+  </div>
 );
 
+/* ── Stats bar ── */
+const TrustBar = () => {
+  const { t } = useI18n();
+  const stats = [
+    { value: "110+", label: t("landing.hero.trust_countries") || "Countries" },
+    { value: "GDPR", label: t("landing.hero.trust_gdpr") || "Compliant" },
+    { value: "AI", label: t("landing.hero.trust_ai") || "Powered" },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.8, duration: 0.6 }}
+      className="flex items-center justify-center gap-8 sm:gap-12"
+    >
+      {stats.map((s) => (
+        <div key={s.value} className="text-center">
+          <div className="text-xl sm:text-2xl font-extrabold" style={{ color: "hsl(var(--accent))" }}>
+            {s.value}
+          </div>
+          <div className="text-xs mt-0.5" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+            {s.label}
+          </div>
+        </div>
+      ))}
+    </motion.div>
+  );
+};
+
+/* ── Quick login card ── */
+const QuickLoginCard = () => {
+  const { t } = useI18n();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      toast({ title: t("common.error"), description: String(err), variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+      className="w-full max-w-md mx-auto"
+    >
+      <div
+        className="rounded-2xl p-6 sm:p-8 border"
+        style={{
+          background: "hsl(var(--primary-foreground) / 0.04)",
+          borderColor: "hsl(var(--primary-foreground) / 0.08)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "0 8px 32px hsl(0 0% 0% / 0.2), inset 0 1px 0 hsl(var(--primary-foreground) / 0.06)",
+        }}
+      >
+        {/* Tabs: Landlord / Tenant */}
+        <div className="flex gap-2 mb-6">
+          <Link
+            to="/signup"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: "hsl(var(--accent) / 0.1)",
+              color: "hsl(var(--accent))",
+              border: "1px solid hsl(var(--accent) / 0.2)",
+            }}
+          >
+            <Building2 className="h-4 w-4" />
+            {t("landing.nav.pro_signup") || "Landlord"}
+          </Link>
+          <Link
+            to="/tenant-signup"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-primary-foreground/5"
+            style={{
+              color: "hsl(var(--primary-foreground) / 0.5)",
+              border: "1px solid hsl(var(--primary-foreground) / 0.08)",
+            }}
+          >
+            <KeyRound className="h-4 w-4" />
+            {t("landing.nav.tenant_access") || "Tenant"}
+          </Link>
+        </div>
+
+        {/* Login form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }} />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("auth.email_placeholder") || "Email"}
+              className="w-full h-12 pl-11 pr-4 rounded-xl text-sm font-medium outline-none transition-all"
+              style={{
+                background: "hsl(var(--primary-foreground) / 0.05)",
+                border: "1px solid hsl(var(--primary-foreground) / 0.1)",
+                color: "hsl(var(--primary-foreground))",
+              }}
+            />
+          </div>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }} />
+            <input
+              type={showPw ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t("auth.password_placeholder") || "Password"}
+              className="w-full h-12 pl-11 pr-11 rounded-xl text-sm font-medium outline-none transition-all"
+              style={{
+                background: "hsl(var(--primary-foreground) / 0.05)",
+                border: "1px solid hsl(var(--primary-foreground) / 0.1)",
+                color: "hsl(var(--primary-foreground))",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw(!showPw)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2"
+              style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}
+            >
+              {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 rounded-xl text-sm font-bold transition-all relative overflow-hidden group disabled:opacity-50"
+            style={{
+              background: "var(--gradient-gold)",
+              color: "hsl(var(--accent-foreground))",
+              boxShadow: "0 0 24px hsl(var(--accent) / 0.25)",
+            }}
+          >
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {loading ? t("common.loading") || "Loading..." : t("landing.nav.login") || "Sign In"}
+              {!loading && <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+          </button>
+
+          <div className="text-center">
+            <Link
+              to="/forgot-password"
+              className="text-xs transition-colors hover:underline"
+              style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}
+            >
+              {t("auth.forgot_password") || "Forgot password?"}
+            </Link>
+          </div>
+        </form>
+
+        {/* SSO */}
+        <SocialLoginButtons />
+      </div>
+    </motion.div>
+  );
+};
+
+/* ═══════════ HERO ═══════════ */
 const Hero = () => {
   const { t } = useI18n();
 
-  const words = [
-    t("landing.hero.tw_tenants") || "Tenants & Bookings",
-    t("landing.hero.tw_rents") || "Rents & Payments",
-    t("landing.hero.tw_leases") || "Leases & Documents",
-    t("landing.hero.tw_services") || "Services & Concierge",
-  ];
-
-  const trustItems = [
-    { icon: Globe, label: t("landing.hero.trust_countries"), glow: "accent" },
-    { icon: Shield, label: t("landing.hero.trust_gdpr"), glow: "success" },
-    { icon: Zap, label: t("landing.hero.trust_ai") || "AI Powered", glow: "warning" },
-    { icon: Users, label: t("landing.hero.trust_portal"), glow: "info" },
-  ];
-
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy-deep">
-      {/* Background */}
-      <div className="absolute inset-0">
-        {/* Cyber grid */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
-          backgroundImage: `linear-gradient(hsl(var(--accent) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.3) 1px, transparent 1px)`,
-          backgroundSize: '80px 80px',
-        }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full"
-          style={{ background: 'radial-gradient(circle, hsl(var(--accent) / 0.06) 0%, transparent 70%)' }}
-        />
-      </div>
+    <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+      <BackgroundEffects />
 
-      <Particles />
-
-      <FloatingOrb className="absolute top-[15%] left-[10%] w-72 h-72 rounded-full blur-[100px] bg-accent/10" delay={0} />
-      <FloatingOrb className="absolute bottom-[20%] right-[8%] w-96 h-96 rounded-full blur-[120px] bg-info/8" delay={2} />
-      <FloatingOrb className="absolute top-[60%] left-[60%] w-64 h-64 rounded-full blur-[80px] bg-success/6" delay={4} />
-
-      {/* Horizontal scan line */}
+      {/* Scan line */}
       <motion.div
         className="absolute left-0 right-0 h-px pointer-events-none"
-        style={{ background: 'hsl(var(--accent) / 0.15)' }}
-        animate={{ top: ['0%', '100%'] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+        style={{ background: "hsl(var(--accent) / 0.08)" }}
+        animate={{ top: ["0%", "100%"] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
       />
 
-      <div className="container relative z-10 py-28 sm:py-36">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, type: "spring" }}
-            className="inline-flex items-center gap-2.5 rounded-full px-6 py-2.5 text-sm font-semibold mb-10 border border-accent/25"
-            style={{
-              background: 'linear-gradient(135deg, hsl(var(--accent) / 0.12) 0%, hsl(var(--accent) / 0.04) 100%)',
-              color: 'hsl(var(--gold-light))',
-              boxShadow: '0 0 30px hsl(var(--accent) / 0.15), inset 0 1px 0 hsl(var(--accent) / 0.2)',
-            }}
-          >
-            <Sparkles className="h-4 w-4" />
-            {t("landing.hero.badge") || "AI-Powered Property Management — 110+ Countries"}
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-8xl font-extrabold tracking-tight leading-[1.02] mb-4"
-            style={{ color: 'hsl(var(--primary-foreground))' }}
-          >
-            {t("landing.hero.title") || "Manage Properties,"}
-          </motion.h1>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-4xl sm:text-6xl lg:text-8xl font-extrabold tracking-tight leading-[1.02] mb-8"
-          >
-            <TypeWriter words={words} />
-          </motion.div>
-
-          {/* Subtitle */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="max-w-2xl mx-auto mb-14"
-          >
-            <p className="text-base sm:text-lg leading-relaxed px-6 py-4 rounded-2xl border border-primary-foreground/5"
-              style={{
-                color: 'hsl(var(--primary-foreground) / 0.6)',
-                background: 'hsl(var(--primary-foreground) / 0.03)',
-                backdropFilter: 'blur(12px)',
-              }}
+      <div className="container relative z-10 py-24 sm:py-32">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center max-w-6xl mx-auto">
+          {/* Left — Copy */}
+          <div className="text-center lg:text-left space-y-8">
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-center lg:justify-start"
             >
-              {t("landing.hero.subtitle")}
-            </p>
-          </motion.div>
+              <AppLogo variant="landing" showLabel linkTo="/" />
+            </motion.div>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
-          >
-            <Link
-              to="/signup"
-              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-gradient-gold text-accent-foreground font-bold px-10 py-4 rounded-2xl transition-all text-base min-w-[220px] relative overflow-hidden"
-              style={{ boxShadow: '0 0 40px hsl(var(--accent) / 0.35), 0 4px 16px hsl(var(--accent) / 0.25)' }}
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex justify-center lg:justify-start"
             >
-              <span className="relative z-10 flex items-center gap-2.5">
-                {t("landing.hero.cta")}
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </Link>
-            <Link
-              to="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 font-semibold px-10 py-4 rounded-2xl transition-all text-base min-w-[220px] border border-primary-foreground/10 hover:border-accent/30 hover:bg-accent/5"
-              style={{ color: 'hsl(var(--primary-foreground) / 0.8)', backdropFilter: 'blur(8px)', background: 'hsl(var(--primary-foreground) / 0.04)' }}
-            >
-              <LogIn className="h-5 w-5" />
-              {t("landing.nav.login")}
-            </Link>
-            <a
-              href="#demo"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 font-semibold px-10 py-4 rounded-2xl transition-all text-base min-w-[220px] border border-primary-foreground/10 hover:border-info/30 hover:bg-info/5"
-              style={{ color: 'hsl(var(--primary-foreground) / 0.8)', backdropFilter: 'blur(8px)', background: 'hsl(var(--primary-foreground) / 0.04)' }}
-            >
-              <Play className="h-5 w-5" />
-              {t("landing.hero.demo") || "See Demo"}
-            </a>
-          </motion.div>
-
-          {/* Trust bar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap"
-          >
-            {trustItems.map((item) => (
-              <motion.div
-                key={item.label}
-                whileHover={{ scale: 1.05, y: -2 }}
-                className="flex items-center gap-2.5 text-sm px-4 py-2 rounded-xl border border-primary-foreground/5"
-                style={{ color: 'hsl(var(--primary-foreground) / 0.45)', background: 'hsl(var(--primary-foreground) / 0.03)' }}
+              <span
+                className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold border"
+                style={{
+                  background: "hsl(var(--accent) / 0.08)",
+                  borderColor: "hsl(var(--accent) / 0.2)",
+                  color: "hsl(var(--gold-light))",
+                }}
               >
-                <item.icon className="h-4 w-4" style={{ color: `hsl(var(--${item.glow}))` }} />
-                <span className="font-medium">{item.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                {t("landing.hero.badge") || "AI-Powered Property Management"}
+              </span>
+            </motion.div>
+
+            {/* Headline */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-3"
+            >
+              <h1
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]"
+                style={{ color: "hsl(var(--primary-foreground))" }}
+              >
+                {t("landing.hero.title") || "Manage Properties,"}
+                <br />
+                <span className="text-gradient-gold">
+                  {t("landing.hero.tw_tenants") || "Worldwide."}
+                </span>
+              </h1>
+            </motion.div>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="text-base sm:text-lg leading-relaxed max-w-lg mx-auto lg:mx-0"
+              style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}
+            >
+              {t("landing.hero.subtitle") || "All-in-one platform for landlords, tenants and concierge professionals. Leases, payments, bookings — 110+ countries."}
+            </motion.p>
+
+            {/* Trust stats */}
+            <TrustBar />
+          </div>
+
+          {/* Right — Auth card */}
+          <QuickLoginCard />
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
-      <div className="absolute top-0 left-0 w-px h-full" style={{ background: 'linear-gradient(180deg, transparent 0%, hsl(var(--accent) / 0.15) 50%, transparent 100%)' }} />
-      <div className="absolute top-0 right-0 w-px h-full" style={{ background: 'linear-gradient(180deg, transparent 0%, hsl(var(--accent) / 0.15) 50%, transparent 100%)' }} />
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
