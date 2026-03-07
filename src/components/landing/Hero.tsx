@@ -228,7 +228,7 @@ const Hero = () => {
             ))}
           </motion.div>
         </div>
-      </motion.div>
+      </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       <div className="absolute top-0 left-0 w-px h-full" style={{ background: 'linear-gradient(180deg, transparent 0%, hsl(var(--accent) / 0.15) 50%, transparent 100%)' }} />
