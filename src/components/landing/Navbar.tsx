@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import logoEasylocs from "@/assets/logo-easylocs.png";
 import { useI18n } from "@/lib/i18n";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 const Navbar = () => {
   const { t } = useI18n();
