@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
+import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Suspense, lazy } from "react";
