@@ -83,32 +83,33 @@ const Settings = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.settings.title")}</h1>
-        <p className="text-muted-foreground text-sm mb-8">{t("page.settings.subtitle")}</p>
+        <div className="page-header">
+          <h1>{t("page.settings.title")}</h1>
+          <p>{t("page.settings.subtitle")}</p>
+        </div>
 
         {/* Profile */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <User className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.profile")}</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.full_name")}</label>
+              <label className="form-label">{t("page.settings.full_name")}</label>
               <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.email")}</label>
+              <label className="form-label">{t("page.settings.email")}</label>
               <input type="email" value={profile.email} disabled
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-muted-foreground" />
+                className="form-input bg-muted text-muted-foreground" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.country")}</label>
+              <label className="form-label">{t("page.settings.country")}</label>
               <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
             </div>
-            <button onClick={saveProfile} disabled={saving}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            <button onClick={saveProfile} disabled={saving} className="btn-primary">
               {saving ? t("page.settings.saving") : t("page.settings.save_profile")}
             </button>
           </div>
