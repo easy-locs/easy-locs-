@@ -4110,6 +4110,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "section.property": "PROPERTY MANAGEMENT", "section.finance": "FINANCE", "section.communication": "COMMUNICATION", "section.services": "SERVICES", "section.company": "COMPANY",
     "nav.local_services": "Activities & Services", "nav.accounting": "Accounting", "nav.marketplace": "Marketplace", "nav.collaboration": "Collaboration", "nav.pricing": "Pricing",
     "badge.landlord": "Landlord area", "badge.tenant": "Tenant area",
+    "sidebar.workspace": "Workspace", "sidebar.select_country": "Select a country to start",
     "dashboard.hello": "Hello 👋", "dashboard.summary": "Here's an overview of your situation.",
     "dashboard.properties": "Properties", "dashboard.tenants_count": "tenant(s)",
     "dashboard.collected": "Collected this month", "dashboard.unpaid": "unpaid",
