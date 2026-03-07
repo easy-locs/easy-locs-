@@ -130,8 +130,8 @@ const ChargesRegularization = () => {
                  <div key={country} className="space-y-4">
                    {/* Country header */}
                    <div className="flex items-center gap-2 pt-2">
-                     <span className="text-lg">{COUNTRY_FLAGS[country] || "🌍"}</span>
-                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{country}</h3>
+                     <span className="text-lg">{getCountryEntryOrDefault(country).flag}</span>
+                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{getCountryEntryOrDefault(country).name}</h3>
                    </div>
 
                    {Object.entries(propMap).map(([propId, { prop, tenantList }]) => {
