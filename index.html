@@ -89,6 +89,10 @@
 </head>
 
   <body>
+    <script>
+      // Prevent flash of wrong theme
+      (function(){try{var t=localStorage.getItem('easylocs-theme');if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches)||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
