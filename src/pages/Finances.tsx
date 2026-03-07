@@ -256,12 +256,12 @@ const Finances = () => {
         {/* Stripe Connect Card */}
         <div className={`rounded-xl p-6 border shadow-card ${
           connectStatus?.onboarding_complete 
-            ? "bg-card border-green-500/30" 
+            ? "bg-card border-success/30" 
             : "bg-card border-accent/30"
         }`}>
           <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-green-500/10" : "bg-accent/10"}`}>
-              <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-green-500" : "text-accent"}`} />
+            <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-success/10" : "bg-accent/10"}`}>
+              <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-success" : "text-accent"}`} />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3 mb-1">
