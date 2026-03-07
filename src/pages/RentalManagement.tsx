@@ -646,19 +646,29 @@ const RentalManagement = () => {
 
           {/* Header — responsive */}
           <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-                <Home className="h-6 w-6 text-accent-foreground" />
+            <div className="detail-header">
+              <div className="detail-header-main">
+                <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
+                  <Home className="h-6 w-6 text-accent-foreground" />
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <h1 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap min-w-0">
+                    <span>{getFlag(selectedProperty.country)}</span>
+                    <span className="break-words">{selectedProperty.label}</span>
+                  </h1>
+                  <p className="text-sm text-muted-foreground flex items-start gap-1 break-words min-w-0">
+                    <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span>{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap">
-                  <span>{getFlag(selectedProperty.country)}</span>
-                  <span className="break-words">{selectedProperty.label}</span>
-                </h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1 break-words"><MapPin className="h-3 w-3 shrink-0" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" />{L.editProperty}</button>
+              <div className="detail-header-actions">
+                <button
+                  onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }}
+                  className="text-xs text-accent hover:underline flex items-center gap-1"
+                >
+                  <Edit className="h-3 w-3" />{L.editProperty}
+                </button>
               </div>
             </div>
           </div>
@@ -773,13 +783,13 @@ const RentalManagement = () => {
                 {propPayments.slice(0, 10).map(p => {
                   const tenant = tenants.find(t => t.id === p.tenant_id);
                   return (
-                    <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
-                      <div className="flex items-center gap-3">
+                    <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5">
+                      <div className="flex items-center gap-3 min-w-0">
                         <span className={`w-2 h-2 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm text-foreground">{p.month}</span>
                         <span className="text-xs text-muted-foreground">{tenant?.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
                         <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
                         <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${p.paid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{p.paid ? L.paid : L.unpaid}</span>
                       </div>
@@ -879,33 +889,40 @@ const RentalManagement = () => {
           </button>
           {/* Profile header — responsive: stacks on mobile */}
           <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
-                <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
+            <div className="detail-header">
+              <div className="detail-header-main">
+                <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
+                  <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
+                  <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div className="detail-header-actions">
                 <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
                 </span>
                 {selectedTenant.tenant_user_id ? (
-                  <span className="text-xs text-success flex items-center gap-1 whitespace-nowrap"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                  <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
                 ) : (
-                  <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
-                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50 whitespace-nowrap">
+                  <button
+                    onClick={() => handleInviteTenant(selectedTenant)}
+                    disabled={invitingTenantId === selectedTenant.id}
+                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
+                  >
                     <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
                   </button>
                 )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" /> {L.editTenant}</button>
+                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1">
+                  <Edit className="h-3 w-3" /> {L.editTenant}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Tabs — horizontal scroll on mobile */}
-          <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-thin">
+          <div className="detail-tab-row mb-6">
             {([
                { key: "info" as const, label: L.overview, icon: FileText },
                { key: "payments" as const, label: L.payments, icon: Euro },
@@ -968,12 +985,12 @@ const RentalManagement = () => {
               ) : (
                 <div className="space-y-2">
                   {tenantPayments.sort((a, b) => b.month.localeCompare(a.month)).map(p => (
-                    <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 relative">
-                      <div className="flex items-center gap-3">
+                    <div key={p.id} className="detail-row bg-muted/30 rounded-lg px-4 py-2.5 relative">
+                      <div className="flex items-center gap-3 min-w-0">
                         <span className={`w-2.5 h-2.5 rounded-full ${p.paid ? "bg-success" : "bg-destructive"}`} />
                         <span className="text-sm font-medium text-foreground">{p.month}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
                         <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
                         {p.paid ? (
                            <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">

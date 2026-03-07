@@ -183,7 +183,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <ThemeSwitcher />
           <NotificationBell />
         </header>
-        <main className="flex-1 p-3 sm:p-6">{children}</main>
+        <main className="app-main flex-1 p-3 sm:p-6">{children}</main>
         <footer className="py-3 text-center border-t border-border/30">
           <span className="text-xs text-muted-foreground/50 font-medium tracking-wide">EASY-LOCS<sup className="text-[8px]">®</sup></span>
         </footer>

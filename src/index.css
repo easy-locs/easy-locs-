@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ══════ Global text safety — prevent letter-by-letter vertical breaking ══════ */
+/* ══════ Global text safety — prevent vertical letter-by-letter breaks ══════ */
 *:not(code):not(pre):not(kbd) {
   overflow-wrap: break-word;
   word-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
 }
 
 /* Profile/detail header — responsive pattern */
@@ -202,10 +204,11 @@
     @apply leading-relaxed;
   }
 
-  /* Prevent text overflow */
+  /* Prevent text overflow without breaking every character */
   h1, h2, h3, h4, h5, h6, p, li {
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
+    text-wrap: pretty;
   }
 }
 
@@ -302,6 +305,29 @@
     @apply mx-auto w-full;
     max-width: var(--container-xl);
   }
+
+  /* ── Detail/profile header layout (global mobile pattern) ── */
+  .detail-header {
+    @apply flex flex-col gap-4;
+  }
+  .detail-header-main {
+    @apply flex items-start gap-3 min-w-0 flex-1;
+  }
+  .detail-header-actions {
+    @apply flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end;
+  }
+
+  /* ── Detail rows: avoid crushed right columns on mobile ── */
+  .detail-row {
+    @apply flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  /* ── Scrollable tab rows for custom tab UIs ── */
+  .detail-tab-row {
+    @apply flex w-full gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1 scrollbar-thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
 
   /* ── Buttons ── */
   .btn {
@@ -631,12 +657,30 @@
    ══════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
+  :root {
+    --card-padding: 1rem;
+    --field-gap: 0.875rem;
+    --section-gap: 1.25rem;
+    --page-padding-x: 0.75rem;
+  }
+
   /* Consistent main content padding on mobile */
-  main {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+  .app-main {
+    padding-left: var(--page-padding-x) !important;
+    padding-right: var(--page-padding-x) !important;
     padding-bottom: 5rem !important; /* FAB safe zone */
   }
+
+  .app-main > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Mobile typography calibration */
+  h1 { font-size: 1.25rem; line-height: 1.3; }
+  h2 { font-size: 1.0625rem; line-height: 1.35; }
+  h3 { font-size: 0.95rem; line-height: 1.4; }
+
 
   /* Ensure modals/dialogs don't overflow */
   [role="dialog"] {

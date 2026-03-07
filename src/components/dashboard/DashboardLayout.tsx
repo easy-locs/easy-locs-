@@ -438,10 +438,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
           <Link
             to="/dashboard/assistant"
-            className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-3 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
+            className="hidden sm:flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-3 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
           >
             <BrainCircuit className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("dashboard.ai_question")}</span>
+            <span>{t("dashboard.ai_question")}</span>
           </Link>
         </header>
 
@@ -466,7 +466,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
-        <main className="flex-1 p-4 sm:p-6 pb-24 sm:pb-6 overflow-x-hidden">{children}</main>
+        <main className="app-main flex-1 p-4 sm:p-6 pb-24 sm:pb-6 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );
