@@ -37,7 +37,7 @@ interface Reservation {
   status: string;
   ota_provider: string;
   amount: number;
-  source_table: "seasonal_bookings" | "booking_requests";
+  source_table: "seasonal_bookings" | "booking_requests" | "reservations";
 }
 
 const ChannelManager = () => {
