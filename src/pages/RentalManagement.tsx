@@ -370,7 +370,7 @@ const RentalManagement = () => {
       notes: t.notes, birth_date: t.birth_date ?? null, birth_place: t.birth_place ?? null,
       nationality: t.nationality ?? "Française", profession: t.profession ?? null,
       guarantor_name: t.guarantor_name ?? null, guarantor_phone: t.guarantor_phone ?? null,
-      caf_apl_amount: t.caf_apl_amount ?? 0, payment_day: 5,
+      caf_apl_amount: t.caf_apl_amount ?? 0, payment_day: t.payment_day ?? 1,
     });
     setShowTenantForm(true);
     setSelectedTenant(null);
