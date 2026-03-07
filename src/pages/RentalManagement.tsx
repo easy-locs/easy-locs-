@@ -973,11 +973,11 @@ const RentalManagement = () => {
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-foreground">{fmt(p.total_amount)}</span>
                         {p.paid ? (
-                           <button onClick={() => togglePayment(p.id)} className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-700">
+                           <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
                              {L.paid}
                            </button>
                         ) : (
-                           <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-2 py-1 rounded bg-red-400/20 text-red-600">
+                           <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-destructive/10 text-destructive">
                              {L.unpaid}
                            </button>
                         )}
