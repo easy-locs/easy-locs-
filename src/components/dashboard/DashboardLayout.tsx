@@ -11,7 +11,7 @@ import {
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Gift, Shield,
   Layers, BookOpen, Zap, Store, Code, ChevronDown,
-  FileCheck, CalendarRange, Handshake,
+  FileCheck, CalendarRange, Handshake, MapPin,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
