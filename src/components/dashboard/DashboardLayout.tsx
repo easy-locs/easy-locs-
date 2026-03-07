@@ -5,6 +5,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
   LayoutDashboard, Home, Users, KeyRound, ClipboardList, FileText, Building,
   Wallet, Contact, Wrench, CheckSquare, MessageCircle,
@@ -312,6 +313,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               </>
             )}
           </div>
+          <ThemeSwitcher />
           <NotificationBell />
           <Link
             to="/dashboard/assistant"

@@ -9,6 +9,7 @@ import {
   CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 // Languages are dynamically filtered based on property country + English
 const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
@@ -182,6 +183,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <ThemeSwitcher />
           <NotificationBell />
         </header>
         <main className="flex-1 p-3 sm:p-6">{children}</main>
