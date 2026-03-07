@@ -682,13 +682,13 @@ const SeasonalRentals = () => {
                         <span className="text-foreground">{req.check_out}</span>
                       </div>
                       <div>
-                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${
-                          req.status === "paid" ? "bg-success/10 text-success" :
-                          req.status === "approved" ? "bg-info/10 text-info" :
-                          req.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                          req.status === "payment_pending" ? "bg-warning/10 text-warning" :
-                          req.status === "pending" ? "bg-warning/10 text-warning" :
-                          "bg-muted text-muted-foreground"
+                        <span className={`badge-status ${
+                          req.status === "paid" ? "badge-success" :
+                          req.status === "approved" ? "badge-info" :
+                          req.status === "rejected" ? "badge-danger" :
+                          req.status === "payment_pending" ? "badge-warning" :
+                          req.status === "pending" ? "badge-warning" :
+                          "badge-neutral"
                         }`}>
                           {req.status === "paid" ? "✅ " + (t("page.seasonal.status_paid") !== "page.seasonal.status_paid" ? t("page.seasonal.status_paid") : "Payé") :
                            req.status === "approved" ? "📧 " + (t("page.seasonal.status_approved") !== "page.seasonal.status_approved" ? t("page.seasonal.status_approved") : "Approuvé") :
