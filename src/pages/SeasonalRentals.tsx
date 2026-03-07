@@ -614,7 +614,7 @@ const SeasonalRentals = () => {
                     const nights = Math.max(1, Math.ceil((new Date(focusedRequest.check_out).getTime() - new Date(focusedRequest.check_in).getTime()) / 86400000));
                     const pricePerNight = listingData?.price_per_night || 0;
                     const totalAmount = pricePerNight * nights;
-                    const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+                    const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`);
                     await supabase.functions.invoke("send-email", {
                       body: {
                         to: focusedRequest.guest_email,
