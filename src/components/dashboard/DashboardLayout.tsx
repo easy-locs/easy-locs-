@@ -44,41 +44,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Dashboard",
       icon: LayoutDashboard,
       items: [
-        { icon: LayoutDashboard, label: t("nav.dashboard") || "Portefeuille", path: "/dashboard" },
-      ],
-    },
-    {
-      key: "property",
-      title: t("section.essential") || "Gestion",
-      icon: Home,
-      items: [
-        { icon: Home, label: t("nav.properties") || "Biens", path: "/dashboard/rental" },
-        { icon: Building, label: t("nav.buildings") || "Immeubles", path: "/dashboard/buildings" },
-        { icon: Users, label: t("nav.tenants") || "Locataires", path: "/dashboard/rental?tab=tenants" },
-        { icon: KeyRound, label: t("nav.leases") || "Baux", path: "/dashboard/leases" },
-        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: "/dashboard/rental?tab=inventory" },
-        { icon: FileText, label: t("nav.documents") || "Documents", path: "/dashboard/documents" },
-      ],
-    },
-    {
-      key: "finance",
-      title: "Finance",
-      icon: Wallet,
-      items: [
-        { icon: Wallet, label: t("nav.finances") || "Revenus", path: "/dashboard/finances" },
-        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: "/dashboard/expenses" },
-        { icon: BookOpen, label: "Comptabilité", path: "/dashboard/accounting" },
-        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal", path: "/dashboard/fiscal" },
-      ],
-    },
-    {
-      key: "communication",
-      title: "Communication",
-      icon: MessageCircle,
-      items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/messages" },
-        { icon: Bell, label: t("nav.reminders") || "Rappels", path: "/dashboard/reminders" },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: "/dashboard/interventions" },
+        { icon: LayoutDashboard, label: t("nav.dashboard") || "Portefeuille mondial", path: "/dashboard" },
       ],
     },
     {

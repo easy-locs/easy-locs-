@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  Globe, ArrowRight, Building, Users, TrendingUp,
-  BrainCircuit, Clock, PiggyBank, Percent, Euro,
+  Globe, Building, Users, Euro, MapPin,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -21,11 +20,10 @@ const Dashboard = () => {
 
   const [stats, setStats] = useState({
     totalProperties: 0,
-    totalTenants: 0,
-    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string; tenants: number; buildings: number }[],
+    totalCountries: 0,
+    totalOwners: 0,
     revenueThisMonth: 0,
-    unpaidTotal: 0,
-    occupancyRate: 0,
+    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string; tenants: number }[],
   });
   const [loading, setLoading] = useState(true);
 
@@ -34,14 +32,12 @@ const Dashboard = () => {
     Promise.all([
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
-      supabase.from("buildings").select("id, org_id").eq("org_id", orgId),
+      supabase.from("owner_profiles").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-    ]).then(([props, tenantsRes, buildingsRes, rc]) => {
+    ]).then(([props, tenantsRes, ownersRes, rc]) => {
       const propData = (props.data || []) as { id: string; country: string }[];
       const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
-      const buildingsData = (buildingsRes.data || []);
 
-      // Aggregate by country
       const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
       propData.forEach(p => {
         const c = p.country || "FR";
@@ -58,34 +54,20 @@ const Dashboard = () => {
           const countryTenants = tenantsList.filter(
             t => t.property_id && data.propIds.has(t.property_id) && (!t.lease_end || t.lease_end >= today)
           );
-          return {
-            code,
-            count: data.count,
-            flag: entry.flag,
-            name: entry.name,
-            tenants: countryTenants.length,
-            buildings: 0, // simplified
-          };
+          return { code, count: data.count, flag: entry.flag, name: entry.name, tenants: countryTenants.length };
         })
         .sort((a, b) => b.count - a.count);
 
       const currentMonth = format(new Date(), "yyyy-MM");
       const monthCalls = ((rc.data || []) as any[]).filter((r: any) => r.month === currentMonth);
       const revenueThisMonth = monthCalls.filter((r: any) => r.paid).reduce((s: number, r: any) => s + Number(r.total_amount), 0);
-      const unpaidTotal = ((rc.data || []) as any[]).filter((r: any) => !r.paid).reduce((s: number, r: any) => s + Number(r.total_amount), 0);
-
-      const occupiedProps = new Set(
-        tenantsList.filter(t => t.property_id && (!t.lease_end || t.lease_end >= today)).map(t => t.property_id)
-      ).size;
-      const occupancyRate = propData.length > 0 ? Math.round((occupiedProps / propData.length) * 100) : 0;
 
       setStats({
         totalProperties: propData.length,
-        totalTenants: tenantsList.length,
-        propertiesByCountry,
+        totalCountries: countryMap.size,
+        totalOwners: ownersRes.count || 0,
         revenueThisMonth,
-        unpaidTotal,
-        occupancyRate,
+        propertiesByCountry,
       });
       setLoading(false);
     });
@@ -103,17 +85,17 @@ const Dashboard = () => {
             </h1>
           </div>
           <p className="text-muted-foreground text-sm ml-9">
-            {loading ? "..." : `${stats.totalProperties} ${stats.totalProperties > 1 ? "biens" : "bien"} · ${stats.propertiesByCountry.length} ${stats.propertiesByCountry.length > 1 ? "pays" : "pays"} · ${stats.totalTenants} ${t("page.dashboard.tenants_count") || "locataires"}`}
+            {t("page.dashboard.global_overview") || "Vue d'ensemble de votre portefeuille immobilier"}
           </p>
         </motion.div>
 
-        {/* Global KPIs - compact row */}
+        {/* Global KPIs — summary only */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties) },
+            { icon: MapPin, label: t("page.dashboard.countries") || "Pays", value: loading ? "..." : String(stats.totalCountries) },
+            { icon: Users, label: t("page.dashboard.owners") || "Propriétaires", value: loading ? "..." : String(stats.totalOwners) },
             { icon: Euro, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
-            { icon: Percent, label: t("page.dashboard.occupancy") || "Occupation", value: loading ? "..." : `${stats.occupancyRate}%` },
-            { icon: PiggyBank, label: t("page.dashboard.unpaid_amount") || "Impayés", value: loading ? "..." : fmt(stats.unpaidTotal) },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -131,7 +113,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* 3D Globe — Interactive world portfolio */}
+        {/* 3D Globe */}
         {!loading && stats.propertiesByCountry.length > 0 && (
           <WorldPropertyMap
             propertiesByCountry={stats.propertiesByCountry}
@@ -139,10 +121,10 @@ const Dashboard = () => {
           />
         )}
 
-        {/* Country Cards — Main Hub */}
+        {/* Country Cards */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            {t("page.dashboard.select_country") || "Sélectionnez un pays"}
+            {t("page.dashboard.select_country") || "Sélectionnez un pays pour gérer"}
           </h2>
 
           {loading ? (
@@ -177,13 +159,13 @@ const Dashboard = () => {
                     to={`/dashboard/country/${c.code.toLowerCase()}`}
                     className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/40 transition-all"
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-center gap-4">
                       <span className="text-4xl shrink-0">{c.flag}</span>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
                           {c.name}
                         </h3>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Building className="h-3.5 w-3.5" />
                             {c.count} {c.count > 1 ? "biens" : "bien"}
@@ -191,35 +173,17 @@ const Dashboard = () => {
                           {c.tenants > 0 && (
                             <span className="flex items-center gap-1">
                               <Users className="h-3.5 w-3.5" />
-                              {c.tenants}
+                              {c.tenants} {c.tenants > 1 ? "locataires" : "locataire"}
                             </span>
                           )}
                         </div>
                       </div>
-                      <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
                     </div>
                   </Link>
                 </motion.div>
               ))}
             </div>
           )}
-        </motion.div>
-
-        {/* AI Assistant CTA */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-8">
-          <Link
-            to="/dashboard/assistant"
-            className="flex items-center gap-4 bg-hero rounded-xl p-5 text-primary-foreground hover:opacity-95 transition-opacity"
-          >
-            <div className="w-11 h-11 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-              <BrainCircuit className="h-5 w-5 text-accent-foreground" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold">{t("page.dashboard.ai_question") || "Posez une question"}</h3>
-              <p className="text-sm text-primary-foreground/60">{t("page.dashboard.ai_desc") || "Assistant IA immobilier"}</p>
-            </div>
-            <ArrowRight className="h-5 w-5 text-primary-foreground/40" />
-          </Link>
         </motion.div>
       </div>
     </DashboardLayout>
