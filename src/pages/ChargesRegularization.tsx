@@ -71,16 +71,16 @@ const ChargesRegularization = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.charges.title")}>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.charges.title")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("page.charges.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="page-header mb-0">
+            <h1>{t("page.charges.title")}</h1>
+            <p>{t("page.charges.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <select value={year} onChange={e => setYear(Number(e.target.value))} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <div className="flex items-center gap-3 shrink-0">
+            <select value={year} onChange={e => setYear(Number(e.target.value))} className="form-select w-auto">
               {[...Array(5)].map((_, i) => { const y = new Date().getFullYear() - i; return <option key={y} value={y}>{y}</option>; })}
             </select>
-            <button onClick={handleExport} className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90">
+            <button onClick={handleExport} className="btn-secondary btn-sm">
               <Download className="h-4 w-4" /> {t("page.charges.export_csv")}
             </button>
           </div>
