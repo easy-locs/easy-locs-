@@ -136,7 +136,7 @@ async function translateWithBuiltInAI(text: string, from: string, to: string): P
     });
 
     if (!response.ok) {
-      console.error("Lovable AI error:", response.status, await response.text());
+      console.error("AI translation error:", response.status, await response.text());
       return null;
     }
 
