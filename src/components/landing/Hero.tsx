@@ -7,7 +7,8 @@ import { useI18n } from "@/lib/i18n";
 const Hero = () => {
   const { t } = useI18n();
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-hero">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden z-10" style={{ background: 'hsl(var(--navy-deep))' }}>
+      <div className="absolute inset-0 -z-[1]" style={{ background: 'hsl(var(--navy-deep))' }} />
       <div className="absolute inset-0 opacity-[0.05] bg-cover bg-center" style={{ backgroundImage: `url(${heroBg})` }} />
       <div className="absolute inset-0 bg-gradient-to-b from-navy-deep/70 via-navy-deep/50 to-navy-deep/95" />
 
