@@ -220,8 +220,8 @@ function addHeader(doc: jsPDF, title: string, country: string, docType: string):
   // Brand name — left aligned, consistent position
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
   doc.text("EASY-LOCS", MARGIN, 20);
-  setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
+  setFont(doc, "normal", 5, COLOR_PRIMARY);
+  doc.text("\u00AE", MARGIN + doc.getTextWidth("EASY-LOCS") + 0.5, 17);
 
   // Authority info — right aligned
   if (countryEntry) {
@@ -268,8 +268,8 @@ function addFooter(doc: jsPDF, country?: string) {
     const brandWidth = doc.getTextWidth(brandText);
     const brandX = (PAGE_WIDTH - brandWidth) / 2;
     doc.text(brandText, brandX, 284);
-    setFont(doc, "normal", 5, COLOR_PRIMARY);
-    doc.text("(R)", brandX + brandWidth + 1, 281.5);
+    setFont(doc, "normal", 4, COLOR_PRIMARY);
+    doc.text("\u00AE", brandX + brandWidth + 0.5, 281.5);
 
     // Page number — right
     setFont(doc, "normal", 7, COLOR_MUTED);
@@ -579,8 +579,8 @@ function addUaeFooter(doc: jsPDF) {
     // Easy-Locs branding
     setFont(doc, "bold", 7, [255, 255, 255]);
     doc.text("EASY-LOCS", MARGIN, 294);
-    setFont(doc, "normal", 4.5, [255, 255, 255]);
-    doc.text("(R)", MARGIN + 18, 292);
+    setFont(doc, "normal", 3.5, [255, 255, 255]);
+    doc.text("\u00AE", MARGIN + 18, 292);
   }
 }
 
