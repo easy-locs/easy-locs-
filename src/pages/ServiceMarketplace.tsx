@@ -207,20 +207,20 @@ const ServiceMarketplace = () => {
                       const prov = providers.find(p => p.id === b.provider_id);
                       const cat = getCatInfo(b.service_type);
                       return (
-                        <div key={b.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <span className="text-xl">{cat.icon}</span>
-                            <div>
-                              <p className="font-medium text-foreground">{prov?.name || "Prestataire"}</p>
-                              <p className="text-xs text-muted-foreground">{b.service_date} — {cat.label}</p>
+                        <div key={b.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 border border-border rounded-lg">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <span className="text-xl shrink-0">{cat.icon}</span>
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground break-words">{prov?.name || "Prestataire"}</p>
+                              <p className="text-xs text-muted-foreground break-words">{b.service_date} — {cat.label}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                             <Badge variant={b.status === "completed" ? "default" : b.status === "confirmed" ? "secondary" : "outline"}>
                               {b.status === "completed" ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
                               {b.status}
                             </Badge>
-                            <span className="font-bold text-foreground">{Number(b.amount).toLocaleString()} €</span>
+                            <span className="font-bold text-foreground whitespace-nowrap">{Number(b.amount).toLocaleString()} €</span>
                           </div>
                         </div>
                       );

@@ -237,14 +237,14 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
               )}
 
               {/* Quick payment actions */}
-              <div className="flex gap-2 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
-                  <Button size="sm" className="flex-1 text-xs" onClick={markPaid}>
+                  <Button size="sm" className="flex-1 min-w-[9rem] text-xs" onClick={markPaid}>
                     <CreditCard className="h-3 w-3 mr-1" /> Mark Paid
                   </Button>
                 )}
                 {booking.payment_link_url && (
-                  <Button size="sm" variant="outline" className="text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[9rem] text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
                     <Copy className="h-3 w-3 mr-1" /> Copy Payment Link
                   </Button>
                 )}

@@ -91,9 +91,9 @@ const LandlordProfile = () => {
           </div>
 
           {(landlord.city || landlord.country) && (
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-sm mb-4">
-              <MapPin className="h-4 w-4 shrink-0" />
-              <span className="break-words">{[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}</span>
+            <div className="flex items-start justify-center gap-1 text-muted-foreground text-sm mb-4 min-w-0">
+              <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+              <span className="break-words text-center">{[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}</span>
             </div>
           )}
 
