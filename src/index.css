@@ -89,6 +89,15 @@
     --label-gap: 0.375rem;         /* 6px */
     --field-gap: 1rem;             /* 16px */
     --section-gap: 1.5rem;         /* 24px */
+
+    /* ── Layout constraints ── */
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1200px;
+    --container-page: 1120px;      /* Default page max-width */
+    --page-padding-x: 1rem;
+    --page-padding-x-sm: 1.5rem;
   }
 
   .dark {
