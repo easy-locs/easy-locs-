@@ -70,7 +70,7 @@ export interface RentCall {
   receipt_pdf_url: string | null;
 }
 
-export function useRentalData() {
+export function useRentalData(countryFilter?: string | null) {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
@@ -82,11 +82,12 @@ export function useRentalData() {
   /* ─── Load all data ─── */
   const loadProperties = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("properties")
       .select("*")
-      .eq("org_id", orgId)
-      .order("label");
+      .eq("org_id", orgId);
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query.order("label");
     if (data) setProperties(data.map(p => ({
       id: p.id, label: p.label, address: p.address, postal_code: p.postal_code,
       city: p.city, property_type: p.property_type, surface: Number(p.surface) || 0,
