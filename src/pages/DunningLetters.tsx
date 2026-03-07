@@ -176,30 +176,32 @@ const DunningLetters = () => {
 
         {/* Letters history */}
         <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <table className="w-full text-sm">
-             <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.date")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.tenant")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.level")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.month")}</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.dunning.amount")}</th>
-              <th className="px-4 py-3"></th>
-            </tr></thead>
-            <tbody>
-               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
-                letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.dunning.no_letter")}</td></tr> :
-                  letters.map(l => (
-                    <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
-                      <td className="px-4 py-3 text-muted-foreground">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
-                      <td className="px-4 py-3 text-foreground font-medium">{tenantName(l.tenant_id)}</td>
-                      <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-blue-500/10 text-blue-500"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
-                      <td className="px-4 py-3 text-muted-foreground">{l.month}</td>
-                      <td className="px-4 py-3 text-right text-foreground font-semibold">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
-                      <td className="px-4 py-3"><button onClick={() => downloadPDF(l)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[580px]">
+               <thead><tr className="border-b border-border/50 bg-muted/30">
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.date")}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.tenant")}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.level")}</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.month")}</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.amount")}</th>
+                <th className="px-4 py-3"></th>
+              </tr></thead>
+              <tbody>
+                 {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
+                  letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.dunning.no_letter")}</td></tr> :
+                    letters.map(l => (
+                      <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
+                        <td className="px-4 py-3 text-foreground font-medium whitespace-nowrap">{tenantName(l.tenant_id)}</td>
+                        <td className="px-4 py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-info/10 text-info"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{l.month}</td>
+                        <td className="px-4 py-3 text-right text-foreground font-semibold whitespace-nowrap">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
+                        <td className="px-4 py-3"><button onClick={() => downloadPDF(l)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       </FeatureGate>
