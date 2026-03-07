@@ -61,7 +61,7 @@ const defaultTenantForm = {
   notes: "", birth_date: null as string | null, birth_place: null as string | null,
   nationality: "" as string | null, profession: null as string | null,
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
-  caf_apl_amount: 0, payment_day: 5,
+  caf_apl_amount: 0, payment_day: 1,
 };
 // EXPENSE_CATEGORIES now uses i18n - see render usage
 
