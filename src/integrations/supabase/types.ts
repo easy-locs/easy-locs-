@@ -1577,11 +1577,16 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_url: string | null
           category: string
           content: string
+          conversation_status: string | null
           created_at: string
+          delivered: boolean | null
           id: string
+          message_type: string | null
           org_id: string
+          property_id: string | null
           read: boolean
           sender_id: string
           sender_locale: string | null
@@ -1589,11 +1594,16 @@ export type Database = {
           translated_content: string | null
         }
         Insert: {
+          attachment_url?: string | null
           category?: string
           content: string
+          conversation_status?: string | null
           created_at?: string
+          delivered?: boolean | null
           id?: string
+          message_type?: string | null
           org_id: string
+          property_id?: string | null
           read?: boolean
           sender_id: string
           sender_locale?: string | null
@@ -1601,11 +1611,16 @@ export type Database = {
           translated_content?: string | null
         }
         Update: {
+          attachment_url?: string | null
           category?: string
           content?: string
+          conversation_status?: string | null
           created_at?: string
+          delivered?: boolean | null
           id?: string
+          message_type?: string | null
           org_id?: string
+          property_id?: string | null
           read?: boolean
           sender_id?: string
           sender_locale?: string | null

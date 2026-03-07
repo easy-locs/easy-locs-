@@ -165,7 +165,7 @@ const CommunicationCenter = () => {
     if (!orgId) return;
     const [docRes, overdueRes, maintRes] = await Promise.all([
       supabase.from("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-      supabase.from("rent_calls" as any).select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
+      supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
       supabase.from("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
     ]);
     setStats(s => ({
@@ -269,7 +269,7 @@ const CommunicationCenter = () => {
         attachment_url: url,
         message_type: "user",
         sender_locale: locale,
-      } as any);
+      });
 
       toast.success("Fichier envoyé");
     } catch (e: any) {
@@ -284,7 +284,7 @@ const CommunicationCenter = () => {
     // Update the last message with the new status
     const lastMsg = messages[messages.length - 1];
     if (lastMsg) {
-      await supabase.from("messages").update({ conversation_status: status } as any).eq("id", lastMsg.id);
+      await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
     }
     toast.success(`Statut: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
   };
@@ -321,7 +321,7 @@ const CommunicationCenter = () => {
         message_type: "user",
         property_id: selectedTenant.property_id || null,
         conversation_status: "waiting_tenant",
-      } as any);
+      });
 
       if (error) { toast.error("Erreur d'envoi"); return; }
       setNewMessage("");
