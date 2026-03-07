@@ -144,16 +144,16 @@ const Expenses = () => {
         )}
 
         {/* List */}
-        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="table-container">
+          <div className="table-scroll">
           <table className="w-full text-sm min-w-[600px]">
-            <thead><tr className="border-b border-border/50 bg-muted/30">
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.date")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.label")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.category")}</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.property")}</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">{t("page.expenses.amount")}</th>
-              <th className="px-4 py-3"></th>
+            <thead><tr className="table-head-row">
+              <th className="table-head-cell">{t("page.expenses.date")}</th>
+              <th className="table-head-cell">{t("page.expenses.label")}</th>
+              <th className="table-head-cell">{t("page.expenses.category")}</th>
+              <th className="table-head-cell">{t("page.expenses.property")}</th>
+              <th className="table-head-cell text-right">{t("page.expenses.amount")}</th>
+              <th className="table-head-cell"></th>
             </tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
