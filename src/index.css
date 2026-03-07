@@ -274,7 +274,16 @@
 
   /* ── Page content wrapper ── */
   .page-content {
-    @apply max-w-5xl mx-auto w-full;
+    @apply mx-auto w-full;
+    max-width: var(--container-page);
+  }
+  .page-content-sm {
+    @apply mx-auto w-full;
+    max-width: var(--container-md);
+  }
+  .page-content-lg {
+    @apply mx-auto w-full;
+    max-width: var(--container-xl);
   }
 
   /* ── Buttons ── */
