@@ -165,7 +165,7 @@ const CommunicationCenter = () => {
     if (!orgId) return;
     const [docRes, overdueRes, maintRes] = await Promise.all([
       supabase.from("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-      supabase.from("rent_calls" as any).select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
+      supabase.from("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
       supabase.from("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
     ]);
     setStats(s => ({
