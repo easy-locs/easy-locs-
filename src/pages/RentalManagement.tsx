@@ -529,9 +529,14 @@ const RentalManagement = () => {
     try {
       const { data, error } = await supabase.functions.invoke("create-rent-payment", { body: { rentCallId: payment.id, amount: payment.total_amount, tenantName: tenant.name, month: payment.month, orgId } });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: t("page.rental.payment_error"), description: err.message, variant: "destructive" });
+      const msg = err.message || String(err);
+      const userMsg = msg.includes("Stripe Connect")
+        ? (t("page.rental.stripe_not_configured") || "Veuillez d'abord configurer votre compte Stripe dans Finances → Paiement en ligne.")
+        : msg;
+      toast({ title: t("page.rental.payment_error") || "Erreur de paiement", description: userMsg, variant: "destructive" });
     } finally { setPayingRentId(null); }
   };
 
