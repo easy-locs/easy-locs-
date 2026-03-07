@@ -574,6 +574,17 @@ const allTemplates: DocumentTemplate[] = [
   frDissolution, frPVAGE, frActeCession, frRapportGestion,
   // France — Company legal
   frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC,
+  // Germany — Pro extras
+  deNebenkostenabrechnung, deMieterhoehung, deKuendigungVermieter, deKuendigungMieter,
+  deUebergabeprotokoll, deMietschuldenfreiheit, deKautionsabrechnung,
+  // Spain — Pro extras
+  esInventario, esRevisionRenta, esDesistimiento, esNoRenovacion, esCertificadoNoDeuda,
+  // Italy — Pro extras
+  itVerbaleConsegna, itAggiornamentoIstat, itDisdettaConduttore, itDisdettaLocatore,
+  // Portugal — Pro extras
+  ptAutoVistoria, ptAtualizacaoRenda, ptDenunciaArrendatario, ptOposicaoSenhorio,
+  // UK — Pro extras
+  gbSection21, gbSection13, gbInventory, gbDepositReturn, gbTenantNotice,
   // Europe packs
   ...allEuropeTemplates,
   // World packs
