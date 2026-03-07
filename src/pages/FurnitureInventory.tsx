@@ -332,10 +332,14 @@ const FurnitureInventory = () => {
         <div className="mb-4">
           <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="form-select w-auto">
             <option value="">{t("page.furniture.all_properties")}</option>
-            {properties.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.label} {p.furnished ? t("page.furniture.furnished") : ""} ({(groupedByProp[p.id] || []).length})
-              </option>
+            {Object.entries(propsByCountry).sort(([a], [b]) => a.localeCompare(b)).map(([country, countryProps]) => (
+              <optgroup key={country} label={`${countryCodes[country] || "🌍"} ${country}`}>
+                {countryProps.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.label} {p.furnished ? t("page.furniture.furnished") : ""} ({(groupedByProp[p.id] || []).length})
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
