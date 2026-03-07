@@ -1079,6 +1079,84 @@ export type Database = {
           },
         ]
       }
+      local_services: {
+        Row: {
+          active: boolean
+          availability_note: string | null
+          category: string
+          city: string
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          org_id: string
+          photo_url: string | null
+          price_indication: string | null
+          property_id: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+          website_url: string | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          active?: boolean
+          availability_note?: string | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          org_id: string
+          photo_url?: string | null
+          price_indication?: string | null
+          property_id?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          active?: boolean
+          availability_note?: string | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          org_id?: string
+          photo_url?: string | null
+          price_indication?: string | null
+          property_id?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "local_services_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           category: string
@@ -1268,6 +1346,7 @@ export type Database = {
           default_payment_provider: string | null
           email: string | null
           id: string
+          local_services_enabled: boolean
           logo_url: string | null
           name: string
           owner_user_id: string
@@ -1293,6 +1372,7 @@ export type Database = {
           default_payment_provider?: string | null
           email?: string | null
           id?: string
+          local_services_enabled?: boolean
           logo_url?: string | null
           name?: string
           owner_user_id: string
@@ -1318,6 +1398,7 @@ export type Database = {
           default_payment_provider?: string | null
           email?: string | null
           id?: string
+          local_services_enabled?: boolean
           logo_url?: string | null
           name?: string
           owner_user_id?: string

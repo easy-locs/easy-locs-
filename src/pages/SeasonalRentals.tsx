@@ -992,16 +992,16 @@ const SeasonalRentals = () => {
                 <button onClick={() => setShowEditRequestModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
               </div>
               <p className="text-sm text-muted-foreground">{focusedRequest.guest_name} — {propName(focusedRequest.property_id)}</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.arrival")}</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.seasonal.arrival")}</label>
                   <input type="date" value={editingRequestDates.check_in} onChange={e => setEditingRequestDates(d => ({ ...d, check_in: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                    className="w-full bg-muted/50 border border-border rounded-xl px-4 py-3 text-sm text-center font-medium focus:outline-none focus:ring-2 focus:ring-accent/40 appearance-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.departure")}</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.seasonal.departure")}</label>
                   <input type="date" value={editingRequestDates.check_out} onChange={e => setEditingRequestDates(d => ({ ...d, check_out: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                    className="w-full bg-muted/50 border border-border rounded-xl px-4 py-3 text-sm text-center font-medium focus:outline-none focus:ring-2 focus:ring-accent/40 appearance-none" />
                 </div>
               </div>
               <button

@@ -68,6 +68,7 @@ const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
+const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
 // Legal pages
@@ -175,6 +176,7 @@ const App = () => (
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
+              <Route path="/dashboard/local-services" element={<ProtectedRoute><LocalServices /></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
