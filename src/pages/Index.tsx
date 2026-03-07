@@ -1,8 +1,11 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import DashboardPreview from "@/components/landing/DashboardPreview";
 import RoleCards from "@/components/landing/RoleCards";
-import WorldMapSection from "@/components/landing/WorldMapSection";
 import Features from "@/components/landing/Features";
+import ConciergeSection from "@/components/landing/ConciergeSection";
+import WorldMapSection from "@/components/landing/WorldMapSection";
+import AdvantagesSection from "@/components/landing/AdvantagesSection";
 import AISection from "@/components/landing/AISection";
 import StatsSection from "@/components/landing/StatsSection";
 import Pricing from "@/components/landing/Pricing";
@@ -64,9 +67,12 @@ const Index = () => {
       />
       <Navbar />
       <Hero />
+      <DashboardPreview />
       <RoleCards />
-      <WorldMapSection />
       <Features />
+      <ConciergeSection />
+      <WorldMapSection />
+      <AdvantagesSection />
       <AISection />
       <StatsSection />
       <Pricing />

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Building2, KeyRound, UserPlus, Globe, Shield, Zap, Users } from "lucide-react";
+import { ArrowRight, Play, LogIn, Globe, Shield, Zap, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
@@ -29,7 +29,7 @@ const Hero = () => {
             style={{ color: 'hsl(var(--gold-light))' }}
           >
             <Globe className="h-4 w-4" />
-            Global Property Management Platform
+            Property Management in 110+ Countries
           </motion.div>
 
           {/* Headline */}
@@ -40,9 +40,9 @@ const Hero = () => {
             className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6"
             style={{ color: 'hsl(var(--primary-foreground))' }}
           >
-            The Global Platform for{" "}
-            <span className="text-gradient-gold">Property Management</span>{" "}
-            and Rentals
+            Manage Properties,{" "}
+            <span className="text-gradient-gold">Tenants & Bookings</span>{" "}
+            Worldwide
           </motion.h1>
 
           {/* Subtitle */}
@@ -53,7 +53,7 @@ const Hero = () => {
             className="text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
             style={{ color: 'hsl(var(--primary-foreground) / 0.55)' }}
           >
-            Manage properties, tenants, bookings and concierge services worldwide from one platform.
+            All-in-one platform for landlords and property managers: leases, rent collection, short-term rentals, concierge services, document generation and AI automation — in any country, language, and currency.
           </motion.p>
 
           {/* Three CTA buttons */}
@@ -64,29 +64,28 @@ const Hero = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
           >
             <Link
-              to="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-gradient-gold text-accent-foreground font-bold px-8 py-4 rounded-xl shadow-gold hover:opacity-90 transition-all text-base min-w-[220px]"
+              to="/signup"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-gradient-gold text-accent-foreground font-bold px-8 py-4 rounded-xl shadow-gold hover:opacity-90 transition-all text-base min-w-[200px]"
             >
-              <Building2 className="h-5 w-5" />
-              Owner / Landlord Login
+              Start Free Trial
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/tenant-signup"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border-2 border-primary-foreground/15 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/5 transition-all text-base min-w-[220px]"
+              to="/login"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border-2 border-primary-foreground/15 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/5 transition-all text-base min-w-[200px]"
               style={{ color: 'hsl(var(--primary-foreground) / 0.8)' }}
             >
-              <KeyRound className="h-5 w-5" />
-              Tenant Login
+              <LogIn className="h-5 w-5" />
+              Login
             </Link>
-            <Link
-              to="/signup"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-primary-foreground/10 border border-primary-foreground/10 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/15 transition-all text-base min-w-[220px]"
+            <a
+              href="#demo"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-primary-foreground/10 border border-primary-foreground/10 font-semibold px-8 py-4 rounded-xl hover:bg-primary-foreground/15 transition-all text-base min-w-[200px]"
               style={{ color: 'hsl(var(--primary-foreground) / 0.9)' }}
             >
-              <UserPlus className="h-5 w-5" />
-              Create Account
-            </Link>
+              <Play className="h-5 w-5" />
+              See Demo
+            </a>
           </motion.div>
 
           {/* Trust bar */}
@@ -100,7 +99,7 @@ const Hero = () => {
               { icon: Globe, label: "110+ Countries" },
               { icon: Shield, label: "GDPR Compliant" },
               { icon: Zap, label: "AI Powered" },
-              { icon: Users, label: "Tenant Portal" },
+              { icon: Users, label: "Tenant & Guest Portal" },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--primary-foreground) / 0.35)' }}>
                 <item.icon className="h-4 w-4" />
