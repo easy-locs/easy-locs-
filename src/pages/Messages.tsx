@@ -52,6 +52,7 @@ const normalizeEmail = (email: string | null | undefined) => (email || "").trim(
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Messages = () => {
+  const countryFilter = useCountryFilter();
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const [tenants, setTenants] = useState<Tenant[]>([]);
