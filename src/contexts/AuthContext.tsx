@@ -77,52 +77,91 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hasDualRole, setHasDualRole] = useState(false);
 
   const fetchOrgId = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", userId)
-      .limit(1)
-      .single();
-    setOrgId(data?.org_id ?? null);
+    try {
+      const { data } = await supabase
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+      setOrgId(data?.org_id ?? null);
+    } catch (err) {
+      console.warn("[AuthContext] fetchOrgId failed:", err);
+      setOrgId(null);
+    }
   }, []);
 
   const fetchUserType = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("user_type, onboarding_completed, country, currency")
-      .eq("id", userId)
-      .single();
-    const ut = (data?.user_type as UserType) ?? "landlord";
-    setUserType(ut);
-    setUserCountry(data?.country ?? "FR");
-    setUserCurrency(data?.currency ?? "EUR");
+    try {
+      // Profile may not exist yet (trigger race) — retry once after short delay
+      let data: any = null;
+      const { data: d1, error: e1 } = await supabase
+        .from("profiles")
+        .select("user_type, onboarding_completed, country, currency")
+        .eq("id", userId)
+        .maybeSingle();
 
-    // Check dual-role: user has both org membership (landlord) and tenant link
-    const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
-      supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
-      supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
-    ]);
+      if (e1 || !d1) {
+        // Wait for trigger to create profile row
+        await new Promise(r => setTimeout(r, 1500));
+        const { data: d2 } = await supabase
+          .from("profiles")
+          .select("user_type, onboarding_completed, country, currency")
+          .eq("id", userId)
+          .maybeSingle();
+        data = d2;
+      } else {
+        data = d1;
+      }
 
-    const dual = !!tenantLink && !!orgLink;
-    setHasDualRole(dual);
+      const ut = (data?.user_type as UserType) ?? "landlord";
+      setUserType(ut);
+      setUserCountry(data?.country ?? "FR");
+      setUserCurrency(data?.currency ?? "EUR");
 
-    // Auto-complete onboarding for existing accounts that already have org data or tenant link
-    let onboardingDone = data?.onboarding_completed ?? false;
-    if (!onboardingDone && (!!orgLink || !!tenantLink)) {
-      // User has org membership or tenant link = existing account, skip onboarding
-      onboardingDone = true;
-      supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
-    }
-    setOnboardingCompleted(onboardingDone);
+      // Check dual-role: user has both org membership (landlord) and tenant link
+      let tenantLink: any = null;
+      let orgLink: any = null;
+      try {
+        const [t, o] = await Promise.all([
+          supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
+          supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+        ]);
+        tenantLink = t.data;
+        orgLink = o.data;
+      } catch (err) {
+        console.warn("[AuthContext] dual-role check failed:", err);
+      }
 
-    // Restore saved role preference, default to landlord for dual-role
-    const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
-    if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
-      setActiveRole(savedRole);
-    } else if (dual) {
+      const dual = !!tenantLink && !!orgLink;
+      setHasDualRole(dual);
+
+      // Auto-complete onboarding for existing accounts that already have org data or tenant link
+      let onboardingDone = data?.onboarding_completed ?? false;
+      if (!onboardingDone && (!!orgLink || !!tenantLink)) {
+        onboardingDone = true;
+        supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+      }
+      setOnboardingCompleted(onboardingDone);
+
+      // Restore saved role preference, default to landlord for dual-role
+      const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
+      if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
+        setActiveRole(savedRole);
+      } else if (dual) {
+        setActiveRole("landlord");
+      } else {
+        setActiveRole(ut === "tenant" ? "tenant" : "landlord");
+      }
+    } catch (err) {
+      console.error("[AuthContext] fetchUserType failed:", err);
+      // Safe defaults — app won't crash
+      setUserType("landlord");
+      setUserCountry("FR");
+      setUserCurrency("EUR");
+      setOnboardingCompleted(false);
       setActiveRole("landlord");
-    } else {
-      setActiveRole(ut === "tenant" ? "tenant" : "landlord");
+      setHasDualRole(false);
     }
   }, []);
 
@@ -169,10 +208,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(nextSession?.user ?? null);
 
       if (nextSession?.user) {
-        await Promise.all([
-          fetchOrgId(nextSession.user.id),
-          fetchUserType(nextSession.user.id),
-        ]);
+        try {
+          await Promise.all([
+            fetchOrgId(nextSession.user.id),
+            fetchUserType(nextSession.user.id),
+          ]);
+        } catch (err) {
+          console.error("[AuthContext] hydrateAuthState failed:", err);
+          // Safe defaults already set by individual catch blocks
+        }
         void refreshSubscription();
       } else {
         setOrgId(null);
