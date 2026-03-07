@@ -983,6 +983,72 @@ const SeasonalRentals = () => {
                 </div>
               ))}
         </div>
+        {/* Edit dates modal */}
+        {showEditRequestModal && focusedRequest && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowEditRequestModal(false)}>
+            <div className="bg-card rounded-2xl border border-border p-6 max-w-md w-full space-y-4" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">{t("page.seasonal.modify_dates_title")}</h3>
+                <button onClick={() => setShowEditRequestModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+              </div>
+              <p className="text-sm text-muted-foreground">{focusedRequest.guest_name} — {propName(focusedRequest.property_id)}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.arrival")}</label>
+                  <input type="date" value={editingRequestDates.check_in} onChange={e => setEditingRequestDates(d => ({ ...d, check_in: e.target.value }))}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">{t("page.seasonal.departure")}</label>
+                  <input type="date" value={editingRequestDates.check_out} onChange={e => setEditingRequestDates(d => ({ ...d, check_out: e.target.value }))}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  if (editingRequestDates.check_out <= editingRequestDates.check_in) {
+                    toast({ title: t("page.common.error"), description: t("page.seasonal.error_dates"), variant: "destructive" });
+                    return;
+                  }
+                  await supabase.from("booking_requests").update({
+                    check_in: editingRequestDates.check_in,
+                    check_out: editingRequestDates.check_out,
+                  } as any).eq("id", focusedRequest.id);
+                  // Update matching seasonal_booking too
+                  if (orgId) {
+                    await supabase.from("seasonal_bookings").update({
+                      check_in: editingRequestDates.check_in,
+                      check_out: editingRequestDates.check_out,
+                    } as any)
+                      .eq("org_id", orgId).eq("property_id", focusedRequest.property_id)
+                      .eq("check_in", focusedRequest.check_in).eq("check_out", focusedRequest.check_out)
+                      .eq("guest_name", focusedRequest.guest_name);
+                  }
+                  // Send modification email
+                  await supabase.functions.invoke("send-email", {
+                    body: {
+                      to: focusedRequest.guest_email,
+                      subject: `📅 ${t("page.seasonal.modified_email_subject")}`,
+                      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                        <h2 style="color:#1a1a1a;text-align:center;">📅 ${t("page.seasonal.modified_email_heading")}</h2>
+                        <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.modified_email_body").replace("{name}", focusedRequest.guest_name).replace("{checkin}", editingRequestDates.check_in).replace("{checkout}", editingRequestDates.check_out)}</p>
+                        <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                      </div>`,
+                    },
+                  });
+                  toast({ title: t("page.seasonal.dates_modified") });
+                  setAllRequests(prev => prev.map(r => r.id === focusedRequest.id ? { ...r, check_in: editingRequestDates.check_in, check_out: editingRequestDates.check_out } : r));
+                  setShowEditRequestModal(false);
+                  setFocusedRequest(null);
+                  await load();
+                }}
+                className="w-full bg-gradient-gold text-accent-foreground px-6 py-2.5 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90"
+              >
+                {t("page.seasonal.save_dates_btn")}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       </FeatureGate>
     </DashboardLayout>
