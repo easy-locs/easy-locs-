@@ -124,16 +124,16 @@ const Receipts = () => {
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">{t("page.common.loading")}</div>
         ) : receipts.length > 0 ? (
-          <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="table-container">
+            <div className="table-scroll">
               <table className="w-full min-w-[580px]">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.tenant")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.owner")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.period")}</th>
-                     <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.amount")}</th>
-                     <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("page.receipts.actions")}</th>
+                  <tr className="table-head-row">
+                     <th className="table-head-cell">{t("page.receipts.tenant")}</th>
+                     <th className="table-head-cell">{t("page.receipts.owner")}</th>
+                     <th className="table-head-cell">{t("page.receipts.period")}</th>
+                     <th className="table-head-cell">{t("page.receipts.amount")}</th>
+                     <th className="table-head-cell text-right">{t("page.receipts.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
