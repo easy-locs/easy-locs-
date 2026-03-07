@@ -313,6 +313,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               </>
             )}
           </div>
+          <ThemeSwitcher />
           <NotificationBell />
           <Link
             to="/dashboard/assistant"
