@@ -1,32 +1,29 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle } from "lucide-react";
+import { usePublicLocale } from "@/hooks/usePublicLocale";
+import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
+import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
+import BookingForm from "@/components/public/BookingForm";
+import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import logoEasylocs from "@/assets/logo-easylocs.png";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const { t } = useI18n();
+  const { t, setLocale } = useI18n();
+  const { locale, changeLocale, supportedLocales } = usePublicLocale();
   const [listing, setListing] = useState<any>(null);
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [bookedDates, setBookedDates] = useState<{ check_in: string; check_out: string }[]>([]);
-  const [form, setForm] = useState({
-    guest_name: "",
-    guest_email: "",
-    guest_phone: "",
-    check_in: "",
-    check_out: "",
-    guests_count: 1,
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Sync locale to i18n context
+  useEffect(() => { setLocale(locale); }, [locale, setLocale]);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") setPaymentSuccess(true);
@@ -44,16 +41,43 @@ const PublicListing = () => {
       if (!l) { setNotFound(true); setLoading(false); return; }
       setListing(l);
 
-      // Use security definer function to bypass RLS for public access
       const { data: propData } = await supabase.rpc("get_listing_property", { p_listing_id: l.id });
       setProperty(propData);
-
-      // Booked dates loaded from booking_requests with confirmed status
-      setBookedDates([]);
       setLoading(false);
     };
     load();
   }, [slug]);
+
+  // Handle payment redirect from email
+  useEffect(() => {
+    if (listing && searchParams.get("pay_request")) {
+      (async () => {
+        const requestId = searchParams.get("pay_request");
+        if (!requestId) return;
+        setSubmitting(true);
+        try {
+          const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+            body: {
+              booking_request_id: requestId,
+              listing_id: listing.id,
+              guest_email: searchParams.get("email") || "",
+              guest_name: searchParams.get("name") || "Guest",
+              amount: Number(searchParams.get("amount")) || 0,
+              nights: Number(searchParams.get("nights")) || 1,
+              property_label: listing.title || property?.label,
+              origin: buildAppUrl("/"),
+            },
+          });
+          if (error) throw error;
+          if (data?.url) window.location.href = data.url;
+        } catch (err: any) {
+          alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);
+        } finally {
+          setSubmitting(false);
+        }
+      })();
+    }
+  }, [listing]);
 
   const photos: string[] = property?.photo_urls || [];
   const amenities: any[] = Array.isArray(listing?.amenities) ? listing.amenities : [];
@@ -61,84 +85,16 @@ const PublicListing = () => {
   const cleaningFeeObj = amenities.find((a: any) => typeof a === "object" && a?.type === "cleaning_fee");
   const cleaningFee = typeof cleaningFeeObj === "object" && cleaningFeeObj ? (cleaningFeeObj as any).amount || 0 : 0;
 
-  const nights = useMemo(() => {
-    if (!form.check_in || !form.check_out) return 0;
-    const diff = new Date(form.check_out).getTime() - new Date(form.check_in).getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  }, [form.check_in, form.check_out]);
-
-  const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!listing || !property || submitting) return;
-    if (!form.guest_name || !form.guest_email || !form.check_in || !form.check_out) return;
-
-    setSubmitting(true);
-    const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
-      listing_id: listing.id,
-      property_id: property.id,
-      org_id: listing.org_id,
-      guest_name: form.guest_name,
-      guest_email: form.guest_email,
-      guest_phone: form.guest_phone,
-      check_in: form.check_in,
-      check_out: form.check_out,
-      guests_count: form.guests_count,
-      message: form.message,
-    } as any).select().single();
-
-    if (error) {
-      setSubmitting(false);
-      alert(t("page.listing.error_submit"));
-      return;
-    }
-
-    try {
-      await supabase.functions.invoke("notify-booking", {
-        body: { booking_request_id: insertedRequest.id },
-      });
-    } catch (e) {
-      console.error("Notification error:", e);
-    }
-
-    setSubmitting(false);
-    setSubmitted(true);
-  };
-
-  // Handle payment when redirected from email payment link
-  const handlePayFromLink = async () => {
-    const requestId = searchParams.get("pay_request");
-    if (!requestId || !listing) return;
-    setSubmitting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-booking-payment", {
-        body: {
-          booking_request_id: requestId,
-          listing_id: listing.id,
-          guest_email: searchParams.get("email") || "",
-          guest_name: searchParams.get("name") || "Guest",
-          amount: Number(searchParams.get("amount")) || 0,
-          nights: Number(searchParams.get("nights")) || 1,
-          property_label: listing.title || property?.label,
-          origin: buildAppUrl("/"),
-        },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      alert(`${t("page.listing.error_payment")}: ${err.message || ""}`);
-    } finally {
-      setSubmitting(false);
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: listing?.title || "Easy-Locs", url });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
     }
   };
-
-  useEffect(() => {
-    if (listing && searchParams.get("pay_request")) {
-      handlePayFromLink();
-    }
-  }, [listing]);
-
 
   if (loading) {
     return (
@@ -173,43 +129,24 @@ const PublicListing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero photos */}
-      <div className="relative w-full h-[50vh] sm:h-[60vh] bg-muted">
-        {photos.length > 0 ? (
-          <>
-            <img src={photos[photoIndex]} alt="" className="w-full h-full object-cover" />
-            {photos.length > 1 && (
-              <>
-                <button
-                  onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur rounded-full p-2 hover:bg-background transition-colors"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setPhotoIndex(i => (i + 1) % photos.length)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur rounded-full p-2 hover:bg-background transition-colors"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                  {photos.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPhotoIndex(i)}
-                      className={`w-2 h-2 rounded-full transition-colors ${i === photoIndex ? "bg-white" : "bg-white/40"}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <p className="text-muted-foreground">{t("page.listing.no_photos")}</p>
+      {/* Top bar with logo + language */}
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
+        <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={logoEasylocs} alt="EASY-LOCS" className="h-6 w-auto" />
+            <span className="text-sm font-bold text-foreground tracking-tight">EASY-LOCS<sup className="text-[7px] ml-0.5 text-muted-foreground">®</sup></span>
           </div>
-        )}
-      </div>
+          <div className="flex items-center gap-3">
+            <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Share">
+              <Share2 className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
+          </div>
+        </div>
+      </header>
+
+      {/* Hero gallery */}
+      <ListingPhotoGallery photos={photos} />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -220,21 +157,22 @@ const PublicListing = () => {
                 {listing.title || property?.label}
               </h1>
               <p className="text-muted-foreground flex items-center gap-1.5 mt-2">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 shrink-0" />
                 {property?.address}, {property?.postal_code} {property?.city}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-wrap gap-3 text-sm">
               {listing.price_per_night > 0 && (
-                <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-1.5 rounded-full font-medium">
-                  <Euro className="h-4 w-4" /> <span className="currency-value whitespace-nowrap">{listing.price_per_night} €</span> {t("page.listing.per_night")}
+                <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-2 rounded-xl font-medium">
+                  <Euro className="h-4 w-4" />
+                  <span className="whitespace-nowrap">{listing.price_per_night} € {t("page.listing.per_night")}</span>
                 </span>
               )}
-              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
                 <Users className="h-4 w-4" /> {listing.max_guests} {t("page.listing.guests_max")}
               </span>
-              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
                 <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
               </span>
             </div>
@@ -242,7 +180,7 @@ const PublicListing = () => {
             {listing.description && (
               <div>
                 <h2 className="font-semibold text-foreground mb-2">{t("page.listing.description")}</h2>
-                <p className="text-muted-foreground text-sm whitespace-pre-wrap">{listing.description}</p>
+                <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">{listing.description}</p>
               </div>
             )}
 
@@ -258,24 +196,19 @@ const PublicListing = () => {
                 <h2 className="font-semibold text-foreground mb-2">{t("page.listing.amenities")}</h2>
                 <div className="flex flex-wrap gap-2">
                   {stringAmenities.map(a => (
-                    <span key={a} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-medium">
-                      {a}
-                    </span>
+                    <span key={a} className="bg-muted text-muted-foreground px-3 py-1.5 rounded-xl text-xs font-medium">{a}</span>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Thumbnails */}
             {photos.length > 1 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {photos.map((url, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setPhotoIndex(i)}
-                    className={`rounded-lg overflow-hidden aspect-[4/3] border-2 transition-colors ${i === photoIndex ? "border-accent" : "border-transparent"}`}
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
+                  <div key={i} className="rounded-xl overflow-hidden aspect-[4/3]">
+                    <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  </div>
                 ))}
               </div>
             )}
@@ -283,131 +216,8 @@ const PublicListing = () => {
 
           {/* Booking form */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 bg-card border border-border rounded-xl p-5 shadow-card space-y-4">
-              {submitted ? (
-              <div className="text-center py-8">
-                  <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("page.listing.request_sent_desc")}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("page.listing.awaiting_approval")}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <h3 className="font-semibold text-foreground text-center">{t("page.listing.book_title")}</h3>
-                  <form onSubmit={handleSubmit} className="space-y-3">
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.full_name")} *</label>
-                      <input
-                        required
-                        value={form.guest_name}
-                        onChange={e => setForm(p => ({ ...p, guest_name: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.email")} *</label>
-                      <input
-                        required
-                        type="email"
-                        value={form.guest_email}
-                        onChange={e => setForm(p => ({ ...p, guest_email: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.phone")}</label>
-                      <input
-                        value={form.guest_phone}
-                        onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_in")} *</label>
-                        <input
-                          required
-                          type="date"
-                          value={form.check_in}
-                          min={new Date().toISOString().slice(0, 10)}
-                          onChange={e => setForm(p => ({ ...p, check_in: e.target.value }))}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_out")} *</label>
-                        <input
-                          required
-                          type="date"
-                          value={form.check_out}
-                          min={form.check_in || new Date().toISOString().slice(0, 10)}
-                          onChange={e => setForm(p => ({ ...p, check_out: e.target.value }))}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.guests_count")}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={listing.max_guests}
-                        value={form.guests_count}
-                        onChange={e => setForm(p => ({ ...p, guests_count: +e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground">{t("page.listing.message")}</label>
-                      <textarea
-                        value={form.message}
-                        onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
-                        rows={2}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 resize-none"
-                        placeholder={t("page.listing.message_placeholder")}
-                      />
-                    </div>
-
-                    {nights > 0 && listing.price_per_night > 0 && (
-                      <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{nights} {t("page.listing.nights")} × {listing.price_per_night}€</span>
-                          <span className="text-foreground">{nights * listing.price_per_night}€</span>
-                        </div>
-                        {cleaningFee > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t("page.listing.cleaning")}</span>
-                            <span className="text-foreground">{cleaningFee}€</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between border-t border-border pt-1">
-                          <span className="font-medium text-foreground">{t("page.listing.total")}</span>
-                          <span className="font-semibold text-foreground">{totalPrice}€</span>
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full bg-accent text-accent-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                    >
-                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      {t("page.listing.send_request")}
-                    </button>
-
-                    {nights > 0 && totalPrice > 0 && (
-                      <p className="text-[10px] text-muted-foreground text-center">
-                        {t("page.listing.approval_note")}
-                      </p>
-                    )}
-                  </form>
-                </>
-              )}
+            <div className="sticky top-16 bg-card border border-border rounded-2xl p-6 shadow-card space-y-5">
+              <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
             </div>
           </div>
         </div>

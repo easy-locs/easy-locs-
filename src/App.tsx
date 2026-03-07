@@ -68,6 +68,8 @@ const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
+const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
+const HostCatalog = lazy(() => import("./pages/HostCatalog"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
@@ -114,6 +116,11 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/listing/:slug" element={<PublicListing />} />
+              <Route path="/r/:country/:city/:propertySlug" element={<PublicListing />} />
+              <Route path="/rentals" element={<RentalCatalog />} />
+              <Route path="/rentals/:country" element={<RentalCatalog />} />
+              <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
+              <Route path="/host/:hostSlug" element={<HostCatalog />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />

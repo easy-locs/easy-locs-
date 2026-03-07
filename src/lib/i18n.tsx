@@ -1773,6 +1773,15 @@ const pageFr: Record<string, string> = {
   "page.listing.error_payment": "Erreur de paiement",
   "page.listing.stripe_note": "Paiement sécurisé par Stripe · Carte & Apple Pay acceptés",
   "page.listing.powered_by_brand": "Gestion locative intelligente",
+  // ── Catalog & Host ──
+  "page.catalog.title": "Locations saisonnières",
+  "page.catalog.search_placeholder": "Rechercher une destination…",
+  "page.catalog.all_guests": "Tous les voyageurs",
+  "page.catalog.no_results": "Aucune annonce trouvée",
+  "page.host.not_found": "Hôte introuvable",
+  "page.host.not_found_desc": "Ce profil n'existe pas ou n'est plus actif.",
+  "page.host.listings_count": "annonce(s) disponible(s)",
+  "page.host.no_listings": "Aucune annonce disponible",
   // ── Listing Manager ──
   "page.listing_mgr.title": "Annonce publique",
   "page.listing_mgr.listing_title": "Titre de l'annonce",
@@ -3182,6 +3191,15 @@ const pageEn: Record<string, string> = {
   "page.listing.error_payment": "Payment error",
   "page.listing.stripe_note": "Secure payment via Stripe · Card & Apple Pay accepted",
   "page.listing.powered_by_brand": "Smart rental management",
+  // ── Catalog & Host ──
+  "page.catalog.title": "Seasonal rentals",
+  "page.catalog.search_placeholder": "Search a destination…",
+  "page.catalog.all_guests": "All guests",
+  "page.catalog.no_results": "No listings found",
+  "page.host.not_found": "Host not found",
+  "page.host.not_found_desc": "This profile does not exist or is no longer active.",
+  "page.host.listings_count": "listing(s) available",
+  "page.host.no_listings": "No listings available",
   // ── Listing Manager ──
   "page.listing_mgr.title": "Public listing",
   "page.listing_mgr.listing_title": "Listing title",
