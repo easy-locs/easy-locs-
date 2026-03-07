@@ -63,6 +63,16 @@ const TenantReceipts = () => {
       }
       if (!signedUrl) throw new Error(L.receiptDownloadError);
       const response = await fetch(signedUrl);
+      if (!response.ok) throw new Error(L.receiptDownloadError);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${r.month}_${r.id}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast({ title: L.receiptDownloadError, description: err.message, variant: "destructive" });
     } finally {
