@@ -486,16 +486,16 @@ const SeasonalRentals = () => {
     <DashboardLayout>
       <FeatureGate feature="ota_sync" featureLabel={t("page.seasonal.feature_label")}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.seasonal.title_page")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.seasonal.subtitle_page")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.seasonal.title_page")}</h1>
+            <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors">
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
               <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
             </button>
-            <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
