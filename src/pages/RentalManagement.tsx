@@ -545,7 +545,7 @@ const RentalManagement = () => {
     }
     setNotifyingRentId(payment.id);
     try {
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenant.email,

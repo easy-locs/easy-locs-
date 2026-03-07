@@ -200,7 +200,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const tenantEmail = tenantContact?.email;
       if (!tenantEmail) throw new Error(t("comp.docs.no_tenant_email"));
 
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const docsWithLinks = await Promise.all(
         docs.map(async (d) => ({ ...d, accessUrl: await getSignedDocumentUrl(d.file_url), statusLabel: statusConfig[normalizeStatus(d.status)]?.label || d.status }))
       );

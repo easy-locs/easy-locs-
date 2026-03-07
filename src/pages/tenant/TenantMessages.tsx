@@ -133,7 +133,7 @@ const TenantMessages = () => {
               landlordEmail = normalizeEmail(ownerProfile?.email ?? null);
             }
             if (landlordEmail && isValidEmail(landlordEmail)) {
-              const appUrl = window.location.origin;
+              const appUrl = buildAppUrl("/");
               await supabase.functions.invoke("send-email", {
                 body: {
                   to: landlordEmail,

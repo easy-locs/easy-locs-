@@ -213,7 +213,7 @@ const Messages = () => {
       const tenantEmail = normalizeEmail(selectedTenant.email);
       if (tenantEmail && isValidEmail(tenantEmail)) {
         const L = getCountryConfig(propCountry).labels;
-        const appUrl = window.location.origin;
+        const appUrl = buildAppUrl("/");
         try {
           await supabase.functions.invoke("send-email", {
             body: {

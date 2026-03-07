@@ -725,7 +725,7 @@ const SeasonalRentals = () => {
                             const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
                             const pricePerNight = listingData?.price_per_night || 0;
                             const totalAmount = pricePerNight * nights;
-                            const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+                            const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`);
                             await supabase.functions.invoke("send-email", {
                               body: {
                                 to: req.guest_email,
