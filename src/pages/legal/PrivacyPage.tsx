@@ -1,11 +1,17 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 
 const PrivacyPage = () => {
   const { t } = useI18n();
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Privacy Policy — Easy-Locs"
+        description="Learn how Easy-Locs protects your personal data. GDPR-compliant privacy policy for our property management platform."
+        canonical="https://www.easy-locs.com/privacy"
+      />
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">

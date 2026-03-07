@@ -1,11 +1,17 @@
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 
 const TermsPage = () => {
   const { t } = useI18n();
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Terms & Conditions — Easy-Locs"
+        description="Read the terms and conditions for using Easy-Locs property management platform. Legal framework for landlords, tenants and users."
+        canonical="https://www.easy-locs.com/terms"
+      />
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">
