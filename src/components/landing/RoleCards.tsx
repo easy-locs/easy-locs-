@@ -28,7 +28,7 @@ const roles = [
     title: "Guest / Short-term Booking",
     description: "Book properties, select dates, pay online and add concierge services.",
     cta: "Book a Property",
-    to: "/dashboard/seasonal",
+    to: "/rentals",
     gradient: "from-success/15 to-success/5",
     iconBg: "bg-success/15",
     iconColor: "text-success",
