@@ -1,15 +1,10 @@
-import { useSearchParams } from "react-router-dom";
-import { useMemo } from "react";
+import { useCountryContext } from "@/hooks/useCountryContext";
 
 /**
- * Reads `?country=XX` from the URL search params.
- * Returns the uppercase country code or null if not set.
- * Used to enforce strict country isolation in sub-pages.
+ * Reads the active country from URL context.
+ * Delegates to useCountryContext for unified country detection.
+ * Returns uppercase country code or null.
  */
 export function useCountryFilter(): string | null {
-  const [searchParams] = useSearchParams();
-  return useMemo(() => {
-    const raw = searchParams.get("country");
-    return raw ? raw.toUpperCase() : null;
-  }, [searchParams]);
+  return useCountryContext();
 }
