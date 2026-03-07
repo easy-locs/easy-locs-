@@ -139,10 +139,10 @@ const DunningLetters = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.dunning.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.dunning.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.dunning.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.dunning.title")}</h1>
+            <p>{t("page.dunning.subtitle")}</p>
           </div>
         </div>
 
