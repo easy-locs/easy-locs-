@@ -4,74 +4,68 @@ import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
 const regions = [
-  { flag: "🇫🇷", key: "France", code: "FR" },
-  { flag: "🇬🇧", key: "United Kingdom", code: "GB" },
-  { flag: "🇩🇪", key: "Germany", code: "DE" },
-  { flag: "🇪🇸", key: "Spain", code: "ES" },
-  { flag: "🇮🇹", key: "Italy", code: "IT" },
-  { flag: "🇵🇹", key: "Portugal", code: "PT" },
-  { flag: "🇳🇱", key: "Netherlands", code: "NL" },
-  { flag: "🇧🇪", key: "Belgium", code: "BE" },
-  { flag: "🇨🇭", key: "Switzerland", code: "CH" },
-  { flag: "🇦🇹", key: "Austria", code: "AT" },
-  { flag: "🇵🇱", key: "Poland", code: "PL" },
-  { flag: "🇬🇷", key: "Greece", code: "GR" },
-  { flag: "🇺🇸", key: "United States", code: "US" },
-  { flag: "🇯🇵", key: "Japan", code: "JP" },
-  { flag: "🇦🇪", key: "UAE", code: "AE" },
-  { flag: "🇧🇷", key: "Brazil", code: "BR" },
-  { flag: "🇲🇦", key: "Morocco", code: "MA" },
-  { flag: "🇹🇷", key: "Turkey", code: "TR" },
+  { flag: "🇫🇷", name: "France" },
+  { flag: "🇬🇧", name: "UK" },
+  { flag: "🇩🇪", name: "Germany" },
+  { flag: "🇪🇸", name: "Spain" },
+  { flag: "🇮🇹", name: "Italy" },
+  { flag: "🇵🇹", name: "Portugal" },
+  { flag: "🇳🇱", name: "Netherlands" },
+  { flag: "🇧🇪", name: "Belgium" },
+  { flag: "🇨🇭", name: "Switzerland" },
+  { flag: "🇦🇹", name: "Austria" },
+  { flag: "🇵🇱", name: "Poland" },
+  { flag: "🇬🇷", name: "Greece" },
+  { flag: "🇺🇸", name: "USA" },
+  { flag: "🇯🇵", name: "Japan" },
+  { flag: "🇦🇪", name: "UAE" },
+  { flag: "🇧🇷", name: "Brazil" },
+  { flag: "🇲🇦", name: "Morocco" },
+  { flag: "🇹🇷", name: "Turkey" },
 ];
 
 const WorldMapSection = () => {
   const { t } = useI18n();
 
   return (
-    <section className="py-20 sm:py-28 relative overflow-hidden">
-      {/* Animated globe grid bg */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle, hsl(var(--accent)) 1px, transparent 1px)`,
-        backgroundSize: '30px 30px',
-      }} />
-
-      <div className="container max-w-6xl relative z-10">
+    <section className="py-24 sm:py-32 relative overflow-hidden">
+      <div className="container max-w-5xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-14"
+          className="text-center mb-14 space-y-4"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-1.5 text-sm font-medium text-accent mb-6">
-            <Globe className="h-4 w-4" />
-            {t("landing.world.badge") || "110+ Countries Supported"}
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            {t("landing.world.title") || "Manage Properties"} <span className="text-gradient-gold">{t("landing.world.title_highlight") || "Worldwide"}</span>
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5">
+            <Globe className="h-3.5 w-3.5" />
+            {t("landing.world.badge") || "110+ Countries"}
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
+            {t("landing.world.title") || "Manage Properties"}{" "}
+            <span className="text-gradient-gold">{t("landing.world.title_highlight") || "Worldwide"}</span>
           </h2>
-          <p className="text-muted-foreground text-base max-w-xl mx-auto">
-            {t("landing.world.subtitle") || "Each country has its own regulations, currencies, languages and document templates — fully separated and compliant."}
+          <p className="text-muted-foreground text-base sm:text-lg max-w-lg mx-auto">
+            {t("landing.world.subtitle") || "Each country has its own regulations, currencies, languages and document templates."}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-3">
           {regions.map((r, i) => (
             <motion.div
-              key={r.code}
-              initial={{ opacity: 0, scale: 0.8 }}
+              key={r.name}
+              initial={{ opacity: 0, scale: 0.85 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.03 }}
-              whileHover={{ scale: 1.08, y: -4 }}
+              transition={{ delay: i * 0.025 }}
+              whileHover={{ y: -3 }}
             >
               <Link
                 to="/login"
-                className="group flex flex-col items-center gap-2 bg-card border border-border/50 rounded-xl p-4 hover:border-accent/30 transition-all relative overflow-hidden"
-                style={{ boxShadow: 'var(--shadow-card)' }}
+                className="group flex flex-col items-center gap-1.5 bg-card border border-border/50 rounded-xl py-3 px-2 hover:border-accent/25 transition-all"
+                style={{ boxShadow: "var(--shadow-card)" }}
               >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.06), transparent 70%)' }} />
-                <span className="text-3xl relative z-10">{r.flag}</span>
-                <span className="text-xs font-medium text-foreground truncate relative z-10">{r.key}</span>
+                <span className="text-2xl">{r.flag}</span>
+                <span className="text-[10px] font-semibold text-foreground truncate w-full text-center">{r.name}</span>
               </Link>
             </motion.div>
           ))}
