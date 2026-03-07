@@ -116,7 +116,7 @@ const Hero = () => {
         transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
       />
 
-      <motion.div className="container relative z-10 py-28 sm:py-36" style={{ opacity }}>
+      <div className="container relative z-10 py-28 sm:py-36">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
           <motion.div
