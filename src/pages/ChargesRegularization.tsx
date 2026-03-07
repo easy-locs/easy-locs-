@@ -30,7 +30,7 @@ const ChargesRegularization = () => {
     if (!orgId) return;
     Promise.all([
       supabase.from("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, monthly_charges").eq("org_id", orgId),
+      supabase.from("properties").select("id, label, monthly_charges, country").eq("org_id", orgId),
     ]).then(([tData, pData]) => {
       setTenants((tData.data || []) as Tenant[]);
       setProperties((pData.data || []) as Property[]);
