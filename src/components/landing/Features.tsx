@@ -1,5 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import {
   Home, MessageSquare, FileSignature, CreditCard,
@@ -19,18 +18,15 @@ const featureKeys = [
 
 const Features = () => {
   const { t } = useI18n();
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 0.3], [0.95, 1]);
 
   return (
-    <section id="features" ref={ref} className="py-24 sm:py-32 relative overflow-hidden">
+    <section id="features" className="py-24 sm:py-32 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.015]" style={{
         backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`,
         backgroundSize: '40px 40px',
       }} />
 
-      <motion.div className="container max-w-6xl relative z-10" style={{ scale }}>
+      <div className="container max-w-6xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -88,7 +84,7 @@ const Features = () => {
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };
