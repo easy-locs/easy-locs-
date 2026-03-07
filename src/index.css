@@ -136,7 +136,7 @@
   }
 
   /* Prevent text overflow globally */
-  h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, label {
+  h1, h2, h3, h4, h5, h6, p, li, td, th {
     overflow-wrap: break-word;
     word-break: break-word;
   }

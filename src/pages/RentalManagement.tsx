@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
+import { buildAppUrl } from "@/lib/app-domain";
 
 type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
@@ -424,7 +425,7 @@ const RentalManagement = () => {
 
     const tenantEmail = normalizeEmail(selectedTenant.email);
     if (tenantEmail && isValidEmail(tenantEmail)) {
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenantEmail,
@@ -544,7 +545,7 @@ const RentalManagement = () => {
     }
     setNotifyingRentId(payment.id);
     try {
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenant.email,

@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 type AuthMode = "password" | "otp";
 
@@ -92,7 +93,7 @@ const Login = () => {
       email,
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: `${window.location.origin}/login?otp=1`,
+        emailRedirectTo: buildAppUrl("/login?otp=1"),
       },
     });
     setLoading(false);

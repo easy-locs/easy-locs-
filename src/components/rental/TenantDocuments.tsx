@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { FileText, Upload, CheckCircle, Clock, XCircle, Trash2, Download, Mail, Loader2 } from "lucide-react";
+import { buildAppUrl } from "@/lib/app-domain";
 
 interface Props {
   tenantId: string;
@@ -67,10 +68,10 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   ];
 
   const statusConfig: Record<string, { label: string; icon: typeof Clock; className: string }> = {
-    pending: { label: t("comp.docs.status_pending"), icon: Clock, className: "text-yellow-600 bg-yellow-500/20" },
-    validated: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
-    approved: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-green-600 bg-green-500/20" },
-    rejected: { label: t("comp.docs.status_rejected"), icon: XCircle, className: "text-red-600 bg-red-500/20" },
+    pending: { label: t("comp.docs.status_pending"), icon: Clock, className: "text-warning bg-warning/10" },
+    validated: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-success bg-success/10" },
+    approved: { label: t("comp.docs.status_validated"), icon: CheckCircle, className: "text-success bg-success/10" },
+    rejected: { label: t("comp.docs.status_rejected"), icon: XCircle, className: "text-destructive bg-destructive/10" },
   };
 
   const loadDocs = async () => {
@@ -103,7 +104,18 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
     try {
       const signedUrl = await getSignedDocumentUrl(doc.file_url);
       if (!signedUrl) throw new Error("Document unavailable");
-      window.open(signedUrl, "_blank", "noopener,noreferrer");
+
+      const response = await fetch(signedUrl);
+      if (!response.ok) throw new Error("Download failed");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = doc.filename || `${doc.label}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
@@ -158,7 +170,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       }
 
       if (hasValidEmail) {
-        const appUrl = window.location.origin;
+        const appUrl = buildAppUrl("/");
         const { data, error } = await supabase.functions.invoke("send-email", {
           body: {
             to: normalizedEmail,
@@ -199,7 +211,7 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
       const tenantEmail = tenantContact?.email;
       if (!tenantEmail) throw new Error(t("comp.docs.no_tenant_email"));
 
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const docsWithLinks = await Promise.all(
         docs.map(async (d) => ({ ...d, accessUrl: await getSignedDocumentUrl(d.file_url), statusLabel: statusConfig[normalizeStatus(d.status)]?.label || d.status }))
       );

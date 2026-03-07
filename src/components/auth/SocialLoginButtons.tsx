@@ -3,6 +3,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Loader2 } from "lucide-react";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const SocialLoginButtons = () => {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
@@ -13,7 +14,7 @@ const SocialLoginButtons = () => {
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/login`,
+      redirect_uri: buildAppUrl("/login"),
     });
     if (result?.error) {
       toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });
@@ -24,7 +25,7 @@ const SocialLoginButtons = () => {
   const handleApple = async () => {
     setLoadingApple(true);
     const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: `${window.location.origin}/login`,
+      redirect_uri: buildAppUrl("/login"),
     });
     if (result?.error) {
       toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });

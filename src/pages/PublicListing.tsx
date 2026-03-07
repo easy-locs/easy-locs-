@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { MapPin, Users, Moon, Euro, ChevronLeft, ChevronRight, Send, Loader2, CheckCircle } from "lucide-react";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const PublicListing = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -120,7 +121,7 @@ const PublicListing = () => {
           amount: Number(searchParams.get("amount")) || 0,
           nights: Number(searchParams.get("nights")) || 1,
           property_label: listing.title || property?.label,
-          origin: window.location.origin,
+          origin: buildAppUrl("/"),
         },
       });
       if (error) throw error;

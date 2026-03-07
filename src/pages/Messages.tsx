@@ -13,6 +13,7 @@ import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryConfig } from "@/lib/country-config";
+import { buildAppUrl } from "@/lib/app-domain";
 
 interface Tenant {
   id: string;
@@ -212,7 +213,7 @@ const Messages = () => {
       const tenantEmail = normalizeEmail(selectedTenant.email);
       if (tenantEmail && isValidEmail(tenantEmail)) {
         const L = getCountryConfig(propCountry).labels;
-        const appUrl = window.location.origin;
+        const appUrl = buildAppUrl("/");
         try {
           await supabase.functions.invoke("send-email", {
             body: {

@@ -10,6 +10,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
 import ListingManager from "@/components/seasonal/ListingManager";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -613,7 +614,7 @@ const SeasonalRentals = () => {
                     const nights = Math.max(1, Math.ceil((new Date(focusedRequest.check_out).getTime() - new Date(focusedRequest.check_in).getTime()) / 86400000));
                     const pricePerNight = listingData?.price_per_night || 0;
                     const totalAmount = pricePerNight * nights;
-                    const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+                    const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${focusedRequest.id}&email=${encodeURIComponent(focusedRequest.guest_email)}&name=${encodeURIComponent(focusedRequest.guest_name)}&amount=${totalAmount}&nights=${nights}`);
                     await supabase.functions.invoke("send-email", {
                       body: {
                         to: focusedRequest.guest_email,
@@ -724,7 +725,7 @@ const SeasonalRentals = () => {
                             const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
                             const pricePerNight = listingData?.price_per_night || 0;
                             const totalAmount = pricePerNight * nights;
-                            const payUrl = `${window.location.origin}/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`;
+                            const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`);
                             await supabase.functions.invoke("send-email", {
                               body: {
                                 to: req.guest_email,

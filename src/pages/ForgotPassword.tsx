@@ -5,6 +5,7 @@ import { Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: buildAppUrl("/reset-password"),
     });
     setLoading(false);
     if (error) {

@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -28,7 +29,7 @@ const Signup = () => {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: buildAppUrl("/"),
         data: { name },
       },
     });
