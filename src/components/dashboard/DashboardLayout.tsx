@@ -98,7 +98,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Communication",
       icon: MessageCircle,
       items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/messages") },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
         { icon: Clock, label: t("nav.reminders") || "Rappels", path: cPath("/dashboard/reminders") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cPath("/dashboard/tasks") },
         { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cPath("/dashboard/candidates") },

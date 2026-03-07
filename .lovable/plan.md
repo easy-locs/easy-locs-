@@ -1,75 +1,69 @@
 
-# Plan Easy-Locs — Roadmap complète
+# Easy-Locs — Roadmap structurée avec suivi
 
-## 1. Traductions complètes (11 langues) ✅
-## 2. Emails de notification ✅
-## 3. Notifications in-app ✅
-## 4. Wizard multi-pays documents ✅
-## 5. Channel Manager OTA ✅
-## 6. Comptabilité Pro ✅
-## 7. Tarification Dynamique ✅
-## 8. Service Marketplace ✅
-## 9. Multi-tenant Collaboration ✅
-## 10. Developer Portal / API ✅
-## 11. White-label Branding ✅
-## 12. Auto-génération quittances ✅
-## 13. Webhooks sortants ✅
-## 14. SSO Google + Apple ✅
-## 15. Rapports PDF automatiques mensuels ✅
-## 16. MFA/2FA TOTP ✅
-## 17. Journal d'audit (Audit Trail Viewer) ✅
-## 18. Multi-currency conversion ✅
-## 19. Pages légales & Footer ✅
-## 20. UI Standardisation & Responsive ✅
-## 21. SEO mondial (36 pages pays) ✅
-## 22. i18n 11 langues (fr/en/es/de/it/pt/nl/pl/tr/ar/ja) ✅
-## 23. Templates 56 pays ✅
-## 24. Sélecteur pays étendu (50+ pays) ✅
+## PHASE 1 — Stabilisation critique
+| Tâche | Statut | Pages affectées | Corrections |
+|-------|--------|-----------------|-------------|
+| Fix communication system | ✅ Terminé | CommunicationCenter, DashboardLayout, NotificationBell, App.tsx | Sidebar nav → /dashboard/communication, NotifBell link fix, Messages redirect sans CountryGuard, Realtime activé, colonnes messages ajoutées |
+| Fix in-app notifications | ✅ Terminé | NotificationBell.tsx | Lien corrigé vers /dashboard/communication, cross-portal routing OK |
+| Fix rent reminders | ✅ Terminé | Reminders.tsx | Table `reminders` et `rent_calls` vérifiées dans le schéma |
+| Verify message delivery & DB storage | ✅ Terminé | CommunicationCenter.tsx | Insert typé, colonnes attachment_url/message_type/property_id/delivered/conversation_status ajoutées via migration |
+| Remove legacy UI components | ✅ Terminé | Messages.tsx, App.tsx | Messages.tsx = redirect, route sans CountryGuard |
+| Fix layout inconsistencies | ✅ Terminé | DashboardLayout.tsx | Nav sections cohérentes, mobile sidebar OK |
+| Verify mobile responsiveness | ✅ Terminé | DashboardLayout | Sidebar responsive, chat mobile back button |
+| Verify payment link flow | ✅ Terminé | create-concierge-payment | Edge function validée, Stripe Connect flow intact |
 
-## Sprint Global — Détails
+## PHASE 2 — Centre de communication centralisé
+| Tâche | Statut |
+|-------|--------|
+| Messages liés à landlord/tenant/property/lease/booking/payment/document | 🔲 À faire |
+| Statuts sent/delivered/read | ✅ Terminé (colonnes en place) |
+| Historique d'activité | 🔲 À faire |
+| Notifications liées | ✅ Terminé |
 
-### SEO mondial ✅
-- [x] 36 landing pages pays (Europe, Amériques, Afrique, Moyen-Orient, Asie-Pacifique)
-- [x] Route dynamique `/property-management-:country`
-- [x] Sitemap.xml étendu (55 URLs)
-- [x] JSON-LD Schema.org + Open Graph + Twitter Cards
-- [x] Pages légales dans sitemap
-- [x] robots.txt optimisé
+## PHASE 3 — Conciergerie / Activités & Services
+| Tâche | Statut |
+|-------|--------|
+| Photos multiples par service | ✅ Terminé (photo_urls jsonb) |
+| Description, date, heure, guests | ✅ Terminé |
+| Statut de service | ✅ Terminé (concierge_orders.status) |
+| Paiement Stripe | ✅ Terminé (edge function) |
+| Virement bancaire | ✅ Terminé (bank_details, payment_method) |
+| Génération facture | 🔲 À faire |
+| Communication client liée au booking | 🔲 À faire |
 
-### i18n 11 langues ✅
-- [x] Locales: fr, en, es, de, it, pt + nl, pl, tr, ar, ja
-- [x] Mapping pays → locale pour 50+ pays
-- [x] Drapeaux locale dans le dashboard
-- [x] Sélecteur de langue étendu
+## PHASE 4 — Documents de réservation
+| Tâche | Statut |
+|-------|--------|
+| Upload passeport/ID/visa/documents par booking | 🔲 À faire |
+| Documents attachés à la réservation | 🔲 À faire |
+| Recherche dans les documents | 🔲 À faire |
 
-### Templates 56 pays ✅
-- [x] 23 pays Europe (bail + quittance)
-- [x] 33 pays monde (Amériques, Afrique, Moyen-Orient, Asie-Pacifique)
-- [x] Templates localisés dans la langue du pays
-- [x] UAE Ejari-compliant avec champs spécifiques
+## PHASE 5 — Géolocalisation et adresse intelligente
+| Tâche | Statut |
+|-------|--------|
+| Détection pays/ville/langue/devise | ✅ Terminé (useGeoDetect) |
+| Autocomplétion adresse mondiale | ✅ Terminé (AddressAutocomplete) |
+| Rue/code postal/ville/pays/GPS | ✅ Terminé |
 
-### Sélecteur pays étendu ✅
-- [x] 50+ pays dans Settings avec optgroups par région
-- [x] Pays organisés: Europe, Americas, Africa, Middle East, Asia-Pacific
+## PHASE 6 — Séparation stricte par pays
+| Tâche | Statut |
+|-------|--------|
+| Devise/documents/langue/workflows/logique juridique par pays | ✅ Terminé (country-profile, country-config) |
+| Dashboard global = résumés portefeuille uniquement | ✅ Terminé (CountryGuard) |
 
-## Infrastructure complétée
-- [x] SSO Google + Apple (Lovable Cloud managed)
-- [x] MFA/2FA TOTP enrollment
-- [x] Audit trail viewer
-- [x] Multi-currency conversion (30+ devises)
-- [x] Système de parrainage
-- [x] Pages SEO 36 pays
-- [x] Dashboard admin SaaS
-- [x] PWA + Capacitor
-- [x] Système dual-rôle (landlord/tenant)
-- [x] Stripe Connect + SEPA
-- [x] Suite de tests (54+)
-- [x] Code-splitting (47+ pages)
-- [x] Webhooks sortants avec HMAC signing
-- [x] Rapports mensuels automatisés
-- [x] 7 pages légales
-- [x] Footer responsive avec liens actifs
-- [x] 11 langues UI
-- [x] 56 templates pays
+## PHASE 7 — Homepage et vitrine
+| Tâche | Statut |
+|-------|--------|
+| Homepage complète | ✅ Terminé (Hero, Features, DashboardPreview, etc.) |
+| Vitrine locations/conciergerie | ✅ Terminé (PublicListing, ConciergeShowcase) |
+| Liens publics de partage | ✅ Terminé (booking slugs) |
+| Partage WhatsApp/Email | 🔲 À faire |
 
-## 🎉 ROADMAP 100% COMPLÉTÉE — GLOBAL EDITION
+## PHASE 8 — Système de design unifié
+| Tâche | Statut |
+|-------|--------|
+| Tokens sémantiques CSS | ✅ Terminé (index.css) |
+| Composants shadcn/ui standardisés | ✅ Terminé |
+| Espacement/layout mobile cohérent | ✅ Terminé |
+| Audit visuel complet | 🔲 À faire |
