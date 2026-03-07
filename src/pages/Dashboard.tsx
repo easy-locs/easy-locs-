@@ -28,7 +28,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId) { setLoading(false); return; }
     Promise.all([
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
