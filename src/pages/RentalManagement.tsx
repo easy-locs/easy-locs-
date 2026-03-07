@@ -243,7 +243,7 @@ const RentalManagement = () => {
       heating: p.heating, furnished: p.furnished, monthly_rent: p.monthly_rent,
       monthly_charges: p.monthly_charges, deposit_amount: p.deposit_amount, notes: p.notes,
       building_name: p.building_name || "", lot_number: p.lot_number || "",
-      country: p.country || userCountry, payment_day: 5,
+      country: p.country || userCountry, payment_day: p.payment_day || 1,
     });
     setShowPropertyForm(true);
   };
