@@ -643,7 +643,7 @@ const SeasonalRentals = () => {
                     toast({ title: t("page.seasonal.request_rejected") });
                     setFocusedRequest({ ...focusedRequest, status: "rejected" });
                   }}
-                  className="flex items-center gap-2 border border-destructive text-destructive px-4 py-2 rounded-lg text-sm font-medium hover:bg-destructive/10"
+                  className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                 >
                   <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
                 </button>
