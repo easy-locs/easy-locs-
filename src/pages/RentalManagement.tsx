@@ -656,9 +656,9 @@ const RentalManagement = () => {
                     <span>{getFlag(selectedProperty.country)}</span>
                     <span className="break-words">{selectedProperty.label}</span>
                   </h1>
-                  <p className="text-sm text-muted-foreground flex items-start gap-1 break-words min-w-0">
+                  <p className="detail-meta flex items-start gap-1">
                     <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
-                    <span>{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
+                    <span className="break-words">{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
                   </p>
                 </div>
               </div>
