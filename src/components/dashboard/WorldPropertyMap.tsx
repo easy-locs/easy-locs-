@@ -256,6 +256,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
                 countries={countriesWithCoords}
                 hoveredCountry={hoveredCountry}
                 onHover={handleHover}
+                onSelect={handleSelect}
               />
             </Canvas>
           </Suspense>
