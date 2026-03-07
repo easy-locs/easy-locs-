@@ -10,6 +10,8 @@ const FONT_BODY = 10;
 const FONT_LABEL = 8.5;
 const FONT_SECTION = 12;
 const FONT_TITLE = 16;
+const HEADER_HEIGHT = 42;         /* Safe Y after header */
+const FOOTER_SAFE_Y = 272;       /* Never render content below this Y */
 const COLOR_PRIMARY: [number, number, number] = [26, 39, 68];
 const COLOR_GOLD: [number, number, number] = [212, 163, 74];
 const COLOR_BODY: [number, number, number] = [40, 40, 40];
@@ -204,43 +206,50 @@ function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, 
 }
 
 function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
-  if (y + needed > 275) { doc.addPage(); return 25; }
+  if (y + needed > FOOTER_SAFE_Y) { doc.addPage(); return HEADER_HEIGHT - 17; }
   return y;
 }
 
 function addHeader(doc: jsPDF, title: string, country: string, docType: string): number {
   const countryEntry = getCountryEntry(country);
 
+  // Gold top bar
   doc.setFillColor(...COLOR_GOLD);
-  doc.rect(0, 0, PAGE_WIDTH, 8, "F");
+  doc.rect(0, 0, PAGE_WIDTH, 7, "F");
 
+  // Brand name — left aligned, consistent position
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
-  doc.text("EASY-LOCS", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 20);
   setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
 
+  // Authority info — right aligned
   if (countryEntry) {
     const authority = GOVERNMENT_AUTHORITIES[country] || `${countryEntry.name} — Housing Authority`;
     const formCode = COUNTRY_FORM_CODES[country] || "Government housing template";
     setFont(doc, "bold", 8, COLOR_MUTED);
-    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 19, { align: "right" });
+    doc.text(sanitize(authority), PAGE_WIDTH - MARGIN, 17, { align: "right" });
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(
       sanitize(`${formCode} · ${countryEntry.taxIdLabel}`),
       PAGE_WIDTH - MARGIN,
-      24,
+      22,
       { align: "right" }
     );
   }
 
+  // Document title — below brand
   setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
   const titleClean = sanitize(title);
-  doc.text(titleClean, MARGIN, 30);
+  const titleLines = doc.splitTextToSize(titleClean, CONTENT_WIDTH);
+  doc.text(titleLines[0] || "", MARGIN, 28);
 
+  // Separator line
   doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, 34, PAGE_WIDTH - MARGIN, 34);
-  return 42;
+  doc.line(MARGIN, 32, PAGE_WIDTH - MARGIN, 32);
+
+  return HEADER_HEIGHT - 2; /* 40 — safe start Y for content */
 }
 
 function addFooter(doc: jsPDF, country?: string) {
@@ -248,21 +257,27 @@ function addFooter(doc: jsPDF, country?: string) {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+
+    // Disclaimer line
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text(
-      sanitize(labels.disclaimer),
-      MARGIN, 283
-    );
-    // EASY-LOCS® branding
+    doc.text(sanitize(labels.disclaimer), MARGIN, 278);
+
+    // Brand centered
     setFont(doc, "bold", 8, COLOR_PRIMARY);
-    doc.text("EASY-LOCS", PAGE_WIDTH / 2 - 8, 289);
+    const brandText = "EASY-LOCS";
+    const brandWidth = doc.getTextWidth(brandText);
+    const brandX = (PAGE_WIDTH - brandWidth) / 2;
+    doc.text(brandText, brandX, 284);
     setFont(doc, "normal", 5, COLOR_PRIMARY);
-    doc.text("\u00AE", PAGE_WIDTH / 2 + 11, 286.5);
-    // Page number
+    doc.text("(R)", brandX + brandWidth + 1, 281.5);
+
+    // Page number — right
     setFont(doc, "normal", 7, COLOR_MUTED);
-    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 289, { align: "right" });
+    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
+
+    // Bottom bar
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 291, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
   }
 }
 
