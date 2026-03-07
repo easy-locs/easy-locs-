@@ -57,6 +57,7 @@ const emptyForm = {
 };
 
 const Interventions = () => {
+  const countryFilter = useCountryFilter();
   const { t } = useI18n();
   const { user, orgId } = useAuth();
   const { toast } = useToast();
