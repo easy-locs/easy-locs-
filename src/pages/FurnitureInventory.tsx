@@ -96,7 +96,7 @@ const FurnitureInventory = () => {
     if (!orgId) return;
     const [{ data: f }, { data: p }] = await Promise.all([
       supabase.from("furniture_items").select("*").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, furnished").eq("org_id", orgId).order("label"),
+      supabase.from("properties").select("id, label, furnished, country").eq("org_id", orgId).order("country").order("label"),
     ]);
     if (f) setItems(f as FurnitureItem[]);
     if (p) setProperties(p as Property[]);
