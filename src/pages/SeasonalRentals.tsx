@@ -10,6 +10,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
 import ListingManager from "@/components/seasonal/ListingManager";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 type IdentityType = "none" | "cni" | "passport";
 

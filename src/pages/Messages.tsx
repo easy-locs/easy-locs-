@@ -13,6 +13,7 @@ import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryConfig } from "@/lib/country-config";
+import { buildAppUrl } from "@/lib/app-domain";
 
 interface Tenant {
   id: string;
