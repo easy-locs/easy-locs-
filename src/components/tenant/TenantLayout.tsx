@@ -9,6 +9,7 @@ import {
   CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 // Languages are dynamically filtered based on property country + English
 const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
