@@ -614,7 +614,7 @@ const ConciergeServices = () => {
 
               <Separator />
               <h3 className="text-sm font-semibold text-foreground">Commission</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Type</label>
                   <Select value={form.commission_type} onValueChange={v => setForm(f => ({ ...f, commission_type: v }))}>
