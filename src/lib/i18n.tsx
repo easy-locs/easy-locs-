@@ -4012,7 +4012,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.dunning": "Relances", "nav.furniture": "Mobilier", "nav.charges": "Régul. charges",
     "nav.fiscal": "Bilan fiscal", "nav.company": "Entreprise", "nav.interventions": "Interventions",
     "nav.tasks": "Tâches", "nav.notes": "Notes", "nav.messages": "Messages",
-    "nav.billing": "Abonnement", "nav.logout": "Déconnexion",
+    "nav.billing": "Abonnement", "nav.logout": "Déconnexion", "nav.channel_manager": "Channel Manager",
     "section.essential": "L'ESSENTIEL", "section.rental": "LOCATION", "section.more": "LE PLUS",
     "badge.landlord": "Espace bailleur", "badge.tenant": "Espace locataire",
     "dashboard.hello": "Bonjour 👋", "dashboard.summary": "Voici un résumé de votre situation.",
