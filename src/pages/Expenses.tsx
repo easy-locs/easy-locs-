@@ -53,14 +53,24 @@ const Expenses = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: e }, { data: p }] = await Promise.all([
-      supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false }),
-      supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-    ]);
-    if (e) setExpenses(e as Expense[]);
-    if (p) setProperties(p);
+    let propQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    const [{ data: p }] = await Promise.all([propQuery]);
+    const filteredProps = p || [];
+    setProperties(filteredProps.map(pr => ({ id: pr.id, label: pr.label })));
+    
+    const propIds = filteredProps.map(pr => pr.id);
+    if (countryFilter && propIds.length > 0) {
+      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false });
+      if (e) setExpenses(e as Expense[]);
+    } else if (!countryFilter) {
+      const { data: e } = await supabase.from("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
+      if (e) setExpenses(e as Expense[]);
+    } else {
+      setExpenses([]);
+    }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { load(); }, [load]);
 

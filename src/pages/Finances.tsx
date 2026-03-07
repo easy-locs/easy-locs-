@@ -102,14 +102,31 @@ const Finances = () => {
   const fetchData = async () => {
     if (!orgId) return;
     try {
-      const [{ data: rc }, { data: exp }, { data: props }] = await Promise.all([
-        supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
-        supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
-        supabase.from("properties").select("id, label").eq("org_id", orgId).order("label"),
-      ]);
-      setRentCalls(rc || []);
-      setExpenses(exp || []);
-      setProperties(props || []);
+      let propsQuery = supabase.from("properties").select("id, label, country").eq("org_id", orgId).order("label");
+      if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
+      const { data: props } = await propsQuery;
+      const filteredProps = props || [];
+      setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
+
+      const propIds = filteredProps.map(p => p.id);
+      if (propIds.length > 0) {
+        const [{ data: rc }, { data: exp }] = await Promise.all([
+          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).in("property_id", propIds).order("month", { ascending: true }),
+          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).in("property_id", propIds).order("expense_date", { ascending: false }),
+        ]);
+        setRentCalls(rc || []);
+        setExpenses(exp || []);
+      } else if (!countryFilter) {
+        const [{ data: rc }, { data: exp }] = await Promise.all([
+          supabase.from("rent_calls").select("id, month, rent_amount, charges_amount, total_amount, paid, paid_date, tenant_id, property_id, payment_status, payment_method").eq("org_id", orgId).order("month", { ascending: true }),
+          supabase.from("expenses").select("id, label, amount, category, expense_date, property_id").eq("org_id", orgId).order("expense_date", { ascending: false }),
+        ]);
+        setRentCalls(rc || []);
+        setExpenses(exp || []);
+      } else {
+        setRentCalls([]);
+        setExpenses([]);
+      }
     } catch {
       setRentCalls([]);
       setExpenses([]);
