@@ -601,7 +601,7 @@ const ConciergeServices = () => {
                   <Input value={form.provider_phone} onChange={e => setForm(f => ({ ...f, provider_phone: e.target.value }))} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Country</label>
                   <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
