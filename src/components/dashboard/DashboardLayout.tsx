@@ -125,26 +125,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
-  // Always-visible global sections (not country-dependent)
+  // Always-visible global sections (not country-dependent) — core only
   const alwaysSections: NavSection[] = [
-    {
-      key: "platform",
-      title: "Plateforme",
-      icon: Globe,
-      items: [
-        { icon: Store, label: t("nav.marketplace") || "Marketplace", path: "/dashboard/marketplace" },
-        { icon: Handshake, label: t("nav.collaboration") || "Collaboration", path: "/dashboard/collaboration" },
-        { icon: Gift, label: t("nav.referrals") || "Parrainage", path: "/dashboard/referrals" },
-      ],
-    },
     {
       key: "company",
       title: t("nav.company") || "Entreprise",
       icon: Shield,
       items: [
         { icon: Contact, label: t("nav.company") || "Entreprise", path: "/dashboard/company" },
-        { icon: Code, label: "API & Webhooks", path: "/dashboard/developers" },
-        { icon: Shield, label: "Admin", path: "/dashboard/admin" },
       ],
     },
   ];
