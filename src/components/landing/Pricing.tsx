@@ -78,7 +78,7 @@ const Pricing = () => {
               className="absolute -inset-1 rounded-2xl opacity-30"
               style={{ background: 'conic-gradient(from 0deg, hsl(var(--accent) / 0.3), transparent 30%, hsl(var(--accent) / 0.1) 60%, transparent 90%)' }}
               animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             />
 
             <div className="relative z-10 bg-card rounded-xl p-6">
