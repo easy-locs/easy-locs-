@@ -123,6 +123,12 @@ const L_EN: LegalLabels = {
   terminationClause: "{senderName} hereby gives notice to {recipientName} of termination of the tenancy at {propertyAddress}, effective {endDate}, in accordance with applicable law.",
   depositReturnClause: "The landlord {landlordName} returns to the tenant {tenantName} the security deposit of {depositAmount} {currency}, less any deductions.",
   legalFooter: "This document is prepared in accordance with applicable tenancy legislation.",
+  clauseObligationsTenant: "Tenant's Obligations", clauseObligationsLandlord: "Landlord's Obligations",
+  clauseMaintenance: "Maintenance & Repairs", clauseGoverningLaw: "Governing Law",
+  leaseClauseObligationsTenant: "The Tenant agrees to:\n• Pay rent punctually on the due date\n• Use the premises exclusively for residential purposes\n• Keep the property in good condition\n• Not sublet or assign without written consent\n• Allow reasonable access for inspections with prior notice\n• Not cause nuisance or disturbance to neighbours\n• Report damage or needed repairs promptly\n• Comply with all applicable laws and building regulations\n• Return the property in its original condition, accounting for fair wear and tear",
+  leaseClauseObligationsLandlord: "The Landlord agrees to:\n• Deliver the property in habitable condition\n• Maintain the structural integrity and essential systems (plumbing, electrical, heating)\n• Carry out major repairs not caused by the Tenant\n• Respect the Tenant's right to quiet enjoyment\n• Provide required documentation and certificates\n• Give proper notice before entering the property\n• Comply with all applicable housing and safety regulations",
+  leaseClauseMaintenance: "The Tenant is responsible for minor day-to-day maintenance and upkeep.\n\nThe Landlord is responsible for structural repairs, essential installations, and any repairs not attributable to the Tenant's use.\n\nThe Tenant shall not make alterations without the Landlord's prior written consent.",
+  leaseClauseGoverningLaw: "This agreement is governed by the applicable tenancy laws. Any dispute shall be submitted to the competent courts of the jurisdiction where the property is located. If any provision is found invalid, the remaining provisions continue in full force.",
 };
 
 const L_ES: LegalLabels = {
