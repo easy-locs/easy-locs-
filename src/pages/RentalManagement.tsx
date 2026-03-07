@@ -999,7 +999,7 @@ const RentalManagement = () => {
                           </div>
                         )}
                          {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}
-                         {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
+                         {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
                         {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
                       </div>
                     </div>
@@ -1082,19 +1082,21 @@ const RentalManagement = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm">{COUNTRY_FLAGS[p.country] || "🌍"}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
-              {p.lot_number && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">Lot {p.lot_number}</span>}
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${propTenants.length > 0 ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {propTenants.length > 0 ? L.occupied : (
-                  <span
-                    className="cursor-pointer hover:underline"
-                    onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
-                  >
-                    {L.vacantAssign}
-                  </span>
-                )}
-              </span>
-              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
-              {propUnpaid > 0 && <span className="text-[10px] font-medium bg-destructive/20 text-destructive px-2 py-0.5 rounded-full">{propUnpaid} {L.unpaidN}</span>}
+              <div className="badge-row">
+                {p.lot_number && <span className="bg-accent/10 text-accent">Lot {p.lot_number}</span>}
+                <span className={propTenants.length > 0 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}>
+                  {propTenants.length > 0 ? L.occupied : (
+                    <span
+                      className="cursor-pointer hover:underline"
+                      onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
+                    >
+                      {L.vacantAssign}
+                    </span>
+                  )}
+                </span>
+                {p.furnished && <span className="bg-accent/10 text-accent">{L.furnished}</span>}
+                {propUnpaid > 0 && <span className="bg-destructive/15 text-destructive">{propUnpaid} {L.unpaidN}</span>}
+              </div>
             </div>
             <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
@@ -1105,7 +1107,7 @@ const RentalManagement = () => {
             {propTenants.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {propTenants.map(t => (
-                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {t.name} {!isLeaseActive(t) && `(${L.terminated_label})`}
                   </span>
                 ))}
@@ -1469,35 +1471,42 @@ const RentalManagement = () => {
                 const prop = getPropertyForTenant(t);
                 const active = isLeaseActive(t);
                 return (
-                  <div key={t.id} className={`flex items-center gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group ${!active ? "opacity-70" : ""}`}>
-                    <button onClick={() => { setSelectedTenant(t); setTenantTab("info"); }} className="flex items-center gap-4 flex-1 text-left">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${active ? "bg-gradient-gold" : "bg-muted"}`}>
+                  <div key={t.id} className={`bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group ${!active ? "opacity-70" : ""}`}>
+                    <div className="card-row">
+                      {/* Col 1: Avatar */}
+                      <button onClick={() => { setSelectedTenant(t); setTenantTab("info"); }} className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${active ? "bg-gradient-gold" : "bg-muted"}`}>
                         <span className={`text-sm font-bold ${active ? "text-accent-foreground" : "text-muted-foreground"}`}>{t.name[0]?.toUpperCase()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                      </button>
+                      {/* Col 2: Info */}
+                      <button onClick={() => { setSelectedTenant(t); setTenantTab("info"); }} className="text-left min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-foreground text-sm">{t.name}</span>
-                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${active ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
-                             {active ? L.active : L.terminated}
-                           </span>
-                          {t.tenant_user_id ? (
-                            <span className="text-[10px] font-medium bg-green-500/20 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />{L.connected}</span>
-                          ) : t.email ? (
-                            <button onClick={(e) => { e.stopPropagation(); handleInviteTenant(t); }} disabled={invitingTenantId === t.id}
-                              className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full flex items-center gap-0.5 hover:bg-accent/20 disabled:opacity-50">
-                              <Link2 className="h-2.5 w-2.5" />{invitingTenantId === t.id ? L.sending : L.invite}
-                            </button>
-                          ) : null}
+                          <div className="badge-row">
+                            <span className={active ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}>
+                              {active ? L.active : L.terminated}
+                            </span>
+                            {t.tenant_user_id ? (
+                              <span className="bg-success/15 text-success flex items-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" />{L.connected}</span>
+                            ) : t.email ? (
+                              <button onClick={(e) => { e.stopPropagation(); handleInviteTenant(t); }} disabled={invitingTenantId === t.id}
+                                className="bg-accent/10 text-accent flex items-center gap-0.5 hover:bg-accent/20 disabled:opacity-50 cursor-pointer">
+                                <Link2 className="h-2.5 w-2.5" />{invitingTenantId === t.id ? L.sending : L.invite}
+                              </button>
+                            ) : null}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
+                        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3 flex-wrap">
                           {prop && <span className="flex items-center gap-1"><Home className="h-3 w-3" />{prop.label}</span>}
-                          {t.rent_amount > 0 && <span>{fmt(t.rent_amount)}{L.perMonth}</span>}
-                          <span>{t.lease_start || "—"} → {t.lease_end || "—"}</span>
+                          {t.rent_amount > 0 && <span className="whitespace-nowrap">{fmt(t.rent_amount)}{L.perMonth}</span>}
+                          <span className="whitespace-nowrap">{t.lease_start || "—"} → {t.lease_end || "—"}</span>
                         </div>
+                      </button>
+                      {/* Col 3: Actions */}
+                      <div className="flex items-center gap-2">
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                        <button onClick={() => deleteTenant(t.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="h-4 w-4" /></button>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                    </button>
-                    <button onClick={() => deleteTenant(t.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="h-4 w-4" /></button>
+                    </div>
                   </div>
                 );
               })}
@@ -1620,7 +1629,7 @@ const RentalManagement = () => {
                           </td>
                           <td className="px-4 py-3 text-right">
                             {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{t("page.rental.validate")}</button>}
-                            {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
+                            {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1 justify-end"><CheckCircle className="h-3 w-3" />{t("page.rental.validated")}</span>}
                             {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground ml-2"><Download className="h-3.5 w-3.5" /></button>}
                           </td>
                         </tr>

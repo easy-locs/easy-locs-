@@ -256,12 +256,12 @@ const Finances = () => {
         {/* Stripe Connect Card */}
         <div className={`rounded-xl p-6 border shadow-card ${
           connectStatus?.onboarding_complete 
-            ? "bg-card border-green-500/30" 
+            ? "bg-card border-success/30" 
             : "bg-card border-accent/30"
         }`}>
           <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-green-500/10" : "bg-accent/10"}`}>
-              <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-green-500" : "text-accent"}`} />
+            <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-success/10" : "bg-accent/10"}`}>
+              <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-success" : "text-accent"}`} />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3 mb-1">
@@ -280,12 +280,12 @@ const Finances = () => {
                 </div>
               ) : connectStatus?.onboarding_complete ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-success text-sm font-medium">
                     <CheckCircle className="h-4 w-4" /> {t("page.finances.stripe_connected")}
                   </div>
                   <div className="flex gap-3 text-xs text-muted-foreground">
-                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payments_enabled")}</span>}
-                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-green-500" /> {t("page.finances.payouts_enabled")}</span>}
+                    {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payments_enabled")}</span>}
+                    {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payouts_enabled")}</span>}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="text-sm text-accent hover:underline flex items-center gap-1 mt-2">
                     {onboardingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
@@ -294,7 +294,7 @@ const Finances = () => {
                 </div>
               ) : connectStatus?.connected ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-yellow-600 text-sm">
+                  <div className="flex items-center gap-2 text-warning text-sm">
                     <AlertTriangle className="h-4 w-4" /> {t("page.finances.onboarding_pending")}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
@@ -320,11 +320,11 @@ const Finances = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-green-500" },
+            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-success" },
             { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },
             { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
             { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconClassName: "text-destructive" },
-            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, iconClassName: "text-accent", valueClassName: kpis.netResult >= 0 ? "text-green-600" : "text-destructive" },
+            { icon: BarChart3, label: t("page.finances.net_result"), value: dataLoading ? "..." : fmt(kpis.netResult), sub: `${t("page.finances.total_collected")} - ${t("page.finances.total_expenses")}`, iconClassName: "text-accent", valueClassName: kpis.netResult >= 0 ? "text-success" : "text-destructive" },
             { icon: CheckCircle, label: t("page.finances.collection_rate"), value: dataLoading ? "..." : `${kpis.occupancyRate}%`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
           ].map(kpi => (
             <StatCard key={kpi.label} {...kpi} />

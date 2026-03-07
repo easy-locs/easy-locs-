@@ -187,4 +187,27 @@
   .section-gap {
     @apply space-y-6;
   }
+
+  /* ── Currency / price nowrap ── */
+  .amount,
+  .price,
+  .currency-value {
+    @apply whitespace-nowrap;
+  }
+
+  /* ── Card row grid: icon | content | actions ── */
+  .card-row {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* ── Uniform status badge baseline ── */
+  .badge-row {
+    @apply flex items-center gap-1.5 flex-wrap;
+  }
+  .badge-row > * {
+    @apply inline-flex items-center justify-center whitespace-nowrap h-5 text-[10px] px-2 rounded-full font-medium leading-none;
+  }
 }
