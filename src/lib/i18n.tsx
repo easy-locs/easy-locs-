@@ -2707,7 +2707,13 @@ const pageEn: Record<string, string> = {
   "landing.hero.title_highlight": "for rental management",
   "landing.hero.subtitle": "Professional-quality automated legal documents, adapted to each country. Manage your long-term, Airbnb and Booking rentals from a single platform.",
   "landing.hero.cta": "Start for free",
+  "landing.hero.cta_pro": "Landlord portal",
+  "landing.hero.cta_tenant": "Tenant portal",
   "landing.hero.pricing": "View pricing",
+  "landing.hero.trust_countries": "110+ countries",
+  "landing.hero.trust_gdpr": "GDPR compliant",
+  "landing.hero.trust_legal": "Legal documents",
+  "landing.hero.trust_portal": "Tenant portal",
 
   "landing.footer.desc": "Your intelligent, compliant and secure rental management assistant.",
   "landing.footer.product": "Product",
