@@ -1,41 +1,44 @@
 import { motion } from "framer-motion";
 import { Building2, KeyRound, Plane, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const roles = [
-  {
-    icon: Building2,
-    title: "Owner / Landlord",
-    description: "Manage properties, tenants, rents, seasonal rentals, documents and payments.",
-    cta: "Access Owner Dashboard",
-    to: "/login",
-    gradient: "from-accent/15 to-accent/5",
-    iconBg: "bg-accent/15",
-    iconColor: "text-accent",
-  },
-  {
-    icon: KeyRound,
-    title: "Tenant",
-    description: "Pay rent, access lease documents, communicate with landlord, receive notifications.",
-    cta: "Access Tenant Space",
-    to: "/tenant-signup",
-    gradient: "from-info/15 to-info/5",
-    iconBg: "bg-info/15",
-    iconColor: "text-info",
-  },
-  {
-    icon: Plane,
-    title: "Guest / Short-term Booking",
-    description: "Book properties, select dates, pay online and add concierge services.",
-    cta: "Book a Property",
-    to: "/rentals",
-    gradient: "from-success/15 to-success/5",
-    iconBg: "bg-success/15",
-    iconColor: "text-success",
-  },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const RoleCards = () => {
+  const { user } = useAuth();
+
+  const roles = [
+    {
+      icon: Building2,
+      title: "Owner / Landlord",
+      description: "Manage properties, tenants, rents, seasonal rentals, documents and payments.",
+      cta: "Access Owner Dashboard",
+      to: user ? "/dashboard" : "/login",
+      gradient: "from-accent/15 to-accent/5",
+      iconBg: "bg-accent/15",
+      iconColor: "text-accent",
+    },
+    {
+      icon: KeyRound,
+      title: "Tenant",
+      description: "Pay rent, access lease documents, communicate with landlord, receive notifications.",
+      cta: "Access Tenant Space",
+      to: user ? "/tenant" : "/tenant-signup",
+      gradient: "from-info/15 to-info/5",
+      iconBg: "bg-info/15",
+      iconColor: "text-info",
+    },
+    {
+      icon: Plane,
+      title: "Guest / Short-term Booking",
+      description: "Book properties, select dates, pay online and add concierge services.",
+      cta: "Book a Property",
+      to: user ? "/dashboard/seasonal" : "/rentals",
+      gradient: "from-success/15 to-success/5",
+      iconBg: "bg-success/15",
+      iconColor: "text-success",
+    },
+  ];
+
   return (
     <section className="py-20 sm:py-28 bg-background">
       <div className="container max-w-6xl">

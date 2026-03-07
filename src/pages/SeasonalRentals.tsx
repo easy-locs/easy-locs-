@@ -231,7 +231,7 @@ const SeasonalRentals = () => {
           type: "info",
           title,
           message,
-          link: "/seasonal-rentals",
+          link: "/dashboard/seasonal",
         })
       )
     );
