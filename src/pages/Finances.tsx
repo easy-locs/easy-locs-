@@ -294,7 +294,7 @@ const Finances = () => {
                 </div>
               ) : connectStatus?.connected ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-yellow-600 text-sm">
+                  <div className="flex items-center gap-2 text-warning text-sm">
                     <AlertTriangle className="h-4 w-4" /> {t("page.finances.onboarding_pending")}
                   </div>
                   <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity text-sm">
