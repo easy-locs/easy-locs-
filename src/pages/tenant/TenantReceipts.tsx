@@ -62,7 +62,7 @@ const TenantReceipts = () => {
         signedUrl = fallback.data?.signedUrl ?? null;
       }
       if (!signedUrl) throw new Error(L.receiptDownloadError);
-      window.open(signedUrl, "_blank", "noopener,noreferrer");
+      const response = await fetch(signedUrl);
     } catch (err: any) {
       toast({ title: L.receiptDownloadError, description: err.message, variant: "destructive" });
     } finally {
