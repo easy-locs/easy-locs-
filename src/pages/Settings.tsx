@@ -83,39 +83,40 @@ const Settings = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.settings.title")}</h1>
-        <p className="text-muted-foreground text-sm mb-8">{t("page.settings.subtitle")}</p>
+        <div className="page-header">
+          <h1>{t("page.settings.title")}</h1>
+          <p>{t("page.settings.subtitle")}</p>
+        </div>
 
         {/* Profile */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <User className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.profile")}</h2>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.full_name")}</label>
+              <label className="form-label">{t("page.settings.full_name")}</label>
               <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.email")}</label>
+              <label className="form-label">{t("page.settings.email")}</label>
               <input type="email" value={profile.email} disabled
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-muted-foreground" />
+                className="form-input bg-muted text-muted-foreground" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.country")}</label>
+              <label className="form-label">{t("page.settings.country")}</label>
               <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
             </div>
-            <button onClick={saveProfile} disabled={saving}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            <button onClick={saveProfile} disabled={saving} className="btn-primary">
               {saving ? t("page.settings.saving") : t("page.settings.save_profile")}
             </button>
           </div>
         </div>
 
         {/* Organization & Document customization */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Building2 className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.org_title")}</h2>
@@ -124,7 +125,7 @@ const Settings = () => {
           <div className="space-y-4">
             {/* Logo */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.logo")}</label>
+              <label className="form-label">{t("page.settings.logo")}</label>
               <div className="flex items-center gap-4">
                 {org.logo_url ? (
                   <img src={org.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
@@ -133,7 +134,7 @@ const Settings = () => {
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
-                <label className="cursor-pointer bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted/80">
+                <label className="btn-secondary btn-sm cursor-pointer">
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.change_logo")}
                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 </label>
@@ -142,7 +143,7 @@ const Settings = () => {
 
             {/* Company Stamp */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.stamp")}</label>
+              <label className="form-label">{t("page.settings.stamp")}</label>
               <p className="text-xs text-muted-foreground mb-2">{t("page.settings.stamp_desc")}</p>
               <div className="flex items-center gap-4">
                 {org.stamp_url ? (
@@ -152,7 +153,7 @@ const Settings = () => {
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
-                <label className="cursor-pointer bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted/80">
+                <label className="btn-secondary btn-sm cursor-pointer">
                   {uploadingStamp ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.add_stamp")}
                   <input type="file" accept="image/*" onChange={async (e) => {
                     const file = e.target.files?.[0];
@@ -184,12 +185,12 @@ const Settings = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.org_name")}</label>
+              <label className="form-label">{t("page.settings.org_name")}</label>
               <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.address")}</label>
+              <label className="form-label">{t("page.settings.address")}</label>
               <AddressAutocomplete
                 value={org.address}
                 onChange={(val) => setOrg(o => ({ ...o, address: val }))}
@@ -201,37 +202,36 @@ const Settings = () => {
                 }))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.postal_code")}</label>
+                <label className="form-label">{t("page.settings.postal_code")}</label>
                 <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.city")}</label>
+                <label className="form-label">{t("page.settings.city")}</label>
                 <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.phone")}</label>
+                <label className="form-label">{t("page.settings.phone")}</label>
                 <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.contact_email")}</label>
+                <label className="form-label">{t("page.settings.contact_email")}</label>
                 <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  className="form-input" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.siret")}</label>
+              <label className="form-label">{t("page.settings.siret")}</label>
               <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
-            <button onClick={saveOrg} disabled={saving}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            <button onClick={saveOrg} disabled={saving} className="btn-primary">
               {saving ? t("page.settings.saving") : t("page.settings.save_org")}
             </button>
           </div>
@@ -243,7 +243,7 @@ const Settings = () => {
         {/* MFA / 2FA */}
         <MFASettings />
 
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <PenTool className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.signature")}</h2>
@@ -254,27 +254,25 @@ const Settings = () => {
             value={profile.signature_url}
             onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))}
           />
-          <button onClick={saveProfile} disabled={saving}
-            className="mt-4 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+          <button onClick={saveProfile} disabled={saving} className="btn-primary mt-4">
             {saving ? t("page.settings.saving") : t("page.settings.save_signature")}
           </button>
         </div>
 
         {/* Data Import */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.import_title")}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">{t("page.settings.import_desc")}</p>
-          <Link to="/dashboard/import"
-            className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90">
+          <Link to="/dashboard/import" className="btn-primary inline-flex">
             <Upload className="h-4 w-4" /> {t("page.settings.import_cta")}
           </Link>
         </div>
 
         {/* White-label Branding */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">White-label / Branding</h2>
@@ -282,32 +280,32 @@ const Settings = () => {
           <p className="text-sm text-muted-foreground mb-4">Personnalisez l'apparence de vos documents et du portail locataire avec votre marque.</p>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Nom de marque</label>
+              <label className="form-label">Nom de marque</label>
               <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder="Ex: Mon Agence Immo"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur principale</label>
+                <label className="form-label">Couleur principale</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))}
-                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
                   <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e"
-                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                    className="form-input font-mono" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur accent</label>
+                <label className="form-label">Couleur accent</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))}
-                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
                   <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227"
-                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                    className="form-input font-mono" />
                 </div>
               </div>
             </div>
             {(org.brand_name || org.brand_primary_color) && (
-              <div className="p-4 rounded-lg border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
+              <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
                 <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
                 <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>Aperçu du branding sur vos documents</p>
               </div>
@@ -322,25 +320,24 @@ const Settings = () => {
               } as any).eq("id", orgId);
               toast({ title: "Branding mis à jour" });
               setSavingBrand(false);
-            }} disabled={savingBrand}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            }} disabled={savingBrand} className="btn-primary">
               {savingBrand ? t("page.settings.saving") : "Enregistrer le branding"}
             </button>
           </div>
         </div>
 
         {/* GDPR */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Shield className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.gdpr_title")}</h2>
           </div>
-          <div className="space-y-4">
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+          <div className="space-y-3">
+            <button className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
               <p className="text-sm font-medium text-foreground">{t("page.settings.export_data")}</p>
               <p className="text-xs text-muted-foreground">{t("page.settings.export_desc")}</p>
             </button>
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-destructive/30 hover:bg-destructive/5 transition-colors">
+            <button className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors">
               <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account")}</p>
               <p className="text-xs text-muted-foreground">{t("page.settings.delete_desc")}</p>
             </button>
