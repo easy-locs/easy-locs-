@@ -754,7 +754,7 @@ const SeasonalRentals = () => {
                             toast({ title: t("page.seasonal.request_rejected") });
                             setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
                           }}
-                          className="flex items-center gap-1 border border-destructive text-destructive px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-destructive/10"
+                          className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                         >
                           <X className="h-3.5 w-3.5" /> {t("page.seasonal.reject_btn")}
                         </button>
