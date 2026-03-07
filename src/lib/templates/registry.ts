@@ -44,6 +44,11 @@ interface LegalLabels {
   inventoryClause: string; terminationClause: string;
   depositReturnClause: string;
   legalFooter: string;
+  // Extended clauses for comprehensive government-aligned templates
+  clauseObligationsTenant?: string; clauseObligationsLandlord?: string;
+  clauseMaintenance?: string; clauseGoverningLaw?: string;
+  leaseClauseObligationsTenant?: string; leaseClauseObligationsLandlord?: string;
+  leaseClauseMaintenance?: string; leaseClauseGoverningLaw?: string;
 }
 
 const L_FR: LegalLabels = {
@@ -78,6 +83,12 @@ const L_FR: LegalLabels = {
   terminationClause: "Par la présente, {senderName} notifie à {recipientName} sa décision de mettre fin au bail du bien situé {propertyAddress}, avec effet au {endDate}, conformément aux dispositions légales.",
   depositReturnClause: "Le bailleur {landlordName} restitue au locataire {tenantName} le dépôt de garantie d'un montant de {depositAmount} {currency}, déduction faite des retenues éventuelles.",
   legalFooter: "Document établi conformément à la législation en vigueur.",
+  clauseObligationsTenant: "Obligations du locataire", clauseObligationsLandlord: "Obligations du bailleur",
+  clauseMaintenance: "Entretien et réparations", clauseGoverningLaw: "Droit applicable",
+  leaseClauseObligationsTenant: "Le locataire s'engage à :\n• Payer le loyer à la date convenue\n• Utiliser les lieux exclusivement à des fins d'habitation\n• Maintenir le logement en bon état\n• Ne pas sous-louer sans accord écrit du bailleur\n• Permettre l'accès pour les visites et réparations avec préavis\n• Ne pas causer de troubles de voisinage\n• Signaler sans délai tout dommage ou dysfonctionnement\n• Restituer le logement en bon état, compte tenu de l'usure normale",
+  leaseClauseObligationsLandlord: "Le bailleur s'engage à :\n• Délivrer un logement décent et en bon état\n• Assurer l'entretien des parties communes et de la structure\n• Effectuer les grosses réparations (sauf celles imputables au locataire)\n• Respecter la jouissance paisible du locataire\n• Fournir les diagnostics et certificats obligatoires\n• Donner un préavis avant toute visite du logement\n• Se conformer à la réglementation en matière de logement",
+  leaseClauseMaintenance: "Le locataire est responsable de l'entretien courant et des menues réparations.\n\nLe bailleur est responsable des réparations structurelles et des équipements essentiels.\n\nLe locataire ne peut effectuer de travaux sans l'accord écrit du bailleur.",
+  leaseClauseGoverningLaw: "Le présent contrat est soumis au droit français. Tout litige sera porté devant le tribunal compétent du lieu de situation de l'immeuble.",
 };
 
 const L_EN: LegalLabels = {
@@ -112,6 +123,12 @@ const L_EN: LegalLabels = {
   terminationClause: "{senderName} hereby gives notice to {recipientName} of termination of the tenancy at {propertyAddress}, effective {endDate}, in accordance with applicable law.",
   depositReturnClause: "The landlord {landlordName} returns to the tenant {tenantName} the security deposit of {depositAmount} {currency}, less any deductions.",
   legalFooter: "This document is prepared in accordance with applicable tenancy legislation.",
+  clauseObligationsTenant: "Tenant's Obligations", clauseObligationsLandlord: "Landlord's Obligations",
+  clauseMaintenance: "Maintenance & Repairs", clauseGoverningLaw: "Governing Law",
+  leaseClauseObligationsTenant: "The Tenant agrees to:\n• Pay rent punctually on the due date\n• Use the premises exclusively for residential purposes\n• Keep the property in good condition\n• Not sublet or assign without written consent\n• Allow reasonable access for inspections with prior notice\n• Not cause nuisance or disturbance to neighbours\n• Report damage or needed repairs promptly\n• Comply with all applicable laws and building regulations\n• Return the property in its original condition, accounting for fair wear and tear",
+  leaseClauseObligationsLandlord: "The Landlord agrees to:\n• Deliver the property in habitable condition\n• Maintain the structural integrity and essential systems (plumbing, electrical, heating)\n• Carry out major repairs not caused by the Tenant\n• Respect the Tenant's right to quiet enjoyment\n• Provide required documentation and certificates\n• Give proper notice before entering the property\n• Comply with all applicable housing and safety regulations",
+  leaseClauseMaintenance: "The Tenant is responsible for minor day-to-day maintenance and upkeep.\n\nThe Landlord is responsible for structural repairs, essential installations, and any repairs not attributable to the Tenant's use.\n\nThe Tenant shall not make alterations without the Landlord's prior written consent.",
+  leaseClauseGoverningLaw: "This agreement is governed by the applicable tenancy laws. Any dispute shall be submitted to the competent courts of the jurisdiction where the property is located. If any provision is found invalid, the remaining provisions continue in full force.",
 };
 
 const L_ES: LegalLabels = {
@@ -641,7 +658,15 @@ function buildCountryTemplates(country: CountryEntry): DocumentTemplate[] {
         { id: "rent", label: L.clauseRent, required: true, text: L.leaseClauseRent },
         { id: "term", label: L.clauseDuration, required: true, text: L.leaseClauseDuration },
         { id: "deposit", label: L.clauseDeposit, required: true, text: L.leaseClauseDeposit },
-        { id: "termination", label: L.clauseTermination, required: false, text: L.leaseClauseTermination },
+        { id: "obligations-tenant", label: L.clauseObligationsTenant || "Tenant Obligations", required: true,
+          text: L.leaseClauseObligationsTenant || "The tenant shall pay rent on time, maintain the property in good condition, not sublet without consent, allow inspections with notice, report damages promptly, and return the property in its original condition accounting for normal wear and tear." },
+        { id: "obligations-landlord", label: L.clauseObligationsLandlord || "Landlord Obligations", required: true,
+          text: L.leaseClauseObligationsLandlord || "The landlord shall deliver the property in habitable condition, maintain structural integrity and essential systems, carry out major repairs, respect the tenant's quiet enjoyment, provide required certificates, and comply with housing regulations." },
+        { id: "maintenance", label: L.clauseMaintenance || "Maintenance", required: true,
+          text: L.leaseClauseMaintenance || "The tenant is responsible for minor maintenance. The landlord is responsible for structural repairs and essential installations. The tenant shall not make alterations without prior written consent." },
+        { id: "termination", label: L.clauseTermination, required: true, text: L.leaseClauseTermination },
+        { id: "governing-law", label: L.clauseGoverningLaw || "Governing Law", required: true,
+          text: L.leaseClauseGoverningLaw || `This agreement is governed by applicable law. Disputes shall be submitted to the competent courts where the property is located.` },
       ],
     });
   }

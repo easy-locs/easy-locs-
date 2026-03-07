@@ -1,10 +1,44 @@
 import type { DocumentTemplate } from "./types";
 
-// ─── Helper to build a standard residential lease template ───
-function makeLease(
-  country: string,
-  lang: { label: string; desc: string; legal?: string; landlord: string; landlordAddr: string; tenant: string; tenantAddr: string; address: string; surface: string; rooms: string; rent: string; deposit: string; start: string; duration: string; indefinite: string; months12: string; parties: string; property: string; rentClause: string; termination: string; terminationText: string; partiesText: (v: string) => string; propertyText: (v: string) => string; rentText: (v: string) => string; surfaceUnit?: string; currency: string }
-): DocumentTemplate {
+// ─── Helper to build a comprehensive residential lease template ───
+interface LeaseLocale {
+  label: string; desc: string; legal?: string;
+  landlord: string; landlordAddr: string; tenant: string; tenantAddr: string;
+  address: string; surface: string; rooms: string; rent: string; deposit: string;
+  start: string; duration: string; indefinite: string; months12: string;
+  parties: string; property: string; rentClause: string; termination: string;
+  terminationText: string;
+  partiesText: (v: string) => string;
+  propertyText: (v: string) => string;
+  rentText: (v: string) => string;
+  surfaceUnit?: string; currency: string;
+  // Optional extended clauses — auto-generated if omitted
+  depositClause?: string;
+  obligationsTenant?: string;
+  obligationsLandlord?: string;
+  maintenanceClause?: string;
+  governingLaw?: string;
+}
+
+function makeLease(country: string, lang: LeaseLocale): DocumentTemplate {
+  const ll = lang.landlord.toLowerCase();
+  const tl = lang.tenant.toLowerCase();
+
+  const depositText = lang.depositClause ||
+    `The ${tl} shall pay a security deposit as specified. The deposit shall be returned at the end of the tenancy, less any amounts for unpaid rent, damages beyond normal wear and tear, or other obligations under this agreement. The ${ll} must return the deposit within the timeframe prescribed by applicable law.`;
+
+  const tenantObligations = lang.obligationsTenant ||
+    `The ${tl} agrees to:\n\n• Pay rent punctually on the agreed date\n• Use the property exclusively for residential purposes\n• Maintain the property in good condition\n• Not sublet or assign without written consent\n• Allow reasonable access for inspections with prior notice\n• Not cause nuisance or disturbance to neighbours\n• Report any damage or needed repairs promptly\n• Comply with all applicable laws and building regulations\n• Return the property in its original condition, accounting for normal wear and tear`;
+
+  const landlordObligations = lang.obligationsLandlord ||
+    `The ${ll} agrees to:\n\n• Deliver the property in habitable condition\n• Maintain the structural integrity and essential systems\n• Carry out major repairs not caused by the ${tl}\n• Respect the ${tl}'s right to quiet enjoyment\n• Provide required documentation and certificates\n• Give proper notice before entering the property\n• Comply with all applicable housing and safety regulations`;
+
+  const maintenanceText = lang.maintenanceClause ||
+    `The ${tl} is responsible for minor day-to-day maintenance and upkeep.\n\nThe ${ll} is responsible for structural repairs, essential installations, and any repairs not attributable to the ${tl}'s use.\n\nThe ${tl} shall not make alterations without the ${ll}'s prior written consent.`;
+
+  const lawText = lang.governingLaw ||
+    `This agreement is governed by the laws of ${country}${lang.legal ? ` (${lang.legal})` : ''}.\n\nAny dispute shall be submitted to the competent courts of the jurisdiction where the property is located.\n\nIf any provision is found to be invalid, the remaining provisions shall continue in full force and effect.`;
+
   return {
     id: `${country.toLowerCase()}-lease-residential`,
     version: "1.0.0",
@@ -19,24 +53,39 @@ function makeLease(
     fields: [
       { key: "landlordName", label: lang.landlord, type: "text", required: true, validation: { minLength: 2 }, group: lang.landlord },
       { key: "landlordAddress", label: lang.landlordAddr, type: "text", required: true, group: lang.landlord },
+      { key: "landlordEmail", label: `${lang.landlord} email`, type: "email", required: false, group: lang.landlord },
       { key: "tenantName", label: lang.tenant, type: "text", required: true, validation: { minLength: 2 }, group: lang.tenant },
       { key: "tenantAddress", label: lang.tenantAddr, type: "text", required: false, group: lang.tenant },
+      { key: "tenantEmail", label: `${lang.tenant} email`, type: "email", required: false, group: lang.tenant },
       { key: "propertyAddress", label: lang.address, type: "text", required: true, group: lang.property },
       { key: "surface", label: `${lang.surface} (${lang.surfaceUnit || "m²"})`, type: "number", required: true, validation: { min: 1 }, group: lang.property },
       { key: "rooms", label: lang.rooms, type: "number", required: true, validation: { min: 1 }, group: lang.property },
+      { key: "furnished", label: "Furnished", type: "select", required: true, options: [
+        { value: "unfurnished", label: "Unfurnished" },
+        { value: "furnished", label: "Furnished" },
+      ], defaultValue: "unfurnished", group: lang.property },
       { key: "rentAmount", label: `${lang.rent} (${lang.currency})`, type: "number", required: true, validation: { min: 1 }, group: lang.rentClause },
+      { key: "chargesAmount", label: `Service charges (${lang.currency})`, type: "number", required: false, defaultValue: 0, group: lang.rentClause },
       { key: "depositAmount", label: `${lang.deposit} (${lang.currency})`, type: "number", required: true, validation: { min: 0 }, group: lang.rentClause },
+      { key: "paymentDay", label: "Payment day", type: "number", required: true, validation: { min: 1, max: 28 }, defaultValue: 1, group: lang.rentClause },
       { key: "startDate", label: lang.start, type: "date", required: true, group: lang.duration },
       { key: "duration", label: lang.duration, type: "select", required: true, options: [
         { value: "indefinite", label: lang.indefinite },
+        { value: "6", label: "6 months" },
         { value: "12", label: lang.months12 },
+        { value: "24", label: "24 months" },
       ], defaultValue: "12", group: lang.duration },
     ],
     clauses: [
       { id: "parties", label: `§1 — ${lang.parties}`, required: true, text: lang.partiesText("{landlordName}, {landlordAddress}\n{tenantName}") },
-      { id: "property", label: `§2 — ${lang.property}`, required: true, text: lang.propertyText("{propertyAddress}, {surface}, {rooms}") },
-      { id: "rent", label: `§3 — ${lang.rentClause}`, required: true, text: lang.rentText("{rentAmount}, {depositAmount}") },
-      { id: "termination", label: `§4 — ${lang.termination}`, required: true, text: lang.terminationText },
+      { id: "property", label: `§2 — ${lang.property}`, required: true, text: lang.propertyText("{propertyAddress}, {surface}, {rooms}, {furnished}") },
+      { id: "rent", label: `§3 — ${lang.rentClause}`, required: true, text: lang.rentText("{rentAmount}, {chargesAmount}, {paymentDay}") },
+      { id: "deposit", label: `§4 — ${lang.deposit}`, required: true, text: depositText },
+      { id: "obligations-tenant", label: `§5 — ${lang.tenant} Obligations`, required: true, text: tenantObligations },
+      { id: "obligations-landlord", label: `§6 — ${lang.landlord} Obligations`, required: true, text: landlordObligations },
+      { id: "maintenance", label: `§7 — Maintenance`, required: true, text: maintenanceText },
+      { id: "termination", label: `§8 — ${lang.termination}`, required: true, text: lang.terminationText },
+      { id: "governing-law", label: `§9 — Governing Law`, required: true, text: lawText },
     ],
   };
 }
