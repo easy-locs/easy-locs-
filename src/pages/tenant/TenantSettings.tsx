@@ -51,7 +51,7 @@ const TenantSettings = () => {
 
   return (
     <TenantLayout>
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-6">{PL.myProfile}</h1>
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -63,7 +63,7 @@ const TenantSettings = () => {
                 <User className="h-5 w-5 text-muted-foreground" />
                 <h2 className="font-semibold text-foreground">{PL.identitySection}</h2>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">{PL.firstName}</label>
                   <input type="text" value={getVal("firstName")} onChange={e => setVal("firstName", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
@@ -110,7 +110,7 @@ const TenantSettings = () => {
                 <label className="block text-sm font-medium text-foreground mb-1">{PL.address}</label>
                 <input type="text" value={getVal("address")} onChange={e => setVal("address", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">{PL.postalCode}</label>
                   <input type="text" value={getVal("postalCode")} onChange={e => setVal("postalCode", e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
@@ -155,7 +155,7 @@ const TenantSettings = () => {
               <SignaturePad label={PL.signature} value={getVal("signatureUrl") || profile.signatureUrl} onChange={v => setVal("signatureUrl", v)} />
             </div>
 
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
+            <button onClick={handleSave} disabled={saving} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold px-5 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {saving ? PL.saving : PL.save}
             </button>

@@ -64,9 +64,9 @@ const LandlordProfile = () => {
     <div className="min-h-screen bg-background">
       {/* Nav */}
       <nav className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-6 py-3">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3">
           <AppLogo variant="header" linkTo="/" />
-          <Link to="/signup" className="bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+          <Link to="/signup" className="shrink-0 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
             Become a Landlord
           </Link>
         </div>
@@ -91,9 +91,9 @@ const LandlordProfile = () => {
           </div>
 
           {(landlord.city || landlord.country) && (
-            <div className="flex items-center justify-center gap-1 text-muted-foreground text-sm mb-4">
-              <MapPin className="h-4 w-4 shrink-0" />
-              <span className="break-words">{[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}</span>
+            <div className="flex items-start justify-center gap-1 text-muted-foreground text-sm mb-4 min-w-0">
+              <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+              <span className="break-words text-center">{[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}</span>
             </div>
           )}
 
@@ -104,7 +104,7 @@ const LandlordProfile = () => {
             </div>
             {landlord.rating && (
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Star className="h-4 w-4 text-yellow-500 shrink-0" />
+                <Star className="h-4 w-4 text-warning shrink-0" />
                 <span className="font-semibold text-foreground">{landlord.rating}</span>/5
               </div>
             )}

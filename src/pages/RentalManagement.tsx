@@ -656,9 +656,9 @@ const RentalManagement = () => {
                     <span>{getFlag(selectedProperty.country)}</span>
                     <span className="break-words">{selectedProperty.label}</span>
                   </h1>
-                  <p className="text-sm text-muted-foreground flex items-start gap-1 break-words min-w-0">
+                  <p className="detail-meta flex items-start gap-1">
                     <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
-                    <span>{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
+                    <span className="break-words">{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</span>
                   </p>
                 </div>
               </div>
@@ -896,7 +896,7 @@ const RentalManagement = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                  <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
+                  <p className="detail-meta">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
                 </div>
               </div>
               <div className="detail-header-actions">
@@ -904,17 +904,17 @@ const RentalManagement = () => {
                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
                 </span>
                 {selectedTenant.tenant_user_id ? (
-                  <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                  <span className="detail-action-btn text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
                 ) : (
                   <button
                     onClick={() => handleInviteTenant(selectedTenant)}
                     disabled={invitingTenantId === selectedTenant.id}
-                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
+                    className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
                   >
                     <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
                   </button>
                 )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1">
+                <button onClick={() => startEditTenant(selectedTenant)} className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1">
                   <Edit className="h-3 w-3" /> {L.editTenant}
                 </button>
               </div>
@@ -923,15 +923,17 @@ const RentalManagement = () => {
 
           {/* Tabs — horizontal scroll on mobile */}
           <div className="detail-tab-row mb-6">
-            {([
-               { key: "info" as const, label: L.overview, icon: FileText },
-               { key: "payments" as const, label: L.payments, icon: Euro },
-               { key: "messages" as const, label: "Messages", icon: MessageSquare },
-               { key: "documents" as const, label: "Documents", icon: Upload },
-            ]).map((tab) => (
-              <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                <tab.icon className="h-4 w-4 shrink-0" />{tab.label}
+             {([
+               { key: "info" as const, label: L.overview, short: L.overview.slice(0, 8), icon: FileText },
+               { key: "payments" as const, label: L.payments, short: L.payments.slice(0, 8), icon: Euro },
+               { key: "messages" as const, label: "Messages", short: "Msgs", icon: MessageSquare },
+               { key: "documents" as const, label: "Documents", short: "Docs", icon: Upload },
+             ]).map((tab) => (
+               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
+                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                 <tab.icon className="h-4 w-4 shrink-0" />
+                 <span className="sm:hidden">{tab.short}</span>
+                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -1204,10 +1206,10 @@ const RentalManagement = () => {
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto">
+        <div className="detail-tab-row mb-6">
           {tabs.map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
               <tab.icon className="h-4 w-4" />{tab.label}
             </button>
           ))}

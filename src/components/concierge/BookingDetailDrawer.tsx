@@ -129,7 +129,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
 
         <div className="space-y-5 mt-4">
           {/* Status & Quick Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
             <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
               {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
@@ -146,8 +146,8 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
               </div>
               <div className="flex items-start gap-2 text-sm min-w-0">
                 <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                <span className="text-foreground break-words">{booking.guest_email}</span>
-                <Button size="sm" variant="ghost" className="h-5 w-5 p-0" onClick={() => copyToClipboard(booking.guest_email)}>
+                <span className="text-foreground break-words min-w-0 flex-1">{booking.guest_email}</span>
+                <Button size="sm" variant="ghost" className="h-5 w-5 p-0 shrink-0" onClick={() => copyToClipboard(booking.guest_email)}>
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
@@ -168,7 +168,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
               <p className="font-medium text-foreground text-sm">{service?.title || "Unknown service"}</p>
               {service?.category && <Badge variant="outline" className="text-[10px]">{service.category}</Badge>}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {booking.service_date && (
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{booking.service_date}</span>
                 )}
@@ -237,14 +237,14 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
               )}
 
               {/* Quick payment actions */}
-              <div className="flex gap-2 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
-                  <Button size="sm" className="flex-1 text-xs" onClick={markPaid}>
+                  <Button size="sm" className="flex-1 min-w-[9rem] text-xs" onClick={markPaid}>
                     <CreditCard className="h-3 w-3 mr-1" /> Mark Paid
                   </Button>
                 )}
                 {booking.payment_link_url && (
-                  <Button size="sm" variant="outline" className="text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[9rem] text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
                     <Copy className="h-3 w-3 mr-1" /> Copy Payment Link
                   </Button>
                 )}

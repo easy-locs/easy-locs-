@@ -7,7 +7,7 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: normal;
-  hyphens: auto;
+  hyphens: manual;
 }
 
 /* Profile/detail header — responsive pattern */
@@ -308,13 +308,24 @@
 
   /* ── Detail/profile header layout (global mobile pattern) ── */
   .detail-header {
-    @apply flex flex-col gap-4;
+    @apply grid gap-4;
+    grid-template-columns: minmax(0, 1fr);
   }
   .detail-header-main {
-    @apply flex items-start gap-3 min-w-0 flex-1;
+    @apply grid items-start gap-3 min-w-0;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .detail-header-main > * {
+    min-width: 0;
   }
   .detail-header-actions {
     @apply flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end;
+  }
+  .detail-header-actions > * {
+    @apply shrink-0;
+  }
+  .detail-action-btn {
+    @apply inline-flex items-center justify-center;
   }
 
   /* ── Detail rows: avoid crushed right columns on mobile ── */
@@ -324,9 +335,18 @@
 
   /* ── Scrollable tab rows for custom tab UIs ── */
   .detail-tab-row {
-    @apply flex w-full gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1 scrollbar-thin;
+    @apply flex w-full min-w-0 gap-1 overflow-x-auto overflow-y-hidden rounded-lg bg-muted/50 p-1 scrollbar-thin;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
   }
+  .detail-tab-row > * {
+    scroll-snap-align: start;
+  }
+
+  .detail-meta {
+    @apply text-sm text-muted-foreground leading-relaxed break-words min-w-0;
+  }
+
 
 
   /* ── Buttons ── */
@@ -681,6 +701,10 @@
   h2 { font-size: 1.0625rem; line-height: 1.35; }
   h3 { font-size: 0.95rem; line-height: 1.4; }
 
+  .detail-header-actions .detail-action-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 
   /* Ensure modals/dialogs don't overflow */
   [role="dialog"] {

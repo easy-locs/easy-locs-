@@ -75,25 +75,27 @@ const TenantDashboard = () => {
           <>
             {/* Property info card */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-xl p-6 shadow-card border border-border/50 mb-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                  <Home className="h-6 w-6 text-accent" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold text-foreground truncate">{tenantInfo.properties?.label || L.property}</h2>
-                  <p className="text-sm text-muted-foreground truncate">{tenantInfo.properties?.address}, {tenantInfo.properties?.city}</p>
-                  <div className="flex flex-wrap gap-6 mt-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{L.myRent}</p>
-                      <p className="font-semibold text-foreground">{fmt(tenantInfo.rent_amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{L.myCharges}</p>
-                      <p className="font-semibold text-foreground">{fmt(tenantInfo.charges_amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{L.myLease}</p>
-                      <p className="font-semibold text-foreground">{leaseLabel}</p>
+              <div className="detail-header">
+                <div className="detail-header-main">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                    <Home className="h-6 w-6 text-accent" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-semibold text-foreground break-words">{tenantInfo.properties?.label || L.property}</h2>
+                    <p className="detail-meta">{tenantInfo.properties?.address}, {tenantInfo.properties?.city}</p>
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{L.myRent}</p>
+                        <p className="font-semibold text-foreground">{fmt(tenantInfo.rent_amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">{L.myCharges}</p>
+                        <p className="font-semibold text-foreground">{fmt(tenantInfo.charges_amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">{L.myLease}</p>
+                        <p className="font-semibold text-foreground break-words">{leaseLabel}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -101,7 +103,7 @@ const TenantDashboard = () => {
             </motion.div>
 
             {/* Quick access cards - uniform grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {quickCards.map((a, i) => (
                 <motion.div key={a.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }} className="h-full">
                   <StatCard

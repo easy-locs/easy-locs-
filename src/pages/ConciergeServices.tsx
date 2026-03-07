@@ -219,7 +219,7 @@ const ConciergeServices = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
             {showcaseUrl && (
               <Button variant="outline" size="sm" onClick={() => {
                 navigator.clipboard.writeText(window.location.origin + showcaseUrl);
@@ -536,7 +536,7 @@ const ConciergeServices = () => {
                 />
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Category</label>
                   <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
@@ -557,7 +557,7 @@ const ConciergeServices = () => {
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Price</label>
                   <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} />
@@ -591,7 +591,7 @@ const ConciergeServices = () => {
 
               <Separator />
               <h3 className="text-sm font-semibold text-foreground">Provider</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Provider Name</label>
                   <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} />
@@ -601,7 +601,7 @@ const ConciergeServices = () => {
                   <Input value={form.provider_phone} onChange={e => setForm(f => ({ ...f, provider_phone: e.target.value }))} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Country</label>
                   <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
@@ -614,7 +614,7 @@ const ConciergeServices = () => {
 
               <Separator />
               <h3 className="text-sm font-semibold text-foreground">Commission</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Type</label>
                   <Select value={form.commission_type} onValueChange={v => setForm(f => ({ ...f, commission_type: v }))}>
