@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -269,23 +270,11 @@ const Accounting = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.revenue_month") || "Revenus (mois)"}</span></div>
-            <p className="text-2xl font-bold text-accent">{totalCredits.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-destructive" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.expenses_month") || "Dépenses (mois)"}</span></div>
-            <p className="text-2xl font-bold text-destructive">{totalDebits.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.net_result") || "Résultat net"}</span></div>
-            <p className={`text-2xl font-bold ${netIncome >= 0 ? "text-accent" : "text-destructive"}`}>{netIncome.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.total_entries") || "Écritures"}</span></div>
-            <p className="text-2xl font-bold text-foreground">{allTransactions.length}</p>
-          </CardContent></Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard icon={ArrowUpRight} iconClassName="text-accent" label={t("page.accounting.revenue_month")} value={`${totalCredits.toLocaleString()} ${sym}`} />
+          <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label={t("page.accounting.expenses_month")} value={`${totalDebits.toLocaleString()} ${sym}`} valueClassName="text-destructive" />
+          <StatCard icon={DollarSign} label={t("page.accounting.net_result")} value={`${netIncome.toLocaleString()} ${sym}`} valueClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} />
+          <StatCard icon={BookOpen} label={t("page.accounting.total_entries")} value={String(allTransactions.length)} />
         </div>
 
         <Tabs defaultValue="journal">
@@ -307,25 +296,25 @@ const Accounting = () => {
                 </Select>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <table className="w-full text-sm min-w-[600px]">
                     <thead><tr className="border-b border-border">
-                      <th className="text-left py-2 text-muted-foreground font-medium">Date</th>
-                      <th className="text-left py-2 text-muted-foreground font-medium">{t("page.accounting.label") || "Libellé"}</th>
-                      <th className="text-left py-2 text-muted-foreground font-medium">{t("page.accounting.category") || "Catégorie"}</th>
-                      <th className="text-right py-2 text-muted-foreground font-medium">{t("page.accounting.debit") || "Débit"}</th>
-                      <th className="text-right py-2 text-muted-foreground font-medium">{t("page.accounting.credit") || "Crédit"}</th>
-                      <th className="text-center py-2 text-muted-foreground font-medium">Source</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">Date</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.label")}</th>
+                      <th className="text-left py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.category")}</th>
+                      <th className="text-right py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.debit")}</th>
+                      <th className="text-right py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">{t("page.accounting.credit")}</th>
+                      <th className="text-center py-2.5 px-3 text-muted-foreground font-medium whitespace-nowrap">Source</th>
                     </tr></thead>
                     <tbody>
                       {allTransactions.slice(0, 100).map(tx => (
                         <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/30">
-                          <td className="py-2 text-muted-foreground">{tx.date}</td>
-                          <td className="py-2 font-medium text-foreground">{tx.label}</td>
-                          <td className="py-2"><Badge variant="outline" className="text-xs">{activeRules.categoryLabels[tx.category] || tx.category}</Badge></td>
-                          <td className="py-2 text-right">{tx.debit > 0 ? <span className="text-destructive">{tx.debit.toLocaleString()} {sym}</span> : "—"}</td>
-                          <td className="py-2 text-right">{tx.credit > 0 ? <span className="text-accent">{tx.credit.toLocaleString()} {sym}</span> : "—"}</td>
-                          <td className="py-2 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[10px]">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
+                          <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{tx.date}</td>
+                          <td className="py-2.5 px-3 font-medium text-foreground max-w-[200px] truncate">{tx.label}</td>
+                          <td className="py-2.5 px-3"><Badge variant="outline" className="text-xs whitespace-nowrap h-6 px-2.5">{activeRules.categoryLabels[tx.category] || tx.category}</Badge></td>
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.debit > 0 ? <span className="text-destructive">{tx.debit.toLocaleString()} {sym}</span> : "—"}</td>
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap">{tx.credit > 0 ? <span className="text-accent">{tx.credit.toLocaleString()} {sym}</span> : "—"}</td>
+                          <td className="py-2.5 px-3 text-center"><Badge variant={tx.source === "auto" ? "secondary" : "default"} className="text-[10px] whitespace-nowrap h-5 px-2">{tx.source === "auto" ? "Auto" : "Manual"}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
