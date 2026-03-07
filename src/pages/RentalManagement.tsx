@@ -891,7 +891,7 @@ const RentalManagement = () => {
                    {isLeaseActive(selectedTenant) ? L.active : L.terminated}
               </span>
               {selectedTenant.tenant_user_id ? (
-                <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
               ) : (
                 <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
                   className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50">
