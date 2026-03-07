@@ -1422,7 +1422,7 @@ const RentalManagement = () => {
                         setTenantForm({ ...tenantForm, property_id: e.target.value || null, rent_amount: prop?.monthly_rent || tenantForm.rent_amount, charges_amount: prop?.monthly_charges || tenantForm.charges_amount, deposit_amount: prop?.deposit_amount || tenantForm.deposit_amount, lease_type: prop?.furnished ? "furnished" : tenantForm.lease_type });
                       }} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         <option value="">{L.selectProperty}</option>
-                        {properties.map(p => <option key={p.id} value={p.id}>{COUNTRY_FLAGS[(p as any).country || userCountry] || "🌍"} {p.label} — {p.address}</option>)}
+                        {properties.map(p => <option key={p.id} value={p.id}>{getFlag((p as any).country || userCountry)} {p.label} — {p.address}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseType}</label>
                       <select value={tenantForm.lease_type} onChange={(e) => setTenantForm({ ...tenantForm, lease_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
