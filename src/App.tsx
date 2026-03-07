@@ -100,6 +100,7 @@ const PageLoader = () => (
 
 const App = () => (
   <ErrorBoundary>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
     <TooltipProvider>
