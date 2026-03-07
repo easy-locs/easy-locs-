@@ -579,8 +579,8 @@ function addUaeFooter(doc: jsPDF) {
     // Easy-Locs branding
     setFont(doc, "bold", 7, [255, 255, 255]);
     doc.text("EASY-LOCS", MARGIN, 294);
-    setFont(doc, "normal", 4.5, [255, 255, 255]);
-    doc.text("(R)", MARGIN + 18, 292);
+    setFont(doc, "normal", 3.5, [255, 255, 255]);
+    doc.text("\u00AE", MARGIN + 18, 292);
   }
 }
 
