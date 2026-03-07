@@ -89,6 +89,16 @@ const ConciergeServices = () => {
   const [tab, setTab] = useState("services");
   const [filterCategory, setFilterCategory] = useState("");
   const [showLinks, setShowLinks] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [landlordProfile, setLandlordProfile] = useState<any>(null);
+
+  // Load landlord profile for showcase link
+  useEffect(() => {
+    if (!orgId) return;
+    supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
+      .then(({ data }) => { if (data) setLandlordProfile(data); });
+  }, [orgId]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
