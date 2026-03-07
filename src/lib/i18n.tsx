@@ -4051,6 +4051,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "section.property": "GESTION LOCATIVE", "section.finance": "FINANCE", "section.communication": "COMMUNICATION", "section.services": "SERVICES", "section.company": "ENTREPRISE",
     "nav.local_services": "Activités & Services", "nav.accounting": "Comptabilité", "nav.marketplace": "Marketplace", "nav.collaboration": "Collaboration", "nav.pricing": "Tarification",
     "badge.landlord": "Espace bailleur", "badge.tenant": "Espace locataire",
+    "sidebar.workspace": "Espace de travail", "sidebar.select_country": "Sélectionnez un pays pour commencer",
     "dashboard.hello": "Bonjour 👋", "dashboard.summary": "Voici un résumé de votre situation.",
     "dashboard.properties": "Biens", "dashboard.tenants_count": "locataire(s)",
     "dashboard.collected": "Encaissé ce mois", "dashboard.unpaid": "impayés",
