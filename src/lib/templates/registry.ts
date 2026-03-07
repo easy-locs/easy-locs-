@@ -12,6 +12,11 @@ import { frPVAGO, frAccountsApproval, frShareTransfer, frCapitalIncrease, frDiss
 import { frInventory, frRentRevision, frChargesRegularization, frUnpaidNotice } from "./fr/rental-extras";
 import { frCongesBailleur, frCongesLocataire, frCautionSolidaire, frAttestationHebergement, frCommandementPayer, frRestitutionDepot } from "./fr/rental-legal";
 import { frStatutsSAS, frStatutsSARL, frPacteAssocies, frNominationCAC } from "./fr/company-legal";
+import { deNebenkostenabrechnung, deMieterhoehung, deKuendigungVermieter, deKuendigungMieter, deUebergabeprotokoll, deMietschuldenfreiheit, deKautionsabrechnung } from "./de/rental-extras";
+import { esInventario, esRevisionRenta, esDesistimiento, esNoRenovacion, esCertificadoNoDeuda } from "./es/rental-extras";
+import { itVerbaleConsegna, itAggiornamentoIstat, itDisdettaConduttore, itDisdettaLocatore } from "./it/rental-extras";
+import { ptAutoVistoria, ptAtualizacaoRenda, ptDenunciaArrendatario, ptOposicaoSenhorio } from "./pt/rental-extras";
+import { gbSection21, gbSection13, gbInventory, gbDepositReturn, gbTenantNotice } from "./gb/rental-extras";
 import { allEuropeTemplates } from "./europe-packs";
 import { allWorldTemplates } from "./world-packs";
 import { allExtraWorldTemplates } from "./world-packs-extra";
