@@ -72,9 +72,9 @@ const LandlordProfile = () => {
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto py-12 px-6">
+      <div className="max-w-3xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
         {/* Profile header */}
-        <div className="bg-card rounded-2xl shadow-card border border-border/50 p-8 text-center mb-8">
+        <div className="bg-card rounded-2xl shadow-card border border-border/50 p-5 sm:p-8 text-center mb-8">
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
             {landlord.avatar_url ? (
               <img src={landlord.avatar_url} alt={landlord.display_name} className="w-20 h-20 rounded-full object-cover" />
@@ -83,35 +83,35 @@ const LandlordProfile = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <h1 className="text-2xl font-bold text-foreground">{landlord.display_name}</h1>
+          <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground break-words">{landlord.display_name}</h1>
             {landlord.verified && (
-              <Shield className="h-5 w-5 text-accent" aria-label="Verified landlord" />
+              <Shield className="h-5 w-5 text-accent shrink-0" aria-label="Verified landlord" />
             )}
           </div>
 
           {(landlord.city || landlord.country) && (
             <div className="flex items-center justify-center gap-1 text-muted-foreground text-sm mb-4">
-              <MapPin className="h-4 w-4" />
-              {[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span className="break-words">{[landlord.city, countryLabels[landlord.country || ""] || landlord.country].filter(Boolean).join(", ")}</span>
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-6 text-sm">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 text-sm flex-wrap">
             <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Home className="h-4 w-4" />
+              <Home className="h-4 w-4 shrink-0" />
               <span className="font-semibold text-foreground">{landlord.properties_count}</span> properties
             </div>
             {landlord.rating && (
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Star className="h-4 w-4 text-yellow-500" />
+                <Star className="h-4 w-4 text-yellow-500 shrink-0" />
                 <span className="font-semibold text-foreground">{landlord.rating}</span>/5
               </div>
             )}
           </div>
 
           {landlord.bio && (
-            <p className="mt-6 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">{landlord.bio}</p>
+            <p className="mt-6 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed break-words">{landlord.bio}</p>
           )}
         </div>
 
