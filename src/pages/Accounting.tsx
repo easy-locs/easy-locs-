@@ -44,9 +44,11 @@ const Accounting = () => {
   });
 
   const { data: properties = [] } = useQuery({
-    queryKey: ["properties", org?.id],
+    queryKey: ["properties", org?.id, countryFilter],
     queryFn: async () => {
-      const { data } = await supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", org!.id);
+      let query = supabase.from("properties").select("id, label, country, monthly_rent, monthly_charges").eq("org_id", org!.id);
+      if (countryFilter) query = query.eq("country", countryFilter);
+      const { data } = await query;
       return data || [];
     },
     enabled: !!org,

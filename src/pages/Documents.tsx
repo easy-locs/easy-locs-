@@ -86,11 +86,13 @@ const Documents = () => {
 
   const fetchDocs = async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
-      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at")
+      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query;
     setDocs((data as DocRow[]) ?? []);
     setLoading(false);
   };
