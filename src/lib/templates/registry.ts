@@ -83,6 +83,12 @@ const L_FR: LegalLabels = {
   terminationClause: "Par la présente, {senderName} notifie à {recipientName} sa décision de mettre fin au bail du bien situé {propertyAddress}, avec effet au {endDate}, conformément aux dispositions légales.",
   depositReturnClause: "Le bailleur {landlordName} restitue au locataire {tenantName} le dépôt de garantie d'un montant de {depositAmount} {currency}, déduction faite des retenues éventuelles.",
   legalFooter: "Document établi conformément à la législation en vigueur.",
+  clauseObligationsTenant: "Obligations du locataire", clauseObligationsLandlord: "Obligations du bailleur",
+  clauseMaintenance: "Entretien et réparations", clauseGoverningLaw: "Droit applicable",
+  leaseClauseObligationsTenant: "Le locataire s'engage à :\n• Payer le loyer à la date convenue\n• Utiliser les lieux exclusivement à des fins d'habitation\n• Maintenir le logement en bon état\n• Ne pas sous-louer sans accord écrit du bailleur\n• Permettre l'accès pour les visites et réparations avec préavis\n• Ne pas causer de troubles de voisinage\n• Signaler sans délai tout dommage ou dysfonctionnement\n• Restituer le logement en bon état, compte tenu de l'usure normale",
+  leaseClauseObligationsLandlord: "Le bailleur s'engage à :\n• Délivrer un logement décent et en bon état\n• Assurer l'entretien des parties communes et de la structure\n• Effectuer les grosses réparations (sauf celles imputables au locataire)\n• Respecter la jouissance paisible du locataire\n• Fournir les diagnostics et certificats obligatoires\n• Donner un préavis avant toute visite du logement\n• Se conformer à la réglementation en matière de logement",
+  leaseClauseMaintenance: "Le locataire est responsable de l'entretien courant et des menues réparations.\n\nLe bailleur est responsable des réparations structurelles et des équipements essentiels.\n\nLe locataire ne peut effectuer de travaux sans l'accord écrit du bailleur.",
+  leaseClauseGoverningLaw: "Le présent contrat est soumis au droit français. Tout litige sera porté devant le tribunal compétent du lieu de situation de l'immeuble.",
 };
 
 const L_EN: LegalLabels = {
