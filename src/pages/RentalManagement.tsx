@@ -1579,7 +1579,7 @@ const RentalManagement = () => {
                                    {L.markPaid}
                                  </button>
                                  <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                   className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
+                                   className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
                                    {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
                                    {L.online}
                                 </button>
