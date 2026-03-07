@@ -1076,7 +1076,7 @@ const RentalManagement = () => {
           </button>
           <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm">{COUNTRY_FLAGS[p.country] || "🌍"}</span>
+              <span className="text-sm">{getFlag(p.country)}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               <div className="badge-row">
                 {p.lot_number && <span className="bg-accent/10 text-accent">Lot {p.lot_number}</span>}
