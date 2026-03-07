@@ -71,6 +71,7 @@ const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
+const AddProperty = lazy(() => import("./pages/AddProperty"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
@@ -147,6 +148,7 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/country/:code" element={<ProtectedRoute><CountryWorkspace /></ProtectedRoute>} />
+              <Route path="/dashboard/add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
               <Route path="/dashboard/receipts" element={<ProtectedRoute><CountryGuard><Receipts /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/reminders" element={<ProtectedRoute><CountryGuard><Reminders /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/documents" element={<ProtectedRoute><CountryGuard><Documents /></CountryGuard></ProtectedRoute>} />
