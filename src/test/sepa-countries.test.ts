@@ -17,9 +17,9 @@ describe("SEPA Countries", () => {
     }
   });
 
-  it("getAvailablePaymentMethods returns stripe for all", async () => {
+  it("getAvailablePaymentMethods returns card for all", async () => {
     const { getAvailablePaymentMethods } = await import("@/lib/sepa-countries");
-    expect(getAvailablePaymentMethods("US")).toContain("stripe");
-    expect(getAvailablePaymentMethods("FR")).toContain("stripe");
+    expect(getAvailablePaymentMethods("US")).toContain("card");
+    expect(getAvailablePaymentMethods("FR")).toContain("card");
   });
 });

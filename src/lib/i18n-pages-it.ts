@@ -331,6 +331,7 @@ export const pageIt: Record<string, string> = {
   "page.settings.complete_setup": "Completa configurazione", "page.settings.connect_stripe": "Collega Stripe",
   "page.settings.default_provider": "Fornitore predefinito", "page.settings.bank_transfer": "Bonifico bancario",
   "page.settings.saas_disclaimer": "Easy-Locs non trattiene, blocca o trasferisce fondi.",
+  "page.settings.sepa_desc": "Addebito diretto SEPA automatico (solo zona SEPA)", "page.settings.sepa_eligible": "Zona SEPA idonea", "page.settings.sepa_via_stripe": "Attivato tramite Stripe Connect. Gli inquilini potranno pagare con addebito diretto SEPA.", "page.settings.sepa_unavailable": "Non disponibile — Il tuo paese non è nella zona SEPA",
 
   // Auth
   "auth.login.title": "Accedi", "auth.login.subtitle": "Accedi al tuo spazio Easy-Locs.",
