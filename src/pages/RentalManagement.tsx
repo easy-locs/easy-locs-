@@ -789,7 +789,7 @@ const RentalManagement = () => {
                         <span className="text-sm text-foreground">{p.month}</span>
                         <span className="text-xs text-muted-foreground">{tenant?.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
                         <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
                         <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${p.paid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{p.paid ? L.paid : L.unpaid}</span>
                       </div>
