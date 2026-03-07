@@ -141,13 +141,13 @@ const Receipts = () => {
                     const data = r.data_json as Record<string, unknown>;
                     const total = (Number(data.rentAmount) || 0) + (Number(data.chargesAmount) || 0);
                     return (
-                      <tr key={r.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{String(data.tenantName || "—")}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{String(data.landlordName || ownerName || "—")}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{r.title}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-foreground currency-value whitespace-nowrap">{formatCurrency(total, userCountry)}</td>
-                        <td className="px-4 py-3 text-right">
-                          <button onClick={() => handleDownload(r)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <tr key={r.id} className="table-body-row">
+                        <td className="table-cell font-medium">{String(data.tenantName || "—")}</td>
+                        <td className="table-cell-muted">{String(data.landlordName || ownerName || "—")}</td>
+                        <td className="table-cell-muted">{r.title}</td>
+                        <td className="table-cell-amount text-left">{formatCurrency(total, userCountry)}</td>
+                        <td className="table-cell-actions">
+                          <button onClick={() => handleDownload(r)} className="btn-ghost btn-icon">
                             <Download className="h-4 w-4" />
                           </button>
                         </td>
