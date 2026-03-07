@@ -782,7 +782,7 @@ const RentalManagement = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">{fmt(p.total_amount)}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.paid ? "bg-green-500/20 text-green-700" : "bg-red-400/20 text-red-600"}`}>{p.paid ? L.paid : L.unpaid}</span>
+                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${p.paid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{p.paid ? L.paid : L.unpaid}</span>
                       </div>
                     </div>
                   );
