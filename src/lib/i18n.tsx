@@ -2432,6 +2432,8 @@ const pageEn: Record<string, string> = {
   "page.common.generate_pdf": "Generate PDF",
   "page.common.select": "— Select —",
   "page.common.enter_address": "Enter an address…",
+  "page.common.country": "Country",
+  "page.properties.title": "Properties",
   "page.doc_builder.prefill_tenant": "Pre-fill from a tenant",
   "page.doc_builder.select_tenant": "— Select a tenant —",
   "page.doc_builder.legal_basis": "Legal basis",
