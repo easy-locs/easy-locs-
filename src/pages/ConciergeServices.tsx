@@ -219,9 +219,27 @@ const ConciergeServices = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
           </div>
-          <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
-            <Plus className="h-4 w-4 mr-1" /> New Service
-          </Button>
+          <div className="flex items-center gap-2">
+            {showcaseUrl && (
+              <Button variant="outline" size="sm" onClick={() => {
+                navigator.clipboard.writeText(window.location.origin + showcaseUrl);
+                toast.success("Showcase link copied!");
+              }}>
+                <ExternalLink className="h-4 w-4 mr-1" /> Showcase
+              </Button>
+            )}
+            {showcaseUrl && (
+              <Button variant="outline" size="sm" onClick={() => {
+                const url = window.location.origin + showcaseUrl;
+                window.open(`https://wa.me/?text=${encodeURIComponent("Check out our services: " + url)}`, "_blank");
+              }}>
+                <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+              </Button>
+            )}
+            <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
+              <Plus className="h-4 w-4 mr-1" /> New Service
+            </Button>
+          </div>
         </div>
 
         {/* KPIs */}
