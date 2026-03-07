@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ══════ Global text safety — prevent letter-by-letter vertical breaking ══════ */
+/* ══════ Global text safety — prevent vertical letter-by-letter breaks ══════ */
 *:not(code):not(pre):not(kbd) {
   overflow-wrap: break-word;
   word-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
 }
 
 /* Profile/detail header — responsive pattern */
