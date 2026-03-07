@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,11 +14,13 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 import BookingLinkShare from "@/components/concierge/BookingLinkShare";
+import BookingDetailDrawer from "@/components/concierge/BookingDetailDrawer";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Trash2, Edit, Sparkles, DollarSign, ShoppingBag, Clock, CheckCircle2,
-  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp
+  XCircle, Link2, Eye, MapPin, CreditCard, Building2, Users, TrendingUp,
+  Search, ExternalLink, FileText, MessageCircle, Copy
 } from "lucide-react";
 import { format } from "date-fns";
 
