@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
@@ -7,6 +7,7 @@ import AuthBrand from "@/components/auth/AuthBrand";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
+import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
 
 type AuthMode = "password" | "otp";
 
@@ -23,65 +24,44 @@ const Login = () => {
   const { t } = useI18n();
   const hasRedirected = useRef(false);
 
-  const getPostLoginRoute = async (userId: string) => {
-    try {
-      const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
-        supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
-        supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
-      ]);
-
-      const hasTenant = !!tenantLink;
-      const hasOrg = !!orgLink;
-
-      if (hasTenant && hasOrg) return "/dashboard";
-      if (hasTenant && !hasOrg) return "/tenant";
-      return "/dashboard";
-    } catch (err) {
-      console.warn("[Login] getPostLoginRoute failed:", err);
-      return "/dashboard";
-    }
-  };
-
-  const redirectAfterLogin = async () => {
+  const redirectAfterLogin = useCallback(async (knownUserId?: string) => {
     if (hasRedirected.current) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      hasRedirected.current = true;
-      navigate("/dashboard", { replace: true });
-      return;
-    }
+    const userId = knownUserId ?? (await waitForAuthenticatedUser())?.id;
+    if (!userId) return;
 
-    const route = await getPostLoginRoute(user.id);
+    const route = await getPostLoginRoute(userId);
     hasRedirected.current = true;
     navigate(route, { replace: true });
-  };
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast({ title: t("auth.login.error"), description: error.message, variant: "destructive" });
     } else {
-      await redirectAfterLogin();
+      await redirectAfterLogin(data.user?.id);
     }
   };
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) await redirectAfterLogin();
+      if (session?.user) await redirectAfterLogin(session.user.id);
     };
-    checkSession();
+    void checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === "SIGNED_IN") await redirectAfterLogin();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (event === "SIGNED_IN" && nextSession?.user) {
+        await redirectAfterLogin(nextSession.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [redirectAfterLogin]);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,12 +93,12 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     setLoading(false);
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectAfterLogin();
+      await redirectAfterLogin(data.user?.id);
     }
   };
 
