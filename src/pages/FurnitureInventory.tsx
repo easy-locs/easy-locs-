@@ -191,6 +191,15 @@ const FurnitureInventory = () => {
   const condLabel = (c: string) => CONDITIONS.find(x => x.value === c)?.label || c;
   const groupedByProp = items.reduce((acc, item) => { if (!acc[item.property_id]) acc[item.property_id] = []; acc[item.property_id].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
 
+  // Group properties by country
+  const countryCodes: Record<string, string> = { FR: "🇫🇷", DE: "🇩🇪", ES: "🇪🇸", IT: "🇮🇹", PT: "🇵🇹", GB: "🇬🇧", BE: "🇧🇪", CH: "🇨🇭", AT: "🇦🇹", NL: "🇳🇱", LU: "🇱🇺", IE: "🇮🇪", PL: "🇵🇱", CZ: "🇨🇿", SK: "🇸🇰", HU: "🇭🇺", RO: "🇷🇴", BG: "🇧🇬", HR: "🇭🇷", GR: "🇬🇷", DK: "🇩🇰", SE: "🇸🇪", NO: "🇳🇴", FI: "🇫🇮" };
+  const propsByCountry = properties.reduce((acc, p) => {
+    const c = (p.country || "XX").toUpperCase();
+    if (!acc[c]) acc[c] = [];
+    acc[c].push(p);
+    return acc;
+  }, {} as Record<string, Property[]>);
+
   const loadImageBase64 = async (url: string): Promise<string | null> => {
     try {
       const res = await fetch(url);
