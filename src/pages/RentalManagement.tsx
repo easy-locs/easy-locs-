@@ -896,7 +896,7 @@ const RentalManagement = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                  <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
+                  <p className="detail-meta">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
                 </div>
               </div>
               <div className="detail-header-actions">
@@ -904,17 +904,17 @@ const RentalManagement = () => {
                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
                 </span>
                 {selectedTenant.tenant_user_id ? (
-                  <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                  <span className="detail-action-btn text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
                 ) : (
                   <button
                     onClick={() => handleInviteTenant(selectedTenant)}
                     disabled={invitingTenantId === selectedTenant.id}
-                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
+                    className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
                   >
                     <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
                   </button>
                 )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1">
+                <button onClick={() => startEditTenant(selectedTenant)} className="detail-action-btn text-xs text-accent hover:underline flex items-center gap-1">
                   <Edit className="h-3 w-3" /> {L.editTenant}
                 </button>
               </div>
