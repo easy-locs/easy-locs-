@@ -5,7 +5,7 @@ import {
   Home, Users, ArrowRight, ArrowLeft, MapPin, Loader2,
   User, Building, Link2, ClipboardList, FileText, CheckCircle2, Briefcase
 } from "lucide-react";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
