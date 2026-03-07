@@ -154,7 +154,7 @@ const ChargesRegularization = () => {
                                  <div className="flex-1">
                                    <p className="text-sm font-medium text-foreground">{tenant.name}</p>
                                    <p className="text-xs text-muted-foreground">
-                                     {t("page.charges.provisions")} : {fmt((tenant.charges_amount || 0) * 12)}/an
+                                     {t("page.charges.provisions")} : {fmt((tenant.charges_amount || 0) * 12, prop.country)}/an
                                    </p>
                                  </div>
                                  <div className="flex items-center gap-2">
