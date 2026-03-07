@@ -269,7 +269,7 @@ const CommunicationCenter = () => {
         attachment_url: url,
         message_type: "user",
         sender_locale: locale,
-      } as any);
+      });
 
       toast.success("Fichier envoyé");
     } catch (e: any) {
