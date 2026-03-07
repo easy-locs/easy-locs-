@@ -126,9 +126,7 @@ const PropertyManagement = () => {
       {/* Nav */}
       <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoEasylocs} alt="Easy-Locs" className="h-8" loading="lazy" />
-          </Link>
+          <AppLogo variant="header" linkTo="/" />
           <div className="flex gap-3">
             <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5">{t("nav.login")}</Link>
             <Link to="/signup" className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-1.5 rounded-lg hover:opacity-90 transition-opacity">{t("nav.signup")}</Link>

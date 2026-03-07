@@ -68,9 +68,7 @@ const HostCatalog = () => {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoEasylocs} alt="EASY-LOCS" className="h-6 w-auto" />
-            <span className="text-sm font-bold text-foreground tracking-tight">EASY-LOCS<sup className="text-[7px] ml-0.5 text-muted-foreground">®</sup></span>
+          <AppLogo variant="header" linkTo="/" />
           </Link>
           <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
         </div>
