@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, Building, Users, Euro, MapPin, Plus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import WorldPropertyMap from "@/components/dashboard/WorldPropertyMap";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,67 +12,117 @@ import { format } from "date-fns";
 import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 
+type CountryStat = {
+  code: string;
+  count: number;
+  flag: string;
+  name: string;
+  tenants: number;
+};
+
+type WorldMapProps = {
+  propertiesByCountry: CountryStat[];
+  userCountry: string;
+};
+
 const Dashboard = () => {
   const { orgId, userCountry } = useAuth();
   const { t } = useI18n();
-  const fmt = (n: number) => formatCurrency(n, userCountry);
+  const fmt = (n: number) => formatCurrency(n, userCountry || "FR");
 
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalCountries: 0,
     totalOwners: 0,
     revenueThisMonth: 0,
-    propertiesByCountry: [] as { code: string; count: number; flag: string; name: string; tenants: number }[],
+    propertiesByCountry: [] as CountryStat[],
   });
   const [loading, setLoading] = useState(true);
+  const [WorldMapComponent, setWorldMapComponent] = useState<ComponentType<WorldMapProps> | null>(null);
+  const [mapLoadFailed, setMapLoadFailed] = useState(false);
 
   useEffect(() => {
-    if (!orgId) { setLoading(false); return; }
+    let active = true;
+
+    import("@/components/dashboard/WorldPropertyMap")
+      .then((mod) => {
+        if (!active) return;
+        setWorldMapComponent(() => mod.default);
+      })
+      .catch((err) => {
+        console.warn("[Dashboard] World map disabled due to import error:", err);
+        if (!active) return;
+        setMapLoadFailed(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!orgId) {
+      setLoading(false);
+      return;
+    }
+
     Promise.all([
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("owner_profiles").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-    ]).then(([props, tenantsRes, ownersRes, rc]) => {
-      const propData = (props.data || []) as { id: string; country: string }[];
-      const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
+    ])
+      .then(([props, tenantsRes, ownersRes, rc]) => {
+        const propData = (props.data || []) as { id: string; country: string }[];
+        const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
 
-      const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
-      propData.forEach(p => {
-        const c = p.country || "FR";
-        const existing = countryMap.get(c) || { count: 0, propIds: new Set<string>() };
-        existing.count++;
-        existing.propIds.add(p.id);
-        countryMap.set(c, existing);
+        const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
+        propData.forEach((p) => {
+          const c = p.country || "FR";
+          const existing = countryMap.get(c) || { count: 0, propIds: new Set<string>() };
+          existing.count++;
+          existing.propIds.add(p.id);
+          countryMap.set(c, existing);
+        });
+
+        const today = new Date().toISOString().split("T")[0];
+        const propertiesByCountry = Array.from(countryMap.entries())
+          .map(([code, data]) => {
+            const entry = getCountryEntryOrDefault(code);
+            const countryTenants = tenantsList.filter(
+              (tenant) => tenant.property_id && data.propIds.has(tenant.property_id) && (!tenant.lease_end || tenant.lease_end >= today)
+            );
+            return {
+              code,
+              count: data.count,
+              flag: entry.flag,
+              name: entry.name,
+              tenants: countryTenants.length,
+            };
+          })
+          .sort((a, b) => b.count - a.count);
+
+        const currentMonth = format(new Date(), "yyyy-MM");
+        const monthCalls = ((rc.data || []) as Array<{ month: string; paid: boolean; total_amount: number | string }>).filter(
+          (r) => r.month === currentMonth
+        );
+        const revenueThisMonth = monthCalls
+          .filter((r) => r.paid)
+          .reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+
+        setStats({
+          totalProperties: propData.length,
+          totalCountries: countryMap.size,
+          totalOwners: ownersRes.count || 0,
+          revenueThisMonth,
+          propertiesByCountry,
+        });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[Dashboard] data fetch error:", err);
+        setLoading(false);
       });
-
-      const today = new Date().toISOString().split("T")[0];
-      const propertiesByCountry = Array.from(countryMap.entries())
-        .map(([code, data]) => {
-          const entry = getCountryEntryOrDefault(code);
-          const countryTenants = tenantsList.filter(
-            t => t.property_id && data.propIds.has(t.property_id) && (!t.lease_end || t.lease_end >= today)
-          );
-          return { code, count: data.count, flag: entry.flag, name: entry.name, tenants: countryTenants.length };
-        })
-        .sort((a, b) => b.count - a.count);
-
-      const currentMonth = format(new Date(), "yyyy-MM");
-      const monthCalls = ((rc.data || []) as any[]).filter((r: any) => r.month === currentMonth);
-      const revenueThisMonth = monthCalls.filter((r: any) => r.paid).reduce((s: number, r: any) => s + Number(r.total_amount), 0);
-
-      setStats({
-        totalProperties: propData.length,
-        totalCountries: countryMap.size,
-        totalOwners: ownersRes.count || 0,
-        revenueThisMonth,
-        propertiesByCountry,
-      });
-      setLoading(false);
-    }).catch((err) => {
-      console.error("[Dashboard] data fetch error:", err);
-      setLoading(false);
-    });
   }, [orgId]);
 
   return (
@@ -116,12 +165,20 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* 3D Globe */}
-        {!loading && stats.propertiesByCountry.length > 0 && (
-          <WorldPropertyMap
+        {/* 3D Globe (safe dynamic import with graceful fallback) */}
+        {!loading && stats.propertiesByCountry.length > 0 && WorldMapComponent && !mapLoadFailed && (
+          <WorldMapComponent
             propertiesByCountry={stats.propertiesByCountry}
-            userCountry={userCountry}
+            userCountry={userCountry || "FR"}
           />
+        )}
+
+        {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
+          <div className="mb-8 rounded-xl border border-border/50 bg-card p-4">
+            <p className="text-sm text-muted-foreground">
+              {t("page.dashboard.world_map") || "Carte mondiale"} indisponible sur cet appareil, le tableau de bord reste accessible.
+            </p>
+          </div>
         )}
 
         {/* Country Cards */}
@@ -132,7 +189,7 @@ const Dashboard = () => {
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="h-28 rounded-xl bg-muted/30 animate-pulse" />
               ))}
             </div>
