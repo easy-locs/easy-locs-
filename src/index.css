@@ -173,10 +173,10 @@
 
 /* ── Form elements ── */
 @layer base {
-  input:not([type="checkbox"]):not([type="radio"]),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
   select,
   textarea {
-    @apply text-sm h-10;
+    @apply text-sm h-10 rounded-xl;
     color-scheme: inherit;
   }
 
