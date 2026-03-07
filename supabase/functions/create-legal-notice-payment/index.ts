@@ -39,8 +39,8 @@ serve(async (req) => {
       line_items: [{ price: LEGAL_NOTICE_PRICE_ID, quantity: 1 }],
       mode: "payment",
       metadata: { jal_name: jalName || "Non spécifié", user_id: user.id },
-      success_url: `${req.headers.get("origin")}/dashboard/company?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/dashboard/company?payment=cancel`,
+      success_url: `https://www.easy-locs.com/dashboard/company?payment=success`,
+      cancel_url: `https://www.easy-locs.com/dashboard/company?payment=cancel`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
