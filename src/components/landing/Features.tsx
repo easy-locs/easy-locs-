@@ -10,7 +10,7 @@ const features = [
   { icon: FileSignature, title: "Digital Contracts", desc: "Generate country-specific lease agreements with electronic signature support." },
   { icon: CreditCard, title: "Online Rent Payments", desc: "Collect rent via Stripe, SEPA, Apple Pay and Google Pay with automated receipts." },
   { icon: CalendarRange, title: "Short-term Rental", desc: "Calendar management, booking engine, and OTA sync with Airbnb, Booking & VRBO." },
-  { icon: Concierge, title: "Concierge Services", desc: "Offer cleaning, transfers, activities and extras to guests through your booking portal." },
+  { icon: ConciergeBell, title: "Concierge Services", desc: "Offer cleaning, transfers, activities and extras to guests through your booking portal." },
   { icon: FileText, title: "Automated Documents", desc: "Auto-generate receipts, payment notices, dunning letters and fiscal reports by country." },
   { icon: BrainCircuit, title: "AI Automation Tools", desc: "AI assistant for document generation, rent optimization, and tenant communication." },
 ];
