@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { BrainCircuit, Send, Loader2, User, Sparkles, Activity, TrendingUp, Star, AlertTriangle, CheckCircle2, ChevronRight, BarChart3, Globe, Eye, Search, Zap } from "lucide-react";
+import { BrainCircuit, Send, Loader2, User, Sparkles, Activity, TrendingUp, Star, AlertTriangle, CheckCircle2, ChevronRight, BarChart3, Globe, Eye, Search, Zap, Building } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
