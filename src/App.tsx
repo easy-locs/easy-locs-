@@ -8,6 +8,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import FloatingAIAssistant from "@/components/ai/FloatingAIAssistant";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -108,6 +109,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
+          <FloatingAIAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}
