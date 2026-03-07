@@ -66,7 +66,7 @@ export default function NotificationPreferences() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await (supabase.from("notification_preferences" as any) as any).upsert(
+    const { error } = await supabase.from("notification_preferences").upsert(
       { user_id: user.id, ...prefs, updated_at: new Date().toISOString() },
       { onConflict: "user_id" }
     );

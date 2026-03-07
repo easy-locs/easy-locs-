@@ -321,7 +321,7 @@ const CommunicationCenter = () => {
         message_type: "user",
         property_id: selectedTenant.property_id || null,
         conversation_status: "waiting_tenant",
-      } as any);
+      });
 
       if (error) { toast.error("Erreur d'envoi"); return; }
       setNewMessage("");
