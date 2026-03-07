@@ -69,7 +69,6 @@ const HostCatalog = () => {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
           <AppLogo variant="header" linkTo="/" />
-          </Link>
           <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
         </div>
       </header>
