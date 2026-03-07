@@ -146,8 +146,8 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
               </div>
               <div className="flex items-start gap-2 text-sm min-w-0">
                 <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                <span className="text-foreground break-words">{booking.guest_email}</span>
-                <Button size="sm" variant="ghost" className="h-5 w-5 p-0" onClick={() => copyToClipboard(booking.guest_email)}>
+                <span className="text-foreground break-words min-w-0 flex-1">{booking.guest_email}</span>
+                <Button size="sm" variant="ghost" className="h-5 w-5 p-0 shrink-0" onClick={() => copyToClipboard(booking.guest_email)}>
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
