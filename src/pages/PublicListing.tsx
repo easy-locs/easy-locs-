@@ -12,7 +12,8 @@ import { buildAppUrl } from "@/lib/app-domain";
 import AppLogo from "@/components/AppLogo";
 
 const PublicListing = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, propertySlug } = useParams<{ slug?: string; propertySlug?: string }>();
+  const listingSlug = slug || propertySlug;
   const [searchParams] = useSearchParams();
   const { t, setLocale } = useI18n();
   const { locale, changeLocale, supportedLocales } = usePublicLocale();
@@ -32,11 +33,11 @@ const PublicListing = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!slug) { setNotFound(true); setLoading(false); return; }
+      if (!listingSlug) { setNotFound(true); setLoading(false); return; }
       const { data: l } = await supabase
         .from("public_listings")
         .select("*")
-        .eq("slug", slug)
+        .eq("slug", listingSlug)
         .eq("active", true)
         .maybeSingle();
       if (!l) { setNotFound(true); setLoading(false); return; }
@@ -47,7 +48,7 @@ const PublicListing = () => {
       setLoading(false);
     };
     load();
-  }, [slug]);
+  }, [listingSlug]);
 
   // Handle payment redirect from email
   useEffect(() => {
