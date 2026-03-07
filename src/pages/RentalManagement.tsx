@@ -922,7 +922,7 @@ const RentalManagement = () => {
           </div>
 
           {/* Tabs — horizontal scroll on mobile */}
-          <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-thin">
+          <div className="detail-tab-row mb-6">
             {([
                { key: "info" as const, label: L.overview, icon: FileText },
                { key: "payments" as const, label: L.payments, icon: Euro },
