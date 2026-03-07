@@ -887,7 +887,7 @@ const RentalManagement = () => {
               <p className="text-sm text-muted-foreground">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
             </div>
             <div className="flex items-center gap-2">
-                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isLeaseActive(selectedTenant) ? "bg-green-500/20 text-green-700" : "bg-destructive/20 text-destructive"}`}>
+                 <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                    {isLeaseActive(selectedTenant) ? L.active : L.terminated}
               </span>
               {selectedTenant.tenant_user_id ? (
