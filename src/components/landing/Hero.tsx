@@ -157,7 +157,7 @@ const QuickLoginCard = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("auth.email_placeholder") || "Email"}
+              placeholder={t("auth.login.placeholder_email")}
               className="w-full h-12 pl-11 pr-4 rounded-xl text-sm font-medium outline-none transition-all"
               style={{
                 background: "hsl(var(--primary-foreground) / 0.05)",
