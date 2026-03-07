@@ -118,10 +118,11 @@ function PropertyMarker({
 
 // --- Globe sphere ---
 // --- Scene (globe + markers rotate together) ---
-function GlobeScene({ countries, hoveredCountry, onHover }: {
+function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
   countries: (CountryData & { lat: number; lng: number })[];
   hoveredCountry: string | null;
   onHover: (code: string | null) => void;
+  onSelect: (code: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
