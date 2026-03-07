@@ -50,16 +50,18 @@ const Login = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) await redirectAfterLogin();
+      if (session?.user) await redirectAfterLogin(session.user.id);
     };
-    checkSession();
+    void checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === "SIGNED_IN") await redirectAfterLogin();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (event === "SIGNED_IN" && nextSession?.user) {
+        await redirectAfterLogin(nextSession.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [redirectAfterLogin]);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
