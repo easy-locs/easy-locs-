@@ -88,6 +88,8 @@ function PropertyMarker({
         ref={meshRef}
         onPointerEnter={() => onHover(country.code)}
         onPointerLeave={() => onHover(null)}
+        onClick={(e) => { e.stopPropagation(); onSelect(country.code); }}
+        style={{ cursor: "pointer" }}
       >
         <sphereGeometry args={[markerSize, 16, 16]} />
         <meshStandardMaterial
