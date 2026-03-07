@@ -302,18 +302,18 @@ const FurnitureInventory = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.furniture.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.furniture.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.furniture.title")}</h1>
+            <p>{t("page.furniture.subtitle")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             {selectedProp && filtered.length > 0 && (
-              <button onClick={downloadPDFFile} disabled={uploading} className="flex items-center gap-2 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted disabled:opacity-50">
+              <button onClick={downloadPDFFile} disabled={uploading} className="btn-secondary btn-sm disabled:opacity-50">
                 <Download className="h-4 w-4" /> {uploading ? "..." : "PDF"}
               </button>
             )}
-            <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
+            <button onClick={() => setShowForm(!showForm)} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.furniture.add")}
             </button>
           </div>
@@ -321,7 +321,7 @@ const FurnitureInventory = () => {
 
         {/* Property selector */}
         <div className="mb-4">
-          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="form-select w-auto">
             <option value="">{t("page.furniture.all_properties")}</option>
             {properties.map(p => (
               <option key={p.id} value={p.id}>

@@ -139,10 +139,10 @@ const DunningLetters = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.dunning.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.dunning.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.dunning.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.dunning.title")}</h1>
+            <p>{t("page.dunning.subtitle")}</p>
           </div>
         </div>
 
@@ -164,7 +164,7 @@ const DunningLetters = () => {
                       <p className="font-medium text-foreground">{tenantName(call.tenant_id)}</p>
                       <p className="text-xs text-muted-foreground">{call.month} · {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(call.total_amount)}</p>
                     </div>
-                    <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90">
+                    <button onClick={() => createLetter(call.tenant_id, call.month, call.total_amount, nextLevel)} className="btn-destructive btn-sm">
                       <Plus className="h-3 w-3" /> {t(LEVELS.find(l => l.value === nextLevel)?.labelKey || "page.dunning.level_1")}
                     </button>
                   </div>
@@ -175,28 +175,28 @@ const DunningLetters = () => {
         )}
 
         {/* Letters history */}
-        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="table-container">
+          <div className="table-scroll">
             <table className="w-full text-sm min-w-[580px]">
-               <thead><tr className="border-b border-border/50 bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.date")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.tenant")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.level")}</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.month")}</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">{t("page.dunning.amount")}</th>
-                <th className="px-4 py-3"></th>
+               <thead><tr className="table-head-row">
+                <th className="table-head-cell">{t("page.dunning.date")}</th>
+                <th className="table-head-cell">{t("page.dunning.tenant")}</th>
+                <th className="table-head-cell">{t("page.dunning.level")}</th>
+                <th className="table-head-cell">{t("page.dunning.month")}</th>
+                <th className="table-head-cell text-right">{t("page.dunning.amount")}</th>
+                <th className="table-head-cell"></th>
               </tr></thead>
               <tbody>
                  {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.common.loading")}</td></tr> :
                   letters.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("page.dunning.no_letter")}</td></tr> :
                     letters.map(l => (
-                      <tr key={l.id} className="border-b border-border/30 hover:bg-muted/20">
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
-                        <td className="px-4 py-3 text-foreground font-medium whitespace-nowrap">{tenantName(l.tenant_id)}</td>
-                        <td className="px-4 py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${l.level === 3 ? "bg-destructive/10 text-destructive" : l.level === 2 ? "bg-warning/10 text-warning" : "bg-info/10 text-info"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{l.month}</td>
-                        <td className="px-4 py-3 text-right text-foreground font-semibold whitespace-nowrap">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
-                        <td className="px-4 py-3"><button onClick={() => downloadPDF(l)} className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></button></td>
+                      <tr key={l.id} className="table-body-row">
+                        <td className="table-cell-muted whitespace-nowrap">{new Date(l.created_at || "").toLocaleDateString("fr-FR")}</td>
+                        <td className="table-cell font-medium whitespace-nowrap">{tenantName(l.tenant_id)}</td>
+                        <td className="table-cell"><span className={`badge-status ${l.level === 3 ? "badge-danger" : l.level === 2 ? "badge-warning" : "badge-info"}`}>{t(LEVELS.find(x => x.value === l.level)?.labelKey || "page.dunning.level_1")}</span></td>
+                        <td className="table-cell-muted whitespace-nowrap">{l.month}</td>
+                        <td className="table-cell-amount">{new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(l.amount_due)}</td>
+                        <td className="table-cell-actions"><button onClick={() => downloadPDF(l)} className="btn-ghost btn-icon"><Download className="h-4 w-4" /></button></td>
                       </tr>
                     ))}
               </tbody>

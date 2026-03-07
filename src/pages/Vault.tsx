@@ -121,17 +121,17 @@ const Vault = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <FolderLock className="h-6 w-6 text-accent" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1 className="flex items-center gap-2">
+              <FolderLock className="h-5 w-5 text-accent" />
               {t("page.vault.title")}
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p>
               {files.length} {t("dashboard.files")} · {fmtSize(totalSize, locale)}
             </p>
           </div>
-          <label className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">
+          <label className="btn-primary shrink-0 cursor-pointer">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             {uploading ? t("page.vault.uploading") : t("page.vault.add")}
             <input type="file" multiple className="hidden" onChange={handleUpload} disabled={uploading} />

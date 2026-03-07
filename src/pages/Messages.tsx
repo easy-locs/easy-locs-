@@ -265,9 +265,9 @@ const Messages = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.messages.title")}</h1>
-            <p className="text-muted-foreground text-sm">{t("page.messages.subtitle")}</p>
+          <div className="page-header mb-0">
+            <h1>{t("page.messages.title")}</h1>
+            <p>{t("page.messages.subtitle")}</p>
           </div>
         </div>
 
