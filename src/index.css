@@ -7,7 +7,7 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: normal;
-  hyphens: auto;
+  hyphens: manual;
 }
 
 /* Profile/detail header — responsive pattern */
