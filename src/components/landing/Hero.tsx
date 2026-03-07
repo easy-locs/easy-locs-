@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Play, LogIn, Globe, Shield, Zap, Users, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
 const TypeWriter = ({ words }: { words: string[] }) => {
