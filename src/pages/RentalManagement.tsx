@@ -1546,7 +1546,8 @@ const RentalManagement = () => {
               </div>
             ) : (
               <div className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
                        <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{L.tenant}</th>
