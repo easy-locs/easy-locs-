@@ -2693,6 +2693,8 @@ const pageEn: Record<string, string> = {
   "landing.nav.pricing": "Pricing",
   "landing.nav.login": "Login",
   "landing.nav.signup": "Sign up",
+  "landing.nav.tenant_access": "Tenant portal",
+  "landing.nav.pro_signup": "Create my pro account",
 
   "landing.hero.badge": "Long-term • Airbnb • Booking • Multi-country",
   "landing.hero.title": "The first worldwide platform",
