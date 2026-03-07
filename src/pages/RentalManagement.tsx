@@ -425,7 +425,7 @@ const RentalManagement = () => {
 
     const tenantEmail = normalizeEmail(selectedTenant.email);
     if (tenantEmail && isValidEmail(tenantEmail)) {
-      const appUrl = window.location.origin;
+      const appUrl = buildAppUrl("/");
       const { data: emailData, error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: tenantEmail,
