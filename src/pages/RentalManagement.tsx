@@ -999,7 +999,7 @@ const RentalManagement = () => {
                           </div>
                         )}
                          {p.paid && !p.receipt_validated && <button onClick={() => validateReceipt(p.id)} className="text-xs text-accent hover:underline">{L.validateReceipt}</button>}
-                         {p.paid && p.receipt_validated && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
+                         {p.paid && p.receipt_validated && <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.accessible}</span>}
                         {p.paid && <button onClick={() => generateReceiptForPayment(p)} className="text-muted-foreground hover:text-foreground"><Download className="h-3.5 w-3.5" /></button>}
                       </div>
                     </div>
