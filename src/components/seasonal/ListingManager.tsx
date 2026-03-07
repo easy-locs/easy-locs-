@@ -200,10 +200,18 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.description")}</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs font-medium text-muted-foreground">{t("page.listing_mgr.description")}</label>
+            <AIGenerateButton
+              task="listing_description"
+              taskContext={`Property: ${form.title || propertyLabel}. Location: ${propertyId}. Max guests: ${form.max_guests}. Price per night: ${form.price_per_night}.`}
+              onApply={(text) => setForm(p => ({ ...p, description: text }))}
+              label={t("page.ai.generate_desc") || "✨ Generate with AI"}
+            />
+          </div>
           <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3}
             placeholder={t("page.listing_mgr.description_placeholder")}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 resize-none" />
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm resize-none" />
         </div>
         <div className="sm:col-span-2">
           <label className="text-xs font-medium text-muted-foreground mb-2 block">{t("page.listing_mgr.amenities_title")}</label>

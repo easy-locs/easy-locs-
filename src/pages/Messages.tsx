@@ -407,6 +407,12 @@ const Messages = () => {
                     className="flex-1"
                     disabled={sending}
                   />
+                  <AIGenerateButton
+                    task="guest_reply"
+                    taskContext={messages.length > 0 ? `Last message from tenant: "${messages[messages.length - 1]?.content}"` : "Draft a professional message to the tenant."}
+                    onApply={(text) => setNewMessage(text)}
+                    variant="icon"
+                  />
                   <Button onClick={handleSend} disabled={!newMessage.trim() || sending} size="icon">
                     <Send className="h-4 w-4" />
                   </Button>
