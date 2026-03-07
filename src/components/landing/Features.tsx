@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import {
   Home, MessageSquare, FileSignature, CreditCard,
-  CalendarRange, Concierge, FileText, BrainCircuit,
+  CalendarRange, ConciergeBell, FileText, BrainCircuit,
 } from "lucide-react";
 
 const features = [
