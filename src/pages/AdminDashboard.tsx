@@ -394,7 +394,7 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${u.user_type === "tenant" ? "bg-blue-500/10 text-blue-500" : "bg-accent/10 text-accent"}`}>
+                        <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${u.user_type === "tenant" ? "bg-info/10 text-info" : "bg-accent/10 text-accent"}`}>
                           {u.user_type || "landlord"}
                         </span>
                         <span className="text-xs text-muted-foreground">

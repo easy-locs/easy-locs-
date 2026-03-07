@@ -1570,16 +1570,16 @@ const RentalManagement = () => {
                           <td className="px-4 py-3 text-sm font-medium text-foreground">{fmt(p.total_amount)}</td>
                           <td className="px-4 py-3 text-right relative">
                             {p.paid ? (
-                               <button onClick={() => togglePayment(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-700">
+                               <button onClick={() => togglePayment(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
                                  ✓ {L.paid} {p.payment_method === "online" ? `(${L.online})` : p.payment_method === "bank_transfer" ? `(${L.transfer})` : p.payment_method === "cash" ? `(${L.cash})` : ""}
                               </button>
                             ) : (
                               <div className="flex items-center justify-end gap-2">
-                                <button onClick={() => setPaymentMethodDialog(p.id)} className="text-xs px-3 py-1 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
+                                <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
                                    {L.markPaid}
                                  </button>
                                  <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                   className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
+                                   className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
                                    {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
                                    {L.online}
                                 </button>
@@ -1609,7 +1609,7 @@ const RentalManagement = () => {
                               <button
                                 onClick={() => handleNotifyRentCall(p)}
                                 disabled={notifyingRentId === p.id}
-                                className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
                               >
                                 {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
                                 {t("page.rental.notify")}

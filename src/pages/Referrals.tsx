@@ -113,8 +113,8 @@ const Referrals = () => {
               {referrals.map((r) => (
                 <div key={r.id} className="flex items-center justify-between text-sm">
                   <span className="text-foreground">{r.referred_email || "—"}</span>
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    r.status === "converted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                  <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${
+                    r.status === "converted" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
                   }`}>
                     {r.status}
                   </span>

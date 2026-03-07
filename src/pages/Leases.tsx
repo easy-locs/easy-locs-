@@ -272,12 +272,12 @@ const Leases = () => {
                       }
                     };
                     return (
-                      <div key={doc.id} className="flex items-center justify-between bg-card rounded-lg p-3 border border-border/50 text-sm">
-                        <div>
-                          <span className="font-medium text-foreground">{doc.title}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
+                      <div key={doc.id} className="flex items-center gap-3 bg-card rounded-lg p-3 border border-border/50 text-sm">
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground truncate block">{doc.title}</span>
+                          <span className="text-muted-foreground text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title={t("page.leases.download_tooltip")}>
                             <Download className="h-4 w-4" />
                           </button>
@@ -289,12 +289,12 @@ const Leases = () => {
                                 toast({ title: t("page.leases.finalized") });
                                 loadSavedLeases();
                               }}
-                              className="text-[10px] px-3 py-1 rounded-full font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
+                              className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
                             >
                               {t("page.leases.finalize")}
                             </button>
                           ) : (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-500/20 text-green-700">
+                            <span className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
                               ✅ {t("page.leases.finalized")}
                             </span>
                           )}

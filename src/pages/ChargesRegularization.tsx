@@ -148,7 +148,7 @@ const ChargesRegularization = () => {
                           <td className="text-right py-3 text-foreground">{fmt(r.provisionsAnnuelles)}</td>
                           <td className="text-right py-3 text-foreground">{fmt(r.chargesReelles)}</td>
                           <td className={`text-right py-3 font-semibold ${r.solde > 0 ? "text-success" : r.solde < 0 ? "text-destructive" : "text-foreground"}`}>{r.solde > 0 ? "+" : ""}{fmt(r.solde)}</td>
-                          <td className="py-3"><span className={`text-xs px-2 py-1 rounded-full ${r.solde > 0 ? "bg-success/10 text-success" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>{r.type}</span></td>
+                          <td className="py-3"><span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${r.solde > 0 ? "bg-success/10 text-success" : r.solde < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>{r.type}</span></td>
                         </tr>
                       ))}
                     </tbody>
