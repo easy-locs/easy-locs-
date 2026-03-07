@@ -284,7 +284,7 @@ const CommunicationCenter = () => {
     // Update the last message with the new status
     const lastMsg = messages[messages.length - 1];
     if (lastMsg) {
-      await supabase.from("messages").update({ conversation_status: status } as any).eq("id", lastMsg.id);
+      await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
     }
     toast.success(`Statut: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
   };
