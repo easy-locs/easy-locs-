@@ -51,7 +51,7 @@ const TenantSettings = () => {
 
   return (
     <TenantLayout>
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-6">{PL.myProfile}</h1>
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
