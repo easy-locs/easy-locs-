@@ -191,6 +191,7 @@ interface Props {
 
 export default function WorldPropertyMap({ propertiesByCountry, userCountry }: Props) {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
 
   const totalProperties = useMemo(
