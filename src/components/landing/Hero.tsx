@@ -86,16 +86,23 @@ const QuickLoginCard = () => {
     if (!email || !password) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toast({ title: t("common.error"), description: error.message, variant: "destructive" });
       } else {
-        navigate("/dashboard");
+        const userId = data.user?.id ?? (await waitForAuthenticatedUser())?.id;
+        if (!userId) {
+          toast({ title: t("common.error"), description: t("auth.login.error"), variant: "destructive" });
+          return;
+        }
+        const route = await getPostLoginRoute(userId);
+        navigate(route, { replace: true });
       }
     } catch (err) {
       toast({ title: t("common.error"), description: String(err), variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
