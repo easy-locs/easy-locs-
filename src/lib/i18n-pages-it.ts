@@ -18,6 +18,13 @@ export const pageIt: Record<string, string> = {
   "page.dashboard.to_process": "Da gestire", "page.dashboard.collected": "Incassato",
   "page.dashboard.unpaid_label": "Non pagato", "page.dashboard.no_unpaid": "0 non pagati",
   "page.dashboard.net_income": "Reddito netto", "page.dashboard.expenses_label": "spese",
+  "page.dashboard.world_map": "Il mio portafoglio mondiale",
+  "page.dashboard.countries": "Paesi",
+  "page.dashboard.select_country": "Seleziona un paese da gestire",
+  "page.dashboard.global_overview": "Panoramica del tuo portafoglio immobiliare",
+  "page.dashboard.owners": "Proprietari",
+  "page.dashboard.no_properties": "Nessun immobile registrato",
+  "page.dashboard.add_first": "Aggiungi il tuo primo immobile per iniziare",
 
   // Tasks
   "page.tasks.title": "Attività", "page.tasks.subtitle": "Gestisci le tue attività e azioni",
