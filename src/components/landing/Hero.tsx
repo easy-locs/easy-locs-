@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import AppLogo from "@/components/AppLogo";
+import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
 
 /* ── Animated background orbs ── */
 const BackgroundEffects = () => (
