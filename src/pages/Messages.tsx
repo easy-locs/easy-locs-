@@ -86,14 +86,19 @@ const Messages = () => {
           propertyMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
         }
       }
-      setTenants(data.map(t => ({
+      let mapped = data.map(t => ({
         ...t,
         property_label: t.property_id ? propertyMap[t.property_id]?.label : undefined,
         property_country: t.property_id ? propertyMap[t.property_id]?.country : undefined,
-      })));
+      }));
+      // Filter tenants by country if country filter active
+      if (countryFilter) {
+        mapped = mapped.filter(t => t.property_country === countryFilter);
+      }
+      setTenants(mapped);
     }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   const loadUnreadCounts = useCallback(async () => {
     if (!orgId || !user) return;
