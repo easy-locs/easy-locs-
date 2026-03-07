@@ -186,10 +186,10 @@ serve(async (req) => {
       if (translated) engine = "google";
     }
 
-    // 3. Lovable AI (ultimate fallback, supports 100+ languages)
+    // 3. Built-in AI (ultimate fallback, supports 100+ languages)
     if (!translated) {
-      translated = await translateWithLovableAI(text, from_locale, to_locale);
-      if (translated) engine = "lovable-ai";
+      translated = await translateWithBuiltInAI(text, from_locale, to_locale);
+      if (translated) engine = "builtin-ai";
     }
 
     if (!translated) {
