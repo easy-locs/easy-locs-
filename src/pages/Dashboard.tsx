@@ -228,12 +228,12 @@ const Dashboard = () => {
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Building className="h-3.5 w-3.5" />
-                            {c.count} {c.count > 1 ? "biens" : "bien"}
+                            {c.count} {c.count > 1 ? t("page.dashboard.property_plural") || "properties" : t("page.dashboard.property_singular") || "property"}
                           </span>
                           {c.tenants > 0 && (
                             <span className="flex items-center gap-1">
                               <Users className="h-3.5 w-3.5" />
-                              {c.tenants} {c.tenants > 1 ? "locataires" : "locataire"}
+                              {c.tenants} {c.tenants > 1 ? t("page.dashboard.tenant_plural") || "tenants" : t("page.dashboard.tenant_singular") || "tenant"}
                             </span>
                           )}
                         </div>
