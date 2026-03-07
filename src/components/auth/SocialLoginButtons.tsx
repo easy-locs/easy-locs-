@@ -9,12 +9,13 @@ const SocialLoginButtons = () => {
   const [loadingApple, setLoadingApple] = useState(false);
   const { toast } = useToast();
   const { t } = useI18n();
+  const authRedirectUri = `${window.location.origin}/login`;
 
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: authRedirectUri,
       });
       if (result?.error) {
         toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });
@@ -29,7 +30,7 @@ const SocialLoginButtons = () => {
     setLoadingApple(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
+        redirect_uri: authRedirectUri,
       });
       if (result?.error) {
         toast({ title: t("common.error"), description: String(result.error), variant: "destructive" });
