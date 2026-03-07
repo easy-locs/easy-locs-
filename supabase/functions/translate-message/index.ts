@@ -105,9 +105,9 @@ async function translateWithGoogle(text: string, from: string, to: string): Prom
 }
 
 /**
- * Strategy 3: Lovable AI (ultimate fallback, always available)
+ * Strategy 3: Built-in AI (ultimate fallback, always available)
  */
-async function translateWithLovableAI(text: string, from: string, to: string): Promise<string | null> {
+async function translateWithBuiltInAI(text: string, from: string, to: string): Promise<string | null> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) return null;
 
@@ -136,14 +136,14 @@ async function translateWithLovableAI(text: string, from: string, to: string): P
     });
 
     if (!response.ok) {
-      console.error("Lovable AI error:", response.status, await response.text());
+      console.error("AI translation error:", response.status, await response.text());
       return null;
     }
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content?.trim() || null;
   } catch (err) {
-    console.error("Lovable AI exception:", err);
+    console.error("AI translation exception:", err);
     return null;
   }
 }
@@ -170,7 +170,7 @@ serve(async (req) => {
       });
     }
 
-    // Cascade: DeepL → Google Cloud → Lovable AI
+    // Cascade: DeepL → Google Cloud → Built-in AI
     let translated: string | null = null;
     let engine = "none";
 
@@ -186,10 +186,10 @@ serve(async (req) => {
       if (translated) engine = "google";
     }
 
-    // 3. Lovable AI (ultimate fallback, supports 100+ languages)
+    // 3. Built-in AI (ultimate fallback, supports 100+ languages)
     if (!translated) {
-      translated = await translateWithLovableAI(text, from_locale, to_locale);
-      if (translated) engine = "lovable-ai";
+      translated = await translateWithBuiltInAI(text, from_locale, to_locale);
+      if (translated) engine = "builtin-ai";
     }
 
     if (!translated) {

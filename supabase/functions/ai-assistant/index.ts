@@ -50,7 +50,7 @@ You help landlords and property managers with:
 - Booking management tips
 
 Be concise, professional, and actionable. Provide specific advice based on the user's context.
-Never mention "AI", "artificial intelligence", "Lovable", or "Supabase".
+Never mention "AI", "artificial intelligence", or any underlying infrastructure provider.
 Present yourself as the "Easy-Locs Copilot".`,
 
   listing_description: `You are a property listing copywriter for Easy-Locs.
