@@ -34,7 +34,8 @@ const defaultForm = { name: "", address: "", postal_code: "", city: "", building
 const Buildings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
-  const { properties } = useRentalData();
+  const countryFilter = useCountryFilter();
+  const { properties } = useRentalData(countryFilter);
   const { t } = useI18n();
   const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
   const [loading, setLoading] = useState(true);

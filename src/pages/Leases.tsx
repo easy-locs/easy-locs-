@@ -45,7 +45,8 @@ const Leases = () => {
   const [selectedLeaseType, setSelectedLeaseType] = useState<string>("empty");
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [generating, setGenerating] = useState(false);
-  const { properties, tenants, loading } = useRentalData();
+  const countryFilter = useCountryFilter();
+  const { properties, tenants, loading } = useRentalData(countryFilter);
   const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
   const { user, orgId, userCountry } = useAuth();
   const { toast } = useToast();

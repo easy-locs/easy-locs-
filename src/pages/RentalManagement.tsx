@@ -109,13 +109,14 @@ const RentalManagement = () => {
     diagnostics: t("page.rental.expense_diag"), honoraires: t("page.rental.expense_fees"),
     other: t("page.rental.expense_other"),
   }), [t]);
+  const countryFilter = useCountryFilter();
   const {
     properties, tenants, rentCalls, loading,
     saveProperty, deleteProperty,
     saveTenant, deleteTenant, sendTenantInvite,
     generateMonthlyRentCalls, togglePayment, validateReceipt,
     assignTenantToProperty,
-  } = useRentalData();
+  } = useRentalData(countryFilter);
 
   const { requiresUpgrade } = useSubscriptionGating();
   const [searchParams] = useSearchParams();
