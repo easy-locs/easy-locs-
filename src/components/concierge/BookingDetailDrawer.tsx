@@ -1,0 +1,347 @@
+/**
+ * BookingDetailDrawer — Full booking detail view with documents, payment, notes.
+ * Shows everything about a booking in one place for fast verification.
+ */
+
+import { useState, useCallback } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
+  CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
+  DollarSign, Send, Copy, ExternalLink
+} from "lucide-react";
+import { format } from "date-fns";
+
+interface BookingDetailDrawerProps {
+  booking: any;
+  service: any;
+  open: boolean;
+  onClose: () => void;
+  onUpdate: () => void;
+  orgId: string;
+}
+
+const STATUS_MAP: Record<string, { label: string; cls: string }> = {
+  pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-600" },
+  awaiting_payment: { label: "Awaiting Payment", cls: "bg-orange-500/10 text-orange-600" },
+  paid: { label: "Paid", cls: "bg-emerald-500/10 text-emerald-600" },
+  confirmed: { label: "Confirmed", cls: "bg-blue-500/10 text-blue-600" },
+  in_progress: { label: "In Progress", cls: "bg-accent/10 text-accent-foreground" },
+  completed: { label: "Completed", cls: "bg-emerald-500/10 text-emerald-600" },
+  cancelled: { label: "Cancelled", cls: "bg-destructive/10 text-destructive" },
+  refunded: { label: "Refunded", cls: "bg-muted text-muted-foreground" },
+};
+
+export default function BookingDetailDrawer({ booking, service, open, onClose, onUpdate, orgId }: BookingDetailDrawerProps) {
+  const [uploading, setUploading] = useState(false);
+  const [notes, setNotes] = useState(booking?.notes || "");
+  const [saving, setSaving] = useState(false);
+
+  const documentUrls: string[] = Array.isArray(booking?.document_urls) ? booking.document_urls : [];
+  const statusInfo = STATUS_MAP[booking?.status] || STATUS_MAP.pending;
+
+  const handleDocUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || !booking?.id) return;
+    setUploading(true);
+
+    try {
+      const newUrls = [...documentUrls];
+      for (const file of Array.from(files)) {
+        const ext = file.name.split(".").pop();
+        const path = `concierge-docs/${orgId}/${booking.id}/${Date.now()}-${file.name}`;
+        const { error } = await supabase.storage.from("rental-docs").upload(path, file);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
+        newUrls.push(urlData.publicUrl);
+      }
+
+      await supabase.from("concierge_orders")
+        .update({ document_urls: newUrls } as any)
+        .eq("id", booking.id);
+
+      toast.success(`${files.length} document(s) uploaded`);
+      onUpdate();
+    } catch (err: any) {
+      toast.error("Upload failed: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  }, [booking, documentUrls, orgId, onUpdate]);
+
+  const removeDoc = useCallback(async (index: number) => {
+    const updated = documentUrls.filter((_, i) => i !== index);
+    await supabase.from("concierge_orders")
+      .update({ document_urls: updated } as any)
+      .eq("id", booking.id);
+    toast.success("Document removed");
+    onUpdate();
+  }, [booking, documentUrls, onUpdate]);
+
+  const saveNotes = useCallback(async () => {
+    setSaving(true);
+    await supabase.from("concierge_orders").update({ notes } as any).eq("id", booking.id);
+    toast.success("Notes saved");
+    setSaving(false);
+  }, [booking, notes]);
+
+  const updateStatus = useCallback(async (status: string) => {
+    const updates: any = { status };
+    if (status === "confirmed") updates.confirmed_at = new Date().toISOString();
+    if (status === "completed") updates.completed_at = new Date().toISOString();
+    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
+    await supabase.from("concierge_orders").update(updates).eq("id", booking.id);
+    toast.success(`Booking ${status}`);
+    onUpdate();
+  }, [booking, onUpdate]);
+
+  const markPaid = useCallback(async () => {
+    await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", booking.id);
+    toast.success("Payment confirmed");
+    onUpdate();
+  }, [booking, onUpdate]);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied!");
+  };
+
+  if (!booking) return null;
+
+  const bankDetails = typeof service?.bank_details === "object" ? service.bank_details : {};
+
+  return (
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-accent" />
+            Booking Details
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="space-y-5 mt-4">
+          {/* Status & Quick Actions */}
+          <div className="flex items-center justify-between">
+            <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
+            <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
+              {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
+            </Badge>
+          </div>
+
+          {/* Client Info */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client</h3>
+            <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium text-foreground">{booking.guest_name}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-foreground">{booking.guest_email}</span>
+                <Button size="sm" variant="ghost" className="h-5 w-5 p-0" onClick={() => copyToClipboard(booking.guest_email)}>
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+              {booking.guest_phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-foreground">{booking.guest_phone}</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Service Info */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Service</h3>
+            <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
+              <p className="font-medium text-foreground text-sm">{service?.title || "Unknown service"}</p>
+              {service?.category && <Badge variant="outline" className="text-[10px]">{service.category}</Badge>}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                {booking.service_date && (
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{booking.service_date}</span>
+                )}
+                {booking.service_time && (
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{booking.service_time}</span>
+                )}
+                {booking.end_time && (
+                  <span className="flex items-center gap-1">→ {booking.end_time}</span>
+                )}
+              </div>
+              {service?.location && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3" />{service.location}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Payment Info */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment</h3>
+            <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Amount</span>
+                <span className="text-lg font-bold text-foreground">{booking.total_price} {booking.currency}</span>
+              </div>
+              {booking.commission_amount > 0 && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Commission</span>
+                  <span className="text-foreground">{booking.commission_amount} {booking.currency}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Method</span>
+                <span className="text-foreground capitalize">{booking.payment_method || "—"}</span>
+              </div>
+              {booking.bank_transfer_reference && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Transfer Ref</span>
+                  <span className="text-foreground font-mono">{booking.bank_transfer_reference}</span>
+                </div>
+              )}
+              {booking.payment_proof_url && (
+                <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => window.open(booking.payment_proof_url, "_blank")}>
+                  <Eye className="h-3 w-3 mr-1" /> View Payment Proof
+                </Button>
+              )}
+
+              {/* Bank details for bank transfer */}
+              {booking.payment_method === "bank_transfer" && bankDetails.iban && (
+                <div className="bg-background rounded-lg p-2 space-y-1 text-xs mt-2">
+                  <p className="font-semibold text-foreground">Bank Details</p>
+                  {bankDetails.bank_name && <p className="text-muted-foreground">Bank: {bankDetails.bank_name}</p>}
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">IBAN: </span>
+                    <span className="font-mono text-foreground">{bankDetails.iban}</span>
+                    <Button size="sm" variant="ghost" className="h-4 w-4 p-0" onClick={() => copyToClipboard(bankDetails.iban)}>
+                      <Copy className="h-2.5 w-2.5" />
+                    </Button>
+                  </div>
+                  {bankDetails.swift && <p className="text-muted-foreground">SWIFT: {bankDetails.swift}</p>}
+                  {bankDetails.account_holder && <p className="text-muted-foreground">Holder: {bankDetails.account_holder}</p>}
+                </div>
+              )}
+
+              {/* Quick payment actions */}
+              <div className="flex gap-2 pt-1">
+                {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
+                  <Button size="sm" className="flex-1 text-xs" onClick={markPaid}>
+                    <CreditCard className="h-3 w-3 mr-1" /> Mark Paid
+                  </Button>
+                )}
+                {booking.payment_link_url && (
+                  <Button size="sm" variant="outline" className="text-xs" onClick={() => copyToClipboard(booking.payment_link_url)}>
+                    <Copy className="h-3 w-3 mr-1" /> Copy Payment Link
+                  </Button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Documents / ID Upload */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5" /> Identity Documents
+            </h3>
+
+            {documentUrls.length > 0 && (
+              <div className="space-y-2">
+                {documentUrls.map((url, i) => {
+                  const filename = url.split("/").pop() || `Document ${i + 1}`;
+                  return (
+                    <div key={i} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-xs text-foreground truncate">{filename}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(url, "_blank")}>
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => removeDoc(i)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-[var(--card-radius)] p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+              <Upload className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {uploading ? "Uploading..." : "Upload passport, ID card, visa..."}
+              </span>
+              <input type="file" className="hidden" multiple accept="image/*,.pdf" onChange={handleDocUpload} disabled={uploading} />
+            </label>
+          </section>
+
+          <Separator />
+
+          {/* Notes */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notes</h3>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Internal notes about this booking..."
+              rows={3}
+            />
+            <Button size="sm" variant="outline" onClick={saveNotes} disabled={saving} className="text-xs">
+              {saving ? "Saving..." : "Save Notes"}
+            </Button>
+          </section>
+
+          <Separator />
+
+          {/* Status Actions */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</h3>
+            <div className="flex flex-wrap gap-2">
+              {booking.status === "pending" && (
+                <Button size="sm" onClick={() => updateStatus("confirmed")} className="text-xs">
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> Confirm
+                </Button>
+              )}
+              {(booking.status === "confirmed" || booking.status === "in_progress") && (
+                <Button size="sm" onClick={() => updateStatus("completed")} className="text-xs">
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> Complete
+                </Button>
+              )}
+              {booking.status !== "cancelled" && booking.status !== "completed" && (
+                <Button size="sm" variant="destructive" onClick={() => updateStatus("cancelled")} className="text-xs">
+                  <XCircle className="h-3 w-3 mr-1" /> Cancel
+                </Button>
+              )}
+            </div>
+          </section>
+
+          {/* Timestamps */}
+          <div className="text-[10px] text-muted-foreground space-y-0.5 pt-2">
+            <p>Created: {booking.created_at ? format(new Date(booking.created_at), "PPp") : "—"}</p>
+            {booking.confirmed_at && <p>Confirmed: {format(new Date(booking.confirmed_at), "PPp")}</p>}
+            {booking.completed_at && <p>Completed: {format(new Date(booking.completed_at), "PPp")}</p>}
+            {booking.cancelled_at && <p>Cancelled: {format(new Date(booking.cancelled_at), "PPp")}</p>}
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
