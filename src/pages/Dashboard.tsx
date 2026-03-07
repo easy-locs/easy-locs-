@@ -182,6 +182,25 @@ const Dashboard = () => {
                   </Link>
                 </motion.div>
               ))}
+
+              {/* Add Property card */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + stats.propertiesByCountry.length * 0.04 }}
+              >
+                <Link
+                  to="/dashboard/rental"
+                  className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all h-full min-h-[5rem]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                    <Plus className="h-5 w-5 text-accent" />
+                  </div>
+                  <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
+                    {t("page.rental.add_property") || "Ajouter un bien"}
+                  </span>
+                </Link>
+              </motion.div>
             </div>
           )}
         </motion.div>
