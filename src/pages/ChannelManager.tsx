@@ -239,7 +239,7 @@ const ChannelManager = () => {
           user_id: user.id, org_id: org.id, type: "info",
           title: "🚫 Réservation annulée",
           message: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
-          link: "/channel-manager",
+          link: "/dashboard/channel-manager",
         });
       }
 
