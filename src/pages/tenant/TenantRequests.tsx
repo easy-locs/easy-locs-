@@ -160,7 +160,7 @@ const TenantRequests = () => {
                     {r.period || "—"} · {new Date(r.created_at).toLocaleDateString(dateLocale)}
                   </p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full ${r.status === "resolved" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${r.status === "resolved" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
                   {r.status === "resolved" ? T.statusResolved : T.statusPending}
                 </span>
               </div>
