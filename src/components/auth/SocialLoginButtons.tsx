@@ -3,6 +3,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Loader2 } from "lucide-react";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const SocialLoginButtons = () => {
   const [loadingGoogle, setLoadingGoogle] = useState(false);

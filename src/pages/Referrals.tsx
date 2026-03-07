@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { Gift, Copy, Users, CheckCircle2, Share2, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const Referrals = () => {
   const { user } = useAuth();

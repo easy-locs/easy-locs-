@@ -5,6 +5,7 @@ import { Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
