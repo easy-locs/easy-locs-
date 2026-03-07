@@ -96,23 +96,33 @@ const TenantReceipts = () => {
         ) : (
           <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
             {receipts.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 p-4">
-                <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
-                  <Receipt className="h-5 w-5 text-info" />
+              <div key={r.id} className="p-4">
+                <div className="card-row">
+                  <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
+                    <Receipt className="h-5 w-5 text-info" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground whitespace-nowrap">{r.month}</p>
+                    <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1 mt-0.5">
+                      <span>{L.rent}</span>
+                      <span className="currency-value whitespace-nowrap">{fmt(r.rent_amount)}</span>
+                      <span>+</span>
+                      <span>{L.charges}</span>
+                      <span className="currency-value whitespace-nowrap">{fmt(r.charges_amount)}</span>
+                      <span>=</span>
+                      <strong className="currency-value whitespace-nowrap">{fmt(r.total_amount)}</strong>
+                    </p>
+                  </div>
+                  {r.receipt_pdf_url && (
+                    <button
+                      onClick={() => handleDownload(r)}
+                      disabled={downloadingId === r.id}
+                      className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-accent hover:bg-accent/10 disabled:opacity-50"
+                    >
+                      {downloadingId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} PDF
+                    </button>
+                  )}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{r.month}</p>
-                  <p className="text-xs text-muted-foreground">{L.rent} {fmt(r.rent_amount)} + {L.charges} {fmt(r.charges_amount)} = <strong>{fmt(r.total_amount)}</strong></p>
-                </div>
-                {r.receipt_pdf_url && (
-                  <button
-                    onClick={() => handleDownload(r)}
-                    disabled={downloadingId === r.id}
-                    className="flex items-center gap-1.5 text-sm text-accent hover:underline disabled:opacity-50"
-                  >
-                    {downloadingId === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} PDF
-                  </button>
-                )}
               </div>
             ))}
           </div>
