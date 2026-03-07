@@ -154,12 +154,12 @@ const PaymentNotices = () => {
     <DashboardLayout>
        <FeatureGate feature="unlimited_tenants" featureLabel={t("page.notices.title")}>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.notices.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.notices.subtitle")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="page-header mb-0">
+            <h1>{t("page.notices.title")}</h1>
+            <p>{t("page.notices.subtitle")}</p>
           </div>
-          <button onClick={generateNotices} className="inline-flex items-center gap-2 h-10 bg-gradient-gold text-accent-foreground px-4 rounded-xl text-sm font-semibold shadow-gold hover:opacity-90">
+          <button onClick={generateNotices} className="btn-primary shrink-0">
             <Plus className="h-4 w-4" /> {t("page.notices.generate")}
           </button>
         </div>
