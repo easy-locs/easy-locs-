@@ -19,11 +19,6 @@ interface Property { id: string; label: string; monthly_rent: number; monthly_ch
 
 const accountingRulesMap = getAllAccountingRules();
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  FR:"🇫🇷",DE:"🇩🇪",ES:"🇪🇸",IT:"🇮🇹",PT:"🇵🇹",GB:"🇬🇧",US:"🇺🇸",AE:"🇦🇪",JP:"🇯🇵",BR:"🇧🇷",MA:"🇲🇦",AU:"🇦🇺",IN:"🇮🇳",SG:"🇸🇬",SA:"🇸🇦",TR:"🇹🇷",
-  BE:"🇧🇪",NL:"🇳🇱",AT:"🇦🇹",CH:"🇨🇭",PL:"🇵🇱",SE:"🇸🇪",NO:"🇳🇴",DK:"🇩🇰",FI:"🇫🇮",GR:"🇬🇷",CZ:"🇨🇿",HU:"🇭🇺",RO:"🇷🇴",BG:"🇧🇬",HR:"🇭🇷",IE:"🇮🇪",
-  CA:"🇨🇦",MX:"🇲🇽",ZA:"🇿🇦",NG:"🇳🇬",KR:"🇰🇷",CN:"🇨🇳",EG:"🇪🇬",IL:"🇮🇱",QA:"🇶🇦",KW:"🇰🇼",PH:"🇵🇭",TH:"🇹🇭",VN:"🇻🇳",MY:"🇲🇾",ID:"🇮🇩",UA:"🇺🇦",SK:"🇸🇰",LU:"🇱🇺",NZ:"🇳🇿",
-};
 
 const FORM_NAMES: Record<string,string> = {
   FR:"Formulaire 2044",DE:"Anlage V",ES:"Modelo 100",IT:"Modello 730",PT:"Modelo 3 (Anexo F)",GB:"Self Assessment",US:"Schedule E (1040)",
