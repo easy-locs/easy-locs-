@@ -468,6 +468,12 @@ const pageFr: Record<string, string> = {
   "page.dashboard.unpaid_label": "Impayé",
   "page.dashboard.no_unpaid": "0 impayé",
   "page.dashboard.world_map": "Mon portefeuille mondial",
+  "page.dashboard.countries": "Pays",
+  "page.dashboard.select_country": "Sélectionnez un pays pour gérer",
+  "page.dashboard.global_overview": "Vue d'ensemble de votre portefeuille immobilier",
+  "page.dashboard.owners": "Propriétaires",
+  "page.dashboard.no_properties": "Aucun bien enregistré",
+  "page.dashboard.add_first": "Ajoutez votre premier bien pour commencer",
   "page.dashboard.net_income": "Résultat net",
   "page.dashboard.expenses_label": "dépenses",
 
