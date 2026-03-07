@@ -147,41 +147,41 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/country/:code" element={<ProtectedRoute><CountryWorkspace /></ProtectedRoute>} />
-              <Route path="/dashboard/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
-              <Route path="/dashboard/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
-              <Route path="/dashboard/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+              <Route path="/dashboard/receipts" element={<ProtectedRoute><CountryGuard><Receipts /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/reminders" element={<ProtectedRoute><CountryGuard><Reminders /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/documents" element={<ProtectedRoute><CountryGuard><Documents /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
-              <Route path="/dashboard/leases" element={<ProtectedRoute><Leases /></ProtectedRoute>} />
+              <Route path="/dashboard/leases" element={<ProtectedRoute><CountryGuard><Leases /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/company" element={<ProtectedRoute><Company /></ProtectedRoute>} />
               <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-              <Route path="/dashboard/tenants" element={<ProtectedRoute><Tenants /></ProtectedRoute>} />
-              <Route path="/dashboard/rental" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
-              <Route path="/dashboard/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
-              <Route path="/dashboard/interventions" element={<ProtectedRoute><Interventions /></ProtectedRoute>} />
-              <Route path="/dashboard/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-              <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-              <Route path="/dashboard/charges" element={<ProtectedRoute><ChargesRegularization /></ProtectedRoute>} />
-              <Route path="/dashboard/fiscal" element={<ProtectedRoute><FiscalReport /></ProtectedRoute>} />
-              <Route path="/dashboard/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-              <Route path="/dashboard/candidates" element={<ProtectedRoute><Candidates /></ProtectedRoute>} />
-              <Route path="/dashboard/seasonal" element={<ProtectedRoute><SeasonalRentals /></ProtectedRoute>} />
-              <Route path="/dashboard/notices" element={<ProtectedRoute><PaymentNotices /></ProtectedRoute>} />
-              <Route path="/dashboard/dunning" element={<ProtectedRoute><DunningLetters /></ProtectedRoute>} />
-              <Route path="/dashboard/furniture" element={<ProtectedRoute><FurnitureInventory /></ProtectedRoute>} />
-              <Route path="/dashboard/buildings" element={<ProtectedRoute><Buildings /></ProtectedRoute>} />
+              <Route path="/dashboard/tenants" element={<ProtectedRoute><CountryGuard><Tenants /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/rental" element={<ProtectedRoute><CountryGuard><RentalManagement /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/finances" element={<ProtectedRoute><CountryGuard><Finances /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/interventions" element={<ProtectedRoute><CountryGuard><Interventions /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/tasks" element={<ProtectedRoute><CountryGuard><Tasks /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/messages" element={<ProtectedRoute><CountryGuard><Messages /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/charges" element={<ProtectedRoute><CountryGuard><ChargesRegularization /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/fiscal" element={<ProtectedRoute><CountryGuard><FiscalReport /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/expenses" element={<ProtectedRoute><CountryGuard><Expenses /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/candidates" element={<ProtectedRoute><CountryGuard><Candidates /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/seasonal" element={<ProtectedRoute><CountryGuard><SeasonalRentals /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/notices" element={<ProtectedRoute><CountryGuard><PaymentNotices /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/dunning" element={<ProtectedRoute><CountryGuard><DunningLetters /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/furniture" element={<ProtectedRoute><CountryGuard><FurnitureInventory /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/buildings" element={<ProtectedRoute><CountryGuard><Buildings /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/dashboard/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
+              <Route path="/dashboard/vault" element={<ProtectedRoute><CountryGuard><Vault /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/import" element={<ProtectedRoute><DataImport /></ProtectedRoute>} />
               <Route path="/dashboard/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/channel-manager" element={<ProtectedRoute><ChannelManager /></ProtectedRoute>} />
-              <Route path="/dashboard/accounting" element={<ProtectedRoute><Accounting /></ProtectedRoute>} />
-              <Route path="/dashboard/pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
+              <Route path="/dashboard/channel-manager" element={<ProtectedRoute><CountryGuard><ChannelManager /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/accounting" element={<ProtectedRoute><CountryGuard><Accounting /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/pricing" element={<ProtectedRoute><CountryGuard><DynamicPricing /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/marketplace" element={<ProtectedRoute><ServiceMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
-              <Route path="/dashboard/local-services" element={<ProtectedRoute><LocalServices /></ProtectedRoute>} />
+              <Route path="/dashboard/local-services" element={<ProtectedRoute><CountryGuard><LocalServices /></CountryGuard></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />
