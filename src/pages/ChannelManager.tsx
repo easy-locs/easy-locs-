@@ -67,12 +67,49 @@ const ChannelManager = () => {
     enabled: !!org,
   });
 
-  // Fetch reservations
+  // Fetch all reservations: seasonal_bookings + booking_requests (merged as unified view)
   const { data: reservations = [] } = useQuery({
-    queryKey: ["reservations", org?.id],
+    queryKey: ["channel_reservations", org?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("reservations" as any).select("*").eq("org_id", org!.id);
-      return (data || []) as unknown as Array<{
+      const [{ data: seasonalData }, { data: requestsData }] = await Promise.all([
+        supabase.from("seasonal_bookings").select("*").eq("org_id", org!.id),
+        supabase.from("booking_requests").select("*").eq("org_id", org!.id),
+      ]);
+
+      const seasonal = (seasonalData || []).map((b: any) => ({
+        id: b.id,
+        property_id: b.property_id,
+        guest_name: b.guest_name,
+        check_in: b.check_in,
+        check_out: b.check_out,
+        status: b.status || "confirmed",
+        ota_provider: "direct",
+        amount: Number(b.total_price) || 0,
+      }));
+
+      const requests = (requestsData || [])
+        .filter((r: any) => r.status === "paid" || r.status === "approved" || r.status === "confirmed")
+        .map((r: any) => ({
+          id: r.id,
+          property_id: r.property_id,
+          guest_name: r.guest_name,
+          check_in: r.check_in,
+          check_out: r.check_out,
+          status: r.status,
+          ota_provider: "direct",
+          amount: 0,
+        }));
+
+      // Deduplicate by key
+      const seen = new Set<string>();
+      const all = [...seasonal, ...requests].filter(r => {
+        const key = `${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      return all as Array<{
         id: string; property_id: string; guest_name: string; check_in: string; check_out: string;
         status: string; ota_provider: string; amount: number;
       }>;
