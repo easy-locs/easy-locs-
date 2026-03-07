@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Loader2 } from "lucide-react";
 import jsPDF from "jspdf";
-import logoEasyloc from "@/assets/logo-easylocs.png";
+
 import { useI18n } from "@/lib/i18n";
 
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
