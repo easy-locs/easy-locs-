@@ -641,45 +641,44 @@ const ChannelManager = () => {
       </div>
 
       {/* ─── Edit Dates Modal ─── */}
-      {editModalRes && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setEditModalRes(null)}>
-          <div className="bg-card rounded-2xl border border-border p-6 max-w-md w-full space-y-4" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">Modifier la réservation</h3>
-              <button onClick={() => setEditModalRes(null)} className="text-muted-foreground hover:text-foreground">
-                <XCircle className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="font-medium text-foreground">{editModalRes.guest_name}</p>
-              <p className="text-xs text-muted-foreground">{propName(editModalRes.property_id)} • {getPlatformInfo(editModalRes.ota_provider).name}</p>
-              {editModalRes.guest_email && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <Mail className="h-3 w-3" />{editModalRes.guest_email}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Arrivée</label>
-                <Input type="date" value={editDates.check_in} onChange={e => setEditDates(d => ({ ...d, check_in: e.target.value }))} />
+      <Dialog open={!!editModalRes} onOpenChange={(open) => { if (!open) setEditModalRes(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Modifier la réservation</DialogTitle>
+          </DialogHeader>
+          {editModalRes && (
+            <div className="space-y-4">
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="font-medium text-foreground">{editModalRes.guest_name}</p>
+                <p className="text-xs text-muted-foreground">{propName(editModalRes.property_id)} • {getPlatformInfo(editModalRes.ota_provider).name}</p>
+                {editModalRes.guest_email && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Mail className="h-3 w-3" />{editModalRes.guest_email}
+                  </p>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Départ</label>
-                <Input type="date" value={editDates.check_out} onChange={e => setEditDates(d => ({ ...d, check_out: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Arrivée</label>
+                  <Input type="date" value={editDates.check_in} onChange={e => setEditDates(d => ({ ...d, check_in: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Départ</label>
+                  <Input type="date" value={editDates.check_out} onChange={e => setEditDates(d => ({ ...d, check_out: e.target.value }))} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button className="flex-1" onClick={modifyDates}>
+                  <Mail className="h-4 w-4 mr-1" />Modifier & notifier
+                </Button>
+                <Button variant="destructive" onClick={() => { if (confirm(`Annuler la réservation de ${editModalRes.guest_name} ?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
+                  <XCircle className="h-4 w-4 mr-1" />Annuler
+                </Button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button className="flex-1" onClick={modifyDates}>
-                <Mail className="h-4 w-4 mr-1" />Modifier & notifier
-              </Button>
-              <Button variant="destructive" onClick={() => { if (confirm(`Annuler la réservation de ${editModalRes.guest_name} ?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
-                <XCircle className="h-4 w-4 mr-1" />Annuler
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
