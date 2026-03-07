@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { Home, FileText, Users, CreditCard, BarChart3, Shield, CheckCircle2, ArrowRight, Building2, Key } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
-import logoEasylocs from "@/assets/logo-easylocs.png";
+import AppLogo from "@/components/AppLogo";
 
 const COUNTRY_PAGES = [
   // Europe
