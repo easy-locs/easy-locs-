@@ -889,27 +889,34 @@ const RentalManagement = () => {
           </button>
           {/* Profile header — responsive: stacks on mobile */}
           <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
-                <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
+            <div className="detail-header">
+              <div className="detail-header-main">
+                <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
+                  <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
+                  <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
-                <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div className="detail-header-actions">
                 <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
                 </span>
                 {selectedTenant.tenant_user_id ? (
-                  <span className="text-xs text-success flex items-center gap-1 whitespace-nowrap"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                  <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
                 ) : (
-                  <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
-                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50 whitespace-nowrap">
+                  <button
+                    onClick={() => handleInviteTenant(selectedTenant)}
+                    disabled={invitingTenantId === selectedTenant.id}
+                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50"
+                  >
                     <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
                   </button>
                 )}
-                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" /> {L.editTenant}</button>
+                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1">
+                  <Edit className="h-3 w-3" /> {L.editTenant}
+                </button>
               </div>
             </div>
           </div>
