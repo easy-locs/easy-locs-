@@ -285,7 +285,7 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
             {propertiesByCountry.map((c) => (
               <Link
                 key={c.code}
-                to={`/dashboard/rental?tab=properties&country=${c.code}`}
+                to={`/dashboard/country/${c.code.toLowerCase()}`}
                 className={`group snap-start shrink-0 inline-flex items-center gap-2 min-w-[140px] max-w-[180px] px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                   hoveredCountry === c.code
                     ? "bg-accent/10 border-accent/40 shadow-sm text-foreground"
