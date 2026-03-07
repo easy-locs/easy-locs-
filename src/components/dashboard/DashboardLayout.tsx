@@ -277,9 +277,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="h-14 border-b border-border bg-card flex items-center px-4 sm:px-6 gap-3 sticky top-0 z-30">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <header className="h-14 border-b border-border bg-card flex items-center px-3 sm:px-6 gap-2 sm:gap-3 sticky top-0 z-30">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
