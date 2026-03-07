@@ -644,20 +644,22 @@ const RentalManagement = () => {
             <ArrowLeft className="h-3.5 w-3.5" /> {L.properties}
           </button>
 
-          {/* Header */}
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
-              <Home className="h-6 w-6 text-accent-foreground" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <span>{getFlag(selectedProperty.country)}</span>
-                {selectedProperty.label}
-              </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" />{L.editProperty}</button>
+          {/* Header — responsive */}
+          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
+                <Home className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2 flex-wrap">
+                  <span>{getFlag(selectedProperty.country)}</span>
+                  <span className="break-words">{selectedProperty.label}</span>
+                </h1>
+                <p className="text-sm text-muted-foreground flex items-center gap-1 break-words"><MapPin className="h-3 w-3 shrink-0" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button onClick={() => { startEditProperty(selectedProperty); setSelectedProperty(null); setActiveTab("properties"); }} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" />{L.editProperty}</button>
+              </div>
             </div>
           </div>
 
@@ -875,31 +877,35 @@ const RentalManagement = () => {
            <button onClick={() => setSelectedTenant(null)} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
              <ArrowLeft className="h-3.5 w-3.5" /> {L.tenants}
           </button>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center">
-              <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground">{selectedTenant.name}</h1>
-              <p className="text-sm text-muted-foreground">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
-            </div>
-            <div className="flex items-center gap-2">
-                 <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                   {isLeaseActive(selectedTenant) ? L.active : L.terminated}
-              </span>
-              {selectedTenant.tenant_user_id ? (
-                <span className="text-xs text-success flex items-center gap-1"><CheckCircle className="h-3 w-3" />{L.connected}</span>
-              ) : (
-                <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
-                  className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50">
-                  <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
-                </button>
-              )}
-              <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1"><Edit className="h-3 w-3" /> {L.editTenant}</button>
+          {/* Profile header — responsive: stacks on mobile */}
+          <div className="bg-card rounded-xl p-4 sm:p-6 shadow-card border border-border/50 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-gold flex items-center justify-center shrink-0">
+                <span className="text-lg font-bold text-accent-foreground">{selectedTenant.name[0]?.toUpperCase()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-foreground break-words">{selectedTenant.name}</h1>
+                <p className="text-sm text-muted-foreground break-words">{prop ? `${prop.label} — ${prop.address}, ${prop.city}` : L.noProperty}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${isLeaseActive(selectedTenant) ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                  {isLeaseActive(selectedTenant) ? L.active : L.terminated}
+                </span>
+                {selectedTenant.tenant_user_id ? (
+                  <span className="text-xs text-success flex items-center gap-1 whitespace-nowrap"><CheckCircle className="h-3 w-3" />{L.connected}</span>
+                ) : (
+                  <button onClick={() => handleInviteTenant(selectedTenant)} disabled={invitingTenantId === selectedTenant.id}
+                    className="text-xs text-accent hover:underline flex items-center gap-1 disabled:opacity-50 whitespace-nowrap">
+                    <Link2 className="h-3 w-3" />{invitingTenantId === selectedTenant.id ? L.sending : L.invite}
+                  </button>
+                )}
+                <button onClick={() => startEditTenant(selectedTenant)} className="text-xs text-accent hover:underline flex items-center gap-1 whitespace-nowrap"><Edit className="h-3 w-3" /> {L.editTenant}</button>
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">
+          {/* Tabs — horizontal scroll on mobile */}
+          <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-thin">
             {([
                { key: "info" as const, label: L.overview, icon: FileText },
                { key: "payments" as const, label: L.payments, icon: Euro },
@@ -907,8 +913,8 @@ const RentalManagement = () => {
                { key: "documents" as const, label: "Documents", icon: Upload },
             ]).map((tab) => (
               <button key={tab.key} onClick={() => { setTenantTab(tab.key); if (tab.key === "messages") loadMessages(selectedTenant.id); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors flex-1 justify-center ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                <tab.icon className="h-4 w-4" />{tab.label}
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${tenantTab === tab.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                <tab.icon className="h-4 w-4 shrink-0" />{tab.label}
               </button>
             ))}
           </div>
