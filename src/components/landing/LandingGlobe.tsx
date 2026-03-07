@@ -3,7 +3,15 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import { ErrorBoundary } from "react-error-boundary";
+import { Component, type ReactNode } from "react";
+
+/* Simple error boundary */
+class GlobeErrorBoundary extends Component<{ children: ReactNode; onError?: () => void; fallback: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch() { this.props.onError?.(); }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+}
 
 /* ── Rotating Earth ── */
 function EarthSphere() {
