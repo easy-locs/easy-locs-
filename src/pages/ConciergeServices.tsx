@@ -219,7 +219,7 @@ const ConciergeServices = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
             {showcaseUrl && (
               <Button variant="outline" size="sm" onClick={() => {
                 navigator.clipboard.writeText(window.location.origin + showcaseUrl);
