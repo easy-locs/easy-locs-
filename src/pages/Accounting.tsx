@@ -270,23 +270,11 @@ const Accounting = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><ArrowUpRight className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.revenue_month") || "Revenus (mois)"}</span></div>
-            <p className="text-2xl font-bold text-accent">{totalCredits.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><ArrowDownRight className="h-4 w-4 text-destructive" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.expenses_month") || "Dépenses (mois)"}</span></div>
-            <p className="text-2xl font-bold text-destructive">{totalDebits.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.net_result") || "Résultat net"}</span></div>
-            <p className={`text-2xl font-bold ${netIncome >= 0 ? "text-accent" : "text-destructive"}`}>{netIncome.toLocaleString()} {sym}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">{t("page.accounting.total_entries") || "Écritures"}</span></div>
-            <p className="text-2xl font-bold text-foreground">{allTransactions.length}</p>
-          </CardContent></Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard icon={ArrowUpRight} iconClassName="text-accent" label={t("page.accounting.revenue_month")} value={`${totalCredits.toLocaleString()} ${sym}`} />
+          <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label={t("page.accounting.expenses_month")} value={`${totalDebits.toLocaleString()} ${sym}`} valueClassName="text-destructive" />
+          <StatCard icon={DollarSign} label={t("page.accounting.net_result")} value={`${netIncome.toLocaleString()} ${sym}`} valueClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} />
+          <StatCard icon={BookOpen} label={t("page.accounting.total_entries")} value={String(allTransactions.length)} />
         </div>
 
         <Tabs defaultValue="journal">
