@@ -1,6 +1,10 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import RoleCards from "@/components/landing/RoleCards";
+import WorldMapSection from "@/components/landing/WorldMapSection";
 import Features from "@/components/landing/Features";
+import AISection from "@/components/landing/AISection";
+import StatsSection from "@/components/landing/StatsSection";
 import Pricing from "@/components/landing/Pricing";
 import LegalDisclaimer from "@/components/landing/LegalDisclaimer";
 import Newsletter from "@/components/landing/Newsletter";
@@ -13,7 +17,7 @@ const jsonLd = {
   name: "Easy-Locs",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Property management software for landlords worldwide. Manage leases, receipts, tenants, and accounting in 110+ countries.",
+  description: "Global property management platform for landlords, tenants and concierge professionals. Manage leases, receipts, bookings in 110+ countries.",
   url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl"],
   offers: {
@@ -52,15 +56,19 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Easy-Locs — Property Management Software | 110+ Countries"
-        description="All-in-one rental management for landlords worldwide. Leases, receipts, tenant portal, accounting. Free to start. Available in 31 languages."
+        title="Easy-Locs — Global Property Management Platform | 110+ Countries"
+        description="All-in-one platform for property management, tenant portals, seasonal rentals and concierge services worldwide. Free to start."
         canonical="https://www.easy-locs.com/"
         jsonLd={jsonLd}
         hreflangAlternates={hreflangAlternates}
       />
       <Navbar />
       <Hero />
+      <RoleCards />
+      <WorldMapSection />
       <Features />
+      <AISection />
+      <StatsSection />
       <Pricing />
       <LegalDisclaimer />
       <Newsletter />
