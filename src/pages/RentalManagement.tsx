@@ -651,7 +651,7 @@ const RentalManagement = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <span>{COUNTRY_FLAGS[selectedProperty.country] || "🌍"}</span>
+                <span>{getFlag(selectedProperty.country)}</span>
                 {selectedProperty.label}
               </h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
