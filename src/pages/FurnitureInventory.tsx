@@ -11,7 +11,7 @@ interface FurnitureItem {
   id: string; property_id: string; room_name: string; item_name: string;
   quantity: number; condition: string; notes: string; photo_url: string | null;
 }
-interface Property { id: string; label: string; furnished: boolean | null; }
+interface Property { id: string; label: string; furnished: boolean | null; country: string; }
 
 const PRESET_FURNITURE: Record<string, string[]> = {
   salon: [
@@ -96,7 +96,7 @@ const FurnitureInventory = () => {
     if (!orgId) return;
     const [{ data: f }, { data: p }] = await Promise.all([
       supabase.from("furniture_items").select("*").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, furnished").eq("org_id", orgId).order("label"),
+      supabase.from("properties").select("id, label, furnished, country").eq("org_id", orgId).order("country").order("label"),
     ]);
     if (f) setItems(f as FurnitureItem[]);
     if (p) setProperties(p as Property[]);
@@ -190,6 +190,15 @@ const FurnitureInventory = () => {
   const grouped = filtered.reduce((acc, item) => { if (!acc[item.room_name]) acc[item.room_name] = []; acc[item.room_name].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
   const condLabel = (c: string) => CONDITIONS.find(x => x.value === c)?.label || c;
   const groupedByProp = items.reduce((acc, item) => { if (!acc[item.property_id]) acc[item.property_id] = []; acc[item.property_id].push(item); return acc; }, {} as Record<string, FurnitureItem[]>);
+
+  // Group properties by country
+  const countryCodes: Record<string, string> = { FR: "🇫🇷", DE: "🇩🇪", ES: "🇪🇸", IT: "🇮🇹", PT: "🇵🇹", GB: "🇬🇧", BE: "🇧🇪", CH: "🇨🇭", AT: "🇦🇹", NL: "🇳🇱", LU: "🇱🇺", IE: "🇮🇪", PL: "🇵🇱", CZ: "🇨🇿", SK: "🇸🇰", HU: "🇭🇺", RO: "🇷🇴", BG: "🇧🇬", HR: "🇭🇷", GR: "🇬🇷", DK: "🇩🇰", SE: "🇸🇪", NO: "🇳🇴", FI: "🇫🇮" };
+  const propsByCountry = properties.reduce((acc, p) => {
+    const c = (p.country || "XX").toUpperCase();
+    if (!acc[c]) acc[c] = [];
+    acc[c].push(p);
+    return acc;
+  }, {} as Record<string, Property[]>);
 
   const loadImageBase64 = async (url: string): Promise<string | null> => {
     try {
@@ -323,10 +332,14 @@ const FurnitureInventory = () => {
         <div className="mb-4">
           <select value={selectedProp} onChange={e => { setSelectedProp(e.target.value); setForm(f => ({ ...f, property_id: e.target.value })); }} className="form-select w-auto">
             <option value="">{t("page.furniture.all_properties")}</option>
-            {properties.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.label} {p.furnished ? t("page.furniture.furnished") : ""} ({(groupedByProp[p.id] || []).length})
-              </option>
+            {Object.entries(propsByCountry).sort(([a], [b]) => a.localeCompare(b)).map(([country, countryProps]) => (
+              <optgroup key={country} label={`${countryCodes[country] || "🌍"} ${country}`}>
+                {countryProps.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.label} {p.furnished ? t("page.furniture.furnished") : ""} ({(groupedByProp[p.id] || []).length})
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -416,26 +429,37 @@ const FurnitureInventory = () => {
                 <p className="text-muted-foreground">{t("page.furniture.no_items")}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {properties.map(p => {
-                  const propItems = groupedByProp[p.id] || [];
-                  const roomCount = new Set(propItems.map(i => i.room_name)).size;
-                  return (
-                    <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
-                      className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-foreground">{p.label}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {p.furnished ? `${t("page.furniture.furnished")} · ` : ""}
-                            {propItems.length} {t("page.furniture.item").toLowerCase()}(s) · {roomCount} {t("page.furniture.room").toLowerCase()}(s)
-                          </p>
-                        </div>
-                        <Sofa className="h-5 w-5 text-accent/60" />
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="space-y-6">
+                {Object.entries(propsByCountry).sort(([a], [b]) => a.localeCompare(b)).map(([country, countryProps]) => (
+                  <div key={country}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">{countryCodes[country] || "🌍"}</span>
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{country}</h3>
+                      <span className="text-xs text-muted-foreground">({countryProps.length})</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {countryProps.map(p => {
+                        const propItems = groupedByProp[p.id] || [];
+                        const roomCount = new Set(propItems.map(i => i.room_name)).size;
+                        return (
+                          <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
+                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-foreground">{p.label}</h3>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {p.furnished ? `${t("page.furniture.furnished")} · ` : ""}
+                                  {propItems.length} {t("page.furniture.item").toLowerCase()}(s) · {roomCount} {t("page.furniture.room").toLowerCase()}(s)
+                                </p>
+                              </div>
+                              <Sofa className="h-5 w-5 text-accent/60" />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )
           ) : Object.keys(grouped).length === 0 ? (
