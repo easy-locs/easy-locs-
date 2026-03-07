@@ -13,10 +13,16 @@ import {
   ArrowRight, ArrowLeft, CheckCircle, Rocket, ScrollText, ClipboardList,
   Newspaper, CreditCard, ExternalLink, Loader2, Search
 } from "lucide-react";
+import CountrySelect from "@/components/ui/CountrySelect";
+import { getCountryFlag } from "@/lib/global-country-registry";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Company = () => {
   const { toast } = useToast();
   const { t } = useI18n();
+  const { orgId } = useAuth();
+  const countryFilter = useCountryFilter();
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [wizardMode, setWizardMode] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
@@ -27,7 +33,20 @@ const Company = () => {
   const [payingJAL, setPayingJAL] = useState(false);
   const [registeredAddress, setRegisteredAddress] = useState("");
   const [detectedDepartment, setDetectedDepartment] = useState("");
-  const companyTemplates = getTemplatesByCategory("company", "FR");
+  const [selectedCountry, setSelectedCountry] = useState<string>(countryFilter || "FR");
+
+  // Load user's country from profile
+  useEffect(() => {
+    if (countryFilter) { setSelectedCountry(countryFilter); return; }
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.id) {
+        supabase.from("profiles").select("country").eq("id", data.user.id).single()
+          .then(({ data: p }) => { if (p?.country) setSelectedCountry(p.country); });
+      }
+    });
+  }, [countryFilter]);
+
+  const companyTemplates = getTemplatesByCategory("company", selectedCountry as any);
 
   // Entity types for wizard
   const entityTypes = [
