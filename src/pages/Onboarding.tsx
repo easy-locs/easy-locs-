@@ -14,6 +14,7 @@ import { useI18n, type Locale } from "@/lib/i18n";
 import { getCountryEntry } from "@/lib/global-country-registry";
 import { Progress } from "@/components/ui/progress";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 
 type UserType = "landlord" | "tenant";
 type RentalMode = "long_term" | "short_term" | "mixed";
