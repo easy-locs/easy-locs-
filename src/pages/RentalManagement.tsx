@@ -24,6 +24,7 @@ import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-gener
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import {
   Home, FileText, ChevronRight, Plus, Users, Send, X,
   Phone, MapPin, Calendar, Download, Receipt, ClipboardList,
@@ -41,20 +42,8 @@ type Tab = "dashboard" | "properties" | "tenants" | "payments" | "inventory";
 type TenantDetailTab = "info" | "messages" | "documents" | "payments";
 type LeaseFilter = "all" | "active" | "terminated";
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  FR: "🇫🇷", BE: "🇧🇪", ES: "🇪🇸", IT: "🇮🇹", DE: "🇩🇪", PT: "🇵🇹", NL: "🇳🇱", GB: "🇬🇧",
-  CH: "🇨🇭", AT: "🇦🇹", LU: "🇱🇺", PL: "🇵🇱", SE: "🇸🇪", DK: "🇩🇰", NO: "🇳🇴", FI: "🇫🇮",
-  GR: "🇬🇷", CZ: "🇨🇿", HU: "🇭🇺", RO: "🇷🇴", HR: "🇭🇷", IE: "🇮🇪", BG: "🇧🇬", SK: "🇸🇰",
-  US: "🇺🇸", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽", MA: "🇲🇦", TN: "🇹🇳", ZA: "🇿🇦", TR: "🇹🇷",
-  JP: "🇯🇵", AU: "🇦🇺", SG: "🇸🇬", AE: "🇦🇪", SA: "🇸🇦",
-};
-const COUNTRY_NAMES: Record<string, string> = {
-  FR: "France", BE: "Belgique", ES: "España", IT: "Italia", DE: "Deutschland", PT: "Portugal",
-  NL: "Nederland", GB: "United Kingdom", CH: "Suisse", AT: "Österreich", LU: "Luxembourg",
-  PL: "Polska", SE: "Sverige", DK: "Danmark", NO: "Norge", FI: "Suomi",
-  GR: "Ελλάδα", CZ: "Česko", HU: "Magyarország", RO: "România", HR: "Hrvatska",
-  IE: "Ireland", BG: "България", SK: "Slovensko",
-};
+const getFlag = (code: string) => getCountryEntryOrDefault(code).flag;
+const getCountryName = (code: string) => getCountryEntryOrDefault(code).name;
 
 // CONDITIONS_LABEL now uses i18n - see render usage
 const defaultPropertyForm = {
@@ -662,7 +651,7 @@ const RentalManagement = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <span>{COUNTRY_FLAGS[selectedProperty.country] || "🌍"}</span>
+                <span>{getFlag(selectedProperty.country)}</span>
                 {selectedProperty.label}
               </h1>
               <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selectedProperty.address}, {selectedProperty.postal_code} {selectedProperty.city}</p>
@@ -1087,7 +1076,7 @@ const RentalManagement = () => {
           </button>
           <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm">{COUNTRY_FLAGS[p.country] || "🌍"}</span>
+              <span className="text-sm">{getFlag(p.country)}</span>
               <span className="font-semibold text-foreground text-sm">{p.label}</span>
               <div className="badge-row">
                 {p.lot_number && <span className="bg-accent/10 text-accent">Lot {p.lot_number}</span>}
@@ -1433,7 +1422,7 @@ const RentalManagement = () => {
                         setTenantForm({ ...tenantForm, property_id: e.target.value || null, rent_amount: prop?.monthly_rent || tenantForm.rent_amount, charges_amount: prop?.monthly_charges || tenantForm.charges_amount, deposit_amount: prop?.deposit_amount || tenantForm.deposit_amount, lease_type: prop?.furnished ? "furnished" : tenantForm.lease_type });
                       }} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
                         <option value="">{L.selectProperty}</option>
-                        {properties.map(p => <option key={p.id} value={p.id}>{COUNTRY_FLAGS[(p as any).country || userCountry] || "🌍"} {p.label} — {p.address}</option>)}
+                        {properties.map(p => <option key={p.id} value={p.id}>{getFlag((p as any).country || userCountry)} {p.label} — {p.address}</option>)}
                       </select></div>
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.leaseType}</label>
                       <select value={tenantForm.lease_type} onChange={(e) => setTenantForm({ ...tenantForm, lease_type: e.target.value })} className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent">
@@ -1618,7 +1607,7 @@ const RentalManagement = () => {
                       const unpaid = propPayments.filter(p => !p.paid).sort((a, b) => a.month.localeCompare(b.month));
                       const paid = propPayments.filter(p => p.paid).sort((a, b) => b.month.localeCompare(a.month));
                       const propCountry = prop?.country?.toUpperCase() || "";
-                      const flag = COUNTRY_FLAGS[propCountry] || "🏠";
+                      const flag = getFlag(propCountry);
 
                       return (
                         <div key={propId} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">

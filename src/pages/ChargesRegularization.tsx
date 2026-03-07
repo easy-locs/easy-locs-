@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
@@ -13,9 +14,6 @@ import { exportToCSV } from "@/lib/csv-export";
 interface Tenant { id: string; name: string; charges_amount: number; property_id: string | null; }
 interface Property { id: string; label: string; monthly_charges: number; country: string; }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  FR: "🇫🇷", DE: "🇩🇪", ES: "🇪🇸", IT: "🇮🇹", PT: "🇵🇹", GB: "🇬🇧", BE: "🇧🇪", CH: "🇨🇭", AT: "🇦🇹", NL: "🇳🇱", LU: "🇱🇺", IE: "🇮🇪", PL: "🇵🇱", CZ: "🇨🇿", SK: "🇸🇰", HU: "🇭🇺", RO: "🇷🇴", BG: "🇧🇬", HR: "🇭🇷", GR: "🇬🇷", DK: "🇩🇰", SE: "🇸🇪", NO: "🇳🇴", FI: "🇫🇮",
-};
 
 const ChargesRegularization = () => {
   const { orgId, userCountry } = useAuth();
@@ -132,8 +130,8 @@ const ChargesRegularization = () => {
                  <div key={country} className="space-y-4">
                    {/* Country header */}
                    <div className="flex items-center gap-2 pt-2">
-                     <span className="text-lg">{COUNTRY_FLAGS[country] || "🌍"}</span>
-                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{country}</h3>
+                     <span className="text-lg">{getCountryEntryOrDefault(country).flag}</span>
+                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">{getCountryEntryOrDefault(country).name}</h3>
                    </div>
 
                    {Object.entries(propMap).map(([propId, { prop, tenantList }]) => {
