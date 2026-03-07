@@ -161,6 +161,14 @@
   select,
   textarea {
     @apply text-sm h-10;
+    color-scheme: inherit;
+  }
+
+  /* Dark mode native date/time input styling */
+  .dark input[type="date"],
+  .dark input[type="time"],
+  .dark input[type="datetime-local"] {
+    color-scheme: dark;
   }
 
   table {
