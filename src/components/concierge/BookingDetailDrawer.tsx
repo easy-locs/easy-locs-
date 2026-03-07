@@ -129,7 +129,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
 
         <div className="space-y-5 mt-4">
           {/* Status & Quick Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
             <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
               {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
