@@ -51,7 +51,7 @@ const defaultPropertyForm = {
   surface: 0, rooms: 0, heating: "individual-gas", furnished: false,
   monthly_rent: 0, monthly_charges: 0, deposit_amount: 0, notes: "", floor: undefined as number | undefined,
   building_name: "" as string, lot_number: "" as string, country: "FR" as string,
-  payment_day: 5,
+  payment_day: 1,
 };
 
 const defaultTenantForm = {
@@ -61,7 +61,7 @@ const defaultTenantForm = {
   notes: "", birth_date: null as string | null, birth_place: null as string | null,
   nationality: "" as string | null, profession: null as string | null,
   guarantor_name: null as string | null, guarantor_phone: null as string | null,
-  caf_apl_amount: 0, payment_day: 5,
+  caf_apl_amount: 0, payment_day: 1,
 };
 // EXPENSE_CATEGORIES now uses i18n - see render usage
 
@@ -243,7 +243,7 @@ const RentalManagement = () => {
       heating: p.heating, furnished: p.furnished, monthly_rent: p.monthly_rent,
       monthly_charges: p.monthly_charges, deposit_amount: p.deposit_amount, notes: p.notes,
       building_name: p.building_name || "", lot_number: p.lot_number || "",
-      country: p.country || userCountry, payment_day: 5,
+      country: p.country || userCountry, payment_day: 1,
     });
     setShowPropertyForm(true);
   };
@@ -370,7 +370,7 @@ const RentalManagement = () => {
       notes: t.notes, birth_date: t.birth_date ?? null, birth_place: t.birth_place ?? null,
       nationality: t.nationality ?? "Française", profession: t.profession ?? null,
       guarantor_name: t.guarantor_name ?? null, guarantor_phone: t.guarantor_phone ?? null,
-      caf_apl_amount: t.caf_apl_amount ?? 0, payment_day: 5,
+      caf_apl_amount: t.caf_apl_amount ?? 0, payment_day: 1,
     });
     setShowTenantForm(true);
     setSelectedTenant(null);
@@ -1439,7 +1439,7 @@ const RentalManagement = () => {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div><label className="block text-xs font-medium text-muted-foreground mb-1">{L.housingBenefit} ({tenantFormConfig.currencySymbol})</label><input type="number" value={tenantForm.caf_apl_amount || ""} onChange={(e) => setTenantForm({ ...tenantForm, caf_apl_amount: +e.target.value })} placeholder="0" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
-                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 {t("page.rental.payment_day_label")}</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 5} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="5" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
+                    <div><label className="block text-xs font-medium text-muted-foreground mb-1">📅 {t("page.rental.payment_day_label")}</label><input type="number" min={1} max={28} value={tenantForm.payment_day || 1} onChange={(e) => setTenantForm({ ...tenantForm, payment_day: +e.target.value })} placeholder="1" className="w-full bg-muted/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent" /></div>
                   </div>
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">{L.guarantor}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
