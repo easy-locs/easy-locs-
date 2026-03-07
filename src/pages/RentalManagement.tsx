@@ -1107,7 +1107,7 @@ const RentalManagement = () => {
             {propTenants.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {propTenants.map(t => (
-                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {t.name} {!isLeaseActive(t) && `(${L.terminated_label})`}
                   </span>
                 ))}
