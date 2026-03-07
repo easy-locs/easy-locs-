@@ -830,7 +830,7 @@ const RentalManagement = () => {
                          <p className="text-sm font-medium text-foreground">{inv.report_type === "entry" ? L.entry : L.exit} — {inv.report_date}</p>
                          {invTenant && <p className="text-xs text-muted-foreground">{L.tenant_label} : {invTenant.name}</p>}
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${inv.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                      <span className={`inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium ${inv.status === "completed" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {inv.status === "completed" ? L.completed : L.draft}
                       </span>
                     </div>
