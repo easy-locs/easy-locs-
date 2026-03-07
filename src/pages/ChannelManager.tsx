@@ -239,7 +239,7 @@ const ChannelManager = () => {
           user_id: user.id, org_id: org.id, type: "info",
           title: "🚫 Réservation annulée",
           message: `${res.guest_name} — ${res.check_in} → ${res.check_out}`,
-          link: "/channel-manager",
+          link: "/dashboard/channel-manager",
         });
       }
 
@@ -386,7 +386,7 @@ const ChannelManager = () => {
             <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/seasonal")}>
               <ArrowRight className="h-4 w-4 mr-1" />Locations saisonnières
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/dynamic-pricing")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/pricing")}>
               <TrendingUp className="h-4 w-4 mr-1" />Dynamic Pricing
             </Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
