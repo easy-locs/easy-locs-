@@ -275,13 +275,18 @@ export async function generateInventoryPDF(
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 283);
+    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 278);
     setFont(doc, "bold", 8, COLOR_PRIMARY);
-    doc.text("EASY-LOCS", PAGE_WIDTH / 2 - 8, 289);
+    const brandText = "EASY-LOCS";
+    const brandWidth = doc.getTextWidth(brandText);
+    const brandX = (PAGE_WIDTH - brandWidth) / 2;
+    doc.text(brandText, brandX, 284);
+    setFont(doc, "normal", 5, COLOR_PRIMARY);
+    doc.text("(R)", brandX + brandWidth + 1, 281.5);
     setFont(doc, "normal", 7, COLOR_MUTED);
-    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 289, { align: "right" });
+    doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 291, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
   }
 
   return doc;
