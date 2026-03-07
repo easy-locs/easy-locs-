@@ -93,12 +93,12 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     setLoading(false);
     if (error) {
       toast({ title: t("auth.login.invalid_code"), description: error.message, variant: "destructive" });
     } else {
-      await redirectAfterLogin();
+      await redirectAfterLogin(data.user?.id);
     }
   };
 
