@@ -633,7 +633,7 @@ const SeasonalRentals = () => {
                     setFocusedRequest({ ...focusedRequest, status: "approved" });
                     await load();
                   }}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+                  className="btn-success btn-sm"
                 >
                   <Check className="h-4 w-4" /> {t("page.seasonal.approve_btn")}
                 </button>
