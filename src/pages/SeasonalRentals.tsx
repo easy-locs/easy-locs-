@@ -662,6 +662,7 @@ const SeasonalRentals = () => {
             <div className="divide-y divide-border/50">
               {allRequests.map((req) => {
                 const nights = Math.max(1, Math.ceil((new Date(req.check_out).getTime() - new Date(req.check_in).getTime()) / 86400000));
+                const isActive = ["pending", "approved", "paid", "payment_pending"].includes(req.status);
                 return (
                   <div key={req.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
@@ -686,80 +687,141 @@ const SeasonalRentals = () => {
                           req.status === "paid" ? "badge-success" :
                           req.status === "approved" ? "badge-info" :
                           req.status === "rejected" ? "badge-danger" :
+                          req.status === "cancelled" ? "badge-danger" :
                           req.status === "payment_pending" ? "badge-warning" :
                           req.status === "pending" ? "badge-warning" :
                           "badge-neutral"
                         }`}>
-                          {req.status === "paid" ? "✅ " + (t("page.seasonal.status_paid") !== "page.seasonal.status_paid" ? t("page.seasonal.status_paid") : "Payé") :
-                           req.status === "approved" ? "📧 " + (t("page.seasonal.status_approved") !== "page.seasonal.status_approved" ? t("page.seasonal.status_approved") : "Approuvé") :
-                           req.status === "rejected" ? "❌ " + (t("page.seasonal.status_rejected") !== "page.seasonal.status_rejected" ? t("page.seasonal.status_rejected") : "Refusé") :
-                           req.status === "payment_pending" ? "⏳ " + (t("page.seasonal.status_payment_pending") !== "page.seasonal.status_payment_pending" ? t("page.seasonal.status_payment_pending") : "Paiement en attente") :
-                           req.status === "pending" ? "🔔 " + (t("page.seasonal.status_pending_label") !== "page.seasonal.status_pending_label" ? t("page.seasonal.status_pending_label") : "En attente") :
+                          {req.status === "paid" ? "✅ " + t("page.seasonal.status_paid") :
+                           req.status === "approved" ? "📧 " + t("page.seasonal.status_approved") :
+                           req.status === "rejected" ? "❌ " + t("page.seasonal.status_rejected") :
+                           req.status === "cancelled" ? "🚫 " + t("page.seasonal.status_cancelled_label") :
+                           req.status === "payment_pending" ? "⏳ " + t("page.seasonal.status_payment_pending") :
+                           req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
                            req.status}
                         </span>
                       </div>
                     </div>
-                    {req.status === "pending" && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {req.status === "pending" && (
+                        <>
+                          <button
+                            onClick={async () => {
+                              await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", req.id);
+                              if (orgId && user) {
+                                await supabase.from("seasonal_bookings").insert({
+                                  org_id: orgId, user_id: user.id, property_id: req.property_id,
+                                  guest_name: req.guest_name, guest_email: req.guest_email, guest_phone: req.guest_phone || "",
+                                  check_in: req.check_in, check_out: req.check_out, total_price: 0, cleaning_fee: 0, deposit_amount: 0,
+                                  notes: req.message || "", status: "confirmed",
+                                } as any);
+                              }
+                              const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
+                              const pricePerNight = listingData?.price_per_night || 0;
+                              const totalAmount = pricePerNight * nights;
+                              const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`);
+                              await supabase.functions.invoke("send-email", {
+                                body: {
+                                  to: req.guest_email,
+                                  subject: `✅ ${t("page.seasonal.approved_subject")} — ${listingData?.title || ""}`,
+                                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                                    <h2 style="color:#1a1a1a;text-align:center;">✅ ${t("page.seasonal.approved_heading")}</h2>
+                                    <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.approved_body").replace("{name}", req.guest_name).replace("{checkin}", req.check_in).replace("{checkout}", req.check_out)}</p>
+                                    <p style="text-align:center;margin:24px 0;">
+                                      <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
+                                    </p>
+                                    <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                                  </div>`,
+                                },
+                              });
+                              toast({ title: t("page.seasonal.request_approved") });
+                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
+                              await load();
+                            }}
+                            className="btn-success btn-sm"
+                          >
+                            <Check className="h-3.5 w-3.5" /> {t("page.seasonal.approve_btn")}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", req.id);
+                              await supabase.functions.invoke("send-email", {
+                                body: {
+                                  to: req.guest_email,
+                                  subject: `❌ ${t("page.seasonal.rejected_email_subject")}`,
+                                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                                    <h2 style="color:#1a1a1a;text-align:center;">❌ ${t("page.seasonal.rejected_email_heading")}</h2>
+                                    <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.rejected_email_body").replace("{name}", req.guest_name).replace("{checkin}", req.check_in).replace("{checkout}", req.check_out)}</p>
+                                    <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                                  </div>`,
+                                },
+                              });
+                              toast({ title: t("page.seasonal.request_rejected") });
+                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
+                            }}
+                            className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
+                          >
+                            <X className="h-3.5 w-3.5" /> {t("page.seasonal.reject_btn")}
+                          </button>
+                        </>
+                      )}
+                      {isActive && req.status !== "pending" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setFocusedRequest(req);
+                              setEditingRequestDates({ check_in: req.check_in, check_out: req.check_out });
+                              setShowEditRequestModal(true);
+                            }}
+                            className="btn-secondary btn-sm"
+                          >
+                            <Edit className="h-3.5 w-3.5" /> {t("page.seasonal.modify_dates_btn")}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm(t("page.seasonal.confirm_cancel"))) return;
+                              await supabase.from("booking_requests").update({ status: "cancelled" } as any).eq("id", req.id);
+                              // Also remove corresponding seasonal_booking
+                              if (orgId) {
+                                await supabase.from("seasonal_bookings").delete()
+                                  .eq("org_id", orgId).eq("property_id", req.property_id)
+                                  .eq("check_in", req.check_in).eq("check_out", req.check_out)
+                                  .eq("guest_name", req.guest_name);
+                              }
+                              await supabase.functions.invoke("send-email", {
+                                body: {
+                                  to: req.guest_email,
+                                  subject: `🚫 ${t("page.seasonal.cancelled_email_subject")}`,
+                                  html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                                    <h2 style="color:#dc2626;text-align:center;">🚫 ${t("page.seasonal.cancelled_email_heading")}</h2>
+                                    <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.cancelled_email_body").replace("{name}", req.guest_name).replace("{checkin}", req.check_in).replace("{checkout}", req.check_out)}</p>
+                                    <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                                  </div>`,
+                                },
+                              });
+                              toast({ title: t("page.seasonal.request_cancelled") });
+                              setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "cancelled" } : r));
+                              await load();
+                            }}
+                            className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
+                          >
+                            <X className="h-3.5 w-3.5" /> {t("page.seasonal.cancel_booking_btn")}
+                          </button>
+                        </>
+                      )}
+                      {!isActive && req.status !== "pending" && (
                         <button
                           onClick={async () => {
-                            await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", req.id);
-                            // Create seasonal_booking for calendar
-                            if (orgId && user) {
-                              await supabase.from("seasonal_bookings").insert({
-                                org_id: orgId,
-                                user_id: user.id,
-                                property_id: req.property_id,
-                                guest_name: req.guest_name,
-                                guest_email: req.guest_email,
-                                guest_phone: req.guest_phone || "",
-                                check_in: req.check_in,
-                                check_out: req.check_out,
-                                total_price: 0,
-                                cleaning_fee: 0,
-                                deposit_amount: 0,
-                                notes: req.message || "",
-                                status: "confirmed",
-                              } as any);
-                            }
-                            const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
-                            const pricePerNight = listingData?.price_per_night || 0;
-                            const totalAmount = pricePerNight * nights;
-                            const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`);
-                            await supabase.functions.invoke("send-email", {
-                              body: {
-                                to: req.guest_email,
-                                subject: `✅ ${t("page.seasonal.approved_subject")} — ${listingData?.title || ""}`,
-                                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                                  <h2 style="color:#1a1a1a;text-align:center;">✅ ${t("page.seasonal.approved_heading")}</h2>
-                                  <p style="color:#555;font-size:15px;text-align:center;">${t("page.seasonal.approved_body").replace("{name}", req.guest_name).replace("{checkin}", req.check_in).replace("{checkout}", req.check_out)}</p>
-                                  <p style="text-align:center;margin:24px 0;">
-                                    <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
-                                  </p>
-                                  <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
-                                </div>`,
-                              },
-                            });
-                            toast({ title: t("page.seasonal.request_approved") });
-                            setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "approved" } : r));
-                            await load();
-                          }}
-                          className="btn-success btn-sm"
-                        >
-                          <Check className="h-3.5 w-3.5" /> {t("page.seasonal.approve_btn")}
-                        </button>
-                        <button
-                          onClick={async () => {
-                            await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", req.id);
-                            toast({ title: t("page.seasonal.request_rejected") });
-                            setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "rejected" } : r));
+                            await supabase.from("booking_requests").delete().eq("id", req.id);
+                            toast({ title: t("page.seasonal.booking_deleted") });
+                            setAllRequests(prev => prev.filter(r => r.id !== req.id));
                           }}
                           className="btn-secondary btn-sm border-destructive text-destructive hover:bg-destructive/10"
                         >
-                          <X className="h-3.5 w-3.5" /> {t("page.seasonal.reject_btn")}
+                          <Trash2 className="h-3.5 w-3.5" /> {t("page.seasonal.delete_btn")}
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 );
               })}
