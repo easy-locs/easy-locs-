@@ -4068,7 +4068,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.dunning": "Dunning", "nav.furniture": "Furniture", "nav.charges": "Charges Regularization",
     "nav.fiscal": "Tax Report", "nav.company": "Company", "nav.interventions": "Interventions",
     "nav.tasks": "Tasks", "nav.notes": "Notes", "nav.messages": "Messages",
-    "nav.billing": "Billing", "nav.logout": "Log out",
+    "nav.billing": "Billing", "nav.logout": "Log out", "nav.channel_manager": "Channel Manager",
     "section.essential": "ESSENTIALS", "section.rental": "RENTAL", "section.more": "MORE",
     "badge.landlord": "Landlord area", "badge.tenant": "Tenant area",
     "dashboard.hello": "Hello 👋", "dashboard.summary": "Here's an overview of your situation.",
