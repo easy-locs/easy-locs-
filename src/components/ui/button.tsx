@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap leading-none text-sm font-semibold ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex max-w-full items-center justify-center gap-2 text-center leading-tight text-sm font-semibold whitespace-normal sm:whitespace-nowrap ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -17,9 +17,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-[var(--input-height)] px-4 rounded-[var(--btn-radius)]",
-        sm: "h-[var(--input-height-sm)] px-3 rounded-[0.5rem]",
-        lg: "h-12 px-6 rounded-[var(--btn-radius)]",
+        default: "min-h-[var(--input-height)] h-auto px-4 py-2 rounded-[var(--btn-radius)]",
+        sm: "min-h-[var(--input-height-sm)] h-auto px-3 py-1.5 rounded-[0.5rem]",
+        lg: "min-h-12 h-auto px-6 py-2.5 rounded-[var(--btn-radius)]",
         icon: "h-[var(--input-height)] w-[var(--input-height)] rounded-[0.5rem]",
       },
     },

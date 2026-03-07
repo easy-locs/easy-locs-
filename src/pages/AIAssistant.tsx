@@ -370,7 +370,7 @@ const AIAssistant = () => {
         </motion.div>
 
         <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="w-full mb-6 bg-muted/50 p-1 rounded-xl grid grid-cols-3">
+          <TabsList className="w-full mb-6 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger value="chat" className="rounded-lg text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <BrainCircuit className="h-4 w-4 mr-1.5 hidden sm:inline" />
               Assistant
