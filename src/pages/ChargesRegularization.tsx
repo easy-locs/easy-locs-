@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calculator, Download, AlertTriangle, Euro, Users } from "lucide-react";
