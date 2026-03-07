@@ -36,6 +36,7 @@ const Finances = lazy(() => import("./pages/Finances"));
 const Interventions = lazy(() => import("./pages/Interventions"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const Messages = lazy(() => import("./pages/Messages"));
+const CommunicationCenter = lazy(() => import("./pages/CommunicationCenter"));
 const ChargesRegularization = lazy(() => import("./pages/ChargesRegularization"));
 const FiscalReport = lazy(() => import("./pages/FiscalReport"));
 const Expenses = lazy(() => import("./pages/Expenses"));
