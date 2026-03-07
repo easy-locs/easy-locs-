@@ -320,7 +320,7 @@ const Finances = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-green-500" },
+            { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-success" },
             { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },
             { icon: PiggyBank, label: t("page.finances.total_collected"), value: dataLoading ? "..." : fmt(kpis.totalRevenue), sub: `${t("page.finances.on")} ${fmt(kpis.totalExpected)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-accent" },
             { icon: Wallet, label: t("page.finances.total_expenses"), value: dataLoading ? "..." : fmt(kpis.totalExpenses), sub: `${filteredExpenses.length} ${t("page.finances.expense_count")}`, path: "/dashboard/expenses", iconClassName: "text-destructive" },
