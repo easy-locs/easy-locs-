@@ -228,7 +228,7 @@ const PublicListing = () => {
             <div className="flex flex-wrap gap-4 text-sm">
               {listing.price_per_night > 0 && (
                 <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-1.5 rounded-full font-medium">
-                  <Euro className="h-4 w-4" /> {listing.price_per_night}€ {t("page.listing.per_night")}
+                  <Euro className="h-4 w-4" /> <span className="currency-value whitespace-nowrap">{listing.price_per_night} €</span> {t("page.listing.per_night")}
                 </span>
               )}
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
