@@ -243,7 +243,7 @@ const Settings = () => {
         {/* MFA / 2FA */}
         <MFASettings />
 
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <PenTool className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.signature")}</h2>
@@ -254,27 +254,25 @@ const Settings = () => {
             value={profile.signature_url}
             onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))}
           />
-          <button onClick={saveProfile} disabled={saving}
-            className="mt-4 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+          <button onClick={saveProfile} disabled={saving} className="btn-primary mt-4">
             {saving ? t("page.settings.saving") : t("page.settings.save_signature")}
           </button>
         </div>
 
         {/* Data Import */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.import_title")}</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">{t("page.settings.import_desc")}</p>
-          <Link to="/dashboard/import"
-            className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90">
+          <Link to="/dashboard/import" className="btn-primary inline-flex">
             <Upload className="h-4 w-4" /> {t("page.settings.import_cta")}
           </Link>
         </div>
 
         {/* White-label Branding */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">White-label / Branding</h2>
@@ -282,32 +280,32 @@ const Settings = () => {
           <p className="text-sm text-muted-foreground mb-4">Personnalisez l'apparence de vos documents et du portail locataire avec votre marque.</p>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Nom de marque</label>
+              <label className="form-label">Nom de marque</label>
               <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder="Ex: Mon Agence Immo"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="form-input" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="form-grid">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur principale</label>
+                <label className="form-label">Couleur principale</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))}
-                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
                   <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e"
-                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                    className="form-input font-mono" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Couleur accent</label>
+                <label className="form-label">Couleur accent</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))}
-                    className="w-10 h-10 rounded border border-border cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
                   <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227"
-                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
+                    className="form-input font-mono" />
                 </div>
               </div>
             </div>
             {(org.brand_name || org.brand_primary_color) && (
-              <div className="p-4 rounded-lg border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
+              <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
                 <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
                 <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>Aperçu du branding sur vos documents</p>
               </div>
@@ -322,25 +320,24 @@ const Settings = () => {
               } as any).eq("id", orgId);
               toast({ title: "Branding mis à jour" });
               setSavingBrand(false);
-            }} disabled={savingBrand}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+            }} disabled={savingBrand} className="btn-primary">
               {savingBrand ? t("page.settings.saving") : "Enregistrer le branding"}
             </button>
           </div>
         </div>
 
         {/* GDPR */}
-        <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+        <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Shield className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.gdpr_title")}</h2>
           </div>
-          <div className="space-y-4">
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+          <div className="space-y-3">
+            <button className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
               <p className="text-sm font-medium text-foreground">{t("page.settings.export_data")}</p>
               <p className="text-xs text-muted-foreground">{t("page.settings.export_desc")}</p>
             </button>
-            <button className="w-full text-left px-4 py-3 rounded-lg border border-destructive/30 hover:bg-destructive/5 transition-colors">
+            <button className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors">
               <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account")}</p>
               <p className="text-xs text-muted-foreground">{t("page.settings.delete_desc")}</p>
             </button>
