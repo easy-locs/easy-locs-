@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ══════ Global text safety — prevent letter-by-letter vertical breaking ══════ */
+*:not(code):not(pre):not(kbd) {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Profile/detail header — responsive pattern */
+.profile-header {
+  @apply flex flex-col sm:flex-row sm:items-center gap-4;
+}
+.profile-header .profile-info {
+  @apply flex-1 min-w-0;
+}
+.profile-header .profile-actions {
+  @apply flex flex-wrap items-center gap-2 shrink-0;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ══════════════════════════════════════════════════
