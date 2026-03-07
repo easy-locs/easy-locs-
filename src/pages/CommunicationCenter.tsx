@@ -707,9 +707,11 @@ const CommunicationCenter = () => {
                     {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                   </Button>
                   <AIGenerateButton
+                    task="guest_reply"
+                    taskContext={newMessage || "message du locataire"}
+                    onApply={(text) => setNewMessage(text)}
                     label="IA"
-                    onGenerated={(text) => setNewMessage(text)}
-                    prompt={`Génère une réponse professionnelle de bailleur pour : "${newMessage || "message du locataire"}". Court et poli.`}
+                    variant="icon"
                   />
                   <Button
                     onClick={handleSend}
