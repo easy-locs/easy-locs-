@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
+import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import logoEasyloc from "@/assets/logo-easylocs.png";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -12,7 +14,7 @@ import {
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Gift, Shield,
   Layers, BookOpen, Zap, Store, Code, ChevronDown,
-  FileCheck, CalendarRange, Handshake, MapPin,
+  FileCheck, CalendarRange, Handshake, MapPin, ArrowLeft, Globe,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
@@ -38,8 +40,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole } = useAuth();
   const { locale, setLocale, t, availableLocales } = useI18n();
   const { currentTier } = useSubscriptionGating();
+  const activeCountry = useCountryContext();
 
-  const navSections: NavSection[] = [
+  // Get country info for display
+  const countryEntry = activeCountry ? getCountryEntryOrDefault(activeCountry) : null;
+
+  // When inside a country, operational links get ?country=XX appended
+  const cPath = (path: string) => appendCountryToPath(path, activeCountry);
+
+  // ═══════════════════════════════════════════════════════
+  // NAVIGATION: Country-aware structure
+  // ═══════════════════════════════════════════════════════
+
+  const globalSections: NavSection[] = [
     {
       key: "dashboard",
       title: "Dashboard",
@@ -48,18 +61,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: LayoutDashboard, label: t("nav.dashboard") || "Tableau de bord", path: "/dashboard" },
       ],
     },
+  ];
+
+  // Operational sections — only shown when inside a country workspace
+  const countrySections: NavSection[] = [
     {
       key: "property",
       title: t("section.property") || "Gestion locative",
       icon: Home,
       items: [
-        { icon: Home, label: t("nav.properties") || "Biens", path: "/dashboard/rental" },
-        { icon: Building, label: t("nav.buildings") || "Immeubles", path: "/dashboard/buildings" },
-        { icon: Users, label: t("nav.tenants") || "Locataires", path: "/dashboard/tenants" },
-        { icon: KeyRound, label: t("nav.leases") || "Baux", path: "/dashboard/leases" },
-        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: "/dashboard/rental?tab=inventory" },
-        { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: "/dashboard/furniture" },
-        { icon: FileText, label: t("nav.documents") || "Documents", path: "/dashboard/documents" },
+        { icon: Home, label: t("nav.properties") || "Biens", path: cPath("/dashboard/rental") },
+        { icon: Building, label: t("nav.buildings") || "Immeubles", path: cPath("/dashboard/buildings") },
+        { icon: Users, label: t("nav.tenants") || "Locataires", path: cPath("/dashboard/tenants") },
+        { icon: KeyRound, label: t("nav.leases") || "Baux", path: cPath("/dashboard/leases") },
+        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: cPath("/dashboard/rental?tab=inventory") },
+        { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: cPath("/dashboard/furniture") },
+        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
       ],
     },
     {
@@ -67,13 +84,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Finance",
       icon: Wallet,
       items: [
-        { icon: Wallet, label: t("nav.finances") || "Finances", path: "/dashboard/finances" },
-        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: "/dashboard/expenses" },
-        { icon: Layers, label: t("nav.charges") || "Régul. charges", path: "/dashboard/charges" },
-        { icon: Bell, label: t("nav.notices") || "Avis d'échéance", path: "/dashboard/notices" },
-        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: "/dashboard/dunning" },
-        { icon: FileCheck, label: t("nav.fiscal") || "Bilan fiscal", path: "/dashboard/fiscal" },
-        { icon: BookOpen, label: t("nav.accounting") || "Comptabilité", path: "/dashboard/accounting" },
+        { icon: Wallet, label: t("nav.finances") || "Finances", path: cPath("/dashboard/finances") },
+        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: cPath("/dashboard/expenses") },
+        { icon: Layers, label: t("nav.charges") || "Régul. charges", path: cPath("/dashboard/charges") },
+        { icon: Bell, label: t("nav.notices") || "Avis d'échéance", path: cPath("/dashboard/notices") },
+        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: cPath("/dashboard/dunning") },
+        { icon: FileCheck, label: t("nav.fiscal") || "Bilan fiscal", path: cPath("/dashboard/fiscal") },
+        { icon: BookOpen, label: t("nav.accounting") || "Comptabilité", path: cPath("/dashboard/accounting") },
       ],
     },
     {
@@ -81,10 +98,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Communication",
       icon: MessageCircle,
       items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/messages" },
-        { icon: Clock, label: t("nav.reminders") || "Rappels", path: "/dashboard/reminders" },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: "/dashboard/tasks" },
-        { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: "/dashboard/candidates" },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/messages") },
+        { icon: Clock, label: t("nav.reminders") || "Rappels", path: cPath("/dashboard/reminders") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cPath("/dashboard/tasks") },
+        { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cPath("/dashboard/candidates") },
       ],
     },
     {
@@ -92,9 +109,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.rental") || "Saisonnier",
       icon: Calendar,
       items: [
-        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
-        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
-        { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
+        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: cPath("/dashboard/seasonal") },
+        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: cPath("/dashboard/channel-manager") },
+        { icon: Zap, label: t("nav.pricing") || "Tarification", path: cPath("/dashboard/pricing") },
       ],
     },
     {
@@ -102,9 +119,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: "Services",
       icon: Store,
       items: [
-        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: "/dashboard/local-services" },
+        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: cPath("/dashboard/local-services") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+      ],
+    },
+  ];
+
+  // Always-visible global sections (not country-dependent)
+  const alwaysSections: NavSection[] = [
+    {
+      key: "platform",
+      title: "Plateforme",
+      icon: Globe,
+      items: [
         { icon: Store, label: t("nav.marketplace") || "Marketplace", path: "/dashboard/marketplace" },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: "/dashboard/interventions" },
         { icon: Handshake, label: t("nav.collaboration") || "Collaboration", path: "/dashboard/collaboration" },
         { icon: Gift, label: t("nav.referrals") || "Parrainage", path: "/dashboard/referrals" },
       ],
@@ -121,25 +149,32 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
-  // Determine which sections should be open by default (active route inside)
-  const isItemActive = (item: NavItem) =>
-    location.pathname + location.search === item.path ||
-    (location.pathname === item.path && !item.path.includes("?"));
+  const navSections = activeCountry
+    ? [...globalSections, ...countrySections, ...alwaysSections]
+    : [...globalSections, ...alwaysSections];
+
+  // Determine active items
+  const isItemActive = (item: NavItem) => {
+    const currentFull = location.pathname + location.search;
+    if (currentFull === item.path) return true;
+    // Check path without query params
+    const itemBase = item.path.split("?")[0];
+    if (location.pathname === itemBase && !item.path.includes("?")) return true;
+    return false;
+  };
 
   const getDefaultOpen = () => {
     const open: Record<string, boolean> = {};
     for (const section of navSections) {
-      // Dashboard section is always "open" (single item, no collapsing needed visually)
       if (section.key === "dashboard") {
         open[section.key] = true;
         continue;
       }
       open[section.key] = section.items.some(isItemActive);
     }
-    // If nothing is active, open the first real section
     if (!Object.values(open).some(Boolean)) {
       open["dashboard"] = true;
-      open["property"] = true;
+      if (activeCountry) open["property"] = true;
     }
     return open;
   };
@@ -235,6 +270,42 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           )}
         </div>
 
+        {/* ═══ Country Context Banner ═══ */}
+        {activeCountry && countryEntry && (
+          <div className="px-3 py-2.5 border-b border-sidebar-border bg-sidebar-accent/30">
+            <Link
+              to="/dashboard"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors mb-1.5"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              {t("page.dashboard.world_map") || "Portefeuille mondial"}
+            </Link>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl leading-none">{countryEntry.flag}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-sidebar-foreground truncate">{countryEntry.name}</p>
+                <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
+                  {t("sidebar.workspace") || "Espace de travail"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ No-country hint ═══ */}
+        {!activeCountry && !isGlobalPage(location.pathname) && (
+          <div className="px-3 py-2.5 border-b border-sidebar-border bg-accent/5">
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 text-xs text-accent hover:underline"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              {t("sidebar.select_country") || "Sélectionnez un pays pour commencer"}
+            </Link>
+          </div>
+        )}
+
         {/* Scrollable nav */}
         <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin">
           {navSections.map((section) => {
@@ -243,7 +314,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             const isSingleItem = section.key === "dashboard";
 
             if (isSingleItem) {
-              // Render single dashboard link without collapsible wrapper
               const item = section.items[0];
               const active = isItemActive(item);
               return (
@@ -266,7 +336,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
             return (
               <div key={section.key} className="mb-1">
-                {/* Section header — clickable to toggle */}
                 <button
                   onClick={() => toggleSection(section.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors ${
@@ -284,7 +353,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   />
                 </button>
 
-                {/* Collapsible items */}
                 <div
                   className={`overflow-hidden transition-all duration-200 ease-in-out ${
                     isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
@@ -354,6 +422,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
+
+          {/* Country breadcrumb in header */}
+          {activeCountry && countryEntry && (
+            <div className="hidden sm:flex items-center gap-2 text-sm">
+              <span className="text-lg">{countryEntry.flag}</span>
+              <span className="font-semibold text-foreground">{countryEntry.name}</span>
+            </div>
+          )}
+
           <div className="flex-1" />
           {/* Language selector */}
           <div className="relative">
