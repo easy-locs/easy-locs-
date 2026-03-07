@@ -23,12 +23,13 @@ import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 import { getCountryProfile, formatPropertyCurrency } from "@/lib/country-profile";
 
 const Accounting = () => {
+  const countryFilter = useCountryFilter();
   const { user } = useAuth();
   const { t } = useI18n();
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
-  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState(countryFilter || "all");
   const [newEntry, setNewEntry] = useState({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
 
   const { data: org } = useQuery({
