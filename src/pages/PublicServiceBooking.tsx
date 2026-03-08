@@ -15,6 +15,16 @@ import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
+
 const PublicServiceBooking = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -372,7 +382,7 @@ const PublicServiceBooking = () => {
                     <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value)))} />
                     {quantity > 1 && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {quantity} × {service.price} {service.currency || "EUR"} = <strong>{(service.price * quantity).toLocaleString()} {service.currency || "EUR"}</strong>
+                        {quantity} × {fmtPrice(service.price, service.currency)} = <strong>{fmtPrice(service.price * quantity, service.currency)}</strong>
                       </p>
                     )}
                   </div>
@@ -412,7 +422,7 @@ const PublicServiceBooking = () => {
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
                     <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "stripe" ? `Pay ${(service.price * quantity).toLocaleString()} ${(service.currency || "EUR").toUpperCase()}` : "Confirm Booking"}
+                      {paymentMethod === "stripe" ? `Pay ${fmtPrice(service.price * quantity, service.currency)}` : "Confirm Booking"}
                     </Button>
                   </div>
                 </div>
@@ -451,14 +461,14 @@ const PublicServiceBooking = () => {
                   {quantity > 1 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Quantity</span>
-                      <span className="text-foreground">{quantity} × {service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                      <span className="text-foreground">{quantity} × {fmtPrice(service.price, service.currency)}</span>
                     </div>
                   )}
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="text-2xl font-bold text-accent">{(service.price * quantity).toLocaleString()} {(service.currency || "EUR").toUpperCase()}</span>
+                    <span className="text-2xl font-bold text-accent">{fmtPrice(service.price * quantity, service.currency)}</span>
                   </div>
                 </CardContent>
               </Card>
