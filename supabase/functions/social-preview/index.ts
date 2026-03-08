@@ -185,7 +185,7 @@ async function handleHost(slug: string, shareUrl: string): Promise<Response> {
   });
 }
 
-async function handleProvider(slug: string): Promise<Response> {
+async function handleProvider(slug: string, shareUrl: string): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
@@ -211,9 +211,9 @@ async function handleProvider(slug: string): Promise<Response> {
   const image = withCacheBust(rawImage, provider.updated_at || firstService?.updated_at || null);
   const title = `${provider.display_name} — Services | Easy-Locs`.slice(0, 60);
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
-  const url = `${APP_URL}/provider/${slug}`;
+  const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "profile" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
     status: 200,
     headers: buildHeaders(),
   });
