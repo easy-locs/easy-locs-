@@ -77,17 +77,6 @@ const CountryWorkspace = () => {
       ],
     },
     {
-      title: "Marketplace & Services",
-      description: "Services, réservations et conciergerie",
-      items: [
-        { icon: Store, label: "Marketplace", path: "/dashboard/activities", count: stats.services },
-        { icon: Handshake, label: "Conciergerie", path: "/dashboard/concierge" },
-        { icon: CalendarCheck, label: "Réservations", path: "/dashboard/operations", count: stats.bookings },
-        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
-      ],
-    },
-    {
       title: "Location saisonnière",
       description: "Annonces, calendrier et tarification",
       items: [
@@ -118,6 +107,7 @@ const CountryWorkspace = () => {
         { icon: Clock, label: t("nav.reminders") || "Rappels", path: cp("/dashboard/reminders") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cp("/dashboard/tasks") },
         { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cp("/dashboard/candidates") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
       ],
     },
   ];
