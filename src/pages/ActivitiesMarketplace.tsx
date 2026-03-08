@@ -269,23 +269,18 @@ const ActivitiesMarketplace = () => {
     toast.success(`Booking ${status}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Send email notification for status changes
-    if (booking?.booker_email) {
+    // Sync status change to communication center (notification + message + email)
+    if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
-      const statusLabels: Record<string, string> = {
-        confirmed: "✅ Confirmed",
-        cancelled: "❌ Cancelled",
-        completed: "✅ Completed",
-      };
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: booking.booker_email,
-            subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
-            message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\n\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
-          },
-        });
-      } catch (e) { console.error("Email notification error:", e); }
+      const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
+      await syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
+        message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
+        category: status === "cancelled" ? "general" : "payment",
+      });
     }
   };
 
