@@ -82,6 +82,7 @@ const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace")
 const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
 const ConciergeShowcasePage = lazy(() => import("./components/concierge/ConciergeShowcase"));
+const ProviderStorefront = lazy(() => import("./components/marketplace/ProviderStorefront"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
@@ -138,6 +139,7 @@ const App = () => (
               <Route path="/guest" element={<GuestPortal />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/showcase/:orgSlug" element={<ConciergeShowcasePage />} />
+              <Route path="/provider/:providerSlug" element={<ProviderStorefront />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />

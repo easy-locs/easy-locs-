@@ -1,318 +1,505 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, X, Check, Compass, Star, Tag } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-
-const ACTIVITY_CATEGORIES = [
-  { value: "experience", label: "🌟 Experience" },
-  { value: "adventure", label: "🏜️ Adventure" },
-  { value: "water_sport", label: "🚤 Water Sport" },
-  { value: "city_tour", label: "🏛️ City Tour" },
-  { value: "museum", label: "🎨 Museum / Culture" },
-  { value: "theme_park", label: "🎢 Theme Park" },
-  { value: "restaurant", label: "🍽️ Restaurant" },
-  { value: "spa", label: "🧖 Spa & Wellness" },
-  { value: "car_rental", label: "🚗 Car Rental" },
-  { value: "luxury_car", label: "🏎️ Luxury Car" },
-  { value: "coworking", label: "💻 Coworking" },
-  { value: "event", label: "🎫 Event / Tickets" },
-  { value: "shopping", label: "🛍️ Shopping" },
-  { value: "visa", label: "📋 Visa Assistance" },
-  { value: "relocation", label: "🏠 Relocation" },
-  { value: "gym", label: "🏋️ Gym / Fitness" },
-  { value: "other", label: "📦 Other" },
-];
-
-const BADGES = ["new", "popular", "premium", "family", "business", "last_minute"];
-
-interface ActivityForm {
-  category: string;
-  title: string;
-  description: string;
-  price: number;
-  currency: string;
-  duration_minutes: number | null;
-  provider_name: string;
-  provider_type: string;
-  commission_percent: number;
-  country: string;
-  city: string;
-  badges: string[];
-  active: boolean;
-}
-
-const emptyForm: ActivityForm = {
-  category: "experience",
-  title: "",
-  description: "",
-  price: 0,
-  currency: "EUR",
-  duration_minutes: null,
-  provider_name: "",
-  provider_type: "internal",
-  commission_percent: 0,
-  country: "",
-  city: "",
-  badges: [],
-  active: true,
-};
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles } from "lucide-react";
+import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
+import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
+import ServiceCard from "@/components/marketplace/ServiceCard";
+import BookingsManager from "@/components/marketplace/BookingsManager";
+import BookingDialog from "@/components/marketplace/BookingDialog";
+import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
-  const { toast } = useToast();
-  const [activities, setActivities] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<ActivityForm>(emptyForm);
-  const [filterCategory, setFilterCategory] = useState("");
+  const qc = useQueryClient();
+  const [providerFormOpen, setProviderFormOpen] = useState(false);
+  const [serviceFormOpen, setServiceFormOpen] = useState(false);
+  const [editingService, setEditingService] = useState<any>(null);
+  const [bookingService, setBookingService] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCat, setFilterCat] = useState("all");
+  const [filterCountry, setFilterCountry] = useState("");
 
-  const load = useCallback(async () => {
-    if (!orgId) return;
-    const { data } = await supabase.from("activities").select("*").eq("org_id", orgId).order("sort_order");
-    setActivities(data || []);
-    setLoading(false);
-  }, [orgId]);
+  // --- My Provider Profile ---
+  const { data: myProvider } = useQuery({
+    queryKey: ["my_marketplace_provider", orgId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("marketplace_providers" as any)
+        .select("*")
+        .eq("org_id", orgId!)
+        .limit(1)
+        .single();
+      return data as any;
+    },
+    enabled: !!orgId,
+  });
 
-  useEffect(() => { load(); }, [load]);
+  // --- My Services ---
+  const { data: myServices = [] } = useQuery({
+    queryKey: ["my_marketplace_services", myProvider?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("marketplace_services" as any)
+        .select("*")
+        .eq("provider_id", myProvider!.id)
+        .order("sort_order");
+      return (data || []) as any[];
+    },
+    enabled: !!myProvider?.id,
+  });
 
-  const save = async () => {
-    if (!orgId || !user || !form.title) return;
-    const record = { ...form, org_id: orgId, user_id: user.id };
-    if (editingId) {
-      await supabase.from("activities").update(record as any).eq("id", editingId);
-      toast({ title: "Activity updated" });
-    } else {
-      await supabase.from("activities").insert(record as any);
-      toast({ title: "Activity created" });
+  // --- My Bookings (received) ---
+  const { data: myBookings = [] } = useQuery({
+    queryKey: ["my_marketplace_bookings", orgId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("marketplace_bookings" as any)
+        .select("*")
+        .eq("org_id", orgId!)
+        .order("created_at", { ascending: false });
+      return (data || []) as any[];
+    },
+    enabled: !!orgId,
+  });
+
+  // --- Browse all active services ---
+  const { data: allServices = [] } = useQuery({
+    queryKey: ["browse_marketplace_services", filterCat, filterCountry],
+    queryFn: async () => {
+      let q = supabase.from("marketplace_services" as any).select("*").eq("active", true);
+      if (filterCat !== "all") q = q.eq("category", filterCat);
+      if (filterCountry) q = q.ilike("country", `%${filterCountry}%`);
+      const { data } = await q.order("created_at", { ascending: false }).limit(100);
+      return (data || []) as any[];
+    },
+  });
+
+  // --- All providers for display ---
+  const { data: allProviders = [] } = useQuery({
+    queryKey: ["browse_marketplace_providers"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("marketplace_providers" as any)
+        .select("*")
+        .eq("active", true)
+        .order("rating", { ascending: false })
+        .limit(200);
+      return (data || []) as any[];
+    },
+  });
+
+  const providersMap = useMemo(() => {
+    const m: Record<string, any> = {};
+    allProviders.forEach((p: any) => { m[p.id] = p; });
+    return m;
+  }, [allProviders]);
+
+  const filteredServices = useMemo(() => {
+    if (!searchQuery) return allServices;
+    const q = searchQuery.toLowerCase();
+    return allServices.filter((s: any) =>
+      s.title?.toLowerCase().includes(q) || s.city?.toLowerCase().includes(q) || s.country?.toLowerCase().includes(q)
+    );
+  }, [allServices, searchQuery]);
+
+  // --- Mutations ---
+  const createProvider = useMutation({
+    mutationFn: async (data: any) => {
+      const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
+      const { error } = await supabase.from("marketplace_providers" as any).insert({
+        ...data,
+        slug,
+        user_id: user!.id,
+        org_id: orgId!,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Provider profile created!");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] });
+      setProviderFormOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateProvider = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase.from("marketplace_providers" as any).update(data).eq("id", myProvider!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Profile updated!");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_provider"] });
+      setProviderFormOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const createService = useMutation({
+    mutationFn: async (data: ServiceFormData) => {
+      const { error } = await supabase.from("marketplace_services" as any).insert({
+        ...data,
+        provider_id: myProvider!.id,
+        org_id: orgId!,
+        user_id: user!.id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Service created!");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
+      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
+      setServiceFormOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateService = useMutation({
+    mutationFn: async (data: ServiceFormData) => {
+      const { error } = await supabase.from("marketplace_services" as any).update(data).eq("id", editingService!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Service updated!");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
+      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
+      setServiceFormOpen(false);
+      setEditingService(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteService = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("marketplace_services" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Service deleted");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
+      qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
+    },
+  });
+
+  const submitBooking = useMutation({
+    mutationFn: async (formData: any) => {
+      const svc = bookingService;
+      const prov = providersMap[svc.provider_id];
+      const { error } = await supabase.from("marketplace_bookings" as any).insert({
+        service_id: svc.id,
+        provider_id: svc.provider_id,
+        org_id: prov?.org_id || svc.org_id,
+        booker_user_id: user?.id || null,
+        booker_name: formData.booker_name,
+        booker_email: formData.booker_email,
+        booker_phone: formData.booker_phone,
+        service_date: formData.service_date,
+        service_time: formData.service_time,
+        quantity: formData.quantity,
+        total_price: Number(svc.price) * formData.quantity,
+        currency: svc.currency,
+        notes: formData.notes,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Booking request sent!");
+      setBookingService(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateBookingStatus = async (id: string, status: string) => {
+    const updates: any = { status };
+    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
+    if (status === "completed") updates.completed_at = new Date().toISOString();
+    const { error } = await supabase.from("marketplace_bookings" as any).update(updates).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`Booking ${status}`);
+      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
     }
-    setShowForm(false);
-    setEditingId(null);
-    setForm(emptyForm);
-    await load();
   };
 
-  const startEdit = (a: any) => {
-    setEditingId(a.id);
-    setForm({
-      category: a.category,
-      title: a.title,
-      description: a.description || "",
-      price: a.price,
-      currency: a.currency || "EUR",
-      duration_minutes: a.duration_minutes,
-      provider_name: a.provider_name || "",
-      provider_type: a.provider_type || "internal",
-      commission_percent: a.commission_percent || 0,
-      country: a.country || "",
-      city: a.city || "",
-      badges: a.badges || [],
-      active: a.active,
-    });
-    setShowForm(true);
+  const sendPaymentLink = (booking: any) => {
+    const svc = myServices.find((s: any) => s.id === booking.service_id);
+    const link = svc?.payment_stripe_link || myProvider?.payment_stripe_link || svc?.payment_paypal_email || myProvider?.payment_paypal_email;
+    if (link) {
+      const mailLink = `mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`;
+      window.open(mailLink, "_blank");
+      supabase.from("marketplace_bookings" as any).update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
+        qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+      });
+    } else {
+      toast.error("No payment link configured");
+    }
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("activities").delete().eq("id", id);
-    toast({ title: "Activity deleted" });
-    await load();
+  const confirmPayment = async (id: string) => {
+    const { error } = await supabase.from("marketplace_bookings" as any).update({
+      payment_confirmed: true,
+      payment_confirmed_at: new Date().toISOString(),
+      payment_method: "manual",
+    }).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Payment confirmed!");
+      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+    }
   };
 
-  const toggleBadge = (badge: string) => {
-    setForm(f => ({
-      ...f,
-      badges: f.badges.includes(badge) ? f.badges.filter(b => b !== badge) : [...f.badges, badge],
-    }));
+  const storefrontUrl = myProvider?.slug
+    ? `${window.location.origin}/provider/${myProvider.slug}`
+    : null;
+
+  const shareStorefront = () => {
+    if (storefrontUrl) {
+      navigator.clipboard.writeText(storefrontUrl);
+      toast.success("Storefront link copied!");
+    }
   };
 
-  const filtered = filterCategory ? activities.filter(a => a.category === filterCategory) : activities;
+  // Stats
+  const totalBookings = myBookings.length;
+  const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
+  const totalRevenue = myBookings.filter((b: any) => b.payment_confirmed).reduce((s: number, b: any) => s + Number(b.total_price || 0), 0);
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Compass className="h-6 w-6 text-accent" /> Activities & Upsells
+              <Compass className="h-6 w-6 text-accent" /> Services Marketplace
             </h1>
-            <p className="text-sm text-muted-foreground">Manage experiences, activities, and upsell offers for guests</p>
+            <p className="text-muted-foreground text-sm">Global dynamic marketplace for activities & services</p>
           </div>
-          <button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }} className="btn-primary">
-            <Plus className="h-4 w-4" /> Add Activity
-          </button>
-        </div>
-
-        {/* Category filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button onClick={() => setFilterCategory("")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!filterCategory ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-            All ({activities.length})
-          </button>
-          {ACTIVITY_CATEGORIES.filter(c => activities.some(a => a.category === c.value)).map(c => (
-            <button key={c.value} onClick={() => setFilterCategory(c.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCategory === c.value ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-              {c.label}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 bg-card rounded-xl border border-border/50">
-            <Compass className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No activities yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">Create experiences and activities for your guests</p>
-            <button onClick={() => setShowForm(true)} className="btn-primary"><Plus className="h-4 w-4" /> Add Activity</button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((a, i) => (
-              <motion.div key={a.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-                className="bg-card rounded-xl border border-border/50 shadow-card overflow-hidden group">
-                {a.photo_url && (
-                  <div className="aspect-[16/9] bg-muted overflow-hidden">
-                    <img src={a.photo_url} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                  </div>
+          <div className="flex gap-2 flex-wrap">
+            {!myProvider ? (
+              <Button onClick={() => setProviderFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" /> Create Provider Profile
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setProviderFormOpen(true)}>Edit Profile</Button>
+                <Button onClick={() => setServiceFormOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" /> Add Service
+                </Button>
+                {storefrontUrl && (
+                  <Button variant="outline" size="sm" onClick={shareStorefront}>
+                    <Share2 className="h-4 w-4 mr-1" /> Share Storefront
+                  </Button>
                 )}
-                <div className="p-4 space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {(a.badges || []).map((b: string) => (
-                      <span key={b} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium uppercase">{b}</span>
-                    ))}
-                  </div>
-                  <h3 className="font-semibold text-foreground text-sm line-clamp-1">{a.title}</h3>
-                  {a.description && <p className="text-xs text-muted-foreground line-clamp-2">{a.description}</p>}
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-accent">{a.price}€</span>
-                    <span className="text-muted-foreground">{a.provider_type === "external" ? "External" : "Internal"}</span>
-                  </div>
-                  {a.commission_percent > 0 && (
-                    <p className="text-[10px] text-muted-foreground">Commission: {a.commission_percent}%</p>
-                  )}
-                  <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                    <button onClick={() => startEdit(a)} className="text-xs text-accent hover:underline flex items-center gap-1">
-                      <Edit className="h-3 w-3" /> Edit
-                    </button>
-                    <button onClick={() => remove(a.id)} className="text-xs text-destructive hover:underline flex items-center gap-1 ml-auto">
-                      <Trash2 className="h-3 w-3" /> Delete
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* KPIs */}
+        {myProvider && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Card><CardContent className="pt-4">
+              <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
+              <p className="text-2xl font-bold text-foreground">{myServices.length}</p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4">
+              <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
+              <p className="text-2xl font-bold text-foreground">{totalBookings}</p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4">
+              <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+              <p className="text-2xl font-bold text-foreground">{pendingBookings}</p>
+            </CardContent></Card>
+            <Card><CardContent className="pt-4">
+              <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
+              <p className="text-2xl font-bold text-foreground">{totalRevenue.toLocaleString()} €</p>
+            </CardContent></Card>
           </div>
         )}
 
-        {/* Form Modal */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-foreground">{editingId ? "Edit Activity" : "New Activity"}</h2>
-                  <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+        <Tabs defaultValue="browse">
+          <TabsList className="detail-tab-row">
+            <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
+            {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> My Services</TabsTrigger>}
+            {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Bookings</TabsTrigger>}
+          </TabsList>
+
+          {/* Browse Tab */}
+          <TabsContent value="browse" className="mt-4 space-y-4">
+            {/* Search & Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  placeholder="Search services, cities..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-10 w-full sm:w-40"
+                  placeholder="Country..."
+                  value={filterCountry}
+                  onChange={(e) => setFilterCountry(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button size="sm" variant={filterCat === "all" ? "default" : "outline"} onClick={() => setFilterCat("all")}>All</Button>
+              {MARKETPLACE_CATEGORIES.map((c) => (
+                <Button key={c.value} size="sm" variant={filterCat === c.value ? "default" : "outline"} onClick={() => setFilterCat(c.value)}>
+                  {c.icon} {c.label}
+                </Button>
+              ))}
+            </div>
+
+            {filteredServices.length === 0 ? (
+              <Card><CardContent className="py-12 text-center">
+                <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <p className="text-muted-foreground">No services found</p>
+                <p className="text-xs text-muted-foreground mt-1">Be the first to list a service!</p>
+              </CardContent></Card>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredServices.map((s: any) => (
+                  <ServiceCard
+                    key={s.id}
+                    service={s}
+                    provider={providersMap[s.provider_id]}
+                    onBook={() => setBookingService(s)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* My Services Tab */}
+          {myProvider && (
+            <TabsContent value="my-services" className="mt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{myServices.length} services listed</p>
+                {storefrontUrl && (
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={storefrontUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-1" /> View Storefront
+                    </a>
+                  </Button>
+                )}
+              </div>
+              {myServices.length === 0 ? (
+                <Card><CardContent className="py-12 text-center">
+                  <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No services yet</p>
+                  <Button className="mt-4" onClick={() => setServiceFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Your First Service
+                  </Button>
+                </CardContent></Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {myServices.map((s: any) => (
+                    <ServiceCard
+                      key={s.id}
+                      service={s}
+                      showActions
+                      onEdit={() => { setEditingService(s); setServiceFormOpen(true); }}
+                    />
+                  ))}
                 </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Category</label>
-                    <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground">
-                      {ACTIVITY_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Title *</label>
-                    <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Description</label>
-                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-none" rows={2} />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Price</label>
-                      <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Duration (min)</label>
-                      <input type="number" value={form.duration_minutes || ""} onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value ? Number(e.target.value) : null }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Commission %</label>
-                      <input type="number" value={form.commission_percent} onChange={e => setForm(f => ({ ...f, commission_percent: Number(e.target.value) }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Provider</label>
-                      <input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Type</label>
-                      <select value={form.provider_type} onChange={e => setForm(f => ({ ...f, provider_type: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground">
-                        <option value="internal">Internal</option>
-                        <option value="external">External</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Country</label>
-                      <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">City</label>
-                      <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Badges</label>
-                    <div className="flex flex-wrap gap-2">
-                      {BADGES.map(b => (
-                        <button key={b} type="button" onClick={() => toggleBadge(b)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${form.badges.includes(b) ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
-                          {b}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-2 text-sm text-foreground">
-                    <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
-                    Active
-                  </label>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
-                  <button onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
-                  <button onClick={save} disabled={!form.title} className="btn-primary">
-                    <Check className="h-4 w-4" /> {editingId ? "Update" : "Create"}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
+              )}
+            </TabsContent>
           )}
-        </AnimatePresence>
+
+          {/* Bookings Tab */}
+          {myProvider && (
+            <TabsContent value="bookings" className="mt-4">
+              <BookingsManager
+                bookings={myBookings}
+                services={myServices}
+                onUpdateStatus={updateBookingStatus}
+                onSendPaymentLink={sendPaymentLink}
+                onConfirmPayment={confirmPayment}
+              />
+            </TabsContent>
+          )}
+        </Tabs>
+
+        {/* Provider Form */}
+        <ProviderProfileForm
+          open={providerFormOpen}
+          onOpenChange={setProviderFormOpen}
+          initialData={myProvider ? {
+            provider_type: myProvider.provider_type,
+            company_name: myProvider.company_name || "",
+            display_name: myProvider.display_name,
+            bio: myProvider.bio || "",
+            email: myProvider.email || "",
+            phone: myProvider.phone || "",
+            whatsapp: myProvider.whatsapp || "",
+            website_url: myProvider.website_url || "",
+            country: myProvider.country,
+            city: myProvider.city,
+            address: myProvider.address || "",
+            categories: myProvider.categories || [],
+            payment_stripe_link: myProvider.payment_stripe_link || "",
+            payment_paypal_email: myProvider.payment_paypal_email || "",
+            payment_custom_url: myProvider.payment_custom_url || "",
+          } : undefined}
+          onSave={(data) => myProvider ? updateProvider.mutate(data) : createProvider.mutate(data)}
+          isPending={createProvider.isPending || updateProvider.isPending}
+        />
+
+        {/* Service Form */}
+        <ServiceForm
+          open={serviceFormOpen}
+          onOpenChange={(v) => { setServiceFormOpen(v); if (!v) setEditingService(null); }}
+          initialData={editingService ? {
+            title: editingService.title,
+            description: editingService.description || "",
+            category: editingService.category,
+            price: editingService.price,
+            currency: editingService.currency,
+            price_type: editingService.price_type,
+            duration_minutes: editingService.duration_minutes,
+            country: editingService.country,
+            city: editingService.city,
+            location: editingService.location || "",
+            max_capacity: editingService.max_capacity || 1,
+            payment_stripe_link: editingService.payment_stripe_link || "",
+            payment_paypal_email: editingService.payment_paypal_email || "",
+            payment_custom_url: editingService.payment_custom_url || "",
+            active: editingService.active,
+          } : undefined}
+          providerCountry={myProvider?.country}
+          providerCity={myProvider?.city}
+          onSave={(data) => editingService ? updateService.mutate(data) : createService.mutate(data)}
+          isPending={createService.isPending || updateService.isPending}
+        />
+
+        {/* Booking Dialog */}
+        {bookingService && (
+          <BookingDialog
+            open={!!bookingService}
+            onOpenChange={(v) => !v && setBookingService(null)}
+            service={bookingService}
+            provider={providersMap[bookingService.provider_id]}
+            onSubmit={(data) => submitBooking.mutate(data)}
+            isPending={submitBooking.isPending}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

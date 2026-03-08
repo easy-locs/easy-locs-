@@ -1575,6 +1575,322 @@ export type Database = {
           },
         ]
       }
+      marketplace_bookings: {
+        Row: {
+          booker_email: string
+          booker_name: string
+          booker_phone: string | null
+          booker_user_id: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          org_id: string
+          payment_confirmed: boolean | null
+          payment_confirmed_at: string | null
+          payment_link_sent: boolean | null
+          payment_method: string | null
+          property_id: string | null
+          provider_id: string
+          quantity: number | null
+          service_date: string | null
+          service_id: string
+          service_time: string | null
+          status: string
+          total_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          booker_email?: string
+          booker_name?: string
+          booker_phone?: string | null
+          booker_user_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          payment_confirmed?: boolean | null
+          payment_confirmed_at?: string | null
+          payment_link_sent?: boolean | null
+          payment_method?: string | null
+          property_id?: string | null
+          provider_id: string
+          quantity?: number | null
+          service_date?: string | null
+          service_id: string
+          service_time?: string | null
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          booker_email?: string
+          booker_name?: string
+          booker_phone?: string | null
+          booker_user_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          payment_confirmed?: boolean | null
+          payment_confirmed_at?: string | null
+          payment_link_sent?: boolean | null
+          payment_method?: string | null
+          property_id?: string | null
+          provider_id?: string
+          quantity?: number | null
+          service_date?: string | null
+          service_id?: string
+          service_time?: string | null
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_providers: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          avatar_url: string | null
+          bio: string | null
+          categories: string[]
+          city: string
+          company_name: string | null
+          country: string
+          cover_photo_url: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          org_id: string
+          payment_bank_details: Json | null
+          payment_custom_url: string | null
+          payment_paypal_email: string | null
+          payment_stripe_link: string | null
+          phone: string | null
+          provider_type: string
+          rating: number | null
+          reviews_count: number | null
+          slug: string
+          updated_at: string
+          user_id: string
+          verified: boolean | null
+          website_url: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          categories?: string[]
+          city?: string
+          company_name?: string | null
+          country?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          org_id: string
+          payment_bank_details?: Json | null
+          payment_custom_url?: string | null
+          payment_paypal_email?: string | null
+          payment_stripe_link?: string | null
+          phone?: string | null
+          provider_type?: string
+          rating?: number | null
+          reviews_count?: number | null
+          slug: string
+          updated_at?: string
+          user_id: string
+          verified?: boolean | null
+          website_url?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          categories?: string[]
+          city?: string
+          company_name?: string | null
+          country?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          org_id?: string
+          payment_bank_details?: Json | null
+          payment_custom_url?: string | null
+          payment_paypal_email?: string | null
+          payment_stripe_link?: string | null
+          phone?: string | null
+          provider_type?: string
+          rating?: number | null
+          reviews_count?: number | null
+          slug?: string
+          updated_at?: string
+          user_id?: string
+          verified?: boolean | null
+          website_url?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_providers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_services: {
+        Row: {
+          active: boolean | null
+          badges: string[] | null
+          blocked_dates: Json | null
+          category: string
+          city: string
+          country: string
+          created_at: string
+          currency: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          max_capacity: number | null
+          org_id: string
+          payment_bank_details: Json | null
+          payment_custom_url: string | null
+          payment_paypal_email: string | null
+          payment_stripe_link: string | null
+          photo_urls: Json | null
+          price: number
+          price_type: string
+          provider_id: string
+          sort_order: number | null
+          time_slots: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          badges?: string[] | null
+          blocked_dates?: Json | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          max_capacity?: number | null
+          org_id: string
+          payment_bank_details?: Json | null
+          payment_custom_url?: string | null
+          payment_paypal_email?: string | null
+          payment_stripe_link?: string | null
+          photo_urls?: Json | null
+          price?: number
+          price_type?: string
+          provider_id: string
+          sort_order?: number | null
+          time_slots?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          badges?: string[] | null
+          blocked_dates?: Json | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          max_capacity?: number | null
+          org_id?: string
+          payment_bank_details?: Json | null
+          payment_custom_url?: string | null
+          payment_paypal_email?: string | null
+          payment_stripe_link?: string | null
+          photo_urls?: Json | null
+          price?: number
+          price_type?: string
+          provider_id?: string
+          sort_order?: number | null
+          time_slots?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           attachment_url: string | null
