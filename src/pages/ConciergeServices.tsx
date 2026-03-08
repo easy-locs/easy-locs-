@@ -285,23 +285,23 @@ const ConciergeServices = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {[
             { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
             { icon: DollarSign, label: `Revenue (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
             { icon: TrendingUp, label: `Commission (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
             { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
-            { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
+            { icon: CreditCard, label: "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card>
+              <Card className="h-full">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <kpi.icon className={`h-4 w-4 ${kpi.cls}`} />
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <kpi.icon className={`h-4 w-4 shrink-0 ${kpi.cls}`} />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
                   </div>
-                  <p className="text-xl font-bold text-foreground tabular-nums">{kpi.value}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
