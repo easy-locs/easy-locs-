@@ -23,19 +23,18 @@ interface Props {
 const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
 
-  const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
-  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
+  // Single stable link for all platforms — edge function serves OG tags for crawlers, redirects browsers
+  const stableLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(publicLink);
+    await navigator.clipboard.writeText(stableLink);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
   const openShare = (platform: "whatsapp" | "telegram" | "email" | "sms") => {
-    const linkForPlatform = platform === "email" || platform === "sms" ? publicLink : socialLink;
-    const encoded = encodeURIComponent(linkForPlatform);
+    const encoded = encodeURIComponent(stableLink);
     const encodedTitle = encodeURIComponent(serviceTitle);
 
     const targets: Record<string, string> = {
