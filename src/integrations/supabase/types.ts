@@ -3971,6 +3971,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_service_availability: {
+        Args: { p_service_id: string }
+        Returns: {
+          end_time: string
+          quantity: number
+          service_date: string
+          service_time: string
+          status: string
+        }[]
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
