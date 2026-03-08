@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, Paperclip, StickyNote, Mail, Bell, MessageCircle } from "lucide-react";
+import { Send, Paperclip, StickyNote, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -115,6 +115,16 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
                 <p className="text-foreground whitespace-pre-line">
                   {m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}
                 </p>
+                {m.attachment_url && (
+                  <a
+                    href={m.attachment_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs underline text-accent"
+                  >
+                    <Paperclip className="h-3 w-3" /> Pièce jointe
+                  </a>
+                )}
               </div>
             );
           })

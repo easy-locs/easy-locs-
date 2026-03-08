@@ -7,7 +7,7 @@ import { Clock, Search, Filter } from "lucide-react";
 import BookingStatusBadge, { BOOKING_STATUSES, type BookingStatus } from "./BookingStatusBadge";
 import BookingDetailDrawer from "./BookingDetailDrawer";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
-import { syncToCommunicationCenter } from "./BookingsManager";
+import { syncToCommunicationCenter, uploadBookingInvoiceAttachment } from "./BookingsManager";
 import { format } from "date-fns";
 
 interface Props {
@@ -61,6 +61,24 @@ export default function BookingRequestCenter({
     if (!blob) return;
 
     const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
+
+    let attachmentUrl: string | undefined;
+    let attachmentName: string | undefined;
+
+    try {
+      const upload = await uploadBookingInvoiceAttachment({
+        blob,
+        orgId: booking.org_id || orgId,
+        bookingId: booking.id,
+        invoiceNumber: invoiceNum,
+        customerName: booking.booker_name,
+      });
+      attachmentUrl = upload.attachmentUrl;
+      attachmentName = upload.attachmentName;
+    } catch (error) {
+      console.error("Invoice attachment upload error:", error);
+    }
+
     await syncToCommunicationCenter({
       orgId: booking.org_id || orgId,
       userId: provider?.user_id,
@@ -68,6 +86,8 @@ export default function BookingRequestCenter({
       subject: `📄 Invoice ${invoiceNum}: ${svc?.title || "Service"}`,
       message: `Invoice generated for ${booking.booker_name}. Amount: ${Number(booking.total_price).toLocaleString()} ${booking.currency}`,
       category: "payment",
+      attachmentUrl,
+      attachmentName,
       meta: {
         event_type: "invoice_generated",
         booking_id: booking.id,
