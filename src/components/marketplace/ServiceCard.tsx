@@ -88,6 +88,9 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           {(service.badges || []).map((b: string) => (
             <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
           ))}
+          {service.requires_id_document && (
+            <Badge variant="outline" className="text-[10px]">🪪 ID Required</Badge>
+          )}
         </div>
 
         <h3 className="font-semibold text-foreground line-clamp-1">{service.title}</h3>
