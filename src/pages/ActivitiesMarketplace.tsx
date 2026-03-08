@@ -578,6 +578,92 @@ const ActivitiesMarketplace = () => {
             isPending={submitBooking.isPending}
           />
         )}
+
+        {/* Revenue Detail Dialog */}
+        <Dialog open={revenueOpen} onOpenChange={setRevenueOpen}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Revenue Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Currency Selector */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Display in:</span>
+                <Select value={displayCurrency} onValueChange={setDisplayCurrency}>
+                  <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DISPLAY_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Total */}
+              <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-xs text-muted-foreground uppercase">Total Revenue</p>
+                <p className="text-3xl font-bold text-foreground tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
+              </div>
+
+              {/* Breakdown by currency */}
+              {Object.keys(revenueByCurrency).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">By Original Currency</p>
+                  {Object.entries(revenueByCurrency).map(([cur, amount]) => (
+                    <div key={cur} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                      <div>
+                        <span className="font-medium text-foreground">{cur}</span>
+                        <p className="text-xs text-muted-foreground">
+                          Rate: 1 {cur} = {computeExchangeRate(cur, displayCurrency).toFixed(4)} {displayCurrency}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-foreground tabular-nums">{formatAmount(amount, cur)}</p>
+                        {cur !== displayCurrency && (
+                          <p className="text-xs text-accent tabular-nums">
+                            ≈ {formatAmount(amount * computeExchangeRate(cur, displayCurrency), displayCurrency)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Transactions */}
+              {paidBookings.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">Paid Transactions ({paidBookings.length})</p>
+                  {paidBookings.map((b: any) => {
+                    const svc = myServices.find((s: any) => s.id === b.service_id);
+                    return (
+                      <div key={b.id} className="flex items-center justify-between p-2 rounded-md bg-card border border-border text-sm">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-foreground font-medium truncate">{b.booker_name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{svc?.title || "Service"} • {b.service_date || "—"}</p>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <p className="font-bold text-foreground tabular-nums">{formatAmount(Number(b.total_price || 0), b.currency || "EUR")}</p>
+                          {(b.currency || "EUR") !== displayCurrency && (
+                            <p className="text-[10px] text-accent tabular-nums">
+                              ≈ {formatAmount(Number(b.total_price || 0) * computeExchangeRate(b.currency || "EUR", displayCurrency), displayCurrency)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {Object.keys(revenueByCurrency).length === 0 && (
+                <p className="text-center text-muted-foreground text-sm py-6">No confirmed payments yet</p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
