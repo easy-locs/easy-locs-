@@ -461,7 +461,7 @@ const PublicServiceBooking = () => {
                   {quantity > 1 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Quantity</span>
-                      <span className="text-foreground">{quantity} × {service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                      <span className="text-foreground">{quantity} × {fmtPrice(service.price, service.currency)}</span>
                     </div>
                   )}
                   </div>
