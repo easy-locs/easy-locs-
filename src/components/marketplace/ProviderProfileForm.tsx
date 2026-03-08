@@ -39,6 +39,8 @@ interface ProviderFormData {
   bank_bic: string;
   bank_holder: string;
   bank_name: string;
+  tax_rate: number;
+  tax_label: string;
 }
 
 interface Props {
@@ -77,6 +79,8 @@ const emptyForm: ProviderFormData = {
   bank_bic: "",
   bank_holder: "",
   bank_name: "",
+  tax_rate: 0,
+  tax_label: "VAT",
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
@@ -293,6 +297,28 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                       value={form.invoice_prefix}
                       onChange={(e) => update("invoice_prefix", e.target.value)}
                       placeholder="INV"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Tax Rate (%)</Label>
+                    <Input
+                      type="number"
+                      value={form.tax_rate || ""}
+                      onChange={(e) => update("tax_rate", Number(e.target.value))}
+                      placeholder="20"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                    />
+                  </div>
+                  <div>
+                    <Label>Tax Label</Label>
+                    <Input
+                      value={form.tax_label}
+                      onChange={(e) => update("tax_label", e.target.value)}
+                      placeholder="VAT / TVA / IVA..."
                     />
                   </div>
                 </div>

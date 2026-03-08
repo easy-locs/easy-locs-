@@ -52,9 +52,9 @@ const AppLogo = ({
       <img
         src={logoSrc}
         alt="EASY-LOCS"
-        className={`${imgClass} object-contain dark:brightness-110 dark:contrast-95 transition-all duration-200`}
+        className={`${imgClass} object-contain transition-all duration-200`}
         draggable={false}
-        style={{ mixBlendMode: "normal" }}
+        style={{ background: "transparent" }}
         width={40}
         height={40}
       />

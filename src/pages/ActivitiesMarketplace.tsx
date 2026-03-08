@@ -15,7 +15,7 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import BookingsManager from "@/components/marketplace/BookingsManager";
+import BookingsManager, { syncToCommunicationCenter } from "@/components/marketplace/BookingsManager";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
@@ -230,38 +230,25 @@ const ActivitiesMarketplace = () => {
       }).select().single();
       if (error) throw error;
 
-      // Create notification for provider
-      try {
-        await supabase.from("notifications").insert({
-          user_id: prov?.user_id || svc.user_id,
-          org_id: provOrgId,
-          type: "info",
-          title: `📦 New booking: ${svc.title}`,
-          message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}`,
-          link: "/dashboard/marketplace",
-        });
-      } catch (e) { console.error("Notification error:", e); }
+      // Sync to communication center (notification + message + email)
+      await syncToCommunicationCenter({
+        orgId: provOrgId,
+        userId: prov?.user_id || svc.user_id,
+        email: prov?.email,
+        subject: `📦 New booking: ${svc.title}`,
+        message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}.\nAmount: ${totalPrice} ${svc.currency}\nContact: ${formData.booker_email}${formData.booker_phone ? " • " + formData.booker_phone : ""}\nNotes: ${formData.notes || "—"}`,
+        category: "general",
+      });
 
-      // Create message thread
-      try {
-        await supabase.from("messages").insert({
-          org_id: provOrgId,
-          sender_id: user?.id || null,
-          content: `📦 Booking: ${svc.title} — ${formData.booker_name} (${formData.booker_email}).\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\nNotes: ${formData.notes || "—"}`,
-          read: false,
-        } as any);
-      } catch (e) { console.error("Message thread error:", e); }
-
-      // Send email notification
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: prov?.email,
-            subject: `📦 New booking: ${svc.title}`,
-            message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}. Amount: ${totalPrice} ${svc.currency}`,
-          },
+      // Also notify the booker
+      if (formData.booker_email) {
+        await syncToCommunicationCenter({
+          orgId: provOrgId,
+          email: formData.booker_email,
+          subject: `✅ Booking request sent: ${svc.title}`,
+          message: `Hello ${formData.booker_name},\n\nYour booking for "${svc.title}" has been submitted.\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\n\nYou will be notified when the provider confirms.\n\nThank you!`,
         });
-      } catch (e) { console.error("Email notification error:", e); }
+      }
     },
     onSuccess: () => {
       toast.success("Booking request sent!");
@@ -282,23 +269,18 @@ const ActivitiesMarketplace = () => {
     toast.success(`Booking ${status}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Send email notification for status changes
-    if (booking?.booker_email) {
+    // Sync status change to communication center (notification + message + email)
+    if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
-      const statusLabels: Record<string, string> = {
-        confirmed: "✅ Confirmed",
-        cancelled: "❌ Cancelled",
-        completed: "✅ Completed",
-      };
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: booking.booker_email,
-            subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
-            message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\n\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
-          },
-        });
-      } catch (e) { console.error("Email notification error:", e); }
+      const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
+      await syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
+        message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
+        category: status === "cancelled" ? "general" : "payment",
+      });
     }
   };
 
@@ -306,10 +288,18 @@ const ActivitiesMarketplace = () => {
     const svc = myServices.find((s: any) => s.id === booking.service_id);
     const link = svc?.payment_stripe_link || myProvider?.payment_stripe_link || svc?.payment_paypal_email || myProvider?.payment_paypal_email;
     if (link) {
-      const mailLink = `mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`;
-      window.open(mailLink, "_blank");
+      window.open(`mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`, "_blank");
       supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+      });
+      // Sync to comms center
+      syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `💳 Payment link sent: ${svc?.title || "Service"}`,
+        message: `Payment link sent to ${booking.booker_name} for "${svc?.title}".\nAmount: ${booking.total_price} ${booking.currency}\nLink: ${link}`,
+        category: "payment",
       });
     } else {
       toast.error("No payment link configured");
@@ -328,18 +318,17 @@ const ActivitiesMarketplace = () => {
     toast.success("Payment confirmed!");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Send payment confirmation email
-    if (booking?.booker_email) {
+    // Sync payment confirmation to comms center
+    if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: booking.booker_email,
-            subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
-            message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\n\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
-          },
-        });
-      } catch (e) { console.error("Email notification error:", e); }
+      await syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
+        message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
+        category: "payment",
+      });
     }
   };
 

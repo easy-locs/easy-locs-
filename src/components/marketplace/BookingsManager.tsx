@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2 } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,30 +22,78 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
   cancelled: { label: "Cancelled", variant: "destructive", icon: X },
 };
 
+/**
+ * Log an action to communication center + notification + email
+ */
+async function syncToCommunicationCenter(opts: {
+  orgId: string;
+  userId?: string;
+  email?: string;
+  subject: string;
+  message: string;
+  category?: string;
+}) {
+  // 1. Create message thread in communication center
+  try {
+    await supabase.from("messages").insert({
+      org_id: opts.orgId,
+      sender_id: opts.userId || null,
+      content: opts.message,
+      category: opts.category || "general",
+      read: false,
+    } as any);
+  } catch (e) { console.error("Comms center sync error:", e); }
+
+  // 2. Create in-app notification
+  if (opts.userId) {
+    try {
+      await supabase.from("notifications").insert({
+        user_id: opts.userId,
+        org_id: opts.orgId,
+        type: "info",
+        title: opts.subject,
+        message: opts.message.slice(0, 200),
+        link: "/dashboard/activities",
+      });
+    } catch (e) { console.error("Notification sync error:", e); }
+  }
+
+  // 3. Send email
+  if (opts.email) {
+    try {
+      await supabase.functions.invoke("send-notification-email", {
+        body: { to: opts.email, subject: opts.subject, message: opts.message },
+      });
+    } catch (e) { console.error("Email sync error:", e); }
+  }
+}
+
 async function handleInvoice(booking: any, service: any, provider: any) {
   const blob = await generateInvoicePdf({ booking, service, provider });
   if (!blob) return;
 
-  // Auto-email invoice if invoicing enabled
-  if (provider?.invoicing_enabled && booking.booker_email) {
-    try {
-      await supabase.functions.invoke("send-notification-email", {
-        body: {
-          to: booking.booker_email,
-          subject: `Invoice for ${service?.title || "Service"} — ${provider.invoice_prefix || "INV"}-${String(provider.invoice_next_number || 1).padStart(4, "0")}`,
-          message: `Hello ${booking.booker_name},\n\nPlease find your invoice for "${service?.title || "Service"}".\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!\n${provider.invoice_company_name || provider.display_name || ""}`,
-        },
-      });
-      toast.success("Invoice sent by email!");
-    } catch (e) {
-      console.error("Invoice email error:", e);
-    }
-  }
+  const invoiceNum = `${provider.invoice_prefix || "INV"}-${String(provider.invoice_next_number || 1).padStart(4, "0")}`;
+  const taxRate = Number(provider.tax_rate || 0);
+  const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
+  const grandTotal = Number(booking.total_price) + taxAmount;
+
+  // Sync invoice to all channels
+  await syncToCommunicationCenter({
+    orgId: booking.org_id || provider.org_id,
+    userId: provider.user_id,
+    email: booking.booker_email,
+    subject: `📄 Invoice ${invoiceNum}: ${service?.title || "Service"}`,
+    message: `Invoice ${invoiceNum} generated for ${booking.booker_name}.\nService: ${service?.title}\nSubtotal: ${Number(booking.total_price).toLocaleString()} ${booking.currency}${taxRate > 0 ? `\n${provider.tax_label || "VAT"} (${taxRate}%): ${taxAmount.toLocaleString()} ${booking.currency}` : ""}\nTotal: ${grandTotal.toLocaleString()} ${booking.currency}\n\n${provider.invoice_company_name || provider.display_name || ""}`,
+    category: "payment",
+  });
 }
 
 function shareInvoiceWhatsApp(booking: any, service: any, provider: any) {
   const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
-  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${booking.total_price} ${booking.currency}\nClient: ${booking.booker_name}\n— ${provider?.invoice_company_name || provider?.display_name || "Easy-Locs®"}`;
+  const taxRate = Number(provider?.tax_rate || 0);
+  const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
+  const grandTotal = Number(booking.total_price) + taxAmount;
+  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${grandTotal.toLocaleString()} ${booking.currency}${taxRate > 0 ? ` (incl. ${provider.tax_label || "VAT"} ${taxRate}%)` : ""}\nClient: ${booking.booker_name}\n— ${provider?.invoice_company_name || provider?.display_name || "Easy-Locs®"}`;
   const phone = booking.booker_phone?.replace(/[^0-9+]/g, "") || "";
   const url = phone
     ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`
@@ -55,7 +103,10 @@ function shareInvoiceWhatsApp(booking: any, service: any, provider: any) {
 
 function shareInvoiceTelegram(booking: any, service: any, provider: any) {
   const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
-  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${booking.total_price} ${booking.currency}\nClient: ${booking.booker_name}`;
+  const taxRate = Number(provider?.tax_rate || 0);
+  const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
+  const grandTotal = Number(booking.total_price) + taxAmount;
+  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${grandTotal.toLocaleString()} ${booking.currency}\nClient: ${booking.booker_name}`;
   window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, "_blank");
 }
 
@@ -117,11 +168,11 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                     {b.status === "confirmed" && (
                       <>
                         <Button size="sm" variant="outline" onClick={() => onSendPaymentLink(b)}>
-                          <Send className="h-3 w-3 mr-1" /> Send Payment
+                          <Send className="h-3 w-3 mr-1" /> Payment
                         </Button>
                         {!b.payment_confirmed && (
                           <Button size="sm" variant="outline" onClick={() => onConfirmPayment(b.id)}>
-                            <CreditCard className="h-3 w-3 mr-1" /> Confirm Payment
+                            <CreditCard className="h-3 w-3 mr-1" /> Confirm Pay
                           </Button>
                         )}
                         <Button size="sm" onClick={() => onUpdateStatus(b.id, "completed")}>
@@ -129,14 +180,17 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                         </Button>
                       </>
                     )}
-                    {/* Invoice buttons */}
+                    {/* Invoice + Share */}
                     {(b.status === "confirmed" || b.status === "completed" || b.payment_confirmed) && provider?.invoicing_enabled && (
                       <>
                         <Button size="sm" variant="outline" onClick={() => handleInvoice(b, svc, provider)}>
                           <FileText className="h-3 w-3 mr-1" /> Invoice
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="Share via WhatsApp">
-                          <Share2 className="h-3 w-3" />
+                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="WhatsApp">
+                          <MessageCircle className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceTelegram(b, svc, provider)} title="Telegram">
+                          <Send className="h-3 w-3" />
                         </Button>
                       </>
                     )}
@@ -150,3 +204,5 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
     </div>
   );
 }
+
+export { syncToCommunicationCenter };
