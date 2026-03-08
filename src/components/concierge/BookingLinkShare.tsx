@@ -10,9 +10,11 @@ interface Props {
   serviceTitle: string;
   /** Type of shareable content — defaults to "service" for concierge */
   shareType?: ShareableType;
+  /** Optional photo URL to include in share messages */
+  photoUrl?: string;
 }
 
-const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service" }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl }: Props) => {
   const [copied, setCopied] = useState(false);
   const shareUrl = getSocialShareUrl(shareType, serviceSlug);
   const links = getShareLinks(shareType, serviceSlug, serviceTitle);
