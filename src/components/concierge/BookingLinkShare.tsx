@@ -21,7 +21,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
   const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
 
   const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
-  const links = getShareLinks(shareType, serviceSlug, serviceTitle, runtimeVersion);
+  
 
   const refreshVersion = () => {
     const seed = shareVersion ? Date.parse(shareVersion) : NaN;
