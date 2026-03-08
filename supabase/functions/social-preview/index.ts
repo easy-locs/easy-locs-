@@ -266,7 +266,7 @@ async function handleProvider(req: Request, slug: string, shareUrl: string, shar
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
 
 
