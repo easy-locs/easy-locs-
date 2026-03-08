@@ -177,7 +177,7 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/country/:code" element={<ProtectedRoute><CountryWorkspace /></ProtectedRoute>} />
               <Route path="/dashboard/add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
-              <Route path="/dashboard/receipts" element={<ProtectedRoute><CountryGuard><Receipts /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
               <Route path="/dashboard/reminders" element={<ProtectedRoute><CountryGuard><Reminders /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/documents" element={<ProtectedRoute><CountryGuard><Documents /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
@@ -185,6 +185,7 @@ const App = () => (
               <Route path="/dashboard/company" element={<ProtectedRoute><Company /></ProtectedRoute>} />
               <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
               <Route path="/dashboard/tenants" element={<ProtectedRoute><CountryGuard><Tenants /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/properties" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
               <Route path="/dashboard/rental" element={<ProtectedRoute><CountryGuard><RentalManagement /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/finances" element={<ProtectedRoute><CountryGuard><Finances /></CountryGuard></ProtectedRoute>} />
               
