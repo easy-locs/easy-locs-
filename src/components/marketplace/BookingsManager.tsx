@@ -253,4 +253,4 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
   );
 }
 
-export { syncToCommunicationCenter, buildBookingDeepLink, type NotificationMeta };
+export { syncToCommunicationCenter, buildBookingDeepLink };
