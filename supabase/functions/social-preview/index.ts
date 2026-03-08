@@ -65,9 +65,9 @@ function htmlPage(meta: {
 
   ${meta.jsonLd ? `<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>` : ""}
 
-  <!-- Redirect browsers, while crawlers keep OG tags -->
-  <meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/>
+  <!-- Redirect real browsers with JS only (crawlers keep OG tags) -->
   <script>window.location.replace(${JSON.stringify(safeRedirectUrl)});</script>
+  <noscript><meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/></noscript>
 </head>
 <body>
   <p>Redirecting to <a href="${safeRedirectUrl}">${safeTitle}</a>...</p>
