@@ -46,7 +46,7 @@ export default function ProviderStorefront() {
   });
 
   const handleBookingSubmit = async (formData: any) => {
-    const { error } = await supabase.from("marketplace_bookings" as any).insert({
+    const { error } = await supabase.from("marketplace_bookings").insert({
       service_id: bookingService.id,
       provider_id: provider.id,
       org_id: provider.org_id,

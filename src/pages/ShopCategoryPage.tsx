@@ -56,7 +56,7 @@ export default function ShopCategoryPage() {
         ...s,
         source: "marketplace" as const,
         photo: Array.isArray(s.photo_urls) ? s.photo_urls[0] : null,
-        slug: null, // marketplace services use provider storefront
+        slug: s.booking_slug,
       }));
 
       return [...conciergeItems, ...marketplaceItems];
