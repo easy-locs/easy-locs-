@@ -227,13 +227,26 @@ const ConciergeServices = () => {
     });
   }, [orders, searchQuery, services]);
 
-  // KPIs
+  // KPIs — convert to preferred currency
   const activeServices = services.filter(s => s.active).length;
-  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
+  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
+    const cur = (o.currency || "EUR").toUpperCase();
+    return s + Number(o.total_price || 0) * computeExchangeRate(cur, preferredCurrency);
+  }, 0);
   const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "awaiting_payment").length;
-  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.commission_amount || 0), 0);
+  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
+    const cur = (o.currency || "EUR").toUpperCase();
+    return s + Number(o.commission_amount || 0) * computeExchangeRate(cur, preferredCurrency);
+  }, 0);
   const completedCount = orders.filter(o => o.status === "completed").length;
   const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
+
+  const handlePreferredCurrencyChange = async (cur: string) => {
+    setPreferredCurrency(cur);
+    if (user) {
+      await supabase.from("profiles").update({ preferred_currency: cur } as any).eq("id", user.id);
+    }
+  };
 
   const showcaseUrl = landlordProfile?.slug ? `/showcase/${landlordProfile.slug}` : null;
 
