@@ -705,6 +705,11 @@ const ConciergeServices = () => {
               </div>
 
               <label className="flex items-center gap-2 text-sm text-foreground">
+                <Switch checked={form.requires_id_document} onCheckedChange={checked => setForm(f => ({ ...f, requires_id_document: checked }))} />
+                🪪 Require ID document from client
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
                 <Switch checked={form.active} onCheckedChange={checked => setForm(f => ({ ...f, active: checked }))} />
                 Active
               </label>
