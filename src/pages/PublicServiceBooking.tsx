@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { detectCustomerCurrency, computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

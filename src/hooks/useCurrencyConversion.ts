@@ -52,6 +52,26 @@ export const RATES_TO_EUR: Record<string, number> = {
   XCD: 0.34,
 };
 
+/** Detect customer's likely currency from browser locale */
+export const detectCustomerCurrency = (): string => {
+  try {
+    const locale = navigator.language || "en-US";
+    const parts = locale.split("-");
+    const region = (parts[1] || parts[0]).toUpperCase();
+    return COUNTRY_CURRENCY_MAP[region] || "EUR";
+  } catch {
+    return "EUR";
+  }
+};
+
+/** Compute exchange rate between two currencies */
+export const computeExchangeRate = (fromCurrency: string, toCurrency: string): number => {
+  if (fromCurrency === toCurrency) return 1;
+  const fromRate = RATES_TO_EUR[fromCurrency] || 1;
+  const toRate = RATES_TO_EUR[toCurrency] || 1;
+  return Math.round((fromRate / toRate) * 1000000) / 1000000;
+};
+
 export const useCurrencyConversion = (userCountry: string = "FR") => {
   const baseCurrency = COUNTRY_CURRENCY_MAP[userCountry] || "EUR";
 
