@@ -195,65 +195,66 @@ const Dashboard = () => {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stats.propertiesByCountry.map((c, i) => (
-                <motion.div
-                  key={c.code}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.04 }}
-                >
-                  <Link
-                    to={`/dashboard/country/${c.code.toLowerCase()}`}
-                    className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/40 transition-all"
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {stats.propertiesByCountry.map((c, i) => (
+                  <motion.div
+                    key={c.code}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + i * 0.04 }}
                   >
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl shrink-0">{c.flag}</span>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
-                          {c.name}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
-                          {c.count > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Building className="h-3.5 w-3.5" />
-                              {c.count} {c.count > 1 ? "biens" : "bien"}
-                            </span>
-                          )}
-                          {c.tenants > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3.5 w-3.5" />
-                              {c.tenants}
-                            </span>
-                          )}
+                    <Link
+                      to={`/dashboard/country/${c.code.toLowerCase()}`}
+                      className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/40 transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-4xl shrink-0">{c.flag}</span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
+                            {c.name}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
+                            {c.count > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Building className="h-3.5 w-3.5" />
+                                {c.count} {c.count > 1 ? "biens" : "bien"}
+                              </span>
+                            )}
+                            {c.tenants > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3.5 w-3.5" />
+                                {c.tenants}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
 
-            </div>
-
-            {/* Add Property card — below country cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + stats.propertiesByCountry.length * 0.04 }}
-              className="mt-4"
-            >
-              <Link
-                to="/dashboard/add-property"
-                className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all min-h-[4rem]"
+              {/* Add Property card — below country cards */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + stats.propertiesByCountry.length * 0.04 }}
+                className="mt-4"
               >
-                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                  <Plus className="h-5 w-5 text-accent" />
-                </div>
-                <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
-                  {t("page.rental.add_property") || "Ajouter un bien"}
-                </span>
-              </Link>
-            </motion.div>
+                <Link
+                  to="/dashboard/add-property"
+                  className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all min-h-[4rem]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                    <Plus className="h-5 w-5 text-accent" />
+                  </div>
+                  <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
+                    {t("page.rental.add_property") || "Ajouter un bien"}
+                  </span>
+                </Link>
+              </motion.div>
+            </>
           )}
         </motion.div>
       </div>
