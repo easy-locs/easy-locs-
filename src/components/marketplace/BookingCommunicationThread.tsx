@@ -56,10 +56,16 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
         read: false,
       } as any);
 
-      // If email type, also send email
+      // If email type, also send email via edge function
       if (messageType === "email" && customerEmail) {
         await supabase.functions.invoke("send-notification-email", {
-          body: { to: customerEmail, subject: `Message from your provider`, message: newMessage },
+          body: {
+            event_type: "marketplace_notification",
+            recipient_email: customerEmail,
+            recipient_name: customerName,
+            data: { subject: `Message from your provider`, message: newMessage },
+            locale: "en",
+          },
         });
       }
 
