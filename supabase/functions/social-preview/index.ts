@@ -197,12 +197,26 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
 }
 
 async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
-  const { data: service } = await supabase
+  // Try concierge_services first
+  let service: any = null;
+  const { data: conciergeService } = await supabase
     .from("concierge_services")
     .select("*")
     .eq("booking_slug", slug)
     .eq("active", true)
     .maybeSingle();
+  service = conciergeService;
+
+  // Fallback to marketplace_services
+  if (!service) {
+    const { data: mpService } = await supabase
+      .from("marketplace_services")
+      .select("*")
+      .eq("booking_slug", slug)
+      .eq("active", true)
+      .maybeSingle();
+    service = mpService;
+  }
 
   if (!service) {
     return new Response("Not found", { status: 404, headers: { ...corsHeaders } });

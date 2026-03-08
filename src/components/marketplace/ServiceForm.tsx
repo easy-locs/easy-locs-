@@ -26,7 +26,18 @@ export interface ServiceFormData {
   payment_custom_url: string;
   active: boolean;
   photo_urls?: string[];
+  requires_id_document?: boolean;
 }
+
+const CURRENCIES = [
+  "EUR", "USD", "GBP", "CHF", "MAD", "TND", "XOF", "AED", "CAD", "AUD",
+  "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP", "SAR",
+  "QAR", "KWD", "BHD", "OMR", "TRY", "PLN", "CZK", "HUF", "RON", "BGN",
+  "SEK", "NOK", "DKK", "ISK", "HRK", "RSD", "GEL", "UAH", "THB", "SGD",
+  "MYR", "IDR", "PHP", "VND", "KRW", "TWD", "HKD", "NZD", "CLP", "COP",
+  "PEN", "ARS", "UYU", "DOP", "JMD", "TTD", "XAF", "GHS", "TZS", "UGX",
+  "RWF", "MUR", "SCR", "MVR", "LKR", "PKR", "BDT", "MMK", "KHR", "LAK",
+];
 
 interface Props {
   open: boolean;
@@ -56,6 +67,7 @@ const emptyService: ServiceFormData = {
   payment_custom_url: "",
   active: true,
   photo_urls: [],
+  requires_id_document: false,
 };
 
 export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId }: Props) {
@@ -128,7 +140,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
               <Select value={form.currency} onValueChange={(v) => update("currency", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["EUR", "USD", "GBP", "CHF", "MAD", "TND", "XOF", "AED"].map((c) => (
+                {CURRENCIES.map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>
@@ -189,6 +201,11 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
               <Label>Custom Payment URL</Label>
               <Input value={form.payment_custom_url} onChange={(e) => update("payment_custom_url", e.target.value)} />
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch checked={form.requires_id_document || false} onCheckedChange={(v) => update("requires_id_document", v)} />
+            <Label>🪪 Require ID Document (Passport / CNI / Permit)</Label>
           </div>
 
           <div className="flex items-center gap-2">
