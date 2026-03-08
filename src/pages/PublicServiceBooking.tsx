@@ -15,6 +15,16 @@ import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
+
 const PublicServiceBooking = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
