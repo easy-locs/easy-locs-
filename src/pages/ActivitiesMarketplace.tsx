@@ -272,14 +272,33 @@ const ActivitiesMarketplace = () => {
   });
 
   const updateBookingStatus = async (id: string, status: string) => {
+    const booking = myBookings.find((b: any) => b.id === id);
     const updates: any = { status };
     if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
     if (status === "completed") updates.completed_at = new Date().toISOString();
     const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success(`Booking ${status}`);
-      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+    if (error) { toast.error(error.message); return; }
+
+    toast.success(`Booking ${status}`);
+    qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+
+    // Send email notification for status changes
+    if (booking?.booker_email) {
+      const svc = myServices.find((s: any) => s.id === booking.service_id);
+      const statusLabels: Record<string, string> = {
+        confirmed: "✅ Confirmed",
+        cancelled: "❌ Cancelled",
+        completed: "✅ Completed",
+      };
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            to: booking.booker_email,
+            subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
+            message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\n\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
+          },
+        });
+      } catch (e) { console.error("Email notification error:", e); }
     }
   };
 
