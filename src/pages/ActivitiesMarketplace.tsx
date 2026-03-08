@@ -317,15 +317,29 @@ const ActivitiesMarketplace = () => {
   };
 
   const confirmPayment = async (id: string) => {
+    const booking = myBookings.find((b: any) => b.id === id);
     const { error } = await supabase.from("marketplace_bookings").update({
       payment_confirmed: true,
       payment_confirmed_at: new Date().toISOString(),
       payment_method: "manual",
     }).eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Payment confirmed!");
-      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+    if (error) { toast.error(error.message); return; }
+
+    toast.success("Payment confirmed!");
+    qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+
+    // Send payment confirmation email
+    if (booking?.booker_email) {
+      const svc = myServices.find((s: any) => s.id === booking.service_id);
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            to: booking.booker_email,
+            subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
+            message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\n\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
+          },
+        });
+      } catch (e) { console.error("Email notification error:", e); }
     }
   };
 

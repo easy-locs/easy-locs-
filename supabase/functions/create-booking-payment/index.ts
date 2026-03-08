@@ -122,6 +122,14 @@ serve(async (req) => {
     const successUrl = `${safeOrigin}/listing/${listing_id}?payment=success`;
     const cancelUrl = `${safeOrigin}/listing/${listing_id}?payment=cancelled`;
 
+    // Build payment method types — card always supports 3D Secure automatically
+    const paymentMethodTypes: string[] = ["card"];
+
+    // Add SEPA for EUR payments
+    if (currency === "eur") {
+      paymentMethodTypes.push("sepa_debit");
+    }
+
     const sessionParams: any = {
       customer_email: guest_email,
       line_items: [
@@ -138,7 +146,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      payment_method_types: ["card"],
+      payment_method_types: paymentMethodTypes,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
@@ -163,6 +171,27 @@ serve(async (req) => {
         .from("booking_requests")
         .update({ status: "payment_pending" } as any)
         .eq("id", booking_request_id);
+    }
+
+    // Send confirmation email to guest
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      await fetch(`${supabaseUrl}/functions/v1/send-notification-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          to: guest_email,
+          subject: `💳 Payment link for your booking${property_label ? ` — ${property_label}` : ""}`,
+          message: `Hello ${guest_name || "Guest"},\n\nYour booking payment of ${verifiedAmount} ${currency.toUpperCase()} for ${nights} night(s) is ready.\n\nPlease complete your payment to confirm your reservation.\n\nThank you!`,
+        }),
+      });
+      logStep("Confirmation email sent to guest");
+    } catch (e) {
+      logStep("Email send error (non-blocking)", { error: String(e) });
     }
 
     return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
