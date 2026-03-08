@@ -88,11 +88,16 @@ const ServiceBookingCalendar = ({
 
     const loadBookings = async () => {
       setLoadingSlots(true);
-      const { data } = await supabase
-        .from("concierge_orders" as any)
-        .select("service_date, service_time, end_time, quantity, status")
-        .eq("service_id", serviceId)
-        .in("status", Array.from(OCCUPYING_STATUSES));
+
+      const { data, error } = await supabase
+        .rpc("get_public_service_availability", { p_service_id: serviceId });
+
+      if (error) {
+        console.error("availability load error", error);
+        setBookedSlots([]);
+        setLoadingSlots(false);
+        return;
+      }
 
       setBookedSlots((data as unknown as BookedSlot[] | null) || []);
       setLoadingSlots(false);
