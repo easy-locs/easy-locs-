@@ -83,6 +83,8 @@ const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
 const ConciergeShowcasePage = lazy(() => import("./components/concierge/ConciergeShowcase"));
 const ProviderStorefront = lazy(() => import("./components/marketplace/ProviderStorefront"));
+const StorePage = lazy(() => import("./pages/StorePage"));
+const ShopCategoryPage = lazy(() => import("./pages/ShopCategoryPage"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
