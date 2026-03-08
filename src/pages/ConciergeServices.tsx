@@ -677,7 +677,7 @@ const ConciergeServices = () => {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Amount</label>
-                  <Input type="number" value={form.commission_amount} onChange={e => setForm(f => ({ ...f, commission_amount: Number(e.target.value) }))} />
+                  <Input type="number" value={form.commission_amount || ""} onChange={e => setForm(f => ({ ...f, commission_amount: e.target.value === "" ? 0 : Number(e.target.value) }))} placeholder="0" />
                 </div>
               </div>
 
