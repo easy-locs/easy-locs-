@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
@@ -18,8 +18,12 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const shareUrl = getSocialShareUrl(shareType, serviceSlug, shareVersion);
-  const links = getShareLinks(shareType, serviceSlug, serviceTitle, shareVersion);
+  const runtimeVersion = useMemo(
+    () => `${shareVersion || "base"}-${Date.now()}`,
+    [serviceSlug, shareVersion]
+  );
+  const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
+  const links = getShareLinks(shareType, serviceSlug, serviceTitle, runtimeVersion);
 
   const copy = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -64,3 +68,4 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
 };
 
 export default BookingLinkShare;
+
