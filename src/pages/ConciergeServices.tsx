@@ -123,6 +123,18 @@ const ConciergeServices = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  // Realtime sync for orders
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel('concierge-orders-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, load]);
+
   const save = async () => {
     if (!orgId || !user || !form.title) return;
     const slug = form.booking_slug || generateSlug(form.title);
