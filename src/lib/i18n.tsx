@@ -5191,7 +5191,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((key: string): string => {
     // Fallback chain: locale → notif → billing → docBuilderExtra → en → fr → key
-    const val = translations[locale]?.[key] || pagesWorldwide[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || pagesWorldwide.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || pagesWorldwide.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
+    const val = translations[locale]?.[key] || pagesWorldwide[locale]?.[key] || marketplaceI18n[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || pagesWorldwide.en?.[key] || marketplaceI18n.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || pagesWorldwide.fr?.[key] || marketplaceI18n.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
     if (val) return val;
     if (import.meta.env.DEV) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     return key;
