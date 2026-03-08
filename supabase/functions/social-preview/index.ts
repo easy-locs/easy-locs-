@@ -8,6 +8,14 @@ const corsHeaders = {
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = Deno.env.get("APP_URL") || "https://easy-locs.lovable.app";
 const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
+const BOT_UA_PATTERN = /(facebookexternalhit|facebot|meta-externalagent|whatsapp|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
+
+function shouldServePreviewHtml(req: Request): boolean {
+  const ua = req.headers.get("user-agent") || "";
+  if (!ua) return true;
+  if (BOT_UA_PATTERN.test(ua)) return true;
+  return !ua.includes("Mozilla");
+}
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
