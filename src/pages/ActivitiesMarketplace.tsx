@@ -432,6 +432,7 @@ const ActivitiesMarketplace = () => {
                       key={s.id}
                       service={s}
                       showActions
+                      showCalendar
                       onEdit={() => { setEditingService(s); setServiceFormOpen(true); }}
                     />
                   ))}
