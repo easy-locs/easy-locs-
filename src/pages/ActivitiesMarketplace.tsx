@@ -230,7 +230,6 @@ const ActivitiesMarketplace = () => {
       }).select().single();
       if (error) throw error;
 
-      // Sync to communication center (notification + message + email)
       await syncToCommunicationCenter({
         orgId: provOrgId,
         userId: prov?.user_id || svc.user_id,
@@ -238,6 +237,15 @@ const ActivitiesMarketplace = () => {
         subject: `📦 New booking: ${svc.title}`,
         message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}.\nAmount: ${totalPrice} ${svc.currency}\nContact: ${formData.booker_email}${formData.booker_phone ? " • " + formData.booker_phone : ""}\nNotes: ${formData.notes || "—"}`,
         category: "general",
+        meta: {
+          event_type: "booking_created",
+          booking_id: booking?.id,
+          property_id: booking?.property_id,
+          country_code: svc.country || "",
+          workspace_id: provOrgId,
+          target_type: "marketplace_booking",
+          service_title: svc.title,
+        },
       });
 
       // Also notify the booker
