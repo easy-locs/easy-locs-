@@ -83,7 +83,7 @@ function buildHeaders() {
   };
 }
 
-async function handleListing(slug: string): Promise<Response> {
+async function handleListing(slug: string, shareUrl: string): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
@@ -103,22 +103,22 @@ async function handleListing(slug: string): Promise<Response> {
   const photos: string[] = property?.photo_urls || [];
   const rawImage = listing.cover_url || photos[0] || DEFAULT_OG_IMAGE;
   const image = withCacheBust(rawImage, listing.updated_at || null);
-  const url = `${APP_URL}/listing/${slug}`;
+  const redirectUrl = `${APP_URL}/listing/${slug}`;
 
   return new Response(
     htmlPage({
       title,
       description: desc,
       image,
-      url,
-      redirectUrl: url,
+      url: shareUrl,
+      redirectUrl,
       type: "website",
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "LodgingBusiness",
         name: listing.title || property?.label,
         description: listing.description?.slice(0, 300) || desc,
-        url,
+        url: redirectUrl,
         image,
         address: {
           "@type": "PostalAddress",
