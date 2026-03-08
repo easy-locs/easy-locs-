@@ -133,12 +133,36 @@ const PublicServiceBooking = () => {
         canonical={canonicalUrl}
         ogImage={ogImage}
       />
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-8 pb-8 text-center space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
-            <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
-            <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received.</p>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <Card className="max-w-md mx-auto w-full">
+          <CardContent className="pt-8 pb-8 space-y-5">
+            <div className="text-center space-y-3">
+              <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
+              <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
+              <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received.</p>
+            </div>
+            <Separator />
+            <div className="space-y-2 text-sm">
+              {isRangeMode && selectedRange ? (
+                <>
+                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">To</span><span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="text-foreground">{rangeDays} days</span></div>
+                </>
+              ) : (
+                <>
+                  {selectedDate && <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span></div>}
+                  {selectedTime && <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="text-foreground">{selectedTime}</span></div>}
+                </>
+              )}
+              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="text-foreground font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span></div>
+            </div>
+            <Separator />
+            <p className="text-xs text-muted-foreground text-center">
+              {paymentMethod === "bank_transfer"
+                ? "Please complete the bank transfer using the details provided. Your booking will be confirmed upon receipt."
+                : "The provider will confirm your booking shortly. You'll receive an email notification."}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -164,6 +188,7 @@ const PublicServiceBooking = () => {
         org_id: service.org_id,
         service_id: service.id,
         property_id: service.property_id || null,
+        property_label: service.title,
         guest_name: form.name,
         guest_email: form.email,
         guest_phone: form.phone,
@@ -197,6 +222,28 @@ const PublicServiceBooking = () => {
         .single();
 
       if (orderError) throw orderError;
+
+      // Send notification email to provider
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: "booking_request",
+            recipient_email: null, // Let the function resolve via org
+            org_id: service.org_id,
+            data: {
+              guest_name: form.name,
+              guest_email: form.email,
+              service_title: service.title,
+              service_date: orderData.service_date,
+              total_price: String(totalPrice),
+              currency: service.currency || "EUR",
+            },
+            locale: "en",
+          },
+        });
+      } catch (e) {
+        console.error("Notification email error:", e);
+      }
 
       if (paymentMethod === "stripe") {
         const { data: checkout, error: checkoutError } = await supabase.functions.invoke("create-concierge-payment", {
@@ -314,6 +361,22 @@ const PublicServiceBooking = () => {
 
               {service.description && (
                 <p className="text-muted-foreground leading-relaxed">{service.description}</p>
+              )}
+
+              {/* Provider Info */}
+              {service.provider_name && (
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-sm">
+                    {service.provider_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{service.provider_name}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      {service.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{service.city}{service.country ? `, ${service.country}` : ""}</span>}
+                      {service.provider_phone && <span>{service.provider_phone}</span>}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {service.conditions && (
