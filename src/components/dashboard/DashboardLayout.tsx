@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
@@ -34,6 +34,13 @@ interface NavSection {
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarReady, setSidebarReady] = useState(false);
+
+  // Delay enabling transitions to prevent initial render flicker on desktop
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setSidebarReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -191,8 +198,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col transition-transform duration-300 ease-in-out safe-bottom ${
-          sidebarOpen ? "translate-x-0 sidebar-slide-in" : "-translate-x-full lg:translate-x-0"
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col safe-bottom ${
+          sidebarReady ? "transition-transform duration-300 ease-in-out" : ""
+        } ${
+          sidebarOpen
+            ? "translate-x-0 sidebar-slide-in"
+            : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Header: Logo + role switch */}

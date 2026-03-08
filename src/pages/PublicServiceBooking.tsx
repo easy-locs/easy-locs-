@@ -351,8 +351,10 @@ const PublicServiceBooking = () => {
               {step === 1 && (
                 <div>
                   <ServiceBookingCalendar
+                    serviceId={service.id}
                     timeSlots={timeSlots}
                     blockedDates={blockedDates}
+                    maxCapacity={service.max_capacity}
                     onSelect={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
                     selectedDate={selectedDate}
                     selectedTime={selectedTime}
