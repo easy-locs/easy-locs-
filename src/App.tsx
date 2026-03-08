@@ -93,6 +93,7 @@ const LegalNoticePage = lazy(() => import("./pages/legal/LegalNoticePage"));
 const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
 const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
 const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
+const PlatformVision = lazy(() => import("./pages/PlatformVision"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +160,7 @@ const App = () => (
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/property-management-:country" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
