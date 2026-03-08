@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 
 // Static approximate rates relative to EUR — comprehensive worldwide coverage
-const RATES_TO_EUR: Record<string, number> = {
+export const RATES_TO_EUR: Record<string, number> = {
   // Europe
   EUR: 1, GBP: 1.17, CHF: 1.05, SEK: 0.089, DKK: 0.134, NOK: 0.087,
   PLN: 0.233, CZK: 0.040, HUF: 0.0026, RON: 0.201, BGN: 0.511,
