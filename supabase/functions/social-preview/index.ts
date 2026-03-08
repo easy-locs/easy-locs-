@@ -83,7 +83,7 @@ function buildHeaders() {
   };
 }
 
-async function handleListing(slug: string): Promise<Response> {
+async function handleListing(slug: string, shareUrl: string): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
@@ -103,22 +103,22 @@ async function handleListing(slug: string): Promise<Response> {
   const photos: string[] = property?.photo_urls || [];
   const rawImage = listing.cover_url || photos[0] || DEFAULT_OG_IMAGE;
   const image = withCacheBust(rawImage, listing.updated_at || null);
-  const url = `${APP_URL}/listing/${slug}`;
+  const redirectUrl = `${APP_URL}/listing/${slug}`;
 
   return new Response(
     htmlPage({
       title,
       description: desc,
       image,
-      url,
-      redirectUrl: url,
+      url: shareUrl,
+      redirectUrl,
       type: "website",
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "LodgingBusiness",
         name: listing.title || property?.label,
         description: listing.description?.slice(0, 300) || desc,
-        url,
+        url: redirectUrl,
         image,
         address: {
           "@type": "PostalAddress",
@@ -137,7 +137,7 @@ async function handleListing(slug: string): Promise<Response> {
   );
 }
 
-async function handleService(slug: string): Promise<Response> {
+async function handleService(slug: string, shareUrl: string): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
@@ -154,15 +154,15 @@ async function handleService(slug: string): Promise<Response> {
   const image = withCacheBust(rawImage, service.updated_at || null);
   const title = `${service.title} — ${service.city || ""} | Easy-Locs`.slice(0, 60);
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
-  const url = `${APP_URL}/book/${slug}`;
+  const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "website" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), {
     status: 200,
     headers: buildHeaders(),
   });
 }
 
-async function handleHost(slug: string): Promise<Response> {
+async function handleHost(slug: string, shareUrl: string): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
@@ -177,15 +177,15 @@ async function handleHost(slug: string): Promise<Response> {
   const image = withCacheBust(host.avatar_url || DEFAULT_OG_IMAGE, host.updated_at || null);
   const title = `${host.display_name} — Properties on Easy-Locs`.slice(0, 60);
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
-  const url = `${APP_URL}/host/${slug}`;
+  const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "profile" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
     status: 200,
     headers: buildHeaders(),
   });
 }
 
-async function handleProvider(slug: string): Promise<Response> {
+async function handleProvider(slug: string, shareUrl: string): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
@@ -211,9 +211,9 @@ async function handleProvider(slug: string): Promise<Response> {
   const image = withCacheBust(rawImage, provider.updated_at || firstService?.updated_at || null);
   const title = `${provider.display_name} — Services | Easy-Locs`.slice(0, 60);
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
-  const url = `${APP_URL}/provider/${slug}`;
+  const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "profile" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
     status: 200,
     headers: buildHeaders(),
   });
@@ -227,6 +227,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const type = url.searchParams.get("type");
   const slug = url.searchParams.get("slug");
+  const v = url.searchParams.get("v");
 
   if (!type || !slug) {
     return new Response(JSON.stringify({ error: "Missing type or slug" }), {
@@ -235,16 +236,21 @@ Deno.serve(async (req) => {
     });
   }
 
+  const shareParams = new URLSearchParams({ type, slug });
+  if (v) shareParams.set("v", v);
+  const functionsBase = `${Deno.env.get("SUPABASE_URL")}/functions/v1/social-preview`;
+  const shareUrl = `${functionsBase}?${shareParams.toString()}`;
+
   try {
     switch (type) {
       case "listing":
-        return await handleListing(slug);
+        return await handleListing(slug, shareUrl);
       case "service":
-        return await handleService(slug);
+        return await handleService(slug, shareUrl);
       case "host":
-        return await handleHost(slug);
+        return await handleHost(slug, shareUrl);
       case "provider":
-        return await handleProvider(slug);
+        return await handleProvider(slug, shareUrl);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
