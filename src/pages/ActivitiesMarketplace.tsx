@@ -165,7 +165,7 @@ const ActivitiesMarketplace = () => {
 
   const updateService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
-      const { error } = await supabase.from("marketplace_services" as any).update(data).eq("id", editingService!.id);
+      const { error } = await supabase.from("marketplace_services").update(data as any).eq("id", editingService!.id);
       if (error) throw error;
     },
     onSuccess: () => {
