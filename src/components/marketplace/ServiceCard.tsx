@@ -150,7 +150,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
+        <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
           <span className="font-bold text-accent">{priceLabel}</span>
           <div className="flex gap-1.5">
             {slug && links && (
