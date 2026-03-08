@@ -6,6 +6,39 @@ import AppLogo from "@/components/AppLogo";
 const Footer = React.forwardRef<HTMLElement>((_, ref) => {
   const { t } = useI18n();
 
+  const columns = [
+    {
+      title: t("landing.footer.about") || "About",
+      links: [
+        { label: t("landing.footer.about") || "About", to: "/about" },
+        { label: t("landing.footer.contact") || "Contact", to: "/contact" },
+        { label: t("landing.footer.help") || "Support", to: "/help" },
+      ],
+    },
+    {
+      title: t("landing.footer.legal") || "Legal",
+      links: [
+        { label: t("landing.footer.terms") || "Terms", to: "/terms" },
+        { label: t("landing.footer.privacy") || "Privacy", to: "/privacy" },
+        { label: t("landing.footer.cookies") || "Cookies", to: "/cookies" },
+      ],
+    },
+    {
+      title: t("landing.footer.product") || "Product",
+      links: [
+        { label: t("landing.nav.features") || "Features", to: "/#features" },
+        { label: t("landing.nav.pricing") || "Pricing", to: "/#pricing" },
+        { label: t("landing.footer.api") || "API", to: "/developer" },
+      ],
+    },
+    {
+      title: "Contact",
+      links: [
+        { label: "contact@easy-locs.com", to: "mailto:contact@easy-locs.com", external: true },
+      ],
+    },
+  ];
+
   return (
     <footer
       ref={ref}
@@ -20,40 +53,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
             <p className="text-sm leading-relaxed">{t("landing.footer.desc")}</p>
           </div>
 
-          {/* Links */}
-          {[
-            {
-              title: t("landing.footer.product") || "Product",
-              links: [
-                { label: t("landing.nav.features"), to: "/#features" },
-                { label: t("landing.nav.pricing"), to: "/#pricing" },
-                { label: t("landing.footer.about") || "About", to: "/about" },
-              ],
-            },
-            {
-              title: t("landing.footer.legal") || "Legal",
-              links: [
-                { label: t("landing.footer.terms") || "Terms", to: "/terms" },
-                { label: t("landing.footer.privacy") || "Privacy", to: "/privacy" },
-                { label: t("landing.footer.legal_notice") || "Legal Notice", to: "/legal-notice" },
-                { label: t("landing.footer.cookies") || "Cookies", to: "/cookies" },
-              ],
-            },
-            {
-              title: t("landing.footer.support") || "Support",
-              links: [
-                { label: t("landing.footer.help") || "Help", to: "/help" },
-                { label: t("landing.footer.contact") || "Contact", to: "/contact" },
-                { label: t("landing.footer.api") || "API", to: "/developer" },
-              ],
-            },
-            {
-              title: "Contact",
-              links: [
-                { label: "contact@easy-locs.com", to: "mailto:contact@easy-locs.com", external: true },
-              ],
-            },
-          ].map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <h4 className="font-semibold text-sm mb-3" style={{ color: "hsl(var(--primary-foreground))" }}>
                 {col.title}
