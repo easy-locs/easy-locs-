@@ -158,6 +158,7 @@ const PublicServiceBooking = () => {
     try {
       // Create the order
       const totalPrice = service.price * quantity;
+      const idDocUrl = (form as any).id_document_url || null;
       const orderData: any = {
         org_id: service.org_id,
         service_id: service.id,
