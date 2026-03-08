@@ -23,6 +23,7 @@ const PublicServiceBooking = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [quantity, setQuantity] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -88,6 +89,7 @@ const PublicServiceBooking = () => {
 
     try {
       // Create the order
+      const totalPrice = service.price * quantity;
       const orderData: any = {
         org_id: service.org_id,
         service_id: service.id,
@@ -96,9 +98,9 @@ const PublicServiceBooking = () => {
         guest_email: form.email,
         guest_phone: form.phone,
         notes: form.notes,
-        quantity: 1,
+        quantity,
         unit_price: service.price,
-        total_price: service.price,
+        total_price: totalPrice,
         currency: service.currency || "EUR",
         service_date: format(selectedDate, "yyyy-MM-dd"),
         service_time: selectedTime || null,
@@ -126,7 +128,7 @@ const PublicServiceBooking = () => {
           body: {
             order_id: (order as any).id,
             service_id: service.id,
-            amount: service.price,
+            amount: service.price * quantity,
             currency: service.currency || "EUR",
             guest_email: form.email,
             guest_name: form.name,
@@ -302,6 +304,15 @@ const PublicServiceBooking = () => {
                     <label className="text-xs text-muted-foreground">Notes</label>
                     <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                   </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Quantity / Days</label>
+                    <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value)))} />
+                    {quantity > 1 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {quantity} × {service.price} {service.currency || "EUR"} = <strong>{(service.price * quantity).toLocaleString()} {service.currency || "EUR"}</strong>
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
                     <Button onClick={() => setStep(3)} disabled={!form.name || !form.email} className="flex-1">Continue</Button>
@@ -338,7 +349,7 @@ const PublicServiceBooking = () => {
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
                     <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "stripe" ? `Pay ${service.price} ${(service.currency || "EUR").toUpperCase()}` : "Confirm Booking"}
+                      {paymentMethod === "stripe" ? `Pay ${(service.price * quantity).toLocaleString()} ${(service.currency || "EUR").toUpperCase()}` : "Confirm Booking"}
                     </Button>
                   </div>
                 </div>
@@ -374,11 +385,17 @@ const PublicServiceBooking = () => {
                         <span className="text-foreground">{service.duration_minutes} min</span>
                       </div>
                     )}
+                  {quantity > 1 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Quantity</span>
+                      <span className="text-foreground">{quantity} × {service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                    </div>
+                  )}
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="text-2xl font-bold text-accent">{service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                    <span className="text-2xl font-bold text-accent">{(service.price * quantity).toLocaleString()} {(service.currency || "EUR").toUpperCase()}</span>
                   </div>
                 </CardContent>
               </Card>
