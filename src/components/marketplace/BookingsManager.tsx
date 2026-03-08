@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2, MessageCircle } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2, MessageCircle, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
