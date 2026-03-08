@@ -125,12 +125,10 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Global KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {[
             { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties) },
             { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries) },
-            { icon: Store, label: "Services", value: loading ? "..." : String(stats.totalServices) },
-            { icon: CalendarCheck, label: "Réservations", value: loading ? "..." : String(stats.totalBookings) },
             { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
           ].map((stat, i) => (
             <motion.div
