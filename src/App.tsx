@@ -93,6 +93,7 @@ const LegalNoticePage = lazy(() => import("./pages/legal/LegalNoticePage"));
 const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
 const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
 const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
+const PlatformVision = lazy(() => import("./pages/PlatformVision"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
