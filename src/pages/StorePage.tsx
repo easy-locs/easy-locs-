@@ -33,7 +33,7 @@ export default function StorePage() {
 
       if (landlord) {
         const { data: services } = await supabase
-          .from("concierge_services" as any)
+          .from("concierge_services")
           .select("*")
           .eq("org_id", landlord.org_id)
           .eq("active", true)
@@ -80,7 +80,7 @@ export default function StorePage() {
     </>
   );
 
-  const profile = showcase.profile as any;
+  const profile = showcase.profile as Record<string, any>;
   const name = profile.display_name || profile.company_name || storeSlug;
 
   return (
