@@ -364,7 +364,7 @@ const PlatformVision = () => (
             { icon: Layers, title: "Document Center", desc: "Generate leases, receipts, invoices and reports. Digital signatures included." },
             { icon: Shield, title: "Security & Compliance", desc: "Role-based access, audit trails, GDPR compliance and encrypted storage." },
           ].map((feature, i) => (
-            <FeatureCard key={i} {...feature} index={i} />
+            <FeatureCard key={i} icon={feature.icon} title={feature.title} description={feature.desc} index={i} />
           ))}
         </motion.div>
       </Section>
