@@ -39,6 +39,8 @@ interface ProviderFormData {
   bank_bic: string;
   bank_holder: string;
   bank_name: string;
+  tax_rate: number;
+  tax_label: string;
 }
 
 interface Props {
