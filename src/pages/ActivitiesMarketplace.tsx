@@ -115,7 +115,7 @@ const ActivitiesMarketplace = () => {
   const createProvider = useMutation({
     mutationFn: async (data: any) => {
       const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      const { error } = await supabase.from("marketplace_providers" as any).insert({
+      const { error } = await supabase.from("marketplace_providers").insert({
         ...data,
         slug,
         user_id: user!.id,
