@@ -21,7 +21,7 @@ const ServicePhotoManager = ({ photos, onChange, orgId }: Props) => {
     const newUrls: string[] = [];
     for (const file of Array.from(files)) {
       const ext = file.name.split(".").pop();
-      const path = `concierge/${orgId}/${crypto.randomUUID()}.${ext}`;
+      const path = `${orgId}/concierge/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
       if (error) {
         toast.error(`Upload failed: ${error.message}`);
