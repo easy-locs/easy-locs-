@@ -507,6 +507,10 @@ const ActivitiesMarketplace = () => {
             active: editingService.active,
             photo_urls: Array.isArray(editingService.photo_urls) ? editingService.photo_urls : [],
             requires_id_document: editingService.requires_id_document || false,
+            source_contact_name: editingService.source_contact_name || "",
+            source_contact_phone: editingService.source_contact_phone || "",
+            source_contact_email: editingService.source_contact_email || "",
+            source_contact_notes: editingService.source_contact_notes || "",
           } : undefined}
           providerCountry={myProvider?.country}
           providerCity={myProvider?.city}
