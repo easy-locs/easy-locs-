@@ -4,8 +4,7 @@ import {
   Home, Users, KeyRound, FileText, Wallet, ClipboardList,
   MessageCircle, Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
-  Store, Calendar, Sofa, Zap, MapPin, CalendarCheck,
-  Settings, ShoppingBag, Handshake, CheckSquare, UserSearch,
+  Calendar, Sofa, Zap, CheckSquare, UserSearch,
   Bell, Layers, Clock,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
