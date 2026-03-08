@@ -343,7 +343,6 @@ const ActivitiesMarketplace = () => {
     toast.success("Payment confirmed!");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Sync payment confirmation to comms center
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
       await syncToCommunicationCenter({
@@ -353,6 +352,15 @@ const ActivitiesMarketplace = () => {
         subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
         category: "payment",
+        meta: {
+          event_type: "payment_received",
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     }
   };
