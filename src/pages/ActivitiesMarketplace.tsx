@@ -194,7 +194,7 @@ const ActivitiesMarketplace = () => {
     mutationFn: async (formData: any) => {
       const svc = bookingService;
       const prov = providersMap[svc.provider_id];
-      const { error } = await supabase.from("marketplace_bookings" as any).insert({
+      const { error } = await supabase.from("marketplace_bookings").insert({
         service_id: svc.id,
         provider_id: svc.provider_id,
         org_id: prov?.org_id || svc.org_id,
