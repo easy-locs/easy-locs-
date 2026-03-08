@@ -111,7 +111,7 @@ const PageLoader = () => (
   </div>
 );
 
-const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/"];
+const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/"];
 
 const RouteAwareAssistant = () => {
   const { pathname } = useLocation();
