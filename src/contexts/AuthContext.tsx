@@ -93,14 +93,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const orgIds = memberships.map(m => m.org_id);
         const { data: orgsData } = await supabase
           .from("orgs")
-          .select("id, name, country, currency")
+          .select("id, name")
           .in("id", orgIds);
 
         const orgs = (orgsData || []).map(o => ({
           id: o.id,
           name: o.name || "Unnamed",
-          country: (o as any).country || "",
-          currency: (o as any).currency || "EUR",
+          country: "",
+          currency: "EUR",
         }));
         setAllOrgs(orgs);
 
