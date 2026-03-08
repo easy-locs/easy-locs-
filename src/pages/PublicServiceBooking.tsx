@@ -31,17 +31,50 @@ const PublicServiceBooking = () => {
   const [photoIndex, setPhotoIndex] = useState(0);
 
   useEffect(() => {
+    let mounted = true;
+
     const load = async () => {
-      const { data } = await supabase
+      if (!slug) {
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      const normalizedSlug = decodeURIComponent(slug).trim();
+
+      const { data: exactMatch } = await supabase
         .from("concierge_services" as any)
         .select("*")
-        .eq("booking_slug", slug)
+        .eq("booking_slug", normalizedSlug)
         .eq("active", true)
-        .single();
-      setService(data);
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let resolvedService = exactMatch;
+
+      if (!resolvedService) {
+        const { data: fallbackMatch } = await supabase
+          .from("concierge_services" as any)
+          .select("*")
+          .ilike("booking_slug", normalizedSlug)
+          .eq("active", true)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        resolvedService = fallbackMatch;
+      }
+
+      if (!mounted) return;
+      setService(resolvedService ?? null);
       setLoading(false);
     };
-    if (slug) load();
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
   }, [slug]);
 
   useEffect(() => {
