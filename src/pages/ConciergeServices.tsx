@@ -78,6 +78,16 @@ const emptyForm: ServiceForm = {
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
 
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
+
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
   const [services, setServices] = useState<any[]>([]);
