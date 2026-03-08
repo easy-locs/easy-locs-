@@ -1,6 +1,6 @@
 /**
  * Social sharing utilities for Easy-Locs.
- * 
+ *
  * Generates share URLs that point to the social-preview edge function,
  * which serves proper og:meta tags for crawlers and redirects real browsers.
  */
@@ -14,8 +14,10 @@ export type ShareableType = "listing" | "service" | "host" | "provider";
  * Crawlers get HTML with correct og:image/og:title.
  * Real browsers get redirected to the SPA page.
  */
-export function getSocialShareUrl(type: ShareableType, slug: string): string {
-  return `${SUPABASE_URL}/functions/v1/social-preview?type=${type}&slug=${encodeURIComponent(slug)}`;
+export function getSocialShareUrl(type: ShareableType, slug: string, version?: string | number): string {
+  const params = new URLSearchParams({ type, slug });
+  if (version) params.set("v", String(version));
+  return `${SUPABASE_URL}/functions/v1/social-preview?${params.toString()}`;
 }
 
 /**
@@ -25,8 +27,9 @@ export async function sharePage(opts: {
   type: ShareableType;
   slug: string;
   title: string;
+  version?: string | number;
 }): Promise<"shared" | "copied" | "failed"> {
-  const url = getSocialShareUrl(opts.type, opts.slug);
+  const url = getSocialShareUrl(opts.type, opts.slug, opts.version);
 
   if (navigator.share) {
     try {
@@ -48,8 +51,8 @@ export async function sharePage(opts: {
 /**
  * Generate share links for specific platforms.
  */
-export function getShareLinks(type: ShareableType, slug: string, title: string) {
-  const url = getSocialShareUrl(type, slug);
+export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
+  const url = getSocialShareUrl(type, slug, version);
   const encoded = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
