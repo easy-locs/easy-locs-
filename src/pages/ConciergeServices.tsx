@@ -494,8 +494,8 @@ const ConciergeServices = () => {
                           <p className="text-[10px] text-muted-foreground">{svcOrders.length} bookings</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-foreground">{rev.toLocaleString()}€</p>
-                          {comm > 0 && <p className="text-[10px] text-muted-foreground">Commission: {comm.toLocaleString()}€</p>}
+                          <p className="text-sm font-bold text-foreground">{fmtPrice(rev, s.currency)}</p>
+                          {comm > 0 && <p className="text-[10px] text-muted-foreground">Commission: {fmtPrice(comm, s.currency)}</p>}
                         </div>
                       </div>
                     );
