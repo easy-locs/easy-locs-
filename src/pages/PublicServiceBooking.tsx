@@ -382,7 +382,7 @@ const PublicServiceBooking = () => {
                     <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value)))} />
                     {quantity > 1 && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {quantity} × {service.price} {service.currency || "EUR"} = <strong>{(service.price * quantity).toLocaleString()} {service.currency || "EUR"}</strong>
+                        {quantity} × {fmtPrice(service.price, service.currency)} = <strong>{fmtPrice(service.price * quantity, service.currency)}</strong>
                       </p>
                     )}
                   </div>
