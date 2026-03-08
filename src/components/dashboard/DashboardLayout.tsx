@@ -116,7 +116,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
         { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
-        { icon: MapPin, label: t("nav.local_services") || "Activités & Services", path: "/dashboard/local-services" },
+        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
+      ],
+    },
+    {
+      key: "services",
+      title: "Services Marketplace",
+      icon: Store,
+      items: [
+        { icon: Store, label: "Marketplace", path: "/dashboard/activities" },
+        { icon: Handshake, label: "Concierge", path: "/dashboard/concierge" },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
     },
   ];
