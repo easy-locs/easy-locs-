@@ -34,14 +34,12 @@ interface NavSection {
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarReady = useRef(false);
+  const [sidebarReady, setSidebarReady] = useState(false);
 
-  // Prevent sidebar transition on initial desktop render (avoids flicker/double blink)
+  // Delay enabling transitions to prevent initial render flicker on desktop
   useEffect(() => {
-    // Mark ready after first paint so transitions only apply to user-triggered changes
-    requestAnimationFrame(() => {
-      sidebarReady.current = true;
-    });
+    const id = requestAnimationFrame(() => setSidebarReady(true));
+    return () => cancelAnimationFrame(id);
   }, []);
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
