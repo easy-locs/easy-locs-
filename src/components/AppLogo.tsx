@@ -54,7 +54,7 @@ const AppLogo = ({
         alt="EASY-LOCS"
         className={`${imgClass} object-contain transition-all duration-200`}
         draggable={false}
-        style={{ mixBlendMode: "multiply", background: "transparent" }}
+        style={{ background: "transparent" }}
         width={40}
         height={40}
       />
