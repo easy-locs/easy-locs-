@@ -180,7 +180,7 @@ const ActivitiesMarketplace = () => {
 
   const deleteService = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("marketplace_services" as any).delete().eq("id", id);
+      const { error } = await supabase.from("marketplace_services").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
