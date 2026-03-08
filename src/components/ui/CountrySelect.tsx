@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { getAllCountryEntries, type CountryEntry } from "@/lib/global-country-registry";
+import { getAllCountryEntries, getLocalizedCountryName, type CountryEntry } from "@/lib/global-country-registry";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, ChevronDown, X } from "lucide-react";
@@ -28,20 +28,30 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
   const ref = useRef<HTMLDivElement>(null);
 
   const allCountries = useMemo(() => getAllCountryEntries(), []);
-  const selected = useMemo(() => allCountries.find(c => c.code === value), [value, allCountries]);
+
+  // Build localized entries once
+  const localizedEntries = useMemo(() => {
+    return allCountries.map(c => ({
+      ...c,
+      localName: getLocalizedCountryName(c.code),
+    }));
+  }, [allCountries]);
+
+  const selected = useMemo(() => localizedEntries.find(c => c.code === value), [value, localizedEntries]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return allCountries;
-    return allCountries.filter(c =>
+    if (!q) return localizedEntries;
+    return localizedEntries.filter(c =>
+      c.localName.toLowerCase().includes(q) ||
       c.name.toLowerCase().includes(q) ||
       c.code.toLowerCase().includes(q) ||
       c.flag.includes(q)
     );
-  }, [search, allCountries]);
+  }, [search, localizedEntries]);
 
   const grouped = useMemo(() => {
-    const map: Record<string, CountryEntry[]> = {};
+    const map: Record<string, (CountryEntry & { localName: string })[]> = {};
     for (const c of filtered) {
       if (!map[c.region]) map[c.region] = [];
       map[c.region].push(c);
@@ -71,7 +81,7 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
           {selected ? (
             <>
               <span className="text-lg">{selected.flag}</span>
-              <span className="truncate">{selected.name}</span>
+              <span className="truncate">{selected.localName}</span>
               <span className="text-muted-foreground text-xs">({selected.code})</span>
             </>
           ) : (
@@ -129,7 +139,7 @@ export default function CountrySelect({ value, onChange, placeholder = "Select a
                           }`}
                         >
                           <span className="text-lg">{c.flag}</span>
-                          <span className="flex-1 text-left truncate">{c.name}</span>
+                          <span className="flex-1 text-left truncate">{c.localName}</span>
                           <span className="text-xs text-muted-foreground">{c.code}</span>
                           <span className="text-xs text-muted-foreground">{c.currencySymbol}</span>
                         </button>

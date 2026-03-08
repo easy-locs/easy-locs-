@@ -62,6 +62,7 @@ export async function sharePage(opts: {
 
 /**
  * Generate share links for specific platforms.
+ * Uses api.whatsapp.com for better mobile compatibility.
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
   const url = getSocialShareUrl(type, slug, version);
@@ -69,7 +70,7 @@ export function getShareLinks(type: ShareableType, slug: string, title: string, 
   const encodedTitle = encodeURIComponent(title);
 
   return {
-    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encoded}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encoded}`,
     telegram: `https://t.me/share/url?url=${encoded}&text=${encodedTitle}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encoded}`,
     twitter: `https://twitter.com/intent/tweet?url=${encoded}&text=${encodedTitle}`,
@@ -79,4 +80,3 @@ export function getShareLinks(type: ShareableType, slug: string, title: string, 
     copy: url,
   };
 }
-

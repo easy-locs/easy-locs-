@@ -285,23 +285,23 @@ const ConciergeServices = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {[
             { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
             { icon: DollarSign, label: `Revenue (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
             { icon: TrendingUp, label: `Commission (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
             { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
-            { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
+            { icon: CreditCard, label: "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card>
+              <Card className="h-full">
                 <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <kpi.icon className={`h-4 w-4 ${kpi.cls}`} />
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <kpi.icon className={`h-4 w-4 shrink-0 ${kpi.cls}`} />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
                   </div>
-                  <p className="text-xl font-bold text-foreground tabular-nums">{kpi.value}</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -333,36 +333,37 @@ const ConciergeServices = () => {
                 <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" /> Create Service</Button>
               </CardContent></Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((s, i) => {
                   const photos: string[] = Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [];
                   return (
                     <motion.div key={s.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
-                      <Card className="overflow-hidden group">
-                        {photos.length > 0 && (
-                          <div className="aspect-[16/9] overflow-hidden bg-muted">
+                      <Card className="overflow-hidden group h-full flex flex-col">
+                        <div className="aspect-[16/9] overflow-hidden bg-muted relative">
+                          {photos.length > 0 ? (
                             <img src={photos[0]} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                            {photos.length > 1 && (
-                              <div className="absolute bottom-2 right-2">
-                                <Badge variant="secondary" className="text-[10px]">{photos.length} photos</Badge>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <CardContent className="pt-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg">{catIcon(s.category)}</span>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl">{catIcon(s.category)}</div>
+                          )}
+                          {photos.length > 1 && (
+                            <div className="absolute bottom-2 right-2">
+                              <Badge variant="secondary" className="text-[10px]">{photos.length} photos</Badge>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2">
                             <Badge variant={s.active ? "default" : "outline"} className="text-[10px]">{s.active ? "Active" : "Inactive"}</Badge>
                           </div>
-                          <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
+                        </div>
+                        <CardContent className="pt-4 space-y-2 flex-1 flex flex-col">
+                          <h3 className="font-semibold text-foreground text-sm line-clamp-1">{catIcon(s.category)} {s.title}</h3>
                           {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
-                          <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center justify-between text-xs mt-auto pt-1">
                             <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>
                             {s.duration_minutes && <span className="text-muted-foreground"><Clock className="h-3 w-3 inline mr-0.5" />{s.duration_minutes}min</span>}
                           </div>
                           {s.commission_amount > 0 && (
                             <p className="text-[10px] text-muted-foreground">
-                              Commission: {s.commission_type === "fixed" ? `${s.commission_amount}€` : `${s.commission_amount}%`}
+                              Commission: {s.commission_type === "fixed" ? fmtPrice(s.commission_amount, s.currency) : `${s.commission_amount}%`}
                             </p>
                           )}
                           <Separator />
@@ -677,7 +678,7 @@ const ConciergeServices = () => {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Amount</label>
-                  <Input type="number" value={form.commission_amount} onChange={e => setForm(f => ({ ...f, commission_amount: Number(e.target.value) }))} />
+                  <Input type="number" value={form.commission_amount || ""} onChange={e => setForm(f => ({ ...f, commission_amount: e.target.value === "" ? 0 : Number(e.target.value) }))} placeholder="0" />
                 </div>
               </div>
 

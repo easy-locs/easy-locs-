@@ -208,6 +208,42 @@ export function getCountryLabel(code: string): string {
   return c ? `${c.flag} ${c.name}` : code;
 }
 
+/**
+ * Get localized country name using browser's Intl.DisplayNames API.
+ * Falls back to registry name if not available.
+ */
+let _displayNames: Intl.DisplayNames | null = null;
+let _displayNamesLocale: string = "";
+
+function getDisplayNames(locale?: string): Intl.DisplayNames | null {
+  const targetLocale = locale || navigator.language || "en";
+  if (_displayNames && _displayNamesLocale === targetLocale) return _displayNames;
+  try {
+    _displayNames = new Intl.DisplayNames([targetLocale], { type: "region" });
+    _displayNamesLocale = targetLocale;
+    return _displayNames;
+  } catch {
+    return null;
+  }
+}
+
+export function getLocalizedCountryName(code: string, locale?: string): string {
+  const dn = getDisplayNames(locale);
+  if (dn) {
+    try {
+      const localized = dn.of(code);
+      if (localized) return localized;
+    } catch { /* fallback */ }
+  }
+  return byCode.get(code)?.name || code;
+}
+
+export function getLocalizedCountryLabel(code: string, locale?: string): string {
+  const c = byCode.get(code);
+  const name = getLocalizedCountryName(code, locale);
+  return c ? `${c.flag} ${name}` : code;
+}
+
 // ─── Formatting helpers ───
 
 export function formatCurrency(amount: number, countryCode: string): string {
