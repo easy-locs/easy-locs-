@@ -81,7 +81,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       )}
-      <CardContent className="pt-4 space-y-2">
+      <CardContent className="pt-4 space-y-2 flex-1 flex flex-col">
         <div className="flex items-center gap-2">
           <span className="text-lg">{cat.icon}</span>
           <Badge variant="outline" className="text-xs">{cat.label}</Badge>
