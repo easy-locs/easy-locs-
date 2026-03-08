@@ -163,7 +163,12 @@ const PublicServiceBooking = () => {
 
   return (
     <>
-      <SEOHead title={`${service.title} — Book Now`} description={service.description || ""} />
+      <SEOHead
+        title={`${service.title} — Book Now | Easy-Locs`}
+        description={service.description || `Book ${service.title} on Easy-Locs`}
+        ogImage={service.photo_url || (Array.isArray(service.photo_urls) && service.photo_urls[0]) || undefined}
+        canonical={`https://www.easy-locs.com/book/${slug}`}
+      />
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Photo Gallery */}
