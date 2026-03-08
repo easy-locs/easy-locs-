@@ -164,6 +164,7 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
   const redirectUrl = `${APP_URL}/listing/${slug}`;
 
   return buildSocialResponse(
+    req,
     htmlPage({
       title,
       description: desc,
@@ -190,7 +191,8 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
             }
           : {}),
       },
-    })
+    }),
+    redirectUrl
   );
 }
 
