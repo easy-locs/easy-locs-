@@ -260,6 +260,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSubscription({ ...defaultSubscription, loading: false });
         setActiveRole("landlord");
         setHasDualRole(false);
+        setAllOrgs([]);
       }
 
       if (mounted) setLoading(false);
