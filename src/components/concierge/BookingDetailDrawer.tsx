@@ -205,12 +205,12 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Amount</span>
-                <span className="text-lg font-bold text-foreground">{booking.total_price} {booking.currency}</span>
+                <span className="text-lg font-bold text-foreground">{fmtPrice(booking.total_price, booking.currency)}</span>
               </div>
               {booking.commission_amount > 0 && (
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Commission</span>
-                  <span className="text-foreground">{booking.commission_amount} {booking.currency}</span>
+                  <span className="text-foreground">{fmtPrice(booking.commission_amount, booking.currency)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between text-xs">
