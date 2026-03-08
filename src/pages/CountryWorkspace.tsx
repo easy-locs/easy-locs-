@@ -4,8 +4,7 @@ import {
   Home, Users, KeyRound, FileText, Wallet, ClipboardList,
   MessageCircle, Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
-  Store, Calendar, Sofa, Zap, MapPin, CalendarCheck,
-  Settings, ShoppingBag, Handshake, CheckSquare, UserSearch,
+  Calendar, Sofa, Zap, CheckSquare, UserSearch,
   Bell, Layers, Clock,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -28,7 +27,7 @@ const CountryWorkspace = () => {
 
   const [stats, setStats] = useState({
     properties: 0, tenants: 0, leases: 0, documents: 0,
-    buildings: 0, services: 0, bookings: 0,
+    buildings: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -40,11 +39,7 @@ const CountryWorkspace = () => {
       supabase.from("leases").select("id", { count: "exact" }).eq("org_id", orgId).eq("country", country),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country),
       supabase.from("buildings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("concierge_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
-      supabase.from("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
-      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    ]).then(([props, tenants, leases, docs, buildings, concSvc, mpSvc, concOrd, mpBk]) => {
+    ]).then(([props, tenants, leases, docs, buildings]) => {
       const propIds = new Set((props.data || []).map(p => p.id));
       const countryTenants = (tenants.data || []).filter(t => t.property_id && propIds.has(t.property_id));
 
@@ -54,8 +49,6 @@ const CountryWorkspace = () => {
         leases: leases.count || 0,
         documents: docs.count || 0,
         buildings: buildings.count || 0,
-        services: (concSvc.count || 0) + (mpSvc.count || 0),
-        bookings: (concOrd.count || 0) + (mpBk.count || 0),
       });
       setLoading(false);
     });
@@ -74,17 +67,6 @@ const CountryWorkspace = () => {
         { icon: KeyRound, label: t("nav.leases") || "Baux", path: cp("/dashboard/leases"), count: stats.leases },
         { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: cp("/dashboard/rental?tab=inventory") },
         { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: cp("/dashboard/furniture") },
-      ],
-    },
-    {
-      title: "Marketplace & Services",
-      description: "Services, réservations et conciergerie",
-      items: [
-        { icon: Store, label: "Marketplace", path: "/dashboard/activities", count: stats.services },
-        { icon: Handshake, label: "Conciergerie", path: "/dashboard/concierge" },
-        { icon: CalendarCheck, label: "Réservations", path: "/dashboard/operations", count: stats.bookings },
-        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
       ],
     },
     {
@@ -118,6 +100,7 @@ const CountryWorkspace = () => {
         { icon: Clock, label: t("nav.reminders") || "Rappels", path: cp("/dashboard/reminders") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cp("/dashboard/tasks") },
         { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cp("/dashboard/candidates") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
       ],
     },
   ];
@@ -149,14 +132,12 @@ const CountryWorkspace = () => {
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {[
             { label: "Biens", value: stats.properties, icon: Home },
             { label: "Locataires", value: stats.tenants, icon: Users },
             { label: "Baux", value: stats.leases, icon: KeyRound },
             { label: "Documents", value: stats.documents, icon: FileText },
-            { label: "Services", value: stats.services, icon: Store },
-            { label: "Réservations", value: stats.bookings, icon: CalendarCheck },
             { label: "Immeubles", value: stats.buildings, icon: Building },
           ].map((stat, i) => (
             <motion.div

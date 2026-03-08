@@ -1,8 +1,7 @@
 import { useState, useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import {
-  Globe, Building, Users, Euro, MapPin, Plus,
-  Store, CalendarCheck, ShoppingBag, TrendingUp,
+  Globe, Building, Users, MapPin, Plus, TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -19,8 +18,6 @@ type CountryStat = {
   flag: string;
   name: string;
   tenants: number;
-  services: number;
-  bookings: number;
 };
 
 type WorldMapProps = {
@@ -36,8 +33,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalCountries: 0,
-    totalServices: 0,
-    totalBookings: 0,
     revenueThisMonth: 0,
     propertiesByCountry: [] as CountryStat[],
   });
@@ -60,27 +55,10 @@ const Dashboard = () => {
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-      // Services: concierge + marketplace
-      supabase.from("concierge_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
-      supabase.from("marketplace_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
-      // Bookings: concierge orders + marketplace bookings
-      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
     ])
-      .then(([props, tenantsRes, rc, concServices, mpServices, concOrders, mpBookings]) => {
+      .then(([props, tenantsRes, rc]) => {
         const propData = (props.data || []) as { id: string; country: string }[];
         const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
-
-        // Aggregate services by country
-        const servicesByCountry = new Map<string, number>();
-        for (const s of (concServices.data || []) as { country: string }[]) {
-          const c = s.country || "XX";
-          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
-        }
-        for (const s of (mpServices.data || []) as { country: string }[]) {
-          const c = s.country || "XX";
-          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
-        }
 
         const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
         propData.forEach((p) => {
@@ -90,13 +68,6 @@ const Dashboard = () => {
           existing.propIds.add(p.id);
           countryMap.set(c, existing);
         });
-
-        // Also include countries that only have services
-        for (const [c] of servicesByCountry) {
-          if (!countryMap.has(c) && c !== "XX") {
-            countryMap.set(c, { count: 0, propIds: new Set() });
-          }
-        }
 
         const today = new Date().toISOString().split("T")[0];
         const propertiesByCountry = Array.from(countryMap.entries())
@@ -111,11 +82,9 @@ const Dashboard = () => {
               flag: entry.flag,
               name: entry.name,
               tenants: countryTenants.length,
-              services: servicesByCountry.get(code) || 0,
-              bookings: 0,
             };
           })
-          .sort((a, b) => (b.count + b.services) - (a.count + a.services));
+          .sort((a, b) => b.count - a.count);
 
         const currentMonth = format(new Date(), "yyyy-MM");
         const monthCalls = ((rc.data || []) as Array<{ month: string; paid: boolean; total_amount: number | string }>).filter(
@@ -125,14 +94,9 @@ const Dashboard = () => {
           .filter((r) => r.paid)
           .reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
 
-        const totalServices = (concServices.count || 0) + (mpServices.count || 0);
-        const totalBookings = (concOrders.count || 0) + (mpBookings.count || 0);
-
         setStats({
           totalProperties: propData.length,
           totalCountries: countryMap.size,
-          totalServices,
-          totalBookings,
           revenueThisMonth,
           propertiesByCountry,
         });
@@ -161,12 +125,10 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Global KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {[
             { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties) },
             { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries) },
-            { icon: Store, label: "Services", value: loading ? "..." : String(stats.totalServices) },
-            { icon: CalendarCheck, label: "Réservations", value: loading ? "..." : String(stats.totalBookings) },
             { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
           ].map((stat, i) => (
             <motion.div
@@ -256,12 +218,6 @@ const Dashboard = () => {
                             <span className="flex items-center gap-1">
                               <Users className="h-3.5 w-3.5" />
                               {c.tenants}
-                            </span>
-                          )}
-                          {c.services > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Store className="h-3.5 w-3.5" />
-                              {c.services} services
                             </span>
                           )}
                         </div>
