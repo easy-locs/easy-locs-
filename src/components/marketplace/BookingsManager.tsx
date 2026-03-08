@@ -65,7 +65,7 @@ async function syncToCommunicationCenter(opts: {
       org_id: opts.orgId,
       sender_id: opts.userId || null,
       content: opts.message,
-      category: opts.category || "general",
+      category: opts.category || "booking",
       read: false,
     } as any);
   } catch (e) { console.error("Comms center sync error:", e); }
@@ -86,11 +86,24 @@ async function syncToCommunicationCenter(opts: {
     } catch (e) { console.error("Notification sync error:", e); }
   }
 
-  // 3. Send email
+  // 3. Send email to client via edge function with correct parameters
   if (opts.email) {
     try {
+      // Map event_type from meta or derive from subject
+      const eventType = opts.meta?.event_type || "marketplace_notification";
       await supabase.functions.invoke("send-notification-email", {
-        body: { to: opts.email, subject: opts.subject, message: opts.message },
+        body: {
+          event_type: eventType,
+          recipient_email: opts.email,
+          recipient_name: "",
+          data: {
+            subject: opts.subject,
+            message: opts.message,
+            service_title: opts.meta?.service_title || "",
+            booking_id: opts.meta?.booking_id || "",
+          },
+          locale: "en",
+        },
       });
     } catch (e) { console.error("Email sync error:", e); }
   }
