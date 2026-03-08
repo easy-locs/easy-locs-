@@ -83,16 +83,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchOrgId = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      // Fetch all orgs for this user
+      const { data: memberships } = await supabase
         .from("org_members")
         .select("org_id")
-        .eq("user_id", userId)
-        .limit(1)
-        .maybeSingle();
-      setOrgId(data?.org_id ?? null);
+        .eq("user_id", userId);
+
+      if (memberships && memberships.length > 0) {
+        const orgIds = memberships.map(m => m.org_id);
+        const { data: orgsData } = await supabase
+          .from("orgs")
+          .select("id, name, country, currency")
+          .in("id", orgIds);
+
+        const orgs = (orgsData || []).map(o => ({
+          id: o.id,
+          name: o.name || "Unnamed",
+          country: (o as any).country || "",
+          currency: (o as any).currency || "EUR",
+        }));
+        setAllOrgs(orgs);
+
+        // Restore saved org preference or use first
+        const savedOrg = localStorage.getItem(`easylocs_active_org_${userId}`);
+        const selectedOrgId = savedOrg && orgs.some(o => o.id === savedOrg) ? savedOrg : orgIds[0];
+        setOrgId(selectedOrgId);
+      } else {
+        setOrgId(null);
+        setAllOrgs([]);
+      }
     } catch (err) {
       console.warn("[AuthContext] fetchOrgId failed:", err);
       setOrgId(null);
+      setAllOrgs([]);
     }
   }, []);
 
