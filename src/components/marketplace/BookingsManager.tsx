@@ -62,10 +62,14 @@ async function syncToCommunicationCenter(opts: {
 }) {
   // 1. Create message thread in communication center
   try {
+    const content = opts.meta?.booking_id
+      ? `${opts.message}\n\n[Booking: ${opts.meta.booking_id}]`
+      : opts.message;
+
     await supabase.from("messages").insert({
       org_id: opts.orgId,
       sender_id: opts.userId || null,
-      content: opts.message,
+      content,
       category: opts.category || "booking",
       attachment_url: opts.attachmentUrl || null,
       read: false,
