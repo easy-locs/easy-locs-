@@ -16,11 +16,44 @@ const getNotifPortal = (n: any): "tenant" | "landlord" | "both" => {
   const link = n.link || "";
   if (link.startsWith("/tenant")) return "tenant";
   if (link.startsWith("/dashboard")) return "landlord";
-  // Messages without explicit link — infer from type
   if (n.type === "message") return "both";
-  // Generic notifications (no link) show in both
   return "both";
 };
+
+/**
+ * Resolve the deep-link target for a notification.
+ * If metadata_json contains booking context, build a country-aware URL.
+ */
+function resolveNotificationTarget(n: any, activeRole: string): string | null {
+  const meta = n.metadata_json;
+
+  // If we have rich metadata with booking context, build a deep-link
+  if (meta && meta.booking_id && meta.target_type) {
+    const params = new URLSearchParams();
+    if (meta.country_code) params.set("country", meta.country_code);
+    params.set("booking", meta.booking_id);
+    params.set("target", meta.target_type);
+
+    // Route based on target_type
+    switch (meta.target_type) {
+      case "marketplace_booking":
+        return `/dashboard/activities?${params.toString()}`;
+      case "concierge_order":
+        return `/dashboard/concierge?${params.toString()}`;
+      case "booking_request":
+        return `/dashboard/seasonal?${params.toString()}`;
+      default:
+        return `/dashboard/activities?${params.toString()}`;
+    }
+  }
+
+  // Fallback to stored link or infer from type
+  if (n.link) return n.link;
+  if (n.type === "message") {
+    return activeRole === "tenant" ? "/tenant/messages" : "/dashboard/communication";
+  }
+  return null;
+}
 
 const NotificationBell = () => {
   const { user, activeRole, hasDualRole, switchRole } = useAuth();
@@ -52,7 +85,6 @@ const NotificationBell = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchNotifications]);
 
-  // Filter notifications for the current active role
   const notifications = useMemo(() => {
     return allNotifications.filter((n) => {
       const portal = getNotifPortal(n);
@@ -61,7 +93,6 @@ const NotificationBell = () => {
     }).slice(0, 20);
   }, [allNotifications, activeRole]);
 
-  // Count unread in the OTHER portal for cross-portal badge
   const otherPortalUnread = useMemo(() => {
     if (!hasDualRole) return 0;
     const otherRole = activeRole === "landlord" ? "tenant" : "landlord";
@@ -89,7 +120,8 @@ const NotificationBell = () => {
   const handleAction = (n: any) => {
     markRead(n);
     setOpen(false);
-    const target = n.link || (n.type === "message" ? (activeRole === "tenant" ? "/tenant/messages" : "/dashboard/communication") : null);
+
+    const target = resolveNotificationTarget(n, activeRole);
     if (!target) return;
 
     // Auto-switch role if notification targets the other portal
@@ -108,6 +140,11 @@ const NotificationBell = () => {
   };
 
   const getActionLabel = (n: any): string | null => {
+    // If we have booking metadata, show a specific action
+    const meta = n.metadata_json;
+    if (meta?.booking_id) {
+      return t("notif.view_booking") || "View Booking";
+    }
     if (n.type === "message") return t("notif.reply");
     if (n.type === "document") return t("notif.view_document");
     if (n.type === "payment") return t("notif.view_payment");
@@ -116,6 +153,11 @@ const NotificationBell = () => {
     if (n.type === "request") return t("notif.view_document");
     if (n.link) return t("notif.open");
     return null;
+  };
+
+  /** Show country badge if notification has country context */
+  const getCountryBadge = (n: any): string | null => {
+    return n.metadata_json?.country_code || null;
   };
 
   return (
@@ -145,7 +187,6 @@ const NotificationBell = () => {
               )}
             </div>
 
-            {/* Cross-portal unread indicator */}
             {hasDualRole && otherPortalUnread > 0 && (
               <button
                 onClick={() => {
@@ -172,12 +213,24 @@ const NotificationBell = () => {
               ) : (
                 notifications.map((n) => {
                   const label = getActionLabel(n);
+                  const countryCode = getCountryBadge(n);
                   return (
-                    <div key={n.id} className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.read ? "bg-accent/5" : ""}`}>
+                    <div
+                      key={n.id}
+                      className={`px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer ${!n.read ? "bg-accent/5" : ""}`}
+                      onClick={() => handleAction(n)}
+                    >
                       <div className="flex items-start gap-2.5">
                         <span className="text-base mt-0.5">{typeIcon[n.type] || "ℹ️"}</span>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
+                            {countryCode && (
+                              <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                {countryCode}
+                              </span>
+                            )}
+                          </div>
                           {n.message && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>}
 
                           <div className="flex items-center gap-3 mt-1.5">
@@ -185,7 +238,7 @@ const NotificationBell = () => {
                               {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: dfLocale })}
                             </p>
                             {label && (
-                              <button onClick={() => handleAction(n)} className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
+                              <button onClick={(e) => { e.stopPropagation(); handleAction(n); }} className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
                                 {n.type === "message" ? <MessageCircle className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
                                 {label}
                               </button>

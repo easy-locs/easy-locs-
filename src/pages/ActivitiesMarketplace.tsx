@@ -15,7 +15,7 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import BookingsManager, { syncToCommunicationCenter } from "@/components/marketplace/BookingsManager";
+import BookingsManager, { syncToCommunicationCenter, type NotificationMeta } from "@/components/marketplace/BookingsManager";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
@@ -230,7 +230,6 @@ const ActivitiesMarketplace = () => {
       }).select().single();
       if (error) throw error;
 
-      // Sync to communication center (notification + message + email)
       await syncToCommunicationCenter({
         orgId: provOrgId,
         userId: prov?.user_id || svc.user_id,
@@ -238,6 +237,15 @@ const ActivitiesMarketplace = () => {
         subject: `📦 New booking: ${svc.title}`,
         message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}.\nAmount: ${totalPrice} ${svc.currency}\nContact: ${formData.booker_email}${formData.booker_phone ? " • " + formData.booker_phone : ""}\nNotes: ${formData.notes || "—"}`,
         category: "general",
+        meta: {
+          event_type: "booking_created",
+          booking_id: booking?.id,
+          property_id: booking?.property_id,
+          country_code: svc.country || "",
+          workspace_id: provOrgId,
+          target_type: "marketplace_booking",
+          service_title: svc.title,
+        },
       });
 
       // Also notify the booker
@@ -269,7 +277,7 @@ const ActivitiesMarketplace = () => {
     toast.success(`Booking ${status}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Sync status change to communication center (notification + message + email)
+    // Sync status change with deep-link metadata
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
       const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
@@ -280,6 +288,15 @@ const ActivitiesMarketplace = () => {
         subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
         category: status === "cancelled" ? "general" : "payment",
+        meta: {
+          event_type: `booking_${status}`,
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     }
   };
@@ -292,7 +309,6 @@ const ActivitiesMarketplace = () => {
       supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
       });
-      // Sync to comms center
       syncToCommunicationCenter({
         orgId: booking.org_id || orgId!,
         userId: myProvider?.user_id,
@@ -300,6 +316,15 @@ const ActivitiesMarketplace = () => {
         subject: `💳 Payment link sent: ${svc?.title || "Service"}`,
         message: `Payment link sent to ${booking.booker_name} for "${svc?.title}".\nAmount: ${booking.total_price} ${booking.currency}\nLink: ${link}`,
         category: "payment",
+        meta: {
+          event_type: "payment_link_sent",
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     } else {
       toast.error("No payment link configured");
@@ -318,7 +343,6 @@ const ActivitiesMarketplace = () => {
     toast.success("Payment confirmed!");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Sync payment confirmation to comms center
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
       await syncToCommunicationCenter({
@@ -328,6 +352,15 @@ const ActivitiesMarketplace = () => {
         subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
         category: "payment",
+        meta: {
+          event_type: "payment_received",
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     }
   };

@@ -22,8 +22,33 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
   cancelled: { label: "Cancelled", variant: "destructive", icon: X },
 };
 
+/** Notification metadata for deep-linking */
+export interface NotificationMeta {
+  event_type: string;
+  booking_id?: string;
+  property_id?: string;
+  country_code?: string;
+  workspace_id?: string;
+  target_type?: "marketplace_booking" | "concierge_order" | "booking_request" | "message" | "document" | "payment";
+  service_title?: string;
+}
+
+/**
+ * Build a deep-link URL for a booking notification that includes country workspace context
+ */
+function buildBookingDeepLink(meta: NotificationMeta): string {
+  const base = "/dashboard/activities";
+  const params = new URLSearchParams();
+  if (meta.country_code) params.set("country", meta.country_code);
+  if (meta.booking_id) params.set("booking", meta.booking_id);
+  if (meta.target_type) params.set("target", meta.target_type);
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
 /**
  * Log an action to communication center + notification + email
+ * Now accepts rich metadata for deep-linking notifications to exact bookings
  */
 async function syncToCommunicationCenter(opts: {
   orgId: string;
@@ -32,6 +57,7 @@ async function syncToCommunicationCenter(opts: {
   subject: string;
   message: string;
   category?: string;
+  meta?: NotificationMeta;
 }) {
   // 1. Create message thread in communication center
   try {
@@ -44,17 +70,19 @@ async function syncToCommunicationCenter(opts: {
     } as any);
   } catch (e) { console.error("Comms center sync error:", e); }
 
-  // 2. Create in-app notification
+  // 2. Create in-app notification with deep-link metadata
   if (opts.userId) {
     try {
+      const link = opts.meta ? buildBookingDeepLink(opts.meta) : "/dashboard/activities";
       await supabase.from("notifications").insert({
         user_id: opts.userId,
         org_id: opts.orgId,
-        type: "info",
+        type: opts.meta?.target_type === "payment" ? "payment" : "info",
         title: opts.subject,
         message: opts.message.slice(0, 200),
-        link: "/dashboard/activities",
-      });
+        link,
+        metadata_json: opts.meta ? (opts.meta as any) : {},
+      } as any);
     } catch (e) { console.error("Notification sync error:", e); }
   }
 
@@ -77,7 +105,6 @@ async function handleInvoice(booking: any, service: any, provider: any) {
   const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
   const grandTotal = Number(booking.total_price) + taxAmount;
 
-  // Sync invoice to all channels
   await syncToCommunicationCenter({
     orgId: booking.org_id || provider.org_id,
     userId: provider.user_id,
@@ -85,6 +112,15 @@ async function handleInvoice(booking: any, service: any, provider: any) {
     subject: `📄 Invoice ${invoiceNum}: ${service?.title || "Service"}`,
     message: `Invoice ${invoiceNum} generated for ${booking.booker_name}.\nService: ${service?.title}\nSubtotal: ${Number(booking.total_price).toLocaleString()} ${booking.currency}${taxRate > 0 ? `\n${provider.tax_label || "VAT"} (${taxRate}%): ${taxAmount.toLocaleString()} ${booking.currency}` : ""}\nTotal: ${grandTotal.toLocaleString()} ${booking.currency}\n\n${provider.invoice_company_name || provider.display_name || ""}`,
     category: "payment",
+    meta: {
+      event_type: "invoice_generated",
+      booking_id: booking.id,
+      property_id: booking.property_id,
+      country_code: service?.country || provider?.country || "",
+      workspace_id: booking.org_id || provider.org_id,
+      target_type: "marketplace_booking",
+      service_title: service?.title,
+    },
   });
 }
 
@@ -190,7 +226,6 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                         </Button>
                       </>
                     )}
-                    {/* Invoice + Share */}
                     {(b.status === "confirmed" || b.status === "completed" || b.payment_confirmed) && provider?.invoicing_enabled && (
                       <>
                         <Button size="sm" variant="outline" onClick={() => handleInvoice(b, svc, provider)}>
@@ -218,4 +253,4 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
   );
 }
 
-export { syncToCommunicationCenter };
+export { syncToCommunicationCenter, buildBookingDeepLink };
