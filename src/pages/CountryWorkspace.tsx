@@ -27,7 +27,7 @@ const CountryWorkspace = () => {
 
   const [stats, setStats] = useState({
     properties: 0, tenants: 0, leases: 0, documents: 0,
-    buildings: 0, services: 0, bookings: 0,
+    buildings: 0,
   });
   const [loading, setLoading] = useState(true);
 
