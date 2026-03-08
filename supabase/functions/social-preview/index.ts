@@ -141,7 +141,7 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
 }
 
 
-async function handleListing(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleListing(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
