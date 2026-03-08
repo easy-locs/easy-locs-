@@ -104,6 +104,7 @@ const ConciergeServices = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
+  const [preferredCurrency, setPreferredCurrency] = useState("EUR");
 
   // Load landlord profile for showcase link
   useEffect(() => {
