@@ -35,6 +35,10 @@ interface ProviderFormData {
   invoice_tax_id: string;
   invoice_prefix: string;
   invoice_next_number: number;
+  bank_iban: string;
+  bank_bic: string;
+  bank_holder: string;
+  bank_name: string;
 }
 
 interface Props {
