@@ -238,7 +238,8 @@ Deno.serve(async (req) => {
 
   const shareParams = new URLSearchParams({ type, slug });
   if (v) shareParams.set("v", v);
-  const shareUrl = `${url.origin}${url.pathname}?${shareParams.toString()}`;
+  const functionsBase = `${Deno.env.get("SUPABASE_URL")}/functions/v1/social-preview`;
+  const shareUrl = `${functionsBase}?${shareParams.toString()}`;
 
   try {
     switch (type) {
