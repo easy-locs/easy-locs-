@@ -109,6 +109,19 @@ const PageLoader = () => (
   </div>
 );
 
+const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/"];
+
+const RouteAwareAssistant = () => {
+  const { pathname } = useLocation();
+  const hideAssistant =
+    pathname === "/guest" ||
+    pathname.startsWith("/r/") ||
+    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix));
+
+  if (hideAssistant) return null;
+  return <FloatingAIAssistant />;
+};
+
 const App = () => (
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
