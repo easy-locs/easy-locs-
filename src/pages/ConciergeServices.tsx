@@ -515,7 +515,7 @@ const ConciergeServices = () => {
                           <p className="text-[10px] text-muted-foreground">{o.service_date || "—"}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-foreground">{o.total_price}€</span>
+                          <span className="text-sm font-bold text-foreground">{fmtPrice(o.total_price, o.currency)}</span>
                           <Button size="sm" variant="outline" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
                             Confirm
                           </Button>
