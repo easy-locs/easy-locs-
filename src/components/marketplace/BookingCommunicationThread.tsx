@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, Paperclip, StickyNote, Mail, Bell, MessageCircle } from "lucide-react";
+import { Send, Paperclip, StickyNote, Mail, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
