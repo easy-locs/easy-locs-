@@ -18,13 +18,23 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const runtimeVersion = useMemo(() => String(Date.now()), [serviceSlug, shareVersion]);
+  const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
 
   const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
   const links = getShareLinks(shareType, serviceSlug, serviceTitle, runtimeVersion);
 
+  const refreshVersion = () => {
+    const seed = shareVersion ? Date.parse(shareVersion) : NaN;
+    const base = Number.isNaN(seed) ? Date.now() : Math.max(seed, Date.now());
+    const next = String(base);
+    setRuntimeVersion(next);
+    return next;
+  };
+
   const copy = async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    const nextVersion = refreshVersion();
+    const nextUrl = getSocialShareUrl(shareType, serviceSlug, nextVersion);
+    await navigator.clipboard.writeText(nextUrl);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
