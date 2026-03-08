@@ -189,7 +189,7 @@ async function handleHost(slug: string, shareUrl: string, shareVersion?: string 
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
 }
 
 async function handleProvider(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
