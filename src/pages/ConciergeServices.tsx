@@ -583,7 +583,7 @@ const ConciergeServices = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Price</label>
-                  <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} />
+                  <Input type="number" value={form.price || ""} onChange={e => setForm(f => ({ ...f, price: e.target.value === "" ? 0 : Number(e.target.value) }))} placeholder="0" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Currency</label>
