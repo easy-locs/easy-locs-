@@ -24,7 +24,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }:
   const [copied, setCopied] = useState(false);
 
   const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
-  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || Date.now());
+  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
 
   const copy = async () => {
     await navigator.clipboard.writeText(publicLink);
