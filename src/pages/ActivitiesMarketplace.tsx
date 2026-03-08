@@ -236,7 +236,7 @@ const ActivitiesMarketplace = () => {
     if (link) {
       const mailLink = `mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`;
       window.open(mailLink, "_blank");
-      supabase.from("marketplace_bookings" as any).update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
+      supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
       });
     } else {
