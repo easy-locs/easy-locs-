@@ -300,6 +300,30 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             )}
           </div>
 
+          {/* Bank Details Section */}
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-sm font-medium text-foreground">🏦 Bank Details (Wire Transfer)</p>
+            <p className="text-xs text-muted-foreground">Displayed on invoices for bank transfer payments</p>
+            <div>
+              <Label>Account Holder</Label>
+              <Input value={form.bank_holder} onChange={(e) => update("bank_holder", e.target.value)} placeholder="John Doe / Company Name" />
+            </div>
+            <div>
+              <Label>IBAN</Label>
+              <Input value={form.bank_iban} onChange={(e) => update("bank_iban", e.target.value)} placeholder="FR76 1234 5678 9012 3456 7890 123" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>BIC / SWIFT</Label>
+                <Input value={form.bank_bic} onChange={(e) => update("bank_bic", e.target.value)} placeholder="BNPAFRPP" />
+              </div>
+              <div>
+                <Label>Bank Name</Label>
+                <Input value={form.bank_name} onChange={(e) => update("bank_name", e.target.value)} placeholder="BNP Paribas" />
+              </div>
+            </div>
+          </div>
+
           <Button className="w-full" disabled={!form.display_name || !form.country || !form.city || isPending} onClick={() => onSave(form)}>
             {isPending ? "Saving..." : initialData ? "Update Profile" : "Create Profile"}
           </Button>
