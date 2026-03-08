@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getSocialShareUrl } from "@/lib/social-share";
+import { getCleanShareUrl, getSocialShareUrl } from "@/lib/social-share";
 
 interface Props {
   serviceSlug: string;
@@ -15,32 +15,34 @@ interface Props {
 
 /**
  * Share booking links with product photo in social previews.
- * - Copy button: stable SPA link (easy-locs.com/book/slug)
+ * - Copy button: stable clean SPA link (easy-locs.com/book/slug)
  * - Social buttons: route through social-preview edge function
  *   so crawlers (WhatsApp, Telegram, iMessage) see og:image with product photo.
  */
 const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
 
-  // Single stable link for all platforms — edge function serves OG tags for crawlers, redirects browsers
-  const stableLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
+  // Clean URL for display and copy
+  const cleanLink = getCleanShareUrl("service", serviceSlug);
+  // Social URL with OG tags for crawlers
+  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || undefined);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(stableLink);
+    await navigator.clipboard.writeText(cleanLink);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
   const openShare = (platform: "whatsapp" | "telegram" | "email" | "sms") => {
-    const encoded = encodeURIComponent(stableLink);
     const encodedTitle = encodeURIComponent(serviceTitle);
 
+    // WhatsApp & Telegram use social URL for OG preview; Email & SMS use clean URL
     const targets: Record<string, string> = {
-      whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encoded}`,
-      telegram: `https://t.me/share/url?url=${encoded}&text=${encodedTitle}`,
-      email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encoded}`,
-      sms: `sms:?body=${encodedTitle}%20${encoded}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodeURIComponent(socialLink)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(socialLink)}&text=${encodedTitle}`,
+      email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
+      sms: `sms:?body=${encodedTitle}%20${encodeURIComponent(cleanLink)}`,
     };
 
     const target = targets[platform];
@@ -63,7 +65,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }:
       )}
 
       <div className="flex gap-2">
-        <Input value={stableLink} readOnly className="text-xs" />
+        <Input value={cleanLink} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
