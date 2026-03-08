@@ -33,12 +33,12 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_provider", orgId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("org_id", orgId!)
         .limit(1)
         .single();
-      return data as any;
+      return data;
     },
     enabled: !!orgId,
   });
