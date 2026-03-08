@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
 import { buildAppUrl } from "@/lib/app-domain";
+import { getSocialShareUrl } from "@/lib/social-share";
 
 interface Props {
   serviceSlug: string;
@@ -14,15 +15,16 @@ interface Props {
 }
 
 /**
- * Share the STABLE booking link: easy-locs.com/book/slug
- * Social previews are handled server-side by the social-preview edge function
- * when crawlers hit the page.
+ * Share booking links with product photo in social previews.
+ * - Copy button: stable SPA link (easy-locs.com/book/slug)
+ * - Social buttons: route through social-preview edge function
+ *   so crawlers (WhatsApp, Telegram, iMessage) see og:image with product photo.
  */
-const BookingLinkShare = ({ serviceSlug, serviceTitle }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
 
-  // Stable link — never changes
   const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
+  const socialLink = getSocialShareUrl("service", serviceSlug, shareVersion || Date.now());
 
   const copy = async () => {
     await navigator.clipboard.writeText(publicLink);
@@ -32,7 +34,8 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle }: Props) => {
   };
 
   const openShare = (platform: "whatsapp" | "telegram" | "email" | "sms") => {
-    const encoded = encodeURIComponent(publicLink);
+    const linkForPlatform = platform === "email" || platform === "sms" ? publicLink : socialLink;
+    const encoded = encodeURIComponent(linkForPlatform);
     const encodedTitle = encodeURIComponent(serviceTitle);
 
     const targets: Record<string, string> = {
@@ -53,6 +56,13 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle }: Props) => {
   return (
     <div className="space-y-3">
       <label className="text-xs text-muted-foreground font-medium">Booking Link</label>
+
+      {photoUrl && (
+        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+          <img src={photoUrl} alt="" className="h-10 w-10 rounded object-cover" />
+          <span className="text-xs text-muted-foreground truncate">{serviceTitle}</span>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Input value={publicLink} readOnly className="text-xs" />
