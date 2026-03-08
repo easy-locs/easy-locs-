@@ -128,7 +128,7 @@ const PublicServiceBooking = () => {
           body: {
             order_id: (order as any).id,
             service_id: service.id,
-            amount: service.price,
+            amount: service.price * quantity,
             currency: service.currency || "EUR",
             guest_email: form.email,
             guest_name: form.name,
