@@ -1840,6 +1840,10 @@ export type Database = {
           provider_id: string
           requires_id_document: boolean
           sort_order: number | null
+          source_contact_email: string | null
+          source_contact_name: string | null
+          source_contact_notes: string | null
+          source_contact_phone: string | null
           time_slots: Json | null
           title: string
           updated_at: string
@@ -1871,6 +1875,10 @@ export type Database = {
           provider_id: string
           requires_id_document?: boolean
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_name?: string | null
+          source_contact_notes?: string | null
+          source_contact_phone?: string | null
           time_slots?: Json | null
           title: string
           updated_at?: string
@@ -1902,6 +1910,10 @@ export type Database = {
           provider_id?: string
           requires_id_document?: boolean
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_name?: string | null
+          source_contact_notes?: string | null
+          source_contact_phone?: string | null
           time_slots?: Json | null
           title?: string
           updated_at?: string
