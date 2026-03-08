@@ -245,7 +245,7 @@ const ActivitiesMarketplace = () => {
   };
 
   const confirmPayment = async (id: string) => {
-    const { error } = await supabase.from("marketplace_bookings" as any).update({
+    const { error } = await supabase.from("marketplace_bookings").update({
       payment_confirmed: true,
       payment_confirmed_at: new Date().toISOString(),
       payment_method: "manual",
