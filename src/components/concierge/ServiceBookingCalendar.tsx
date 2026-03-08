@@ -126,19 +126,24 @@ const ServiceBookingCalendar = ({
     for (const b of bookedSlots) {
       if (!b.service_date) continue;
 
-      // If booking has an end_time (date range booking), expand to all dates in range
-      if (b.end_time) {
-        ranges.push({ from: b.service_date, to: b.end_time });
+      // Range booking: end_time carries the end date (yyyy-MM-dd)
+      const isRangeBooking = typeof b.end_time === "string" && DATE_ONLY_PATTERN.test(b.end_time);
+
+      if (isRangeBooking) {
+        ranges.push({ from: b.service_date, to: b.end_time as string });
         try {
           const days = eachDayOfInterval({
-            start: new Date(b.service_date),
-            end: new Date(b.end_time),
+            start: parseDateOnly(b.service_date),
+            end: parseDateOnly(b.end_time as string),
           });
           for (const day of days) {
             const ds = format(day, "yyyy-MM-dd");
-            countByDate[ds] = (countByDate[ds] || 0) + (b.quantity || 1);
+            // One range booking occupies one unit per day (quantity in range mode is rental days)
+            countByDate[ds] = (countByDate[ds] || 0) + 1;
           }
-        } catch { /* invalid range */ }
+        } catch {
+          // invalid date range
+        }
         continue;
       }
 
