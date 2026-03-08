@@ -220,12 +220,6 @@ const Dashboard = () => {
                               {c.tenants}
                             </span>
                           )}
-                          {c.services > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Store className="h-3.5 w-3.5" />
-                              {c.services} services
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>

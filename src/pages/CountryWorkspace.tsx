@@ -132,14 +132,12 @@ const CountryWorkspace = () => {
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {[
             { label: "Biens", value: stats.properties, icon: Home },
             { label: "Locataires", value: stats.tenants, icon: Users },
             { label: "Baux", value: stats.leases, icon: KeyRound },
             { label: "Documents", value: stats.documents, icon: FileText },
-            { label: "Services", value: stats.services, icon: Store },
-            { label: "Réservations", value: stats.bookings, icon: CalendarCheck },
             { label: "Immeubles", value: stats.buildings, icon: Building },
           ].map((stat, i) => (
             <motion.div

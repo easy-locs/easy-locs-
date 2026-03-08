@@ -337,6 +337,22 @@ const ActivitiesMarketplace = () => {
 
           {/* Browse Tab */}
           <TabsContent value="browse" className="mt-4 space-y-4">
+            {/* Category Grid */}
+            {filterCat === "all" && !searchQuery && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+                {MARKETPLACE_CATEGORIES.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => setFilterCat(c.value)}
+                    className="group flex items-center gap-3 bg-card rounded-xl p-4 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all text-left"
+                  >
+                    <span className="text-2xl">{c.icon}</span>
+                    <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">{c.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Search & Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -359,14 +375,14 @@ const ActivitiesMarketplace = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 flex-wrap">
-              <Button size="sm" variant={filterCat === "all" ? "default" : "outline"} onClick={() => setFilterCat("all")}>All</Button>
-              {MARKETPLACE_CATEGORIES.map((c) => (
-                <Button key={c.value} size="sm" variant={filterCat === c.value ? "default" : "outline"} onClick={() => setFilterCat(c.value)}>
-                  {c.icon} {c.label}
-                </Button>
-              ))}
-            </div>
+            {filterCat !== "all" && (
+              <div className="flex gap-2 items-center">
+                <Button size="sm" variant="outline" onClick={() => setFilterCat("all")}>← All Categories</Button>
+                <Badge variant="secondary" className="text-sm">
+                  {getCategoryInfo(filterCat).icon} {getCategoryInfo(filterCat).label}
+                </Badge>
+              </div>
+            )}
 
             {filteredServices.length === 0 ? (
               <Card><CardContent className="py-12 text-center">
