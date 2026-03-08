@@ -112,12 +112,21 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         </div>
 
         {provider && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{provider.display_name}</span>
-            {provider.verified && <Badge variant="secondary" className="text-[10px]">✓ Verified</Badge>}
-            {Number(provider.rating) > 0 && (
-              <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-[hsl(45,90%,50%)]" />{Number(provider.rating).toFixed(1)}</span>
-            )}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-muted/30 rounded-lg">
+            <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
+              {provider.display_name?.charAt(0) || "P"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="font-medium text-foreground">{provider.display_name}</span>
+              {provider.verified && <Badge variant="secondary" className="text-[10px] ml-1">✓</Badge>}
+              <div className="flex items-center gap-2 flex-wrap">
+                {Number(provider.rating) > 0 && (
+                  <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-[hsl(45,90%,50%)]" />{Number(provider.rating).toFixed(1)}</span>
+                )}
+                {provider.phone && <span className="text-[10px]">📞 {provider.phone}</span>}
+                {provider.email && <span className="text-[10px] truncate">✉️ {provider.email}</span>}
+              </div>
+            </div>
           </div>
         )}
 
