@@ -220,7 +220,7 @@ async function handleProvider(slug: string, shareUrl: string, shareVersion?: str
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
 }
 
 
