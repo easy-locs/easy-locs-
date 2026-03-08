@@ -97,7 +97,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label>Price *</Label>
-              <Input type="number" value={form.price} onChange={(e) => update("price", Number(e.target.value))} />
+              <Input type="number" value={form.price || ""} onChange={(e) => update("price", e.target.value === "" ? 0 : Number(e.target.value))} />
             </div>
             <div>
               <Label>Currency</Label>
