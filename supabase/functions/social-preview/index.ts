@@ -8,7 +8,6 @@ const corsHeaders = {
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = Deno.env.get("APP_URL") || "https://easy-locs.lovable.app";
 const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
-const BOT_UA_PATTERN = /(facebookexternalhit|facebot|whatsapp|twitterbot|linkedinbot|slackbot|telegrambot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
