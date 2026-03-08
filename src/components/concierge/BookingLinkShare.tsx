@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
-import { buildAppUrl } from "@/lib/app-domain";
 import { getSocialShareUrl } from "@/lib/social-share";
 
 interface Props {
