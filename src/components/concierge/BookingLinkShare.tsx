@@ -12,12 +12,14 @@ interface Props {
   shareType?: ShareableType;
   /** Optional photo URL to include in share messages */
   photoUrl?: string;
+  /** Optional share version for social cache-busting */
+  shareVersion?: string;
 }
 
-const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const shareUrl = getSocialShareUrl(shareType, serviceSlug);
-  const links = getShareLinks(shareType, serviceSlug, serviceTitle);
+  const shareUrl = getSocialShareUrl(shareType, serviceSlug, shareVersion);
+  const links = getShareLinks(shareType, serviceSlug, serviceTitle, shareVersion);
 
   const copy = async () => {
     await navigator.clipboard.writeText(shareUrl);
