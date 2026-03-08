@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { detectCustomerCurrency, computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -171,6 +172,8 @@ const PublicServiceBooking = () => {
         unit_price: service.price,
         total_price: totalPrice,
         currency: service.currency || "EUR",
+        customer_currency: Intl.DateTimeFormat().resolvedOptions().locale ? detectCustomerCurrency() : null,
+        exchange_rate: computeExchangeRate(service.currency || "EUR", detectCustomerCurrency()),
         service_date: format(selectedDate, "yyyy-MM-dd"),
         service_time: selectedTime || null,
         payment_method: paymentMethod,

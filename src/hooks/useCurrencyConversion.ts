@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { COUNTRY_CURRENCY_MAP } from "@/lib/i18n";
 
 // Static approximate rates relative to EUR — comprehensive worldwide coverage
-const RATES_TO_EUR: Record<string, number> = {
+export const RATES_TO_EUR: Record<string, number> = {
   // Europe
   EUR: 1, GBP: 1.17, CHF: 1.05, SEK: 0.089, DKK: 0.134, NOK: 0.087,
   PLN: 0.233, CZK: 0.040, HUF: 0.0026, RON: 0.201, BGN: 0.511,
@@ -50,6 +50,26 @@ const RATES_TO_EUR: Record<string, number> = {
   // Caribbean / Others
   CUP: 0.038, AWG: 0.51, ANG: 0.51, KYD: 1.12, BMD: 0.92,
   XCD: 0.34,
+};
+
+/** Detect customer's likely currency from browser locale */
+export const detectCustomerCurrency = (): string => {
+  try {
+    const locale = navigator.language || "en-US";
+    const parts = locale.split("-");
+    const region = (parts[1] || parts[0]).toUpperCase();
+    return COUNTRY_CURRENCY_MAP[region] || "EUR";
+  } catch {
+    return "EUR";
+  }
+};
+
+/** Compute exchange rate between two currencies */
+export const computeExchangeRate = (fromCurrency: string, toCurrency: string): number => {
+  if (fromCurrency === toCurrency) return 1;
+  const fromRate = RATES_TO_EUR[fromCurrency] || 1;
+  const toRate = RATES_TO_EUR[toCurrency] || 1;
+  return Math.round((fromRate / toRate) * 1000000) / 1000000;
 };
 
 export const useCurrencyConversion = (userCountry: string = "FR") => {

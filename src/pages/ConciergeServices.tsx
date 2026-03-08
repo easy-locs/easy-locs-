@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 import BookingLinkShare from "@/components/concierge/BookingLinkShare";
 import BookingDetailDrawer from "@/components/concierge/BookingDetailDrawer";
+import CurrencyWalletWidget from "@/components/dashboard/CurrencyWalletWidget";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -103,13 +105,16 @@ const ConciergeServices = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
+  const [preferredCurrency, setPreferredCurrency] = useState("EUR");
 
-  // Load landlord profile for showcase link
+  // Load landlord profile + preferred currency
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId || !user) return;
     supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
       .then(({ data }) => { if (data) setLandlordProfile(data); });
-  }, [orgId]);
+    supabase.from("profiles").select("preferred_currency").eq("id", user.id).single()
+      .then(({ data }) => { if (data?.preferred_currency) setPreferredCurrency(data.preferred_currency); });
+  }, [orgId, user]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -222,13 +227,26 @@ const ConciergeServices = () => {
     });
   }, [orders, searchQuery, services]);
 
-  // KPIs
+  // KPIs — convert to preferred currency
   const activeServices = services.filter(s => s.active).length;
-  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
+  const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
+    const cur = (o.currency || "EUR").toUpperCase();
+    return s + Number(o.total_price || 0) * computeExchangeRate(cur, preferredCurrency);
+  }, 0);
   const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "awaiting_payment").length;
-  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => s + Number(o.commission_amount || 0), 0);
+  const commissionEarned = orders.filter(o => o.payment_status === "paid").reduce((s: number, o: any) => {
+    const cur = (o.currency || "EUR").toUpperCase();
+    return s + Number(o.commission_amount || 0) * computeExchangeRate(cur, preferredCurrency);
+  }, 0);
   const completedCount = orders.filter(o => o.status === "completed").length;
   const pendingPayments = orders.filter(o => o.payment_status !== "paid" && o.status !== "cancelled").length;
+
+  const handlePreferredCurrencyChange = async (cur: string) => {
+    setPreferredCurrency(cur);
+    if (user) {
+      await supabase.from("profiles").update({ preferred_currency: cur } as any).eq("id", user.id);
+    }
+  };
 
   const showcaseUrl = landlordProfile?.slug ? `/showcase/${landlordProfile.slug}` : null;
 
@@ -271,8 +289,8 @@ const ConciergeServices = () => {
           {[
             { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
-            { icon: DollarSign, label: "Total Revenue", value: fmtPrice(totalRevenue, services[0]?.currency || "EUR"), cls: "text-emerald-500" },
-            { icon: TrendingUp, label: "Commission Earned", value: fmtPrice(commissionEarned, services[0]?.currency || "EUR"), cls: "text-blue-500" },
+            { icon: DollarSign, label: `Revenue (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
+            { icon: TrendingUp, label: `Commission (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
             { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
             { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
@@ -479,7 +497,14 @@ const ConciergeServices = () => {
           </TabsContent>
 
           {/* REVENUE TAB */}
-          <TabsContent value="revenue" className="mt-4">
+          <TabsContent value="revenue" className="mt-4 space-y-4">
+            {/* Currency Wallet */}
+            <CurrencyWalletWidget
+              orders={orders}
+              preferredCurrency={preferredCurrency}
+              onPreferredCurrencyChange={handlePreferredCurrencyChange}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">Revenue by Service</CardTitle></CardHeader>

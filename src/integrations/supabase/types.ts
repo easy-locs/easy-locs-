@@ -183,6 +183,8 @@ export type Database = {
           check_in: string
           check_out: string
           created_at: string | null
+          customer_currency: string | null
+          exchange_rate: number | null
           guest_email: string
           guest_name: string
           guest_phone: string | null
@@ -199,6 +201,8 @@ export type Database = {
           check_in: string
           check_out: string
           created_at?: string | null
+          customer_currency?: string | null
+          exchange_rate?: number | null
           guest_email: string
           guest_name: string
           guest_phone?: string | null
@@ -215,6 +219,8 @@ export type Database = {
           check_in?: string
           check_out?: string
           created_at?: string | null
+          customer_currency?: string | null
+          exchange_rate?: number | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
@@ -505,8 +511,10 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           currency: string
+          customer_currency: string | null
           document_urls: Json | null
           end_time: string | null
+          exchange_rate: number | null
           guest_email: string
           guest_name: string
           guest_phone: string | null
@@ -543,8 +551,10 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           currency?: string
+          customer_currency?: string | null
           document_urls?: Json | null
           end_time?: string | null
+          exchange_rate?: number | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
@@ -581,8 +591,10 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           currency?: string
+          customer_currency?: string | null
           document_urls?: Json | null
           end_time?: string | null
+          exchange_rate?: number | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
@@ -1588,6 +1600,8 @@ export type Database = {
           completed_at: string | null
           created_at: string
           currency: string
+          customer_currency: string | null
+          exchange_rate: number | null
           id: string
           notes: string | null
           org_id: string
@@ -1614,6 +1628,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           currency?: string
+          customer_currency?: string | null
+          exchange_rate?: number | null
           id?: string
           notes?: string | null
           org_id: string
@@ -1640,6 +1656,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           currency?: string
+          customer_currency?: string | null
+          exchange_rate?: number | null
           id?: string
           notes?: string | null
           org_id?: string
@@ -2497,6 +2515,7 @@ export type Database = {
           onboarding_step: number | null
           phone: string | null
           postal_code: string | null
+          preferred_currency: string | null
           referral_code: string | null
           signature_url: string | null
           tax_id: string | null
@@ -2523,6 +2542,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           postal_code?: string | null
+          preferred_currency?: string | null
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
@@ -2549,6 +2569,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           postal_code?: string | null
+          preferred_currency?: string | null
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
