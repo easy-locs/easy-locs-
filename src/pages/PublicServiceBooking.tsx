@@ -349,7 +349,7 @@ const PublicServiceBooking = () => {
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
                     <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "stripe" ? `Pay ${service.price} ${(service.currency || "EUR").toUpperCase()}` : "Confirm Booking"}
+                      {paymentMethod === "stripe" ? `Pay ${(service.price * quantity).toLocaleString()} ${(service.currency || "EUR").toUpperCase()}` : "Confirm Booking"}
                     </Button>
                   </div>
                 </div>
