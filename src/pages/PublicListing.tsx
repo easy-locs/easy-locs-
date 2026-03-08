@@ -90,13 +90,15 @@ const PublicListing = () => {
   const cleaningFee = typeof cleaningFeeObj === "object" && cleaningFeeObj ? (cleaningFeeObj as any).amount || 0 : 0;
 
   const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: listing?.title || "Easy-Locs", url });
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(url);
+    if (!listingSlug) return;
+    const result = await sharePage({
+      type: "listing",
+      slug: listingSlug,
+      title: listing?.title || "Easy-Locs",
+    });
+    if (result === "copied") {
+      const { toast } = await import("sonner");
+      toast.success("Link copied!");
     }
   };
 
