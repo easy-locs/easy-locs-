@@ -169,7 +169,7 @@ async function handleService(slug: string, shareUrl: string, shareVersion?: stri
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }));
 }
 
 async function handleHost(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
