@@ -152,7 +152,7 @@ async function handleListing(slug: string, shareUrl: string, shareVersion?: stri
   );
 }
 
-async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleService(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
