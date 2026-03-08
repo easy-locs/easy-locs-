@@ -196,6 +196,9 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                         <Button size="sm" variant="outline" onClick={() => handleInvoice(b, svc, provider)}>
                           <FileText className="h-3 w-3 mr-1" /> Invoice
                         </Button>
+                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceEmail(b, svc, provider)} title="Email">
+                          <Mail className="h-3 w-3" />
+                        </Button>
                         <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="WhatsApp">
                           <MessageCircle className="h-3 w-3" />
                         </Button>
