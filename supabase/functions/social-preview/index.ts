@@ -137,7 +137,7 @@ async function handleListing(slug: string, shareUrl: string): Promise<Response> 
   );
 }
 
-async function handleService(slug: string): Promise<Response> {
+async function handleService(slug: string, shareUrl: string): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
@@ -154,9 +154,9 @@ async function handleService(slug: string): Promise<Response> {
   const image = withCacheBust(rawImage, service.updated_at || null);
   const title = `${service.title} — ${service.city || ""} | Easy-Locs`.slice(0, 60);
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
-  const url = `${APP_URL}/book/${slug}`;
+  const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "website" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), {
     status: 200,
     headers: buildHeaders(),
   });
