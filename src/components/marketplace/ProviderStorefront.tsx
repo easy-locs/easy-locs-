@@ -35,12 +35,12 @@ export default function ProviderStorefront() {
     queryKey: ["marketplace_services_public", provider?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_services" as any)
+        .from("marketplace_services")
         .select("*")
         .eq("provider_id", provider!.id)
         .eq("active", true)
         .order("sort_order");
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!provider?.id,
   });
