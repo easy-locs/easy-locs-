@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, CreditCard, Mail, Phone } from "lucide-react";
+import { Calendar, CreditCard, Mail } from "lucide-react";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
+
+const RANGE_CATEGORIES = ["accommodation", "car_rental", "boat_rental", "yacht", "equipment_rental"];
 
 interface Props {
   open: boolean;
@@ -19,6 +23,8 @@ interface Props {
     booker_phone: string;
     service_date: string;
     service_time: string;
+    date_from?: string;
+    date_to?: string;
     quantity: number;
     notes: string;
   }) => void;
@@ -26,23 +32,66 @@ interface Props {
 }
 
 export default function BookingDialog({ open, onOpenChange, service, provider, onSubmit, isPending }: Props) {
+  const isRangeMode = RANGE_CATEGORIES.includes(service?.category);
+
   const [form, setForm] = useState({
     booker_name: "",
     booker_email: "",
     booker_phone: "",
     service_date: format(new Date(), "yyyy-MM-dd"),
     service_time: "10:00",
+    date_from: "",
+    date_to: "",
     quantity: 1,
     notes: "",
   });
 
-  const update = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
-  const totalPrice = Number(service?.price || 0) * form.quantity;
+  const [bookedDates, setBookedDates] = useState<{ from: string; to: string }[]>([]);
 
-  // Get payment info from service or fallback to provider
+  // Load existing bookings for availability
+  useEffect(() => {
+    if (!open || !service?.id) return;
+    const loadBookings = async () => {
+      const { data } = await supabase
+        .from("marketplace_bookings")
+        .select("service_date, date_from, date_to, status")
+        .eq("service_id", service.id)
+        .in("status", ["pending", "confirmed", "completed"]);
+      if (data) {
+        setBookedDates(data.map((b: any) => ({
+          from: b.date_from || b.service_date,
+          to: b.date_to || b.service_date,
+        })).filter((b: any) => b.from));
+      }
+    };
+    loadBookings();
+  }, [open, service?.id]);
+
+  const update = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
+
+  const days = useMemo(() => {
+    if (!isRangeMode || !form.date_from || !form.date_to) return 0;
+    return Math.max(1, Math.ceil((new Date(form.date_to).getTime() - new Date(form.date_from).getTime()) / 86400000));
+  }, [isRangeMode, form.date_from, form.date_to]);
+
+  const totalPrice = isRangeMode
+    ? Number(service?.price || 0) * days
+    : Number(service?.price || 0) * form.quantity;
+
+  // Check date overlap
+  const dateOverlap = useMemo(() => {
+    if (!isRangeMode || !form.date_from || !form.date_to) return false;
+    return bookedDates.some(b => form.date_from < b.to && form.date_to > b.from);
+  }, [isRangeMode, form.date_from, form.date_to, bookedDates]);
+
   const paymentStripe = service?.payment_stripe_link || provider?.payment_stripe_link;
   const paymentPaypal = service?.payment_paypal_email || provider?.payment_paypal_email;
   const paymentCustom = service?.payment_custom_url || provider?.payment_custom_url;
+
+  const today = format(new Date(), "yyyy-MM-dd");
+
+  const timeSlots = Array.isArray(service?.time_slots) ? service.time_slots : [];
+  const blockedDates = Array.isArray(service?.blocked_dates) ? service.blocked_dates : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,7 +104,10 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             <div className="p-3 bg-muted/30 rounded-lg">
               <p className="font-medium text-foreground text-sm">{service.title}</p>
               <p className="text-xs text-muted-foreground">{provider?.display_name} — {service.city}, {service.country}</p>
-              <p className="text-sm font-bold text-accent mt-1">{Number(service.price).toLocaleString()} {service.currency}</p>
+              <p className="text-sm font-bold text-accent mt-1">
+                {Number(service.price).toLocaleString()} {service.currency}
+                {isRangeMode ? "/day" : service.price_type === "hourly" ? "/h" : ""}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -74,19 +126,76 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               <Input value={form.booker_phone} onChange={(e) => update("booker_phone", e.target.value)} />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label>Date *</Label>
-                <Input type="date" value={form.service_date} onChange={(e) => update("service_date", e.target.value)} />
+            {isRangeMode ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>From *</Label>
+                    <Input type="date" min={today} value={form.date_from} onChange={(e) => update("date_from", e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>To *</Label>
+                    <Input type="date" min={form.date_from || today} value={form.date_to} onChange={(e) => update("date_to", e.target.value)} />
+                  </div>
+                </div>
+                {dateOverlap && (
+                  <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">⚠️ These dates are already booked</p>
+                )}
+                {days > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{days} day{days > 1 ? "s" : ""} × {Number(service.price).toLocaleString()} {service.currency}</span>
+                      <span className="font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Date *</Label>
+                  <Input type="date" min={today} value={form.service_date} onChange={(e) => update("service_date", e.target.value)} />
+                </div>
+                <div>
+                  <Label>Time</Label>
+                  <Input type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
+                </div>
+                <div>
+                  <Label>Qty</Label>
+                  <Input type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 1 : Number(e.target.value))} />
+                </div>
               </div>
-              <div>
-                <Label>Time</Label>
-                <Input type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
-              </div>
-              <div>
-                <Label>Qty</Label>
-                <Input type="number" min={1} value={form.quantity} onChange={(e) => update("quantity", Number(e.target.value))} />
-              </div>
+            )}
+
+            {/* Live calendar */}
+            <div className="border-t border-border pt-3">
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> Availability
+              </p>
+              <ServiceBookingCalendar
+                serviceId={service.id}
+                timeSlots={timeSlots}
+                blockedDates={blockedDates}
+                maxCapacity={service.max_capacity}
+                onSelect={(dateVal: Date) => {
+                  const date = format(dateVal, "yyyy-MM-dd");
+                  if (isRangeMode) {
+                    if (!form.date_from || form.date_to) {
+                      setForm(f => ({ ...f, date_from: date, date_to: "" }));
+                    } else {
+                      if (date > form.date_from) {
+                        setForm(f => ({ ...f, date_to: date }));
+                      } else {
+                        setForm(f => ({ ...f, date_from: date, date_to: form.date_from }));
+                      }
+                    }
+                  } else {
+                    update("service_date", date);
+                  }
+                }}
+                selectedDate={isRangeMode ? (form.date_from ? new Date(form.date_from) : undefined) : (form.service_date ? new Date(form.service_date) : undefined)}
+                selectedTime={form.service_time}
+              />
             </div>
 
             <div>
@@ -111,7 +220,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               <span className="text-lg font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
               <Button
                 onClick={() => onSubmit(form)}
-                disabled={!form.booker_name || !form.booker_email || isPending}
+                disabled={!form.booker_name || !form.booker_email || isPending || dateOverlap || (isRangeMode && (!form.date_from || !form.date_to))}
               >
                 {isPending ? "Booking..." : "Request Booking"}
               </Button>

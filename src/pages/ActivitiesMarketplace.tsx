@@ -206,26 +206,67 @@ const ActivitiesMarketplace = () => {
     mutationFn: async (formData: any) => {
       const svc = bookingService;
       const prov = providersMap[svc.provider_id];
-      const { error } = await supabase.from("marketplace_bookings").insert({
+      const provOrgId = prov?.org_id || svc.org_id;
+      const totalPrice = formData.date_from && formData.date_to
+        ? Number(svc.price) * Math.max(1, Math.ceil((new Date(formData.date_to).getTime() - new Date(formData.date_from).getTime()) / 86400000))
+        : Number(svc.price) * (formData.quantity || 1);
+
+      const { data: booking, error } = await supabase.from("marketplace_bookings").insert({
         service_id: svc.id,
         provider_id: svc.provider_id,
-        org_id: prov?.org_id || svc.org_id,
+        org_id: provOrgId,
         booker_user_id: user?.id || null,
         booker_name: formData.booker_name,
         booker_email: formData.booker_email,
         booker_phone: formData.booker_phone,
-        service_date: formData.service_date,
+        service_date: formData.service_date || formData.date_from,
         service_time: formData.service_time,
-        quantity: formData.quantity,
-        total_price: Number(svc.price) * formData.quantity,
+        date_from: formData.date_from || null,
+        date_to: formData.date_to || null,
+        quantity: formData.quantity || 1,
+        total_price: totalPrice,
         currency: svc.currency,
         notes: formData.notes,
-      });
+      }).select().single();
       if (error) throw error;
+
+      // Create notification for provider
+      try {
+        await supabase.from("notifications").insert({
+          user_id: prov?.user_id || svc.user_id,
+          org_id: provOrgId,
+          type: "info",
+          title: `📦 New booking: ${svc.title}`,
+          message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}`,
+          link: "/dashboard/marketplace",
+        });
+      } catch (e) { console.error("Notification error:", e); }
+
+      // Create message thread
+      try {
+        await supabase.from("messages").insert({
+          org_id: provOrgId,
+          sender_id: user?.id || null,
+          content: `📦 Booking: ${svc.title} — ${formData.booker_name} (${formData.booker_email}).\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\nNotes: ${formData.notes || "—"}`,
+          read: false,
+        } as any);
+      } catch (e) { console.error("Message thread error:", e); }
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            to: prov?.email,
+            subject: `📦 New booking: ${svc.title}`,
+            message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}. Amount: ${totalPrice} ${svc.currency}`,
+          },
+        });
+      } catch (e) { console.error("Email notification error:", e); }
     },
     onSuccess: () => {
       toast.success("Booking request sent!");
       setBookingService(null);
+      qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

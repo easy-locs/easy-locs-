@@ -50,7 +50,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const prevPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i - 1 + photos.length) % photos.length); };
 
   return (
-    <Card className="overflow-hidden hover:border-accent/50 transition-colors group">
+    <Card className="overflow-hidden hover:border-accent/50 transition-colors group h-full flex flex-col">
       {/* Photo gallery */}
       {photos.length > 0 && (
         <div className="relative aspect-[16/9] bg-muted overflow-hidden">
@@ -81,7 +81,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       )}
-      <CardContent className="pt-4 space-y-2">
+      <CardContent className="pt-4 space-y-2 flex-1 flex flex-col">
         <div className="flex items-center gap-2">
           <span className="text-lg">{cat.icon}</span>
           <Badge variant="outline" className="text-xs">{cat.label}</Badge>
@@ -150,7 +150,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
+        <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
           <span className="font-bold text-accent">{priceLabel}</span>
           <div className="flex gap-1.5">
             {slug && links && (
