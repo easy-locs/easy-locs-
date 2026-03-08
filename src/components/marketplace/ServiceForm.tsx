@@ -26,7 +26,18 @@ export interface ServiceFormData {
   payment_custom_url: string;
   active: boolean;
   photo_urls?: string[];
+  requires_id_document?: boolean;
 }
+
+const CURRENCIES = [
+  "EUR", "USD", "GBP", "CHF", "MAD", "TND", "XOF", "AED", "CAD", "AUD",
+  "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP", "SAR",
+  "QAR", "KWD", "BHD", "OMR", "TRY", "PLN", "CZK", "HUF", "RON", "BGN",
+  "SEK", "NOK", "DKK", "ISK", "HRK", "RSD", "GEL", "UAH", "THB", "SGD",
+  "MYR", "IDR", "PHP", "VND", "KRW", "TWD", "HKD", "NZD", "CLP", "COP",
+  "PEN", "ARS", "UYU", "DOP", "JMD", "TTD", "XAF", "GHS", "TZS", "UGX",
+  "RWF", "MUR", "SCR", "MVR", "LKR", "PKR", "BDT", "MMK", "KHR", "LAK",
+];
 
 interface Props {
   open: boolean;
