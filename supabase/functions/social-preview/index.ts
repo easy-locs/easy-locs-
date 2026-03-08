@@ -89,7 +89,9 @@ function buildHeaders() {
   return {
     ...corsHeaders,
     "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "public, max-age=60",
+    "Cache-Control": "no-store, max-age=0, must-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
   };
 }
 
