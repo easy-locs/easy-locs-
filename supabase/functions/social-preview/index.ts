@@ -58,9 +58,9 @@ function htmlPage(meta: {
   <meta property="og:title" content="${safeTitle}"/>
   <meta property="og:description" content="${safeDesc}"/>
   <meta property="og:image" content="${safeImage}"/>
+  <meta property="og:image:secure_url" content="${safeImage}"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:url" content="${safeUrl}"/>
   <meta property="og:site_name" content="${BRAND_NAME}"/>
 
   <!-- Twitter -->
