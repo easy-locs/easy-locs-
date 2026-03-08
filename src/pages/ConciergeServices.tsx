@@ -64,6 +64,7 @@ interface ServiceForm {
   payment_methods: string[]; bank_details: any; commission_type: string; commission_amount: number;
   paypal_email: string; booking_slug: string;
   time_slots: { start: string; end: string }[]; blocked_dates: string[];
+  requires_id_document: boolean;
 }
 
 const emptyForm: ServiceForm = {
@@ -72,7 +73,7 @@ const emptyForm: ServiceForm = {
   active: true, photo_urls: [], location: "", conditions: "", booking_type: "instant",
   payment_methods: ["stripe"], bank_details: {}, commission_type: "percentage",
   commission_amount: 0, paypal_email: "", booking_slug: "",
-  time_slots: [], blocked_dates: [],
+  time_slots: [], blocked_dates: [], requires_id_document: false,
 };
 
 const generateSlug = (title: string) =>
@@ -173,6 +174,7 @@ const ConciergeServices = () => {
       booking_slug: s.booking_slug || "",
       time_slots: Array.isArray(s.time_slots) ? s.time_slots : [],
       blocked_dates: Array.isArray(s.blocked_dates) ? s.blocked_dates : [],
+      requires_id_document: !!s.requires_id_document,
     });
     setShowForm(true);
   };
@@ -582,7 +584,7 @@ const ConciergeServices = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Price</label>
-                  <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} />
+                  <Input type="number" value={form.price || ""} onChange={e => setForm(f => ({ ...f, price: e.target.value === "" ? 0 : Number(e.target.value) }))} placeholder="0" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Currency</label>
@@ -702,6 +704,11 @@ const ConciergeServices = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <Switch checked={form.requires_id_document} onCheckedChange={checked => setForm(f => ({ ...f, requires_id_document: checked }))} />
+                🪪 Require ID document from client
+              </label>
 
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <Switch checked={form.active} onCheckedChange={checked => setForm(f => ({ ...f, active: checked }))} />

@@ -660,6 +660,7 @@ export type Database = {
           property_id: string | null
           provider_name: string | null
           provider_phone: string | null
+          requires_id_document: boolean
           sort_order: number
           time_slots: Json | null
           title: string
@@ -694,6 +695,7 @@ export type Database = {
           property_id?: string | null
           provider_name?: string | null
           provider_phone?: string | null
+          requires_id_document?: boolean
           sort_order?: number
           time_slots?: Json | null
           title: string
@@ -728,6 +730,7 @@ export type Database = {
           property_id?: string | null
           provider_name?: string | null
           provider_phone?: string | null
+          requires_id_document?: boolean
           sort_order?: number
           time_slots?: Json | null
           title?: string

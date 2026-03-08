@@ -1,0 +1,1 @@
+ALTER TABLE public.concierge_services ADD COLUMN IF NOT EXISTS requires_id_document boolean NOT NULL DEFAULT false;
