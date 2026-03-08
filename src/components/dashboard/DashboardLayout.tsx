@@ -34,13 +34,8 @@ interface NavSection {
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarReady, setSidebarReady] = useState(false);
 
-  // Delay enabling transitions to prevent initial render flicker on desktop
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setSidebarReady(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
+
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
