@@ -322,6 +322,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                     />
                   </div>
                 </div>
+              </div>
             )}
           </div>
 
