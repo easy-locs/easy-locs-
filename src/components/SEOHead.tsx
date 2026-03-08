@@ -36,6 +36,8 @@ const SEOHead = ({
     setMeta("og:description", description, true);
     setMeta("og:type", "website", true);
     setMeta("og:image", ogImage, true);
+    setMeta("og:image:width", "1200", true);
+    setMeta("og:image:height", "630", true);
     setMeta("og:site_name", "Easy-Locs", true);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);

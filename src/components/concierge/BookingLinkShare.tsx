@@ -1,55 +1,49 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, MessageCircle, Mail, Share2, Check } from "lucide-react";
+import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
+import { getSocialShareUrl, getShareLinks, type ShareableType } from "@/lib/social-share";
 
 interface Props {
   serviceSlug: string;
   serviceTitle: string;
+  /** Type of shareable content — defaults to "service" for concierge */
+  shareType?: ShareableType;
 }
 
-const BookingLinkShare = ({ serviceSlug, serviceTitle }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service" }: Props) => {
   const [copied, setCopied] = useState(false);
-  const baseUrl = window.location.origin;
-  const bookingUrl = `${baseUrl}/book/${serviceSlug}`;
+  const shareUrl = getSocialShareUrl(shareType, serviceSlug);
+  const links = getShareLinks(shareType, serviceSlug, serviceTitle);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(bookingUrl);
+    await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const shareWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(`Book ${serviceTitle}: ${bookingUrl}`)}`, "_blank");
-  };
-
-  const shareEmail = () => {
-    window.open(`mailto:?subject=${encodeURIComponent(`Book: ${serviceTitle}`)}&body=${encodeURIComponent(`Book this service: ${bookingUrl}`)}`, "_blank");
-  };
-
-  const shareSMS = () => {
-    window.open(`sms:?body=${encodeURIComponent(`Book ${serviceTitle}: ${bookingUrl}`)}`, "_blank");
   };
 
   return (
     <div className="space-y-3">
       <label className="text-xs text-muted-foreground font-medium">Booking Link</label>
       <div className="flex gap-2">
-        <Input value={bookingUrl} readOnly className="text-xs" />
+        <Input value={shareUrl} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={shareWhatsApp} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => window.open(links.whatsapp, "_blank")} className="flex-1 text-xs">
           <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
         </Button>
-        <Button size="sm" variant="outline" onClick={shareEmail} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => window.open(links.telegram, "_blank")} className="flex-1 text-xs">
+          <Send className="h-3 w-3 mr-1" /> Telegram
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => window.open(links.email, "_blank")} className="flex-1 text-xs">
           <Mail className="h-3 w-3 mr-1" /> Email
         </Button>
-        <Button size="sm" variant="outline" onClick={shareSMS} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => window.open(links.sms, "_blank")} className="flex-1 text-xs">
           <Share2 className="h-3 w-3 mr-1" /> SMS
         </Button>
       </div>

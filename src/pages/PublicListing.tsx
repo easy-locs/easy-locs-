@@ -10,6 +10,7 @@ import ListingLocalServices from "@/components/public/ListingLocalServices";
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";
 
 const PublicListing = () => {
@@ -89,13 +90,15 @@ const PublicListing = () => {
   const cleaningFee = typeof cleaningFeeObj === "object" && cleaningFeeObj ? (cleaningFeeObj as any).amount || 0 : 0;
 
   const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: listing?.title || "Easy-Locs", url });
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(url);
+    if (!listingSlug) return;
+    const result = await sharePage({
+      type: "listing",
+      slug: listingSlug,
+      title: listing?.title || "Easy-Locs",
+    });
+    if (result === "copied") {
+      const { toast } = await import("sonner");
+      toast.success("Link copied!");
     }
   };
 

@@ -93,6 +93,8 @@ export default function ProviderStorefront() {
       <SEOHead
         title={`${provider.display_name} — Services | EASY-LOCS®`}
         description={provider.bio || `Discover services by ${provider.display_name}`}
+        ogImage={provider.avatar_url || provider.cover_url}
+        canonical={`https://www.easy-locs.com/provider/${providerSlug}`}
       />
 
       {/* Header */}
