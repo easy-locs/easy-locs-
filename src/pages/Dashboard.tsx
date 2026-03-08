@@ -55,27 +55,10 @@ const Dashboard = () => {
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
-      // Services: concierge + marketplace
-      supabase.from("concierge_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
-      supabase.from("marketplace_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
-      // Bookings: concierge orders + marketplace bookings
-      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
     ])
-      .then(([props, tenantsRes, rc, concServices, mpServices, concOrders, mpBookings]) => {
+      .then(([props, tenantsRes, rc]) => {
         const propData = (props.data || []) as { id: string; country: string }[];
         const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
-
-        // Aggregate services by country
-        const servicesByCountry = new Map<string, number>();
-        for (const s of (concServices.data || []) as { country: string }[]) {
-          const c = s.country || "XX";
-          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
-        }
-        for (const s of (mpServices.data || []) as { country: string }[]) {
-          const c = s.country || "XX";
-          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
-        }
 
         const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
         propData.forEach((p) => {
@@ -85,13 +68,6 @@ const Dashboard = () => {
           existing.propIds.add(p.id);
           countryMap.set(c, existing);
         });
-
-        // Also include countries that only have services
-        for (const [c] of servicesByCountry) {
-          if (!countryMap.has(c) && c !== "XX") {
-            countryMap.set(c, { count: 0, propIds: new Set() });
-          }
-        }
 
         const today = new Date().toISOString().split("T")[0];
         const propertiesByCountry = Array.from(countryMap.entries())
@@ -106,11 +82,9 @@ const Dashboard = () => {
               flag: entry.flag,
               name: entry.name,
               tenants: countryTenants.length,
-              services: servicesByCountry.get(code) || 0,
-              bookings: 0,
             };
           })
-          .sort((a, b) => (b.count + b.services) - (a.count + a.services));
+          .sort((a, b) => b.count - a.count);
 
         const currentMonth = format(new Date(), "yyyy-MM");
         const monthCalls = ((rc.data || []) as Array<{ month: string; paid: boolean; total_amount: number | string }>).filter(
@@ -120,14 +94,9 @@ const Dashboard = () => {
           .filter((r) => r.paid)
           .reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
 
-        const totalServices = (concServices.count || 0) + (mpServices.count || 0);
-        const totalBookings = (concOrders.count || 0) + (mpBookings.count || 0);
-
         setStats({
           totalProperties: propData.length,
           totalCountries: countryMap.size,
-          totalServices,
-          totalBookings,
           revenueThisMonth,
           propertiesByCountry,
         });
