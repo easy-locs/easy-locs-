@@ -272,13 +272,13 @@ Deno.serve(async (req) => {
   try {
     switch (type) {
       case "listing":
-        return await handleListing(slug, shareUrl);
+        return await handleListing(req, slug, shareUrl, v);
       case "service":
-        return await handleService(slug, shareUrl);
+        return await handleService(req, slug, shareUrl, v);
       case "host":
-        return await handleHost(slug, shareUrl);
+        return await handleHost(req, slug, shareUrl, v);
       case "provider":
-        return await handleProvider(slug, shareUrl);
+        return await handleProvider(req, slug, shareUrl, v);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
