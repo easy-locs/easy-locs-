@@ -236,7 +236,7 @@ async function handleHost(req: Request, slug: string, shareUrl: string, shareVer
   return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
 }
 
-async function handleProvider(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleProvider(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
