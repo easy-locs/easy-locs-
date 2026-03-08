@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
@@ -18,13 +18,23 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const runtimeVersion = useMemo(() => String(Date.now()), [serviceSlug, shareVersion]);
+  const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
 
   const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
-  const links = getShareLinks(shareType, serviceSlug, serviceTitle, runtimeVersion);
+  
+
+  const refreshVersion = () => {
+    const seed = shareVersion ? Date.parse(shareVersion) : NaN;
+    const base = Number.isNaN(seed) ? Date.now() : Math.max(seed, Date.now());
+    const next = String(base);
+    setRuntimeVersion(next);
+    return next;
+  };
 
   const copy = async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    const nextVersion = refreshVersion();
+    const nextUrl = getSocialShareUrl(shareType, serviceSlug, nextVersion);
+    await navigator.clipboard.writeText(nextUrl);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
@@ -48,16 +58,32 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
         </Button>
       </div>
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => window.open(links.whatsapp, "_blank")} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => {
+          const nextVersion = refreshVersion();
+          const nextLinks = getShareLinks(shareType, serviceSlug, serviceTitle, nextVersion);
+          window.open(nextLinks.whatsapp, "_blank", "noopener,noreferrer");
+        }} className="flex-1 text-xs">
           <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
         </Button>
-        <Button size="sm" variant="outline" onClick={() => window.open(links.telegram, "_blank")} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => {
+          const nextVersion = refreshVersion();
+          const nextLinks = getShareLinks(shareType, serviceSlug, serviceTitle, nextVersion);
+          window.open(nextLinks.telegram, "_blank", "noopener,noreferrer");
+        }} className="flex-1 text-xs">
           <Send className="h-3 w-3 mr-1" /> Telegram
         </Button>
-        <Button size="sm" variant="outline" onClick={() => window.open(links.email, "_blank")} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => {
+          const nextVersion = refreshVersion();
+          const nextLinks = getShareLinks(shareType, serviceSlug, serviceTitle, nextVersion);
+          window.open(nextLinks.email, "_blank", "noopener,noreferrer");
+        }} className="flex-1 text-xs">
           <Mail className="h-3 w-3 mr-1" /> Email
         </Button>
-        <Button size="sm" variant="outline" onClick={() => window.open(links.sms, "_blank")} className="flex-1 text-xs">
+        <Button size="sm" variant="outline" onClick={() => {
+          const nextVersion = refreshVersion();
+          const nextLinks = getShareLinks(shareType, serviceSlug, serviceTitle, nextVersion);
+          window.open(nextLinks.sms, "_blank", "noopener,noreferrer");
+        }} className="flex-1 text-xs">
           <Share2 className="h-3 w-3 mr-1" /> SMS
         </Button>
       </div>

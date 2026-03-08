@@ -8,6 +8,14 @@ const corsHeaders = {
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = Deno.env.get("APP_URL") || "https://easy-locs.lovable.app";
 const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
+const BOT_UA_PATTERN = /(facebookexternalhit|facebot|meta-externalagent|whatsapp|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
+
+function shouldServePreviewHtml(req: Request): boolean {
+  const ua = req.headers.get("user-agent") || "";
+  if (!ua) return true;
+  if (BOT_UA_PATTERN.test(ua)) return true;
+  return !ua.includes("Mozilla");
+}
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -115,11 +123,25 @@ function buildHeaders() {
   };
 }
 
-function buildSocialResponse(html: string): Response {
-  return new Response(html, { status: 200, headers: buildHeaders() });
+function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
+  if (shouldServePreviewHtml(req)) {
+    return new Response(html, { status: 200, headers: buildHeaders() });
+  }
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      ...corsHeaders,
+      Location: redirectUrl,
+      "Cache-Control": "no-store, max-age=0, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
+  });
 }
 
-async function handleListing(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+
+async function handleListing(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
@@ -142,6 +164,7 @@ async function handleListing(slug: string, shareUrl: string, shareVersion?: stri
   const redirectUrl = `${APP_URL}/listing/${slug}`;
 
   return buildSocialResponse(
+    req,
     htmlPage({
       title,
       description: desc,
@@ -168,11 +191,12 @@ async function handleListing(slug: string, shareUrl: string, shareVersion?: stri
             }
           : {}),
       },
-    })
+    }),
+    redirectUrl
   );
 }
 
-async function handleService(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
@@ -191,10 +215,10 @@ async function handleService(slug: string, shareUrl: string, shareVersion?: stri
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }));
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
 }
 
-async function handleHost(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleHost(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
@@ -211,10 +235,10 @@ async function handleHost(slug: string, shareUrl: string, shareVersion?: string 
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
 
-async function handleProvider(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleProvider(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
@@ -242,7 +266,7 @@ async function handleProvider(slug: string, shareUrl: string, shareVersion?: str
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
 
 
@@ -271,13 +295,13 @@ Deno.serve(async (req) => {
   try {
     switch (type) {
       case "listing":
-        return await handleListing(slug, shareUrl, v);
+        return await handleListing(req, slug, shareUrl, v);
       case "service":
-        return await handleService(slug, shareUrl, v);
+        return await handleService(req, slug, shareUrl, v);
       case "host":
-        return await handleHost(slug, shareUrl, v);
+        return await handleHost(req, slug, shareUrl, v);
       case "provider":
-        return await handleProvider(slug, shareUrl, v);
+        return await handleProvider(req, slug, shareUrl, v);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
