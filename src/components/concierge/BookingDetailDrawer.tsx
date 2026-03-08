@@ -167,6 +167,17 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <span className="text-foreground">{booking.guest_phone}</span>
                 </div>
               )}
+              {/* Contact buttons */}
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`mailto:${booking.guest_email}?subject=Booking ${service?.title || ""}`, "_blank")}>
+                  <Mail className="h-3 w-3 mr-1" /> Email
+                </Button>
+                {booking.guest_phone && (
+                  <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`https://wa.me/${booking.guest_phone.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent(`Hello ${booking.guest_name}, regarding your booking for ${service?.title || "our service"}...`)}`, "_blank")}>
+                    <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
+                  </Button>
+                )}
+              </div>
             </div>
           </section>
 
