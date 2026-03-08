@@ -107,12 +107,14 @@ const ConciergeServices = () => {
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
   const [preferredCurrency, setPreferredCurrency] = useState("EUR");
 
-  // Load landlord profile for showcase link
+  // Load landlord profile + preferred currency
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId || !user) return;
     supabase.from("landlord_profiles").select("slug").eq("org_id", orgId).eq("active", true).limit(1).maybeSingle()
       .then(({ data }) => { if (data) setLandlordProfile(data); });
-  }, [orgId]);
+    supabase.from("profiles").select("preferred_currency").eq("id", user.id).single()
+      .then(({ data }) => { if (data?.preferred_currency) setPreferredCurrency(data.preferred_currency); });
+  }, [orgId, user]);
 
   const load = useCallback(async () => {
     if (!orgId) return;
