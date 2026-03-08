@@ -115,6 +115,16 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
                 <p className="text-foreground whitespace-pre-line">
                   {m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}
                 </p>
+                {m.attachment_url && (
+                  <a
+                    href={m.attachment_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs underline text-accent"
+                  >
+                    <Paperclip className="h-3 w-3" /> Pièce jointe
+                  </a>
+                )}
               </div>
             );
           })
