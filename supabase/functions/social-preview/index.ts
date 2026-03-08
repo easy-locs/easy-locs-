@@ -216,7 +216,7 @@ async function handleService(req: Request, slug: string, shareUrl: string, share
   return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }));
 }
 
-async function handleHost(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleHost(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
