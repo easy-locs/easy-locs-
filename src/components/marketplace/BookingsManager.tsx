@@ -56,6 +56,8 @@ async function syncToCommunicationCenter(opts: {
   subject: string;
   message: string;
   category?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
   meta?: NotificationMeta;
 }) {
   // 1. Create message thread in communication center
@@ -65,9 +67,12 @@ async function syncToCommunicationCenter(opts: {
       sender_id: opts.userId || null,
       content: opts.message,
       category: opts.category || "booking",
+      attachment_url: opts.attachmentUrl || null,
       read: false,
     } as any);
-  } catch (e) { console.error("Comms center sync error:", e); }
+  } catch (e) {
+    console.error("Comms center sync error:", e);
+  }
 
   // 2. Create in-app notification with deep-link metadata
   if (opts.userId) {
@@ -82,13 +87,14 @@ async function syncToCommunicationCenter(opts: {
         link,
         metadata_json: opts.meta ? (opts.meta as any) : {},
       } as any);
-    } catch (e) { console.error("Notification sync error:", e); }
+    } catch (e) {
+      console.error("Notification sync error:", e);
+    }
   }
 
   // 3. Send email to client via edge function with correct parameters
   if (opts.email) {
     try {
-      // Map event_type from meta or derive from subject
       const eventType = opts.meta?.event_type || "marketplace_notification";
       await supabase.functions.invoke("send-notification-email", {
         body: {
@@ -100,12 +106,57 @@ async function syncToCommunicationCenter(opts: {
             message: opts.message,
             service_title: opts.meta?.service_title || "",
             booking_id: opts.meta?.booking_id || "",
+            attachment_url: opts.attachmentUrl || "",
+            attachment_name: opts.attachmentName || "",
+            cta_url: opts.attachmentUrl || "",
+            cta_label: opts.attachmentUrl ? "Télécharger la facture" : "Voir le détail",
           },
-          locale: "en",
+          locale: "fr",
         },
       });
-    } catch (e) { console.error("Email sync error:", e); }
+    } catch (e) {
+      console.error("Email sync error:", e);
+    }
   }
+}
+
+function sanitizeFileName(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9-_\.]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+}
+
+export async function uploadBookingInvoiceAttachment(params: {
+  blob: Blob;
+  orgId: string;
+  bookingId: string;
+  invoiceNumber: string;
+  customerName: string;
+}) {
+  const safeName = sanitizeFileName(params.customerName || "client");
+  const fileName = `${sanitizeFileName(params.invoiceNumber)}-${safeName}.pdf`;
+  const path = `${params.orgId}/invoices/${params.bookingId}/${crypto.randomUUID()}-${fileName}`;
+
+  const { error } = await supabase.storage
+    .from("booking-documents")
+    .upload(path, params.blob, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  const { data } = supabase.storage.from("booking-documents").getPublicUrl(path);
+
+  return {
+    attachmentUrl: data.publicUrl,
+    attachmentName: fileName,
+  };
 }
 
 async function handleInvoice(booking: any, service: any, provider: any) {
