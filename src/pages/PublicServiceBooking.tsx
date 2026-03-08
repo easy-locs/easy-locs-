@@ -164,6 +164,7 @@ const PublicServiceBooking = () => {
         org_id: service.org_id,
         service_id: service.id,
         property_id: service.property_id || null,
+        property_label: service.title,
         guest_name: form.name,
         guest_email: form.email,
         guest_phone: form.phone,
@@ -197,6 +198,28 @@ const PublicServiceBooking = () => {
         .single();
 
       if (orderError) throw orderError;
+
+      // Send notification email to provider
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: "booking_request",
+            recipient_email: null, // Let the function resolve via org
+            org_id: service.org_id,
+            data: {
+              guest_name: form.name,
+              guest_email: form.email,
+              service_title: service.title,
+              service_date: orderData.service_date,
+              total_price: String(totalPrice),
+              currency: service.currency || "EUR",
+            },
+            locale: "en",
+          },
+        });
+      } catch (e) {
+        console.error("Notification email error:", e);
+      }
 
       if (paymentMethod === "stripe") {
         const { data: checkout, error: checkoutError } = await supabase.functions.invoke("create-concierge-payment", {
