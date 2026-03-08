@@ -1838,6 +1838,7 @@ export type Database = {
           price: number
           price_type: string
           provider_id: string
+          requires_id_document: boolean
           sort_order: number | null
           time_slots: Json | null
           title: string
@@ -1868,6 +1869,7 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id: string
+          requires_id_document?: boolean
           sort_order?: number | null
           time_slots?: Json | null
           title: string
@@ -1898,6 +1900,7 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id?: string
+          requires_id_document?: boolean
           sort_order?: number | null
           time_slots?: Json | null
           title?: string
