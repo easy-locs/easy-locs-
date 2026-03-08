@@ -484,6 +484,7 @@ const ActivitiesMarketplace = () => {
         <ServiceForm
           open={serviceFormOpen}
           onOpenChange={(v) => { setServiceFormOpen(v); if (!v) setEditingService(null); }}
+          orgId={orgId || undefined}
           initialData={editingService ? {
             title: editingService.title,
             description: editingService.description || "",
@@ -500,6 +501,7 @@ const ActivitiesMarketplace = () => {
             payment_paypal_email: editingService.payment_paypal_email || "",
             payment_custom_url: editingService.payment_custom_url || "",
             active: editingService.active,
+            photo_urls: Array.isArray(editingService.photo_urls) ? editingService.photo_urls : [],
           } : undefined}
           providerCountry={myProvider?.country}
           providerCity={myProvider?.city}
