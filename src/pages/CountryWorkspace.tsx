@@ -1,9 +1,12 @@
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Home, Users, KeyRound, FileText, Wallet, ClipboardList,
   MessageCircle, Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
+  Store, Calendar, Sofa, Zap, MapPin, CalendarCheck,
+  Settings, ShoppingBag, Handshake, CheckSquare, UserSearch,
+  Bell, Layers, Clock,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +15,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { getCountryProfile } from "@/lib/country-profile";
 import { formatCurrency } from "@/lib/country-config";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 const CountryWorkspace = () => {
   const { code } = useParams<{ code: string }>();
@@ -25,7 +28,7 @@ const CountryWorkspace = () => {
 
   const [stats, setStats] = useState({
     properties: 0, tenants: 0, leases: 0, documents: 0,
-    buildings: 0, revenue: 0, unpaid: 0,
+    buildings: 0, services: 0, bookings: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +40,11 @@ const CountryWorkspace = () => {
       supabase.from("leases").select("id", { count: "exact" }).eq("org_id", orgId).eq("country", country),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country),
       supabase.from("buildings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    ]).then(([props, tenants, leases, docs, buildings]) => {
-      // Filter tenants by properties in this country
+      supabase.from("concierge_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
+      supabase.from("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
+      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    ]).then(([props, tenants, leases, docs, buildings, concSvc, mpSvc, concOrd, mpBk]) => {
       const propIds = new Set((props.data || []).map(p => p.id));
       const countryTenants = (tenants.data || []).filter(t => t.property_id && propIds.has(t.property_id));
 
@@ -48,50 +54,70 @@ const CountryWorkspace = () => {
         leases: leases.count || 0,
         documents: docs.count || 0,
         buildings: buildings.count || 0,
-        revenue: 0,
-        unpaid: 0,
+        services: (concSvc.count || 0) + (mpSvc.count || 0),
+        bookings: (concOrd.count || 0) + (mpBk.count || 0),
       });
       setLoading(false);
     });
   }, [orgId, country]);
 
+  const cp = (path: string) => `${path}${path.includes("?") ? "&" : "?"}country=${country}`;
+
   const sections = [
     {
-      title: t("nav.properties") || "Biens",
+      title: t("section.property") || "Gestion immobilière",
+      description: "Biens, locataires, baux et inventaires",
       items: [
-        { icon: Home, label: t("nav.properties") || "Biens", path: `/dashboard/rental?tab=properties&country=${country}`, count: stats.properties },
-        { icon: Building, label: t("nav.buildings") || "Immeubles", path: `/dashboard/buildings?country=${country}`, count: stats.buildings },
+        { icon: Home, label: t("nav.properties") || "Biens", path: cp("/dashboard/rental"), count: stats.properties },
+        { icon: Building, label: t("nav.buildings") || "Immeubles", path: cp("/dashboard/buildings"), count: stats.buildings },
+        { icon: Users, label: t("nav.tenants") || "Locataires", path: cp("/dashboard/tenants"), count: stats.tenants },
+        { icon: KeyRound, label: t("nav.leases") || "Baux", path: cp("/dashboard/leases"), count: stats.leases },
+        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: cp("/dashboard/rental?tab=inventory") },
+        { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: cp("/dashboard/furniture") },
       ],
     },
     {
-      title: t("nav.tenants") || "Locataires",
+      title: "Marketplace & Services",
+      description: "Services, réservations et conciergerie",
       items: [
-        { icon: Users, label: t("nav.tenants") || "Locataires", path: `/dashboard/rental?tab=tenants&country=${country}`, count: stats.tenants },
-        { icon: KeyRound, label: t("nav.leases") || "Baux", path: `/dashboard/leases?country=${country}`, count: stats.leases },
-        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: `/dashboard/rental?tab=inventory&country=${country}` },
+        { icon: Store, label: "Marketplace", path: "/dashboard/activities", count: stats.services },
+        { icon: Handshake, label: "Conciergerie", path: "/dashboard/concierge" },
+        { icon: CalendarCheck, label: "Réservations", path: "/dashboard/operations", count: stats.bookings },
+        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
       ],
     },
     {
-      title: "Finance",
+      title: "Location saisonnière",
+      description: "Annonces, calendrier et tarification",
       items: [
-        { icon: Wallet, label: t("nav.finances") || "Revenus", path: `/dashboard/finances?country=${country}` },
-        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: `/dashboard/expenses?country=${country}` },
-        { icon: BookOpen, label: "Comptabilité", path: `/dashboard/accounting?country=${country}` },
-        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal", path: `/dashboard/fiscal?country=${country}` },
-        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: `/dashboard/dunning?country=${country}` },
+        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
+        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
+        { icon: Zap, label: t("nav.pricing") || "Tarification dynamique", path: "/dashboard/pricing" },
       ],
     },
     {
-      title: "Documents",
+      title: "Finance & Comptabilité",
+      description: "Revenus, dépenses, fiscal et relances",
       items: [
-        { icon: FileText, label: t("nav.documents") || "Documents", path: `/dashboard/documents?country=${country}`, count: stats.documents },
+        { icon: Wallet, label: t("nav.finances") || "Revenus", path: cp("/dashboard/finances") },
+        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: cp("/dashboard/expenses") },
+        { icon: Bell, label: t("nav.notices") || "Avis d'échéance", path: cp("/dashboard/notices") },
+        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: cp("/dashboard/dunning") },
+        { icon: Layers, label: t("nav.charges") || "Régul. charges", path: cp("/dashboard/charges") },
+        { icon: BookOpen, label: t("nav.accounting") || "Comptabilité", path: cp("/dashboard/accounting") },
+        { icon: FileCheck, label: t("nav.fiscal") || "Bilan fiscal", path: cp("/dashboard/fiscal") },
       ],
     },
     {
-      title: "Communication",
+      title: "Documents & Communication",
+      description: "Documents légaux, messages et rappels",
       items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: `/dashboard/messages?country=${country}` },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: `/dashboard/interventions?country=${country}` },
+        { icon: FileText, label: t("nav.documents") || "Documents", path: cp("/dashboard/documents"), count: stats.documents },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cp("/dashboard/communication") },
+        { icon: Clock, label: t("nav.reminders") || "Rappels", path: cp("/dashboard/reminders") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cp("/dashboard/tasks") },
+        { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cp("/dashboard/candidates") },
       ],
     },
   ];
@@ -114,21 +140,24 @@ const CountryWorkspace = () => {
             <div>
               <h1 className="text-2xl font-bold text-foreground">{entry.name}</h1>
               <div className="flex items-center gap-3 mt-1">
-                <span className="badge-info">{profile.currency} ({profile.currencySymbol})</span>
-                <span className="badge-neutral">{profile.locale}</span>
-                <span className="badge-neutral">{profile.measurementUnit === "metric" ? "Métrique" : "Impérial"}</span>
+                <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded font-medium">{profile.currency} ({profile.currencySymbol})</span>
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">{profile.locale}</span>
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">{profile.measurementUnit === "metric" ? "Métrique" : "Impérial"}</span>
               </div>
             </div>
           </div>
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
           {[
-            { label: t("nav.properties") || "Biens", value: stats.properties, icon: Home },
-            { label: t("nav.tenants") || "Locataires", value: stats.tenants, icon: Users },
-            { label: t("nav.leases") || "Baux", value: stats.leases, icon: KeyRound },
-            { label: t("nav.documents") || "Documents", value: stats.documents, icon: FileText },
+            { label: "Biens", value: stats.properties, icon: Home },
+            { label: "Locataires", value: stats.tenants, icon: Users },
+            { label: "Baux", value: stats.leases, icon: KeyRound },
+            { label: "Documents", value: stats.documents, icon: FileText },
+            { label: "Services", value: stats.services, icon: Store },
+            { label: "Réservations", value: stats.bookings, icon: CalendarCheck },
+            { label: "Immeubles", value: stats.buildings, icon: Building },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -137,19 +166,19 @@ const CountryWorkspace = () => {
               transition={{ delay: 0.05 + i * 0.03 }}
               className="stat-card"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground font-medium">{stat.label}</span>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <stat.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground font-medium truncate">{stat.label}</span>
               </div>
-              <div className="text-2xl font-bold text-foreground mt-auto">
+              <div className="text-xl font-bold text-foreground tabular-nums">
                 {loading ? "..." : stat.value}
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Navigation Sections */}
-        <div className="space-y-6">
+        {/* Module Sections */}
+        <div className="space-y-8">
           {sections.map((section, si) => (
             <motion.div
               key={section.title}
@@ -157,9 +186,12 @@ const CountryWorkspace = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + si * 0.04 }}
             >
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                {section.title}
-              </h2>
+              <div className="mb-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {section.title}
+                </h2>
+                <p className="text-[11px] text-muted-foreground/60 mt-0.5">{section.description}</p>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {section.items.map((item) => (
                   <Link
