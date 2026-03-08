@@ -34,9 +34,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
   };
 
   const copy = async () => {
-    const nextVersion = refreshVersion();
-    const nextUrl = getSocialShareUrl(shareType, serviceSlug, nextVersion);
-    await navigator.clipboard.writeText(nextUrl);
+    await navigator.clipboard.writeText(publicLink);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
