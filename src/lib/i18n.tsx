@@ -9,6 +9,7 @@ import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages,
 import { billingWorldwide } from "./i18n-billing-worldwide";
 import { notifKeys } from "./i18n-validation";
 import { pagesWorldwide } from "./i18n-pages-worldwide";
+import { marketplaceI18n } from "./i18n-marketplace";
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
