@@ -124,16 +124,7 @@ const Dashboard = () => {
           </p>
         </motion.div>
 
-        {/* Quick Add Property */}
-        <div className="mb-6">
-          <Link
-            to="/dashboard/add-property"
-            className="group inline-flex items-center gap-2 bg-accent text-accent-foreground px-5 py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            {t("page.rental.add_property") || "Ajouter un bien"}
-          </Link>
-        </div>
+        {/* Quick Add Property — moved below country cards */}
 
         {/* Global KPIs — clickable navigation cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
