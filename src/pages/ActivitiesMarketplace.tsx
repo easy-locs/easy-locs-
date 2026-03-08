@@ -318,18 +318,17 @@ const ActivitiesMarketplace = () => {
     toast.success("Payment confirmed!");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Send payment confirmation email
-    if (booking?.booker_email) {
+    // Sync payment confirmation to comms center
+    if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: booking.booker_email,
-            subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
-            message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\n\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
-          },
-        });
-      } catch (e) { console.error("Email notification error:", e); }
+      await syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
+        message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
+        category: "payment",
+      });
     }
   };
 
