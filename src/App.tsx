@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
@@ -109,6 +109,19 @@ const PageLoader = () => (
   </div>
 );
 
+const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/"];
+
+const RouteAwareAssistant = () => {
+  const { pathname } = useLocation();
+  const hideAssistant =
+    pathname === "/guest" ||
+    pathname.startsWith("/r/") ||
+    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix));
+
+  if (hideAssistant) return null;
+  return <FloatingAIAssistant />;
+};
+
 const App = () => (
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
@@ -119,7 +132,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
-          <FloatingAIAssistant />
+          <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}

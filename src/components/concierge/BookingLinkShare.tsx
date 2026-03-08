@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getSocialShareUrl, getShareLinks, type ShareableType } from "@/lib/social-share";
+import { getShareLinks, type ShareableType } from "@/lib/social-share";
+import { buildAppUrl } from "@/lib/app-domain";
 
 interface Props {
   serviceSlug: string;
@@ -18,23 +19,16 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
-
-  const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
-  
+  const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
 
   const refreshVersion = () => {
     const seed = shareVersion ? Date.parse(shareVersion) : NaN;
     const base = Number.isNaN(seed) ? Date.now() : Math.max(seed, Date.now());
-    const next = String(base);
-    setRuntimeVersion(next);
-    return next;
+    return String(base);
   };
 
   const copy = async () => {
-    const nextVersion = refreshVersion();
-    const nextUrl = getSocialShareUrl(shareType, serviceSlug, nextVersion);
-    await navigator.clipboard.writeText(nextUrl);
+    await navigator.clipboard.writeText(publicLink);
     setCopied(true);
     toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
@@ -52,7 +46,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
       )}
 
       <div className="flex gap-2">
-        <Input value={shareUrl} readOnly className="text-xs" />
+        <Input value={publicLink} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>

@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
-import { Clock, MapPin, CreditCard, Building2, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PublicServiceBooking = () => {
@@ -30,48 +31,105 @@ const PublicServiceBooking = () => {
   const [photoIndex, setPhotoIndex] = useState(0);
 
   useEffect(() => {
+    let mounted = true;
+
     const load = async () => {
-      const { data } = await supabase
+      if (!slug) {
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      const normalizedSlug = decodeURIComponent(slug).trim();
+
+      const { data: exactMatch } = await supabase
         .from("concierge_services" as any)
         .select("*")
-        .eq("booking_slug", slug)
+        .eq("booking_slug", normalizedSlug)
         .eq("active", true)
-        .single();
-      setService(data);
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let resolvedService = exactMatch;
+
+      if (!resolvedService) {
+        const { data: fallbackMatch } = await supabase
+          .from("concierge_services" as any)
+          .select("*")
+          .ilike("booking_slug", normalizedSlug)
+          .eq("active", true)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        resolvedService = fallbackMatch;
+      }
+
+      if (!mounted) return;
+      setService(resolvedService ?? null);
       setLoading(false);
     };
-    if (slug) load();
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
   }, [slug]);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") setSuccess(true);
   }, [searchParams]);
 
+  const canonicalUrl = buildAppUrl(slug ? `/book/${encodeURIComponent(slug)}` : "/book");
+
   if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
+    <>
+      <SEOHead
+        title="Service booking | Easy-Locs"
+        description="Book trusted services online with Easy-Locs."
+        canonical={canonicalUrl}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    </>
   );
 
   if (!service) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Service not found</h1>
-        <p className="text-muted-foreground">This booking link may be expired or invalid.</p>
+    <>
+      <SEOHead
+        title="Service not found | Easy-Locs"
+        description="This booking link is invalid or expired."
+        canonical={canonicalUrl}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Service not found</h1>
+          <p className="text-muted-foreground">This booking link may be expired or invalid.</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 
   if (success) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Card className="max-w-md mx-auto">
-        <CardContent className="pt-8 pb-8 text-center space-y-4">
-          <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
-          <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
-          <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received. You will receive a confirmation email shortly.</p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <SEOHead
+        title={`${service.title} booking confirmed | Easy-Locs`}
+        description={`Your booking for ${service.title} has been confirmed.`}
+        canonical={canonicalUrl}
+        ogImage={service.photo_url || (Array.isArray(service.photo_urls) && service.photo_urls[0]) || undefined}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
+            <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
+            <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received. You will receive a confirmation email shortly.</p>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 
   const photos: string[] = Array.isArray(service.photo_urls) ? service.photo_urls : service.photo_url ? [service.photo_url] : [];
@@ -167,7 +225,7 @@ const PublicServiceBooking = () => {
         title={`${service.title} — Book Now | Easy-Locs`}
         description={service.description || `Book ${service.title} on Easy-Locs`}
         ogImage={service.photo_url || (Array.isArray(service.photo_urls) && service.photo_urls[0]) || undefined}
-        canonical={`https://www.easy-locs.com/book/${slug}`}
+        canonical={canonicalUrl}
       />
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-8">
