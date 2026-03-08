@@ -202,6 +202,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) localStorage.setItem(`easylocs_active_role_${user.id}`, role);
   }, [user]);
 
+  const switchOrg = useCallback((newOrgId: string) => {
+    setOrgId(newOrgId);
+    if (user) localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
+  }, [user]);
+
   const refreshSubscription = useCallback(async () => {
     if (!session?.access_token) return;
     setSubscription((prev) => ({ ...prev, loading: true }));
