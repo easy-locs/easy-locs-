@@ -149,23 +149,23 @@ const DashboardPreview = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 + i * 0.06 }}
-                  className="rounded-xl p-4 border transition-all duration-300 hover:scale-[1.02]"
+                  className="rounded-xl p-3 sm:p-4 border transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: "hsl(var(--primary-foreground) / 0.03)",
-                    borderColor: "hsl(var(--primary-foreground) / 0.06)",
+                    background: "hsl(var(--primary-foreground) / 0.05)",
+                    borderColor: "hsl(var(--accent) / 0.12)",
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <s.icon className="h-4 w-4" style={{ color: `hsl(var(--${s.color}))` }} />
-                      <span className="text-xs font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{s.label}</span>
+                      <span className="text-[10px] sm:text-xs font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{s.label}</span>
                     </div>
                     <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: "hsl(var(--success))" }}>
                       <ArrowUpRight className="h-3 w-3" />
                       {s.change}
                     </span>
                   </div>
-                  <div className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--primary-foreground))" }}>{s.value}</div>
+                  <div className="text-lg sm:text-2xl font-extrabold tabular-nums whitespace-nowrap" style={{ color: "hsl(var(--primary-foreground))" }}>{s.value}</div>
                 </motion.div>
               ))}
             </div>

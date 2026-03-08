@@ -213,7 +213,7 @@ const QuickLoginCard = () => {
               className="text-xs transition-colors hover:underline"
               style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}
             >
-              {t("auth.forgot_password") || "Forgot password?"}
+              {t("auth.login.forgot") || "Forgot password?"}
             </Link>
           </div>
         </form>
