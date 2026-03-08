@@ -8,6 +8,7 @@ const corsHeaders = {
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = Deno.env.get("APP_URL") || "https://easy-locs.lovable.app";
 const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
+const BOT_UA_PATTERN = /(facebookexternalhit|facebot|whatsapp|twitterbot|linkedinbot|slackbot|telegrambot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -22,15 +23,19 @@ function toVersionToken(value?: string | null): string | null {
   return cleaned || null;
 }
 
-function withCacheBust(image: string | null | undefined, updatedAt?: string | null): string {
+function withCacheBust(image: string | null | undefined, version?: string | null): string {
   const base = image || DEFAULT_OG_IMAGE;
-  const token = toVersionToken(updatedAt);
+  const token = toVersionToken(version);
   if (!token) return base;
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}v=${encodeURIComponent(token)}`;
 }
 
-function htmlPage(meta: {
+function shouldServePreviewHtml(req: Request): boolean {
+  const userAgent = req.headers.get("user-agent") || "";
+  return BOT_UA_PATTERN.test(userAgent);
+}
+
   title: string;
   description: string;
   image: string;
