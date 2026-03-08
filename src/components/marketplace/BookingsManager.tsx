@@ -1,9 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Download } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
+import { generateInvoicePdf } from "./InvoicePdfGenerator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   bookings: any[];
@@ -21,165 +22,41 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
   cancelled: { label: "Cancelled", variant: "destructive", icon: X },
 };
 
-function generateInvoicePdf(booking: any, service: any, provider: any) {
-  if (!provider?.invoicing_enabled) {
-    toast.error("Invoicing is not enabled. Activate it in your provider profile.");
-    return;
+async function handleInvoice(booking: any, service: any, provider: any) {
+  const blob = await generateInvoicePdf({ booking, service, provider });
+  if (!blob) return;
+
+  // Auto-email invoice if invoicing enabled
+  if (provider?.invoicing_enabled && booking.booker_email) {
+    try {
+      await supabase.functions.invoke("send-notification-email", {
+        body: {
+          to: booking.booker_email,
+          subject: `Invoice for ${service?.title || "Service"} — ${provider.invoice_prefix || "INV"}-${String(provider.invoice_next_number || 1).padStart(4, "0")}`,
+          message: `Hello ${booking.booker_name},\n\nPlease find your invoice for "${service?.title || "Service"}".\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!\n${provider.invoice_company_name || provider.display_name || ""}`,
+        },
+      });
+      toast.success("Invoice sent by email!");
+    } catch (e) {
+      console.error("Invoice email error:", e);
+    }
   }
+}
 
-  const doc = new jsPDF();
-  const margin = 20;
-  let y = margin;
+function shareInvoiceWhatsApp(booking: any, service: any, provider: any) {
+  const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
+  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${booking.total_price} ${booking.currency}\nClient: ${booking.booker_name}\n— ${provider?.invoice_company_name || provider?.display_name || "Easy-Locs®"}`;
+  const phone = booking.booker_phone?.replace(/[^0-9+]/g, "") || "";
+  const url = phone
+    ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`
+    : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+}
 
-  // Header
-  const companyName = provider.invoice_company_name || provider.company_name || provider.display_name || "Provider";
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text(companyName, margin, y);
-  y += 8;
-
-  if (provider.invoice_address) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    const lines = provider.invoice_address.split("\n");
-    lines.forEach((line: string) => {
-      doc.text(line, margin, y);
-      y += 4;
-    });
-  }
-
-  if (provider.invoice_tax_id) {
-    doc.setFontSize(9);
-    doc.text(`Tax ID: ${provider.invoice_tax_id}`, margin, y);
-    y += 4;
-  }
-
-  if (provider.email) {
-    doc.text(`Email: ${provider.email}`, margin, y);
-    y += 4;
-  }
-  if (provider.phone) {
-    doc.text(`Phone: ${provider.phone}`, margin, y);
-    y += 4;
-  }
-
-  y += 6;
-
-  // Invoice number & date
-  const prefix = provider.invoice_prefix || "INV";
-  const num = String(provider.invoice_next_number || 1).padStart(4, "0");
-  const invoiceNumber = `${prefix}-${num}`;
-  const invoiceDate = new Date().toLocaleDateString("en-GB");
-
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text(`INVOICE ${invoiceNumber}`, margin, y);
-  y += 7;
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Date: ${invoiceDate}`, margin, y);
-  y += 10;
-
-  // Client info
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text("Bill To:", margin, y);
-  y += 6;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(booking.booker_name || "Client", margin, y);
-  y += 5;
-  doc.text(booking.booker_email || "", margin, y);
-  y += 5;
-  if (booking.booker_phone) {
-    doc.text(booking.booker_phone, margin, y);
-    y += 5;
-  }
-
-  y += 10;
-
-  // Line separator
-  doc.setDrawColor(200, 200, 200);
-  doc.line(margin, y, 190, y);
-  y += 6;
-
-  // Table header
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("Description", margin, y);
-  doc.text("Qty", 120, y, { align: "center" });
-  doc.text("Unit Price", 145, y, { align: "center" });
-  doc.text("Total", 180, y, { align: "right" });
-  y += 3;
-  doc.line(margin, y, 190, y);
-  y += 6;
-
-  // Item
-  const title = service?.title || "Service";
-  const dateInfo = booking.date_from && booking.date_to
-    ? `${booking.date_from} → ${booking.date_to}`
-    : booking.service_date || "";
-  const qty = booking.quantity || 1;
-  const unitPrice = service?.price || Number(booking.total_price || 0) / qty;
-  const totalPrice = Number(booking.total_price || 0);
-  const currency = booking.currency || "EUR";
-
-  doc.setFont("helvetica", "normal");
-  doc.text(title, margin, y);
-  y += 4;
-  if (dateInfo) {
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text(dateInfo, margin, y);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    y += 4;
-  }
-
-  // Values on same line as title
-  const valueY = dateInfo ? y - 8 : y;
-  doc.text(String(qty), 120, valueY, { align: "center" });
-  doc.text(`${unitPrice.toLocaleString()} ${currency}`, 145, valueY, { align: "center" });
-  doc.text(`${totalPrice.toLocaleString()} ${currency}`, 180, valueY, { align: "right" });
-
-  y += 6;
-  doc.line(margin, y, 190, y);
-  y += 8;
-
-  // Total
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("TOTAL:", 140, y);
-  doc.text(`${totalPrice.toLocaleString()} ${currency}`, 180, y, { align: "right" });
-  y += 10;
-
-  // Payment status
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  const paymentStatus = booking.payment_confirmed ? "✅ PAID" : "⏳ PENDING";
-  doc.text(`Payment Status: ${paymentStatus}`, margin, y);
-  y += 5;
-  if (booking.payment_confirmed_at) {
-    doc.text(`Paid on: ${new Date(booking.payment_confirmed_at).toLocaleDateString("en-GB")}`, margin, y);
-    y += 5;
-  }
-
-  // Notes
-  if (booking.notes) {
-    y += 5;
-    doc.setFontSize(9);
-    doc.text(`Notes: ${booking.notes}`, margin, y);
-  }
-
-  // Footer
-  y = 270;
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Generated by Easy-Locs® — ${invoiceNumber}`, margin, y);
-
-  doc.save(`${invoiceNumber}-${booking.booker_name?.replace(/\s+/g, "-") || "invoice"}.pdf`);
-  toast.success(`Invoice ${invoiceNumber} generated!`);
+function shareInvoiceTelegram(booking: any, service: any, provider: any) {
+  const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
+  const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${booking.total_price} ${booking.currency}\nClient: ${booking.booker_name}`;
+  window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, "_blank");
 }
 
 export default function BookingsManager({ bookings, services, provider, onUpdateStatus, onSendPaymentLink, onConfirmPayment }: Props) {
@@ -252,15 +129,16 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                         </Button>
                       </>
                     )}
-                    {/* Invoice button for confirmed/completed/paid */}
+                    {/* Invoice buttons */}
                     {(b.status === "confirmed" || b.status === "completed" || b.payment_confirmed) && provider?.invoicing_enabled && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => generateInvoicePdf(b, svc, provider)}
-                      >
-                        <FileText className="h-3 w-3 mr-1" /> Invoice
-                      </Button>
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => handleInvoice(b, svc, provider)}>
+                          <FileText className="h-3 w-3 mr-1" /> Invoice
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="Share via WhatsApp">
+                          <Share2 className="h-3 w-3" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
