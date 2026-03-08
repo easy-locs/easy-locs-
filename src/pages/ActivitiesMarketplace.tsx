@@ -504,6 +504,7 @@ const ActivitiesMarketplace = () => {
             payment_custom_url: editingService.payment_custom_url || "",
             active: editingService.active,
             photo_urls: Array.isArray(editingService.photo_urls) ? editingService.photo_urls : [],
+            requires_id_document: editingService.requires_id_document || false,
           } : undefined}
           providerCountry={myProvider?.country}
           providerCity={myProvider?.city}
