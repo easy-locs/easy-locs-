@@ -30,11 +30,6 @@ function withCacheBust(image: string | null | undefined, version?: string | null
   return `${base}${separator}v=${encodeURIComponent(token)}`;
 }
 
-function shouldServePreviewHtml(req: Request): boolean {
-  const userAgent = req.headers.get("user-agent") || "";
-  return BOT_UA_PATTERN.test(userAgent);
-}
-
 function htmlPage(meta: {
   title: string;
   description: string;
