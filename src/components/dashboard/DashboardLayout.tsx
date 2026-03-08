@@ -34,7 +34,7 @@ interface NavSection {
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
 
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
