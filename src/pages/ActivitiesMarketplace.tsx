@@ -572,6 +572,7 @@ const ActivitiesMarketplace = () => {
               <BookingsManager
                 bookings={myBookings}
                 services={myServices}
+                provider={myProvider}
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
@@ -602,6 +603,12 @@ const ActivitiesMarketplace = () => {
             payment_paypal_email: myProvider.payment_paypal_email || "",
             payment_custom_url: myProvider.payment_custom_url || "",
             avatar_url: myProvider.avatar_url || "",
+            invoicing_enabled: myProvider.invoicing_enabled || false,
+            invoice_company_name: myProvider.invoice_company_name || "",
+            invoice_address: myProvider.invoice_address || "",
+            invoice_tax_id: myProvider.invoice_tax_id || "",
+            invoice_prefix: myProvider.invoice_prefix || "INV",
+            invoice_next_number: myProvider.invoice_next_number || 1,
           } : undefined}
           onSave={(data) => myProvider ? updateProvider.mutate(data) : createProvider.mutate(data)}
           isPending={createProvider.isPending || updateProvider.isPending}

@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
-import { Building2, User, ImagePlus, Loader2 } from "lucide-react";
+import { Building2, User, ImagePlus, Loader2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -28,6 +29,12 @@ interface ProviderFormData {
   payment_paypal_email: string;
   payment_custom_url: string;
   avatar_url: string;
+  invoicing_enabled: boolean;
+  invoice_company_name: string;
+  invoice_address: string;
+  invoice_tax_id: string;
+  invoice_prefix: string;
+  invoice_next_number: number;
 }
 
 interface Props {
@@ -56,6 +63,12 @@ const emptyForm: ProviderFormData = {
   payment_paypal_email: "",
   payment_custom_url: "",
   avatar_url: "",
+  invoicing_enabled: false,
+  invoice_company_name: "",
+  invoice_address: "",
+  invoice_tax_id: "",
+  invoice_prefix: "INV",
+  invoice_next_number: 1,
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
@@ -71,7 +84,7 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
     }));
   };
 
-  const update = (field: keyof ProviderFormData, value: string) =>
+  const update = (field: keyof ProviderFormData, value: string | boolean | number) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,6 +233,63 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
               <Label>Custom Payment URL</Label>
               <Input value={form.payment_custom_url} onChange={(e) => update("payment_custom_url", e.target.value)} placeholder="https://..." />
             </div>
+          </div>
+
+          {/* Invoicing Section */}
+          <div className="space-y-3 border-t border-border pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-accent" />
+                <p className="text-sm font-medium text-foreground">Invoicing</p>
+              </div>
+              <Switch
+                checked={form.invoicing_enabled}
+                onCheckedChange={(v) => update("invoicing_enabled", v)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {form.invoicing_enabled ? "Invoices will be generated for confirmed bookings" : "Enable to generate invoices for your services"}
+            </p>
+
+            {form.invoicing_enabled && (
+              <div className="space-y-3 pl-1 border-l-2 border-accent/20 ml-1">
+                <div>
+                  <Label>Invoice Company / Name</Label>
+                  <Input
+                    value={form.invoice_company_name}
+                    onChange={(e) => update("invoice_company_name", e.target.value)}
+                    placeholder={form.company_name || form.display_name || "Company name on invoice"}
+                  />
+                </div>
+                <div>
+                  <Label>Invoice Address</Label>
+                  <Textarea
+                    value={form.invoice_address}
+                    onChange={(e) => update("invoice_address", e.target.value)}
+                    placeholder="Full address for the invoice"
+                    rows={2}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Tax / VAT ID</Label>
+                    <Input
+                      value={form.invoice_tax_id}
+                      onChange={(e) => update("invoice_tax_id", e.target.value)}
+                      placeholder="FR12345678901"
+                    />
+                  </div>
+                  <div>
+                    <Label>Invoice Prefix</Label>
+                    <Input
+                      value={form.invoice_prefix}
+                      onChange={(e) => update("invoice_prefix", e.target.value)}
+                      placeholder="INV"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <Button className="w-full" disabled={!form.display_name || !form.country || !form.city || isPending} onClick={() => onSave(form)}>
