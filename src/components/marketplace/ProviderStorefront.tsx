@@ -21,12 +21,12 @@ export default function ProviderStorefront() {
     queryKey: ["marketplace_provider_public", providerSlug],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("slug", providerSlug!)
         .eq("active", true)
         .single();
-      return data as any;
+      return data;
     },
     enabled: !!providerSlug,
   });
