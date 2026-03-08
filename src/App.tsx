@@ -160,6 +160,7 @@ const App = () => (
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/property-management-:country" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
