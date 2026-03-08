@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "./MarketplaceCategories";
-import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ interface Props {
 
 export default function ServiceCard({ service, provider, onBook, onEdit, showActions, showCalendar }: Props) {
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [photoIdx, setPhotoIdx] = useState(0);
   const cat = getCategoryInfo(service.category);
   const photos = (service.photo_urls || []) as string[];
   const priceLabel = service.price_type === "quote"
@@ -45,11 +46,39 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const timeSlots = Array.isArray(service.time_slots) ? service.time_slots : [];
   const blockedDates = Array.isArray(service.blocked_dates) ? service.blocked_dates : [];
 
+  const nextPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i + 1) % photos.length); };
+  const prevPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i - 1 + photos.length) % photos.length); };
+
   return (
     <Card className="overflow-hidden hover:border-accent/50 transition-colors group">
+      {/* Photo gallery */}
       {photos.length > 0 && (
-        <div className="aspect-[16/9] bg-muted overflow-hidden">
-          <img src={photos[0]} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+        <div className="relative aspect-[16/9] bg-muted overflow-hidden">
+          <img
+            src={photos[photoIdx]}
+            alt={service.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+          {photos.length > 1 && (
+            <>
+              <button onClick={prevPhoto} className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={nextPhoto} className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {photos.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); setPhotoIdx(i); }}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
       <CardContent className="pt-4 space-y-2">
@@ -74,6 +103,9 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           {service.max_capacity > 1 && (
             <span className="flex items-center gap-1"><Users className="h-3 w-3" /> Max {service.max_capacity}</span>
           )}
+          {photos.length > 1 && (
+            <span className="text-[10px] text-muted-foreground">{photos.length} photos</span>
+          )}
         </div>
 
         {provider && (
@@ -89,7 +121,6 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <span className="font-bold text-accent">{priceLabel}</span>
           <div className="flex gap-1.5">
-            {/* Share button */}
             {slug && links && (
               <Popover>
                 <PopoverTrigger asChild>
@@ -122,7 +153,6 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               </Popover>
             )}
 
-            {/* Calendar toggle */}
             {showCalendar && (
               <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setCalendarOpen(!calendarOpen)}>
                 <Calendar className="h-3.5 w-3.5" />
@@ -134,7 +164,6 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         </div>
 
-        {/* Inline calendar */}
         {calendarOpen && (
           <div className="pt-3 border-t border-border">
             <div className="flex items-center justify-between mb-2">
