@@ -172,6 +172,8 @@ const PublicServiceBooking = () => {
         unit_price: service.price,
         total_price: totalPrice,
         currency: service.currency || "EUR",
+        customer_currency: Intl.DateTimeFormat().resolvedOptions().locale ? detectCustomerCurrency() : null,
+        exchange_rate: computeExchangeRate(service.currency || "EUR", detectCustomerCurrency()),
         service_date: format(selectedDate, "yyyy-MM-dd"),
         service_time: selectedTime || null,
         payment_method: paymentMethod,
