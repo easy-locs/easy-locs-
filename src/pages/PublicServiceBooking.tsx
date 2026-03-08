@@ -558,11 +558,19 @@ const PublicServiceBooking = () => {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error("File too large (max 10MB)");
+                            return;
+                          }
                           const ext = file.name.split(".").pop();
-                          const path = `public-id-docs/${crypto.randomUUID()}.${ext}`;
-                          const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
-                          if (error) { toast.error("Upload failed"); return; }
-                          const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
+                          const path = `id-docs/${crypto.randomUUID()}.${ext}`;
+                          const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+                          if (error) {
+                            console.error("ID upload error:", error);
+                            toast.error("Upload failed: " + (error.message || "Unknown error"));
+                            return;
+                          }
+                          const { data: urlData } = supabase.storage.from("booking-documents").getPublicUrl(path);
                           setForm(f => ({ ...f, id_document_url: urlData.publicUrl }));
                           toast.success("ID document uploaded");
                         }}
