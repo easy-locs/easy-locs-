@@ -422,7 +422,7 @@ const ConciergeServices = () => {
                                 {o.service_date || "—"}
                                 {o.service_time && <span className="text-muted-foreground ml-1">{o.service_time}</span>}
                               </td>
-                              <td className="px-3 py-3 font-medium text-foreground">{o.total_price} {o.currency}</td>
+                              <td className="px-3 py-3 font-medium text-foreground">{fmtPrice(o.total_price, o.currency)}</td>
                               <td className="px-3 py-3">
                                 <Badge variant="outline" className={`text-[10px] ${o.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}`}>
                                   {o.payment_status}
