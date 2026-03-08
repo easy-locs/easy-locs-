@@ -333,36 +333,37 @@ const ConciergeServices = () => {
                 <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" /> Create Service</Button>
               </CardContent></Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((s, i) => {
                   const photos: string[] = Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [];
                   return (
                     <motion.div key={s.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
-                      <Card className="overflow-hidden group">
-                        {photos.length > 0 && (
-                          <div className="aspect-[16/9] overflow-hidden bg-muted">
+                      <Card className="overflow-hidden group h-full flex flex-col">
+                        <div className="aspect-[16/9] overflow-hidden bg-muted relative">
+                          {photos.length > 0 ? (
                             <img src={photos[0]} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                            {photos.length > 1 && (
-                              <div className="absolute bottom-2 right-2">
-                                <Badge variant="secondary" className="text-[10px]">{photos.length} photos</Badge>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <CardContent className="pt-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg">{catIcon(s.category)}</span>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl">{catIcon(s.category)}</div>
+                          )}
+                          {photos.length > 1 && (
+                            <div className="absolute bottom-2 right-2">
+                              <Badge variant="secondary" className="text-[10px]">{photos.length} photos</Badge>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2">
                             <Badge variant={s.active ? "default" : "outline"} className="text-[10px]">{s.active ? "Active" : "Inactive"}</Badge>
                           </div>
-                          <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
+                        </div>
+                        <CardContent className="pt-4 space-y-2 flex-1 flex flex-col">
+                          <h3 className="font-semibold text-foreground text-sm line-clamp-1">{catIcon(s.category)} {s.title}</h3>
                           {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
-                          <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center justify-between text-xs mt-auto pt-1">
                             <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>
                             {s.duration_minutes && <span className="text-muted-foreground"><Clock className="h-3 w-3 inline mr-0.5" />{s.duration_minutes}min</span>}
                           </div>
                           {s.commission_amount > 0 && (
                             <p className="text-[10px] text-muted-foreground">
-                              Commission: {s.commission_type === "fixed" ? `${s.commission_amount}€` : `${s.commission_amount}%`}
+                              Commission: {s.commission_type === "fixed" ? fmtPrice(s.commission_amount, s.currency) : `${s.commission_amount}%`}
                             </p>
                           )}
                           <Separator />
