@@ -67,9 +67,9 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
       for (const file of Array.from(files)) {
         const ext = file.name.split(".").pop();
         const path = `concierge-docs/${orgId}/${booking.id}/${Date.now()}-${file.name}`;
-        const { error } = await supabase.storage.from("rental-docs").upload(path, file);
+        const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
         if (error) throw error;
-        const { data: urlData } = supabase.storage.from("rental-docs").getPublicUrl(path);
+        const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
         newUrls.push(urlData.publicUrl);
       }
 

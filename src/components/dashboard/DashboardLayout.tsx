@@ -34,13 +34,8 @@ interface NavSection {
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarReady, setSidebarReady] = useState(false);
 
-  // Delay enabling transitions to prevent initial render flicker on desktop
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setSidebarReady(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
+
   const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -198,11 +193,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col safe-bottom ${
-          sidebarReady ? "transition-transform duration-300 ease-in-out" : ""
-        } ${
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col safe-bottom transition-transform duration-300 ease-in-out ${
           sidebarOpen
-            ? "translate-x-0 sidebar-slide-in"
+            ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
