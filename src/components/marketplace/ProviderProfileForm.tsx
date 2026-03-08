@@ -79,6 +79,8 @@ const emptyForm: ProviderFormData = {
   bank_bic: "",
   bank_holder: "",
   bank_name: "",
+  tax_rate: 0,
+  tax_label: "VAT",
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
