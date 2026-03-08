@@ -146,12 +146,12 @@ const ActivitiesMarketplace = () => {
 
   const createService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
-      const { error } = await supabase.from("marketplace_services" as any).insert({
+      const { error } = await supabase.from("marketplace_services").insert({
         ...data,
         provider_id: myProvider!.id,
         org_id: orgId!,
         user_id: user!.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
