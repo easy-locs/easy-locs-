@@ -497,7 +497,14 @@ const ConciergeServices = () => {
           </TabsContent>
 
           {/* REVENUE TAB */}
-          <TabsContent value="revenue" className="mt-4">
+          <TabsContent value="revenue" className="mt-4 space-y-4">
+            {/* Currency Wallet */}
+            <CurrencyWalletWidget
+              orders={orders}
+              preferredCurrency={preferredCurrency}
+              onPreferredCurrencyChange={handlePreferredCurrencyChange}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">Revenue by Service</CardTitle></CardHeader>
