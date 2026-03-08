@@ -40,6 +40,7 @@ const PublicServiceBooking = () => {
   const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [quantity, setQuantity] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
+  const [idDocUploading, setIdDocUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
