@@ -64,6 +64,7 @@ interface ServiceForm {
   payment_methods: string[]; bank_details: any; commission_type: string; commission_amount: number;
   paypal_email: string; booking_slug: string;
   time_slots: { start: string; end: string }[]; blocked_dates: string[];
+  requires_id_document: boolean;
 }
 
 const emptyForm: ServiceForm = {
@@ -72,7 +73,7 @@ const emptyForm: ServiceForm = {
   active: true, photo_urls: [], location: "", conditions: "", booking_type: "instant",
   payment_methods: ["stripe"], bank_details: {}, commission_type: "percentage",
   commission_amount: 0, paypal_email: "", booking_slug: "",
-  time_slots: [], blocked_dates: [],
+  time_slots: [], blocked_dates: [], requires_id_document: false,
 };
 
 const generateSlug = (title: string) =>
