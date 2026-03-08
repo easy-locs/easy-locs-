@@ -33,7 +33,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Tenants = lazy(() => import("./pages/Tenants"));
 const RentalManagement = lazy(() => import("./pages/RentalManagement"));
 const Finances = lazy(() => import("./pages/Finances"));
-const Interventions = lazy(() => import("./pages/Interventions"));
+
 const Tasks = lazy(() => import("./pages/Tasks"));
 const Messages = lazy(() => import("./pages/Messages"));
 const CommunicationCenter = lazy(() => import("./pages/CommunicationCenter"));
