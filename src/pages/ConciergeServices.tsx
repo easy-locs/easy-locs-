@@ -337,7 +337,7 @@ const ConciergeServices = () => {
                           <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
                           {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-accent">{s.price} {s.currency || "EUR"}</span>
+                            <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>
                             {s.duration_minutes && <span className="text-muted-foreground"><Clock className="h-3 w-3 inline mr-0.5" />{s.duration_minutes}min</span>}
                           </div>
                           {s.commission_amount > 0 && (
