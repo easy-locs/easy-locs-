@@ -18,10 +18,12 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const runtimeVersion = useMemo(
-    () => `${shareVersion || "base"}-${Date.now()}`,
-    [serviceSlug, shareVersion]
-  );
+  const runtimeVersion = useMemo(() => {
+    const parsed = shareVersion ? Date.parse(shareVersion) : NaN;
+    const base = Number.isNaN(parsed) ? "base" : String(parsed);
+    return `${base}-${Date.now()}`;
+  }, [serviceSlug, shareVersion]);
+
   const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
   const links = getShareLinks(shareType, serviceSlug, serviceTitle, runtimeVersion);
 
@@ -68,4 +70,5 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
 };
 
 export default BookingLinkShare;
+
 
