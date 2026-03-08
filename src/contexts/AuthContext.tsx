@@ -50,6 +50,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   emailVerified: false,
   orgId: null,
+  allOrgs: [],
+  switchOrg: () => {},
   userType: "landlord",
   userCountry: "FR",
   userCurrency: "EUR",
