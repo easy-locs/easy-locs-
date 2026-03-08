@@ -128,7 +128,7 @@ export default function BookingDetailDrawer({
                     {Number(booking.total_price).toLocaleString()} {booking.currency}
                   </span>
                   {booking.payment_confirmed && (
-                    <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                    <span className="text-xs text-accent font-medium flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" /> Paid
                     </span>
                   )}

@@ -148,7 +148,7 @@ export default function BookingRequestCenter({
                       <p className="font-semibold text-foreground">{b.booker_name}</p>
                       <BookingStatusBadge status={b.status} />
                       {b.payment_confirmed && (
-                        <span className="text-xs text-emerald-600 font-medium">💰 Paid</span>
+                        <span className="text-xs text-accent font-medium">💰 Paid</span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
