@@ -22,8 +22,28 @@ function toVersionToken(value?: string | null): string | null {
   return cleaned || null;
 }
 
+function buildOptimizedOgImageUrl(image: string): string {
+  try {
+    const parsed = new URL(image);
+    const marker = "/storage/v1/object/public/";
+    const idx = parsed.pathname.indexOf(marker);
+    if (idx === -1) return image;
+
+    const objectPath = parsed.pathname.slice(idx + marker.length);
+    const optimized = new URL(`${parsed.origin}/storage/v1/render/image/public/${objectPath}`);
+    optimized.searchParams.set("width", "1200");
+    optimized.searchParams.set("height", "630");
+    optimized.searchParams.set("resize", "cover");
+    optimized.searchParams.set("quality", "80");
+    return optimized.toString();
+  } catch {
+    return image;
+  }
+}
+
 function withCacheBust(image: string | null | undefined, version?: string | null): string {
-  const base = image || DEFAULT_OG_IMAGE;
+  const source = image || DEFAULT_OG_IMAGE;
+  const base = buildOptimizedOgImageUrl(source);
   const token = toVersionToken(version);
   if (!token) return base;
   const separator = base.includes("?") ? "&" : "?";
