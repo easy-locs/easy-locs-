@@ -14,11 +14,20 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
+function toVersionToken(value?: string | null): string | null {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  if (!Number.isNaN(parsed)) return String(parsed);
+  const cleaned = value.replace(/[^a-zA-Z0-9_-]/g, "");
+  return cleaned || null;
+}
+
 function withCacheBust(image: string | null | undefined, updatedAt?: string | null): string {
   const base = image || DEFAULT_OG_IMAGE;
-  if (!updatedAt) return base;
+  const token = toVersionToken(updatedAt);
+  if (!token) return base;
   const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}v=${encodeURIComponent(updatedAt)}`;
+  return `${base}${separator}v=${encodeURIComponent(token)}`;
 }
 
 function htmlPage(meta: {

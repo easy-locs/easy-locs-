@@ -9,6 +9,17 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export type ShareableType = "listing" | "service" | "host" | "provider";
 
+function normalizeVersion(version?: string | number): string | undefined {
+  if (version === undefined || version === null || version === "") return undefined;
+  if (typeof version === "number") return String(version);
+
+  const parsed = Date.parse(version);
+  if (!Number.isNaN(parsed)) return String(parsed);
+
+  const cleaned = version.replace(/[^a-zA-Z0-9_-]/g, "");
+  return cleaned || undefined;
+}
+
 /**
  * Build a share URL that goes through the social-preview edge function.
  * Crawlers get HTML with correct og:image/og:title.
@@ -16,7 +27,8 @@ export type ShareableType = "listing" | "service" | "host" | "provider";
  */
 export function getSocialShareUrl(type: ShareableType, slug: string, version?: string | number): string {
   const params = new URLSearchParams({ type, slug });
-  if (version) params.set("v", String(version));
+  const normalized = normalizeVersion(version);
+  if (normalized) params.set("v", normalized);
   return `${SUPABASE_URL}/functions/v1/social-preview?${params.toString()}`;
 }
 
@@ -67,3 +79,4 @@ export function getShareLinks(type: ShareableType, slug: string, title: string, 
     copy: url,
   };
 }
+
