@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Copy, MessageCircle, Mail, Share2, Check, Send } from "lucide-react";
 import { toast } from "sonner";
 import { getSocialShareUrl, getShareLinks, type ShareableType } from "@/lib/social-share";
+import { buildAppUrl } from "@/lib/app-domain";
 
 interface Props {
   serviceSlug: string;
