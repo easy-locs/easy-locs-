@@ -174,6 +174,7 @@ const ConciergeServices = () => {
       booking_slug: s.booking_slug || "",
       time_slots: Array.isArray(s.time_slots) ? s.time_slots : [],
       blocked_dates: Array.isArray(s.blocked_dates) ? s.blocked_dates : [],
+      requires_id_document: !!s.requires_id_document,
     });
     setShowForm(true);
   };
