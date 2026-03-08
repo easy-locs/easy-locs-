@@ -22,6 +22,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
   const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
 
   const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
+  const publicLink = buildAppUrl(`/book/${serviceSlug}`);
   
 
   const refreshVersion = () => {
