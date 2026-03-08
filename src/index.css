@@ -223,6 +223,17 @@
     color-scheme: inherit;
   }
 
+  /* Remove browser validation checkmark/icon overlays */
+  input:valid,
+  textarea:valid,
+  select:valid {
+    background-image: none !important;
+  }
+  input::-ms-check,
+  input::-ms-clear {
+    display: none;
+  }
+
   textarea {
     height: auto;
     min-height: 5rem;

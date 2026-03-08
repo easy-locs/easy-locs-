@@ -52,7 +52,7 @@ describe("Landing Page - Navbar", () => {
 });
 
 describe("Landing Page - Hero", () => {
-  it("renders hero section with CTA", async () => {
+  it("renders hero section with CTA buttons", async () => {
     const Hero = (await import("@/components/landing/Hero")).default;
     const { container } = render(<Hero />, { wrapper: Wrapper });
     const links = container.querySelectorAll("a");
