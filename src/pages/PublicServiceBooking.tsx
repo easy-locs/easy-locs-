@@ -181,6 +181,7 @@ const PublicServiceBooking = () => {
         commission_amount: service.commission_type === "fixed"
           ? service.commission_amount
           : (service.price * (service.commission_amount || 0)) / 100,
+        ...(idDocUrl ? { document_urls: [idDocUrl] } : {}),
       };
 
       const { data: order, error: orderError } = await supabase
