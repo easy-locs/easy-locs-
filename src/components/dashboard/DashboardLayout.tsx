@@ -200,9 +200,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col transition-transform duration-300 ease-in-out safe-bottom ${
-          sidebarOpen ? "translate-x-0 sidebar-slide-in" : "-translate-x-full lg:translate-x-0"
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-[280px] sm:w-64 bg-sidebar flex flex-col safe-bottom ${
+          sidebarOpen
+            ? "translate-x-0 sidebar-slide-in"
+            : "-translate-x-full lg:translate-x-0"
         }`}
+        style={{
+          // Only enable transition after first paint to prevent desktop flicker
+          transitionProperty: sidebarReady.current ? "transform" : "none",
+          transitionDuration: "300ms",
+          transitionTimingFunction: "ease-in-out",
+        }}
       >
         {/* Header: Logo + role switch */}
         <div className="px-4 pt-4 pb-3 border-b border-sidebar-border shrink-0">
