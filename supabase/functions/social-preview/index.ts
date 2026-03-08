@@ -36,6 +36,7 @@ function shouldServePreviewHtml(req: Request): boolean {
   return BOT_UA_PATTERN.test(userAgent);
 }
 
+function htmlPage(meta: {
   title: string;
   description: string;
   image: string;
@@ -80,7 +81,7 @@ function shouldServePreviewHtml(req: Request): boolean {
 
   ${meta.jsonLd ? `<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>` : ""}
 
-  <!-- Redirect real browsers with JS only (crawlers keep OG tags) -->
+  <!-- Redirect fallback -->
   <script>window.location.replace(${JSON.stringify(safeRedirectUrl)});</script>
   <noscript><meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/></noscript>
 </head>
@@ -117,6 +118,7 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
   return new Response(html, { status: 200, headers: buildHeaders() });
 }
 
+async function handleListing(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
@@ -135,10 +137,11 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
 
   const photos: string[] = property?.photo_urls || [];
   const rawImage = listing.cover_url || photos[0] || DEFAULT_OG_IMAGE;
-  const image = withCacheBust(rawImage, listing.updated_at || null);
+  const image = withCacheBust(rawImage, shareVersion || listing.updated_at || null);
   const redirectUrl = `${APP_URL}/listing/${slug}`;
 
-  return new Response(
+  return buildSocialResponse(
+    req,
     htmlPage({
       title,
       description: desc,
@@ -166,11 +169,11 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
           : {}),
       },
     }),
-    { status: 200, headers: buildHeaders() }
+    redirectUrl
   );
 }
 
-async function handleService(slug: string, shareUrl: string): Promise<Response> {
+async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
@@ -184,18 +187,15 @@ async function handleService(slug: string, shareUrl: string): Promise<Response> 
 
   const photos: string[] = Array.isArray(service.photo_urls) ? (service.photo_urls as string[]) : [];
   const rawImage = service.photo_url || photos[0] || DEFAULT_OG_IMAGE;
-  const image = withCacheBust(rawImage, service.updated_at || null);
+  const image = withCacheBust(rawImage, shareVersion || service.updated_at || null);
   const title = `${service.title} — ${service.city || ""} | Easy-Locs`.slice(0, 60);
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), {
-    status: 200,
-    headers: buildHeaders(),
-  });
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
 }
 
-async function handleHost(slug: string, shareUrl: string): Promise<Response> {
+async function handleHost(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
@@ -207,18 +207,15 @@ async function handleHost(slug: string, shareUrl: string): Promise<Response> {
     return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
   }
 
-  const image = withCacheBust(host.avatar_url || DEFAULT_OG_IMAGE, host.updated_at || null);
+  const image = withCacheBust(host.avatar_url || DEFAULT_OG_IMAGE, shareVersion || host.updated_at || null);
   const title = `${host.display_name} — Properties on Easy-Locs`.slice(0, 60);
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
-    status: 200,
-    headers: buildHeaders(),
-  });
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
 
-async function handleProvider(slug: string, shareUrl: string): Promise<Response> {
+async function handleProvider(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
@@ -241,16 +238,14 @@ async function handleProvider(slug: string, shareUrl: string): Promise<Response>
 
   const firstServicePhoto = Array.isArray(firstService?.photo_urls) ? String(firstService.photo_urls[0] || "") : "";
   const rawImage = provider.cover_photo_url || provider.avatar_url || firstServicePhoto || DEFAULT_OG_IMAGE;
-  const image = withCacheBust(rawImage, provider.updated_at || firstService?.updated_at || null);
+  const image = withCacheBust(rawImage, shareVersion || provider.updated_at || firstService?.updated_at || null);
   const title = `${provider.display_name} — Services | Easy-Locs`.slice(0, 60);
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
-    status: 200,
-    headers: buildHeaders(),
-  });
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
