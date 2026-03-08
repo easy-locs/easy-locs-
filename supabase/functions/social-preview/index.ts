@@ -162,7 +162,7 @@ async function handleService(slug: string, shareUrl: string): Promise<Response> 
   });
 }
 
-async function handleHost(slug: string): Promise<Response> {
+async function handleHost(slug: string, shareUrl: string): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
@@ -177,9 +177,9 @@ async function handleHost(slug: string): Promise<Response> {
   const image = withCacheBust(host.avatar_url || DEFAULT_OG_IMAGE, host.updated_at || null);
   const title = `${host.display_name} — Properties on Easy-Locs`.slice(0, 60);
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
-  const url = `${APP_URL}/host/${slug}`;
+  const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return new Response(htmlPage({ title, description: desc, image, url, redirectUrl: url, type: "profile" }), {
+  return new Response(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), {
     status: 200,
     headers: buildHeaders(),
   });
