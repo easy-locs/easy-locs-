@@ -39,11 +39,7 @@ const CountryWorkspace = () => {
       supabase.from("leases").select("id", { count: "exact" }).eq("org_id", orgId).eq("country", country),
       supabase.from("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country),
       supabase.from("buildings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("concierge_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
-      supabase.from("marketplace_services").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("country", country).eq("active", true),
-      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    ]).then(([props, tenants, leases, docs, buildings, concSvc, mpSvc, concOrd, mpBk]) => {
+    ]).then(([props, tenants, leases, docs, buildings]) => {
       const propIds = new Set((props.data || []).map(p => p.id));
       const countryTenants = (tenants.data || []).filter(t => t.property_id && propIds.has(t.property_id));
 
@@ -53,8 +49,6 @@ const CountryWorkspace = () => {
         leases: leases.count || 0,
         documents: docs.count || 0,
         buildings: buildings.count || 0,
-        services: (concSvc.count || 0) + (mpSvc.count || 0),
-        bookings: (concOrd.count || 0) + (mpBk.count || 0),
       });
       setLoading(false);
     });
