@@ -385,11 +385,17 @@ const PublicServiceBooking = () => {
                         <span className="text-foreground">{service.duration_minutes} min</span>
                       </div>
                     )}
+                  {quantity > 1 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Quantity</span>
+                      <span className="text-foreground">{quantity} × {service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                    </div>
+                  )}
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="text-2xl font-bold text-accent">{service.price} {(service.currency || "EUR").toUpperCase()}</span>
+                    <span className="text-2xl font-bold text-accent">{(service.price * quantity).toLocaleString()} {(service.currency || "EUR").toUpperCase()}</span>
                   </div>
                 </CardContent>
               </Card>
