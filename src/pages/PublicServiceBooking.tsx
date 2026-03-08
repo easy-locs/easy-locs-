@@ -563,22 +563,33 @@ const PublicServiceBooking = () => {
                             toast.error("File too large (max 10MB)");
                             return;
                           }
-                          const ext = file.name.split(".").pop();
-                          const path = `id-docs/${crypto.randomUUID()}.${ext}`;
-                          const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
-                          if (error) {
-                            console.error("ID upload error:", error);
-                            toast.error("Upload failed: " + (error.message || "Unknown error"));
-                            return;
+
+                          setIdDocUploading(true);
+                          try {
+                            const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+                            const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
+                            const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+
+                            if (error) {
+                              console.error("ID upload error:", error);
+                              toast.error("Upload failed: " + (error.message || "Unknown error"));
+                              return;
+                            }
+
+                            const { data: urlData } = supabase.storage.from("booking-documents").getPublicUrl(path);
+                            setForm((f) => ({ ...f, id_document_url: urlData.publicUrl }));
+                            toast.success("ID document uploaded");
+                          } finally {
+                            setIdDocUploading(false);
                           }
-                          const { data: urlData } = supabase.storage.from("booking-documents").getPublicUrl(path);
-                          setForm(f => ({ ...f, id_document_url: urlData.publicUrl }));
-                          toast.success("ID document uploaded");
                         }}
                         className="cursor-pointer"
                       />
-                      {(form as any).id_document_url && (
-                        <p className="text-xs text-emerald-600 mt-1">✓ Document uploaded</p>
+                      {idDocUploading && (
+                        <p className="text-xs text-muted-foreground mt-1">Upload en cours...</p>
+                      )}
+                      {(form as any).id_document_url && !idDocUploading && (
+                        <p className="text-xs text-accent mt-1">✓ Document uploaded</p>
                       )}
                     </div>
                   )}
