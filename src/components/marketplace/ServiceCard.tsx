@@ -28,7 +28,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
     : `${Number(service.price).toLocaleString()} ${service.currency}${service.price_type === "hourly" ? "/h" : service.price_type === "daily" ? "/day" : ""}`;
 
   const slug = service.booking_slug;
-  const links = slug ? getShareLinks("service", slug, service.title) : null;
+  const links = slug ? getShareLinks("service", slug, service.title, service.updated_at) : null;
 
   const handleShare = async () => {
     if (!slug) { toast.error("No booking slug configured"); return; }
