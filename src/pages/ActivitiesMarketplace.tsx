@@ -230,38 +230,25 @@ const ActivitiesMarketplace = () => {
       }).select().single();
       if (error) throw error;
 
-      // Create notification for provider
-      try {
-        await supabase.from("notifications").insert({
-          user_id: prov?.user_id || svc.user_id,
-          org_id: provOrgId,
-          type: "info",
-          title: `📦 New booking: ${svc.title}`,
-          message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}`,
-          link: "/dashboard/marketplace",
-        });
-      } catch (e) { console.error("Notification error:", e); }
+      // Sync to communication center (notification + message + email)
+      await syncToCommunicationCenter({
+        orgId: provOrgId,
+        userId: prov?.user_id || svc.user_id,
+        email: prov?.email,
+        subject: `📦 New booking: ${svc.title}`,
+        message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}.\nAmount: ${totalPrice} ${svc.currency}\nContact: ${formData.booker_email}${formData.booker_phone ? " • " + formData.booker_phone : ""}\nNotes: ${formData.notes || "—"}`,
+        category: "general",
+      });
 
-      // Create message thread
-      try {
-        await supabase.from("messages").insert({
-          org_id: provOrgId,
-          sender_id: user?.id || null,
-          content: `📦 Booking: ${svc.title} — ${formData.booker_name} (${formData.booker_email}).\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\nNotes: ${formData.notes || "—"}`,
-          read: false,
-        } as any);
-      } catch (e) { console.error("Message thread error:", e); }
-
-      // Send email notification
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            to: prov?.email,
-            subject: `📦 New booking: ${svc.title}`,
-            message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}. Amount: ${totalPrice} ${svc.currency}`,
-          },
+      // Also notify the booker
+      if (formData.booker_email) {
+        await syncToCommunicationCenter({
+          orgId: provOrgId,
+          email: formData.booker_email,
+          subject: `✅ Booking request sent: ${svc.title}`,
+          message: `Hello ${formData.booker_name},\n\nYour booking for "${svc.title}" has been submitted.\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\n\nYou will be notified when the provider confirms.\n\nThank you!`,
         });
-      } catch (e) { console.error("Email notification error:", e); }
+      }
     },
     onSuccess: () => {
       toast.success("Booking request sent!");
