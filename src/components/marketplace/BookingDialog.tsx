@@ -177,14 +177,15 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 timeSlots={timeSlots}
                 blockedDates={blockedDates}
                 maxCapacity={service.max_capacity}
-                onSelect={(date) => {
+                onSelect={(dateVal) => {
+                  const date = typeof dateVal === "string" ? dateVal : format(dateVal as Date, "yyyy-MM-dd");
                   if (isRangeMode) {
                     if (!form.date_from || form.date_to) {
-                      update("date_from", date);
                       setForm(f => ({ ...f, date_from: date, date_to: "" }));
                     } else {
-                      update("date_to", date > form.date_from ? date : form.date_from);
-                      if (date <= form.date_from) {
+                      if (date > form.date_from) {
+                        setForm(f => ({ ...f, date_to: date }));
+                      } else {
                         setForm(f => ({ ...f, date_from: date, date_to: form.date_from }));
                       }
                     }
