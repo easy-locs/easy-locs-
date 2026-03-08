@@ -8,14 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles } from "lucide-react";
+import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft } from "lucide-react";
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
 import BookingsManager from "@/components/marketplace/BookingsManager";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
+import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+
+const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
@@ -27,6 +32,10 @@ const ActivitiesMarketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCat, setFilterCat] = useState("all");
   const [filterCountry, setFilterCountry] = useState("");
+  const [activeTab, setActiveTab] = useState("browse");
+  const [revenueOpen, setRevenueOpen] = useState(false);
+  const [displayCurrency, setDisplayCurrency] = useState("EUR");
+
 
   // --- My Provider Profile ---
   const { data: myProvider } = useQuery({
