@@ -198,6 +198,32 @@ const ConciergeServices = () => {
     if (status === "refunded") updates.refunded_at = new Date().toISOString();
     await supabase.from("concierge_orders").update(updates).eq("id", orderId);
     toast.success(`Order ${status}`);
+
+    // Send email notification to guest on status change
+    const order = orders.find((o: any) => o.id === orderId);
+    if (order?.guest_email) {
+      const svc = services.find(s => s.id === order.service_id);
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: status === "confirmed" ? "booking_request" : status === "cancelled" ? "booking_request" : "booking_request",
+            recipient_email: order.guest_email,
+            data: {
+              guest_name: order.guest_name || "Guest",
+              service_title: svc?.title || "Service",
+              status,
+              service_date: order.service_date || "",
+              total_price: String(order.total_price || 0),
+              currency: order.currency || "EUR",
+            },
+            locale: "en",
+          },
+        });
+      } catch (e) {
+        console.error("Status notification email error:", e);
+      }
+    }
+
     await load();
   };
 

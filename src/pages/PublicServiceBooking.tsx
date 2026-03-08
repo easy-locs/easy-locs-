@@ -363,6 +363,22 @@ const PublicServiceBooking = () => {
                 <p className="text-muted-foreground leading-relaxed">{service.description}</p>
               )}
 
+              {/* Provider Info */}
+              {service.provider_name && (
+                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-sm">
+                    {service.provider_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{service.provider_name}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      {service.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{service.city}{service.country ? `, ${service.country}` : ""}</span>}
+                      {service.provider_phone && <span>{service.provider_phone}</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {service.conditions && (
                 <div className="bg-muted/30 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-foreground mb-2">Conditions</h3>
