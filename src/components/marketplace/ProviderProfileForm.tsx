@@ -73,6 +73,10 @@ const emptyForm: ProviderFormData = {
   invoice_tax_id: "",
   invoice_prefix: "INV",
   invoice_next_number: 1,
+  bank_iban: "",
+  bank_bic: "",
+  bank_holder: "",
+  bank_name: "",
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
