@@ -222,7 +222,7 @@ const ActivitiesMarketplace = () => {
     const updates: any = { status };
     if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
     if (status === "completed") updates.completed_at = new Date().toISOString();
-    const { error } = await supabase.from("marketplace_bookings" as any).update(updates).eq("id", id);
+    const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
     if (error) toast.error(error.message);
     else {
       toast.success(`Booking ${status}`);
