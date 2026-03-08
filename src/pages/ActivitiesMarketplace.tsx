@@ -283,7 +283,34 @@ const ActivitiesMarketplace = () => {
   // Stats
   const totalBookings = myBookings.length;
   const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
-  const totalRevenue = myBookings.filter((b: any) => b.payment_confirmed).reduce((s: number, b: any) => s + Number(b.total_price || 0), 0);
+
+  // Revenue by currency
+  const revenueByCurrency = useMemo(() => {
+    const map: Record<string, number> = {};
+    myBookings.filter((b: any) => b.payment_confirmed).forEach((b: any) => {
+      const cur = b.currency || "EUR";
+      map[cur] = (map[cur] || 0) + Number(b.total_price || 0);
+    });
+    return map;
+  }, [myBookings]);
+
+  const totalRevenueConverted = useMemo(() => {
+    let total = 0;
+    for (const [cur, amount] of Object.entries(revenueByCurrency)) {
+      total += amount * computeExchangeRate(cur, displayCurrency);
+    }
+    return Math.round(total * 100) / 100;
+  }, [revenueByCurrency, displayCurrency]);
+
+  const formatAmount = (amount: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} ${currency}`;
+    }
+  };
+
+  const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
 
   return (
     <DashboardLayout>
@@ -317,29 +344,42 @@ const ActivitiesMarketplace = () => {
           </div>
         </div>
 
-        {/* KPIs */}
+        {/* KPIs - Clickable */}
         {myProvider && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
-              <p className="text-2xl font-bold text-foreground">{myServices.length}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
-              <p className="text-2xl font-bold text-foreground">{totalBookings}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
-              <p className="text-2xl font-bold text-foreground">{pendingBookings}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
-              <p className="text-2xl font-bold text-foreground">{totalRevenue.toLocaleString()} €</p>
-            </CardContent></Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("my-services")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{myServices.length}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setRevenueOpen(true)}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
+                {Object.keys(revenueByCurrency).length > 1 && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <ArrowRightLeft className="h-3 w-3" /> {Object.keys(revenueByCurrency).length} currencies
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
-        <Tabs defaultValue="browse">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="detail-tab-row">
             <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
             {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> My Services</TabsTrigger>}
