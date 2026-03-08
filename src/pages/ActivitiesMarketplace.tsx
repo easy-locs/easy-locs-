@@ -309,7 +309,6 @@ const ActivitiesMarketplace = () => {
       supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
       });
-      // Sync to comms center
       syncToCommunicationCenter({
         orgId: booking.org_id || orgId!,
         userId: myProvider?.user_id,
@@ -317,6 +316,15 @@ const ActivitiesMarketplace = () => {
         subject: `💳 Payment link sent: ${svc?.title || "Service"}`,
         message: `Payment link sent to ${booking.booker_name} for "${svc?.title}".\nAmount: ${booking.total_price} ${booking.currency}\nLink: ${link}`,
         category: "payment",
+        meta: {
+          event_type: "payment_link_sent",
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     } else {
       toast.error("No payment link configured");
