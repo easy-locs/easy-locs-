@@ -1727,6 +1727,12 @@ export type Database = {
           display_name: string
           email: string | null
           id: string
+          invoice_address: string | null
+          invoice_company_name: string | null
+          invoice_next_number: number | null
+          invoice_prefix: string | null
+          invoice_tax_id: string | null
+          invoicing_enabled: boolean | null
           org_id: string
           payment_bank_details: Json | null
           payment_custom_url: string | null
@@ -1757,6 +1763,12 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          invoice_address?: string | null
+          invoice_company_name?: string | null
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
+          invoice_tax_id?: string | null
+          invoicing_enabled?: boolean | null
           org_id: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
@@ -1787,6 +1799,12 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          invoice_address?: string | null
+          invoice_company_name?: string | null
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
+          invoice_tax_id?: string | null
+          invoicing_enabled?: boolean | null
           org_id?: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
