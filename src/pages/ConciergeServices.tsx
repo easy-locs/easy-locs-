@@ -564,7 +564,7 @@ const ConciergeServices = () => {
             {showLinks && (() => {
               const svc = services.find(s => s.id === showLinks);
               return svc?.booking_slug ? (
-                <BookingLinkShare serviceSlug={svc.booking_slug} serviceTitle={svc.title} photoUrl={svc.photo_url || (Array.isArray(svc.photo_urls) && svc.photo_urls.length > 0 ? String(svc.photo_urls[0]) : undefined)} shareVersion={svc.updated_at} />
+                <BookingLinkShare serviceSlug={svc.booking_slug} serviceTitle={svc.title} photoUrl={svc.photo_url || (Array.isArray(svc.photo_urls) && svc.photo_urls.length > 0 ? String(svc.photo_urls[0]) : undefined)} shareVersion={(svc.photo_url || (Array.isArray(svc.photo_urls) && svc.photo_urls.length > 0 ? String(svc.photo_urls[0]) : "") || svc.updated_at || "") as string} />
               ) : <p className="text-muted-foreground text-sm">No booking link configured for this service</p>;
             })()}
           </DialogContent>
