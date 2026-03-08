@@ -10,9 +10,11 @@ interface Props {
   serviceTitle: string;
   /** Type of shareable content — defaults to "service" for concierge */
   shareType?: ShareableType;
+  /** Optional photo URL to include in share messages */
+  photoUrl?: string;
 }
 
-const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service" }: Props) => {
+const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl }: Props) => {
   const [copied, setCopied] = useState(false);
   const shareUrl = getSocialShareUrl(shareType, serviceSlug);
   const links = getShareLinks(shareType, serviceSlug, serviceTitle);
@@ -27,6 +29,14 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service" }: 
   return (
     <div className="space-y-3">
       <label className="text-xs text-muted-foreground font-medium">Booking Link</label>
+
+      {/* Photo preview */}
+      {photoUrl && (
+        <div className="rounded-lg overflow-hidden border border-border aspect-video bg-muted">
+          <img src={photoUrl} alt={serviceTitle} className="w-full h-full object-cover" />
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input value={shareUrl} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>

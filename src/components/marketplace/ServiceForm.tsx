@@ -97,7 +97,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label>Price *</Label>
-              <Input type="number" value={form.price} onChange={(e) => update("price", Number(e.target.value))} />
+              <Input type="number" value={form.price || ""} onChange={(e) => update("price", e.target.value === "" ? 0 : Number(e.target.value))} />
             </div>
             <div>
               <Label>Currency</Label>
@@ -131,7 +131,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
             </div>
             <div>
               <Label>Max Capacity</Label>
-              <Input type="number" value={form.max_capacity} onChange={(e) => update("max_capacity", Number(e.target.value))} />
+              <Input type="number" value={form.max_capacity || ""} onChange={(e) => update("max_capacity", e.target.value === "" ? 1 : Number(e.target.value))} />
             </div>
           </div>
 
