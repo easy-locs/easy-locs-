@@ -75,7 +75,7 @@ const ActivitiesMarketplace = () => {
   const { data: allServices = [] } = useQuery({
     queryKey: ["browse_marketplace_services", filterCat, filterCountry],
     queryFn: async () => {
-      let q = supabase.from("marketplace_services" as any).select("*").eq("active", true);
+      let q = supabase.from("marketplace_services").select("*").eq("active", true);
       if (filterCat !== "all") q = q.eq("category", filterCat);
       if (filterCountry) q = q.ilike("country", `%${filterCountry}%`);
       const { data } = await q.order("created_at", { ascending: false }).limit(100);
