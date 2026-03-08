@@ -8,14 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles } from "lucide-react";
+import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft } from "lucide-react";
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
 import BookingsManager from "@/components/marketplace/BookingsManager";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
+import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+
+const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
@@ -27,6 +32,10 @@ const ActivitiesMarketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCat, setFilterCat] = useState("all");
   const [filterCountry, setFilterCountry] = useState("");
+  const [activeTab, setActiveTab] = useState("browse");
+  const [revenueOpen, setRevenueOpen] = useState(false);
+  const [displayCurrency, setDisplayCurrency] = useState("EUR");
+
 
   // --- My Provider Profile ---
   const { data: myProvider } = useQuery({
@@ -274,7 +283,34 @@ const ActivitiesMarketplace = () => {
   // Stats
   const totalBookings = myBookings.length;
   const pendingBookings = myBookings.filter((b: any) => b.status === "pending").length;
-  const totalRevenue = myBookings.filter((b: any) => b.payment_confirmed).reduce((s: number, b: any) => s + Number(b.total_price || 0), 0);
+
+  // Revenue by currency
+  const revenueByCurrency = useMemo(() => {
+    const map: Record<string, number> = {};
+    myBookings.filter((b: any) => b.payment_confirmed).forEach((b: any) => {
+      const cur = b.currency || "EUR";
+      map[cur] = (map[cur] || 0) + Number(b.total_price || 0);
+    });
+    return map;
+  }, [myBookings]);
+
+  const totalRevenueConverted = useMemo(() => {
+    let total = 0;
+    for (const [cur, amount] of Object.entries(revenueByCurrency)) {
+      total += amount * computeExchangeRate(cur, displayCurrency);
+    }
+    return Math.round(total * 100) / 100;
+  }, [revenueByCurrency, displayCurrency]);
+
+  const formatAmount = (amount: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} ${currency}`;
+    }
+  };
+
+  const paidBookings = useMemo(() => myBookings.filter((b: any) => b.payment_confirmed), [myBookings]);
 
   return (
     <DashboardLayout>
@@ -308,29 +344,42 @@ const ActivitiesMarketplace = () => {
           </div>
         </div>
 
-        {/* KPIs */}
+        {/* KPIs - Clickable */}
         {myProvider && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
-              <p className="text-2xl font-bold text-foreground">{myServices.length}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
-              <p className="text-2xl font-bold text-foreground">{totalBookings}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
-              <p className="text-2xl font-bold text-foreground">{pendingBookings}</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
-              <p className="text-2xl font-bold text-foreground">{totalRevenue.toLocaleString()} €</p>
-            </CardContent></Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("my-services")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{myServices.length}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setRevenueOpen(true)}>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
+                <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
+                {Object.keys(revenueByCurrency).length > 1 && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <ArrowRightLeft className="h-3 w-3" /> {Object.keys(revenueByCurrency).length} currencies
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
-        <Tabs defaultValue="browse">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="detail-tab-row">
             <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
             {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> My Services</TabsTrigger>}
@@ -529,6 +578,92 @@ const ActivitiesMarketplace = () => {
             isPending={submitBooking.isPending}
           />
         )}
+
+        {/* Revenue Detail Dialog */}
+        <Dialog open={revenueOpen} onOpenChange={setRevenueOpen}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Revenue Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Currency Selector */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Display in:</span>
+                <Select value={displayCurrency} onValueChange={setDisplayCurrency}>
+                  <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DISPLAY_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Total */}
+              <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
+                <p className="text-xs text-muted-foreground uppercase">Total Revenue</p>
+                <p className="text-3xl font-bold text-foreground tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
+              </div>
+
+              {/* Breakdown by currency */}
+              {Object.keys(revenueByCurrency).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">By Original Currency</p>
+                  {Object.entries(revenueByCurrency).map(([cur, amount]) => (
+                    <div key={cur} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                      <div>
+                        <span className="font-medium text-foreground">{cur}</span>
+                        <p className="text-xs text-muted-foreground">
+                          Rate: 1 {cur} = {computeExchangeRate(cur, displayCurrency).toFixed(4)} {displayCurrency}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-foreground tabular-nums">{formatAmount(amount, cur)}</p>
+                        {cur !== displayCurrency && (
+                          <p className="text-xs text-accent tabular-nums">
+                            ≈ {formatAmount(amount * computeExchangeRate(cur, displayCurrency), displayCurrency)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Transactions */}
+              {paidBookings.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">Paid Transactions ({paidBookings.length})</p>
+                  {paidBookings.map((b: any) => {
+                    const svc = myServices.find((s: any) => s.id === b.service_id);
+                    return (
+                      <div key={b.id} className="flex items-center justify-between p-2 rounded-md bg-card border border-border text-sm">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-foreground font-medium truncate">{b.booker_name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{svc?.title || "Service"} • {b.service_date || "—"}</p>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <p className="font-bold text-foreground tabular-nums">{formatAmount(Number(b.total_price || 0), b.currency || "EUR")}</p>
+                          {(b.currency || "EUR") !== displayCurrency && (
+                            <p className="text-[10px] text-accent tabular-nums">
+                              ≈ {formatAmount(Number(b.total_price || 0) * computeExchangeRate(b.currency || "EUR", displayCurrency), displayCurrency)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {Object.keys(revenueByCurrency).length === 0 && (
+                <p className="text-center text-muted-foreground text-sm py-6">No confirmed payments yet</p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
