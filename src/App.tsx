@@ -151,7 +151,7 @@ const App = () => (
               <Route path="/host/:hostSlug" element={<HostCatalog />} />
               <Route path="/guest" element={<GuestPortal />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
-              <Route path="/showcase/:orgSlug" element={<ConciergeShowcasePage />} />
+              <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
               <Route path="/provider/:providerSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
