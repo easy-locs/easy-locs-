@@ -52,6 +52,12 @@ const DEFAULT_SLOTS: TimeSlot[] = [
 
 /** Statuses that occupy a slot */
 const OCCUPYING_STATUSES = new Set(["pending", "awaiting_payment", "paid", "confirmed", "in_progress", "completed"]);
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const parseDateOnly = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+};
 
 const ServiceBookingCalendar = ({
   serviceId,
@@ -82,11 +88,16 @@ const ServiceBookingCalendar = ({
 
     const loadBookings = async () => {
       setLoadingSlots(true);
-      const { data } = await supabase
-        .from("concierge_orders" as any)
-        .select("service_date, service_time, end_time, quantity, status")
-        .eq("service_id", serviceId)
-        .in("status", Array.from(OCCUPYING_STATUSES));
+
+      const { data, error } = await supabase
+        .rpc("get_public_service_availability", { p_service_id: serviceId });
+
+      if (error) {
+        console.error("availability load error", error);
+        setBookedSlots([]);
+        setLoadingSlots(false);
+        return;
+      }
 
       setBookedSlots((data as unknown as BookedSlot[] | null) || []);
       setLoadingSlots(false);
@@ -115,19 +126,24 @@ const ServiceBookingCalendar = ({
     for (const b of bookedSlots) {
       if (!b.service_date) continue;
 
-      // If booking has an end_time (date range booking), expand to all dates in range
-      if (b.end_time) {
-        ranges.push({ from: b.service_date, to: b.end_time });
+      // Range booking: end_time carries the end date (yyyy-MM-dd)
+      const isRangeBooking = typeof b.end_time === "string" && DATE_ONLY_PATTERN.test(b.end_time);
+
+      if (isRangeBooking) {
+        ranges.push({ from: b.service_date, to: b.end_time as string });
         try {
           const days = eachDayOfInterval({
-            start: new Date(b.service_date),
-            end: new Date(b.end_time),
+            start: parseDateOnly(b.service_date),
+            end: parseDateOnly(b.end_time as string),
           });
           for (const day of days) {
             const ds = format(day, "yyyy-MM-dd");
-            countByDate[ds] = (countByDate[ds] || 0) + (b.quantity || 1);
+            // One range booking occupies one unit per day (quantity in range mode is rental days)
+            countByDate[ds] = (countByDate[ds] || 0) + 1;
           }
-        } catch { /* invalid range */ }
+        } catch {
+          // invalid date range
+        }
         continue;
       }
 
