@@ -93,22 +93,7 @@ function buildHeaders() {
   };
 }
 
-function redirectToApp(url: string): Response {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      ...corsHeaders,
-      Location: url,
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
-function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
-  if (!shouldServePreviewHtml(req)) {
-    return redirectToApp(redirectUrl);
-  }
-
+function buildSocialResponse(html: string): Response {
   return new Response(html, { status: 200, headers: buildHeaders() });
 }
 
