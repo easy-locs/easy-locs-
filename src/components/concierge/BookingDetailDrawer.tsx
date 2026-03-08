@@ -15,9 +15,19 @@ import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
   CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
-  DollarSign, Send, Copy, ExternalLink
+  DollarSign, Send, Copy, ExternalLink, MessageCircle
 } from "lucide-react";
 import { format } from "date-fns";
+
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
 
 interface BookingDetailDrawerProps {
   booking: any;
