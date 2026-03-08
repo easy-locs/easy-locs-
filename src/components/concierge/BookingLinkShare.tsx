@@ -20,10 +20,7 @@ interface Props {
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
   const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
-
-  const shareUrl = getSocialShareUrl(shareType, serviceSlug, runtimeVersion);
-  const publicLink = buildAppUrl(`/book/${serviceSlug}`);
-  
+  const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
 
   const refreshVersion = () => {
     const seed = shareVersion ? Date.parse(shareVersion) : NaN;

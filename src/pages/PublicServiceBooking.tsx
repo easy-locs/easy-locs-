@@ -123,7 +123,7 @@ const PublicServiceBooking = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto">
           <CardContent className="pt-8 pb-8 text-center space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
+            <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
             <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
             <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received. You will receive a confirmation email shortly.</p>
           </CardContent>
