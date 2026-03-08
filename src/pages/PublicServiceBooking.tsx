@@ -23,6 +23,7 @@ const PublicServiceBooking = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [quantity, setQuantity] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
