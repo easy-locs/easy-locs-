@@ -179,7 +179,7 @@ async function handleProvider(slug: string): Promise<Response> {
     return new Response("Not found", { status: 404 });
   }
 
-  const image = provider.avatar_url || provider.cover_url || DEFAULT_OG_IMAGE;
+  const image = provider.cover_photo_url || provider.avatar_url || DEFAULT_OG_IMAGE;
   const title = `${provider.display_name} — Services | Easy-Locs`.slice(0, 60);
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const url = `${APP_URL}/provider/${slug}`;

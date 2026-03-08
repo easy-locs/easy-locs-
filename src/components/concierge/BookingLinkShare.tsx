@@ -29,6 +29,14 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
   return (
     <div className="space-y-3">
       <label className="text-xs text-muted-foreground font-medium">Booking Link</label>
+
+      {/* Photo preview */}
+      {photoUrl && (
+        <div className="rounded-lg overflow-hidden border border-border aspect-video bg-muted">
+          <img src={photoUrl} alt={serviceTitle} className="w-full h-full object-cover" />
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input value={shareUrl} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>
