@@ -3,9 +3,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isBefore, startOfDay } from "date-fns";
+import { format, isBefore, startOfDay, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 
 interface TimeSlot {
   start: string;
@@ -15,6 +16,7 @@ interface TimeSlot {
 interface BookedSlot {
   service_date: string;
   service_time: string | null;
+  end_time: string | null;
   quantity: number;
   status: string;
 }
@@ -25,8 +27,13 @@ interface Props {
   blockedDates: string[];
   maxCapacity?: number | null;
   onSelect: (date: Date, time: string) => void;
+  /** For range mode: callback with start + end dates */
+  onSelectRange?: (from: Date, to: Date) => void;
   selectedDate?: Date;
   selectedTime?: string;
+  /** Enable date-range selection (for rentals: cars, nights) */
+  rangeMode?: boolean;
+  selectedRange?: { from: Date; to: Date } | null;
 }
 
 const DEFAULT_SLOTS: TimeSlot[] = [
@@ -43,7 +50,7 @@ const DEFAULT_SLOTS: TimeSlot[] = [
   { start: "19:00", end: "20:00" },
 ];
 
-/** Statuses that occupy a slot (pending counts as occupied to prevent double booking) */
+/** Statuses that occupy a slot */
 const OCCUPYING_STATUSES = new Set(["pending", "awaiting_payment", "paid", "confirmed", "in_progress", "completed"]);
 
 const ServiceBookingCalendar = ({
@@ -52,10 +59,16 @@ const ServiceBookingCalendar = ({
   blockedDates,
   maxCapacity,
   onSelect,
+  onSelectRange,
   selectedDate,
   selectedTime,
+  rangeMode = false,
+  selectedRange,
 }: Props) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
+  const [range, setRange] = useState<DateRange | undefined>(
+    selectedRange ? { from: selectedRange.from, to: selectedRange.to } : undefined
+  );
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const slots = timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS;
@@ -63,7 +76,7 @@ const ServiceBookingCalendar = ({
   const blockedSet = useMemo(() => new Set(blockedDates), [blockedDates]);
   const today = startOfDay(new Date());
 
-  // ── Load existing bookings for this service ──
+  // ── Load existing bookings ──
   useEffect(() => {
     if (!serviceId) return;
 
@@ -71,7 +84,7 @@ const ServiceBookingCalendar = ({
       setLoadingSlots(true);
       const { data } = await supabase
         .from("concierge_orders" as any)
-        .select("service_date, service_time, quantity, status")
+        .select("service_date, service_time, end_time, quantity, status")
         .eq("service_id", serviceId)
         .in("status", Array.from(OCCUPYING_STATUSES));
 
@@ -81,36 +94,43 @@ const ServiceBookingCalendar = ({
 
     loadBookings();
 
-    // ── Realtime subscription for live updates ──
     const channel = supabase
       .channel(`booking-calendar-${serviceId}`)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "concierge_orders",
-          filter: `service_id=eq.${serviceId}`,
-        },
-        () => {
-          // Reload on any change
-          loadBookings();
-        }
+        { event: "*", schema: "public", table: "concierge_orders", filter: `service_id=eq.${serviceId}` },
+        () => { loadBookings(); }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [serviceId]);
 
   // ── Compute booked dates/times ──
-  const { fullyBookedDates, bookedTimesByDate, bookingCountByDate } = useMemo(() => {
+  const { fullyBookedDates, bookedTimesByDate, bookingCountByDate, bookedRanges } = useMemo(() => {
     const countByDate: Record<string, number> = {};
     const timesByDate: Record<string, Set<string>> = {};
+    const ranges: { from: string; to: string }[] = [];
 
     for (const b of bookedSlots) {
       if (!b.service_date) continue;
+
+      // If booking has an end_time (date range booking), expand to all dates in range
+      if (b.end_time) {
+        ranges.push({ from: b.service_date, to: b.end_time });
+        try {
+          const days = eachDayOfInterval({
+            start: new Date(b.service_date),
+            end: new Date(b.end_time),
+          });
+          for (const day of days) {
+            const ds = format(day, "yyyy-MM-dd");
+            countByDate[ds] = (countByDate[ds] || 0) + (b.quantity || 1);
+          }
+        } catch { /* invalid range */ }
+        continue;
+      }
+
       const dateStr = b.service_date;
       countByDate[dateStr] = (countByDate[dateStr] || 0) + (b.quantity || 1);
 
@@ -120,17 +140,14 @@ const ServiceBookingCalendar = ({
       }
     }
 
-    // Determine fully booked dates
-    const capacity = maxCapacity || 1; // default 1 = single booking per date
+    const capacity = maxCapacity || 1;
     const fullyBooked = new Set<string>();
 
     for (const [dateStr, count] of Object.entries(countByDate)) {
-      // If service has time slots, date is fully booked when ALL slots are taken
       if (slots.length > 0 && timesByDate[dateStr]) {
         const allSlotsTaken = slots.every(slot => timesByDate[dateStr]?.has(slot.start));
         if (allSlotsTaken) fullyBooked.add(dateStr);
       } else if (count >= capacity) {
-        // No time slots = date-based booking, check capacity
         fullyBooked.add(dateStr);
       }
     }
@@ -139,6 +156,7 @@ const ServiceBookingCalendar = ({
       fullyBookedDates: fullyBooked,
       bookedTimesByDate: timesByDate,
       bookingCountByDate: countByDate,
+      bookedRanges: ranges,
     };
   }, [bookedSlots, maxCapacity, slots]);
 
@@ -151,6 +169,81 @@ const ServiceBookingCalendar = ({
     );
   };
 
+  // ── Range mode ──
+  if (rangeMode) {
+    const handleRangeSelect = (newRange: DateRange | undefined) => {
+      setRange(newRange);
+      if (newRange?.from && newRange?.to && onSelectRange) {
+        onSelectRange(newRange.from, newRange.to);
+      }
+    };
+
+    const rangeDays = range?.from && range?.to
+      ? differenceInCalendarDays(range.to, range.from)
+      : 0;
+
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center">
+          <Calendar
+            mode="range"
+            selected={range}
+            onSelect={handleRangeSelect}
+            disabled={isDateBlocked}
+            numberOfMonths={1}
+            className={cn("rounded-xl border border-border pointer-events-auto")}
+            modifiers={{
+              booked: (d) => fullyBookedDates.has(format(d, "yyyy-MM-dd")),
+              partial: (d) => {
+                const ds = format(d, "yyyy-MM-dd");
+                return !fullyBookedDates.has(ds) && (bookingCountByDate[ds] || 0) > 0;
+              },
+            }}
+            modifiersClassNames={{
+              booked: "bg-destructive/20 text-destructive line-through",
+              partial: "bg-amber-500/15 text-amber-700",
+            }}
+          />
+        </div>
+
+        {loadingSlots && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading availability...
+          </div>
+        )}
+
+        {range?.from && (
+          <div className="text-center space-y-1">
+            <p className="text-sm text-foreground font-medium">
+              {format(range.from, "dd/MM/yyyy")}
+              {range.to ? ` → ${format(range.to, "dd/MM/yyyy")}` : " → Select end date"}
+            </p>
+            {rangeDays > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {rangeDays} {rangeDays === 1 ? "day" : "days"}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground pt-1">
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/30" /> Partial
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm bg-destructive/30 line-through" /> Unavailable
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Single date mode (existing) ──
   const selectedDateStr = date ? format(date, "yyyy-MM-dd") : "";
   const bookedTimesForDate = bookedTimesByDate[selectedDateStr] || new Set<string>();
   const dateBookingCount = bookingCountByDate[selectedDateStr] || 0;
@@ -171,10 +264,7 @@ const ServiceBookingCalendar = ({
           disabled={isDateBlocked}
           className={cn("rounded-xl border border-border pointer-events-auto")}
           modifiers={{
-            booked: (d) => {
-              const ds = format(d, "yyyy-MM-dd");
-              return fullyBookedDates.has(ds);
-            },
+            booked: (d) => fullyBookedDates.has(format(d, "yyyy-MM-dd")),
             partial: (d) => {
               const ds = format(d, "yyyy-MM-dd");
               return !fullyBookedDates.has(ds) && (bookingCountByDate[ds] || 0) > 0;
@@ -228,7 +318,6 @@ const ServiceBookingCalendar = ({
             })}
           </div>
 
-          {/* Legend */}
           <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-1">
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
