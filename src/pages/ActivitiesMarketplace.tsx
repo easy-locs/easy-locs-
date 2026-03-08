@@ -33,12 +33,12 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_provider", orgId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("org_id", orgId!)
         .limit(1)
         .single();
-      return data as any;
+      return data;
     },
     enabled: !!orgId,
   });
@@ -48,11 +48,11 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_services", myProvider?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_services" as any)
+        .from("marketplace_services")
         .select("*")
         .eq("provider_id", myProvider!.id)
         .order("sort_order");
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!myProvider?.id,
   });
@@ -62,11 +62,11 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_bookings", orgId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_bookings" as any)
+        .from("marketplace_bookings")
         .select("*")
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false });
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!orgId,
   });
@@ -75,11 +75,11 @@ const ActivitiesMarketplace = () => {
   const { data: allServices = [] } = useQuery({
     queryKey: ["browse_marketplace_services", filterCat, filterCountry],
     queryFn: async () => {
-      let q = supabase.from("marketplace_services" as any).select("*").eq("active", true);
+      let q = supabase.from("marketplace_services").select("*").eq("active", true);
       if (filterCat !== "all") q = q.eq("category", filterCat);
       if (filterCountry) q = q.ilike("country", `%${filterCountry}%`);
       const { data } = await q.order("created_at", { ascending: false }).limit(100);
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 
@@ -88,12 +88,12 @@ const ActivitiesMarketplace = () => {
     queryKey: ["browse_marketplace_providers"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("active", true)
         .order("rating", { ascending: false })
         .limit(200);
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 
@@ -115,7 +115,7 @@ const ActivitiesMarketplace = () => {
   const createProvider = useMutation({
     mutationFn: async (data: any) => {
       const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-      const { error } = await supabase.from("marketplace_providers" as any).insert({
+      const { error } = await supabase.from("marketplace_providers").insert({
         ...data,
         slug,
         user_id: user!.id,
@@ -133,7 +133,7 @@ const ActivitiesMarketplace = () => {
 
   const updateProvider = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from("marketplace_providers" as any).update(data).eq("id", myProvider!.id);
+      const { error } = await supabase.from("marketplace_providers").update(data).eq("id", myProvider!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -146,12 +146,12 @@ const ActivitiesMarketplace = () => {
 
   const createService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
-      const { error } = await supabase.from("marketplace_services" as any).insert({
+      const { error } = await supabase.from("marketplace_services").insert({
         ...data,
         provider_id: myProvider!.id,
         org_id: orgId!,
         user_id: user!.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -165,7 +165,7 @@ const ActivitiesMarketplace = () => {
 
   const updateService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
-      const { error } = await supabase.from("marketplace_services" as any).update(data).eq("id", editingService!.id);
+      const { error } = await supabase.from("marketplace_services").update(data as any).eq("id", editingService!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -180,7 +180,7 @@ const ActivitiesMarketplace = () => {
 
   const deleteService = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("marketplace_services" as any).delete().eq("id", id);
+      const { error } = await supabase.from("marketplace_services").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -194,7 +194,7 @@ const ActivitiesMarketplace = () => {
     mutationFn: async (formData: any) => {
       const svc = bookingService;
       const prov = providersMap[svc.provider_id];
-      const { error } = await supabase.from("marketplace_bookings" as any).insert({
+      const { error } = await supabase.from("marketplace_bookings").insert({
         service_id: svc.id,
         provider_id: svc.provider_id,
         org_id: prov?.org_id || svc.org_id,
@@ -222,7 +222,7 @@ const ActivitiesMarketplace = () => {
     const updates: any = { status };
     if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
     if (status === "completed") updates.completed_at = new Date().toISOString();
-    const { error } = await supabase.from("marketplace_bookings" as any).update(updates).eq("id", id);
+    const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
     if (error) toast.error(error.message);
     else {
       toast.success(`Booking ${status}`);
@@ -236,7 +236,7 @@ const ActivitiesMarketplace = () => {
     if (link) {
       const mailLink = `mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`;
       window.open(mailLink, "_blank");
-      supabase.from("marketplace_bookings" as any).update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
+      supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
       });
     } else {
@@ -245,7 +245,7 @@ const ActivitiesMarketplace = () => {
   };
 
   const confirmPayment = async (id: string) => {
-    const { error } = await supabase.from("marketplace_bookings" as any).update({
+    const { error } = await supabase.from("marketplace_bookings").update({
       payment_confirmed: true,
       payment_confirmed_at: new Date().toISOString(),
       payment_method: "manual",

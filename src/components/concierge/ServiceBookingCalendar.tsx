@@ -105,11 +105,17 @@ const ServiceBookingCalendar = ({
 
     loadBookings();
 
+    // Also listen to marketplace_bookings for this service
     const channel = supabase
       .channel(`booking-calendar-${serviceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "concierge_orders", filter: `service_id=eq.${serviceId}` },
+        () => { loadBookings(); }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "marketplace_bookings", filter: `service_id=eq.${serviceId}` },
         () => { loadBookings(); }
       )
       .subscribe();

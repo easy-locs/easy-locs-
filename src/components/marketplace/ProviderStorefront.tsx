@@ -21,12 +21,12 @@ export default function ProviderStorefront() {
     queryKey: ["marketplace_provider_public", providerSlug],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("slug", providerSlug!)
         .eq("active", true)
         .single();
-      return data as any;
+      return data;
     },
     enabled: !!providerSlug,
   });
@@ -35,18 +35,18 @@ export default function ProviderStorefront() {
     queryKey: ["marketplace_services_public", provider?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_services" as any)
+        .from("marketplace_services")
         .select("*")
         .eq("provider_id", provider!.id)
         .eq("active", true)
         .order("sort_order");
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!provider?.id,
   });
 
   const handleBookingSubmit = async (formData: any) => {
-    const { error } = await supabase.from("marketplace_bookings" as any).insert({
+    const { error } = await supabase.from("marketplace_bookings").insert({
       service_id: bookingService.id,
       provider_id: provider.id,
       org_id: provider.org_id,
@@ -93,7 +93,7 @@ export default function ProviderStorefront() {
       <SEOHead
         title={`${provider.display_name} — Services | EASY-LOCS®`}
         description={provider.bio || `Discover services by ${provider.display_name}`}
-        ogImage={provider.avatar_url || provider.cover_url}
+        ogImage={provider.avatar_url || provider.cover_photo_url}
         canonical={`https://www.easy-locs.com/provider/${providerSlug}`}
       />
 

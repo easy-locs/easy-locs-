@@ -43,7 +43,7 @@ export default function StorePage() {
       }
 
       const { data: provider } = await supabase
-        .from("marketplace_providers" as any)
+        .from("marketplace_providers")
         .select("*")
         .eq("slug", storeSlug!)
         .eq("active", true)
@@ -51,13 +51,13 @@ export default function StorePage() {
 
       if (provider) {
         const { data: services } = await supabase
-          .from("marketplace_services" as any)
+          .from("marketplace_services")
           .select("*")
-          .eq("provider_id", (provider as any).id)
+          .eq("provider_id", provider.id)
           .eq("active", true)
           .order("sort_order");
 
-        return { type: "provider" as const, profile: provider as any, services: (services || []) as any[] };
+        return { type: "provider" as const, profile: provider, services: (services || []) };
       }
 
       return null;
@@ -80,7 +80,7 @@ export default function StorePage() {
     </>
   );
 
-  const profile = showcase.profile;
+  const profile = showcase.profile as any;
   const name = profile.display_name || profile.company_name || storeSlug;
 
   return (

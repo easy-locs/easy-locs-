@@ -20,6 +20,8 @@ interface AuthContextType {
   loading: boolean;
   emailVerified: boolean;
   orgId: string | null;
+  allOrgs: { id: string; name: string; country: string; currency: string }[];
+  switchOrg: (orgId: string) => void;
   userType: UserType;
   userCountry: string;
   userCurrency: string;
@@ -48,6 +50,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   emailVerified: false,
   orgId: null,
+  allOrgs: [],
+  switchOrg: () => {},
   userType: "landlord",
   userCountry: "FR",
   userCurrency: "EUR",
@@ -75,19 +79,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
   const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
   const [hasDualRole, setHasDualRole] = useState(false);
+  const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
 
   const fetchOrgId = useCallback(async (userId: string) => {
     try {
-      const { data } = await supabase
+      // Fetch all orgs for this user
+      const { data: memberships } = await supabase
         .from("org_members")
         .select("org_id")
-        .eq("user_id", userId)
-        .limit(1)
-        .maybeSingle();
-      setOrgId(data?.org_id ?? null);
+        .eq("user_id", userId);
+
+      if (memberships && memberships.length > 0) {
+        const orgIds = memberships.map(m => m.org_id);
+        const { data: orgsData } = await supabase
+          .from("orgs")
+          .select("id, name")
+          .in("id", orgIds);
+
+        const orgs = (orgsData || []).map(o => ({
+          id: o.id,
+          name: o.name || "Unnamed",
+          country: "",
+          currency: "EUR",
+        }));
+        setAllOrgs(orgs);
+
+        // Restore saved org preference or use first
+        const savedOrg = localStorage.getItem(`easylocs_active_org_${userId}`);
+        const selectedOrgId = savedOrg && orgs.some(o => o.id === savedOrg) ? savedOrg : orgIds[0];
+        setOrgId(selectedOrgId);
+      } else {
+        setOrgId(null);
+        setAllOrgs([]);
+      }
     } catch (err) {
       console.warn("[AuthContext] fetchOrgId failed:", err);
       setOrgId(null);
+      setAllOrgs([]);
     }
   }, []);
 
@@ -174,6 +202,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) localStorage.setItem(`easylocs_active_role_${user.id}`, role);
   }, [user]);
 
+  const switchOrg = useCallback((newOrgId: string) => {
+    setOrgId(newOrgId);
+    if (user) localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
+  }, [user]);
+
   const refreshSubscription = useCallback(async () => {
     if (!session?.access_token) return;
     setSubscription((prev) => ({ ...prev, loading: true }));
@@ -227,6 +260,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSubscription({ ...defaultSubscription, loading: false });
         setActiveRole("landlord");
         setHasDualRole(false);
+        setAllOrgs([]);
       }
 
       if (mounted) setLoading(false);
@@ -271,7 +305,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, allOrgs, switchOrg, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
