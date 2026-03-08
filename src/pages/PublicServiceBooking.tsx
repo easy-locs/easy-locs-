@@ -81,31 +81,55 @@ const PublicServiceBooking = () => {
     if (searchParams.get("payment") === "success") setSuccess(true);
   }, [searchParams]);
 
+  const canonicalUrl = buildAppUrl(slug ? `/book/${slug}` : "/book");
+
   if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
+    <>
+      <SEOHead
+        title="Service booking | Easy-Locs"
+        description="Book trusted services online with Easy-Locs."
+        canonical={canonicalUrl}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    </>
   );
 
   if (!service) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Service not found</h1>
-        <p className="text-muted-foreground">This booking link may be expired or invalid.</p>
+    <>
+      <SEOHead
+        title="Service not found | Easy-Locs"
+        description="This booking link is invalid or expired."
+        canonical={canonicalUrl}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Service not found</h1>
+          <p className="text-muted-foreground">This booking link may be expired or invalid.</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 
   if (success) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Card className="max-w-md mx-auto">
-        <CardContent className="pt-8 pb-8 text-center space-y-4">
-          <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
-          <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
-          <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received. You will receive a confirmation email shortly.</p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <SEOHead
+        title={`${service.title} booking confirmed | Easy-Locs`}
+        description={`Your booking for ${service.title} has been confirmed.`}
+        canonical={canonicalUrl}
+        ogImage={service.photo_url || (Array.isArray(service.photo_urls) && service.photo_urls[0]) || undefined}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
+            <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
+            <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received. You will receive a confirmation email shortly.</p>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 
   const photos: string[] = Array.isArray(service.photo_urls) ? service.photo_urls : service.photo_url ? [service.photo_url] : [];
