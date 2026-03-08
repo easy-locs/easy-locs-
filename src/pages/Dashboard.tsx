@@ -1,7 +1,7 @@
 import { useState, useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import {
-  Globe, Building, Users, MapPin, Plus, TrendingUp,
+  Globe, Building, Users, MapPin, Plus, TrendingUp, ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
