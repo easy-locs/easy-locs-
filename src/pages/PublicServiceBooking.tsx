@@ -468,7 +468,7 @@ const PublicServiceBooking = () => {
                   <Separator />
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="text-2xl font-bold text-accent">{(service.price * quantity).toLocaleString()} {(service.currency || "EUR").toUpperCase()}</span>
+                    <span className="text-2xl font-bold text-accent">{fmtPrice(service.price * quantity, service.currency)}</span>
                   </div>
                 </CardContent>
               </Card>
