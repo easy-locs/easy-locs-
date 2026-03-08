@@ -30,15 +30,15 @@ export default function ShopCategoryPage() {
     queryFn: async () => {
       // Query both concierge_services and marketplace_services
       let q1 = supabase
-        .from("concierge_services" as any)
+        .from("concierge_services")
         .select("id, title, description, category, city, country, price, currency, photo_url, booking_slug, duration_minutes")
         .eq("active", true);
       if (category) q1 = q1.ilike("category", `%${category}%`);
       if (city) q1 = q1.ilike("city", `%${city}%`);
 
       let q2 = supabase
-        .from("marketplace_services" as any)
-        .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes")
+        .from("marketplace_services")
+        .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes, booking_slug")
         .eq("active", true);
       if (category) q2 = q2.ilike("category", `%${category}%`);
       if (city) q2 = q2.ilike("city", `%${city}%`);
