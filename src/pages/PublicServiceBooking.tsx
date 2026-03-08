@@ -133,12 +133,36 @@ const PublicServiceBooking = () => {
         canonical={canonicalUrl}
         ogImage={ogImage}
       />
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-8 pb-8 text-center space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
-            <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
-            <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received.</p>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <Card className="max-w-md mx-auto w-full">
+          <CardContent className="pt-8 pb-8 space-y-5">
+            <div className="text-center space-y-3">
+              <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
+              <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
+              <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received.</p>
+            </div>
+            <Separator />
+            <div className="space-y-2 text-sm">
+              {isRangeMode && selectedRange ? (
+                <>
+                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">To</span><span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="text-foreground">{rangeDays} days</span></div>
+                </>
+              ) : (
+                <>
+                  {selectedDate && <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span></div>}
+                  {selectedTime && <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="text-foreground">{selectedTime}</span></div>}
+                </>
+              )}
+              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="text-foreground font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span></div>
+            </div>
+            <Separator />
+            <p className="text-xs text-muted-foreground text-center">
+              {paymentMethod === "bank_transfer"
+                ? "Please complete the bank transfer using the details provided. Your booking will be confirmed upon receipt."
+                : "The provider will confirm your booking shortly. You'll receive an email notification."}
+            </p>
           </CardContent>
         </Card>
       </div>
