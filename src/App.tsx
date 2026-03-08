@@ -68,7 +68,7 @@ const Install = lazy(() => import("./pages/Install"));
 const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
-const ServiceMarketplace = lazy(() => import("./pages/ServiceMarketplace"));
+const ServiceMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));

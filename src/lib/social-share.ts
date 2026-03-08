@@ -1,13 +1,23 @@
 /**
  * Social sharing utilities for Easy-Locs.
  *
- * Generates share URLs that point to the social-preview edge function,
- * which serves proper og:meta tags for crawlers and redirects real browsers.
+ * Two URL types:
+ * 1. Clean SPA URL (easy-locs.com/book/slug) — for copy/display
+ * 2. Edge function URL — for social platforms (serves og:meta for crawlers)
  */
+
+import { APP_BASE_URL } from "@/lib/app-domain";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export type ShareableType = "listing" | "service" | "host" | "provider";
+
+const TYPE_PATH_MAP: Record<ShareableType, string> = {
+  listing: "/listing/",
+  service: "/book/",
+  host: "/host/",
+  provider: "/provider/",
+};
 
 function normalizeVersion(version?: string | number): string | undefined {
   if (version === undefined || version === null || version === "") return undefined;
@@ -21,9 +31,17 @@ function normalizeVersion(version?: string | number): string | undefined {
 }
 
 /**
- * Build a share URL that goes through the social-preview edge function.
- * Crawlers get HTML with correct og:image/og:title.
- * Real browsers get redirected to the SPA page.
+ * Clean, stable SPA URL for display and clipboard copy.
+ * Example: https://www.easy-locs.com/book/my-service-slug
+ */
+export function getCleanShareUrl(type: ShareableType, slug: string): string {
+  const path = TYPE_PATH_MAP[type] || "/book/";
+  return `${APP_BASE_URL}${path}${slug}`;
+}
+
+/**
+ * Edge function URL for social platforms (WhatsApp, Telegram, etc.)
+ * Crawlers get HTML with og:image/og:title, browsers get redirected.
  */
 export function getSocialShareUrl(type: ShareableType, slug: string, version?: string | number): string {
   const params = new URLSearchParams({ type, slug });
@@ -34,6 +52,7 @@ export function getSocialShareUrl(type: ShareableType, slug: string, version?: s
 
 /**
  * Share a page via Web Share API, clipboard fallback.
+ * Uses clean URL for sharing.
  */
 export async function sharePage(opts: {
   type: ShareableType;
@@ -41,7 +60,7 @@ export async function sharePage(opts: {
   title: string;
   version?: string | number;
 }): Promise<"shared" | "copied" | "failed"> {
-  const url = getSocialShareUrl(opts.type, opts.slug, opts.version);
+  const url = getCleanShareUrl(opts.type, opts.slug);
 
   if (navigator.share) {
     try {
@@ -62,11 +81,13 @@ export async function sharePage(opts: {
 
 /**
  * Generate share links for specific platforms.
- * Uses api.whatsapp.com for better mobile compatibility.
+ * Social platforms use edge function URL for OG previews.
+ * Copy uses clean SPA URL.
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
-  const url = getSocialShareUrl(type, slug, version);
-  const encoded = encodeURIComponent(url);
+  const socialUrl = getSocialShareUrl(type, slug, version);
+  const cleanUrl = getCleanShareUrl(type, slug);
+  const encoded = encodeURIComponent(socialUrl);
   const encodedTitle = encodeURIComponent(title);
 
   return {
@@ -75,8 +96,8 @@ export function getShareLinks(type: ShareableType, slug: string, title: string, 
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encoded}`,
     twitter: `https://twitter.com/intent/tweet?url=${encoded}&text=${encodedTitle}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`,
-    email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encoded}`,
-    sms: `sms:?body=${encodedTitle}%20${encoded}`,
-    copy: url,
+    email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodeURIComponent(cleanUrl)}`,
+    sms: `sms:?body=${encodedTitle}%20${encodeURIComponent(cleanUrl)}`,
+    copy: cleanUrl,
   };
 }

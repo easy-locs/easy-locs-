@@ -28,17 +28,38 @@ export default function ShopCategoryPage() {
   const { data: services = [], isLoading } = useQuery({
     queryKey: ["shop-category", category, city],
     queryFn: async () => {
-      let query = supabase
+      // Query both concierge_services and marketplace_services
+      let q1 = supabase
         .from("concierge_services" as any)
-        .select("*")
-        .eq("active", true)
-        .order("sort_order");
+        .select("id, title, description, category, city, country, price, currency, photo_url, booking_slug, duration_minutes")
+        .eq("active", true);
+      if (category) q1 = q1.ilike("category", `%${category}%`);
+      if (city) q1 = q1.ilike("city", `%${city}%`);
 
-      if (category) query = query.ilike("category", `%${category}%`);
-      if (city) query = query.ilike("city", `%${city}%`);
+      let q2 = supabase
+        .from("marketplace_services" as any)
+        .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes")
+        .eq("active", true);
+      if (category) q2 = q2.ilike("category", `%${category}%`);
+      if (city) q2 = q2.ilike("city", `%${city}%`);
 
-      const { data } = await query.limit(50);
-      return (data || []) as any[];
+      const [r1, r2] = await Promise.all([q1.limit(50), q2.limit(50)]);
+
+      const conciergeItems = (r1.data || []).map((s: any) => ({
+        ...s,
+        source: "concierge" as const,
+        photo: s.photo_url,
+        slug: s.booking_slug,
+      }));
+
+      const marketplaceItems = (r2.data || []).map((s: any) => ({
+        ...s,
+        source: "marketplace" as const,
+        photo: Array.isArray(s.photo_urls) ? s.photo_urls[0] : null,
+        slug: null, // marketplace services use provider storefront
+      }));
+
+      return [...conciergeItems, ...marketplaceItems];
     },
     enabled: !!(category || city),
   });
@@ -59,47 +80,47 @@ export default function ShopCategoryPage() {
         canonical={buildAppUrl(`/shop/${categoryCity}`)}
       />
       <div className="min-h-screen bg-background">
-        <div className="bg-gradient-to-br from-accent/10 to-background border-b border-border">
-          <div className="max-w-5xl mx-auto px-4 py-10">
-            <h1 className="text-3xl font-bold text-foreground">{title}</h1>
-            <p className="text-muted-foreground mt-1">{services.length} services available</p>
-          </div>
-        </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
+          <p className="text-muted-foreground mb-8">{services.length} services available</p>
 
-        <div className="max-w-5xl mx-auto px-4 py-8">
           {services.length === 0 ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground">No services found in this category</CardContent></Card>
+            <Card>
+              <CardContent className="py-16 text-center">
+                <p className="text-muted-foreground">No services found in this category</p>
+                <Link to="/">
+                  <Button variant="outline" className="mt-4">Browse all</Button>
+                </Link>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((s: any) => {
-                const photo = s.photo_url || (Array.isArray(s.photo_urls) && s.photo_urls[0]);
-                return (
-                  <Card key={s.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    {photo && (
-                      <div className="aspect-video bg-muted">
-                        <img src={photo} alt={s.title} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <CardContent className="p-4 space-y-2">
-                      <h3 className="font-semibold text-foreground truncate">{s.title}</h3>
-                      {s.city && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {s.city}
-                        </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((s: any) => (
+                <Card key={`${s.source}-${s.id}`} className="overflow-hidden hover:border-accent/50 transition-colors group">
+                  {s.photo && (
+                    <div className="aspect-[16/9] bg-muted overflow-hidden">
+                      <img src={s.photo} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    </div>
+                  )}
+                  <CardContent className="pt-4 space-y-2">
+                    <h3 className="font-semibold text-foreground line-clamp-1">{s.title}</h3>
+                    {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" /> {s.city}, {s.country}
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}{s.price_type === "daily" ? "/day" : s.price_type === "hourly" ? "/h" : ""}</span>
+                      {s.slug ? (
+                        <Link to={`/book/${s.slug}`}>
+                          <Button size="sm"><ExternalLink className="h-3 w-3 mr-1" /> Book</Button>
+                        </Link>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Contact</Badge>
                       )}
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="text-xs">{s.category}</Badge>
-                        <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>
-                      </div>
-                      {s.booking_slug && (
-                        <Button size="sm" className="w-full mt-2" asChild>
-                          <Link to={`/book/${s.booking_slug}`}><ExternalLink className="h-3 w-3 mr-1" /> Book</Link>
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>
