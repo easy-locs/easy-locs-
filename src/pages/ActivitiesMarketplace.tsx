@@ -277,7 +277,7 @@ const ActivitiesMarketplace = () => {
     toast.success(`Booking ${status}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
-    // Sync status change to communication center (notification + message + email)
+    // Sync status change with deep-link metadata
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
       const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
@@ -288,6 +288,15 @@ const ActivitiesMarketplace = () => {
         subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
         category: status === "cancelled" ? "general" : "payment",
+        meta: {
+          event_type: `booking_${status}`,
+          booking_id: booking.id,
+          property_id: booking.property_id,
+          country_code: svc?.country || "",
+          workspace_id: booking.org_id || orgId!,
+          target_type: "marketplace_booking",
+          service_title: svc?.title,
+        },
       });
     }
   };
