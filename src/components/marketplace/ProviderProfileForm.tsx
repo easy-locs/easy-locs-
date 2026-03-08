@@ -300,7 +300,28 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                     />
                   </div>
                 </div>
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Tax Rate (%)</Label>
+                    <Input
+                      type="number"
+                      value={form.tax_rate || ""}
+                      onChange={(e) => update("tax_rate", Number(e.target.value))}
+                      placeholder="20"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                    />
+                  </div>
+                  <div>
+                    <Label>Tax Label</Label>
+                    <Input
+                      value={form.tax_label}
+                      onChange={(e) => update("tax_label", e.target.value)}
+                      placeholder="VAT / TVA / IVA..."
+                    />
+                  </div>
+                </div>
             )}
           </div>
 
