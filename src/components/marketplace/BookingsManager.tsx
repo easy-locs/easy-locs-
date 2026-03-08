@@ -168,6 +168,23 @@ async function handleInvoice(booking: any, service: any, provider: any) {
   const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
   const grandTotal = Number(booking.total_price) + taxAmount;
 
+  let attachmentUrl: string | undefined;
+  let attachmentName: string | undefined;
+
+  try {
+    const upload = await uploadBookingInvoiceAttachment({
+      blob,
+      orgId: booking.org_id || provider.org_id,
+      bookingId: booking.id,
+      invoiceNumber: invoiceNum,
+      customerName: booking.booker_name,
+    });
+    attachmentUrl = upload.attachmentUrl;
+    attachmentName = upload.attachmentName;
+  } catch (error) {
+    console.error("Invoice attachment upload error:", error);
+  }
+
   await syncToCommunicationCenter({
     orgId: booking.org_id || provider.org_id,
     userId: provider.user_id,
@@ -175,6 +192,8 @@ async function handleInvoice(booking: any, service: any, provider: any) {
     subject: `📄 Invoice ${invoiceNum}: ${service?.title || "Service"}`,
     message: `Invoice ${invoiceNum} generated for ${booking.booker_name}.\nService: ${service?.title}\nSubtotal: ${Number(booking.total_price).toLocaleString()} ${booking.currency}${taxRate > 0 ? `\n${provider.tax_label || "VAT"} (${taxRate}%): ${taxAmount.toLocaleString()} ${booking.currency}` : ""}\nTotal: ${grandTotal.toLocaleString()} ${booking.currency}\n\n${provider.invoice_company_name || provider.display_name || ""}`,
     category: "payment",
+    attachmentUrl,
+    attachmentName,
     meta: {
       event_type: "invoice_generated",
       booking_id: booking.id,
