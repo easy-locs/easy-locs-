@@ -89,6 +89,7 @@ const PublicServiceBooking = () => {
 
     try {
       // Create the order
+      const totalPrice = service.price * quantity;
       const orderData: any = {
         org_id: service.org_id,
         service_id: service.id,
@@ -97,9 +98,9 @@ const PublicServiceBooking = () => {
         guest_email: form.email,
         guest_phone: form.phone,
         notes: form.notes,
-        quantity: 1,
+        quantity,
         unit_price: service.price,
-        total_price: service.price,
+        total_price: totalPrice,
         currency: service.currency || "EUR",
         service_date: format(selectedDate, "yyyy-MM-dd"),
         service_time: selectedTime || null,
