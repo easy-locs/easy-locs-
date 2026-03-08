@@ -67,6 +67,7 @@ const emptyService: ServiceFormData = {
   payment_custom_url: "",
   active: true,
   photo_urls: [],
+  requires_id_document: false,
 };
 
 export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId }: Props) {
