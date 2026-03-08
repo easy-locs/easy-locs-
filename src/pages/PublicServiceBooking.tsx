@@ -50,8 +50,9 @@ const PublicServiceBooking = () => {
       if (!slug) { if (mounted) setLoading(false); return; }
       const normalizedSlug = decodeURIComponent(slug).trim();
 
+      // 1. Try concierge_services first
       const { data: exactMatch } = await supabase
-        .from("concierge_services" as any)
+        .from("concierge_services")
         .select("*")
         .eq("booking_slug", normalizedSlug)
         .eq("active", true)
@@ -59,17 +60,42 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      let resolvedService = exactMatch;
+      let resolvedService: any = exactMatch ? { ...exactMatch, _source: "concierge" } : null;
+
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
-          .from("concierge_services" as any)
+          .from("concierge_services")
           .select("*")
           .ilike("booking_slug", normalizedSlug)
           .eq("active", true)
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        resolvedService = fallbackMatch;
+        if (fallbackMatch) resolvedService = { ...fallbackMatch, _source: "concierge" };
+      }
+
+      // 2. If not found in concierge, try marketplace_services
+      if (!resolvedService) {
+        const { data: mpExact } = await supabase
+          .from("marketplace_services")
+          .select("*")
+          .eq("booking_slug", normalizedSlug)
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (mpExact) {
+          resolvedService = { ...mpExact, _source: "marketplace" };
+        } else {
+          const { data: mpFallback } = await supabase
+            .from("marketplace_services")
+            .select("*")
+            .ilike("booking_slug", normalizedSlug)
+            .eq("active", true)
+            .limit(1)
+            .maybeSingle();
+          if (mpFallback) resolvedService = { ...mpFallback, _source: "marketplace" };
+        }
       }
 
       if (!mounted) return;
