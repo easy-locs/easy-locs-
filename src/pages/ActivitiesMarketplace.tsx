@@ -247,11 +247,9 @@ const ActivitiesMarketplace = () => {
         await supabase.from("messages").insert({
           org_id: provOrgId,
           sender_id: user?.id || null,
-          subject: `📦 Booking: ${svc.title} — ${formData.booker_name}`,
-          body: `New booking from ${formData.booker_name} (${formData.booker_email}).\nService: ${svc.title}\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\nNotes: ${formData.notes || "—"}`,
-          context_type: "booking",
-          context_id: booking?.id,
-        });
+          content: `📦 Booking: ${svc.title} — ${formData.booker_name} (${formData.booker_email}).\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\nNotes: ${formData.notes || "—"}`,
+          read: false,
+        } as any);
       } catch (e) { console.error("Message thread error:", e); }
 
       // Send email notification
