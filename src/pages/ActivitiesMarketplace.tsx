@@ -461,6 +461,7 @@ const ActivitiesMarketplace = () => {
         <ProviderProfileForm
           open={providerFormOpen}
           onOpenChange={setProviderFormOpen}
+          orgId={orgId || undefined}
           initialData={myProvider ? {
             provider_type: myProvider.provider_type,
             company_name: myProvider.company_name || "",
@@ -477,6 +478,7 @@ const ActivitiesMarketplace = () => {
             payment_stripe_link: myProvider.payment_stripe_link || "",
             payment_paypal_email: myProvider.payment_paypal_email || "",
             payment_custom_url: myProvider.payment_custom_url || "",
+            avatar_url: myProvider.avatar_url || "",
           } : undefined}
           onSave={(data) => myProvider ? updateProvider.mutate(data) : createProvider.mutate(data)}
           isPending={createProvider.isPending || updateProvider.isPending}
