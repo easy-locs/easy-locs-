@@ -10,6 +10,7 @@ import ListingLocalServices from "@/components/public/ListingLocalServices";
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";
 
 const PublicListing = () => {
