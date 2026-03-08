@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
-import { Clock, MapPin, CreditCard, Building2, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
