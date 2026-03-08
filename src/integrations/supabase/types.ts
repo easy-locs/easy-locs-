@@ -1601,6 +1601,8 @@ export type Database = {
           created_at: string
           currency: string
           customer_currency: string | null
+          date_from: string | null
+          date_to: string | null
           exchange_rate: number | null
           id: string
           notes: string | null
@@ -1629,6 +1631,8 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_currency?: string | null
+          date_from?: string | null
+          date_to?: string | null
           exchange_rate?: number | null
           id?: string
           notes?: string | null
@@ -1657,6 +1661,8 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_currency?: string | null
+          date_from?: string | null
+          date_to?: string | null
           exchange_rate?: number | null
           id?: string
           notes?: string | null
@@ -1812,6 +1818,7 @@ export type Database = {
           active: boolean | null
           badges: string[] | null
           blocked_dates: Json | null
+          booking_slug: string
           category: string
           city: string
           country: string
@@ -1841,6 +1848,7 @@ export type Database = {
           active?: boolean | null
           badges?: string[] | null
           blocked_dates?: Json | null
+          booking_slug: string
           category?: string
           city?: string
           country?: string
@@ -1870,6 +1878,7 @@ export type Database = {
           active?: boolean | null
           badges?: string[] | null
           blocked_dates?: Json | null
+          booking_slug?: string
           category?: string
           city?: string
           country?: string
@@ -3950,6 +3959,10 @@ export type Database = {
       accept_tenant_invitation: {
         Args: { _token: string; _user_id: string }
         Returns: Json
+      }
+      check_service_availability: {
+        Args: { p_date_from: string; p_date_to?: string; p_service_id: string }
+        Returns: boolean
       }
       create_api_key: {
         Args: { _name: string; _org_id: string; _scopes: string[] }
