@@ -79,7 +79,7 @@ const ActivitiesMarketplace = () => {
       if (filterCat !== "all") q = q.eq("category", filterCat);
       if (filterCountry) q = q.ilike("country", `%${filterCountry}%`);
       const { data } = await q.order("created_at", { ascending: false }).limit(100);
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 
