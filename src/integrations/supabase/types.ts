@@ -1747,6 +1747,8 @@ export type Database = {
           rating: number | null
           reviews_count: number | null
           slug: string
+          tax_label: string | null
+          tax_rate: number | null
           updated_at: string
           user_id: string
           verified: boolean | null
@@ -1787,6 +1789,8 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           slug: string
+          tax_label?: string | null
+          tax_rate?: number | null
           updated_at?: string
           user_id: string
           verified?: boolean | null
@@ -1827,6 +1831,8 @@ export type Database = {
           rating?: number | null
           reviews_count?: number | null
           slug?: string
+          tax_label?: string | null
+          tax_rate?: number | null
           updated_at?: string
           user_id?: string
           verified?: boolean | null
