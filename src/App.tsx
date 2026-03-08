@@ -77,11 +77,8 @@ const AddProperty = lazy(() => import("./pages/AddProperty"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
-const ConciergeServices = lazy(() => import("./pages/ConciergeServices"));
 const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
 const GuestPortal = lazy(() => import("./pages/GuestPortal"));
-const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
-const ConciergeShowcasePage = lazy(() => import("./components/concierge/ConciergeShowcase"));
 const ProviderStorefront = lazy(() => import("./components/marketplace/ProviderStorefront"));
 const StorePage = lazy(() => import("./pages/StorePage"));
 const ShopCategoryPage = lazy(() => import("./pages/ShopCategoryPage"));
@@ -154,7 +151,7 @@ const App = () => (
               <Route path="/host/:hostSlug" element={<HostCatalog />} />
               <Route path="/guest" element={<GuestPortal />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
-              <Route path="/showcase/:orgSlug" element={<ConciergeShowcasePage />} />
+              <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
               <Route path="/provider/:providerSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
@@ -216,9 +213,7 @@ const App = () => (
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/local-services" element={<ProtectedRoute><LocalServices /></ProtectedRoute>} />
-              <Route path="/dashboard/concierge" element={<ProtectedRoute><ConciergeServices /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
-              <Route path="/dashboard/operations" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />

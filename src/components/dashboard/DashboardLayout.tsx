@@ -14,7 +14,7 @@ import {
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
   Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Gift, Shield,
   Layers, BookOpen, Zap, Store, Code, ChevronDown,
-  FileCheck, CalendarRange, Handshake, MapPin, ArrowLeft, Globe,
+  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
@@ -126,7 +126,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Store,
       items: [
         { icon: Store, label: "Marketplace", path: "/dashboard/activities" },
-        { icon: Handshake, label: "Conciergerie", path: "/dashboard/concierge" },
         { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
