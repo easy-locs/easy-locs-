@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2, MessageCircle } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Share2, MessageCircle, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,6 +110,16 @@ function shareInvoiceTelegram(booking: any, service: any, provider: any) {
   window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, "_blank");
 }
 
+function shareInvoiceEmail(booking: any, service: any, provider: any) {
+  const invoiceNum = `${provider?.invoice_prefix || "INV"}-${String(provider?.invoice_next_number || 1).padStart(4, "0")}`;
+  const taxRate = Number(provider?.tax_rate || 0);
+  const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
+  const grandTotal = Number(booking.total_price) + taxAmount;
+  const subject = `Invoice ${invoiceNum} — ${service?.title || "Service"}`;
+  const body = `Dear ${booking.booker_name},\n\nPlease find below the details of your invoice:\n\nInvoice: ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${grandTotal.toLocaleString()} ${booking.currency}${taxRate > 0 ? ` (incl. ${provider.tax_label || "VAT"} ${taxRate}%)` : ""}\n\nThank you for your business.\n\n${provider?.invoice_company_name || provider?.display_name || "Easy-Locs®"}`;
+  window.open(`mailto:${booking.booker_email || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_self");
+}
+
 export default function BookingsManager({ bookings, services, provider, onUpdateStatus, onSendPaymentLink, onConfirmPayment }: Props) {
   const getService = (id: string) => services.find((s) => s.id === id);
 
@@ -185,6 +195,9 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                       <>
                         <Button size="sm" variant="outline" onClick={() => handleInvoice(b, svc, provider)}>
                           <FileText className="h-3 w-3 mr-1" /> Invoice
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => shareInvoiceEmail(b, svc, provider)} title="Email">
+                          <Mail className="h-3 w-3" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => shareInvoiceWhatsApp(b, svc, provider)} title="WhatsApp">
                           <MessageCircle className="h-3 w-3" />
