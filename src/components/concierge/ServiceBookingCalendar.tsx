@@ -75,7 +75,7 @@ const ServiceBookingCalendar = ({
         .eq("service_id", serviceId)
         .in("status", Array.from(OCCUPYING_STATUSES));
 
-      setBookedSlots((data as BookedSlot[] | null) || []);
+      setBookedSlots((data as unknown as BookedSlot[] | null) || []);
       setLoadingSlots(false);
     };
 
