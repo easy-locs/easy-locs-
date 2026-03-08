@@ -8,7 +8,6 @@ const corsHeaders = {
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = Deno.env.get("APP_URL") || "https://easy-locs.lovable.app";
 const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
-const BOT_UA_PATTERN = /(facebookexternalhit|facebot|whatsapp|twitterbot|linkedinbot|slackbot|telegrambot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -29,11 +28,6 @@ function withCacheBust(image: string | null | undefined, version?: string | null
   if (!token) return base;
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}v=${encodeURIComponent(token)}`;
-}
-
-function shouldServePreviewHtml(req: Request): boolean {
-  const userAgent = req.headers.get("user-agent") || "";
-  return BOT_UA_PATTERN.test(userAgent);
 }
 
 function htmlPage(meta: {
@@ -82,8 +76,8 @@ function htmlPage(meta: {
   ${meta.jsonLd ? `<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>` : ""}
 
   <!-- Redirect fallback -->
+  <meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/>
   <script>window.location.replace(${JSON.stringify(safeRedirectUrl)});</script>
-  <noscript><meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/></noscript>
 </head>
 <body>
   <p>Redirecting to <a href="${safeRedirectUrl}">${safeTitle}</a>...</p>
@@ -99,26 +93,11 @@ function buildHeaders() {
   };
 }
 
-function redirectToApp(url: string): Response {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      ...corsHeaders,
-      Location: url,
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
-function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
-  if (!shouldServePreviewHtml(req)) {
-    return redirectToApp(redirectUrl);
-  }
-
+function buildSocialResponse(html: string): Response {
   return new Response(html, { status: 200, headers: buildHeaders() });
 }
 
-async function handleListing(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleListing(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
@@ -141,7 +120,6 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
   const redirectUrl = `${APP_URL}/listing/${slug}`;
 
   return buildSocialResponse(
-    req,
     htmlPage({
       title,
       description: desc,
@@ -168,12 +146,11 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
             }
           : {}),
       },
-    }),
-    redirectUrl
+    })
   );
 }
 
-async function handleService(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleService(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: service } = await supabase
     .from("concierge_services")
     .select("*")
@@ -192,10 +169,10 @@ async function handleService(req: Request, slug: string, shareUrl: string, share
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }));
 }
 
-async function handleHost(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleHost(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: host } = await supabase
     .from("landlord_profiles")
     .select("*")
@@ -212,10 +189,10 @@ async function handleHost(req: Request, slug: string, shareUrl: string, shareVer
   const desc = `Browse vacation rentals by ${host.display_name}${host.city ? ` in ${host.city}` : ""}. Book directly on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/host/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
 }
 
-async function handleProvider(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+async function handleProvider(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: provider } = await supabase
     .from("marketplace_providers")
     .select("*")
@@ -243,7 +220,7 @@ async function handleProvider(req: Request, slug: string, shareUrl: string, shar
   const desc = `${provider.bio?.slice(0, 120) || `Discover services by ${provider.display_name}`}`.slice(0, 160);
   const redirectUrl = `${APP_URL}/provider/${slug}`;
 
-  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
+  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }));
 }
 
 
@@ -272,13 +249,13 @@ Deno.serve(async (req) => {
   try {
     switch (type) {
       case "listing":
-        return await handleListing(req, slug, shareUrl, v);
+        return await handleListing(slug, shareUrl, v);
       case "service":
-        return await handleService(req, slug, shareUrl, v);
+        return await handleService(slug, shareUrl, v);
       case "host":
-        return await handleHost(req, slug, shareUrl, v);
+        return await handleHost(slug, shareUrl, v);
       case "provider":
-        return await handleProvider(req, slug, shareUrl, v);
+        return await handleProvider(slug, shareUrl, v);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
