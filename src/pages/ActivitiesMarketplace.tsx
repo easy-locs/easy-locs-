@@ -288,10 +288,18 @@ const ActivitiesMarketplace = () => {
     const svc = myServices.find((s: any) => s.id === booking.service_id);
     const link = svc?.payment_stripe_link || myProvider?.payment_stripe_link || svc?.payment_paypal_email || myProvider?.payment_paypal_email;
     if (link) {
-      const mailLink = `mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`;
-      window.open(mailLink, "_blank");
+      window.open(`mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`, "_blank");
       supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
         qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
+      });
+      // Sync to comms center
+      syncToCommunicationCenter({
+        orgId: booking.org_id || orgId!,
+        userId: myProvider?.user_id,
+        email: booking.booker_email,
+        subject: `💳 Payment link sent: ${svc?.title || "Service"}`,
+        message: `Payment link sent to ${booking.booker_name} for "${svc?.title}".\nAmount: ${booking.total_price} ${booking.currency}\nLink: ${link}`,
+        category: "payment",
       });
     } else {
       toast.error("No payment link configured");
