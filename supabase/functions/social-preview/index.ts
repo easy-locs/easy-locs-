@@ -98,7 +98,25 @@ function buildHeaders() {
   };
 }
 
-async function handleListing(slug: string, shareUrl: string): Promise<Response> {
+function redirectToApp(url: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      ...corsHeaders,
+      Location: url,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
+  if (!shouldServePreviewHtml(req)) {
+    return redirectToApp(redirectUrl);
+  }
+
+  return new Response(html, { status: 200, headers: buildHeaders() });
+}
+
   const { data: listing } = await supabase
     .from("public_listings")
     .select("*")
