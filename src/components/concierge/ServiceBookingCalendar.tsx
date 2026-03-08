@@ -52,6 +52,12 @@ const DEFAULT_SLOTS: TimeSlot[] = [
 
 /** Statuses that occupy a slot */
 const OCCUPYING_STATUSES = new Set(["pending", "awaiting_payment", "paid", "confirmed", "in_progress", "completed"]);
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const parseDateOnly = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+};
 
 const ServiceBookingCalendar = ({
   serviceId,
