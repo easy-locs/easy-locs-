@@ -269,8 +269,8 @@ const ConciergeServices = () => {
           {[
             { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
-            { icon: DollarSign, label: "Total Revenue", value: `${totalRevenue.toLocaleString()}€`, cls: "text-emerald-500" },
-            { icon: TrendingUp, label: "Commission Earned", value: `${commissionEarned.toLocaleString()}€`, cls: "text-blue-500" },
+            { icon: DollarSign, label: "Total Revenue", value: fmtPrice(totalRevenue, services[0]?.currency || "EUR"), cls: "text-emerald-500" },
+            { icon: TrendingUp, label: "Commission Earned", value: fmtPrice(commissionEarned, services[0]?.currency || "EUR"), cls: "text-blue-500" },
             { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
             { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
