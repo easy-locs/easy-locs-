@@ -621,7 +621,7 @@ const PublicServiceBooking = () => {
 
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                    <Button onClick={() => setStep(3)} disabled={!form.name || !form.email || (service.requires_id_document && !(form as any).id_document_url)} className="flex-1">Continue</Button>
+                    <Button onClick={() => setStep(3)} disabled={idDocUploading || !form.name || !form.email || (service.requires_id_document && !(form as any).id_document_url)} className="flex-1">Continue</Button>
                   </div>
                 </div>
               )}
