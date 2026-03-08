@@ -256,6 +256,42 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           {user && (
             <p className="text-xs text-sidebar-foreground/50 mt-2 truncate">{user.email}</p>
           )}
+
+          {/* Multi-org switcher */}
+          {allOrgs.length > 1 && (
+            <div className="mt-2 relative">
+              <button
+                onClick={() => setOrgSelectorOpen(!orgSelectorOpen)}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs bg-muted/50 hover:bg-muted transition-colors text-sidebar-foreground/70"
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate flex-1 text-left">
+                  {allOrgs.find(o => o.id === orgId)?.name || "Select workspace"}
+                </span>
+                <ChevronDown className={`h-3 w-3 shrink-0 transition-transform ${orgSelectorOpen ? "rotate-180" : ""}`} />
+              </button>
+              {orgSelectorOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOrgSelectorOpen(false)} />
+                  <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 z-50 max-h-48 overflow-y-auto">
+                    {allOrgs.map((org) => (
+                      <button
+                        key={org.id}
+                        onClick={() => { switchOrg(org.id); setOrgSelectorOpen(false); }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted transition-colors ${
+                          orgId === org.id ? "text-accent font-semibold" : "text-foreground"
+                        }`}
+                      >
+                        <Store className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{org.name}</span>
+                        {orgId === org.id && <span className="ml-auto text-accent">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ═══ Country Context Banner ═══ */}
