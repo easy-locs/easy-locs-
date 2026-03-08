@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 import BookingLinkShare from "@/components/concierge/BookingLinkShare";
 import BookingDetailDrawer from "@/components/concierge/BookingDetailDrawer";
+import CurrencyWalletWidget from "@/components/dashboard/CurrencyWalletWidget";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
