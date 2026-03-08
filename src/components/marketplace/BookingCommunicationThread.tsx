@@ -1,0 +1,152 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Send, Paperclip, StickyNote, Mail, Bell, MessageCircle } from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+
+interface Props {
+  bookingId: string;
+  orgId: string;
+  customerName: string;
+  customerEmail?: string;
+}
+
+type MessageType = "message" | "internal_note" | "email" | "notification";
+
+export default function BookingCommunicationThread({ bookingId, orgId, customerName, customerEmail }: Props) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [newMessage, setNewMessage] = useState("");
+  const [messageType, setMessageType] = useState<MessageType>("message");
+
+  const { data: messages = [] } = useQuery({
+    queryKey: ["booking_messages", bookingId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: true })
+        .limit(200);
+      // Filter messages for this booking by checking content or category
+      return (data || []).filter((m: any) => {
+        const content = m.content || "";
+        return content.includes(bookingId) || (m.category === "booking" && content.includes(customerName));
+      });
+    },
+    enabled: !!bookingId && !!orgId,
+  });
+
+  const sendMessage = useMutation({
+    mutationFn: async () => {
+      const prefix = messageType === "internal_note" ? "📌 [Internal] " : messageType === "email" ? "📧 [Email] " : "";
+      const content = `${prefix}${newMessage}\n\n[Booking: ${bookingId}]`;
+      
+      await supabase.from("messages").insert({
+        org_id: orgId,
+        sender_id: user?.id || null,
+        content,
+        category: "booking",
+        message_type: messageType === "internal_note" ? "system" : "text",
+        read: false,
+      } as any);
+
+      // If email type, also send email
+      if (messageType === "email" && customerEmail) {
+        await supabase.functions.invoke("send-notification-email", {
+          body: { to: customerEmail, subject: `Message from your provider`, message: newMessage },
+        });
+      }
+
+      // Log to audit
+      await supabase.from("audit_logs").insert({
+        org_id: orgId,
+        user_id: user?.id,
+        action: `${messageType === "internal_note" ? "Internal note" : "Message"} sent for booking`,
+        metadata_json: { booking_id: bookingId, type: messageType } as any,
+      });
+    },
+    onSuccess: () => {
+      setNewMessage("");
+      qc.invalidateQueries({ queryKey: ["booking_messages", bookingId] });
+      toast.success(messageType === "internal_note" ? "Note added" : "Message sent");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const typeButtons: { type: MessageType; icon: any; label: string }[] = [
+    { type: "message", icon: MessageCircle, label: "Message" },
+    { type: "internal_note", icon: StickyNote, label: "Note" },
+    { type: "email", icon: Mail, label: "Email" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Messages list */}
+      <div className="max-h-64 overflow-y-auto space-y-2 border border-border rounded-lg p-3">
+        {messages.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground py-4">No messages yet</p>
+        ) : (
+          messages.map((m: any) => {
+            const isInternal = m.content?.includes("[Internal]");
+            const isEmail = m.content?.includes("[Email]");
+            const isSystem = m.message_type === "system";
+            return (
+              <div key={m.id} className={`p-2.5 rounded-lg text-sm ${isInternal ? "bg-amber-500/10 border border-amber-500/20" : isSystem ? "bg-muted/30" : "bg-card border border-border"}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  {isInternal && <Badge variant="outline" className="text-[10px]">📌 Internal</Badge>}
+                  {isEmail && <Badge variant="outline" className="text-[10px]">📧 Email</Badge>}
+                  {isSystem && <Badge variant="outline" className="text-[10px]">🤖 System</Badge>}
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {format(new Date(m.created_at), "dd/MM HH:mm")}
+                  </span>
+                </div>
+                <p className="text-foreground whitespace-pre-line">
+                  {m.content?.replace(/\[Booking: [^\]]+\]/g, "").replace(/📌 \[Internal\] |📧 \[Email\] /g, "").trim()}
+                </p>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Compose */}
+      <div className="space-y-2">
+        <div className="flex gap-1">
+          {typeButtons.map(({ type, icon: Icon, label }) => (
+            <Button
+              key={type}
+              size="sm"
+              variant={messageType === type ? "default" : "ghost"}
+              onClick={() => setMessageType(type)}
+              className="text-xs"
+            >
+              <Icon className="h-3 w-3 mr-1" /> {label}
+            </Button>
+          ))}
+        </div>
+        <Textarea
+          placeholder={messageType === "internal_note" ? "Add an internal note..." : `Message to ${customerName}...`}
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          className="min-h-[4rem]"
+        />
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            disabled={!newMessage.trim() || sendMessage.isPending}
+            onClick={() => sendMessage.mutate()}
+          >
+            <Send className="h-3 w-3 mr-1" />
+            {messageType === "email" ? "Send Email" : messageType === "internal_note" ? "Save Note" : "Send"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

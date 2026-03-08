@@ -15,7 +15,8 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import BookingsManager, { syncToCommunicationCenter, type NotificationMeta } from "@/components/marketplace/BookingsManager";
+import { syncToCommunicationCenter, type NotificationMeta } from "@/components/marketplace/BookingsManager";
+import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
@@ -588,13 +589,14 @@ const ActivitiesMarketplace = () => {
             </TabsContent>
           )}
 
-          {/* Bookings Tab */}
+          {/* Bookings Tab — Full Booking Request Center */}
           {myProvider && (
             <TabsContent value="bookings" className="mt-4">
-              <BookingsManager
+              <BookingRequestCenter
                 bookings={myBookings}
                 services={myServices}
                 provider={myProvider}
+                orgId={orgId || ""}
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
