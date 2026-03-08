@@ -62,11 +62,11 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_bookings", orgId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_bookings" as any)
+        .from("marketplace_bookings")
         .select("*")
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false });
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!orgId,
   });
