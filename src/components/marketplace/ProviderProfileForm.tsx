@@ -3,11 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
-import { Building2, User } from "lucide-react";
+import { Building2, User, ImagePlus, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProviderFormData {
   provider_type: string;
@@ -25,6 +27,7 @@ interface ProviderFormData {
   payment_stripe_link: string;
   payment_paypal_email: string;
   payment_custom_url: string;
+  avatar_url: string;
 }
 
 interface Props {
@@ -33,6 +36,7 @@ interface Props {
   onSave: (data: ProviderFormData) => void;
   initialData?: Partial<ProviderFormData>;
   isPending?: boolean;
+  orgId?: string;
 }
 
 const emptyForm: ProviderFormData = {
@@ -51,10 +55,12 @@ const emptyForm: ProviderFormData = {
   payment_stripe_link: "",
   payment_paypal_email: "",
   payment_custom_url: "",
+  avatar_url: "",
 };
 
-export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending }: Props) {
+export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
   const [form, setForm] = useState<ProviderFormData>({ ...emptyForm, ...initialData });
+  const [uploading, setUploading] = useState(false);
 
   const toggleCategory = (cat: string) => {
     setForm((f) => ({
@@ -68,6 +74,24 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
   const update = (field: keyof ProviderFormData, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
+  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !orgId) return;
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `${orgId}/providers/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
+    if (error) {
+      toast.error(`Upload failed: ${error.message}`);
+      setUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
+    setForm((f) => ({ ...f, avatar_url: urlData.publicUrl }));
+    setUploading(false);
+    toast.success("Photo uploaded!");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -75,6 +99,21 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
           <DialogTitle>{initialData ? "Edit Provider Profile" : "Create Provider Profile"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          {/* Avatar */}
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              {form.avatar_url ? (
+                <AvatarImage src={form.avatar_url} alt={form.display_name} />
+              ) : null}
+              <AvatarFallback className="text-lg">{form.display_name?.charAt(0) || "P"}</AvatarFallback>
+            </Avatar>
+            <label className={`cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-md border border-input text-sm hover:bg-muted transition-colors ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+              {uploading ? "Uploading..." : "Upload Photo"}
+              <input type="file" accept="image/*" onChange={uploadAvatar} className="hidden" />
+            </label>
+          </div>
+
           {/* Type */}
           <div className="grid grid-cols-2 gap-2">
             <Button
