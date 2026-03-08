@@ -132,7 +132,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
-          <FloatingAIAssistant />
+          <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}

@@ -52,7 +52,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", ph
       )}
 
       <div className="flex gap-2">
-        <Input value={shareUrl} readOnly className="text-xs" />
+        <Input value={publicLink} readOnly className="text-xs" />
         <Button size="sm" variant="outline" onClick={copy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
