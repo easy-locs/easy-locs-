@@ -227,6 +227,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const type = url.searchParams.get("type");
   const slug = url.searchParams.get("slug");
+  const v = url.searchParams.get("v");
 
   if (!type || !slug) {
     return new Response(JSON.stringify({ error: "Missing type or slug" }), {
@@ -235,16 +236,20 @@ Deno.serve(async (req) => {
     });
   }
 
+  const shareParams = new URLSearchParams({ type, slug });
+  if (v) shareParams.set("v", v);
+  const shareUrl = `${url.origin}${url.pathname}?${shareParams.toString()}`;
+
   try {
     switch (type) {
       case "listing":
-        return await handleListing(slug);
+        return await handleListing(slug, shareUrl);
       case "service":
-        return await handleService(slug);
+        return await handleService(slug, shareUrl);
       case "host":
-        return await handleHost(slug);
+        return await handleHost(slug, shareUrl);
       case "provider":
-        return await handleProvider(slug);
+        return await handleProvider(slug, shareUrl);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
