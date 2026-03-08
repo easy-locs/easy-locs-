@@ -33,8 +33,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalCountries: 0,
-    totalServices: 0,
-    totalBookings: 0,
     revenueThisMonth: 0,
     propertiesByCountry: [] as CountryStat[],
   });
