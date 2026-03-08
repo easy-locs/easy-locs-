@@ -19,8 +19,6 @@ type CountryStat = {
   flag: string;
   name: string;
   tenants: number;
-  services: number;
-  bookings: number;
 };
 
 type WorldMapProps = {
