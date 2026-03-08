@@ -572,6 +572,7 @@ const ActivitiesMarketplace = () => {
               <BookingsManager
                 bookings={myBookings}
                 services={myServices}
+                provider={myProvider}
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
