@@ -20,6 +20,8 @@ interface AuthContextType {
   loading: boolean;
   emailVerified: boolean;
   orgId: string | null;
+  allOrgs: { id: string; name: string; country: string; currency: string }[];
+  switchOrg: (orgId: string) => void;
   userType: UserType;
   userCountry: string;
   userCurrency: string;
