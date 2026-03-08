@@ -133,7 +133,7 @@ const ActivitiesMarketplace = () => {
 
   const updateProvider = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from("marketplace_providers" as any).update(data).eq("id", myProvider!.id);
+      const { error } = await supabase.from("marketplace_providers").update(data).eq("id", myProvider!.id);
       if (error) throw error;
     },
     onSuccess: () => {
