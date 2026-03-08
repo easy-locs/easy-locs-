@@ -360,35 +360,66 @@ const PublicServiceBooking = () => {
               )}
 
               {step === 2 && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Full Name *</label>
-                    <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Email *</label>
-                    <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Full Name *</label>
+                      <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Email *</label>
+                      <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground">Phone</label>
                     <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
                   </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Notes</label>
-                    <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Quantity / Days</label>
-                    <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value)))} />
-                    {quantity > 1 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {quantity} × {fmtPrice(service.price, service.currency)} = <strong>{fmtPrice(service.price * quantity, service.currency)}</strong>
-                      </p>
-                    )}
+
+                  {service.requires_id_document && (
+                    <div>
+                      <label className="text-xs text-muted-foreground font-medium">🪪 ID Document *</label>
+                      <p className="text-[11px] text-muted-foreground mb-2">This service requires a copy of your identity document (passport, ID card, or driving licence).</p>
+                      <Input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const ext = file.name.split(".").pop();
+                          const path = `public-id-docs/${crypto.randomUUID()}.${ext}`;
+                          const { error } = await supabase.storage.from("property-photos").upload(path, file, { upsert: true });
+                          if (error) { toast.error("Upload failed"); return; }
+                          const { data: urlData } = supabase.storage.from("property-photos").getPublicUrl(path);
+                          setForm(f => ({ ...f, id_document_url: urlData.publicUrl }));
+                          toast.success("ID document uploaded");
+                        }}
+                        className="cursor-pointer"
+                      />
+                      {(form as any).id_document_url && (
+                        <p className="text-xs text-emerald-600 mt-1">✓ Document uploaded</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Notes</label>
+                      <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Quantity / Days</label>
+                      <Input type="number" min={1} value={quantity || ""} onChange={e => setQuantity(e.target.value === "" ? 1 : Math.max(1, Number(e.target.value)))} placeholder="1" />
+                      {quantity > 1 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {quantity} × {fmtPrice(service.price, service.currency)} = <strong>{fmtPrice(service.price * quantity, service.currency)}</strong>
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                    <Button onClick={() => setStep(3)} disabled={!form.name || !form.email} className="flex-1">Continue</Button>
+                    <Button onClick={() => setStep(3)} disabled={!form.name || !form.email || (service.requires_id_document && !(form as any).id_document_url)} className="flex-1">Continue</Button>
                   </div>
                 </div>
               )}
