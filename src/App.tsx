@@ -82,6 +82,7 @@ const ActivitiesMarketplace = lazy(() => import("./pages/ActivitiesMarketplace")
 const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
 const ConciergeShowcasePage = lazy(() => import("./components/concierge/ConciergeShowcase"));
+const ProviderStorefront = lazy(() => import("./components/marketplace/ProviderStorefront"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
