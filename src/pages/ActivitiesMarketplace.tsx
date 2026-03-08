@@ -48,11 +48,11 @@ const ActivitiesMarketplace = () => {
     queryKey: ["my_marketplace_services", myProvider?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_services" as any)
+        .from("marketplace_services")
         .select("*")
         .eq("provider_id", myProvider!.id)
         .order("sort_order");
-      return (data || []) as any[];
+      return (data || []);
     },
     enabled: !!myProvider?.id,
   });
