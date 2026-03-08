@@ -146,8 +146,10 @@ const ActivitiesMarketplace = () => {
 
   const createService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
+      const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const insertData: Record<string, unknown> = {
         ...data,
+        booking_slug: slug,
         provider_id: myProvider!.id,
         org_id: orgId!,
         user_id: user!.id,

@@ -204,6 +204,11 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
           </div>
 
           <div className="flex items-center gap-2">
+            <Switch checked={form.requires_id_document || false} onCheckedChange={(v) => update("requires_id_document", v)} />
+            <Label>🪪 Require ID Document (Passport / CNI / Permit)</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
             <Switch checked={form.active} onCheckedChange={(v) => update("active", v)} />
             <Label>Active</Label>
           </div>
