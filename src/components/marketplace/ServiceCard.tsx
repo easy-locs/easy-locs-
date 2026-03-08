@@ -32,7 +32,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
 
   const handleShare = async () => {
     if (!slug) { toast.error("No booking slug configured"); return; }
-    const result = await sharePage({ type: "service", slug, title: service.title });
+    const result = await sharePage({ type: "service", slug, title: service.title, version: service.updated_at });
     if (result === "copied") toast.success("Link copied!");
     else if (result === "shared") toast.success("Shared!");
   };
