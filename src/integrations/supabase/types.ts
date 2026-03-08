@@ -2110,6 +2110,7 @@ export type Database = {
           id: string
           link: string | null
           message: string
+          metadata_json: Json | null
           org_id: string | null
           read: boolean
           title: string
@@ -2121,6 +2122,7 @@ export type Database = {
           id?: string
           link?: string | null
           message?: string
+          metadata_json?: Json | null
           org_id?: string | null
           read?: boolean
           title: string
@@ -2132,6 +2134,7 @@ export type Database = {
           id?: string
           link?: string | null
           message?: string
+          metadata_json?: Json | null
           org_id?: string | null
           read?: boolean
           title?: string
