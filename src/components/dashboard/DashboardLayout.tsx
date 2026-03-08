@@ -108,7 +108,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
-  // Seasonal / Concierge — global module (not country-dependent)
+  // Seasonal — global module
   const seasonalSection: NavSection[] = [
     {
       key: "seasonal",
@@ -118,16 +118,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
         { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
-        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
       ],
     },
     {
-      key: "services",
+      key: "marketplace",
       title: "Services Marketplace",
       icon: Store,
       items: [
         { icon: Store, label: "Marketplace", path: "/dashboard/activities" },
-        { icon: Handshake, label: "Concierge", path: "/dashboard/concierge" },
+        { icon: Handshake, label: "Conciergerie", path: "/dashboard/concierge" },
+        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
     },

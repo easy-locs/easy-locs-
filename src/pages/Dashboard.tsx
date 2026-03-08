@@ -2,6 +2,7 @@ import { useState, useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, Building, Users, Euro, MapPin, Plus,
+  Store, CalendarCheck, ShoppingBag, TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -18,6 +19,8 @@ type CountryStat = {
   flag: string;
   name: string;
   tenants: number;
+  services: number;
+  bookings: number;
 };
 
 type WorldMapProps = {
@@ -33,7 +36,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalCountries: 0,
-    totalOwners: 0,
+    totalServices: 0,
+    totalBookings: 0,
     revenueThisMonth: 0,
     propertiesByCountry: [] as CountryStat[],
   });
@@ -43,38 +47,40 @@ const Dashboard = () => {
 
   useEffect(() => {
     let active = true;
-
     import("@/components/dashboard/WorldPropertyMap")
-      .then((mod) => {
-        if (!active) return;
-        setWorldMapComponent(() => mod.default);
-      })
-      .catch((err) => {
-        console.warn("[Dashboard] World map disabled due to import error:", err);
-        if (!active) return;
-        setMapLoadFailed(true);
-      });
-
-    return () => {
-      active = false;
-    };
+      .then((mod) => { if (active) setWorldMapComponent(() => mod.default); })
+      .catch(() => { if (active) setMapLoadFailed(true); });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (!orgId) {
-      setLoading(false);
-      return;
-    }
+    if (!orgId) { setLoading(false); return; }
 
     Promise.all([
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
-      supabase.from("owner_profiles").select("id", { count: "exact", head: true }).eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
+      // Services: concierge + marketplace
+      supabase.from("concierge_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
+      supabase.from("marketplace_services").select("id, country", { count: "exact" }).eq("org_id", orgId).eq("active", true),
+      // Bookings: concierge orders + marketplace bookings
+      supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+      supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("org_id", orgId),
     ])
-      .then(([props, tenantsRes, ownersRes, rc]) => {
+      .then(([props, tenantsRes, rc, concServices, mpServices, concOrders, mpBookings]) => {
         const propData = (props.data || []) as { id: string; country: string }[];
         const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
+
+        // Aggregate services by country
+        const servicesByCountry = new Map<string, number>();
+        for (const s of (concServices.data || []) as { country: string }[]) {
+          const c = s.country || "XX";
+          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
+        }
+        for (const s of (mpServices.data || []) as { country: string }[]) {
+          const c = s.country || "XX";
+          servicesByCountry.set(c, (servicesByCountry.get(c) || 0) + 1);
+        }
 
         const countryMap = new Map<string, { count: number; propIds: Set<string> }>();
         propData.forEach((p) => {
@@ -84,6 +90,13 @@ const Dashboard = () => {
           existing.propIds.add(p.id);
           countryMap.set(c, existing);
         });
+
+        // Also include countries that only have services
+        for (const [c] of servicesByCountry) {
+          if (!countryMap.has(c) && c !== "XX") {
+            countryMap.set(c, { count: 0, propIds: new Set() });
+          }
+        }
 
         const today = new Date().toISOString().split("T")[0];
         const propertiesByCountry = Array.from(countryMap.entries())
@@ -98,9 +111,11 @@ const Dashboard = () => {
               flag: entry.flag,
               name: entry.name,
               tenants: countryTenants.length,
+              services: servicesByCountry.get(code) || 0,
+              bookings: 0,
             };
           })
-          .sort((a, b) => b.count - a.count);
+          .sort((a, b) => (b.count + b.services) - (a.count + a.services));
 
         const currentMonth = format(new Date(), "yyyy-MM");
         const monthCalls = ((rc.data || []) as Array<{ month: string; paid: boolean; total_amount: number | string }>).filter(
@@ -110,10 +125,14 @@ const Dashboard = () => {
           .filter((r) => r.paid)
           .reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
 
+        const totalServices = (concServices.count || 0) + (mpServices.count || 0);
+        const totalBookings = (concOrders.count || 0) + (mpBookings.count || 0);
+
         setStats({
           totalProperties: propData.length,
           totalCountries: countryMap.size,
-          totalOwners: ownersRes.count || 0,
+          totalServices,
+          totalBookings,
           revenueThisMonth,
           propertiesByCountry,
         });
@@ -137,17 +156,18 @@ const Dashboard = () => {
             </h1>
           </div>
           <p className="text-muted-foreground text-sm ml-9">
-            {t("page.dashboard.global_overview") || "Vue d'ensemble de votre portefeuille immobilier"}
+            {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
           </p>
         </motion.div>
 
-        {/* Global KPIs — summary only */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Global KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {[
             { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties) },
-            { icon: MapPin, label: t("page.dashboard.countries") || "Pays", value: loading ? "..." : String(stats.totalCountries) },
-            { icon: Users, label: t("page.dashboard.owners") || "Propriétaires", value: loading ? "..." : String(stats.totalOwners) },
-            { icon: Euro, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
+            { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries) },
+            { icon: Store, label: "Services", value: loading ? "..." : String(stats.totalServices) },
+            { icon: CalendarCheck, label: "Réservations", value: loading ? "..." : String(stats.totalBookings) },
+            { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth) },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -165,7 +185,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* 3D Globe (safe dynamic import with graceful fallback) */}
+        {/* 3D Globe */}
         {!loading && stats.propertiesByCountry.length > 0 && WorldMapComponent && !mapLoadFailed && (
           <WorldMapComponent
             propertiesByCountry={stats.propertiesByCountry}
@@ -176,7 +196,7 @@ const Dashboard = () => {
         {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
           <div className="mb-8 rounded-xl border border-border/50 bg-card p-4">
             <p className="text-sm text-muted-foreground">
-              {t("page.dashboard.world_map") || "Carte mondiale"} indisponible sur cet appareil, le tableau de bord reste accessible.
+              Carte mondiale indisponible sur cet appareil.
             </p>
           </div>
         )}
@@ -197,10 +217,10 @@ const Dashboard = () => {
             <div className="text-center py-16 bg-card rounded-xl border border-border/50">
               <Globe className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {t("page.dashboard.no_properties") || "Aucun bien enregistré"}
+                {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
               </h3>
               <p className="text-sm text-muted-foreground mb-6">
-                {t("page.dashboard.add_first") || "Ajoutez votre premier bien pour commencer"}
+                Ajoutez votre premier bien ou créez un service pour commencer
               </p>
               <Link to="/dashboard/add-property" className="btn-primary">
                 {t("page.rental.add_property") || "Ajouter un bien"}
@@ -225,15 +245,23 @@ const Dashboard = () => {
                         <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
                           {c.name}
                         </h3>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Building className="h-3.5 w-3.5" />
-                            {c.count} {c.count > 1 ? t("page.dashboard.property_plural") || "properties" : t("page.dashboard.property_singular") || "property"}
-                          </span>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
+                          {c.count > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Building className="h-3.5 w-3.5" />
+                              {c.count} {c.count > 1 ? "biens" : "bien"}
+                            </span>
+                          )}
                           {c.tenants > 0 && (
                             <span className="flex items-center gap-1">
                               <Users className="h-3.5 w-3.5" />
-                              {c.tenants} {c.tenants > 1 ? t("page.dashboard.tenant_plural") || "tenants" : t("page.dashboard.tenant_singular") || "tenant"}
+                              {c.tenants}
+                            </span>
+                          )}
+                          {c.services > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Store className="h-3.5 w-3.5" />
+                              {c.services} services
                             </span>
                           )}
                         </div>
