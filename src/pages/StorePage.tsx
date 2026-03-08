@@ -80,7 +80,7 @@ export default function StorePage() {
     </>
   );
 
-  const profile = showcase.profile;
+  const profile = showcase.profile as any;
   const name = profile.display_name || profile.company_name || storeSlug;
 
   return (
