@@ -140,7 +140,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
               <Select value={form.currency} onValueChange={(v) => update("currency", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["EUR", "USD", "GBP", "CHF", "MAD", "TND", "XOF", "AED"].map((c) => (
+                {CURRENCIES.map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>
