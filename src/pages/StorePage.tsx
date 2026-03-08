@@ -33,7 +33,7 @@ export default function StorePage() {
 
       if (landlord) {
         const { data: services } = await supabase
-          .from("concierge_services" as any)
+          .from("concierge_services")
           .select("*")
           .eq("org_id", landlord.org_id)
           .eq("active", true)
