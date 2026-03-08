@@ -123,9 +123,23 @@ function buildHeaders() {
   };
 }
 
-function buildSocialResponse(html: string): Response {
-  return new Response(html, { status: 200, headers: buildHeaders() });
+function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
+  if (shouldServePreviewHtml(req)) {
+    return new Response(html, { status: 200, headers: buildHeaders() });
+  }
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      ...corsHeaders,
+      Location: redirectUrl,
+      "Cache-Control": "no-store, max-age=0, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
+  });
 }
+
 
 async function handleListing(slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
   const { data: listing } = await supabase
