@@ -83,6 +83,8 @@ const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 const ConciergeOperations = lazy(() => import("./pages/ConciergeOperations"));
 const ConciergeShowcasePage = lazy(() => import("./components/concierge/ConciergeShowcase"));
 const ProviderStorefront = lazy(() => import("./components/marketplace/ProviderStorefront"));
+const StorePage = lazy(() => import("./pages/StorePage"));
+const ShopCategoryPage = lazy(() => import("./pages/ShopCategoryPage"));
 // Legal pages
 const TermsPage = lazy(() => import("./pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/legal/PrivacyPage"));
@@ -109,7 +111,7 @@ const PageLoader = () => (
   </div>
 );
 
-const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/"];
+const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/"];
 
 const RouteAwareAssistant = () => {
   const { pathname } = useLocation();
@@ -153,6 +155,8 @@ const App = () => (
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/showcase/:orgSlug" element={<ConciergeShowcasePage />} />
               <Route path="/provider/:providerSlug" element={<ProviderStorefront />} />
+              <Route path="/store/:storeSlug" element={<StorePage />} />
+              <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/property-management" element={<PropertyManagement />} />
