@@ -213,7 +213,7 @@ async function handleService(req: Request, slug: string, shareUrl: string, share
   const desc = `${service.title}${service.city ? ` in ${service.city}` : ""}. ${service.price > 0 ? `From ${service.price} ${service.currency}.` : ""} Book on Easy-Locs.`.slice(0, 160);
   const redirectUrl = `${APP_URL}/book/${slug}`;
 
-  return buildSocialResponse(htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }));
+  return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "website" }), redirectUrl);
 }
 
 async function handleHost(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
