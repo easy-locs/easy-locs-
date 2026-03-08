@@ -1717,6 +1717,10 @@ export type Database = {
           active: boolean | null
           address: string | null
           avatar_url: string | null
+          bank_bic: string | null
+          bank_holder: string | null
+          bank_iban: string | null
+          bank_name: string | null
           bio: string | null
           categories: string[]
           city: string
@@ -1753,6 +1757,10 @@ export type Database = {
           active?: boolean | null
           address?: string | null
           avatar_url?: string | null
+          bank_bic?: string | null
+          bank_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           bio?: string | null
           categories?: string[]
           city?: string
@@ -1789,6 +1797,10 @@ export type Database = {
           active?: boolean | null
           address?: string | null
           avatar_url?: string | null
+          bank_bic?: string | null
+          bank_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           bio?: string | null
           categories?: string[]
           city?: string
