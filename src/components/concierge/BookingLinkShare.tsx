@@ -19,15 +19,12 @@ interface Props {
 
 const BookingLinkShare = ({ serviceSlug, serviceTitle, shareType = "service", photoUrl, shareVersion }: Props) => {
   const [copied, setCopied] = useState(false);
-  const [runtimeVersion, setRuntimeVersion] = useState(() => String(Date.now()));
   const publicLink = buildAppUrl(`/book/${encodeURIComponent(serviceSlug)}`);
 
   const refreshVersion = () => {
     const seed = shareVersion ? Date.parse(shareVersion) : NaN;
     const base = Number.isNaN(seed) ? Date.now() : Math.max(seed, Date.now());
-    const next = String(base);
-    setRuntimeVersion(next);
-    return next;
+    return String(base);
   };
 
   const copy = async () => {
