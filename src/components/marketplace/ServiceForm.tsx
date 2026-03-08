@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
+import { UserCircle } from "lucide-react";
 
 export interface ServiceFormData {
   title: string;
@@ -27,6 +28,10 @@ export interface ServiceFormData {
   active: boolean;
   photo_urls?: string[];
   requires_id_document?: boolean;
+  source_contact_name?: string;
+  source_contact_phone?: string;
+  source_contact_email?: string;
+  source_contact_notes?: string;
 }
 
 const CURRENCIES = [
@@ -68,6 +73,10 @@ const emptyService: ServiceFormData = {
   active: true,
   photo_urls: [],
   requires_id_document: false,
+  source_contact_name: "",
+  source_contact_phone: "",
+  source_contact_email: "",
+  source_contact_notes: "",
 };
 
 export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId }: Props) {
@@ -183,6 +192,35 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
             <div>
               <Label>Location</Label>
               <Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Address or area" />
+            </div>
+          </div>
+
+          {/* Source Contact - for intermediaries */}
+          <div className="space-y-3 border-t border-border pt-4">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-4 w-4 text-accent" />
+              <p className="text-sm font-medium text-foreground">Source / Provider Contact</p>
+            </div>
+            <p className="text-xs text-muted-foreground">Contact details of the actual service provider (visible on service card)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Contact Name</Label>
+                <Input value={form.source_contact_name || ""} onChange={(e) => update("source_contact_name", e.target.value)} placeholder="Provider name" />
+              </div>
+              <div>
+                <Label>Contact Phone</Label>
+                <Input value={form.source_contact_phone || ""} onChange={(e) => update("source_contact_phone", e.target.value)} placeholder="+33..." />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Contact Email</Label>
+                <Input type="email" value={form.source_contact_email || ""} onChange={(e) => update("source_contact_email", e.target.value)} placeholder="provider@email.com" />
+              </div>
+              <div>
+                <Label>Notes (internal)</Label>
+                <Input value={form.source_contact_notes || ""} onChange={(e) => update("source_contact_notes", e.target.value)} placeholder="Internal notes..." />
+              </div>
             </div>
           </div>
 
