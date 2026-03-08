@@ -304,6 +304,15 @@ const PublicServiceBooking = () => {
                     <label className="text-xs text-muted-foreground">Notes</label>
                     <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                   </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Quantity / Days</label>
+                    <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, Number(e.target.value)))} />
+                    {quantity > 1 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {quantity} × {service.price} {service.currency || "EUR"} = <strong>{(service.price * quantity).toLocaleString()} {service.currency || "EUR"}</strong>
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
                     <Button onClick={() => setStep(3)} disabled={!form.name || !form.email} className="flex-1">Continue</Button>
