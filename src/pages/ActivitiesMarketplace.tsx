@@ -589,13 +589,14 @@ const ActivitiesMarketplace = () => {
             </TabsContent>
           )}
 
-          {/* Bookings Tab */}
+          {/* Bookings Tab — Full Booking Request Center */}
           {myProvider && (
             <TabsContent value="bookings" className="mt-4">
-              <BookingsManager
+              <BookingRequestCenter
                 bookings={myBookings}
                 services={myServices}
                 provider={myProvider}
+                orgId={orgId || ""}
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
