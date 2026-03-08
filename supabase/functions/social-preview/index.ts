@@ -76,8 +76,8 @@ function htmlPage(meta: {
   ${meta.jsonLd ? `<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>` : ""}
 
   <!-- Redirect fallback -->
+  <meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/>
   <script>window.location.replace(${JSON.stringify(safeRedirectUrl)});</script>
-  <noscript><meta http-equiv="refresh" content="0;url=${safeRedirectUrl}"/></noscript>
 </head>
 <body>
   <p>Redirecting to <a href="${safeRedirectUrl}">${safeTitle}</a>...</p>
