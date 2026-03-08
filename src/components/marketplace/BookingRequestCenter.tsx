@@ -7,7 +7,7 @@ import { Clock, Search, Filter } from "lucide-react";
 import BookingStatusBadge, { BOOKING_STATUSES, type BookingStatus } from "./BookingStatusBadge";
 import BookingDetailDrawer from "./BookingDetailDrawer";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
-import { syncToCommunicationCenter } from "./BookingsManager";
+import { syncToCommunicationCenter, uploadBookingInvoiceAttachment } from "./BookingsManager";
 import { format } from "date-fns";
 
 interface Props {
