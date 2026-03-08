@@ -1,18 +1,28 @@
+import { Suspense, lazy } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import DashboardPreview from "@/components/landing/DashboardPreview";
 import RoleCards from "@/components/landing/RoleCards";
 import Features from "@/components/landing/Features";
-import ConciergeSection from "@/components/landing/ConciergeSection";
-import WorldMapSection from "@/components/landing/WorldMapSection";
 import AdvantagesSection from "@/components/landing/AdvantagesSection";
-import AISection from "@/components/landing/AISection";
 import StatsSection from "@/components/landing/StatsSection";
 import Pricing from "@/components/landing/Pricing";
 import LegalDisclaimer from "@/components/landing/LegalDisclaimer";
 import Newsletter from "@/components/landing/Newsletter";
 import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
+import { Loader2 } from "lucide-react";
+
+// Lazy-load heavy sections (Three.js globe, framer-motion heavy)
+const ConciergeSection = lazy(() => import("@/components/landing/ConciergeSection"));
+const WorldMapSection = lazy(() => import("@/components/landing/WorldMapSection"));
+const AISection = lazy(() => import("@/components/landing/AISection"));
+
+const SectionLoader = () => (
+  <div className="flex items-center justify-center py-16">
+    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+  </div>
+);
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -70,10 +80,16 @@ const Index = () => {
       <DashboardPreview />
       <RoleCards />
       <Features />
-      <ConciergeSection />
-      <WorldMapSection />
+      <Suspense fallback={<SectionLoader />}>
+        <ConciergeSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <WorldMapSection />
+      </Suspense>
       <AdvantagesSection />
-      <AISection />
+      <Suspense fallback={<SectionLoader />}>
+        <AISection />
+      </Suspense>
       <StatsSection />
       <Pricing />
       <LegalDisclaimer />

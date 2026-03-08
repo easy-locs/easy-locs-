@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
+import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 
 export interface ServiceFormData {
   title: string;
@@ -24,6 +25,7 @@ export interface ServiceFormData {
   payment_paypal_email: string;
   payment_custom_url: string;
   active: boolean;
+  photo_urls?: string[];
 }
 
 interface Props {
@@ -34,6 +36,7 @@ interface Props {
   isPending?: boolean;
   providerCountry?: string;
   providerCity?: string;
+  orgId?: string;
 }
 
 const emptyService: ServiceFormData = {
@@ -52,15 +55,27 @@ const emptyService: ServiceFormData = {
   payment_paypal_email: "",
   payment_custom_url: "",
   active: true,
+  photo_urls: [],
 };
 
-export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity }: Props) {
+export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId }: Props) {
   const [form, setForm] = useState<ServiceFormData>({
     ...emptyService,
     country: providerCountry || "",
     city: providerCity || "",
     ...initialData,
   });
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        ...emptyService,
+        country: providerCountry || "",
+        city: providerCity || "",
+        ...initialData,
+      });
+    }
+  }, [open, initialData, providerCountry, providerCity]);
 
   const update = <K extends keyof ServiceFormData>(k: K, v: ServiceFormData[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -81,6 +96,15 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
             <Label>Description</Label>
             <Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} />
           </div>
+
+          {/* Photos */}
+          {orgId && (
+            <ServicePhotoManager
+              photos={form.photo_urls || []}
+              onChange={(urls) => update("photo_urls", urls)}
+              orgId={orgId}
+            />
+          )}
 
           <div>
             <Label>Category</Label>

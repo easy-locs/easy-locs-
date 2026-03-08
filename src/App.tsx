@@ -68,7 +68,7 @@ const Install = lazy(() => import("./pages/Install"));
 const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
-const ServiceMarketplace = lazy(() => import("./pages/ActivitiesMarketplace"));
+
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
@@ -208,7 +208,7 @@ const App = () => (
               <Route path="/dashboard/channel-manager" element={<ProtectedRoute><ChannelManager /></ProtectedRoute>} />
               <Route path="/dashboard/accounting" element={<ProtectedRoute><CountryGuard><Accounting /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
-              <Route path="/dashboard/marketplace" element={<ProtectedRoute><ServiceMarketplace /></ProtectedRoute>} />
+              <Route path="/dashboard/marketplace" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developers" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
