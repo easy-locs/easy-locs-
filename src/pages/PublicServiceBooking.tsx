@@ -81,7 +81,7 @@ const PublicServiceBooking = () => {
     if (searchParams.get("payment") === "success") setSuccess(true);
   }, [searchParams]);
 
-  const canonicalUrl = buildAppUrl(slug ? `/book/${slug}` : "/book");
+  const canonicalUrl = buildAppUrl(slug ? `/book/${encodeURIComponent(slug)}` : "/book");
 
   if (loading) return (
     <>
