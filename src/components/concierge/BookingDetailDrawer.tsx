@@ -15,9 +15,19 @@ import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
   CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
-  DollarSign, Send, Copy, ExternalLink
+  DollarSign, Send, Copy, ExternalLink, MessageCircle
 } from "lucide-react";
 import { format } from "date-fns";
+
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
 
 interface BookingDetailDrawerProps {
   booking: any;
@@ -157,6 +167,17 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <span className="text-foreground">{booking.guest_phone}</span>
                 </div>
               )}
+              {/* Contact buttons */}
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`mailto:${booking.guest_email}?subject=Booking ${service?.title || ""}`, "_blank")}>
+                  <Mail className="h-3 w-3 mr-1" /> Email
+                </Button>
+                {booking.guest_phone && (
+                  <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`https://wa.me/${booking.guest_phone.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent(`Hello ${booking.guest_name}, regarding your booking for ${service?.title || "our service"}...`)}`, "_blank")}>
+                    <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
+                  </Button>
+                )}
+              </div>
             </div>
           </section>
 
@@ -195,12 +216,12 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Amount</span>
-                <span className="text-lg font-bold text-foreground">{booking.total_price} {booking.currency}</span>
+                <span className="text-lg font-bold text-foreground">{fmtPrice(booking.total_price, booking.currency)}</span>
               </div>
               {booking.commission_amount > 0 && (
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Commission</span>
-                  <span className="text-foreground">{booking.commission_amount} {booking.currency}</span>
+                  <span className="text-foreground">{fmtPrice(booking.commission_amount, booking.currency)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between text-xs">

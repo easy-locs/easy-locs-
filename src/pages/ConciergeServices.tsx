@@ -78,6 +78,16 @@ const emptyForm: ServiceForm = {
 const generateSlug = (title: string) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
 
+/** Format price using Intl based on currency code */
+const fmtPrice = (amount: number, currency: string = "EUR") => {
+  const cur = (currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${cur}`;
+  }
+};
+
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
   const [services, setServices] = useState<any[]>([]);
@@ -112,6 +122,18 @@ const ConciergeServices = () => {
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Realtime sync for orders
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel('concierge-orders-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'concierge_orders', filter: `org_id=eq.${orgId}` }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, load]);
 
   const save = async () => {
     if (!orgId || !user || !form.title) return;
@@ -247,8 +269,8 @@ const ConciergeServices = () => {
           {[
             { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
-            { icon: DollarSign, label: "Total Revenue", value: `${totalRevenue.toLocaleString()}€`, cls: "text-emerald-500" },
-            { icon: TrendingUp, label: "Commission Earned", value: `${commissionEarned.toLocaleString()}€`, cls: "text-blue-500" },
+            { icon: DollarSign, label: "Total Revenue", value: fmtPrice(totalRevenue, services[0]?.currency || "EUR"), cls: "text-emerald-500" },
+            { icon: TrendingUp, label: "Commission Earned", value: fmtPrice(commissionEarned, services[0]?.currency || "EUR"), cls: "text-blue-500" },
             { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
             { icon: CreditCard, label: "Pending Payments", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
@@ -315,7 +337,7 @@ const ConciergeServices = () => {
                           <h3 className="font-semibold text-foreground text-sm">{s.title}</h3>
                           {s.description && <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>}
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-accent">{s.price} {s.currency || "EUR"}</span>
+                            <span className="font-bold text-accent">{fmtPrice(s.price, s.currency)}</span>
                             {s.duration_minutes && <span className="text-muted-foreground"><Clock className="h-3 w-3 inline mr-0.5" />{s.duration_minutes}min</span>}
                           </div>
                           {s.commission_amount > 0 && (
@@ -400,7 +422,7 @@ const ConciergeServices = () => {
                                 {o.service_date || "—"}
                                 {o.service_time && <span className="text-muted-foreground ml-1">{o.service_time}</span>}
                               </td>
-                              <td className="px-3 py-3 font-medium text-foreground">{o.total_price} {o.currency}</td>
+                              <td className="px-3 py-3 font-medium text-foreground">{fmtPrice(o.total_price, o.currency)}</td>
                               <td className="px-3 py-3">
                                 <Badge variant="outline" className={`text-[10px] ${o.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}`}>
                                   {o.payment_status}
@@ -472,8 +494,8 @@ const ConciergeServices = () => {
                           <p className="text-[10px] text-muted-foreground">{svcOrders.length} bookings</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-foreground">{rev.toLocaleString()}€</p>
-                          {comm > 0 && <p className="text-[10px] text-muted-foreground">Commission: {comm.toLocaleString()}€</p>}
+                          <p className="text-sm font-bold text-foreground">{fmtPrice(rev, s.currency)}</p>
+                          {comm > 0 && <p className="text-[10px] text-muted-foreground">Commission: {fmtPrice(comm, s.currency)}</p>}
                         </div>
                       </div>
                     );
@@ -493,7 +515,7 @@ const ConciergeServices = () => {
                           <p className="text-[10px] text-muted-foreground">{o.service_date || "—"}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-foreground">{o.total_price}€</span>
+                          <span className="text-sm font-bold text-foreground">{fmtPrice(o.total_price, o.currency)}</span>
                           <Button size="sm" variant="outline" className="text-[10px] h-6" onClick={() => markPaid(o.id)}>
                             Confirm
                           </Button>
