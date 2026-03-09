@@ -73,7 +73,7 @@ const GuestPortal = () => {
       const [{ data: p }, { data: svc }, { data: act }, { data: orgData }] = await Promise.all([
         supabase.from("properties").select("*").eq("id", bookingData.property_id).maybeSingle(),
         supabase.from("concierge_services_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
-        supabase.from("activities").select("*").eq("org_id", bookingData.org_id).eq("active", true).order("sort_order"),
+        supabase.from("activities_public" as any).select("*").eq("org_id", bookingData.org_id).order("sort_order"),
         supabase.from("orgs").select("name, email, phone, logo_url, brand_name").eq("id", bookingData.org_id).maybeSingle(),
       ]);
       setProperty(p);

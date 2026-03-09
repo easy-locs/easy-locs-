@@ -4017,6 +4017,87 @@ export type Database = {
       }
     }
     Views: {
+      activities_public: {
+        Row: {
+          active: boolean | null
+          badges: string[] | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string | null
+          org_id: string | null
+          photo_url: string | null
+          price: number | null
+          property_id: string | null
+          provider_name: string | null
+          provider_type: string | null
+          sort_order: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          badges?: string[] | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          org_id?: string | null
+          photo_url?: string | null
+          price?: number | null
+          property_id?: string | null
+          provider_name?: string | null
+          provider_type?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          badges?: string[] | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          org_id?: string | null
+          photo_url?: string | null
+          price?: number | null
+          property_id?: string | null
+          provider_name?: string | null
+          provider_type?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concierge_services_public: {
         Row: {
           active: boolean | null
@@ -4025,8 +4106,6 @@ export type Database = {
           booking_type: string | null
           category: string | null
           city: string | null
-          commission_amount: number | null
-          commission_type: string | null
           conditions: string | null
           country: string | null
           created_at: string | null
@@ -4048,7 +4127,6 @@ export type Database = {
           time_slots: Json | null
           title: string | null
           updated_at: string | null
-          user_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -4057,8 +4135,6 @@ export type Database = {
           booking_type?: string | null
           category?: string | null
           city?: string | null
-          commission_amount?: number | null
-          commission_type?: string | null
           conditions?: string | null
           country?: string | null
           created_at?: string | null
@@ -4080,7 +4156,6 @@ export type Database = {
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
-          user_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -4089,8 +4164,6 @@ export type Database = {
           booking_type?: string | null
           category?: string | null
           city?: string | null
-          commission_amount?: number | null
-          commission_type?: string | null
           conditions?: string | null
           country?: string | null
           created_at?: string | null
@@ -4112,7 +4185,6 @@ export type Database = {
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
