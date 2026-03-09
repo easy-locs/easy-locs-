@@ -22,7 +22,7 @@ const FEATURES = [
 ];
 
 const CountrySEOPage = () => {
-  const { country: slug } = useParams<{ country: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const country = getCountryBySlug(slug || "");
 
   if (!country) {
