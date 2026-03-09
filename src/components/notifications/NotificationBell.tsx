@@ -310,17 +310,15 @@ const NotificationBell = () => {
                   const mod = getNotifModule(n);
 
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={n.id}
-                      role="button"
-                      tabIndex={0}
                       aria-label={n.title}
                       onClick={() => handleNotificationClick(n)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNotificationClick(n); } }}
                       className={[
-                        "px-4 py-3 transition-colors cursor-pointer select-none",
+                        "w-full text-left px-4 py-3 transition-colors cursor-pointer select-none",
                         "hover:bg-muted/50 active:bg-muted/70",
-                        "touch-manipulation",
+                        "touch-manipulation border-0 bg-transparent",
                         !n.read ? "bg-accent/5" : "",
                         outdated ? "opacity-60 cursor-default" : "",
                       ].filter(Boolean).join(" ")}
