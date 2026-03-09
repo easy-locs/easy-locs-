@@ -51,51 +51,48 @@ const PublicServiceBooking = () => {
       if (!slug) { if (mounted) setLoading(false); return; }
       const normalizedSlug = decodeURIComponent(slug).trim();
 
-      // 1. Try concierge_services first
+      // 1. Try concierge_services_public first (safe view excludes sensitive fields)
       const { data: exactMatch } = await supabase
-        .from("concierge_services")
+        .from("concierge_services_public" as any)
         .select("*")
         .eq("booking_slug", normalizedSlug)
-        .eq("active", true)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      let resolvedService: any = exactMatch ? { ...exactMatch, _source: "concierge" } : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
 
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
-          .from("concierge_services")
+          .from("concierge_services_public" as any)
           .select("*")
           .ilike("booking_slug", normalizedSlug)
-          .eq("active", true)
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (fallbackMatch) resolvedService = { ...fallbackMatch, _source: "concierge" };
+        if (fallbackMatch) resolvedService = { ...(fallbackMatch as any), _source: "concierge" };
       }
 
       // 2. If not found in concierge, try marketplace_services
       if (!resolvedService) {
         const { data: mpExact } = await supabase
-          .from("marketplace_services")
+          .from("marketplace_services_public" as any)
           .select("*")
           .eq("booking_slug", normalizedSlug)
-          .eq("active", true)
           .limit(1)
           .maybeSingle();
 
         if (mpExact) {
-          resolvedService = { ...mpExact, _source: "marketplace" };
+          resolvedService = { ...(mpExact as any), _source: "marketplace" };
         } else {
           const { data: mpFallback } = await supabase
-            .from("marketplace_services")
+            .from("marketplace_services_public" as any)
             .select("*")
             .ilike("booking_slug", normalizedSlug)
-            .eq("active", true)
             .limit(1)
             .maybeSingle();
-          if (mpFallback) resolvedService = { ...mpFallback, _source: "marketplace" };
+          if (mpFallback) resolvedService = { ...(mpFallback as any), _source: "marketplace" };
         }
       }
 

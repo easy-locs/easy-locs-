@@ -641,6 +641,13 @@ export type Database = {
             referencedRelation: "concierge_services"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "concierge_orders_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "concierge_services_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       concierge_services: {
@@ -1708,6 +1715,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "marketplace_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4003,7 +4017,219 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      concierge_services_public: {
+        Row: {
+          active: boolean | null
+          blocked_dates: Json | null
+          booking_slug: string | null
+          booking_type: string | null
+          category: string | null
+          city: string | null
+          commission_amount: number | null
+          commission_type: string | null
+          conditions: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string | null
+          location: string | null
+          max_capacity: number | null
+          org_id: string | null
+          payment_methods: Json | null
+          photo_url: string | null
+          photo_urls: Json | null
+          price: number | null
+          property_id: string | null
+          provider_name: string | null
+          requires_id_document: boolean | null
+          sort_order: number | null
+          time_slots: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          booking_type?: string | null
+          category?: string | null
+          city?: string | null
+          commission_amount?: number | null
+          commission_type?: string | null
+          conditions?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          location?: string | null
+          max_capacity?: number | null
+          org_id?: string | null
+          payment_methods?: Json | null
+          photo_url?: string | null
+          photo_urls?: Json | null
+          price?: number | null
+          property_id?: string | null
+          provider_name?: string | null
+          requires_id_document?: boolean | null
+          sort_order?: number | null
+          time_slots?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          booking_type?: string | null
+          category?: string | null
+          city?: string | null
+          commission_amount?: number | null
+          commission_type?: string | null
+          conditions?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          location?: string | null
+          max_capacity?: number | null
+          org_id?: string | null
+          payment_methods?: Json | null
+          photo_url?: string | null
+          photo_urls?: Json | null
+          price?: number | null
+          property_id?: string | null
+          provider_name?: string | null
+          requires_id_document?: boolean | null
+          sort_order?: number | null
+          time_slots?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concierge_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_services_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_services_public: {
+        Row: {
+          active: boolean | null
+          badges: string[] | null
+          blocked_dates: Json | null
+          booking_slug: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string | null
+          location: string | null
+          max_capacity: number | null
+          org_id: string | null
+          photo_urls: Json | null
+          price: number | null
+          price_type: string | null
+          provider_id: string | null
+          requires_id_document: boolean | null
+          sort_order: number | null
+          time_slots: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          badges?: string[] | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          location?: string | null
+          max_capacity?: number | null
+          org_id?: string | null
+          photo_urls?: Json | null
+          price?: number | null
+          price_type?: string | null
+          provider_id?: string | null
+          requires_id_document?: boolean | null
+          sort_order?: number | null
+          time_slots?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          badges?: string[] | null
+          blocked_dates?: Json | null
+          booking_slug?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string | null
+          location?: string | null
+          max_capacity?: number | null
+          org_id?: string | null
+          photo_urls?: Json | null
+          price?: number | null
+          price_type?: string | null
+          provider_id?: string | null
+          requires_id_document?: boolean | null
+          sort_order?: number | null
+          time_slots?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_collaboration_invitation: {
@@ -4037,6 +4263,33 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+        }[]
+      }
+      get_public_marketplace_services: {
+        Args: { _category?: string; _city?: string; _country?: string }
+        Returns: {
+          active: boolean
+          badges: string[]
+          blocked_dates: Json
+          booking_slug: string
+          category: string
+          city: string
+          country: string
+          currency: string
+          description: string
+          duration_minutes: number
+          id: string
+          location: string
+          max_capacity: number
+          org_id: string
+          photo_urls: Json
+          price: number
+          price_type: string
+          provider_id: string
+          requires_id_document: boolean
+          sort_order: number
+          time_slots: Json
+          title: string
         }[]
       }
       get_public_service_availability: {
