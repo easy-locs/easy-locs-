@@ -50,6 +50,16 @@ const DEFAULT_SLOTS: TimeSlot[] = [
   { start: "19:00", end: "20:00" },
 ];
 
+/** Deduplicate time slots by start time to prevent visual duplication */
+function deduplicateSlots(slots: TimeSlot[]): TimeSlot[] {
+  const seen = new Set<string>();
+  return slots.filter(s => {
+    if (seen.has(s.start)) return false;
+    seen.add(s.start);
+    return true;
+  });
+}
+
 /** Statuses that occupy a slot */
 const OCCUPYING_STATUSES = new Set(["pending", "awaiting_payment", "paid", "confirmed", "in_progress", "completed"]);
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
