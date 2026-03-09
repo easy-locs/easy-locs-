@@ -863,22 +863,22 @@ ${serviceLabel}${priceLabel}
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-8rem)] flex flex-col">
-        {/* Stats bar */}
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
+      <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
+        {/* Stats bar — compact on mobile */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground">Communication Center</h1>
-            <p className="text-sm text-muted-foreground">Unified inbox — Tenants, Bookings, Services</p>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Communication Center</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">Unified inbox — Tenants, Bookings, Services</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
               { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-primary" },
               { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500" },
               { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive" },
               { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500" },
             ].map(s => (
-              <div key={s.label} className="flex items-center gap-1.5 px-3 py-1.5 bg-card rounded-lg border border-border/50 text-xs">
-                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
+              <div key={s.label} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-card rounded-lg border border-border/50 text-xs">
+                <s.icon className={`h-3 sm:h-3.5 w-3 sm:w-3.5 ${s.color}`} />
                 <span className="font-semibold text-foreground">{s.value}</span>
                 <span className="text-muted-foreground hidden sm:inline">{s.label}</span>
               </div>
