@@ -68,6 +68,7 @@ interface Message {
   booking_type?: string;
   contact_name?: string;
   contact_email?: string;
+  sender_locale?: string;
 }
 
 const MESSAGE_CATEGORIES = [
