@@ -56,6 +56,8 @@ interface Message {
   tenant_id: string | null;
   content: string;
   translated_content: string | null;
+  translated_locale: string | null;
+  language_detected: string | null;
   category: string;
   read: boolean;
   created_at: string;
