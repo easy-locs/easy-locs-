@@ -211,14 +211,18 @@ const NotificationBell = () => {
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   /** Core click handler — each notification resolves its own unique target */
-  const handleNotificationClick = useCallback(async (n: any) => {
+  const handleNotificationClick = useCallback((e: React.MouseEvent, n: any) => {
+    // Stop propagation so the backdrop overlay doesn't intercept
+    e.stopPropagation();
+    e.preventDefault();
+
     const outdated = n.metadata_json?.outdated === true;
     if (outdated) return;
 
     // Resolve the target from THIS notification's own metadata — fully isolated
     const notifId = String(n.id);
     const target = resolveNotificationTarget(n, activeRole);
-    console.log("[notif] click:", notifId, "target:", target);
+    console.log("[notif] click:", notifId, "target:", target, "title:", n.title);
 
     // 1. Mark as resolved (removes from active list)
     resolveNotification(notifId);
@@ -226,21 +230,22 @@ const NotificationBell = () => {
     // 2. Close dropdown
     setOpen(false);
 
-    // 3. Auto-switch role if needed
+    // 3. Auto-switch role if needed then navigate
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
-    if (hasDualRole) {
-      if (isTenantLink && activeRole !== "tenant") {
-        switchRole("tenant");
-        await wait(250);
-      } else if (isLandlordLink && activeRole !== "landlord") {
-        switchRole("landlord");
-        await wait(250);
-      }
-    }
+    const needsSwitch = hasDualRole && (
+      (isTenantLink && activeRole !== "tenant") ||
+      (isLandlordLink && activeRole !== "landlord")
+    );
 
-    // 4. Navigate to this notification's exact target
-    navigate(target, { replace: false });
+    if (needsSwitch) {
+      const newRole = isTenantLink ? "tenant" : "landlord";
+      switchRole(newRole);
+      setTimeout(() => navigate(target, { replace: false }), 300);
+    } else {
+      // Navigate synchronously — no async/await to avoid stale closures
+      setTimeout(() => navigate(target, { replace: false }), 50);
+    }
   }, [activeRole, hasDualRole, switchRole, navigate, resolveNotification]);
 
   const typeIcon: Record<string, string> = {
