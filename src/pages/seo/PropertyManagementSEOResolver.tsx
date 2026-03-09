@@ -15,16 +15,16 @@ interface Props {
 const PropertyManagementSEOResolver = ({ slugOverride }: Props) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug;
-  if (!slug) return <CountrySEOPage />;
+  if (!slug) return <CountrySEOPage slugOverride="" />;
 
   // Try country first
-  if (getCountryBySlug(slug)) return <CountrySEOPage />;
+  if (getCountryBySlug(slug)) return <CountrySEOPage slugOverride={slug} />;
 
   // Try city
   if (getCityBySlug(slug)) return <CitySEOPage citySlug={slug} />;
 
   // Fallback — treat as country (will show fallback UI)
-  return <CountrySEOPage />;
+  return <CountrySEOPage slugOverride={slug} />;
 };
 
 export default PropertyManagementSEOResolver;
