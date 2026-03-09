@@ -558,10 +558,55 @@ const ChannelManager = () => {
 
           {/* ─── Connections Tab ─── */}
           <TabsContent value="connections" className="mt-4">
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Quick-connect guides */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card className="border-[hsl(350,80%,55%)]/30 bg-[hsl(350,80%,55%)]/5">
+                  <CardContent className="pt-4 pb-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🏠</span>
+                      <div>
+                        <p className="font-semibold text-foreground">Airbnb</p>
+                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                      </div>
+                    </div>
+                    <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
+                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
+                      <p>1. Ouvrez Airbnb → <strong>Annonce</strong> → <strong>Tarification et disponibilité</strong></p>
+                      <p>2. Section <strong>"Exporter le calendrier"</strong> → Copiez l'URL iCal</p>
+                      <p>3. Collez-la dans le formulaire <strong>"Ajouter une connexion"</strong></p>
+                    </div>
+                    <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "airbnb" })); setAddOpen(true); }}>
+                      <Plus className="h-4 w-4 mr-1" />Connecter Airbnb
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="border-[hsl(220,80%,45%)]/30 bg-[hsl(220,80%,45%)]/5">
+                  <CardContent className="pt-4 pb-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🅱️</span>
+                      <div>
+                        <p className="font-semibold text-foreground">Booking.com</p>
+                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                      </div>
+                    </div>
+                    <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
+                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
+                      <p>1. Ouvrez l'Extranet Booking.com → <strong>Calendrier</strong></p>
+                      <p>2. Cliquez sur <strong>"Synchroniser les calendriers"</strong></p>
+                      <p>3. Copiez le lien iCal et collez-le ci-dessous</p>
+                    </div>
+                    <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "booking" })); setAddOpen(true); }}>
+                      <Plus className="h-4 w-4 mr-1" />Connecter Booking.com
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Existing connections */}
               {connections.length === 0 && (
-                <Card><CardContent className="py-8 text-center text-muted-foreground">
-                  Aucune connexion OTA. Cliquez "Ajouter une connexion" pour synchroniser Airbnb, Booking.com, etc.
+                <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">
+                  Aucune connexion active. Utilisez les guides ci-dessus pour synchroniser vos calendriers Airbnb et Booking.com.
                 </CardContent></Card>
               )}
               {connections.map(conn => {
