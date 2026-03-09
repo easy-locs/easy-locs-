@@ -1049,7 +1049,7 @@ const SeasonalRentals = () => {
           {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
-                <div key={b.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group">
+                <div key={b.id} id={`booking-${b.id}`} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group transition-all">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground">{b.guest_name}</p>
                     <p className="text-xs text-muted-foreground">{propName(b.property_id)} · {b.check_in} → {b.check_out}</p>
