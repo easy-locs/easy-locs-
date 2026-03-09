@@ -143,7 +143,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               {!isRangeMode && (
                 <div>
                   <Label>Qty</Label>
-                  <Input type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 1 : Number(e.target.value))} />
+                  <Input type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
                 </div>
               )}
             </div>

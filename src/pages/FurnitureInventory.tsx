@@ -157,7 +157,7 @@ const FurnitureInventory = () => {
       }
     }
     toast({ title: t("page.furniture.added") });
-    setForm(f => ({ ...f, item_name: "", quantity: 1, notes: "" }));
+    setForm(f => ({ ...f, item_name: "", quantity: 0, notes: "" }));
     setPhotoFile(null);
     setPhotoPreview(null);
     setShowSuggestions(false);
