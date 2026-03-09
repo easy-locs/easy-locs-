@@ -166,6 +166,10 @@ const App = () => (
               <Route path="/property-management-:country" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
+              <Route path="/concierge-services" element={<ConciergeServicesPage />} />
+              <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
+              <Route path="/activities" element={<ActivitiesPage />} />
+              <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
