@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
+    sitemapPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {
