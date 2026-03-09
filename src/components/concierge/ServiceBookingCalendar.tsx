@@ -3,7 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isBefore, startOfDay, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
+import { format, isBefore, startOfDay, addDays, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
@@ -21,19 +21,41 @@ interface BookedSlot {
   status: string;
 }
 
+/** Activity-specific booking rules passed from the service record */
+export interface ActivityBookingRules {
+  /** Slot interval in minutes (e.g. 30, 60) — used to generate slots if none provided */
+  slotInterval?: number;
+  /** Duration per booking in minutes */
+  durationMinutes?: number;
+  /** Max capacity per slot/day */
+  maxCapacity?: number | null;
+  /** Minimum notice in hours before booking */
+  minNoticeHours?: number;
+  /** Maximum days in advance for booking */
+  maxAdvanceDays?: number;
+  /** Days of week available (0=Sun, 1=Mon … 6=Sat) */
+  availableDays?: number[];
+  /** Opening hour (e.g. 8) */
+  openHour?: number;
+  /** Closing hour (e.g. 20) */
+  closeHour?: number;
+  /** Whether this is a daily (range) or hourly (slot) booking */
+  mode?: "hourly" | "daily";
+}
+
 interface Props {
   serviceId: string;
   timeSlots: TimeSlot[];
   blockedDates: string[];
   maxCapacity?: number | null;
   onSelect: (date: Date, time: string) => void;
-  /** For range mode: callback with start + end dates */
   onSelectRange?: (from: Date, to: Date) => void;
   selectedDate?: Date;
   selectedTime?: string;
-  /** Enable date-range selection (for rentals: cars, nights) */
   rangeMode?: boolean;
   selectedRange?: { from: Date; to: Date } | null;
+  /** Activity-specific rules for dynamic calendar behavior */
+  rules?: ActivityBookingRules;
 }
 
 const DEFAULT_SLOTS: TimeSlot[] = [
@@ -50,7 +72,27 @@ const DEFAULT_SLOTS: TimeSlot[] = [
   { start: "19:00", end: "20:00" },
 ];
 
-/** Deduplicate time slots by start time to prevent visual duplication */
+/** Generate time slots from rules (interval + open/close hours) */
+function generateSlotsFromRules(rules: ActivityBookingRules): TimeSlot[] {
+  const interval = rules.slotInterval || 60;
+  const duration = rules.durationMinutes || interval;
+  const openHour = rules.openHour ?? 8;
+  const closeHour = rules.closeHour ?? 20;
+  const slots: TimeSlot[] = [];
+
+  for (let minutes = openHour * 60; minutes + duration <= closeHour * 60; minutes += interval) {
+    const startH = String(Math.floor(minutes / 60)).padStart(2, "0");
+    const startM = String(minutes % 60).padStart(2, "0");
+    const endMin = minutes + duration;
+    const endH = String(Math.floor(endMin / 60)).padStart(2, "0");
+    const endM = String(endMin % 60).padStart(2, "0");
+    slots.push({ start: `${startH}:${startM}`, end: `${endH}:${endM}` });
+  }
+
+  return slots;
+}
+
+/** Deduplicate time slots by start time */
 function deduplicateSlots(slots: TimeSlot[]): TimeSlot[] {
   const seen = new Set<string>();
   return slots.filter(s => {
@@ -80,6 +122,7 @@ const ServiceBookingCalendar = ({
   selectedTime,
   rangeMode = false,
   selectedRange,
+  rules,
 }: Props) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
   const [range, setRange] = useState<DateRange | undefined>(
@@ -87,10 +130,46 @@ const ServiceBookingCalendar = ({
   );
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
-  const slots = deduplicateSlots(timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS);
+
+  // Resolve effective capacity from rules or prop
+  const effectiveCapacity = rules?.maxCapacity ?? maxCapacity ?? 1;
+
+  // Resolve slots: from explicit timeSlots, or generated from rules, or defaults
+  const slots = useMemo(() => {
+    if (timeSlots.length > 0) return deduplicateSlots(timeSlots);
+    if (rules?.slotInterval || rules?.openHour !== undefined) {
+      return deduplicateSlots(generateSlotsFromRules(rules));
+    }
+    return deduplicateSlots(DEFAULT_SLOTS);
+  }, [timeSlots, rules]);
+
+  // Compute minimum booking date from minNoticeHours
+  const minDate = useMemo(() => {
+    const now = new Date();
+    if (rules?.minNoticeHours) {
+      return new Date(now.getTime() + rules.minNoticeHours * 3600000);
+    }
+    return startOfDay(now);
+  }, [rules?.minNoticeHours]);
+
+  // Compute maximum booking date from maxAdvanceDays
+  const maxDate = useMemo(() => {
+    if (rules?.maxAdvanceDays) {
+      return addDays(startOfDay(new Date()), rules.maxAdvanceDays);
+    }
+    return undefined;
+  }, [rules?.maxAdvanceDays]);
 
   const blockedSet = useMemo(() => new Set(blockedDates), [blockedDates]);
   const today = startOfDay(new Date());
+
+  // Available days of week
+  const availableDaysSet = useMemo(() => {
+    if (rules?.availableDays && rules.availableDays.length > 0) {
+      return new Set(rules.availableDays);
+    }
+    return null; // all days available
+  }, [rules?.availableDays]);
 
   // ── Load existing bookings ──
   useEffect(() => {
@@ -115,7 +194,6 @@ const ServiceBookingCalendar = ({
 
     loadBookings();
 
-    // Also listen to marketplace_bookings for this service
     const channel = supabase
       .channel(`booking-calendar-${serviceId}`)
       .on(
@@ -142,7 +220,6 @@ const ServiceBookingCalendar = ({
     for (const b of bookedSlots) {
       if (!b.service_date) continue;
 
-      // Range booking: end_time carries the end date (yyyy-MM-dd)
       const isRangeBooking = typeof b.end_time === "string" && DATE_ONLY_PATTERN.test(b.end_time);
 
       if (isRangeBooking) {
@@ -154,7 +231,6 @@ const ServiceBookingCalendar = ({
           });
           for (const day of days) {
             const ds = format(day, "yyyy-MM-dd");
-            // One range booking occupies one unit per day (quantity in range mode is rental days)
             countByDate[ds] = (countByDate[ds] || 0) + 1;
           }
         } catch {
@@ -172,7 +248,7 @@ const ServiceBookingCalendar = ({
       }
     }
 
-    const capacity = maxCapacity || 1;
+    const capacity = effectiveCapacity;
     const fullyBooked = new Set<string>();
 
     for (const [dateStr, count] of Object.entries(countByDate)) {
@@ -190,15 +266,23 @@ const ServiceBookingCalendar = ({
       bookingCountByDate: countByDate,
       bookedRanges: ranges,
     };
-  }, [bookedSlots, maxCapacity, slots]);
+  }, [bookedSlots, effectiveCapacity, slots]);
 
   const isDateBlocked = (d: Date) => {
     const dateStr = format(d, "yyyy-MM-dd");
-    return (
-      isBefore(d, today) ||
-      blockedSet.has(dateStr) ||
-      fullyBookedDates.has(dateStr)
-    );
+    // Past dates
+    if (isBefore(d, today)) return true;
+    // Before minimum notice
+    if (isBefore(d, startOfDay(minDate))) return true;
+    // After max advance
+    if (maxDate && isBefore(maxDate, d)) return true;
+    // Blocked dates
+    if (blockedSet.has(dateStr)) return true;
+    // Fully booked
+    if (fullyBookedDates.has(dateStr)) return true;
+    // Day of week not available
+    if (availableDaysSet && !availableDaysSet.has(d.getDay())) return true;
+    return false;
   };
 
   // ── Range mode ──
@@ -230,10 +314,12 @@ const ServiceBookingCalendar = ({
                 const ds = format(d, "yyyy-MM-dd");
                 return !fullyBookedDates.has(ds) && (bookingCountByDate[ds] || 0) > 0;
               },
+              unavailableDay: (d) => availableDaysSet ? !availableDaysSet.has(d.getDay()) : false,
             }}
             modifiersClassNames={{
               booked: "bg-destructive/20 text-destructive line-through",
               partial: "bg-warning/15 text-warning",
+              unavailableDay: "opacity-30",
             }}
           />
         </div>
@@ -275,11 +361,11 @@ const ServiceBookingCalendar = ({
     );
   }
 
-  // ── Single date mode (existing) ──
+  // ── Single date mode ──
   const selectedDateStr = date ? format(date, "yyyy-MM-dd") : "";
   const bookedTimesForDate = bookedTimesByDate[selectedDateStr] || new Set<string>();
   const dateBookingCount = bookingCountByDate[selectedDateStr] || 0;
-  const remainingCapacity = (maxCapacity || 1) - dateBookingCount;
+  const remainingCapacity = effectiveCapacity - dateBookingCount;
 
   return (
     <div className="space-y-4">
@@ -301,10 +387,12 @@ const ServiceBookingCalendar = ({
               const ds = format(d, "yyyy-MM-dd");
               return !fullyBookedDates.has(ds) && (bookingCountByDate[ds] || 0) > 0;
             },
+            unavailableDay: (d) => availableDaysSet ? !availableDaysSet.has(d.getDay()) : false,
           }}
           modifiersClassNames={{
             booked: "bg-destructive/20 text-destructive line-through",
             partial: "bg-warning/15 text-warning",
+            unavailableDay: "opacity-30",
           }}
         />
       </div>
@@ -322,15 +410,29 @@ const ServiceBookingCalendar = ({
             <p className="text-sm font-medium text-foreground">
               Available times — {format(date, "dd/MM/yyyy")}
             </p>
-            {maxCapacity && maxCapacity > 1 && (
+            {effectiveCapacity > 1 && (
               <Badge variant="outline" className="text-[10px]">
                 {remainingCapacity > 0 ? `${remainingCapacity} spots left` : "Fully booked"}
               </Badge>
             )}
           </div>
+
+          {/* Duration badge if specified */}
+          {rules?.durationMinutes && (
+            <Badge variant="secondary" className="text-[10px]">
+              ⏱ {rules.durationMinutes} min per slot
+            </Badge>
+          )}
+
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {slots.map((slot) => {
               const isBooked = bookedTimesForDate.has(slot.start);
+              // Check if slot time is before minimum notice
+              const slotDateTime = date ? new Date(date) : new Date();
+              const [slotH, slotM] = slot.start.split(":").map(Number);
+              slotDateTime.setHours(slotH, slotM, 0, 0);
+              const isTooSoon = isBefore(slotDateTime, minDate);
+
               return (
                 <Button
                   key={slot.start}
@@ -338,10 +440,10 @@ const ServiceBookingCalendar = ({
                   size="sm"
                   className={cn(
                     "text-xs",
-                    isBooked && "opacity-40 line-through cursor-not-allowed"
+                    (isBooked || isTooSoon) && "opacity-40 line-through cursor-not-allowed"
                   )}
-                  disabled={isBooked}
-                  onClick={() => onSelect(date, slot.start)}
+                  disabled={isBooked || isTooSoon}
+                  onClick={() => onSelect(date!, slot.start)}
                 >
                   {slot.start}
                   {isBooked && <span className="ml-1 text-[9px]">✕</span>}

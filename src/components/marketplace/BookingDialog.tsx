@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, Mail, MapPin, Users, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
+import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
 
 interface Props {
@@ -34,9 +34,26 @@ interface Props {
   isPending?: boolean;
 }
 
+/** Derive activity-specific booking rules from the service record */
+function deriveBookingRules(service: any): ActivityBookingRules {
+  if (!service) return {};
+  return {
+    durationMinutes: service.duration_minutes || undefined,
+    maxCapacity: service.max_capacity || undefined,
+    slotInterval: service.slot_interval || undefined,
+    minNoticeHours: service.min_notice_hours || undefined,
+    maxAdvanceDays: service.max_advance_days || undefined,
+    availableDays: Array.isArray(service.available_days) ? service.available_days : undefined,
+    openHour: service.open_hour || undefined,
+    closeHour: service.close_hour || undefined,
+    mode: service.price_type === "daily" ? "daily" : "hourly",
+  };
+}
+
 export default function BookingDialog({ open, onOpenChange, service, provider, onSubmit, isPending }: Props) {
   const config = useMemo(() => getCategoryBookingConfig(service?.category || "other"), [service?.category]);
   const isRange = config.calendarMode === "range";
+  const rules = useMemo(() => deriveBookingRules(service), [service]);
 
   const [form, setForm] = useState({
     booker_name: "",
@@ -129,10 +146,12 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
         {service && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 overscroll-contain">
-            {/* Service info */}
+            {/* Service info — country/timezone derived from service */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{provider?.display_name} — {service.city}, {service.country}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {provider?.display_name} — {service.city}, {service.country}
+              </p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-sm font-bold text-accent">
                   {Number(service.price).toLocaleString()} {service.currency}
@@ -146,7 +165,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             </div>
 
-            {/* Contact info — single column on mobile */}
+            {/* Contact info */}
             <div className="space-y-2">
               <div>
                 <Label className="text-xs">Your Name *</Label>
@@ -192,7 +211,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             )}
 
-            {/* Time slots — stacked on mobile */}
+            {/* Time slots */}
             {config.showTime && (
               <div className={`grid gap-2 ${config.showReturnTime ? "grid-cols-1 sm:grid-cols-2" : ""}`}>
                 <div>
@@ -208,7 +227,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             )}
 
-            {/* Calendar — constrained width */}
+            {/* Calendar — with activity-specific rules */}
             <div className="border border-border rounded-lg p-2 overflow-hidden">
               <p className="text-xs font-medium text-muted-foreground mb-1.5 px-1">
                 {isRange
@@ -227,6 +246,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                   onSelect={handleCalendarSelect}
                   selectedDate={isRange ? (form.date_from ? new Date(form.date_from) : undefined) : (form.service_date ? new Date(form.service_date) : undefined)}
                   selectedTime={form.service_time}
+                  rules={rules}
                 />
               </div>
 
