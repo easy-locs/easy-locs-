@@ -619,7 +619,11 @@ const SeasonalRentals = () => {
                  <button
                   onClick={async () => {
                     await supabase.from("booking_requests").update({ status: "approved" } as any).eq("id", focusedRequest.id);
-                    // Create seasonal_booking for calendar
+                    // Resolve notifications — real action completed
+                    try {
+                      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+                      await resolveNotificationsForTarget("booking_request", focusedRequest.id, user?.id);
+                    } catch (e) { console.error("[resolve-notif]", e); }
                     if (orgId && user) {
                       await supabase.from("seasonal_bookings").insert({
                         org_id: orgId,
