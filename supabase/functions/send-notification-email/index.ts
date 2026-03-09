@@ -235,28 +235,54 @@ function safeUrl(url: string | undefined): string | undefined {
   } catch { return undefined; }
 }
 
-function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: string): string {
+function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: string, locale?: string): string {
   const safeTitle = sanitizeHtml(title);
   const safeBody = sanitizeHtml(body);
+  const footerTexts: Record<string, string> = {
+    fr: "Cet email est envoyé automatiquement par Easy-Locs®. Ne répondez pas à cet email.",
+    en: "This email was sent automatically by Easy-Locs®. Please do not reply.",
+    es: "Este correo fue enviado automáticamente por Easy-Locs®. No responda a este correo.",
+    de: "Diese E-Mail wurde automatisch von Easy-Locs® gesendet. Bitte antworten Sie nicht.",
+    it: "Questa email è stata inviata automaticamente da Easy-Locs®. Non rispondere.",
+    pt: "Este email foi enviado automaticamente pelo Easy-Locs®. Não responda.",
+  };
+  const ctaTexts: Record<string, string> = {
+    fr: "Accéder à mon espace", en: "Go to my dashboard", es: "Acceder a mi espacio",
+    de: "Zum Dashboard", it: "Vai alla dashboard", pt: "Acessar painel",
+  };
+  const lang = locale || "fr";
+  const footer = footerTexts[lang] || footerTexts.fr;
+  const defaultCta = ctaTexts[lang] || ctaTexts.fr;
+
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5}
-.container{max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-.header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:32px 24px;text-align:center}
-.header h1{color:#fff;font-size:20px;margin:0}
-.header .brand{color:#c9a84c;font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:8px}
-.body{padding:32px 24px}
-.body p{color:#333;font-size:15px;line-height:1.6;margin:0 0 16px}
-.cta{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;margin-top:8px}
-.footer{padding:24px;text-align:center;color:#999;font-size:12px;border-top:1px solid #eee}
+<html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;background:#f0ede8;-webkit-font-smoothing:antialiased}
+.wrapper{max-width:600px;margin:0 auto;padding:24px 16px}
+.card{background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:40px 32px 32px;text-align:center}
+.brand{color:#c9a84c;font-size:13px;font-weight:800;letter-spacing:2px;margin-bottom:12px;text-transform:uppercase}
+.header h1{color:#ffffff;font-size:22px;font-weight:700;margin:0;line-height:1.3}
+.body-content{padding:32px 32px 24px}
+.body-content p{color:#2d2d2d;font-size:15px;line-height:1.7;margin:0 0 16px}
+.highlight-box{background:#f8f6f1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0}
+.highlight-box p{margin:0;color:#333;font-size:14px}
+.cta-wrapper{text-align:center;padding:8px 0 16px}
+.cta-btn{display:inline-block;background:linear-gradient(135deg,#c9a84c 0%,#b8963f 100%);color:#1a1a2e;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;font-size:15px;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.footer{padding:24px 32px;text-align:center;border-top:1px solid #eee}
+.footer p{color:#999;font-size:11px;line-height:1.5;margin:0}
+.footer .brand-sm{color:#c9a84c;font-weight:700;font-size:11px}
 </style></head>
-<body><div class="container">
+<body>
+<div class="wrapper"><div class="card">
 <div class="header"><div class="brand">EASY-LOCS®</div><h1>${safeTitle}</h1></div>
-<div class="body"><p>${safeBody}</p>
-${ctaUrl ? `<a href="${ctaUrl}" class="cta">${sanitizeHtml(ctaLabel || "Accéder")}</a>` : ""}
+<div class="body-content">
+<div class="highlight-box"><p>${safeBody}</p></div>
+${ctaUrl ? `<div class="cta-wrapper"><a href="${ctaUrl}" class="cta-btn">${sanitizeHtml(ctaLabel || defaultCta)}</a></div>` : ""}
 </div>
-<div class="footer">Cet email est envoyé automatiquement par Easy-Locs®.<br>Ne répondez pas à cet email.</div>
-</div></body></html>`;
+<div class="footer"><p class="brand-sm">EASY-LOCS®</p><p>${footer}</p></div>
+</div></div>
+</body></html>`;
 }
 
 serve(async (req) => {
