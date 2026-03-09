@@ -22,9 +22,10 @@ const FEATURES = [
   { icon: Shield, title: "Compliance Tools", desc: "Stay informed about local rental regulations and best practices." },
 ];
 
-const CountrySEOPage = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const country = getCountryBySlug(slug || "");
+const CountrySEOPage = ({ slugOverride }: { slugOverride?: string }) => {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = slugOverride || paramSlug || "";
+  const country = getCountryBySlug(slug);
 
   if (!country) {
     return (

@@ -96,7 +96,7 @@ const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServic
 const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
 const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
 // SEO Layer pages
-const PropertyManagementSEOResolver = lazy(() => import("./pages/seo/PropertyManagementSEOResolver"));
+const SEOCatchAll = lazy(() => import("./pages/seo/SEOCatchAll"));
 const LongTermRentalsPage = lazy(() => import("./pages/seo/LongTermRentalsPage"));
 const ServiceCitySEOPage = lazy(() => import("./pages/seo/ServiceCitySEOPage"));
 const ActivityCitySEOPage = lazy(() => import("./pages/seo/ActivityCitySEOPage"));
@@ -173,7 +173,7 @@ const App = () => (
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              <Route path="/property-management-:slug" element={<PropertyManagementSEOResolver />} />
+              {/* property-management-:slug handled by SEOCatchAll on * route */}
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
               <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
@@ -250,7 +250,7 @@ const App = () => (
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
               <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>
         </AuthProvider>
