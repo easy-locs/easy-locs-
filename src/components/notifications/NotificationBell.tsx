@@ -201,12 +201,14 @@ const NotificationBell = () => {
     setAllNotifications((prev) => prev.map((n) => currentIds.includes(n.id) ? { ...n, read: true } : n));
   };
 
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   /** Core click handler — entire row triggers this */
   const handleNotificationClick = useCallback(async (n: any) => {
     const outdated = n.metadata_json?.outdated === true;
     if (outdated) return;
 
-    console.log("[notif] clicked:", n);
+    console.log("[notif] click start:", n);
     console.log("[notif] metadata:", n.metadata_json);
 
     const target = resolveNotificationTarget(n, activeRole);
@@ -219,19 +221,27 @@ const NotificationBell = () => {
     // 2. Close dropdown
     setOpen(false);
 
-    // 3. Auto-switch role if needed
+    // 3. Auto-switch role if needed — wait for state to settle
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
     if (hasDualRole) {
-      if (isTenantLink && activeRole !== "tenant") switchRole("tenant");
-      else if (isLandlordLink && activeRole !== "landlord") switchRole("landlord");
+      if (isTenantLink && activeRole !== "tenant") {
+        console.log("[notif] switching role to tenant");
+        switchRole("tenant");
+        await wait(250);
+        console.log("[notif] role switch done");
+      } else if (isLandlordLink && activeRole !== "landlord") {
+        console.log("[notif] switching role to landlord");
+        switchRole("landlord");
+        await wait(250);
+        console.log("[notif] role switch done");
+      }
     }
 
-    // 4. Navigate with tiny delay for dropdown close
+    // 4. Navigate
     console.log("[notif] navigating to:", target);
-    setTimeout(() => {
-      navigate(target);
-    }, 50);
+    navigate(target);
+    console.log("[notif] navigate called");
   }, [activeRole, hasDualRole, switchRole, navigate]);
 
   const typeIcon: Record<string, string> = {
