@@ -277,7 +277,95 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleBookingPayment(supabase, metadata, session);
   } else if (type === "rent_payment") {
     await handleRentPayment(supabase, metadata, session);
+  } else if (type === "marketplace_booking") {
+    await handleMarketplacePayment(supabase, metadata, session.payment_intent as string || "");
   }
+}
+
+/** Handle marketplace booking payment completion */
+async function handleMarketplacePayment(supabase: any, metadata: Record<string, string>, paymentIntentId: string) {
+  const bookingId = metadata.marketplace_booking_id;
+  if (!bookingId) return;
+
+  logStep("Processing marketplace booking payment", { bookingId });
+
+  // Update the marketplace booking to paid + confirmed
+  const { error: updateError } = await supabase.from("marketplace_bookings").update({
+    status: "confirmed",
+    payment_confirmed: true,
+    payment_confirmed_at: new Date().toISOString(),
+    payment_method: "stripe",
+  }).eq("id", bookingId);
+
+  if (updateError) {
+    logStep("Error updating marketplace booking", { error: updateError.message });
+    return;
+  }
+
+  // Fetch booking details
+  const { data: booking } = await supabase
+    .from("marketplace_bookings")
+    .select("*")
+    .eq("id", bookingId)
+    .single();
+  if (!booking) { logStep("Marketplace booking not found"); return; }
+
+  // Fetch service details
+  const { data: service } = await supabase
+    .from("marketplace_services")
+    .select("title, category, country, currency")
+    .eq("id", booking.service_id)
+    .single();
+
+  // Fetch provider details
+  const { data: provider } = await supabase
+    .from("marketplace_providers")
+    .select("user_id, display_name")
+    .eq("id", booking.provider_id)
+    .single();
+
+  // Notify provider
+  if (provider?.user_id) {
+    await supabase.from("notifications").insert({
+      user_id: provider.user_id,
+      org_id: booking.org_id,
+      type: "info",
+      title: "💰 Marketplace payment received",
+      message: `${booking.booker_name} paid ${booking.total_price} ${booking.currency} for ${service?.title || "service"} (Stripe)`,
+      link: `/dashboard/activities?booking=${bookingId}`,
+    });
+  }
+
+  // Email confirmation to booker
+  const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+  if (booking.booker_email && SENDGRID_API_KEY) {
+    try {
+      await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${SENDGRID_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: booking.booker_email }] }],
+          from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
+          subject: `✅ Payment confirmed — ${service?.title || "Service"}`,
+          content: [{
+            type: "text/html",
+            value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+              <h2 style="color:#1a2744;text-align:center;">✅ Payment Confirmed</h2>
+              <p style="color:#555;">Hello ${booking.booker_name},</p>
+              <p style="color:#555;">Your payment of <strong>${booking.total_price} ${booking.currency}</strong> for "${service?.title || "Service"}" has been confirmed.</p>
+              <p style="color:#555;">Date: ${booking.service_date || booking.date_from || "—"}</p>
+              <p style="color:#aaa;font-size:11px;text-align:center;margin-top:32px;">EASY-LOCS® — Smart Property Management</p>
+            </div>`,
+          }],
+        }),
+      });
+      logStep("Marketplace payment confirmation email sent");
+    } catch (e) {
+      logStep("Email error (non-blocking)", { error: String(e) });
+    }
+  }
+
+  logStep("Marketplace payment fully processed", { bookingId });
 }
 
 async function handleBookingPayment(supabase: any, metadata: Record<string, string>, session: Stripe.Checkout.Session) {

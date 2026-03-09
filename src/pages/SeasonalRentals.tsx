@@ -135,9 +135,9 @@ const SeasonalRentals = () => {
     identity_number: "",
     check_in: "",
     check_out: "",
-    total_price: 0,
-    cleaning_fee: 0,
-    deposit_amount: 0,
+    total_price: 0 as any,
+    cleaning_fee: 0 as any,
+    deposit_amount: 0 as any,
     notes: "",
   });
   const [payingRequest, setPayingRequest] = useState<string | null>(null);

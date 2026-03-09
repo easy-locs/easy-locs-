@@ -194,12 +194,12 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               <div className={config.showReturnTime ? "grid grid-cols-2 gap-3" : ""}>
                 <div>
                   <Label>{isRange ? "Pickup Time" : "Time"}</Label>
-                  <Input type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
+                  <Input type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} placeholder="HH:MM" />
                 </div>
                 {config.showReturnTime && (
                   <div>
                     <Label>Return Time</Label>
-                    <Input type="time" value={form.return_time} onChange={(e) => update("return_time", e.target.value)} />
+                    <Input type="time" value={form.return_time} onChange={(e) => update("return_time", e.target.value)} placeholder="HH:MM" />
                   </div>
                 )}
               </div>
