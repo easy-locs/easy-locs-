@@ -243,6 +243,14 @@ const NotificationBell = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
+                            {(() => {
+                              const mod = getNotifModule(n);
+                              if (mod) {
+                                const cfg = MODULE_LABELS[mod];
+                                return <span className={`text-[9px] font-bold px-1 py-0.5 rounded shrink-0 ${cfg.color}`}>{cfg.label}</span>;
+                              }
+                              return null;
+                            })()}
                             {countryCode && (
                               <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                                 {countryCode}
