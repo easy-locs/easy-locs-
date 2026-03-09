@@ -91,6 +91,10 @@ const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
 const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
 const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
 const PlatformVision = lazy(() => import("./pages/PlatformVision"));
+const ConciergeServicesPage = lazy(() => import("./pages/seo/ConciergeServicesPage"));
+const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServicesPage"));
+const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
+const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
