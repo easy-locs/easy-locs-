@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health">("overview");
 
   useEffect(() => {
     if (!user) return;
