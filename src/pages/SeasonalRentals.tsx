@@ -121,6 +121,7 @@ const SeasonalRentals = () => {
     return new Date();
   });
   const [focusedRequestId] = useState(() => new URLSearchParams(window.location.search).get("focusRequest") || null);
+  const [focusedBookingId] = useState(() => new URLSearchParams(window.location.search).get("booking") || null);
   const initialPropertyId = new URLSearchParams(window.location.search).get("propertyId") || "";
   const [form, setForm] = useState<SeasonalForm>({
     property_id: initialPropertyId,
