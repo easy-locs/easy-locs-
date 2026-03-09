@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle } from "lucide-react";
+import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle, Archive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -56,7 +56,6 @@ const TARGET_ROUTE_MAP: Record<string, { landlord: string; tenant?: string }> = 
   message: { landlord: "/dashboard/communication", tenant: "/tenant/messages" },
 };
 
-/** Module fallback when nothing else resolves */
 const TYPE_FALLBACK: Record<string, string> = {
   payment: "/dashboard/rental",
   message: "/dashboard/communication",
@@ -71,7 +70,6 @@ const TYPE_FALLBACK: Record<string, string> = {
 function resolveNotificationTarget(n: any, activeRole: string): string {
   const meta = n.metadata_json;
 
-  // 1. Explicit target_url — most precise
   if (meta?.target_url) {
     let url = meta.target_url as string;
     if (activeRole === "tenant" && meta.target_type) {
@@ -84,11 +82,9 @@ function resolveNotificationTarget(n: any, activeRole: string): string {
     if (meta.country_code && !url.includes("country=")) {
       url += (url.includes("?") ? "&" : "?") + `country=${meta.country_code}`;
     }
-    console.log("[notif] resolved via target_url:", url);
     return url;
   }
 
-  // 2. Route map + structured IDs
   if (meta?.target_type) {
     const routeInfo = TARGET_ROUTE_MAP[meta.target_type as string];
     if (routeInfo) {
@@ -100,22 +96,13 @@ function resolveNotificationTarget(n: any, activeRole: string): string {
       if (meta.target_id) params.set("record", meta.target_id as string);
       if (meta.booking_id) params.set("booking", meta.booking_id as string);
       const qs = params.toString();
-      const url = qs ? `${basePath}?${qs}` : basePath;
-      console.log("[notif] resolved via target_type map:", url);
-      return url;
+      return qs ? `${basePath}?${qs}` : basePath;
     }
   }
 
-  // 3. Legacy link column
-  if (n.link) {
-    console.log("[notif] resolved via legacy link:", n.link);
-    return n.link;
-  }
+  if (n.link) return n.link;
 
-  // 4. Type fallback
-  const fallback = TYPE_FALLBACK[n.type] || "/dashboard";
-  console.log("[notif] resolved via type fallback:", fallback);
-  return fallback;
+  return TYPE_FALLBACK[n.type] || "/dashboard";
 }
 
 function getHumanActionLabel(n: any, t: (k: string) => string): string | null {
@@ -170,16 +157,20 @@ const NotificationBell = () => {
     if (!user) return;
     const channel = supabase
       .channel("notifications-bell")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchNotifications]);
 
+  // Active notifications = not resolved, filtered by portal
   const notifications = useMemo(() => {
-    return allNotifications.filter((n) => {
-      const portal = getNotifPortal(n);
-      return portal === "both" || portal === activeRole;
-    }).slice(0, 20);
+    return allNotifications
+      .filter((n) => !(n as any).resolved)
+      .filter((n) => {
+        const portal = getNotifPortal(n);
+        return portal === "both" || portal === activeRole;
+      })
+      .slice(0, 20);
   }, [allNotifications, activeRole]);
 
   const otherPortalUnread = useMemo(() => {
@@ -187,7 +178,7 @@ const NotificationBell = () => {
     const otherRole = activeRole === "landlord" ? "tenant" : "landlord";
     return allNotifications.filter((n) => {
       const portal = getNotifPortal(n);
-      return !n.read && portal === otherRole;
+      return !n.read && !(n as any).resolved && portal === otherRole;
     }).length;
   }, [allNotifications, activeRole, hasDualRole]);
 
@@ -201,48 +192,56 @@ const NotificationBell = () => {
     setAllNotifications((prev) => prev.map((n) => currentIds.includes(n.id) ? { ...n, read: true } : n));
   };
 
+  /** Resolve a notification — marks as resolved and removes from active list */
+  const resolveNotification = useCallback(async (notifId: string) => {
+    // Optimistic UI removal
+    setAllNotifications((prev) =>
+      prev.map((n) => String(n.id) === String(notifId)
+        ? { ...n, resolved: true, resolved_at: new Date().toISOString() }
+        : n
+      )
+    );
+    // Persist
+    await supabase
+      .from("notifications")
+      .update({ resolved: true, resolved_at: new Date().toISOString(), read: true } as any)
+      .eq("id", notifId);
+  }, []);
+
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  /** Core click handler — entire row triggers this */
+  /** Core click handler — each notification resolves its own unique target */
   const handleNotificationClick = useCallback(async (n: any) => {
     const outdated = n.metadata_json?.outdated === true;
     if (outdated) return;
 
-    console.log("[notif] click start:", n);
-    console.log("[notif] metadata:", n.metadata_json);
-
+    // Resolve the target from THIS notification's own metadata — fully isolated
+    const notifId = String(n.id);
     const target = resolveNotificationTarget(n, activeRole);
-    console.log("[notif] resolved target:", target);
+    console.log("[notif] click:", notifId, "target:", target);
 
-    // 1. Mark as read (fire & forget)
-    supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
-    setAllNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
+    // 1. Mark as resolved (removes from active list)
+    resolveNotification(notifId);
 
     // 2. Close dropdown
     setOpen(false);
 
-    // 3. Auto-switch role if needed — wait for state to settle
+    // 3. Auto-switch role if needed
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
     if (hasDualRole) {
       if (isTenantLink && activeRole !== "tenant") {
-        console.log("[notif] switching role to tenant");
         switchRole("tenant");
         await wait(250);
-        console.log("[notif] role switch done");
       } else if (isLandlordLink && activeRole !== "landlord") {
-        console.log("[notif] switching role to landlord");
         switchRole("landlord");
         await wait(250);
-        console.log("[notif] role switch done");
       }
     }
 
-    // 4. Navigate
-    console.log("[notif] navigating to:", target);
+    // 4. Navigate to this notification's exact target
     navigate(target, { replace: false });
-    console.log("[notif] navigate called");
-  }, [activeRole, hasDualRole, switchRole, navigate]);
+  }, [activeRole, hasDualRole, switchRole, navigate, resolveNotification]);
 
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
