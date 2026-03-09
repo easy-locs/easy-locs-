@@ -6,13 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { fr, enUS, es, de, it, pt, nl, pl, tr, ja, ko, zhCN, type Locale as DfLocale } from "date-fns/locale";
 import { useI18n } from "@/lib/i18n";
-import { appendCountryToPath } from "@/hooks/useCountryContext";
 
 const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
 };
 
-/** Determine which portal and module a notification belongs to */
 const getNotifPortal = (n: any): "tenant" | "landlord" | "both" => {
   const meta = n.metadata_json;
   const link = meta?.target_url || n.link || "";
@@ -22,12 +20,10 @@ const getNotifPortal = (n: any): "tenant" | "landlord" | "both" => {
   return "both";
 };
 
-/** Determine module from notification metadata */
 const getNotifModule = (n: any): "long_term" | "seasonal" | "marketplace" | null => {
   const meta = n.metadata_json;
   const targetType = meta?.target_type || "";
   const link = meta?.target_url || n.link || "";
-
   if (targetType === "marketplace_booking" || targetType === "marketplace_service" || link.includes("/activities")) return "marketplace";
   if (targetType === "concierge_order" || targetType === "concierge_service" || link.includes("/concierge")) return "marketplace";
   if (targetType === "booking_request" || link.includes("/seasonal")) return "seasonal";
@@ -42,7 +38,6 @@ const MODULE_LABELS: Record<string, { label: string; color: string }> = {
   marketplace: { label: "🎯", color: "bg-emerald-500/10 text-emerald-600" },
 };
 
-/* ── Target type → route mapping ── */
 const TARGET_ROUTE_MAP: Record<string, { landlord: string; tenant?: string }> = {
   marketplace_booking: { landlord: "/dashboard/activities" },
   marketplace_service: { landlord: "/dashboard/activities" },
@@ -61,67 +56,71 @@ const TARGET_ROUTE_MAP: Record<string, { landlord: string; tenant?: string }> = 
   message: { landlord: "/dashboard/communication", tenant: "/tenant/messages" },
 };
 
-/**
- * Resolve the deep-link target for a notification.
- * Priority: 1) metadata_json.target_url  2) route map + IDs  3) n.link  4) type inference
- */
-function resolveNotificationTarget(n: any, activeRole: string): string | null {
+/** Module fallback when nothing else resolves */
+const TYPE_FALLBACK: Record<string, string> = {
+  payment: "/dashboard/rental",
+  message: "/dashboard/communication",
+  document: "/dashboard/documents",
+  dunning: "/dashboard/dunning",
+  rent_call: "/dashboard/rental",
+  request: "/dashboard/interventions",
+  receipt: "/dashboard/receipts",
+  info: "/dashboard",
+};
+
+function resolveNotificationTarget(n: any, activeRole: string): string {
   const meta = n.metadata_json;
 
-  // 1. Explicit target_url from metadata — most precise, set by DB triggers
+  // 1. Explicit target_url — most precise
   if (meta?.target_url) {
-    let url = meta.target_url;
-    // For tenant role, remap landlord URLs to tenant equivalents
+    let url = meta.target_url as string;
     if (activeRole === "tenant" && meta.target_type) {
-      const routeInfo = TARGET_ROUTE_MAP[meta.target_type];
+      const routeInfo = TARGET_ROUTE_MAP[meta.target_type as string];
       if (routeInfo?.tenant) {
-        // Rebuild URL with tenant base but keep query params
         const [, qs] = url.split("?");
         url = qs ? `${routeInfo.tenant}?${qs}` : routeInfo.tenant;
       }
     }
-    // Append country if missing
     if (meta.country_code && !url.includes("country=")) {
-      const sep = url.includes("?") ? "&" : "?";
-      url = `${url}${sep}country=${meta.country_code}`;
+      url += (url.includes("?") ? "&" : "?") + `country=${meta.country_code}`;
     }
+    console.log("[notif] resolved via target_url:", url);
     return url;
   }
 
-  // 2. Route map with structured IDs
+  // 2. Route map + structured IDs
   if (meta?.target_type) {
-    const routeInfo = TARGET_ROUTE_MAP[meta.target_type];
+    const routeInfo = TARGET_ROUTE_MAP[meta.target_type as string];
     if (routeInfo) {
       const basePath = activeRole === "tenant" && routeInfo.tenant
         ? routeInfo.tenant
         : routeInfo.landlord;
-
       const params = new URLSearchParams();
-      if (meta.country_code) params.set("country", meta.country_code);
-      if (meta.target_id) params.set("record", meta.target_id);
-      if (meta.booking_id) params.set("booking", meta.booking_id);
-
+      if (meta.country_code) params.set("country", meta.country_code as string);
+      if (meta.target_id) params.set("record", meta.target_id as string);
+      if (meta.booking_id) params.set("booking", meta.booking_id as string);
       const qs = params.toString();
-      return qs ? `${basePath}?${qs}` : basePath;
+      const url = qs ? `${basePath}?${qs}` : basePath;
+      console.log("[notif] resolved via target_type map:", url);
+      return url;
     }
   }
 
-  // 3. Fallback to stored link column (legacy notifications)
-  if (n.link) return n.link;
-
-  // 4. Infer from notification type
-  if (n.type === "message") {
-    return activeRole === "tenant" ? "/tenant/messages" : "/dashboard/communication";
+  // 3. Legacy link column
+  if (n.link) {
+    console.log("[notif] resolved via legacy link:", n.link);
+    return n.link;
   }
-  return null;
+
+  // 4. Type fallback
+  const fallback = TYPE_FALLBACK[n.type] || "/dashboard";
+  console.log("[notif] resolved via type fallback:", fallback);
+  return fallback;
 }
 
-/** Human-readable action labels (never raw i18n keys) */
 function getHumanActionLabel(n: any, t: (k: string) => string): string | null {
   const meta = n.metadata_json;
-  const targetType = meta?.target_type || "";
-
-  // Specific labels by target type
+  const targetType = (meta?.target_type || "") as string;
   const labelMap: Record<string, string> = {
     marketplace_booking: t("notif.view_booking") || "View booking",
     concierge_order: t("notif.view_booking") || "View booking",
@@ -135,10 +134,7 @@ function getHumanActionLabel(n: any, t: (k: string) => string): string | null {
     dunning: t("notif.view_dunning") || "View reminder",
     message: t("notif.reply") || "Reply",
   };
-
   if (targetType && labelMap[targetType]) return labelMap[targetType];
-
-  // Fallback by notification type
   if (n.type === "message") return labelMap.message;
   if (n.type === "document") return labelMap.document;
   if (n.type === "payment") return labelMap.payment;
@@ -182,8 +178,7 @@ const NotificationBell = () => {
   const notifications = useMemo(() => {
     return allNotifications.filter((n) => {
       const portal = getNotifPortal(n);
-      if (portal === "both") return true;
-      return portal === activeRole;
+      return portal === "both" || portal === activeRole;
     }).slice(0, 20);
   }, [allNotifications, activeRole]);
 
@@ -192,7 +187,7 @@ const NotificationBell = () => {
     const otherRole = activeRole === "landlord" ? "tenant" : "landlord";
     return allNotifications.filter((n) => {
       const portal = getNotifPortal(n);
-      return !n.read && (portal === otherRole);
+      return !n.read && portal === otherRole;
     }).length;
   }, [allNotifications, activeRole, hasDualRole]);
 
@@ -206,41 +201,42 @@ const NotificationBell = () => {
     setAllNotifications((prev) => prev.map((n) => currentIds.includes(n.id) ? { ...n, read: true } : n));
   };
 
-  const markRead = (n: any) => {
-    supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
-    setAllNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
-  };
+  /** Core click handler — entire row triggers this */
+  const handleNotificationClick = useCallback(async (n: any) => {
+    const outdated = n.metadata_json?.outdated === true;
+    if (outdated) return;
 
-  const handleAction = (n: any) => {
-    markRead(n);
-    setOpen(false);
+    console.log("[notif] clicked:", n);
+    console.log("[notif] metadata:", n.metadata_json);
 
     const target = resolveNotificationTarget(n, activeRole);
-    if (!target) return;
+    console.log("[notif] resolved target:", target);
 
-    // Auto-switch role if notification targets the other portal
+    // 1. Mark as read (fire & forget)
+    supabase.from("notifications").update({ read: true }).eq("id", n.id).then(() => {});
+    setAllNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
+
+    // 2. Close dropdown
+    setOpen(false);
+
+    // 3. Auto-switch role if needed
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
     if (hasDualRole) {
       if (isTenantLink && activeRole !== "tenant") switchRole("tenant");
       else if (isLandlordLink && activeRole !== "landlord") switchRole("landlord");
     }
-    navigate(target);
-  };
+
+    // 4. Navigate with tiny delay for dropdown close
+    console.log("[notif] navigating to:", target);
+    setTimeout(() => {
+      navigate(target);
+    }, 50);
+  }, [activeRole, hasDualRole, switchRole, navigate]);
 
   const typeIcon: Record<string, string> = {
     payment: "💳", message: "💬", dunning: "⚠️", rent_call: "🏠",
     document: "📄", request: "📋", info: "ℹ️", receipt: "🧾",
-  };
-
-  /** Show country badge if notification has country context */
-  const getCountryBadge = (n: any): string | null => {
-    return n.metadata_json?.country_code || null;
-  };
-
-  /** Check if notification target is outdated */
-  const isOutdated = (n: any): boolean => {
-    return n.metadata_json?.outdated === true;
   };
 
   return (
@@ -258,6 +254,7 @@ const NotificationBell = () => {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-foreground">{t("notif.title")}</h3>
@@ -270,6 +267,7 @@ const NotificationBell = () => {
               )}
             </div>
 
+            {/* Other portal banner */}
             {hasDualRole && otherPortalUnread > 0 && (
               <button
                 onClick={() => {
@@ -290,33 +288,42 @@ const NotificationBell = () => {
               </button>
             )}
 
+            {/* Notification list */}
             <div className="max-h-80 overflow-y-auto divide-y divide-border">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">{t("notif.empty")}</div>
               ) : (
                 notifications.map((n) => {
                   const label = getHumanActionLabel(n, t);
-                  const countryCode = getCountryBadge(n);
-                  const outdated = isOutdated(n);
+                  const countryCode = n.metadata_json?.country_code || null;
+                  const outdated = n.metadata_json?.outdated === true;
+                  const mod = getNotifModule(n);
+
                   return (
                     <div
                       key={n.id}
-                      className={`px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer ${!n.read ? "bg-accent/5" : ""} ${outdated ? "opacity-60" : ""}`}
-                      onClick={() => !outdated && handleAction(n)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={n.title}
+                      onClick={() => handleNotificationClick(n)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNotificationClick(n); } }}
+                      className={[
+                        "px-4 py-3 transition-colors cursor-pointer select-none",
+                        "hover:bg-muted/50 active:bg-muted/70",
+                        "touch-manipulation",
+                        !n.read ? "bg-accent/5" : "",
+                        outdated ? "opacity-60 cursor-default" : "",
+                      ].filter(Boolean).join(" ")}
+                      style={{ WebkitTapHighlightColor: "transparent" }}
                     >
-                      <div className="flex items-start gap-2.5">
+                      <div className="flex items-start gap-2.5 pointer-events-none">
                         <span className="text-base mt-0.5">{outdated ? "⚪" : (typeIcon[n.type] || "ℹ️")}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
-                            {(() => {
-                              const mod = getNotifModule(n);
-                              if (mod) {
-                                const cfg = MODULE_LABELS[mod];
-                                return <span className={`text-[9px] font-bold px-1 py-0.5 rounded shrink-0 ${cfg.color}`}>{cfg.label}</span>;
-                              }
-                              return null;
-                            })()}
+                            {mod && (
+                              <span className={`text-[9px] font-bold px-1 py-0.5 rounded shrink-0 ${MODULE_LABELS[mod].color}`}>{MODULE_LABELS[mod].label}</span>
+                            )}
                             {countryCode && (
                               <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                                 {countryCode}
@@ -337,10 +344,10 @@ const NotificationBell = () => {
                               {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: dfLocale })}
                             </p>
                             {label && !outdated && (
-                              <button onClick={(e) => { e.stopPropagation(); handleAction(n); }} className="flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
+                              <span className="flex items-center gap-1 text-[11px] font-medium text-accent">
                                 {n.type === "message" ? <MessageCircle className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
                                 {label}
-                              </button>
+                              </span>
                             )}
                           </div>
                         </div>
