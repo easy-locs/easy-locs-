@@ -36,10 +36,10 @@ interface AuthContextType {
 }
 
 const defaultSubscription: SubscriptionState = {
-  subscribed: true,
-  plan: "unlimited",
+  subscribed: false,
+  plan: "free",
   subscriptionEnd: null,
-  loading: false,
+  loading: true,
   isTrial: false,
   trialDaysLeft: null,
 };
