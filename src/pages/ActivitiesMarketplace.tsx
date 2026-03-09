@@ -36,6 +36,18 @@ const ActivitiesMarketplace = () => {
   const [activeTab, setActiveTab] = useState("browse");
   const [revenueOpen, setRevenueOpen] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState("EUR");
+  const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
+
+  // Deep-link: auto-switch to bookings tab from ?booking=ID
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("booking");
+    if (bookingId) {
+      setActiveTab("bookings");
+      setDeepLinkedBookingId(bookingId);
+      console.log("[deep-link] auto-opened marketplace booking:", bookingId);
+    }
+  }, []);
 
 
   // --- My Provider Profile ---

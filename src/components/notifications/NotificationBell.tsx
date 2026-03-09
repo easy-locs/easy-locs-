@@ -240,7 +240,7 @@ const NotificationBell = () => {
 
     // 4. Navigate
     console.log("[notif] navigating to:", target);
-    navigate(target);
+    navigate(target, { replace: false });
     console.log("[notif] navigate called");
   }, [activeRole, hasDualRole, switchRole, navigate]);
 
