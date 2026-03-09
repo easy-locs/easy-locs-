@@ -52,6 +52,10 @@ function buildBookingDeepLink(meta: NotificationMeta): string {
  * Log an action to communication center + notification + email
  * Now accepts rich metadata for deep-linking notifications to exact bookings
  */
+/**
+ * Legacy-compatible sync function — now delegates to the shared communication pipeline.
+ * All callers continue to work unchanged.
+ */
 async function syncToCommunicationCenter(opts: {
   orgId: string;
   userId?: string;
@@ -63,68 +67,29 @@ async function syncToCommunicationCenter(opts: {
   attachmentName?: string;
   meta?: NotificationMeta;
 }) {
-  // 1. Create message thread in communication center
-  try {
-    const content = opts.meta?.booking_id
-      ? `${opts.message}\n\n[Booking: ${opts.meta.booking_id}]`
-      : opts.message;
+  const targetType = (opts.meta?.target_type || "marketplace_booking") as any;
+  const meta = createDeepLinkMeta({
+    targetType,
+    targetId: opts.meta?.booking_id || "",
+    module: "marketplace",
+    countryCode: opts.meta?.country_code,
+    bookingId: opts.meta?.booking_id,
+    orgId: opts.orgId,
+    propertyId: opts.meta?.property_id,
+  });
 
-    await supabase.from("messages").insert({
-      org_id: opts.orgId,
-      sender_id: opts.userId || null,
-      content,
-      category: opts.category || "booking",
-      attachment_url: opts.attachmentUrl || null,
-      read: false,
-    } as any);
-  } catch (e) {
-    console.error("Comms center sync error:", e);
-  }
-
-  // 2. Create in-app notification with deep-link metadata
-  if (opts.userId) {
-    try {
-      const link = opts.meta ? buildBookingDeepLink(opts.meta) : "/dashboard/activities";
-      await supabase.from("notifications").insert({
-        user_id: opts.userId,
-        org_id: opts.orgId,
-        type: opts.meta?.target_type === "payment" ? "payment" : "info",
-        title: opts.subject,
-        message: opts.message.slice(0, 200),
-        link,
-        metadata_json: opts.meta ? (opts.meta as any) : {},
-      } as any);
-    } catch (e) {
-      console.error("Notification sync error:", e);
-    }
-  }
-
-  // 3. Send email to client via edge function with correct parameters
-  if (opts.email) {
-    try {
-      const eventType = opts.meta?.event_type || "marketplace_notification";
-      await supabase.functions.invoke("send-notification-email", {
-        body: {
-          event_type: eventType,
-          recipient_email: opts.email,
-          recipient_name: "",
-          data: {
-            subject: opts.subject,
-            message: opts.message,
-            service_title: opts.meta?.service_title || "",
-            booking_id: opts.meta?.booking_id || "",
-            attachment_url: opts.attachmentUrl || "",
-            attachment_name: opts.attachmentName || "",
-            cta_url: opts.attachmentUrl || "",
-            cta_label: opts.attachmentUrl ? "Télécharger la facture" : "Voir le détail",
-          },
-          locale: "fr",
-        },
-      });
-    } catch (e) {
-      console.error("Email sync error:", e);
-    }
-  }
+  await sendCommunicationEvent({
+    orgId: opts.orgId,
+    senderId: opts.userId,
+    recipientUserId: opts.userId,
+    recipientEmail: opts.email,
+    subject: opts.subject,
+    message: opts.message,
+    category: opts.category || "booking",
+    meta,
+    attachmentUrl: opts.attachmentUrl,
+    attachmentName: opts.attachmentName,
+  });
 }
 
 function sanitizeFileName(input: string): string {
