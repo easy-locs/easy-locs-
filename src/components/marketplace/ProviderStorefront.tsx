@@ -21,12 +21,8 @@ export default function ProviderStorefront() {
     queryKey: ["marketplace_provider_public", providerSlug],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers")
-        .select("*")
-        .eq("slug", providerSlug!)
-        .eq("active", true)
-        .single();
-      return data;
+        .rpc("get_public_marketplace_providers", { p_slug: providerSlug!, p_active_only: true });
+      return (data && data.length > 0) ? data[0] : null;
     },
     enabled: !!providerSlug,
   });
@@ -49,7 +45,7 @@ export default function ProviderStorefront() {
     const { error } = await supabase.from("marketplace_bookings").insert({
       service_id: bookingService.id,
       provider_id: provider.id,
-      org_id: provider.org_id,
+      org_id: bookingService.org_id,
       booker_name: formData.booker_name,
       booker_email: formData.booker_email,
       booker_phone: formData.booker_phone,

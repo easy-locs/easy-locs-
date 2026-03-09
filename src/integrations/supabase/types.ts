@@ -4265,6 +4265,30 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_marketplace_providers: {
+        Args: { p_active_only?: boolean; p_slug?: string }
+        Returns: {
+          active: boolean
+          avatar_url: string
+          bio: string
+          categories: string[]
+          city: string
+          company_name: string
+          country: string
+          cover_photo_url: string
+          display_name: string
+          email: string
+          id: string
+          phone: string
+          provider_type: string
+          rating: number
+          reviews_count: number
+          slug: string
+          verified: boolean
+          website_url: string
+          whatsapp: string
+        }[]
+      }
       get_public_marketplace_services: {
         Args: { _category?: string; _city?: string; _country?: string }
         Returns: {
