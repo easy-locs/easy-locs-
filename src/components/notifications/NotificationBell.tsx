@@ -381,7 +381,6 @@ const NotificationBell = () => {
               )}
             </div>
           </div>
-        </>
       )}
     </div>
   );
