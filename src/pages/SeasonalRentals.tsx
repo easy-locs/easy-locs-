@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
-import { useDeepLink, scrollToAndHighlight } from "@/lib/shared/deep-link";
+import { scrollToAndHighlight } from "@/lib/shared/deep-link";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
