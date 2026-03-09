@@ -106,7 +106,7 @@ const SeasonalRentals = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,8 +120,8 @@ const SeasonalRentals = () => {
     }
     return new Date();
   });
-  const focusedRequestId = searchParams.get("focusRequest") || null;
-  const focusedBookingId = searchParams.get("booking") || null;
+  const [deepLinkBookingId] = useState(() => searchParams.get("booking") || null);
+  const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
   const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);
   const [form, setForm] = useState<SeasonalForm>({
