@@ -1,6 +1,9 @@
 /**
  * System message generator — creates automatic communication events
  * for payments, documents, leases, maintenance, etc.
+ * 
+ * Each notification now carries structured metadata for precise deep-linking:
+ *   target_type, target_id, booking_id, country_code, target_url
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -30,21 +33,29 @@ interface SystemMessagePayload {
   category?: string;
 }
 
-const EVENT_MESSAGES: Record<SystemEventType, { content: string; category: string }> = {
-  payment_received: { content: "💰 Paiement reçu — {month} ({amount})", category: "payment" },
-  payment_overdue: { content: "⚠️ Loyer impayé — {month} ({amount}). Merci de régulariser.", category: "payment" },
-  rent_reminder: { content: "🔔 Rappel : votre loyer de {month} est dû le {due_date}. Montant : {amount}.", category: "payment" },
-  lease_signed: { content: "📝 Bail signé par toutes les parties pour {property}.", category: "lease" },
-  lease_created: { content: "📝 Nouveau bail créé pour {property}. Début : {start_date}.", category: "lease" },
-  document_uploaded: { content: "📄 Nouveau document disponible : {title}.", category: "general" },
-  document_signed: { content: "✅ Document signé : {title}.", category: "legal" },
-  maintenance_created: { content: "🔧 Demande de maintenance créée : {title}. Priorité : {priority}.", category: "maintenance" },
-  maintenance_resolved: { content: "✅ Maintenance résolue : {title}.", category: "maintenance" },
-  booking_confirmed: { content: "🏖️ Réservation confirmée du {check_in} au {check_out}.", category: "general" },
-  booking_cancelled: { content: "❌ Réservation annulée du {check_in} au {check_out}.", category: "general" },
-  checkin_reminder: { content: "🏠 Rappel : check-in prévu le {check_in}.", category: "general" },
-  checkout_reminder: { content: "🏠 Rappel : check-out prévu le {check_out}.", category: "general" },
-  account_welcome: { content: "👋 Bienvenue ! Votre espace locataire est prêt. Accédez à vos documents, payez votre loyer et communiquez avec votre bailleur.", category: "general" },
+interface DeepLinkContext {
+  target_type?: string;
+  target_id?: string;
+  booking_id?: string;
+  country_code?: string;
+  target_url?: string;
+}
+
+const EVENT_MESSAGES: Record<SystemEventType, { content: string; category: string; target_type: string }> = {
+  payment_received: { content: "💰 Paiement reçu — {month} ({amount})", category: "payment", target_type: "payment" },
+  payment_overdue: { content: "⚠️ Loyer impayé — {month} ({amount}). Merci de régulariser.", category: "payment", target_type: "payment" },
+  rent_reminder: { content: "🔔 Rappel : votre loyer de {month} est dû le {due_date}. Montant : {amount}.", category: "payment", target_type: "payment" },
+  lease_signed: { content: "📝 Bail signé par toutes les parties pour {property}.", category: "lease", target_type: "lease" },
+  lease_created: { content: "📝 Nouveau bail créé pour {property}. Début : {start_date}.", category: "lease", target_type: "lease" },
+  document_uploaded: { content: "📄 Nouveau document disponible : {title}.", category: "general", target_type: "document" },
+  document_signed: { content: "✅ Document signé : {title}.", category: "legal", target_type: "document" },
+  maintenance_created: { content: "🔧 Demande de maintenance créée : {title}. Priorité : {priority}.", category: "maintenance", target_type: "intervention" },
+  maintenance_resolved: { content: "✅ Maintenance résolue : {title}.", category: "maintenance", target_type: "intervention" },
+  booking_confirmed: { content: "🏖️ Réservation confirmée du {check_in} au {check_out}.", category: "general", target_type: "booking_request" },
+  booking_cancelled: { content: "❌ Réservation annulée du {check_in} au {check_out}.", category: "general", target_type: "booking_request" },
+  checkin_reminder: { content: "🏠 Rappel : check-in prévu le {check_in}.", category: "general", target_type: "booking_request" },
+  checkout_reminder: { content: "🏠 Rappel : check-out prévu le {check_out}.", category: "general", target_type: "booking_request" },
+  account_welcome: { content: "👋 Bienvenue ! Votre espace locataire est prêt. Accédez à vos documents, payez votre loyer et communiquez avec votre bailleur.", category: "general", target_type: "message" },
 };
 
 function interpolate(text: string, data: Record<string, string>): string {
@@ -53,7 +64,6 @@ function interpolate(text: string, data: Record<string, string>): string {
 
 /**
  * Creates a system message in a tenant's conversation.
- * These appear as automated notifications within the chat thread.
  */
 export async function createSystemMessage(payload: SystemMessagePayload): Promise<void> {
   const template = EVENT_MESSAGES[payload.event];
@@ -64,7 +74,7 @@ export async function createSystemMessage(payload: SystemMessagePayload): Promis
   await supabase.from("messages").insert({
     tenant_id: payload.tenantId,
     org_id: payload.orgId,
-    sender_id: "00000000-0000-0000-0000-000000000000", // system sender
+    sender_id: "00000000-0000-0000-0000-000000000000",
     content,
     category: payload.category || template.category,
     message_type: "system",
@@ -75,7 +85,8 @@ export async function createSystemMessage(payload: SystemMessagePayload): Promis
 }
 
 /**
- * Sends both a system message AND a notification + optional email
+ * Sends both a system message AND a notification + optional email.
+ * Notifications carry deep-link metadata for exact record navigation.
  */
 export async function createSystemEvent(payload: SystemMessagePayload & {
   notifyUserId?: string;
@@ -83,13 +94,27 @@ export async function createSystemEvent(payload: SystemMessagePayload & {
   notificationLink?: string;
   emailRecipient?: string;
   emailLocale?: string;
+  deepLink?: DeepLinkContext;
 }): Promise<void> {
   await createSystemMessage(payload);
 
-  // In-app notification
+  // In-app notification with deep-link metadata
   if (payload.notifyUserId) {
     const template = EVENT_MESSAGES[payload.event];
     const content = interpolate(template.content, payload.data || {});
+
+    // Build metadata_json with deep-link context
+    const metadata: Record<string, any> = {
+      target_type: payload.deepLink?.target_type || template.target_type,
+      org_id: payload.orgId,
+    };
+    if (payload.deepLink?.target_id) metadata.target_id = payload.deepLink.target_id;
+    if (payload.deepLink?.booking_id) metadata.booking_id = payload.deepLink.booking_id;
+    if (payload.deepLink?.country_code) metadata.country_code = payload.deepLink.country_code;
+    if (payload.deepLink?.target_url) metadata.target_url = payload.deepLink.target_url;
+    if (payload.propertyId) metadata.property_id = payload.propertyId;
+    if (payload.leaseId) metadata.lease_id = payload.leaseId;
+
     await supabase.from("notifications").insert({
       user_id: payload.notifyUserId,
       org_id: payload.orgId,
@@ -97,6 +122,7 @@ export async function createSystemEvent(payload: SystemMessagePayload & {
       title: payload.notificationTitle || content.slice(0, 50),
       message: content,
       link: payload.notificationLink || "/tenant/messages",
+      metadata_json: metadata,
     });
   }
 

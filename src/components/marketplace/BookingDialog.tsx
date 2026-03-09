@@ -9,7 +9,7 @@ import { CreditCard, Mail, MapPin, Users, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
-import { getCategoryBookingConfig, isRangeCategory } from "./CategoryBookingConfig";
+import { getCategoryBookingConfig } from "./CategoryBookingConfig";
 
 interface Props {
   open: boolean;
@@ -122,92 +122,95 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Book: {service?.title}</DialogTitle>
+      <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="px-4 pt-4 pb-2 shrink-0 border-b border-border">
+          <DialogTitle className="text-base truncate">Book: {service?.title}</DialogTitle>
         </DialogHeader>
+
         {service && (
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 overscroll-contain">
             {/* Service info */}
             <div className="p-3 bg-muted/30 rounded-lg">
-              <p className="font-medium text-foreground text-sm">{service.title}</p>
-              <p className="text-xs text-muted-foreground">{provider?.display_name} — {service.city}, {service.country}</p>
-              <p className="text-sm font-bold text-accent mt-1">
-                {Number(service.price).toLocaleString()} {service.currency}
-                {config.priceUnit && <span className="text-xs font-normal text-muted-foreground ml-1">{config.priceUnit}</span>}
-              </p>
-              {service.duration_minutes && config.showDuration && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Clock className="h-3 w-3" /> {service.duration_minutes} min
-                </p>
-              )}
+              <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{provider?.display_name} — {service.city}, {service.country}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm font-bold text-accent">
+                  {Number(service.price).toLocaleString()} {service.currency}
+                </span>
+                {config.priceUnit && <span className="text-xs text-muted-foreground">{config.priceUnit}</span>}
+                {service.duration_minutes && config.showDuration && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-0.5 ml-auto">
+                    <Clock className="h-3 w-3" /> {service.duration_minutes} min
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Contact info */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Contact info — single column on mobile */}
+            <div className="space-y-2">
               <div>
-                <Label>Your Name *</Label>
-                <Input value={form.booker_name} onChange={(e) => update("booker_name", e.target.value)} />
+                <Label className="text-xs">Your Name *</Label>
+                <Input className="h-9 text-sm" value={form.booker_name} onChange={(e) => update("booker_name", e.target.value)} />
               </div>
               <div>
-                <Label>Email *</Label>
-                <Input type="email" value={form.booker_email} onChange={(e) => update("booker_email", e.target.value)} />
+                <Label className="text-xs">Email *</Label>
+                <Input className="h-9 text-sm" type="email" value={form.booker_email} onChange={(e) => update("booker_email", e.target.value)} />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Phone</Label>
-                <Input value={form.booker_phone} onChange={(e) => update("booker_phone", e.target.value)} />
-              </div>
-              {config.showQuantity && (
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label>{config.quantityLabel}</Label>
-                  <Input type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
+                  <Label className="text-xs">Phone</Label>
+                  <Input className="h-9 text-sm" value={form.booker_phone} onChange={(e) => update("booker_phone", e.target.value)} />
                 </div>
-              )}
+                {config.showQuantity && (
+                  <div>
+                    <Label className="text-xs">{config.quantityLabel}</Label>
+                    <Input className="h-9 text-sm" type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Passengers (airport transfer / transport) */}
+            {/* Passengers */}
             {config.showPassengers && (
               <div>
-                <Label className="flex items-center gap-1"><Users className="h-3 w-3" /> Passengers</Label>
-                <Input type="number" min={1} value={form.passengers || ""} onChange={(e) => update("passengers", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
+                <Label className="text-xs flex items-center gap-1"><Users className="h-3 w-3" /> Passengers</Label>
+                <Input className="h-9 text-sm" type="number" min={1} value={form.passengers || ""} onChange={(e) => update("passengers", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
               </div>
             )}
 
-            {/* Pickup / Drop-off locations (airport transfer / transport) */}
+            {/* Pickup / Drop-off locations */}
             {config.showLocations && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
                 <div>
-                  <Label className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Pickup Location</Label>
-                  <Input value={form.pickup_location} onChange={(e) => update("pickup_location", e.target.value)} placeholder="Airport, hotel..." />
+                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Pickup Location</Label>
+                  <Input className="h-9 text-sm" value={form.pickup_location} onChange={(e) => update("pickup_location", e.target.value)} placeholder="Airport, hotel..." />
                 </div>
                 <div>
-                  <Label className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Drop-off Location</Label>
-                  <Input value={form.dropoff_location} onChange={(e) => update("dropoff_location", e.target.value)} placeholder="Destination..." />
+                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Drop-off Location</Label>
+                  <Input className="h-9 text-sm" value={form.dropoff_location} onChange={(e) => update("dropoff_location", e.target.value)} placeholder="Destination..." />
                 </div>
               </div>
             )}
 
-            {/* Time slot */}
+            {/* Time slots — stacked on mobile */}
             {config.showTime && (
-              <div className={config.showReturnTime ? "grid grid-cols-2 gap-3" : ""}>
+              <div className={`grid gap-2 ${config.showReturnTime ? "grid-cols-1 sm:grid-cols-2" : ""}`}>
                 <div>
-                  <Label>{isRange ? "Pickup Time" : "Time"}</Label>
-                  <Input type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} placeholder="HH:MM" />
+                  <Label className="text-xs">{isRange ? "Pickup Time" : "Time"}</Label>
+                  <Input className="h-9 text-sm" type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
                 </div>
                 {config.showReturnTime && (
                   <div>
-                    <Label>Return Time</Label>
-                    <Input type="time" value={form.return_time} onChange={(e) => update("return_time", e.target.value)} placeholder="HH:MM" />
+                    <Label className="text-xs">Return Time</Label>
+                    <Input className="h-9 text-sm" type="time" value={form.return_time} onChange={(e) => update("return_time", e.target.value)} />
                   </div>
                 )}
               </div>
             )}
 
-            {/* Calendar */}
-            <div className="border border-border rounded-lg p-3">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
+            {/* Calendar — constrained width */}
+            <div className="border border-border rounded-lg p-2 overflow-hidden">
+              <p className="text-xs font-medium text-muted-foreground mb-1.5 px-1">
                 {isRange
                   ? form.date_from && !form.date_to
                     ? `📅 Select ${config.endDateLabel.toLowerCase()}`
@@ -215,32 +218,34 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                   : `📅 ${config.dateLabel}`
                 }
               </p>
-              <ServiceBookingCalendar
-                serviceId={service.id}
-                timeSlots={timeSlots}
-                blockedDates={blockedDates}
-                maxCapacity={service.max_capacity}
-                onSelect={handleCalendarSelect}
-                selectedDate={isRange ? (form.date_from ? new Date(form.date_from) : undefined) : (form.service_date ? new Date(form.service_date) : undefined)}
-                selectedTime={form.service_time}
-              />
+              <div className="flex justify-center [&_.rdp]:text-xs [&_.rdp-day]:h-8 [&_.rdp-day]:w-8 [&_.rdp-head_cell]:text-xs [&_.rdp-caption]:text-sm [&_.rdp-table]:w-full [&_.rdp]:max-w-full">
+                <ServiceBookingCalendar
+                  serviceId={service.id}
+                  timeSlots={timeSlots}
+                  blockedDates={blockedDates}
+                  maxCapacity={service.max_capacity}
+                  onSelect={handleCalendarSelect}
+                  selectedDate={isRange ? (form.date_from ? new Date(form.date_from) : undefined) : (form.service_date ? new Date(form.service_date) : undefined)}
+                  selectedTime={form.service_time}
+                />
+              </div>
 
               {/* Selected range display */}
               {isRange && form.date_from && (
-                <div className="mt-2 flex items-center gap-2 text-xs">
-                  <Badge variant="outline">{form.date_from}</Badge>
+                <div className="mt-1.5 flex items-center gap-2 text-xs px-1">
+                  <Badge variant="outline" className="text-[10px]">{form.date_from}</Badge>
                   {form.date_to && (
                     <>
                       <span className="text-muted-foreground">→</span>
-                      <Badge variant="outline">{form.date_to}</Badge>
+                      <Badge variant="outline" className="text-[10px]">{form.date_to}</Badge>
                     </>
                   )}
                 </div>
               )}
 
               {!isRange && form.service_date && (
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-xs">{form.service_date}</Badge>
+                <div className="mt-1.5 px-1">
+                  <Badge variant="outline" className="text-[10px]">{form.service_date}</Badge>
                 </div>
               )}
             </div>
@@ -251,9 +256,9 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
             {/* Price summary */}
             {((isRange && days > 0) || (!isRange && (form.quantity || 1) > 0)) && totalPrice > 0 && (
-              <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
+              <div className="bg-muted/50 rounded-lg p-2.5 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">
                     {isRange
                       ? `${days} day${days > 1 ? "s" : ""} × ${Number(service.price).toLocaleString()} ${service.currency}`
                       : `${form.quantity || 1} × ${Number(service.price).toLocaleString()} ${service.currency}`
@@ -264,34 +269,38 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             )}
 
-            {/* Notes — include location info for transport categories */}
+            {/* Notes */}
             <div>
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder="Special requests..." />
+              <Label className="text-xs">Notes</Label>
+              <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder="Special requests..." />
             </div>
 
             {/* Payment methods */}
             {(paymentStripe || paymentPaypal || paymentCustom) && (
-              <div className="space-y-2 border-t border-border pt-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase">Payment Options</p>
-                <div className="flex flex-wrap gap-2">
-                  {paymentStripe && <Badge variant="outline"><CreditCard className="h-3 w-3 mr-1" /> Stripe</Badge>}
-                  {paymentPaypal && <Badge variant="outline"><Mail className="h-3 w-3 mr-1" /> PayPal</Badge>}
-                  {paymentCustom && <Badge variant="outline"><CreditCard className="h-3 w-3 mr-1" /> Other</Badge>}
+              <div className="space-y-1.5 border-t border-border pt-2">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase">Payment Options</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {paymentStripe && <Badge variant="outline" className="text-xs"><CreditCard className="h-3 w-3 mr-1" /> Stripe</Badge>}
+                  {paymentPaypal && <Badge variant="outline" className="text-xs"><Mail className="h-3 w-3 mr-1" /> PayPal</Badge>}
+                  {paymentCustom && <Badge variant="outline" className="text-xs"><CreditCard className="h-3 w-3 mr-1" /> Other</Badge>}
                 </div>
                 <p className="text-[10px] text-muted-foreground">Payment link will be sent after confirmation</p>
               </div>
             )}
+          </div>
+        )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <span className="text-lg font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
-              <Button
-                onClick={() => onSubmit(form)}
-                disabled={!isValid || isPending}
-              >
-                {isPending ? "Booking..." : "Request Booking"}
-              </Button>
-            </div>
+        {/* Sticky footer */}
+        {service && (
+          <div className="shrink-0 flex items-center justify-between px-4 py-3 border-t border-border bg-card">
+            <span className="text-base font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
+            <Button
+              size="sm"
+              onClick={() => onSubmit(form)}
+              disabled={!isValid || isPending}
+            >
+              {isPending ? "Booking..." : "Request Booking"}
+            </Button>
           </div>
         )}
       </DialogContent>
