@@ -68,6 +68,7 @@ interface Message {
   booking_type?: string;
   contact_name?: string;
   contact_email?: string;
+  sender_locale?: string;
 }
 
 const MESSAGE_CATEGORIES = [
@@ -110,6 +111,8 @@ const CommunicationCenter = () => {
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
   const [typingIndicator, setTypingIndicator] = useState(false);
+  const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
+  const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -517,26 +520,54 @@ const CommunicationCenter = () => {
         },
       });
 
-      // Send email notification to client
+      // Send email notification to client — professional design with booking details
       const recipientEmail = normalizeEmail(selectedThread.email);
       if (recipientEmail && isValidEmail(recipientEmail)) {
-        const L = getCountryConfig(propCountry).labels;
+        const propCountryLabel = selectedThread.propertyCountry
+          ? getCountryEntryOrDefault(selectedThread.propertyCountry).name
+          : "";
+        const bookingRef = selectedThread.bookingId?.slice(0, 8) || "";
+        const emailLang = tenantLocale || "en";
+        const emailLabels: Record<string, Record<string, string>> = {
+          fr: { title: "📩 Nouveau message de votre hôte", cta: "Répondre", ref: "Réf. réservation", service: "Service", property: "Bien" },
+          en: { title: "📩 New message from your host", cta: "Reply", ref: "Booking ref", service: "Service", property: "Property" },
+          es: { title: "📩 Nuevo mensaje de tu anfitrión", cta: "Responder", ref: "Ref. reserva", service: "Servicio", property: "Propiedad" },
+          de: { title: "📩 Neue Nachricht von Ihrem Gastgeber", cta: "Antworten", ref: "Buchungs-Ref", service: "Service", property: "Objekt" },
+          it: { title: "📩 Nuovo messaggio dal tuo host", cta: "Rispondi", ref: "Rif. prenotazione", service: "Servizio", property: "Proprietà" },
+          pt: { title: "📩 Nova mensagem do seu anfitrião", cta: "Responder", ref: "Ref. reserva", service: "Serviço", property: "Imóvel" },
+        };
+        const eL = emailLabels[emailLang] || emailLabels.en;
         const appUrl = buildAppUrl("/");
+
+        const detailRows = [
+          bookingRef ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.ref}</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>` : "",
+          selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.service}</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "",
+          selectedThread.propertyLabel ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.property}</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.propertyLabel)}</td></tr>` : "",
+        ].filter(Boolean).join("");
+
         try {
           await supabase.functions.invoke("send-email", {
             body: {
               to: recipientEmail,
-              subject: `📩 ${selectedThread.name} — New message`,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                <h2 style="color:#1a1a1a;text-align:center;">📩 New message from your host</h2>
-                <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                  <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || content)}</p>
-                </div>
-                ${selectedThread.bookingId ? `<p style="color:#888;font-size:12px;">Booking ref: ${selectedThread.bookingId.slice(0, 8)}</p>` : ""}
-                <div style="text-align:center;margin:24px 0;">
-                  <a href="${appUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Reply</a>
-                </div>
-              </div>`,
+              subject: eL.title,
+              html: `<!DOCTYPE html><html lang="${emailLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
+.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}.msg{background:#f8f6f1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:18px 20px;margin:0 0 20px}
+.msg p{color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;line-height:1.6}table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
+.cta{text-align:center;padding:8px 0 16px}
+.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
+</style></head><body><div class="w"><div class="c">
+<div class="h"><div class="b">EASY-LOCS®</div><h1>${eL.title}</h1></div>
+<div class="bd">
+<div class="msg"><p>${escapeEmailHtml(translatedContent || content)}</p></div>
+${detailRows ? `<table>${detailRows}</table>` : ""}
+<div class="cta"><a href="${appUrl}">${eL.cta}</a></div>
+</div>
+<div class="ft"><p class="bs">EASY-LOCS®</p></div>
+</div></div></body></html>`,
             },
           });
         } catch (e) { console.error("Email failed:", e); }
@@ -568,6 +599,45 @@ const CommunicationCenter = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  /* ────── On-demand translation (Airbnb-style) ────── */
+  const handleTranslateMessage = async (msg: Message) => {
+    if (translatingMsgId) return;
+    const isShowingOriginal = showOriginal[msg.id];
+
+    // Toggle back to translated if already showing original
+    if (isShowingOriginal) {
+      setShowOriginal(prev => ({ ...prev, [msg.id]: false }));
+      return;
+    }
+
+    // If message has no translated_content yet, request translation
+    if (!msg.translated_content) {
+      setTranslatingMsgId(msg.id);
+      try {
+        const senderLocale = msg.sender_locale || "en";
+        const { data: transData } = await supabase.functions.invoke("translate-message", {
+          body: { text: msg.content, from_locale: senderLocale, to_locale: locale },
+        });
+        if (transData?.translated) {
+          // Update local state
+          setMessages(prev => prev.map(m =>
+            m.id === msg.id ? { ...m, translated_content: transData.translated } : m
+          ));
+          // Persist translation
+          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
+        }
+      } catch (e) {
+        console.error("Translation failed:", e);
+        toast.error("Translation failed");
+      }
+      setTranslatingMsgId(null);
+      return;
+    }
+
+    // Toggle to show original
+    setShowOriginal(prev => ({ ...prev, [msg.id]: true }));
   };
 
   /* ────── Booking actions ────── */
@@ -610,17 +680,67 @@ const CommunicationCenter = () => {
 
       toast.success(actionLabels[action]);
 
-      // Notify client by email
+      // Notify client by email — professional template in customer language
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        const actionI18n: Record<string, Record<string, { subject: string; title: string; body: string; cta: string }>> = {
+          confirm: {
+            fr: { subject: "✅ Réservation confirmée", title: "✅ Votre réservation est confirmée", body: "Votre réservation a été confirmée. Nous avons hâte de vous accueillir !", cta: "Voir ma réservation" },
+            en: { subject: "✅ Booking Confirmed", title: "✅ Your booking is confirmed", body: "Your booking has been confirmed. We look forward to welcoming you!", cta: "View my booking" },
+            es: { subject: "✅ Reserva confirmada", title: "✅ Su reserva está confirmada", body: "Su reserva ha sido confirmada. ¡Le esperamos!", cta: "Ver mi reserva" },
+            de: { subject: "✅ Buchung bestätigt", title: "✅ Ihre Buchung ist bestätigt", body: "Ihre Buchung wurde bestätigt. Wir freuen uns auf Sie!", cta: "Meine Buchung ansehen" },
+            it: { subject: "✅ Prenotazione confermata", title: "✅ La tua prenotazione è confermata", body: "La tua prenotazione è stata confermata. Non vediamo l'ora di accoglierti!", cta: "Vedi la mia prenotazione" },
+            pt: { subject: "✅ Reserva confirmada", title: "✅ Sua reserva está confirmada", body: "Sua reserva foi confirmada. Esperamos por você!", cta: "Ver minha reserva" },
+          },
+          cancel: {
+            fr: { subject: "❌ Réservation annulée", title: "❌ Réservation annulée", body: "Votre réservation a été annulée. N'hésitez pas à nous contacter pour toute question.", cta: "Nous contacter" },
+            en: { subject: "❌ Booking Cancelled", title: "❌ Booking Cancelled", body: "Your booking has been cancelled. Please contact us if you have any questions.", cta: "Contact us" },
+            es: { subject: "❌ Reserva cancelada", title: "❌ Reserva cancelada", body: "Su reserva ha sido cancelada. No dude en contactarnos.", cta: "Contactar" },
+            de: { subject: "❌ Buchung storniert", title: "❌ Buchung storniert", body: "Ihre Buchung wurde storniert. Kontaktieren Sie uns bei Fragen.", cta: "Kontakt" },
+            it: { subject: "❌ Prenotazione cancellata", title: "❌ Prenotazione cancellata", body: "La tua prenotazione è stata cancellata. Contattaci per domande.", cta: "Contattaci" },
+            pt: { subject: "❌ Reserva cancelada", title: "❌ Reserva cancelada", body: "Sua reserva foi cancelada. Entre em contato conosco.", cta: "Contato" },
+          },
+          complete: {
+            fr: { subject: "🏁 Réservation terminée", title: "🏁 Réservation terminée", body: "Votre réservation est terminée. Merci de votre confiance !", cta: "Laisser un avis" },
+            en: { subject: "🏁 Booking Completed", title: "🏁 Booking Completed", body: "Your booking is completed. Thank you for your trust!", cta: "Leave a review" },
+            es: { subject: "🏁 Reserva completada", title: "🏁 Reserva completada", body: "Su reserva ha finalizado. ¡Gracias por su confianza!", cta: "Dejar una reseña" },
+            de: { subject: "🏁 Buchung abgeschlossen", title: "🏁 Buchung abgeschlossen", body: "Ihre Buchung ist abgeschlossen. Vielen Dank für Ihr Vertrauen!", cta: "Bewertung abgeben" },
+            it: { subject: "🏁 Prenotazione completata", title: "🏁 Prenotazione completata", body: "La tua prenotazione è completata. Grazie per la fiducia!", cta: "Lascia una recensione" },
+            pt: { subject: "🏁 Reserva concluída", title: "🏁 Reserva concluída", body: "Sua reserva foi concluída. Obrigado pela confiança!", cta: "Deixar avaliação" },
+          },
+        };
+        const aL = (actionI18n[action]?.[clientLang] || actionI18n[action]?.en)!;
+        const bookingRef = bookingId.slice(0, 8);
+        const serviceLabel = selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Service</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "";
+        const priceLabel = selectedThread.totalPrice ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;">Total</td><td style="padding:10px 16px;font-weight:700;font-size:15px;color:#16a34a;">${selectedThread.totalPrice.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</td></tr>` : "";
+
         await supabase.functions.invoke("send-email", {
           body: {
             to: email,
-            subject: actionLabels[action],
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <h2 style="text-align:center;">${actionLabels[action]}</h2>
-              <p style="text-align:center;color:#555;">Your booking has been updated. Ref: ${bookingId.slice(0, 8)}</p>
-            </div>`,
+            subject: aL.subject,
+            html: `<!DOCTYPE html><html lang="${clientLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
+.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}
+.bd p{color:#333;font-size:15px;line-height:1.7;margin:0 0 16px}
+table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
+.cta{text-align:center;padding:12px 0 20px}
+.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
+</style></head><body><div class="w"><div class="c">
+<div class="h"><div class="b">EASY-LOCS®</div><h1>${aL.title}</h1></div>
+<div class="bd"><p>${aL.body}</p>
+<table>
+<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Ref</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>
+${serviceLabel}${priceLabel}
+</table>
+<div class="cta"><a href="${buildAppUrl("/")}">${aL.cta}</a></div>
+</div>
+<div class="ft"><p class="bs">EASY-LOCS®</p></div>
+</div></div></body></html>`,
           },
         });
       }
@@ -949,8 +1069,44 @@ const CommunicationCenter = () => {
                                   <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
                                 )}
                                 <p className="text-sm whitespace-pre-wrap break-words">
-                                  {isMe ? msg.content : (msg.translated_content || msg.content)}
+                                  {isMe
+                                    ? msg.content
+                                    : showOriginal[msg.id]
+                                      ? msg.content
+                                      : (msg.translated_content || msg.content)
+                                  }
                                 </p>
+                                {/* Airbnb-style translation toggle */}
+                                {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
+                                  <button
+                                    onClick={() => handleTranslateMessage(msg)}
+                                    className={`mt-1 inline-flex items-center gap-1 text-[10px] transition-colors ${
+                                      isPayment ? "text-accent/70 hover:text-accent" : "text-muted-foreground/60 hover:text-muted-foreground"
+                                    }`}
+                                  >
+                                    {translatingMsgId === msg.id ? (
+                                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                    ) : (
+                                      <Globe className="h-2.5 w-2.5" />
+                                    )}
+                                    {showOriginal[msg.id]
+                                      ? "Show translation"
+                                      : msg.translated_content
+                                        ? "Show original"
+                                        : "Translate"
+                                    }
+                                  </button>
+                                )}
+                                {/* Also show toggle for owner's own messages that have translations */}
+                                {isMe && msg.translated_content && (
+                                  <button
+                                    onClick={() => setShowOriginal(prev => ({ ...prev, [msg.id]: !prev[msg.id] }))}
+                                    className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary-foreground/50 hover:text-primary-foreground/80 transition-colors"
+                                  >
+                                    <Globe className="h-2.5 w-2.5" />
+                                    {showOriginal[msg.id] ? "Your message" : `Sent as: ${msg.translated_content.slice(0, 30)}…`}
+                                  </button>
+                                )}
                                 {linkMatch && (
                                   <a href={linkMatch[1]} target="_blank" rel="noopener noreferrer"
                                     className="mt-2 inline-flex items-center gap-1.5 text-xs text-accent underline">
