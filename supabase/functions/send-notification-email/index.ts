@@ -244,12 +244,17 @@ function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: stri
   const safeTitle = sanitizeHtml(title);
   const safeBody = sanitizeHtml(body);
   const footerTexts: Record<string, string> = {
-    fr: "Cet email est envoyé automatiquement par Easy-Locs®. Ne répondez pas à cet email.",
-    en: "This email was sent automatically by Easy-Locs®. Please do not reply.",
-    es: "Este correo fue enviado automáticamente por Easy-Locs®. No responda a este correo.",
-    de: "Diese E-Mail wurde automatisch von Easy-Locs® gesendet. Bitte antworten Sie nicht.",
-    it: "Questa email è stata inviata automaticamente da Easy-Locs®. Non rispondere.",
-    pt: "Este email foi enviado automaticamente pelo Easy-Locs®. Não responda.",
+    fr: "Cet email est envoyé automatiquement par Easy-Locs®. Vous pouvez répondre directement à cet email.",
+    en: "This email was sent automatically by Easy-Locs®. You can reply directly to this email.",
+    es: "Este correo fue enviado automáticamente por Easy-Locs®. Puede responder directamente.",
+    de: "Diese E-Mail wurde automatisch von Easy-Locs® gesendet. Sie können direkt antworten.",
+    it: "Questa email è stata inviata automaticamente da Easy-Locs®. Puoi rispondere direttamente.",
+    pt: "Este email foi enviado automaticamente pelo Easy-Locs®. Você pode responder diretamente.",
+    ar: "تم إرسال هذا البريد الإلكتروني تلقائيًا بواسطة Easy-Locs®. يمكنك الرد مباشرة.",
+    ja: "このメールはEasy-Locs®から自動送信されました。直接返信できます。",
+    tr: "Bu e-posta Easy-Locs® tarafından otomatik olarak gönderilmiştir. Doğrudan yanıtlayabilirsiniz.",
+    nl: "Deze e-mail is automatisch verzonden door Easy-Locs®. U kunt direct antwoorden.",
+    pl: "Ten e-mail został wysłany automatycznie przez Easy-Locs®. Możesz odpowiedzieć bezpośrednio.",
   };
   const ctaTexts: Record<string, string> = {
     fr: "Accéder à mon espace", en: "Go to my dashboard", es: "Acceder a mi espacio",
