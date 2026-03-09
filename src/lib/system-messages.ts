@@ -35,6 +35,7 @@ interface SystemMessagePayload {
   category?: string;
 }
 
+/** @deprecated Use DeepLinkMeta from shared/types.ts instead */
 interface DeepLinkContext {
   target_type?: string;
   target_id?: string;
