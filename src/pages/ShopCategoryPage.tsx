@@ -28,18 +28,16 @@ export default function ShopCategoryPage() {
   const { data: services = [], isLoading } = useQuery({
     queryKey: ["shop-category", category, city],
     queryFn: async () => {
-      // Query both concierge_services and marketplace_services
+      // Query both safe views (exclude sensitive fields)
       let q1 = supabase
-        .from("concierge_services")
-        .select("id, title, description, category, city, country, price, currency, photo_url, booking_slug, duration_minutes")
-        .eq("active", true);
+        .from("concierge_services_public" as any)
+        .select("id, title, description, category, city, country, price, currency, photo_url, booking_slug, duration_minutes");
       if (category) q1 = q1.ilike("category", `%${category}%`);
       if (city) q1 = q1.ilike("city", `%${city}%`);
 
       let q2 = supabase
-        .from("marketplace_services")
-        .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes, booking_slug")
-        .eq("active", true);
+        .from("marketplace_services_public" as any)
+        .select("id, title, description, category, city, country, price, currency, photo_urls, price_type, duration_minutes, booking_slug");
       if (category) q2 = q2.ilike("category", `%${category}%`);
       if (city) q2 = q2.ilike("city", `%${city}%`);
 

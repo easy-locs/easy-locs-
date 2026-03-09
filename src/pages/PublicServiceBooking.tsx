@@ -86,10 +86,9 @@ const PublicServiceBooking = () => {
           resolvedService = { ...mpExact, _source: "marketplace" };
         } else {
           const { data: mpFallback } = await supabase
-            .from("marketplace_services")
+            .from("marketplace_services_public" as any)
             .select("*")
             .ilike("booking_slug", normalizedSlug)
-            .eq("active", true)
             .limit(1)
             .maybeSingle();
           if (mpFallback) resolvedService = { ...mpFallback, _source: "marketplace" };
