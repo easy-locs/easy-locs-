@@ -1069,8 +1069,44 @@ ${serviceLabel}${priceLabel}
                                   <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
                                 )}
                                 <p className="text-sm whitespace-pre-wrap break-words">
-                                  {isMe ? msg.content : (msg.translated_content || msg.content)}
+                                  {isMe
+                                    ? msg.content
+                                    : showOriginal[msg.id]
+                                      ? msg.content
+                                      : (msg.translated_content || msg.content)
+                                  }
                                 </p>
+                                {/* Airbnb-style translation toggle */}
+                                {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
+                                  <button
+                                    onClick={() => handleTranslateMessage(msg)}
+                                    className={`mt-1 inline-flex items-center gap-1 text-[10px] transition-colors ${
+                                      isPayment ? "text-accent/70 hover:text-accent" : "text-muted-foreground/60 hover:text-muted-foreground"
+                                    }`}
+                                  >
+                                    {translatingMsgId === msg.id ? (
+                                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                    ) : (
+                                      <Globe className="h-2.5 w-2.5" />
+                                    )}
+                                    {showOriginal[msg.id]
+                                      ? "Show translation"
+                                      : msg.translated_content
+                                        ? "Show original"
+                                        : "Translate"
+                                    }
+                                  </button>
+                                )}
+                                {/* Also show toggle for owner's own messages that have translations */}
+                                {isMe && msg.translated_content && (
+                                  <button
+                                    onClick={() => setShowOriginal(prev => ({ ...prev, [msg.id]: !prev[msg.id] }))}
+                                    className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary-foreground/50 hover:text-primary-foreground/80 transition-colors"
+                                  >
+                                    <Globe className="h-2.5 w-2.5" />
+                                    {showOriginal[msg.id] ? "Your message" : `Sent as: ${msg.translated_content.slice(0, 30)}…`}
+                                  </button>
+                                )}
                                 {linkMatch && (
                                   <a href={linkMatch[1]} target="_blank" rel="noopener noreferrer"
                                     className="mt-2 inline-flex items-center gap-1.5 text-xs text-accent underline">
