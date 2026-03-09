@@ -34,7 +34,6 @@ interface Props {
   isPending?: boolean;
 }
 
-/** Derive activity-specific booking rules from the service record */
 function deriveBookingRules(service: any): ActivityBookingRules {
   if (!service) return {};
   return {
@@ -115,27 +114,29 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
   const paymentCustom = service?.payment_custom_url || provider?.payment_custom_url;
 
   const timeSlots = Array.isArray(service?.time_slots) ? service.time_slots : [];
-  const blockedDates = Array.isArray(service?.blocked_dates) ? service.blocked_dates : [];
+  const blockedDates2 = Array.isArray(service?.blocked_dates) ? service.blocked_dates : [];
 
-  const handleCalendarSelect = (dateVal: Date) => {
-    const date = format(dateVal, "yyyy-MM-dd");
-    if (isRange) {
-      if (!form.date_from || form.date_to) {
-        setForm(f => ({ ...f, date_from: date, date_to: "" }));
-      } else {
-        if (date > form.date_from) {
-          setForm(f => ({ ...f, date_to: date }));
-        } else {
-          setForm(f => ({ ...f, date_from: date, date_to: form.date_from }));
-        }
-      }
-    } else {
-      update("service_date", date);
-    }
+  // ── Range selection handler (Airbnb-style) ──
+  const handleRangeSelect = (from: Date, to: Date) => {
+    setForm(f => ({
+      ...f,
+      date_from: format(from, "yyyy-MM-dd"),
+      date_to: format(to, "yyyy-MM-dd"),
+      service_date: format(from, "yyyy-MM-dd"),
+    }));
+  };
+
+  // ── Single date selection handler ──
+  const handleSingleSelect = (dateVal: Date, time: string) => {
+    setForm(f => ({
+      ...f,
+      service_date: format(dateVal, "yyyy-MM-dd"),
+      service_time: time || f.service_time,
+    }));
   };
 
   const isValid = form.booker_name && form.booker_email && !dateOverlap &&
-    (isRange ? (form.date_from && form.date_to) : true);
+    (isRange ? (form.date_from && form.date_to) : !!form.service_date);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,7 +147,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
         {service && (
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 overscroll-contain">
-            {/* Service info — country/timezone derived from service */}
+            {/* Service info */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
               <p className="text-xs text-muted-foreground truncate">
@@ -211,11 +212,11 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             )}
 
-            {/* Time slots */}
-            {config.showTime && (
+            {/* Time pickers (for range categories that need time, e.g. car rental) */}
+            {isRange && config.showTime && (
               <div className={`grid gap-2 ${config.showReturnTime ? "grid-cols-1 sm:grid-cols-2" : ""}`}>
                 <div>
-                  <Label className="text-xs">{isRange ? "Pickup Time" : "Time"}</Label>
+                  <Label className="text-xs">Pickup Time</Label>
                   <Input className="h-9 text-sm" type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
                 </div>
                 {config.showReturnTime && (
@@ -227,47 +228,29 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             )}
 
-            {/* Calendar — with activity-specific rules */}
+            {/* Calendar — adapts to category */}
             <div className="border border-border rounded-lg p-2 overflow-hidden">
-              <p className="text-xs font-medium text-muted-foreground mb-1.5 px-1">
-                {isRange
-                  ? form.date_from && !form.date_to
-                    ? `📅 Select ${config.endDateLabel.toLowerCase()}`
-                    : `📅 ${config.dateLabel} → ${config.endDateLabel}`
-                  : `📅 ${config.dateLabel}`
-                }
-              </p>
               <div className="flex justify-center [&_.rdp]:text-xs [&_.rdp-day]:h-8 [&_.rdp-day]:w-8 [&_.rdp-head_cell]:text-xs [&_.rdp-caption]:text-sm [&_.rdp-table]:w-full [&_.rdp]:max-w-full">
                 <ServiceBookingCalendar
                   serviceId={service.id}
                   timeSlots={timeSlots}
-                  blockedDates={blockedDates}
+                  blockedDates={blockedDates2}
                   maxCapacity={service.max_capacity}
-                  onSelect={handleCalendarSelect}
-                  selectedDate={isRange ? (form.date_from ? new Date(form.date_from) : undefined) : (form.service_date ? new Date(form.service_date) : undefined)}
+                  rangeMode={isRange}
+                  onSelect={handleSingleSelect}
+                  onSelectRange={handleRangeSelect}
+                  selectedDate={!isRange && form.service_date ? new Date(form.service_date) : undefined}
                   selectedTime={form.service_time}
+                  selectedRange={
+                    isRange && form.date_from && form.date_to
+                      ? { from: new Date(form.date_from), to: new Date(form.date_to) }
+                      : null
+                  }
                   rules={rules}
+                  checkInLabel={config.dateLabel}
+                  checkOutLabel={config.endDateLabel}
                 />
               </div>
-
-              {/* Selected range display */}
-              {isRange && form.date_from && (
-                <div className="mt-1.5 flex items-center gap-2 text-xs px-1">
-                  <Badge variant="outline" className="text-[10px]">{form.date_from}</Badge>
-                  {form.date_to && (
-                    <>
-                      <span className="text-muted-foreground">→</span>
-                      <Badge variant="outline" className="text-[10px]">{form.date_to}</Badge>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {!isRange && form.service_date && (
-                <div className="mt-1.5 px-1">
-                  <Badge variant="outline" className="text-[10px]">{form.service_date}</Badge>
-                </div>
-              )}
             </div>
 
             {dateOverlap && (
@@ -280,7 +263,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
                     {isRange
-                      ? `${days} day${days > 1 ? "s" : ""} × ${Number(service.price).toLocaleString()} ${service.currency}`
+                      ? `${days} ${config.priceUnit === "/night" ? "night" : "day"}${days > 1 ? "s" : ""} × ${Number(service.price).toLocaleString()} ${service.currency}`
                       : `${form.quantity || 1} × ${Number(service.price).toLocaleString()} ${service.currency}`
                     }
                   </span>
