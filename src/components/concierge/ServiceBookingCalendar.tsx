@@ -87,7 +87,7 @@ const ServiceBookingCalendar = ({
   );
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
-  const slots = timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS;
+  const slots = deduplicateSlots(timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS);
 
   const blockedSet = useMemo(() => new Set(blockedDates), [blockedDates]);
   const today = startOfDay(new Date());

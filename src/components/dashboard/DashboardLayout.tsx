@@ -69,16 +69,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const countrySections: NavSection[] = [
     {
       key: "property",
-      title: t("section.property") || "Gestion locative",
+      title: t("section.property") || "Long-Term Rental",
       icon: Home,
       items: [
-        { icon: Home, label: t("nav.properties") || "Biens", path: cPath("/dashboard/rental") },
-        { icon: Building, label: t("nav.buildings") || "Immeubles", path: cPath("/dashboard/buildings") },
-        { icon: Users, label: t("nav.tenants") || "Locataires", path: cPath("/dashboard/tenants") },
-        { icon: KeyRound, label: t("nav.leases") || "Baux", path: cPath("/dashboard/leases") },
-        { icon: ClipboardList, label: t("nav.inventory") || "États des lieux", path: cPath("/dashboard/rental?tab=inventory") },
-        { icon: Sofa, label: t("nav.furniture") || "Mobilier", path: cPath("/dashboard/furniture") },
+        { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
+        { icon: Building, label: t("nav.buildings") || "Buildings", path: cPath("/dashboard/buildings") },
+        { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
+        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+        { icon: ClipboardList, label: t("nav.inventory") || "Inventory", path: cPath("/dashboard/rental?tab=inventory") },
+        { icon: Sofa, label: t("nav.furniture") || "Furniture", path: cPath("/dashboard/furniture") },
         { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
     },
     {
@@ -87,12 +88,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Wallet,
       items: [
         { icon: Wallet, label: t("nav.finances") || "Finances", path: cPath("/dashboard/finances") },
-        { icon: Receipt, label: t("nav.expenses") || "Dépenses", path: cPath("/dashboard/expenses") },
-        { icon: Layers, label: t("nav.charges") || "Régul. charges", path: cPath("/dashboard/charges") },
-        { icon: Bell, label: t("nav.notices") || "Avis d'échéance", path: cPath("/dashboard/notices") },
-        { icon: AlertTriangle, label: t("nav.dunning") || "Relances", path: cPath("/dashboard/dunning") },
-        { icon: FileCheck, label: t("nav.fiscal") || "Bilan fiscal", path: cPath("/dashboard/fiscal") },
-        { icon: BookOpen, label: t("nav.accounting") || "Comptabilité", path: cPath("/dashboard/accounting") },
+        { icon: Receipt, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
+        { icon: Layers, label: t("nav.charges") || "Charges", path: cPath("/dashboard/charges") },
+        { icon: Bell, label: t("nav.notices") || "Payment Notices", path: cPath("/dashboard/notices") },
+        { icon: AlertTriangle, label: t("nav.dunning") || "Dunning", path: cPath("/dashboard/dunning") },
+        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal Report", path: cPath("/dashboard/fiscal") },
+        { icon: BookOpen, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/accounting") },
       ],
     },
     {
@@ -101,9 +102,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: MessageCircle,
       items: [
         { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
-        { icon: Clock, label: t("nav.reminders") || "Rappels", path: cPath("/dashboard/reminders") },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tâches", path: cPath("/dashboard/tasks") },
-        { icon: UserSearch, label: t("nav.candidates") || "Candidats", path: cPath("/dashboard/candidates") },
+        { icon: Clock, label: t("nav.reminders") || "Reminders", path: cPath("/dashboard/reminders") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
+        { icon: UserSearch, label: t("nav.candidates") || "Candidates", path: cPath("/dashboard/candidates") },
       ],
     },
   ];
@@ -112,22 +113,21 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const seasonalSection: NavSection[] = [
     {
       key: "seasonal",
-      title: t("section.rental") || "Saisonnier",
+      title: t("section.rental") || "Seasonal Rentals",
       icon: Calendar,
       items: [
-        { icon: Calendar, label: t("nav.seasonal") || "Locations saisonnières", path: "/dashboard/seasonal" },
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
-        { icon: Zap, label: t("nav.pricing") || "Tarification", path: "/dashboard/pricing" },
+        { icon: Zap, label: t("nav.pricing") || "Dynamic Pricing", path: "/dashboard/pricing" },
       ],
     },
     {
       key: "marketplace",
-      title: "Services Marketplace",
+      title: "Marketplace",
       icon: Store,
       items: [
-        { icon: Store, label: "Marketplace", path: "/dashboard/activities" },
-        { icon: MapPin, label: t("nav.local_services") || "Services locaux", path: "/dashboard/local-services" },
-        
+        { icon: Store, label: "Services Marketplace", path: "/dashboard/activities" },
+        { icon: MapPin, label: t("nav.local_services") || "Local Services", path: "/dashboard/local-services" },
       ],
     },
   ];

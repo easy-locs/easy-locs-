@@ -230,6 +230,18 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
             </div>
           </div>
 
+          {/* Reviews Toggle */}
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">⭐ Enable Reviews</p>
+              <p className="text-xs text-muted-foreground">Allow customers to leave reviews on your services</p>
+            </div>
+            <Switch
+              checked={(form as any).reviews_enabled || false}
+              onCheckedChange={(v) => update("reviews_enabled" as any, v)}
+            />
+          </div>
+
           {/* Payment Links */}
           <div className="space-y-3 border-t border-border pt-4">
             <p className="text-sm font-medium text-foreground">Payment Links (sent to clients)</p>
