@@ -93,6 +93,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
+  const [searchParams] = useSearchParams();
   const [services, setServices] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,20 +107,22 @@ const ConciergeServices = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
   const [preferredCurrency, setPreferredCurrency] = useState("EUR");
+  const [hasAppliedDeepLink, setHasAppliedDeepLink] = useState(false);
 
-  // Deep-link: auto-open booking from ?booking=ID
+  // Deep-link: auto-open booking from ?booking=ID (runs only once)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const bookingId = params.get("booking");
-    if (bookingId && orders.length > 0 && !selectedBooking) {
-      const found = orders.find((o: any) => o.id === bookingId);
+    if (hasAppliedDeepLink) return;
+    const bookingId = searchParams.get("booking");
+    if (bookingId && orders.length > 0) {
+      const found = orders.find((o: any) => String(o.id) === String(bookingId));
       if (found) {
         setTab("bookings");
         setSelectedBooking(found);
+        setHasAppliedDeepLink(true);
         console.log("[deep-link] auto-opened concierge booking:", bookingId);
       }
     }
-  }, [orders, selectedBooking]);
+  }, [orders, hasAppliedDeepLink, searchParams]);
 
   // Load landlord profile + preferred currency
   useEffect(() => {
