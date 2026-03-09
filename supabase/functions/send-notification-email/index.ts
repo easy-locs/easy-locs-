@@ -359,7 +359,7 @@ serve(async (req) => {
 
     const ctaUrl = safeUrl(data.cta_url);
     const ctaLabel = data.cta_label || undefined;
-    const html = buildHtml(title, body, ctaUrl, ctaLabel);
+    const html = buildHtml(title, body, ctaUrl, ctaLabel, locale);
 
     if (!SENDGRID_API_KEY) {
       console.log("[send-notification-email] No SendGrid key, logging email:", { to: recipient_email, subject });
