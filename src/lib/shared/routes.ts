@@ -114,22 +114,40 @@ export function detectPortal(notification: any): "tenant" | "landlord" | "both" 
 /**
  * Build a standard target_url from target_type and IDs.
  * Used when creating notifications to pre-build the URL.
+ * This is the SINGLE SOURCE OF TRUTH for all deep-link URLs.
  */
 export function buildTargetUrl(targetType: TargetType, ids: {
   targetId?: string;
   bookingId?: string;
   countryCode?: string;
+  role?: "landlord" | "tenant";
 }): string {
   const routeInfo = TARGET_ROUTES[targetType];
   if (!routeInfo) return "/dashboard";
 
-  const basePath = routeInfo.landlord;
+  const basePath = ids.role === "tenant" && routeInfo.tenant
+    ? routeInfo.tenant
+    : routeInfo.landlord;
   const params = new URLSearchParams();
   if (ids.countryCode) params.set("country", ids.countryCode);
   if (ids.bookingId) params.set("booking", ids.bookingId);
   else if (ids.targetId) params.set("record", ids.targetId);
   const qs = params.toString();
   return qs ? `${basePath}?${qs}` : basePath;
+}
+
+/**
+ * Build an absolute URL for emails.
+ * Uses APP_BASE_URL to generate full clickable links.
+ */
+export function buildAbsoluteTargetUrl(
+  baseUrl: string,
+  targetType: TargetType,
+  ids: { targetId?: string; bookingId?: string; countryCode?: string; role?: "landlord" | "tenant" }
+): string {
+  const path = buildTargetUrl(targetType, ids);
+  const cleanBase = baseUrl.replace(/\/$/, "");
+  return `${cleanBase}${path}`;
 }
 
 export { TARGET_ROUTES, TYPE_FALLBACKS };

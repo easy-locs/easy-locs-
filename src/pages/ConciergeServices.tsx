@@ -114,7 +114,8 @@ const ConciergeServices = () => {
   useEffect(() => {
     if (hasAppliedDeepLink) return;
     const bookingId = searchParams.get("booking");
-    if (!bookingId || orders.length === 0) return;
+    if (!bookingId) return;
+    if (loading) return; // Wait for data to load
     const found = orders.find((o: any) => String(o.id) === String(bookingId));
     if (found) {
       setTab("bookings");
@@ -124,8 +125,17 @@ const ConciergeServices = () => {
       next.delete("booking");
       setSearchParams(next, { replace: true });
       console.log("[deep-link] auto-opened concierge booking:", bookingId);
+    } else if (!loading && orders.length >= 0) {
+      // Data loaded but booking not found — show fallback
+      setTab("bookings");
+      setHasAppliedDeepLink(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("booking");
+      setSearchParams(next, { replace: true });
+      toast.error("Booking not found or no longer available");
+      console.warn("[deep-link] concierge booking not found:", bookingId);
     }
-  }, [orders, hasAppliedDeepLink, searchParams, setSearchParams]);
+  }, [orders, loading, hasAppliedDeepLink, searchParams, setSearchParams]);
 
   // Load landlord profile + preferred currency
   useEffect(() => {

@@ -206,7 +206,8 @@ const SeasonalRentals = () => {
 
   // Deep-link: scroll to booking from ?booking=ID (runs only once, then cleans URL)
   useEffect(() => {
-    if (hasAppliedSeasonalDeepLink || !deepLinkBookingId || bookings.length === 0) return;
+    if (hasAppliedSeasonalDeepLink || !deepLinkBookingId) return;
+    if (loading) return; // Wait for data to load
     const el = document.getElementById(`booking-${deepLinkBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -217,13 +218,21 @@ const SeasonalRentals = () => {
       if (found) {
         startEdit(found);
         console.log("[deep-link] opened seasonal booking for edit:", deepLinkBookingId);
+      } else if (!loading) {
+        // Data loaded but booking not found
+        toast({
+          title: "Booking not found",
+          description: "This booking is no longer available.",
+          variant: "destructive",
+        });
+        console.warn("[deep-link] seasonal booking not found:", deepLinkBookingId);
       }
     }
     setHasAppliedSeasonalDeepLink(true);
     const next = new URLSearchParams(searchParams);
     next.delete("booking");
     setSearchParams(next, { replace: true });
-  }, [deepLinkBookingId, bookings, hasAppliedSeasonalDeepLink]);
+  }, [deepLinkBookingId, bookings, loading, hasAppliedSeasonalDeepLink]);
 
   const resetForm = () => {
     setForm({
