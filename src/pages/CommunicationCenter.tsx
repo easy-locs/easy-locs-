@@ -475,9 +475,20 @@ const CommunicationCenter = () => {
     if (!selectedThread || !orgId || !user) return;
     setSending(true);
     try {
-      const propCountry = selectedThread.propertyCountry || "FR";
-      const tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+      // Resolve customer language: prefer their stored locale, fallback to property country, then "en"
       const senderLocale = locale;
+      let tenantLocale = "en";
+      if (selectedThread.tenantId) {
+        const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+        if (tData?.preferred_locale) tenantLocale = tData.preferred_locale;
+        else {
+          const propCountry = selectedThread.propertyCountry || "FR";
+          tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+        }
+      } else {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+      }
 
       let translatedContent: string | null = null;
       if (senderLocale !== tenantLocale) {
