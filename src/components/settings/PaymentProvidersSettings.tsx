@@ -16,6 +16,7 @@ const PaymentProvidersSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectingStripe, setConnectingStripe] = useState(false);
+  const [disconnectingStripe, setDisconnectingStripe] = useState(false);
   const [orgCountry, setOrgCountry] = useState(userCountry || "FR");
   const sepaEligible = useMemo(() => isSepaCountry(orgCountry), [orgCountry]);
 
