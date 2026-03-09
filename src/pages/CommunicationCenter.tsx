@@ -800,8 +800,14 @@ const CommunicationCenter = () => {
       // Email client using premium template
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        const propCountry = selectedThread.propertyCountry || "FR";
-        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        let clientLangPay = "en";
+        if (selectedThread.tenantId) {
+          const { data: tLP } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+          clientLangPay = tLP?.preferred_locale || getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        } else {
+          clientLangPay = getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        }
+        const clientLang = clientLangPay;
         const threadRef = selectedThread.bookingId || selectedThread.id;
         
         await supabase.functions.invoke("send-notification-email", {
