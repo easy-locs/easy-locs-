@@ -60,7 +60,7 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
+      let resolvedService: any = exactMatch ? { ...(exactMatch as any)h as any), _source: "concierge" } : null;
 
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
@@ -70,7 +70,7 @@ const PublicServiceBooking = () => {
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (fallbackMatch) resolvedService = { ...fallbackMatch, _source: "concierge" };
+        if (fallbackMatch) resolvedServic(fallbackMatch as any)backMatch, _source: "concierge" };
       }
 
       // 2. If not found in concierge, try marketplace_services
