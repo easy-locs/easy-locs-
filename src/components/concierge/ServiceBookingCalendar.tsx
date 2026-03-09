@@ -275,7 +275,7 @@ function RangeCalendar({
           onSelect={handleRangeSelect}
           disabled={isDateBlocked}
           numberOfMonths={1}
-          className={cn("rounded-xl border border-border pointer-events-auto")}
+          className={cn("rounded-xl border border-border pointer-events-auto w-full")}
           modifiers={{
             booked: (d) => fullyBookedDates.has(format(d, "yyyy-MM-dd")),
             occupied: (d) => {
@@ -300,7 +300,7 @@ function RangeCalendar({
       )}
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+      <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground flex-wrap">
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-sm bg-primary/30" /> Selected
         </span>
