@@ -81,13 +81,10 @@ const TenantPay = () => {
       setOrgInfo(org);
       setHasStripeConnect(!!(org?.stripe_account_id && org.stripe_onboarding_complete));
 
-      // Fetch owner bank info for manual SEPA transfer
-      const { data: ownerProfile } = await supabase
-        .from("owner_profiles")
-        .select("full_name, bank_iban, bank_bic, bank_name")
-        .eq("org_id", tenant.org_id)
-        .limit(1)
-        .maybeSingle();
+      // Fetch owner bank info for manual SEPA transfer (via secure RPC)
+      const { data: ownerBankData } = await supabase
+        .rpc("get_owner_bank_for_tenant", { _org_id: tenant.org_id });
+      const ownerProfile = Array.isArray(ownerBankData) ? ownerBankData[0] || null : ownerBankData;
       setOwnerBank(ownerProfile || null);
 
       // Fetch unpaid rent calls
