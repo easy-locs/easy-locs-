@@ -36,10 +36,10 @@ interface AuthContextType {
 }
 
 const defaultSubscription: SubscriptionState = {
-  subscribed: true,
-  plan: "unlimited",
+  subscribed: false,
+  plan: "free",
   subscriptionEnd: null,
-  loading: false,
+  loading: true,
   isTrial: false,
   trialDaysLeft: null,
 };
@@ -229,7 +229,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.error("[AuthContext] check-subscription error:", err);
-      setSubscription((prev) => ({ ...prev, loading: false }));
+      setSubscription((prev) => ({ ...prev, loading: false, subscribed: false, plan: "free" }));
     }
   }, [session?.access_token]);
 

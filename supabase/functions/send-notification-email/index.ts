@@ -353,7 +353,7 @@ serve(async (req) => {
     if (!sgRes.ok) {
       const errText = await sgRes.text();
       console.error("[send-notification-email] SendGrid error:", errText);
-      return new Response(JSON.stringify({ error: "Email send failed", details: errText }), {
+      return new Response(JSON.stringify({ error: "Email send failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -573,8 +573,8 @@ const PublicServiceBooking = () => {
                               return;
                             }
 
-                            const { data: urlData } = supabase.storage.from("booking-documents").getPublicUrl(path);
-                            setForm((f) => ({ ...f, id_document_url: urlData.publicUrl }));
+                            // Store path only — bucket is private, managers use signed URLs
+                            setForm((f) => ({ ...f, id_document_url: path }));
                             toast.success("ID document uploaded");
                           } finally {
                             setIdDocUploading(false);

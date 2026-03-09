@@ -155,10 +155,12 @@ export async function uploadBookingInvoiceAttachment(params: {
     throw error;
   }
 
-  const { data } = supabase.storage.from("booking-documents").getPublicUrl(path);
+  const { data: signedData, error: signError } = await supabase.storage
+    .from("booking-documents")
+    .createSignedUrl(path, 3600);
 
   return {
-    attachmentUrl: data.publicUrl,
+    attachmentUrl: signedData?.signedUrl || "",
     attachmentName: fileName,
   };
 }
