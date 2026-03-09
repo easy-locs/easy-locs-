@@ -1754,7 +1754,7 @@ const RentalManagement = () => {
                                 {paid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">
