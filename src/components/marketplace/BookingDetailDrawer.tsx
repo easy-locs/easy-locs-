@@ -15,6 +15,61 @@ import BookingStatusBadge from "./BookingStatusBadge";
 import BookingCommunicationThread from "./BookingCommunicationThread";
 import BookingActivityLog from "./BookingActivityLog";
 
+function IdDocumentCard({ booking }: { booking: any }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!booking.id_document_url) return;
+    const path = booking.id_document_url;
+    if (path.startsWith("http")) {
+      setSignedUrl(path);
+      return;
+    }
+    supabase.storage
+      .from("booking-documents")
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setSignedUrl(data.signedUrl);
+      });
+  }, [booking.id_document_url]);
+
+  return (
+    <Card>
+      <CardContent className="pt-4 space-y-2">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <FileText className="h-4 w-4 text-accent" /> Identity Document
+        </h3>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <p className="text-muted-foreground text-xs">Client</p>
+            <p className="font-medium text-foreground">{booking.booker_name}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Booking Ref</p>
+            <p className="font-medium text-foreground">#{booking.id?.slice(0, 8)}</p>
+          </div>
+          {booking.id_document_type && (
+            <div>
+              <p className="text-muted-foreground text-xs">Document Type</p>
+              <p className="font-medium text-foreground capitalize">{booking.id_document_type}</p>
+            </div>
+          )}
+        </div>
+        {signedUrl && (
+          <a
+            href={signedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-accent hover:underline mt-1"
+          >
+            <FileText className="h-3 w-3" /> View Document
+          </a>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
