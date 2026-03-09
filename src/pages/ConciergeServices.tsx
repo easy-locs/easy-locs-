@@ -219,28 +219,32 @@ const ConciergeServices = () => {
     await supabase.from("concierge_orders").update(updates).eq("id", orderId);
     toast.success(`Order ${status}`);
 
-    // Send email notification to guest on status change
+    // Send notification via shared communication pipeline
     const order = orders.find((o: any) => o.id === orderId);
     if (order?.guest_email) {
       const svc = services.find(s => s.id === order.service_id);
       try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            event_type: status === "confirmed" ? "booking_request" : status === "cancelled" ? "booking_request" : "booking_request",
-            recipient_email: order.guest_email,
-            data: {
-              guest_name: order.guest_name || "Guest",
-              service_title: svc?.title || "Service",
-              status,
-              service_date: order.service_date || "",
-              total_price: String(order.total_price || 0),
-              currency: order.currency || "EUR",
-            },
-            locale: "en",
-          },
+        const { sendCommunicationEvent, createDeepLinkMeta } = await import("@/lib/shared");
+        const meta = createDeepLinkMeta({
+          targetType: "concierge_order",
+          targetId: orderId,
+          module: "marketplace",
+          countryCode: svc?.country || "",
+          bookingId: orderId,
+          orgId: order.org_id,
+          propertyId: order.property_id,
+        });
+        await sendCommunicationEvent({
+          orgId: order.org_id,
+          senderId: user?.id,
+          recipientEmail: order.guest_email,
+          subject: `Order ${status}: ${svc?.title || "Service"}`,
+          message: `Your order for ${svc?.title || "Service"} on ${order.service_date || "—"} has been ${status}. Total: ${order.total_price} ${order.currency || "EUR"}.`,
+          category: "booking",
+          meta,
         });
       } catch (e) {
-        console.error("Status notification email error:", e);
+        console.error("Status notification error:", e);
       }
     }
 

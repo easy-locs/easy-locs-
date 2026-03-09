@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useDeepLink, scrollToAndHighlight, sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
+import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
+import { useDeepLink, scrollToAndHighlight } from "@/lib/shared/deep-link";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -247,51 +248,45 @@ const SeasonalRentals = () => {
     setEditingId(null);
   };
 
-  const notifyReservation = async (title: string, message: string, bookingEmail?: string) => {
+  /** Unified notification for seasonal bookings — uses shared communication pipeline */
+  const notifyReservation = async (title: string, message: string, bookingEmail?: string, bookingId?: string) => {
     if (!orgId || !user) return;
 
     const { data: org } = await supabase.from("orgs").select("owner_user_id, email, name").eq("id", orgId).single();
-
-    const targets = Array.from(new Set([user.id, org?.owner_user_id].filter(Boolean)));
-    await Promise.all(
-      targets.map((targetUserId) =>
-        supabase.from("notifications").insert({
-          user_id: targetUserId,
-          org_id: orgId,
-          type: "info",
-          title,
-          message,
-          link: "/dashboard/seasonal",
-        })
-      )
-    );
-
     const orgEmail = normalizeEmail(org?.email);
-    if (orgEmail && isValidEmail(orgEmail)) {
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: orgEmail,
-          subject: title,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">🏖️ ${title}</h2>
-            <p style="color:#555;font-size:15px;">${message}</p>
-            <p style="color:#888;font-size:12px;text-align:center;">${t("page.seasonal.auto_notif")}</p>
-          </div>`,
-        },
-      });
-    }
 
+    const meta = createDeepLinkMeta({
+      targetType: "booking_request",
+      targetId: bookingId || "",
+      module: "seasonal",
+      countryCode: searchParams.get("country") || "",
+      bookingId,
+      orgId,
+    });
+
+    // Notify org owner via shared pipeline
+    await sendCommunicationEvent({
+      orgId,
+      senderId: user.id,
+      recipientUserId: org?.owner_user_id || user.id,
+      recipientEmail: orgEmail && isValidEmail(orgEmail) ? orgEmail : undefined,
+      subject: title,
+      message,
+      category: "booking",
+      meta,
+    });
+
+    // Also notify the guest if email provided
     if (bookingEmail && isValidEmail(bookingEmail)) {
-      await supabase.functions.invoke("send-email", {
-        body: {
-          to: bookingEmail,
-          subject: t("page.seasonal.booking_confirmed_subject"),
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-            <h2 style="color:#1a1a1a;text-align:center;">${t("page.seasonal.booking_confirmed_heading")}</h2>
-            <p style="color:#555;font-size:15px;">${t("page.seasonal.booking_confirmed_body")}</p>
-            <p style="color:#888;font-size:12px;text-align:center;">${t("page.seasonal.booking_confirmed_footer")}</p>
-          </div>`,
-        },
+      await sendCommunicationEvent({
+        orgId,
+        senderId: user.id,
+        recipientEmail: bookingEmail,
+        subject: t("page.seasonal.booking_confirmed_subject"),
+        message: t("page.seasonal.booking_confirmed_body"),
+        category: "booking",
+        emailLocale: "fr",
+        meta,
       });
     }
   };
