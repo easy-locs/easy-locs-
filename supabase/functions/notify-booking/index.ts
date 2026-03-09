@@ -416,7 +416,8 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true, payment_url: paymentUrl }), {
+    // Do not expose payment_url to the caller to prevent leakage
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
