@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useDeepLink, scrollToAndHighlight, sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,6 +108,7 @@ const SeasonalRentals = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
+  const deepLink = useDeepLink();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ const SeasonalRentals = () => {
     }
     return new Date();
   });
-  const [deepLinkBookingId] = useState(() => searchParams.get("booking") || null);
+  const [deepLinkBookingId] = useState(() => deepLink.bookingId);
   const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
   const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);

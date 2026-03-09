@@ -6,6 +6,8 @@
  *   target_type, target_id, booking_id, country_code, target_url
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createDeepLinkMeta, createNotification } from "@/lib/shared";
+import type { TargetType, AppModule } from "@/lib/shared/types";
 
 type SystemEventType =
   | "payment_received"
@@ -33,6 +35,7 @@ interface SystemMessagePayload {
   category?: string;
 }
 
+/** @deprecated Use DeepLinkMeta from shared/types.ts instead */
 interface DeepLinkContext {
   target_type?: string;
   target_id?: string;
@@ -98,31 +101,39 @@ export async function createSystemEvent(payload: SystemMessagePayload & {
 }): Promise<void> {
   await createSystemMessage(payload);
 
-  // In-app notification with deep-link metadata
+  // In-app notification using shared engine
   if (payload.notifyUserId) {
     const template = EVENT_MESSAGES[payload.event];
     const content = interpolate(template.content, payload.data || {});
 
-    // Build metadata_json with deep-link context
-    const metadata: Record<string, any> = {
-      target_type: payload.deepLink?.target_type || template.target_type,
-      org_id: payload.orgId,
+    // Determine module from target_type
+    const moduleMap: Record<string, AppModule> = {
+      payment: "long_term", lease: "long_term", document: "long_term",
+      intervention: "long_term", booking_request: "seasonal",
+      marketplace_booking: "marketplace", concierge_order: "marketplace",
+      message: "long_term",
     };
-    if (payload.deepLink?.target_id) metadata.target_id = payload.deepLink.target_id;
-    if (payload.deepLink?.booking_id) metadata.booking_id = payload.deepLink.booking_id;
-    if (payload.deepLink?.country_code) metadata.country_code = payload.deepLink.country_code;
-    if (payload.deepLink?.target_url) metadata.target_url = payload.deepLink.target_url;
-    if (payload.propertyId) metadata.property_id = payload.propertyId;
-    if (payload.leaseId) metadata.lease_id = payload.leaseId;
+    const targetType = (payload.deepLink?.target_type || template.target_type) as TargetType;
+    const module = moduleMap[targetType] || "long_term";
 
-    await supabase.from("notifications").insert({
-      user_id: payload.notifyUserId,
-      org_id: payload.orgId,
+    const meta = createDeepLinkMeta({
+      targetType,
+      targetId: payload.deepLink?.target_id || "",
+      module,
+      countryCode: payload.deepLink?.country_code,
+      bookingId: payload.deepLink?.booking_id,
+      orgId: payload.orgId,
+      propertyId: payload.propertyId,
+      leaseId: payload.leaseId,
+    });
+
+    await createNotification({
+      userId: payload.notifyUserId,
+      orgId: payload.orgId,
       type: template.category === "payment" ? "payment" : "info",
       title: payload.notificationTitle || content.slice(0, 50),
       message: content,
-      link: payload.notificationLink || "/tenant/messages",
-      metadata_json: metadata,
+      meta,
     });
   }
 
