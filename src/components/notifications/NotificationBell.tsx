@@ -360,7 +360,7 @@ const NotificationBell = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })
               )}
