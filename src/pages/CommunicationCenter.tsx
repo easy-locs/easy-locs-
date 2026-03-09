@@ -1091,6 +1091,9 @@ const CommunicationCenter = () => {
                                 {isInboundEmail && (
                                   <span className="text-[10px] font-medium text-accent mb-0.5 block flex items-center gap-1">
                                     <Mail className="h-2.5 w-2.5" /> Email reply
+                                    {msg.language_detected && (
+                                      <span className="opacity-60">• {msg.language_detected.toUpperCase()}</span>
+                                    )}
                                   </span>
                                 )}
                                 {msg.category !== "general" && !isInboundEmail && (
@@ -1104,6 +1107,12 @@ const CommunicationCenter = () => {
                                       : (msg.translated_content || msg.content)
                                   }
                                 </p>
+                                {/* Show original below translation when not toggled */}
+                                {!isMe && msg.translated_content && !showOriginal[msg.id] && (
+                                  <p className="text-xs mt-1.5 pt-1.5 border-t border-current/10 opacity-50 italic whitespace-pre-wrap break-words">
+                                    {msg.content.length > 120 ? msg.content.slice(0, 120) + "…" : msg.content}
+                                  </p>
+                                )}
                                 {/* Airbnb-style translation toggle */}
                                 {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
                                   <button
