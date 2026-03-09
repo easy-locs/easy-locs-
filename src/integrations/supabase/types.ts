@@ -2617,6 +2617,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           preferred_currency: string | null
+          preferred_locale: string | null
           referral_code: string | null
           signature_url: string | null
           tax_id: string | null
@@ -2644,6 +2645,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           preferred_currency?: string | null
+          preferred_locale?: string | null
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
@@ -2671,6 +2673,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           preferred_currency?: string | null
+          preferred_locale?: string | null
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
@@ -3734,6 +3737,7 @@ export type Database = {
           notes: string | null
           org_id: string
           phone: string | null
+          preferred_locale: string | null
           profession: string | null
           property_id: string | null
           rent_amount: number | null
@@ -3763,6 +3767,7 @@ export type Database = {
           notes?: string | null
           org_id: string
           phone?: string | null
+          preferred_locale?: string | null
           profession?: string | null
           property_id?: string | null
           rent_amount?: number | null
@@ -3792,6 +3797,7 @@ export type Database = {
           notes?: string | null
           org_id?: string
           phone?: string | null
+          preferred_locale?: string | null
           profession?: string | null
           property_id?: string | null
           rent_amount?: number | null
