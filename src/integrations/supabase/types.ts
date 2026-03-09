@@ -4039,6 +4039,33 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_marketplace_services: {
+        Args: { _category?: string; _city?: string; _country?: string }
+        Returns: {
+          active: boolean
+          badges: string[]
+          blocked_dates: Json
+          booking_slug: string
+          category: string
+          city: string
+          country: string
+          currency: string
+          description: string
+          duration_minutes: number
+          id: string
+          location: string
+          max_capacity: number
+          org_id: string
+          photo_urls: Json
+          price: number
+          price_type: string
+          provider_id: string
+          requires_id_document: boolean
+          sort_order: number
+          time_slots: Json
+          title: string
+        }[]
+      }
       get_public_service_availability: {
         Args: { p_service_id: string }
         Returns: {
