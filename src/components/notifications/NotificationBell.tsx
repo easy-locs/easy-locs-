@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle, Archive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -138,7 +138,20 @@ const NotificationBell = () => {
   const { t, locale } = useI18n();
   const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
+
+  // Close dropdown on outside click using ref — no backdrop overlay needed
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler, true);
+    return () => document.removeEventListener("mousedown", handler, true);
+  }, [open]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -254,7 +267,7 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button onClick={() => setOpen(!open)} className="relative p-2 rounded-lg hover:bg-muted transition-colors">
         <Bell className="h-5 w-5 text-foreground" />
         {unreadCount > 0 && (
@@ -265,8 +278,6 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -370,7 +381,6 @@ const NotificationBell = () => {
               )}
             </div>
           </div>
-        </>
       )}
     </div>
   );
