@@ -443,7 +443,7 @@ const FurnitureInventory = () => {
                         const roomCount = new Set(propItems.map(i => i.room_name)).size;
                         return (
                           <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
-                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
+                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 hover:shadow-card-hover transition-all min-h-[6rem]">
                             <div className="flex items-start justify-between">
                               <div>
                                 <h3 className="font-semibold text-foreground">{p.label}</h3>
