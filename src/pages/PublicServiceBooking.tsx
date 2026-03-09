@@ -60,8 +60,8 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      const exactMatchObj = exactMatch as unknown as unknown as unknown as unknown as Record<string, unknown> | null;
-      let resolvedService: any = exactMatchObj ? { ...exactMatchObj, _source: "concierge" } : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
 
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
@@ -71,8 +71,7 @@ const PublicServiceBooking = () => {
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-      unknown as   const fbOunknown as bj = fallbaunknown as ckMatch as Record<string, unknown> | null;
-        if (fbObj) resolvedService = { ...fbObj, _source: "concierge" };
+        if (fallbackMatch) resolvedService = { ...(fallbackMatch as any), _source: "concierge" };
       }
 
       // 2. If not found in concierge, try marketplace_services
@@ -82,11 +81,10 @@ const PublicServiceBooking = () => {
           .select("*")
           .eq("booking_slug", normalizedSlug)
           .limit(1)
-          .maybeSingunknown as le();
-        const mpunknown as ExactObj = mpExact as Record<string, unknown> | null;
+          .maybeSingle();
 
-        if (mpExactObj) {
-          resolvedService = { ...mpExactObj, _source: "marketplace" };
+        if (mpExact) {
+          resolvedService = { ...(mpExact as any), _source: "marketplace" };
         } else {
           const { data: mpFallback } = await supabase
             .from("marketplace_services_public" as any)
@@ -94,8 +92,7 @@ const PublicServiceBooking = () => {
             .ilike("booking_slug", normalizedSlug)
             .limit(1)
             .maybeSingle();
-       unknown as    const mpFbObj = mpFallback as Record<string, unknown> | null;
-          if (mpFbObj) resolvedService = { ...mpFbObj, _source: "marketplace" };
+          if (mpFallback) resolvedService = { ...(mpFallback as any), _source: "marketplace" };
         }
       }
 
