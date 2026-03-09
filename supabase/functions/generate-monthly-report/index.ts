@@ -13,6 +13,30 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    // Authorization check — only allow service role key or dedicated cron secret
+    const authHeader = req.headers.get("authorization") || "";
+    const callerToken = authHeader.replace("Bearer ", "").trim();
+    const cronSecret = req.headers.get("x-cron-secret") || "";
+
+    let authorized = false;
+    if (callerToken === serviceKey) {
+      authorized = true;
+    } else if (cronSecret) {
+      const { data: cfg } = await supabase
+        .from("internal_config")
+        .select("value")
+        .eq("key", "cron_secret")
+        .single();
+      if (cfg && cfg.value === cronSecret) authorized = true;
+    }
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Get current month
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
