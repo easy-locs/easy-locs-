@@ -126,12 +126,12 @@ const Dashboard = () => {
 
         {/* Quick Add Property — moved below country cards */}
 
-        {/* Global KPIs — clickable navigation cards */}
+        {/* Global KPIs — smart clickable navigation cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {[
-            { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties), path: "/dashboard/properties" },
-            { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries), path: "/dashboard" },
-            { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth), path: "/dashboard/receipts" },
+            { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties), path: "/dashboard/properties", hint: "Voir les biens →" },
+            { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries), path: null, hint: "Sélectionnez un pays ci-dessous" },
+            { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth), path: "/dashboard/receipts", hint: "Voir les quittances →" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -139,16 +139,28 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.03 }}
             >
-              <Link to={stat.path} className="group block stat-card cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <stat.icon className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
+              {stat.path ? (
+                <Link to={stat.path} className="group block stat-card cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all h-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <stat.icon className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
+                      <span className="text-xs text-muted-foreground font-medium truncate">{stat.label}</span>
+                    </div>
+                    <ArrowRight className="h-3.5 w-3.5 text-transparent group-hover:text-accent transition-colors shrink-0" />
+                  </div>
+                  <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
+                  <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{stat.hint}</p>
+                </Link>
+              ) : (
+                <div className="stat-card h-full">
+                  <div className="flex items-center gap-2 mb-2">
+                    <stat.icon className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground font-medium truncate">{stat.label}</span>
                   </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-transparent group-hover:text-muted-foreground transition-colors shrink-0" />
+                  <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">{stat.hint}</p>
                 </div>
-                <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
-              </Link>
+              )}
             </motion.div>
           ))}
         </div>
