@@ -140,6 +140,7 @@ const SeasonalRentals = () => {
     deposit_amount: 0,
     notes: "",
   });
+  const [payingRequest, setPayingRequest] = useState<string | null>(null);
   const [showIcalPanel, setShowIcalPanel] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
   const [importingIcal, setImportingIcal] = useState(false);
@@ -769,34 +770,65 @@ const SeasonalRentals = () => {
                       )}
                       {isActive && req.status !== "pending" && (
                         <>
-                          {(req.status === "approved" || req.status === "payment_pending") && (
+                           {(req.status === "approved" || req.status === "payment_pending") && (
                             <button
+                              disabled={payingRequest === req.id}
                               onClick={async () => {
-                                const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
-                                const pricePerNight = listingData?.price_per_night || 0;
-                                const totalAmount = pricePerNight * nights;
-                                const payUrl = buildAppUrl(`/listing/${listingData?.slug}?pay_request=${req.id}&email=${encodeURIComponent(req.guest_email)}&name=${encodeURIComponent(req.guest_name)}&amount=${totalAmount}&nights=${nights}`);
-                                await supabase.from("booking_requests").update({ status: "payment_pending" } as any).eq("id", req.id);
-                                await supabase.functions.invoke("send-email", {
-                                  body: {
-                                    to: req.guest_email,
-                                    subject: `💳 Payment — ${listingData?.title || ""}`,
-                                    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                                      <h2 style="color:#1a1a1a;text-align:center;">💳 ${t("page.seasonal.pay_now_btn")}</h2>
-                                      <p style="color:#555;font-size:15px;text-align:center;">${req.guest_name}, ${req.check_in} → ${req.check_out}</p>
-                                      <p style="text-align:center;margin:24px 0;">
-                                        <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
-                                      </p>
-                                      <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
-                                    </div>`,
-                                  },
-                                });
-                                toast({ title: "Payment link sent!" });
-                                setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "payment_pending" } : r));
+                                setPayingRequest(req.id);
+                                try {
+                                  const { data: listingData } = await supabase.from("public_listings").select("*").eq("id", req.listing_id).single();
+                                  const pricePerNight = listingData?.price_per_night || 0;
+                                  const totalAmount = pricePerNight * nights;
+
+                                  // Generate real Stripe checkout session
+                                  const { data: stripeData, error: stripeError } = await supabase.functions.invoke("create-booking-payment", {
+                                    body: {
+                                      booking_request_id: req.id,
+                                      listing_id: req.listing_id,
+                                      guest_email: req.guest_email,
+                                      guest_name: req.guest_name,
+                                      amount: totalAmount,
+                                      nights,
+                                      property_label: listingData?.title || "",
+                                      origin: window.location.origin,
+                                    },
+                                  });
+
+                                  if (stripeError) throw stripeError;
+                                  if (stripeData?.error) throw new Error(stripeData.error);
+
+                                  // Update status
+                                  await supabase.from("booking_requests").update({ status: "payment_pending" } as any).eq("id", req.id);
+
+                                  // Send email with Stripe payment link
+                                  if (stripeData?.url) {
+                                    await supabase.functions.invoke("send-email", {
+                                      body: {
+                                        to: req.guest_email,
+                                        subject: `💳 Payment — ${listingData?.title || ""}`,
+                                        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                                          <h2 style="color:#1a1a1a;text-align:center;">💳 ${t("page.seasonal.pay_now_btn")}</h2>
+                                          <p style="color:#555;font-size:15px;text-align:center;">${req.guest_name}, ${req.check_in} → ${req.check_out}</p>
+                                          <p style="text-align:center;margin:24px 0;">
+                                            <a href="${stripeData.url}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">💳 ${t("page.seasonal.pay_now_btn")} — ${totalAmount}€</a>
+                                          </p>
+                                          <p style="text-align:center;color:#aaa;font-size:11px;">EASY-LOCS®</p>
+                                        </div>`,
+                                      },
+                                    });
+                                  }
+
+                                  toast({ title: "✅ Payment link generated and sent!" });
+                                  setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "payment_pending" } : r));
+                                } catch (err: any) {
+                                  toast({ title: t("page.common.error"), description: err.message || "Payment link generation failed", variant: "destructive" });
+                                } finally {
+                                  setPayingRequest(null);
+                                }
                               }}
-                              className="btn-success btn-sm"
+                              className="btn-success btn-sm disabled:opacity-50"
                             >
-                              💳 {t("page.seasonal.pay_now_btn")}
+                              {payingRequest === req.id ? "⏳..." : `💳 ${t("page.seasonal.pay_now_btn")}`}
                             </button>
                           )}
                           <button
