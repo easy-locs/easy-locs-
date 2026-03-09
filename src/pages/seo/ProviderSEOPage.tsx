@@ -205,7 +205,7 @@ const ProviderSEOPage = () => {
               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                 <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {provider.city}, {provider.country}</span>
                 {provider.rating > 0 && (
-                  <span className="flex items-center gap-1"><Star className="h-4 w-4 text-yellow-500" /> {provider.rating} ({provider.reviews_count} reviews)</span>
+                  <span className="flex items-center gap-1"><Star className="h-4 w-4 text-warning" /> {provider.rating} ({provider.reviews_count} reviews)</span>
                 )}
               </div>
               {provider.bio && <p className="text-muted-foreground max-w-2xl">{provider.bio}</p>}
