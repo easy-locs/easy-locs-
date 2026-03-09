@@ -41,6 +41,7 @@ interface ProviderFormData {
   bank_name: string;
   tax_rate: number;
   tax_label: string;
+  reviews_enabled: boolean;
 }
 
 interface Props {
