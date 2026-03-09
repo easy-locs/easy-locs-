@@ -236,39 +236,39 @@ function RangeCalendar({
   const rangeDays = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
 
   return (
-    <div className="space-y-3">
-      {/* Check-in / Check-out display */}
-      <div className="grid grid-cols-2 gap-2">
+    <div className="w-full max-w-md mx-auto space-y-4">
+      {/* Check-in / Check-out display — aligned row */}
+      <div className="grid grid-cols-2 gap-3">
         <div className={cn(
-          "rounded-lg border-2 p-2.5 text-center transition-colors",
-          !range?.from ? "border-primary bg-primary/5" : "border-border"
+          "rounded-xl border-2 px-4 py-3 text-center transition-all",
+          !range?.from ? "border-primary bg-primary/5 shadow-sm" : "border-border"
         )}>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{checkInLabel}</p>
-          <p className={cn("text-sm font-semibold mt-0.5", range?.from ? "text-foreground" : "text-muted-foreground")}>
-            {range?.from ? format(range.from, "dd MMM yyyy") : "Select date"}
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkInLabel}</p>
+          <p className={cn("text-sm font-bold", range?.from ? "text-foreground" : "text-muted-foreground/60")}>
+            {range?.from ? format(range.from, "dd MMM yyyy") : "—"}
           </p>
         </div>
         <div className={cn(
-          "rounded-lg border-2 p-2.5 text-center transition-colors",
-          range?.from && !range?.to ? "border-primary bg-primary/5" : "border-border"
+          "rounded-xl border-2 px-4 py-3 text-center transition-all",
+          range?.from && !range?.to ? "border-primary bg-primary/5 shadow-sm" : "border-border"
         )}>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{checkOutLabel}</p>
-          <p className={cn("text-sm font-semibold mt-0.5", range?.to ? "text-foreground" : "text-muted-foreground")}>
-            {range?.to ? format(range.to, "dd MMM yyyy") : "Select date"}
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkOutLabel}</p>
+          <p className={cn("text-sm font-bold", range?.to ? "text-foreground" : "text-muted-foreground/60")}>
+            {range?.to ? format(range.to, "dd MMM yyyy") : "—"}
           </p>
         </div>
       </div>
 
       {rangeDays > 0 && (
         <div className="text-center">
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs px-3 py-1">
             {rangeDays} {rangeDays === 1 ? "night" : "nights"}
           </Badge>
         </div>
       )}
 
-      {/* Calendar */}
-      <div className="flex justify-center">
+      {/* Calendar — centered, full width */}
+      <div className="flex justify-center [&_.rdp]:w-full">
         <Calendar
           mode="range"
           selected={range}
