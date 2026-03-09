@@ -99,16 +99,37 @@ export async function resolveNotification(notifId: string): Promise<void> {
  * Resolve all notifications matching a specific target.
  * Called by destination pages when an action is completed on a record.
  * 
+ * @param targetType - e.g. "marketplace_booking", "concierge_order", "booking_request"
+ * @param targetId - the record ID
+ * @param userId - optional: scope to a specific user's notifications
+ * @param eventType - optional: only resolve notifications with this specific event_type
+ *                    in metadata_json (prevents resolving unrelated notifications on the same record)
+ * 
  * @example
- * // After confirming a booking:
+ * // After confirming a booking — resolves all notifications for this booking:
  * await resolveNotificationsForTarget("marketplace_booking", bookingId);
+ * 
+ * // After payment only — resolves only payment notifications:
+ * await resolveNotificationsForTarget("marketplace_booking", bookingId, userId, "payment_received");
  */
 export async function resolveNotificationsForTarget(
   targetType: string,
   targetId: string,
-  userId?: string
+  userId?: string,
+  eventType?: string
 ): Promise<void> {
   try {
+    const matchFilter: Record<string, string> = {
+      target_type: targetType,
+      target_id: targetId,
+    };
+
+    // When eventType is provided, only resolve notifications with that specific event
+    // This prevents resolving unrelated notifications attached to the same record
+    if (eventType) {
+      matchFilter.event_type = eventType;
+    }
+
     let query = supabase
       .from("notifications")
       .update({
@@ -116,14 +137,14 @@ export async function resolveNotificationsForTarget(
         resolved_at: new Date().toISOString(),
         read: true,
       } as any)
-      .contains("metadata_json", { target_type: targetType, target_id: targetId } as any);
+      .contains("metadata_json", matchFilter as any);
 
     if (userId) {
       query = query.eq("user_id", userId);
     }
 
     await query;
-    console.log(`[notification-engine] resolved notifications for ${targetType}:${targetId}`);
+    console.log(`[notification-engine] resolved notifications for ${targetType}:${targetId}${eventType ? ` (event: ${eventType})` : ""}`);
   } catch (e) {
     console.error("[notification-engine] resolveForTarget failed:", e);
   }
