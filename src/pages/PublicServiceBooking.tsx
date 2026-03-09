@@ -60,7 +60,7 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      const exactMatchObj = exactMatch as Record<string, unknown> | null;
+      const exactMatchObj = exactMatch as unknown as Record<string, unknown> | null;
       let resolvedService: any = exactMatchObj ? { ...exactMatchObj, _source: "concierge" } : null;
 
       if (!resolvedService) {
