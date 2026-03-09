@@ -422,55 +422,46 @@ const ChannelManager = () => {
           </div>
         </div>
 
-        {/* KPIs — Smart clickable */}
+        {/* KPIs — Smart clickable synchronized with tab state */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => {
-            const tabEl = document.querySelector('[data-state="inactive"][value="connections"]') as HTMLElement;
-            if (tabEl) tabEl.click();
-          }}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("connections")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les connexions →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les connexions →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => {
-            const tabEl = document.querySelector('[data-state="inactive"][value="reservations"]') as HTMLElement;
-            if (tabEl) tabEl.click();
-          }}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("reservations")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Réservations</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
-              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Locations saisonnières →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Locations saisonnières →</p>
             </CardContent>
           </Card>
-          <Card className={`cursor-pointer hover:shadow-card-hover transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => {
-            const tabEl = document.querySelector('[data-state="inactive"][value="calendar"]') as HTMLElement;
-            if (tabEl) tabEl.click();
-          }}>
+          <Card className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
               <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir le calendrier →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir le calendrier →</p>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => navigate("/dashboard/pricing")}>
+          <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/pricing")}>
             <CardContent className="pt-4 pb-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
               <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="calendar" onValueChange={() => {}}>
+        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList>
             <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
             <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
