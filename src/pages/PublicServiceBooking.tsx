@@ -60,7 +60,7 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      const exactMatchObj = exactMatch as unknown as unknown as Record<string, unknown> | null;
+      const exactMatchObj = exactMatch as unknown as unknown as unknown as Record<string, unknown> | null;
       let resolvedService: any = exactMatchObj ? { ...exactMatchObj, _source: "concierge" } : null;
 
       if (!resolvedService) {
@@ -71,7 +71,7 @@ const PublicServiceBooking = () => {
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        const fbObj = fallbaunknown as ckMatch as Record<string, unknown> | null;
+        const fbOunknown as bj = fallbaunknown as ckMatch as Record<string, unknown> | null;
         if (fbObj) resolvedService = { ...fbObj, _source: "concierge" };
       }
 
@@ -83,7 +83,7 @@ const PublicServiceBooking = () => {
           .eq("booking_slug", normalizedSlug)
           .limit(1)
           .maybeSingle();
-        const mpExactObj = mpExact as Record<string, unknown> | null;
+        const mpunknown as ExactObj = mpExact as Record<string, unknown> | null;
 
         if (mpExactObj) {
           resolvedService = { ...mpExactObj, _source: "marketplace" };
