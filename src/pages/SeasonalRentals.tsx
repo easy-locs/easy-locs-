@@ -671,6 +671,11 @@ const SeasonalRentals = () => {
                 <button
                   onClick={async () => {
                     await supabase.from("booking_requests").update({ status: "rejected" } as any).eq("id", focusedRequest.id);
+                    // Resolve notifications — action completed
+                    try {
+                      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+                      await resolveNotificationsForTarget("booking_request", focusedRequest.id, user?.id);
+                    } catch (e) { console.error("[resolve-notif]", e); }
                     toast({ title: t("page.seasonal.request_rejected") });
                     setFocusedRequest({ ...focusedRequest, status: "rejected" });
                   }}
