@@ -787,19 +787,27 @@ ${serviceLabel}${priceLabel}
         read: false,
       } as any);
 
-      // Email client
+      // Email client using premium template
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        await supabase.functions.invoke("send-email", {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        const threadRef = selectedThread.bookingId || selectedThread.id;
+        
+        await supabase.functions.invoke("send-notification-email", {
           body: {
-            to: email,
-            subject: `💳 Payment request — ${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <h2 style="text-align:center;">💳 Payment Request</h2>
-              <p style="text-align:center;font-size:24px;font-weight:bold;color:#1a1a1a;">${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</p>
-              ${paymentDescription ? `<p style="text-align:center;color:#555;">${escapeEmailHtml(paymentDescription)}</p>` : ""}
-              ${paymentUrl ? `<div style="text-align:center;margin:24px 0;"><a href="${paymentUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:16px;">Pay Now</a></div>` : ""}
-            </div>`,
+            event_type: "payment_link_sent",
+            recipient_email: email,
+            recipient_name: selectedThread.name,
+            data: {
+              service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+              message: `${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}${paymentDescription ? ` — ${paymentDescription}` : ""}`,
+              booking_id: selectedThread.bookingId || "",
+              cta_url: paymentUrl || buildAppUrl("/"),
+              cta_label: clientLang === "fr" ? "Payer maintenant" : clientLang === "es" ? "Pagar ahora" : clientLang === "de" ? "Jetzt bezahlen" : "Pay Now",
+              org_id: orgId,
+            },
+            locale: clientLang,
           },
         });
       }
