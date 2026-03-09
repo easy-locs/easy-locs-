@@ -265,7 +265,7 @@ const ServiceBookingCalendar = ({
             <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/30" /> Partial
+            <span className="w-2.5 h-2.5 rounded-sm bg-warning/30" /> Partial
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm bg-destructive/30 line-through" /> Unavailable
