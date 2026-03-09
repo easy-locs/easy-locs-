@@ -140,6 +140,7 @@ const SeasonalRentals = () => {
     deposit_amount: 0,
     notes: "",
   });
+  const [payingRequest, setPayingRequest] = useState<string | null>(null);
   const [showIcalPanel, setShowIcalPanel] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
   const [importingIcal, setImportingIcal] = useState(false);
