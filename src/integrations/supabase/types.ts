@@ -1989,7 +1989,11 @@ export type Database = {
       messages: {
         Row: {
           attachment_url: string | null
+          booking_id: string | null
+          booking_type: string | null
           category: string
+          contact_email: string | null
+          contact_name: string | null
           content: string
           conversation_status: string | null
           created_at: string
@@ -2001,12 +2005,16 @@ export type Database = {
           read: boolean
           sender_id: string
           sender_locale: string | null
-          tenant_id: string
+          tenant_id: string | null
           translated_content: string | null
         }
         Insert: {
           attachment_url?: string | null
+          booking_id?: string | null
+          booking_type?: string | null
           category?: string
+          contact_email?: string | null
+          contact_name?: string | null
           content: string
           conversation_status?: string | null
           created_at?: string
@@ -2018,12 +2026,16 @@ export type Database = {
           read?: boolean
           sender_id: string
           sender_locale?: string | null
-          tenant_id: string
+          tenant_id?: string | null
           translated_content?: string | null
         }
         Update: {
           attachment_url?: string | null
+          booking_id?: string | null
+          booking_type?: string | null
           category?: string
+          contact_email?: string | null
+          contact_name?: string | null
           content?: string
           conversation_status?: string | null
           created_at?: string
@@ -2035,7 +2047,7 @@ export type Database = {
           read?: boolean
           sender_id?: string
           sender_locale?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
           translated_content?: string | null
         }
         Relationships: [
