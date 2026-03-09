@@ -113,16 +113,17 @@ const SeasonalRentals = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [calMonth, setCalMonth] = useState(() => {
-    const monthParam = new URLSearchParams(window.location.search).get("month");
+    const monthParam = searchParams.get("month");
     if (monthParam) {
       const [y, m] = monthParam.split("-").map(Number);
       if (y && m) return new Date(y, m - 1, 1);
     }
     return new Date();
   });
-  const [focusedRequestId] = useState(() => new URLSearchParams(window.location.search).get("focusRequest") || null);
-  const [focusedBookingId] = useState(() => new URLSearchParams(window.location.search).get("booking") || null);
-  const initialPropertyId = new URLSearchParams(window.location.search).get("propertyId") || "";
+  const focusedRequestId = searchParams.get("focusRequest") || null;
+  const focusedBookingId = searchParams.get("booking") || null;
+  const initialPropertyId = searchParams.get("propertyId") || "";
+  const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);
   const [form, setForm] = useState<SeasonalForm>({
     property_id: initialPropertyId,
     guest_name: "",
@@ -196,23 +197,25 @@ const SeasonalRentals = () => {
     loadRequest();
   }, [focusedRequestId, orgId]);
 
-  // Deep-link: scroll to booking from ?booking=ID
+  // Deep-link: scroll to booking from ?booking=ID (runs only once)
   useEffect(() => {
-    if (!focusedBookingId || bookings.length === 0) return;
+    if (hasAppliedSeasonalDeepLink || !focusedBookingId || bookings.length === 0) return;
     const el = document.getElementById(`booking-${focusedBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.classList.add("ring-2", "ring-accent");
+      setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 3000);
+      setHasAppliedSeasonalDeepLink(true);
       console.log("[deep-link] scrolled to seasonal booking:", focusedBookingId);
     } else {
-      // Try matching booking_requests
-      const found = bookings.find(b => b.id === focusedBookingId);
+      const found = bookings.find(b => String(b.id) === String(focusedBookingId));
       if (found) {
         startEdit(found);
+        setHasAppliedSeasonalDeepLink(true);
         console.log("[deep-link] opened seasonal booking for edit:", focusedBookingId);
       }
     }
-  }, [focusedBookingId, bookings]);
+  }, [focusedBookingId, bookings, hasAppliedSeasonalDeepLink]);
 
   const resetForm = () => {
     setForm({
@@ -1046,7 +1049,7 @@ const SeasonalRentals = () => {
           {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
-                <div key={b.id} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group">
+                <div key={b.id} id={`booking-${b.id}`} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group transition-all">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground">{b.guest_name}</p>
                     <p className="text-xs text-muted-foreground">{propName(b.property_id)} · {b.check_in} → {b.check_out}</p>

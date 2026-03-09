@@ -38,14 +38,14 @@ const ActivitiesMarketplace = () => {
   const [displayCurrency, setDisplayCurrency] = useState("EUR");
   const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
 
-  // Deep-link: auto-switch to bookings tab from ?booking=ID
+  // Deep-link: read ?booking=ID on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get("booking");
     if (bookingId) {
       setActiveTab("bookings");
-      setDeepLinkedBookingId(bookingId);
-      console.log("[deep-link] auto-opened marketplace booking:", bookingId);
+      setDeepLinkedBookingId(String(bookingId));
+      console.log("[deep-link] marketplace booking param:", bookingId);
     }
   }, []);
 

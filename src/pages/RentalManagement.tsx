@@ -119,26 +119,33 @@ const RentalManagement = () => {
     }
   }, [searchParams]);
 
-  // Deep-link: auto-select tenant or scroll to record from ?record=ID
+  // Deep-link: auto-select tenant or scroll to record from ?record=ID (runs only once)
+  const [hasAppliedRecordDeepLink, setHasAppliedRecordDeepLink] = useState(false);
   useEffect(() => {
+    if (hasAppliedRecordDeepLink || loading) return;
     const recordId = searchParams.get("record");
-    if (!recordId || loading) return;
+    if (!recordId) return;
     // Try to match a tenant
-    const tenant = tenants.find(t => t.id === recordId);
+    const tenant = tenants.find(t => String(t.id) === String(recordId));
     if (tenant) {
       setActiveTab("tenants");
       setSelectedTenant(tenant);
+      setHasAppliedRecordDeepLink(true);
       console.log("[deep-link] auto-selected tenant:", recordId);
       return;
     }
     // Try to scroll to a payment row
-    const el = document.getElementById(`payment-${recordId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("ring-2", "ring-accent");
-      console.log("[deep-link] scrolled to payment:", recordId);
-    }
-  }, [searchParams, tenants, loading]);
+    setTimeout(() => {
+      const el = document.getElementById(`payment-${recordId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-accent");
+        setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 3000);
+        setHasAppliedRecordDeepLink(true);
+        console.log("[deep-link] scrolled to payment:", recordId);
+      }
+    }, 100);
+  }, [searchParams, tenants, loading, hasAppliedRecordDeepLink]);
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -1687,7 +1694,7 @@ const RentalManagement = () => {
                                 {unpaid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
@@ -1747,7 +1754,7 @@ const RentalManagement = () => {
                                 {paid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">
