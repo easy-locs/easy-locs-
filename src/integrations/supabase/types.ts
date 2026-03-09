@@ -4265,6 +4265,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_owner_bank_for_tenant: {
+        Args: { _org_id: string }
+        Returns: {
+          bank_bic: string
+          bank_iban: string
+          bank_name: string
+          full_name: string
+        }[]
+      }
       get_owner_profile_for_tenant: {
         Args: { _org_id: string }
         Returns: {
