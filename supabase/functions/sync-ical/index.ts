@@ -88,6 +88,22 @@ serve(async (req) => {
       throw new Error("Missing required fields: ical_url, property_id, provider, org_id");
     }
 
+    // Verify the authenticated user belongs to the requested org
+    const { data: membership } = await supabase
+      .from("org_members")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("org_id", org_id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!membership) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: not a member of this organization" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
     // SSRF protection: validate URL scheme and hostname
     let parsedUrl: URL;
     try {
