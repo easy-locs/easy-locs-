@@ -291,12 +291,18 @@ serve(async (req) => {
 
     const { event_type, recipient_email, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
 
-    // If not internal, verify org membership when org_id is provided
-    if (!isInternalCall && data.org_id) {
+    // If not internal, always require and verify org membership
+    if (!isInternalCall) {
+      const resolvedOrgId = data?.org_id;
+      if (!resolvedOrgId) {
+        return new Response(JSON.stringify({ error: "org_id is required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const { data: membership } = await supabaseAdmin
         .from("org_members").select("id")
-        .eq("user_id", (req as any).__callerId).eq("org_id", data.org_id)
+        .eq("user_id", (req as any).__callerId).eq("org_id", resolvedOrgId)
         .maybeSingle();
       if (!membership) {
         return new Response(JSON.stringify({ error: "Forbidden: not an org member" }), {
