@@ -110,6 +110,8 @@ const CommunicationCenter = () => {
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
   const [typingIndicator, setTypingIndicator] = useState(false);
+  const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
+  const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
