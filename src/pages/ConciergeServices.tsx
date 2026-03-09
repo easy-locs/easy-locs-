@@ -108,34 +108,33 @@ const ConciergeServices = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
   const [preferredCurrency, setPreferredCurrency] = useState("EUR");
-  const [hasAppliedDeepLink, setHasAppliedDeepLink] = useState(false);
+  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
-  // Deep-link: auto-open booking from ?booking=ID (runs only once, then cleans URL)
+  // Reactive deep-link: auto-open booking from ?booking=ID (works on mount AND subsequent navigations)
   useEffect(() => {
-    if (hasAppliedDeepLink) return;
     const bookingId = searchParams.get("booking");
-    if (!bookingId) return;
+    if (!bookingId || bookingId === lastAppliedBookingId) return;
     if (loading) return; // Wait for data to load
     const found = orders.find((o: any) => String(o.id) === String(bookingId));
     if (found) {
       setTab("bookings");
       setSelectedBooking(found);
-      setHasAppliedDeepLink(true);
+      setLastAppliedBookingId(bookingId);
       const next = new URLSearchParams(searchParams);
       next.delete("booking");
       setSearchParams(next, { replace: true });
       console.log("[deep-link] auto-opened concierge booking:", bookingId);
-    } else if (!loading && orders.length >= 0) {
+    } else if (!loading) {
       // Data loaded but booking not found — show fallback
       setTab("bookings");
-      setHasAppliedDeepLink(true);
+      setLastAppliedBookingId(bookingId);
       const next = new URLSearchParams(searchParams);
       next.delete("booking");
       setSearchParams(next, { replace: true });
       toast.error("Booking not found or no longer available");
       console.warn("[deep-link] concierge booking not found:", bookingId);
     }
-  }, [orders, loading, hasAppliedDeepLink, searchParams, setSearchParams]);
+  }, [orders, loading, searchParams, lastAppliedBookingId, setSearchParams]);
 
   // Load landlord profile + preferred currency
   useEffect(() => {
