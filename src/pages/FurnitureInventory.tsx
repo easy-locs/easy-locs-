@@ -83,7 +83,7 @@ const FurnitureInventory = () => {
   ];
   const DEFAULT_ROOMS = ROOM_KEYS.map(k => t(k));
 
-  const [form, setForm] = useState({ property_id: "", room_name: "", item_name: "", quantity: 1, condition: "good", notes: "" });
+  const [form, setForm] = useState({ property_id: "", room_name: "", item_name: "", quantity: 0, condition: "good", notes: "" });
 
   // Set default room after translations load
   useEffect(() => {
@@ -157,7 +157,7 @@ const FurnitureInventory = () => {
       }
     }
     toast({ title: t("page.furniture.added") });
-    setForm(f => ({ ...f, item_name: "", quantity: 1, notes: "" }));
+    setForm(f => ({ ...f, item_name: "", quantity: 0, notes: "" }));
     setPhotoFile(null);
     setPhotoPreview(null);
     setShowSuggestions(false);
@@ -383,7 +383,7 @@ const FurnitureInventory = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.quantity")}</label>
-                <input type="number" min={1} value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                <input type="number" min={1} value={form.quantity || ""} onChange={e => setForm(f => ({ ...f, quantity: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" placeholder="1" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.condition")}</label>
@@ -443,7 +443,7 @@ const FurnitureInventory = () => {
                         const roomCount = new Set(propItems.map(i => i.room_name)).size;
                         return (
                           <button key={p.id} onClick={() => { setSelectedProp(p.id); setForm(f => ({ ...f, property_id: p.id })); }}
-                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 transition-colors">
+                            className="bg-card rounded-xl border border-border/50 p-5 text-left hover:border-accent/50 hover:shadow-card-hover transition-all min-h-[6rem]">
                             <div className="flex items-start justify-between">
                               <div>
                                 <h3 className="font-semibold text-foreground">{p.label}</h3>
