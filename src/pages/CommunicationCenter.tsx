@@ -690,8 +690,14 @@ const CommunicationCenter = () => {
       // Notify client by email — professional template in customer language
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        const propCountry = selectedThread.propertyCountry || "FR";
-        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        // Resolve client language from tenant preferred_locale or property country
+        let clientLang = "en";
+        if (selectedThread.tenantId) {
+          const { data: tL } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+          clientLang = tL?.preferred_locale || getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        } else {
+          clientLang = getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        }
         const actionI18n: Record<string, Record<string, { subject: string; title: string; body: string; cta: string }>> = {
           confirm: {
             fr: { subject: "✅ Réservation confirmée", title: "✅ Votre réservation est confirmée", body: "Votre réservation a été confirmée. Nous avons hâte de vous accueillir !", cta: "Voir ma réservation" },
