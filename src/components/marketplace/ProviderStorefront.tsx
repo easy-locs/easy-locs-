@@ -45,7 +45,7 @@ export default function ProviderStorefront() {
     const { error } = await supabase.from("marketplace_bookings").insert({
       service_id: bookingService.id,
       provider_id: provider.id,
-      org_id: provider.org_id,
+      org_id: bookingService.org_id,
       booker_name: formData.booker_name,
       booker_email: formData.booker_email,
       booker_phone: formData.booker_phone,
