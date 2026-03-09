@@ -305,14 +305,14 @@ serve(async (req) => {
       const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
-      if (claimsErr || !claimsData?.claims) {
+      const { data: { user: callerUser }, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !callerUser) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       // Store caller user ID for org membership check below
-      (req as any).__callerId = claimsData.claims.sub;
+      (req as any).__callerId = callerUser.id;
     }
 
     const { event_type, recipient_email, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
