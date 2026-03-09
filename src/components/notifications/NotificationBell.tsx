@@ -223,27 +223,22 @@ const NotificationBell = () => {
 
   
 
-  /** Core click handler — each notification resolves its own unique target */
-  const handleNotificationClick = useCallback((e: React.MouseEvent, n: any) => {
-    // Stop propagation so the backdrop overlay doesn't intercept
-    e.stopPropagation();
-    e.preventDefault();
-
+  /** Core click handler — simple, one notification at a time */
+  const handleNotificationClick = useCallback((n: any) => {
     const outdated = n.metadata_json?.outdated === true;
     if (outdated) return;
 
-    // Resolve the target from THIS notification's own metadata — fully isolated
     const notifId = String(n.id);
     const target = resolveNotificationTarget(n, activeRole);
-    console.log("[notif] click:", notifId, "target:", target, "title:", n.title);
+    console.log("[notif] clicked:", notifId, "target:", target, "title:", n.title);
 
-    // 1. Mark as resolved (removes from active list)
+    // Mark as resolved
     resolveNotification(notifId);
 
-    // 2. Close dropdown
+    // Close dropdown
     setOpen(false);
 
-    // 3. Auto-switch role if needed then navigate
+    // Auto-switch role if needed then navigate
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
     const needsSwitch = hasDualRole && (
@@ -253,12 +248,10 @@ const NotificationBell = () => {
 
     if (needsSwitch) {
       const newRole = isTenantLink ? "tenant" : "landlord";
-      console.log("[notif] switching role to:", newRole, "then navigating to:", target);
       switchRole(newRole);
-      setTimeout(() => { console.log("[notif] navigate (after switch):", target); navigate(target, { replace: false }); }, 300);
+      setTimeout(() => navigate(target), 300);
     } else {
-      console.log("[notif] navigating to:", target);
-      setTimeout(() => { console.log("[notif] navigate fired:", target); navigate(target, { replace: false }); }, 50);
+      navigate(target);
     }
   }, [activeRole, hasDualRole, switchRole, navigate, resolveNotification]);
 
