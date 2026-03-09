@@ -8,7 +8,11 @@ const corsHeaders = {
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Internal secret header for machine-to-machine calls from other edge functions
+const INTERNAL_SECRET = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 interface EmailRequest {
   event_type: string;
@@ -212,10 +216,23 @@ function interpolate(text: string, data: Record<string, any>): string {
 
 function sanitizeHtml(text: string): string {
   return text
+    .replace(/&/g, "&amp;")   // Must be first
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
     .replace(/on\w+\s*=/gi, "")
     .replace(/javascript:/gi, "");
+}
+
+/** Allow only http/https URLs — prevents javascript: URI injection */
+function safeUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    if (!["https:", "http:"].includes(parsed.protocol)) return undefined;
+    return parsed.href;
+  } catch { return undefined; }
 }
 
 function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: string): string {
@@ -248,7 +265,45 @@ serve(async (req) => {
   }
 
   try {
+    // --- Auth: allow internal (service-role) calls or verify org membership ---
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    const isInternalCall = token === INTERNAL_SECRET;
+
+    if (!isInternalCall) {
+      if (!authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
+      if (claimsErr || !claimsData?.claims) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Store caller user ID for org membership check below
+      (req as any).__callerId = claimsData.claims.sub;
+    }
+
     const { event_type, recipient_email, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
+
+    // If not internal, verify org membership when org_id is provided
+    if (!isInternalCall && data.org_id) {
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: membership } = await supabaseAdmin
+        .from("org_members").select("id")
+        .eq("user_id", (req as any).__callerId).eq("org_id", data.org_id)
+        .maybeSingle();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: "Forbidden: not an org member" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (!event_type || !recipient_email) {
       return new Response(JSON.stringify({ error: "Missing event_type or recipient_email" }), {
@@ -270,7 +325,7 @@ serve(async (req) => {
     const title = interpolate(template.title, data);
     const body = interpolate(template.body, data);
 
-    const ctaUrl = data.cta_url || undefined;
+    const ctaUrl = safeUrl(data.cta_url);
     const ctaLabel = data.cta_label || undefined;
     const html = buildHtml(title, body, ctaUrl, ctaLabel);
 

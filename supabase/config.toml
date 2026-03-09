@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.notify-booking]
 verify_jwt = false
+
+[functions.send-notification-email]
+verify_jwt = false
