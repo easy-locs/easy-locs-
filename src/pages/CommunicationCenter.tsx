@@ -638,17 +638,67 @@ ${detailRows ? `<table>${detailRows}</table>` : ""}
 
       toast.success(actionLabels[action]);
 
-      // Notify client by email
+      // Notify client by email — professional template in customer language
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        const actionI18n: Record<string, Record<string, { subject: string; title: string; body: string; cta: string }>> = {
+          confirm: {
+            fr: { subject: "✅ Réservation confirmée", title: "✅ Votre réservation est confirmée", body: "Votre réservation a été confirmée. Nous avons hâte de vous accueillir !", cta: "Voir ma réservation" },
+            en: { subject: "✅ Booking Confirmed", title: "✅ Your booking is confirmed", body: "Your booking has been confirmed. We look forward to welcoming you!", cta: "View my booking" },
+            es: { subject: "✅ Reserva confirmada", title: "✅ Su reserva está confirmada", body: "Su reserva ha sido confirmada. ¡Le esperamos!", cta: "Ver mi reserva" },
+            de: { subject: "✅ Buchung bestätigt", title: "✅ Ihre Buchung ist bestätigt", body: "Ihre Buchung wurde bestätigt. Wir freuen uns auf Sie!", cta: "Meine Buchung ansehen" },
+            it: { subject: "✅ Prenotazione confermata", title: "✅ La tua prenotazione è confermata", body: "La tua prenotazione è stata confermata. Non vediamo l'ora di accoglierti!", cta: "Vedi la mia prenotazione" },
+            pt: { subject: "✅ Reserva confirmada", title: "✅ Sua reserva está confirmada", body: "Sua reserva foi confirmada. Esperamos por você!", cta: "Ver minha reserva" },
+          },
+          cancel: {
+            fr: { subject: "❌ Réservation annulée", title: "❌ Réservation annulée", body: "Votre réservation a été annulée. N'hésitez pas à nous contacter pour toute question.", cta: "Nous contacter" },
+            en: { subject: "❌ Booking Cancelled", title: "❌ Booking Cancelled", body: "Your booking has been cancelled. Please contact us if you have any questions.", cta: "Contact us" },
+            es: { subject: "❌ Reserva cancelada", title: "❌ Reserva cancelada", body: "Su reserva ha sido cancelada. No dude en contactarnos.", cta: "Contactar" },
+            de: { subject: "❌ Buchung storniert", title: "❌ Buchung storniert", body: "Ihre Buchung wurde storniert. Kontaktieren Sie uns bei Fragen.", cta: "Kontakt" },
+            it: { subject: "❌ Prenotazione cancellata", title: "❌ Prenotazione cancellata", body: "La tua prenotazione è stata cancellata. Contattaci per domande.", cta: "Contattaci" },
+            pt: { subject: "❌ Reserva cancelada", title: "❌ Reserva cancelada", body: "Sua reserva foi cancelada. Entre em contato conosco.", cta: "Contato" },
+          },
+          complete: {
+            fr: { subject: "🏁 Réservation terminée", title: "🏁 Réservation terminée", body: "Votre réservation est terminée. Merci de votre confiance !", cta: "Laisser un avis" },
+            en: { subject: "🏁 Booking Completed", title: "🏁 Booking Completed", body: "Your booking is completed. Thank you for your trust!", cta: "Leave a review" },
+            es: { subject: "🏁 Reserva completada", title: "🏁 Reserva completada", body: "Su reserva ha finalizado. ¡Gracias por su confianza!", cta: "Dejar una reseña" },
+            de: { subject: "🏁 Buchung abgeschlossen", title: "🏁 Buchung abgeschlossen", body: "Ihre Buchung ist abgeschlossen. Vielen Dank für Ihr Vertrauen!", cta: "Bewertung abgeben" },
+            it: { subject: "🏁 Prenotazione completata", title: "🏁 Prenotazione completata", body: "La tua prenotazione è completata. Grazie per la fiducia!", cta: "Lascia una recensione" },
+            pt: { subject: "🏁 Reserva concluída", title: "🏁 Reserva concluída", body: "Sua reserva foi concluída. Obrigado pela confiança!", cta: "Deixar avaliação" },
+          },
+        };
+        const aL = (actionI18n[action]?.[clientLang] || actionI18n[action]?.en)!;
+        const bookingRef = bookingId.slice(0, 8);
+        const serviceLabel = selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Service</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "";
+        const priceLabel = selectedThread.totalPrice ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;">Total</td><td style="padding:10px 16px;font-weight:700;font-size:15px;color:#16a34a;">${selectedThread.totalPrice.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</td></tr>` : "";
+
         await supabase.functions.invoke("send-email", {
           body: {
             to: email,
-            subject: actionLabels[action],
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <h2 style="text-align:center;">${actionLabels[action]}</h2>
-              <p style="text-align:center;color:#555;">Your booking has been updated. Ref: ${bookingId.slice(0, 8)}</p>
-            </div>`,
+            subject: aL.subject,
+            html: `<!DOCTYPE html><html lang="${clientLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
+.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}
+.bd p{color:#333;font-size:15px;line-height:1.7;margin:0 0 16px}
+table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
+.cta{text-align:center;padding:12px 0 20px}
+.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
+</style></head><body><div class="w"><div class="c">
+<div class="h"><div class="b">EASY-LOCS®</div><h1>${aL.title}</h1></div>
+<div class="bd"><p>${aL.body}</p>
+<table>
+<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Ref</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>
+${serviceLabel}${priceLabel}
+</table>
+<div class="cta"><a href="${buildAppUrl("/")}">${aL.cta}</a></div>
+</div>
+<div class="ft"><p class="bs">EASY-LOCS®</p></div>
+</div></div></body></html>`,
           },
         });
       }
