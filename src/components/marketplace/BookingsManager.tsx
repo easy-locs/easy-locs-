@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail } from "lucide-react";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
+import { sendCommunicationEvent, createDeepLinkMeta, type CommunicationEvent, type DeepLinkMeta } from "@/lib/shared";
 
 interface Props {
   bookings: any[];
