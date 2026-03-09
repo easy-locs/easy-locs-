@@ -470,7 +470,7 @@ const ChannelManager = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="calendar">
+        <Tabs defaultValue="calendar" onValueChange={() => {}}>
           <TabsList>
             <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
             <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
