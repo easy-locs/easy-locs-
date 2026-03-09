@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
   cancelled: { label: "Cancelled", variant: "destructive", icon: X },
 };
 
-/** Notification metadata for deep-linking */
+/** Notification metadata for deep-linking — re-export from shared for backward compat */
 export interface NotificationMeta {
   event_type: string;
   booking_id?: string;
@@ -34,16 +34,18 @@ export interface NotificationMeta {
 }
 
 /**
- * Build a deep-link URL for a booking notification that includes country workspace context
+ * Build a deep-link URL — delegates to shared route builder
  */
 function buildBookingDeepLink(meta: NotificationMeta): string {
-  const base = "/dashboard/activities";
-  const params = new URLSearchParams();
-  if (meta.country_code) params.set("country", meta.country_code);
-  if (meta.booking_id) params.set("booking", meta.booking_id);
-  if (meta.target_type) params.set("target", meta.target_type);
-  const qs = params.toString();
-  return qs ? `${base}?${qs}` : base;
+  const targetType = meta.target_type || "marketplace_booking";
+  const dlMeta = createDeepLinkMeta({
+    targetType: targetType as any,
+    targetId: meta.booking_id || "",
+    module: "marketplace",
+    countryCode: meta.country_code,
+    bookingId: meta.booking_id,
+  });
+  return dlMeta.target_url;
 }
 
 /**
