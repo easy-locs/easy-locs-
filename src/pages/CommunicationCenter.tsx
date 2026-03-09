@@ -517,26 +517,54 @@ const CommunicationCenter = () => {
         },
       });
 
-      // Send email notification to client
+      // Send email notification to client — professional design with booking details
       const recipientEmail = normalizeEmail(selectedThread.email);
       if (recipientEmail && isValidEmail(recipientEmail)) {
-        const L = getCountryConfig(propCountry).labels;
+        const propCountryLabel = selectedThread.propertyCountry
+          ? getCountryEntryOrDefault(selectedThread.propertyCountry).name
+          : "";
+        const bookingRef = selectedThread.bookingId?.slice(0, 8) || "";
+        const emailLang = tenantLocale || "en";
+        const emailLabels: Record<string, Record<string, string>> = {
+          fr: { title: "📩 Nouveau message de votre hôte", cta: "Répondre", ref: "Réf. réservation", service: "Service", property: "Bien" },
+          en: { title: "📩 New message from your host", cta: "Reply", ref: "Booking ref", service: "Service", property: "Property" },
+          es: { title: "📩 Nuevo mensaje de tu anfitrión", cta: "Responder", ref: "Ref. reserva", service: "Servicio", property: "Propiedad" },
+          de: { title: "📩 Neue Nachricht von Ihrem Gastgeber", cta: "Antworten", ref: "Buchungs-Ref", service: "Service", property: "Objekt" },
+          it: { title: "📩 Nuovo messaggio dal tuo host", cta: "Rispondi", ref: "Rif. prenotazione", service: "Servizio", property: "Proprietà" },
+          pt: { title: "📩 Nova mensagem do seu anfitrião", cta: "Responder", ref: "Ref. reserva", service: "Serviço", property: "Imóvel" },
+        };
+        const eL = emailLabels[emailLang] || emailLabels.en;
         const appUrl = buildAppUrl("/");
+
+        const detailRows = [
+          bookingRef ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.ref}</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>` : "",
+          selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.service}</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "",
+          selectedThread.propertyLabel ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">${eL.property}</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.propertyLabel)}</td></tr>` : "",
+        ].filter(Boolean).join("");
+
         try {
           await supabase.functions.invoke("send-email", {
             body: {
               to: recipientEmail,
-              subject: `📩 ${selectedThread.name} — New message`,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
-                <h2 style="color:#1a1a1a;text-align:center;">📩 New message from your host</h2>
-                <div style="background:#f5f5f5;border-left:4px solid #d4a853;border-radius:8px;padding:16px;margin:16px 0;">
-                  <p style="color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;">${escapeEmailHtml(translatedContent || content)}</p>
-                </div>
-                ${selectedThread.bookingId ? `<p style="color:#888;font-size:12px;">Booking ref: ${selectedThread.bookingId.slice(0, 8)}</p>` : ""}
-                <div style="text-align:center;margin:24px 0;">
-                  <a href="${appUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;">Reply</a>
-                </div>
-              </div>`,
+              subject: eL.title,
+              html: `<!DOCTYPE html><html lang="${emailLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
+.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
+.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}.msg{background:#f8f6f1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:18px 20px;margin:0 0 20px}
+.msg p{color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;line-height:1.6}table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
+.cta{text-align:center;padding:8px 0 16px}
+.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
+.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
+</style></head><body><div class="w"><div class="c">
+<div class="h"><div class="b">EASY-LOCS®</div><h1>${eL.title}</h1></div>
+<div class="bd">
+<div class="msg"><p>${escapeEmailHtml(translatedContent || content)}</p></div>
+${detailRows ? `<table>${detailRows}</table>` : ""}
+<div class="cta"><a href="${appUrl}">${eL.cta}</a></div>
+</div>
+<div class="ft"><p class="bs">EASY-LOCS®</p></div>
+</div></div></body></html>`,
             },
           });
         } catch (e) { console.error("Email failed:", e); }
