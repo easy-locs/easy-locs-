@@ -546,28 +546,24 @@ const CommunicationCenter = () => {
         ].filter(Boolean).join("");
 
         try {
-          await supabase.functions.invoke("send-email", {
+          const threadRef = selectedThread.bookingId?.slice(0, 8) || selectedThread.tenantId?.slice(0, 8) || "";
+          const subjectWithRef = threadRef ? `${eL.title} [REF:${selectedThread.bookingId || selectedThread.tenantId}]` : eL.title;
+          
+          await supabase.functions.invoke("send-notification-email", {
             body: {
-              to: recipientEmail,
-              subject: eL.title,
-              html: `<!DOCTYPE html><html lang="${emailLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
-.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}.msg{background:#f8f6f1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:18px 20px;margin:0 0 20px}
-.msg p{color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;line-height:1.6}table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
-.cta{text-align:center;padding:8px 0 16px}
-.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
-.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
-</style></head><body><div class="w"><div class="c">
-<div class="h"><div class="b">EASY-LOCS®</div><h1>${eL.title}</h1></div>
-<div class="bd">
-<div class="msg"><p>${escapeEmailHtml(translatedContent || content)}</p></div>
-${detailRows ? `<table>${detailRows}</table>` : ""}
-<div class="cta"><a href="${appUrl}">${eL.cta}</a></div>
-</div>
-<div class="ft"><p class="bs">EASY-LOCS®</p></div>
-</div></div></body></html>`,
+              event_type: "marketplace_notification",
+              recipient_email: recipientEmail,
+              recipient_name: selectedThread.name,
+              data: {
+                subject: subjectWithRef,
+                message: escapeEmailHtml(translatedContent || content),
+                service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+                booking_id: selectedThread.bookingId || "",
+                cta_url: appUrl,
+                cta_label: eL.cta,
+                org_id: orgId,
+              },
+              locale: emailLang,
             },
           });
         } catch (e) { console.error("Email failed:", e); }
