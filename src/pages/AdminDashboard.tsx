@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+
+const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 
 interface Stats {
   totalUsers: number;
@@ -37,7 +39,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health">("overview");
 
   useEffect(() => {
     if (!user) return;
@@ -177,10 +179,10 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="flex items-center bg-muted rounded-lg p-0.5">
-            {(["overview", "users", "revenue"] as const).map(tab => (
+            {(["overview", "users", "revenue", "health"] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : "Revenue"}
+                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : "Health"}
               </button>
             ))}
           </div>
@@ -405,6 +407,13 @@ const AdminDashboard = () => {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Health Tab */}
+            {activeTab === "health" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading health dashboard…</div>}>
+                <HealthDashboard />
+              </Suspense>
             )}
           </>
         )}
