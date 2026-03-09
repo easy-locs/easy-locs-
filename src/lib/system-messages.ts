@@ -6,6 +6,8 @@
  *   target_type, target_id, booking_id, country_code, target_url
  */
 import { supabase } from "@/integrations/supabase/client";
+import { createDeepLinkMeta, createNotification } from "@/lib/shared";
+import type { TargetType, AppModule } from "@/lib/shared/types";
 
 type SystemEventType =
   | "payment_received"
