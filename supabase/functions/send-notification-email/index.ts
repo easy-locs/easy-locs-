@@ -287,7 +287,7 @@ serve(async (req) => {
     const title = interpolate(template.title, data);
     const body = interpolate(template.body, data);
 
-    const ctaUrl = data.cta_url || undefined;
+    const ctaUrl = safeUrl(data.cta_url);
     const ctaLabel = data.cta_label || undefined;
     const html = buildHtml(title, body, ctaUrl, ctaLabel);
 
