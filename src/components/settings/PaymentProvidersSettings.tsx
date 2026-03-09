@@ -16,6 +16,7 @@ const PaymentProvidersSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectingStripe, setConnectingStripe] = useState(false);
+  const [disconnectingStripe, setDisconnectingStripe] = useState(false);
   const [orgCountry, setOrgCountry] = useState(userCountry || "FR");
   const sepaEligible = useMemo(() => isSepaCountry(orgCountry), [orgCountry]);
 
@@ -57,6 +58,21 @@ const PaymentProvidersSettings = () => {
       toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
     } finally {
       setConnectingStripe(false);
+    }
+  };
+
+  const handleDisconnectStripe = async () => {
+    if (!confirm(t("page.finances.disconnect_confirm"))) return;
+    setDisconnectingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("disconnect-stripe");
+      if (error) throw error;
+      toast({ title: t("page.finances.disconnect_success") });
+      setConnectStatus({ connected: false, onboarding_complete: false });
+    } catch (err: any) {
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setDisconnectingStripe(false);
     }
   };
 
@@ -112,16 +128,28 @@ const PaymentProvidersSettings = () => {
               </span>
             ) : null}
           </div>
-          {!connectStatus?.onboarding_complete && (
-            <button
-              onClick={handleConnectStripe}
-              disabled={connectingStripe}
-              className="flex items-center gap-2 bg-[#635bff] text-white font-medium px-4 py-2 rounded-lg text-sm hover:bg-[#635bff]/90 disabled:opacity-50"
-            >
-              {connectingStripe ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-              {connectStatus?.connected ? t("page.settings.complete_setup") : t("page.settings.connect_stripe")}
-            </button>
-          )}
+          <div className="flex items-center gap-2 mt-2">
+            {!connectStatus?.onboarding_complete && (
+              <button
+                onClick={handleConnectStripe}
+                disabled={connectingStripe}
+                className="flex items-center gap-2 bg-[#635bff] text-white font-medium px-4 py-2 rounded-lg text-sm hover:bg-[#635bff]/90 disabled:opacity-50"
+              >
+                {connectingStripe ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                {connectStatus?.connected ? t("page.settings.complete_setup") : t("page.settings.connect_stripe")}
+              </button>
+            )}
+            {connectStatus?.connected && (
+              <button
+                onClick={handleDisconnectStripe}
+                disabled={disconnectingStripe}
+                className="flex items-center gap-2 text-destructive text-sm hover:underline disabled:opacity-50"
+              >
+                {disconnectingStripe ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                {t("page.finances.disconnect_stripe")}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* SEPA Direct Debit — only for SEPA zone */}
