@@ -253,11 +253,12 @@ const NotificationBell = () => {
 
     if (needsSwitch) {
       const newRole = isTenantLink ? "tenant" : "landlord";
+      console.log("[notif] switching role to:", newRole, "then navigating to:", target);
       switchRole(newRole);
-      setTimeout(() => navigate(target, { replace: false }), 300);
+      setTimeout(() => { console.log("[notif] navigate (after switch):", target); navigate(target, { replace: false }); }, 300);
     } else {
-      // Navigate synchronously — no async/await to avoid stale closures
-      setTimeout(() => navigate(target, { replace: false }), 50);
+      console.log("[notif] navigating to:", target);
+      setTimeout(() => { console.log("[notif] navigate fired:", target); navigate(target, { replace: false }); }, 50);
     }
   }, [activeRole, hasDualRole, switchRole, navigate, resolveNotification]);
 
