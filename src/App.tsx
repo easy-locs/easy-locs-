@@ -128,7 +128,9 @@ const RouteAwareAssistant = () => {
   const hideAssistant =
     pathname === "/guest" ||
     pathname.startsWith("/r/") ||
-    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix));
+    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix)) ||
+    pathname.startsWith("/services/") ||
+    pathname.startsWith("/activities/");
 
   if (hideAssistant) return null;
   return <FloatingAIAssistant />;
