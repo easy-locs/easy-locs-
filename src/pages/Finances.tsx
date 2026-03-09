@@ -159,6 +159,21 @@ const Finances = () => {
     }
   };
 
+  const handleDisconnectStripe = async () => {
+    if (!confirm(t("page.finances.disconnect_confirm"))) return;
+    setDisconnectLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("disconnect-stripe");
+      if (error) throw error;
+      toast({ title: t("page.finances.disconnect_success") });
+      setConnectStatus({ connected: false, onboarding_complete: false });
+    } catch (err: any) {
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setDisconnectLoading(false);
+    }
+  };
+
   // Filter by property
   const filteredRentCalls = propertyFilter ? rentCalls.filter(r => r.property_id === propertyFilter) : rentCalls;
   const filteredExpenses = propertyFilter ? expenses.filter(e => e.property_id === propertyFilter) : expenses;

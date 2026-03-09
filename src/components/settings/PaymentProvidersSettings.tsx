@@ -61,6 +61,21 @@ const PaymentProvidersSettings = () => {
     }
   };
 
+  const handleDisconnectStripe = async () => {
+    if (!confirm(t("page.finances.disconnect_confirm"))) return;
+    setDisconnectingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("disconnect-stripe");
+      if (error) throw error;
+      toast({ title: t("page.finances.disconnect_success") });
+      setConnectStatus({ connected: false, onboarding_complete: false });
+    } catch (err: any) {
+      toast({ title: t("page.common.error"), description: err.message, variant: "destructive" });
+    } finally {
+      setDisconnectingStripe(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!orgId) return;
     setSaving(true);
