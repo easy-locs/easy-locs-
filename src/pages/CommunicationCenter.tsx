@@ -1039,11 +1039,12 @@ ${serviceLabel}${priceLabel}
                         messages.map(msg => {
                           const isMe = msg.sender_id === user?.id;
                           const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+                          const isInboundEmail = msg.message_type === "inbound_email";
 
                           if (isSystem) {
                             return (
                               <div key={msg.id} className="flex justify-center">
-                                <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center">
+                                <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center break-words">
                                   {msg.content}
                                   <span className="ml-2 opacity-60">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
                                 </div>
