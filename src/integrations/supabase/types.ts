@@ -2127,6 +2127,8 @@ export type Database = {
           metadata_json: Json | null
           org_id: string | null
           read: boolean
+          resolved: boolean
+          resolved_at: string | null
           title: string
           type: string
           user_id: string
@@ -2139,6 +2141,8 @@ export type Database = {
           metadata_json?: Json | null
           org_id?: string | null
           read?: boolean
+          resolved?: boolean
+          resolved_at?: string | null
           title: string
           type?: string
           user_id: string
@@ -2151,6 +2155,8 @@ export type Database = {
           metadata_json?: Json | null
           org_id?: string | null
           read?: boolean
+          resolved?: boolean
+          resolved_at?: string | null
           title?: string
           type?: string
           user_id?: string
