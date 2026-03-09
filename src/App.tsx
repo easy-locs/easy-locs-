@@ -113,6 +113,12 @@ const MarketplaceServiceCityPage = lazy(() => import("./pages/seo/MarketplaceCit
 const ServicesHubPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServicesHubPage })));
 const ServiceCategoryPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCategoryPage })));
 const ServiceCityPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCityPage })));
+const ProviderSEOPage = lazy(() => import("./pages/seo/ProviderSEOPage"));
+
+// City sub-page wrappers
+const CityServicesPage = () => <CityHubPage subPage="services" />;
+const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
+const CityConciergePage = () => <CityHubPage subPage="concierge" />;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -131,20 +137,17 @@ const PageLoader = () => (
   </div>
 );
 
-const publicPathsWithoutAssistant = ["/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/"];
+const seoPublicPrefixes = [
+  "/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/",
+  "/services/", "/activities/", "/locations", "/country/", "/city/", "/marketplace",
+];
 
 const RouteAwareAssistant = () => {
   const { pathname } = useLocation();
   const hideAssistant =
     pathname === "/guest" ||
     pathname.startsWith("/r/") ||
-    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix)) ||
-    pathname.startsWith("/services/") ||
-    pathname.startsWith("/activities/") ||
-    pathname.startsWith("/locations") ||
-    pathname.startsWith("/country/") ||
-    pathname.startsWith("/city/") ||
-    pathname.startsWith("/marketplace");
+    seoPublicPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (hideAssistant) return null;
   return <FloatingAIAssistant />;
@@ -180,14 +183,12 @@ const App = () => (
               <Route path="/guest" element={<GuestPortal />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
-              <Route path="/provider/:providerSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              {/* property-management-:slug handled by SEOCatchAll on * route */}
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
               <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
@@ -196,10 +197,41 @@ const App = () => (
               <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
               <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
+
+              {/* ══════ PROGRAMMATIC SEO ROUTES ══════ */}
+
+              {/* /locations — Global hub */}
+              <Route path="/locations" element={<LocationsPage />} />
+
+              {/* /country/:country — Country hub */}
+              <Route path="/country/:country" element={<CountryHubPage />} />
+
+              {/* /city/:city — City hub + sub-pages */}
+              <Route path="/city/:city" element={<CityHubPage />} />
+              <Route path="/city/:city/services" element={<CityServicesPage />} />
+              <Route path="/city/:city/activities" element={<CityActivitiesPage />} />
+              <Route path="/city/:city/concierge" element={<CityConciergePage />} />
+
+              {/* /services — Services directory */}
+              <Route path="/services" element={<ServicesHubPage />} />
+              <Route path="/services/:service" element={<ServiceCategoryPage />} />
+              <Route path="/services/:service/:city" element={<ServiceCityPage />} />
+
+              {/* /marketplace — Marketplace directory */}
+              <Route path="/marketplace" element={<MarketplaceHubPage />} />
+              <Route path="/marketplace/:city" element={<MarketplaceCityPage />} />
+              <Route path="/marketplace/:service/:city" element={<MarketplaceServiceCityPage />} />
+
+              {/* /provider/:slug — Provider SEO landing (new) + legacy storefront */}
+              <Route path="/provider/:providerSlug" element={<ProviderSEOPage />} />
+
+              {/* /activities — Activities hub + city combinations */}
               <Route path="/activities" element={<ActivitiesPage />} />
               <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
+
+              {/* Legacy SEO routes — backward compatible */}
               <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
-              <Route path="/services/:serviceCity" element={<ServiceCitySEOPage />} />
+              {/* /services/:serviceCity handled by legacy route for hyphenated slugs */}
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
@@ -264,6 +296,7 @@ const App = () => (
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
               <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
+              {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>

@@ -1,11 +1,15 @@
 /**
- * Vite plugin to generate sitemap.xml at build time
- * from the SEO data registry (phase-1 only).
+ * Vite plugin to generate split sitemaps at build time.
+ * Generates:
+ *   sitemap.xml           — index pointing to sub-sitemaps
+ *   sitemap-core.xml
+ *   sitemap-countries.xml
+ *   sitemap-cities.xml
+ *   sitemap-services.xml
+ *   sitemap-activities.xml
+ *   sitemap-marketplace.xml
  */
 import type { Plugin } from "vite";
-
-// Inline the data generation to avoid ESM/TS import issues in vite config
-// This mirrors the logic in src/lib/seo/sitemap-generator.ts
 
 const BASE = "https://www.easy-locs.com";
 
@@ -22,151 +26,139 @@ export function sitemapPlugin(): Plugin {
     closeBundle: {
       sequential: true,
       async handler() {
-        // Dynamic import to use the actual TS data
-        // At build time, Vite has already processed the TS files
         const fs = await import("fs");
         const path = await import("path");
-        
-        // We'll generate a minimal but correct sitemap
-        // Since we can't easily import TS at plugin level,
-        // we read and evaluate the generated JS output
-        const sitemapPath = path.resolve("dist", "sitemap.xml");
-        
-        // Check if dist exists (it should during build)
+
         if (!fs.existsSync(path.resolve("dist"))) {
-          console.warn("[sitemap] dist/ not found, skipping sitemap generation");
+          console.warn("[sitemap] dist/ not found, skipping");
           return;
         }
 
-        // Generate sitemap from hardcoded phase-1 data
-        // This ensures the sitemap is always in sync with what the app routes handle
-        const xml = generateSitemapXml();
-        fs.writeFileSync(sitemapPath, xml, "utf-8");
-        console.log(`[sitemap] Generated sitemap.xml with ${xml.split("<url>").length - 1} URLs`);
+        // Phase-1 data — mirrored from seo-data.ts
+        const p1CountrySlugs = [
+          "france", "uk", "spain", "germany", "italy", "portugal", "netherlands",
+          "switzerland", "usa", "canada", "uae", "saudi-arabia", "turkey", "israel",
+          "thailand", "japan", "australia", "singapore-sg", "indonesia", "morocco", "south-africa",
+        ];
+        const p1CitySlugs = [
+          "paris", "marseille", "lyon", "nice", "bordeaux", "toulouse",
+          "london", "manchester", "edinburgh", "birmingham",
+          "madrid", "barcelona", "valencia", "malaga",
+          "berlin", "munich", "hamburg", "frankfurt",
+          "rome", "milan", "florence",
+          "lisbon", "porto",
+          "amsterdam",
+          "zurich", "geneva",
+          "new-york", "miami", "los-angeles", "san-francisco",
+          "toronto", "vancouver", "montreal",
+          "dubai", "abu-dhabi",
+          "riyadh", "jeddah",
+          "istanbul", "antalya",
+          "tel-aviv",
+          "bangkok", "phuket", "chiang-mai",
+          "tokyo", "osaka",
+          "sydney", "melbourne",
+          "singapore-city",
+          "bali",
+          "marrakech", "casablanca",
+          "cape-town", "johannesburg",
+          "vienna", "warsaw", "athens", "dublin", "prague", "dubrovnik", "seoul", "mexico-city",
+        ];
+        const serviceCategories = [
+          "cleaning", "maintenance", "transport", "car-rental", "tours",
+          "airport-transfer", "personal", "spa", "water-sport", "restaurant",
+          "coworking", "event", "yacht-rental", "private-chef",
+        ];
+        const activityTypes = [
+          "desert-safari", "food-tour", "cooking-class", "boat-tour", "city-tour",
+          "wine-tasting", "scuba-diving", "hiking", "surfing", "cultural-tour",
+          "photography-tour", "snorkeling", "kayaking", "horse-riding",
+          "helicopter-tour", "sunset-cruise",
+        ];
+
+        const toXml = (entries: SitemapEntry[]): string => {
+          const urls = entries.map(e =>
+            `  <url><loc>${e.loc}</loc><changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`
+          ).join("\n");
+          return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
+        };
+
+        // 1. Core
+        const coreEntries: SitemapEntry[] = [
+          ["/", "1.0"], ["/locations", "0.9"],
+          ["/property-management", "0.9"], ["/long-term-rentals", "0.9"],
+          ["/seasonal-rentals", "0.9"], ["/marketplace-services", "0.9"],
+          ["/concierge-services", "0.9"], ["/activities", "0.9"],
+          ["/rental-management", "0.8"], ["/property-owner-software", "0.8"],
+          ["/property-management-platform", "0.8"], ["/rental-management-software", "0.8"],
+          ["/rentals", "0.8"], ["/services", "0.9"], ["/marketplace", "0.9"],
+          ["/login", "0.4"], ["/signup", "0.5"], ["/install", "0.4"],
+          ["/guest", "0.5"], ["/vision", "0.5"],
+          ["/terms", "0.3"], ["/privacy", "0.3"], ["/cookies", "0.3"],
+          ["/legal-notice", "0.3"], ["/about", "0.5"], ["/contact", "0.5"], ["/help", "0.5"],
+        ].map(([p, prio]) => ({ loc: `${BASE}${p}`, changefreq: "weekly", priority: prio as string }));
+
+        // 2. Countries
+        const countryEntries: SitemapEntry[] = p1CountrySlugs.flatMap(s => [
+          { loc: `${BASE}/country/${s}`, changefreq: "monthly", priority: "0.8" },
+          { loc: `${BASE}/property-management-${s}`, changefreq: "monthly", priority: "0.7" },
+        ]);
+
+        // 3. Cities
+        const cityEntries: SitemapEntry[] = p1CitySlugs.flatMap(s => [
+          { loc: `${BASE}/city/${s}`, changefreq: "weekly", priority: "0.8" },
+          { loc: `${BASE}/city/${s}/services`, changefreq: "monthly", priority: "0.7" },
+          { loc: `${BASE}/city/${s}/activities`, changefreq: "monthly", priority: "0.7" },
+          { loc: `${BASE}/city/${s}/concierge`, changefreq: "monthly", priority: "0.6" },
+          { loc: `${BASE}/property-management-${s}`, changefreq: "monthly", priority: "0.6" },
+        ]);
+
+        // 4. Services
+        const svcHubs: SitemapEntry[] = serviceCategories.map(s => ({
+          loc: `${BASE}/services/${s}`, changefreq: "monthly", priority: "0.7",
+        }));
+        const svcCity: SitemapEntry[] = serviceCategories.flatMap(s =>
+          p1CitySlugs.map(c => ({ loc: `${BASE}/services/${s}/${c}`, changefreq: "monthly", priority: "0.6" }))
+        );
+
+        // 5. Activities
+        const top30Cities = p1CitySlugs.slice(0, 30);
+        const actEntries: SitemapEntry[] = activityTypes.flatMap(a =>
+          top30Cities.map(c => ({ loc: `${BASE}/activities/${a}-${c}`, changefreq: "monthly", priority: "0.6" }))
+        );
+
+        // 6. Marketplace
+        const mktCity: SitemapEntry[] = p1CitySlugs.map(c => ({
+          loc: `${BASE}/marketplace/${c}`, changefreq: "weekly", priority: "0.7",
+        }));
+        const mktSvcCity: SitemapEntry[] = serviceCategories.flatMap(s =>
+          top30Cities.map(c => ({ loc: `${BASE}/marketplace/${s}/${c}`, changefreq: "monthly", priority: "0.6" }))
+        );
+
+        const sitemaps: Record<string, SitemapEntry[]> = {
+          "sitemap-core.xml": coreEntries,
+          "sitemap-countries.xml": countryEntries,
+          "sitemap-cities.xml": cityEntries,
+          "sitemap-services.xml": [...svcHubs, ...svcCity],
+          "sitemap-activities.xml": actEntries,
+          "sitemap-marketplace.xml": [...mktCity, ...mktSvcCity],
+        };
+
+        let totalUrls = 0;
+        for (const [file, entries] of Object.entries(sitemaps)) {
+          fs.writeFileSync(path.resolve("dist", file), toXml(entries), "utf-8");
+          totalUrls += entries.length;
+        }
+
+        // Sitemap index
+        const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${Object.keys(sitemaps).map(f => `  <sitemap><loc>${BASE}/${f}</loc></sitemap>`).join("\n")}
+</sitemapindex>`;
+        fs.writeFileSync(path.resolve("dist", "sitemap.xml"), indexXml, "utf-8");
+
+        console.log(`[sitemap] Generated sitemap index + ${Object.keys(sitemaps).length} sub-sitemaps (${totalUrls} URLs total)`);
       },
     },
   };
-}
-
-function generateSitemapXml(): string {
-  const entries: SitemapEntry[] = [];
-
-  // Layer 1 — Core pages
-  const corePages = [
-    "/", "/property-management", "/long-term-rentals", "/seasonal-rentals",
-    "/marketplace-services", "/concierge-services", "/activities",
-    "/rental-management", "/property-owner-software", "/property-management-platform",
-    "/rental-management-software", "/rentals",
-  ];
-  for (const p of corePages) {
-    entries.push({ loc: `${BASE}${p}`, changefreq: "weekly", priority: p === "/" ? "1.0" : "0.9" });
-  }
-
-  // Layer 2 — Phase-1 Country slugs
-  const p1CountrySlugs = [
-    "france", "uk", "spain", "germany", "italy", "portugal", "netherlands",
-    "switzerland", "usa", "canada", "uae", "saudi-arabia", "turkey", "israel",
-    "thailand", "japan", "australia", "singapore-sg", "indonesia", "morocco", "south-africa",
-  ];
-  for (const slug of p1CountrySlugs) {
-    entries.push({ loc: `${BASE}/property-management-${slug}`, changefreq: "monthly", priority: "0.8" });
-  }
-
-  // Layer 3 — Phase-1 City slugs (from both phase-1 and phase-2 countries)
-  const p1CitySlugs = [
-    // France
-    "paris", "marseille", "lyon", "nice", "bordeaux", "toulouse",
-    // UK
-    "london", "manchester", "edinburgh", "birmingham",
-    // Spain
-    "madrid", "barcelona", "valencia", "malaga",
-    // Germany
-    "berlin", "munich", "hamburg", "frankfurt",
-    // Italy
-    "rome", "milan", "florence",
-    // Portugal
-    "lisbon", "porto",
-    // Netherlands
-    "amsterdam",
-    // Switzerland
-    "zurich", "geneva",
-    // USA
-    "new-york", "miami", "los-angeles", "san-francisco",
-    // Canada
-    "toronto", "vancouver", "montreal",
-    // UAE
-    "dubai", "abu-dhabi",
-    // Saudi Arabia
-    "riyadh", "jeddah",
-    // Turkey
-    "istanbul", "antalya",
-    // Israel
-    "tel-aviv",
-    // Thailand
-    "bangkok", "phuket", "chiang-mai",
-    // Japan
-    "tokyo", "osaka",
-    // Australia
-    "sydney", "melbourne",
-    // Singapore
-    "singapore-city",
-    // Indonesia
-    "bali",
-    // Morocco
-    "marrakech", "casablanca",
-    // South Africa
-    "cape-town", "johannesburg",
-    // Phase-2 countries, phase-1 cities
-    "vienna", "warsaw", "athens", "dublin", "prague", "dubrovnik", "seoul",
-    "mexico-city",
-  ];
-  for (const slug of p1CitySlugs) {
-    entries.push({ loc: `${BASE}/property-management-${slug}`, changefreq: "monthly", priority: "0.7" });
-  }
-
-  // Layer 4 — Service + top 30 Phase-1 cities
-  const serviceCategories = [
-    "cleaning", "maintenance", "transport", "car-rental", "tours",
-    "airport-transfer", "personal", "spa", "water-sport", "restaurant",
-    "coworking", "event", "yacht-rental", "private-chef",
-  ];
-  const top30Cities = p1CitySlugs.slice(0, 30);
-  for (const svc of serviceCategories) {
-    for (const city of top30Cities) {
-      entries.push({ loc: `${BASE}/services/${svc}-${city}`, changefreq: "monthly", priority: "0.6" });
-    }
-  }
-
-  // Layer 5 — Activity + top 20 Phase-1 cities
-  const activityTypes = [
-    "desert-safari", "food-tour", "cooking-class", "boat-tour", "city-tour",
-    "wine-tasting", "scuba-diving", "hiking", "surfing", "cultural-tour",
-    "photography-tour", "snorkeling", "kayaking", "horse-riding",
-    "helicopter-tour", "sunset-cruise",
-  ];
-  for (const act of activityTypes) {
-    for (const city of top30Cities.slice(0, 20)) {
-      entries.push({ loc: `${BASE}/activities/${act}-${city}`, changefreq: "monthly", priority: "0.6" });
-    }
-  }
-
-  // Utility pages
-  const utilPages: [string, string][] = [
-    ["/login", "0.5"], ["/signup", "0.6"], ["/install", "0.5"],
-    ["/guest", "0.6"], ["/vision", "0.6"],
-    ["/terms", "0.3"], ["/privacy", "0.3"], ["/cookies", "0.3"],
-    ["/legal-notice", "0.3"], ["/about", "0.5"], ["/contact", "0.5"], ["/help", "0.6"],
-  ];
-  for (const [p, prio] of utilPages) {
-    entries.push({ loc: `${BASE}${p}`, changefreq: "monthly", priority: prio });
-  }
-
-  const urls = entries.map(e =>
-    `  <url><loc>${e.loc}</loc><changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`
-  ).join("\n");
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
-</urlset>`;
 }
