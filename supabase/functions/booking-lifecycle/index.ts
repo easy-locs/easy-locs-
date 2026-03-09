@@ -183,13 +183,12 @@ serve(async (req) => {
       processed++;
     }
 
-    return new Response(JSON.stringify({ processed, total: bookings.length }), {
+    return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("[BOOKING-LIFECYCLE] Error:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    console.error("[BOOKING-LIFECYCLE] Error:", error instanceof Error ? error.message : String(error));
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
