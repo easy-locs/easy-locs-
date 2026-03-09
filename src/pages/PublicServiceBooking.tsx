@@ -60,7 +60,7 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      let resolvedService: any = exactMatch ? { ...exactMatch, _source: "concierge" } : null;
+      let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
 
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
