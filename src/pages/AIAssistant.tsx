@@ -225,7 +225,7 @@ const AIAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { t, locale } = useI18n();
   const { properties, tenants } = useRentalData();
 
