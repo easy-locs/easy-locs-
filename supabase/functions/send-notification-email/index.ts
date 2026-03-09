@@ -8,7 +8,11 @@ const corsHeaders = {
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Internal secret header for machine-to-machine calls from other edge functions
+const INTERNAL_SECRET = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 interface EmailRequest {
   event_type: string;
