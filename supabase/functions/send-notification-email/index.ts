@@ -431,10 +431,57 @@ serve(async (req) => {
       });
     }
 
+    // Check if we have a native template for this locale
+    const hasNativeTemplate = !!templateGroup[locale];
     const template = templateGroup[locale] || templateGroup["en"] || templateGroup["fr"];
-    const subject = interpolate(template.subject, data);
-    const title = interpolate(template.title, data);
-    const body = interpolate(template.body, data);
+    let subject = interpolate(template.subject, data);
+    let title = interpolate(template.title, data);
+    let body = interpolate(template.body, data);
+
+    // Dynamic AI translation for unsupported locales (e.g., Thai, Vietnamese, Hindi, Russian...)
+    if (!hasNativeTemplate && locale !== "en" && locale !== "fr") {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (LOVABLE_API_KEY) {
+        const LOCALE_NAMES: Record<string, string> = {
+          th: "Thai", vi: "Vietnamese", hi: "Hindi", ru: "Russian", ko: "Korean",
+          ja: "Japanese", zh: "Chinese", ar: "Arabic", tr: "Turkish", id: "Indonesian",
+          ms: "Malay", sv: "Swedish", da: "Danish", fi: "Finnish", el: "Greek",
+          cs: "Czech", hu: "Hungarian", ro: "Romanian", hr: "Croatian", bg: "Bulgarian",
+          sk: "Slovak", uk: "Ukrainian", he: "Hebrew", fa: "Persian", ur: "Urdu",
+          bn: "Bengali", ta: "Tamil", sw: "Swahili", am: "Amharic", ka: "Georgian",
+          km: "Khmer", lo: "Lao", my: "Burmese", ne: "Nepali", si: "Sinhala",
+          mn: "Mongolian", kk: "Kazakh", uz: "Uzbek", tl: "Filipino", af: "Afrikaans",
+        };
+        const targetLang = LOCALE_NAMES[locale] || locale;
+        try {
+          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash-lite",
+              messages: [
+                { role: "system", content: `Translate the following email content to ${targetLang}. Return a JSON object with keys: "subject", "title", "body". Keep the same formatting, emojis, and tone. Return ONLY the JSON.` },
+                { role: "user", content: JSON.stringify({ subject, title, body }) },
+              ],
+              max_tokens: 2000, temperature: 0.1,
+            }),
+          });
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            const content = aiData.choices?.[0]?.message?.content?.trim() || "";
+            // Parse JSON from AI response (may have markdown code fence)
+            const jsonStr = content.replace(/^```json?\n?/i, "").replace(/\n?```$/i, "").trim();
+            try {
+              const parsed = JSON.parse(jsonStr);
+              if (parsed.subject) subject = parsed.subject;
+              if (parsed.title) title = parsed.title;
+              if (parsed.body) body = parsed.body;
+              console.log(`[send-notification-email] AI translated to ${targetLang}`);
+            } catch { console.warn("[send-notification-email] AI translation parse failed"); }
+          }
+        } catch (e) { console.error("[send-notification-email] AI translation error:", e); }
+      }
+    }
 
     const ctaUrl = safeUrl(data.cta_url);
     const ctaLabel = data.cta_label || undefined;
