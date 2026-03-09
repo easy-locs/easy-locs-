@@ -8,6 +8,7 @@ import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 import { getPostLoginRoute, waitForAuthenticatedUser } from "@/lib/auth-redirect";
+import SEOHead from "@/components/SEOHead";
 
 type AuthMode = "password" | "otp";
 
