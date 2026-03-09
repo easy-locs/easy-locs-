@@ -25,14 +25,9 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         navigateFallbackDenylist: [/^\/~oauth/],
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
-            options: { cacheName: "supabase-api-v2", expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
-          },
-        ],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        // No runtimeCaching — Safari's FetchEvent.respondWith fails on
+        // cross-origin / opaque responses causing "TypeError: Load failed"
       },
       manifest: {
         name: "Easy-Locs — Property Management",
