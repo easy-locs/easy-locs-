@@ -123,7 +123,8 @@ const NotificationBell = () => {
     setAllNotifications((prev) => prev.map((n) => currentIds.includes(n.id) ? { ...n, read: true } : n));
   };
 
-  /** Core click handler — simple, deterministic */
+  /** Core click handler — marks as READ only, not resolved.
+   *  Resolved happens on destination pages when the real action is completed. */
   const handleNotificationClick = useCallback((n: any) => {
     if (n.metadata_json?.outdated === true) return;
 
@@ -131,17 +132,14 @@ const NotificationBell = () => {
     const target = resolveTarget(n, activeRole);
     console.log("[notif] click:", notifId, "→", target);
 
-    // Optimistic resolve
+    // Optimistic: mark as read only
     setAllNotifications((prev) =>
-      prev.map((x) => String(x.id) === notifId
-        ? { ...x, resolved: true, resolved_at: new Date().toISOString(), read: true }
-        : x
-      )
+      prev.map((x) => String(x.id) === notifId ? { ...x, read: true } : x)
     );
-    // Persist
+    // Persist read status
     supabase
       .from("notifications")
-      .update({ resolved: true, resolved_at: new Date().toISOString(), read: true } as any)
+      .update({ read: true })
       .eq("id", notifId)
       .then(() => {});
 
