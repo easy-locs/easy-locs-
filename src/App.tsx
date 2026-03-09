@@ -250,7 +250,7 @@ const App = () => (
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
               <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>
         </AuthProvider>
