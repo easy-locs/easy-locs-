@@ -171,13 +171,19 @@ const App = () => (
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              <Route path="/property-management-:country" element={<PropertyManagement />} />
+              <Route path="/property-management-:slug" element={<PropertyManagementSEOResolver />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
+              <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
+              <Route path="/property-owner-software" element={<CoreSEOPages />} />
+              <Route path="/property-management-platform" element={<PropertyManagementPlatformPage />} />
+              <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
               <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
               <Route path="/activities" element={<ActivitiesPage />} />
+              <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
               <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
+              <Route path="/services/:serviceCity" element={<ServiceCitySEOPage />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
