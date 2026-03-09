@@ -41,12 +41,9 @@ export default function StorePage() {
         return { type: "landlord" as const, profile: landlord, services: services || [] };
       }
 
-      const { data: provider } = await supabase
-        .from("marketplace_providers")
-        .select("*")
-        .eq("slug", storeSlug!)
-        .eq("active", true)
-        .maybeSingle();
+      const { data: providerRows } = await supabase
+        .rpc("get_public_marketplace_providers", { p_slug: storeSlug!, p_active_only: true });
+      const provider = providerRows && providerRows.length > 0 ? providerRows[0] : null;
 
       if (provider) {
         const { data: services } = await supabase

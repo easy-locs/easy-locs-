@@ -98,12 +98,8 @@ const ActivitiesMarketplace = () => {
     queryKey: ["browse_marketplace_providers"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("marketplace_providers")
-        .select("*")
-        .eq("active", true)
-        .order("rating", { ascending: false })
-        .limit(200);
-      return (data || []);
+        .rpc("get_public_marketplace_providers", { p_active_only: true });
+      return (data || []) as any[];
     },
   });
 
