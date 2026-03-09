@@ -38,6 +38,11 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     de: { subject: "Miete fällig — {month}", title: "🏠 Miete fällig", body: "Ihre Miete für {month} ist fällig. Gesamtbetrag: {amount}." },
     it: { subject: "Affitto dovuto — {month}", title: "🏠 Affitto dovuto", body: "Il suo affitto per {month} è dovuto. Importo totale: {amount}." },
     pt: { subject: "Aluguel devido — {month}", title: "🏠 Aluguel devido", body: "Seu aluguel de {month} está vencido. Valor total: {amount}." },
+    ar: { subject: "إيجار مستحق — {month}", title: "🏠 إيجار مستحق", body: "إيجارك لشهر {month} مستحق. المبلغ الإجمالي: {amount}." },
+    ja: { subject: "家賃のお支払い — {month}", title: "🏠 家賃のお支払い", body: "{month}の家賃のお支払い期限です。合計金額: {amount}。" },
+    tr: { subject: "Kira ödeme — {month}", title: "🏠 Kira ödeme", body: "{month} ayı kiranız vadesi gelmiştir. Toplam tutar: {amount}." },
+    nl: { subject: "Huur verschuldigd — {month}", title: "🏠 Huur verschuldigd", body: "Uw huur voor {month} is verschuldigd. Totaalbedrag: {amount}." },
+    pl: { subject: "Czynsz wymagalny — {month}", title: "🏠 Czynsz wymagalny", body: "Czynsz za {month} jest wymagalny. Łączna kwota: {amount}." },
   },
   payment_received: {
     fr: { subject: "Paiement reçu — {month}", title: "💰 Paiement confirmé", body: "Le paiement du loyer de {month} a été enregistré. Montant : {amount}." },
