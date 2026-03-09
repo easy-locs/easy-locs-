@@ -41,6 +41,7 @@ interface ProviderFormData {
   bank_name: string;
   tax_rate: number;
   tax_label: string;
+  reviews_enabled: boolean;
 }
 
 interface Props {
@@ -81,6 +82,7 @@ const emptyForm: ProviderFormData = {
   bank_name: "",
   tax_rate: 0,
   tax_label: "VAT",
+  reviews_enabled: false,
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
@@ -228,6 +230,18 @@ export default function ProviderProfileForm({ open, onOpenChange, onSave, initia
                 </Badge>
               ))}
             </div>
+          </div>
+
+          {/* Reviews Toggle */}
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <div>
+              <p className="text-sm font-medium text-foreground">⭐ Enable Reviews</p>
+              <p className="text-xs text-muted-foreground">Allow customers to leave reviews on your services</p>
+            </div>
+            <Switch
+              checked={(form as any).reviews_enabled || false}
+              onCheckedChange={(v) => update("reviews_enabled" as any, v)}
+            />
           </div>
 
           {/* Payment Links */}

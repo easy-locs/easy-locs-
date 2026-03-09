@@ -50,6 +50,16 @@ const DEFAULT_SLOTS: TimeSlot[] = [
   { start: "19:00", end: "20:00" },
 ];
 
+/** Deduplicate time slots by start time to prevent visual duplication */
+function deduplicateSlots(slots: TimeSlot[]): TimeSlot[] {
+  const seen = new Set<string>();
+  return slots.filter(s => {
+    if (seen.has(s.start)) return false;
+    seen.add(s.start);
+    return true;
+  });
+}
+
 /** Statuses that occupy a slot */
 const OCCUPYING_STATUSES = new Set(["pending", "awaiting_payment", "paid", "confirmed", "in_progress", "completed"]);
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -77,7 +87,7 @@ const ServiceBookingCalendar = ({
   );
   const [bookedSlots, setBookedSlots] = useState<BookedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
-  const slots = timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS;
+  const slots = deduplicateSlots(timeSlots.length > 0 ? timeSlots : DEFAULT_SLOTS);
 
   const blockedSet = useMemo(() => new Set(blockedDates), [blockedDates]);
   const today = startOfDay(new Date());
@@ -223,7 +233,7 @@ const ServiceBookingCalendar = ({
             }}
             modifiersClassNames={{
               booked: "bg-destructive/20 text-destructive line-through",
-              partial: "bg-amber-500/15 text-amber-700",
+              partial: "bg-warning/15 text-warning",
             }}
           />
         </div>
@@ -255,7 +265,7 @@ const ServiceBookingCalendar = ({
             <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/30" /> Partial
+            <span className="w-2.5 h-2.5 rounded-sm bg-warning/30" /> Partial
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm bg-destructive/30 line-through" /> Unavailable
@@ -294,7 +304,7 @@ const ServiceBookingCalendar = ({
           }}
           modifiersClassNames={{
             booked: "bg-destructive/20 text-destructive line-through",
-            partial: "bg-amber-500/15 text-amber-700",
+            partial: "bg-warning/15 text-warning",
           }}
         />
       </div>
@@ -345,7 +355,7 @@ const ServiceBookingCalendar = ({
               <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/30" /> Partial
+              <span className="w-2.5 h-2.5 rounded-sm bg-warning/30" /> Partial
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-sm bg-destructive/30 line-through" /> Full
