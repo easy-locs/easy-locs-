@@ -95,6 +95,14 @@ const ConciergeServicesPage = lazy(() => import("./pages/seo/ConciergeServicesPa
 const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServicesPage"));
 const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
 const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
+// SEO Layer pages
+const PropertyManagementSEOResolver = lazy(() => import("./pages/seo/PropertyManagementSEOResolver"));
+const LongTermRentalsPage = lazy(() => import("./pages/seo/LongTermRentalsPage"));
+const ServiceCitySEOPage = lazy(() => import("./pages/seo/ServiceCitySEOPage"));
+const ActivityCitySEOPage = lazy(() => import("./pages/seo/ActivityCitySEOPage"));
+const CoreSEOPages = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyOwnerSoftwarePage })));
+const PropertyManagementPlatformPage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyManagementPlatformPage })));
+const RentalManagementSoftwarePage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.RentalManagementSoftwarePage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
