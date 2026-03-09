@@ -318,7 +318,7 @@ const NotificationBell = () => {
                       type="button"
                       key={n.id}
                       aria-label={n.title}
-                      onClick={() => handleNotificationClick(n)}
+                      onClick={(e) => handleNotificationClick(e, n)}
                       className={[
                         "w-full text-left px-4 py-3 transition-colors cursor-pointer select-none",
                         "hover:bg-muted/50 active:bg-muted/70",
