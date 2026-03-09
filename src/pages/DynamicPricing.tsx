@@ -26,6 +26,7 @@ const RULE_TYPES = [
 
 const DynamicPricing = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [newRule, setNewRule] = useState({
