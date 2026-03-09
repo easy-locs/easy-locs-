@@ -156,10 +156,15 @@ const DynamicPricing = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
-            <p className="text-muted-foreground text-sm">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channel-manager")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
+            </div>
+            <p className="text-muted-foreground text-sm ml-10">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nouvelle règle</Button></DialogTrigger>
