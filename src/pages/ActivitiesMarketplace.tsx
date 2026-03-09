@@ -289,6 +289,12 @@ const ActivitiesMarketplace = () => {
     toast.success(`Booking ${status}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
+    // Resolve related notifications — action is now completed
+    try {
+      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+      await resolveNotificationsForTarget("marketplace_booking", id, user?.id);
+    } catch (e) { console.error("[resolve-notif]", e); }
+
     // Sync status change with deep-link metadata
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
