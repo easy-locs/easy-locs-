@@ -111,13 +111,34 @@ const RentalManagement = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>((searchParams.get("tab") as Tab) || "dashboard");
 
-  // Sync tab from URL params
+  // Sync tab and record from URL params
   useEffect(() => {
     const tab = searchParams.get("tab") as Tab;
     if (tab && ["dashboard", "properties", "tenants", "payments", "inventory"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  // Deep-link: auto-select tenant or scroll to record from ?record=ID
+  useEffect(() => {
+    const recordId = searchParams.get("record");
+    if (!recordId || loading) return;
+    // Try to match a tenant
+    const tenant = tenants.find(t => t.id === recordId);
+    if (tenant) {
+      setActiveTab("tenants");
+      setSelectedTenant(tenant);
+      console.log("[deep-link] auto-selected tenant:", recordId);
+      return;
+    }
+    // Try to scroll to a payment row
+    const el = document.getElementById(`payment-${recordId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-accent");
+      console.log("[deep-link] scrolled to payment:", recordId);
+    }
+  }, [searchParams, tenants, loading]);
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);

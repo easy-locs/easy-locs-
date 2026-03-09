@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,18 @@ const ActivitiesMarketplace = () => {
   const [activeTab, setActiveTab] = useState("browse");
   const [revenueOpen, setRevenueOpen] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState("EUR");
+  const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
+
+  // Deep-link: auto-switch to bookings tab from ?booking=ID
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("booking");
+    if (bookingId) {
+      setActiveTab("bookings");
+      setDeepLinkedBookingId(bookingId);
+      console.log("[deep-link] auto-opened marketplace booking:", bookingId);
+    }
+  }, []);
 
 
   // --- My Provider Profile ---
@@ -601,6 +613,7 @@ const ActivitiesMarketplace = () => {
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
+                focusBookingId={deepLinkedBookingId}
               />
             </TabsContent>
           )}

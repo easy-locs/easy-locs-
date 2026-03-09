@@ -107,6 +107,20 @@ const ConciergeServices = () => {
   const [landlordProfile, setLandlordProfile] = useState<any>(null);
   const [preferredCurrency, setPreferredCurrency] = useState("EUR");
 
+  // Deep-link: auto-open booking from ?booking=ID
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("booking");
+    if (bookingId && orders.length > 0 && !selectedBooking) {
+      const found = orders.find((o: any) => o.id === bookingId);
+      if (found) {
+        setTab("bookings");
+        setSelectedBooking(found);
+        console.log("[deep-link] auto-opened concierge booking:", bookingId);
+      }
+    }
+  }, [orders, selectedBooking]);
+
   // Load landlord profile + preferred currency
   useEffect(() => {
     if (!orgId || !user) return;

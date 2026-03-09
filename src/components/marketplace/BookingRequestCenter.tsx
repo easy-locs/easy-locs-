@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,28 @@ interface Props {
   onUpdateStatus: (id: string, status: string) => void;
   onSendPaymentLink: (booking: any) => void;
   onConfirmPayment: (id: string) => void;
+  focusBookingId?: string | null;
 }
 
 export default function BookingRequestCenter({
   bookings, services, provider, orgId,
   onUpdateStatus, onSendPaymentLink, onConfirmPayment,
+  focusBookingId,
 }: Props) {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Deep-link: auto-open booking detail when focusBookingId is provided
+  useEffect(() => {
+    if (focusBookingId && bookings.length > 0 && !selectedBooking) {
+      const found = bookings.find((b) => b.id === focusBookingId);
+      if (found) {
+        setSelectedBooking(found);
+        console.log("[deep-link] auto-opened marketplace booking detail:", focusBookingId);
+      }
+    }
+  }, [focusBookingId, bookings, selectedBooking]);
 
   const getService = (id: string) => services.find((s) => s.id === id);
 

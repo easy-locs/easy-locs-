@@ -121,6 +121,7 @@ const SeasonalRentals = () => {
     return new Date();
   });
   const [focusedRequestId] = useState(() => new URLSearchParams(window.location.search).get("focusRequest") || null);
+  const [focusedBookingId] = useState(() => new URLSearchParams(window.location.search).get("booking") || null);
   const initialPropertyId = new URLSearchParams(window.location.search).get("propertyId") || "";
   const [form, setForm] = useState<SeasonalForm>({
     property_id: initialPropertyId,
@@ -194,6 +195,24 @@ const SeasonalRentals = () => {
     };
     loadRequest();
   }, [focusedRequestId, orgId]);
+
+  // Deep-link: scroll to booking from ?booking=ID
+  useEffect(() => {
+    if (!focusedBookingId || bookings.length === 0) return;
+    const el = document.getElementById(`booking-${focusedBookingId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-accent");
+      console.log("[deep-link] scrolled to seasonal booking:", focusedBookingId);
+    } else {
+      // Try matching booking_requests
+      const found = bookings.find(b => b.id === focusedBookingId);
+      if (found) {
+        startEdit(found);
+        console.log("[deep-link] opened seasonal booking for edit:", focusedBookingId);
+      }
+    }
+  }, [focusedBookingId, bookings]);
 
   const resetForm = () => {
     setForm({
