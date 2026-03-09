@@ -126,8 +126,7 @@ const SeasonalRentals = () => {
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
   const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
-  const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);
-  // Track deep-link booking reactively via searchParams
+  
   const [form, setForm] = useState<SeasonalForm>({
     property_id: initialPropertyId,
     guest_name: "",
