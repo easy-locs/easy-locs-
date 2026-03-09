@@ -69,6 +69,7 @@ const Finances = () => {
   const [connectLoading, setConnectLoading] = useState(true);
   const [connectSyncing, setConnectSyncing] = useState(false);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
+  const [disconnectLoading, setDisconnectLoading] = useState(false);
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
