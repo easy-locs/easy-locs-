@@ -67,15 +67,15 @@ export function clearEvents() {
 async function persistToAuditLog(evt: MonitoringEvent) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return;
-  await supabase.from("audit_logs").insert({
+  await supabase.from("audit_logs").insert([{
     action: `monitoring:${evt.type}`,
     user_id: session.user.id,
     metadata_json: {
       source: evt.source,
       message: evt.message,
       metadata: evt.metadata,
-    },
-  });
+    } as any,
+  }]);
 }
 
 // ── Global Error Handlers ──────────────────────────────────────────
