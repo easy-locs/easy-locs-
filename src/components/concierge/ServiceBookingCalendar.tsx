@@ -233,7 +233,7 @@ const ServiceBookingCalendar = ({
             }}
             modifiersClassNames={{
               booked: "bg-destructive/20 text-destructive line-through",
-              partial: "bg-amber-500/15 text-amber-700",
+              partial: "bg-warning/15 text-warning",
             }}
           />
         </div>
