@@ -47,25 +47,34 @@ export default function BookingCommunicationThread({ bookingId, orgId, customerN
       const prefix = messageType === "internal_note" ? "📌 [Internal] " : messageType === "email" ? "📧 [Email] " : "";
       const content = `${prefix}${newMessage}\n\n[Booking: ${bookingId}]`;
       
-      await supabase.from("messages").insert({
-        org_id: orgId,
-        sender_id: user?.id || null,
-        content,
-        category: "booking",
-        message_type: messageType === "internal_note" ? "system" : "text",
-        read: false,
-      } as any);
-
-      // If email type, also send email via edge function
-      if (messageType === "email" && customerEmail) {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            event_type: "marketplace_notification",
-            recipient_email: customerEmail,
-            recipient_name: customerName,
-            data: { subject: `Message from your provider`, message: newMessage },
-            locale: "en",
-          },
+      // Internal notes: just save the message directly
+      if (messageType === "internal_note") {
+        await supabase.from("messages").insert({
+          org_id: orgId,
+          sender_id: user?.id || null,
+          content,
+          category: "booking",
+          message_type: "system",
+          read: false,
+        } as any);
+      } else {
+        // Message or Email: use the shared communication pipeline
+        const { sendCommunicationEvent, createDeepLinkMeta } = await import("@/lib/shared");
+        const meta = createDeepLinkMeta({
+          targetType: "marketplace_booking",
+          targetId: bookingId,
+          module: "marketplace",
+          bookingId,
+          orgId,
+        });
+        await sendCommunicationEvent({
+          orgId,
+          senderId: user?.id,
+          recipientEmail: messageType === "email" ? customerEmail : undefined,
+          subject: `Message from your provider`,
+          message: newMessage,
+          category: "booking",
+          meta,
         });
       }
 
