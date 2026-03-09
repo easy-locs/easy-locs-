@@ -149,8 +149,8 @@ const NotificationBell = () => {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler, true);
-    return () => document.removeEventListener("mousedown", handler, true);
+    document.addEventListener("pointerdown", handler, true);
+    return () => document.removeEventListener("pointerdown", handler, true);
   }, [open]);
 
   const fetchNotifications = useCallback(async () => {
