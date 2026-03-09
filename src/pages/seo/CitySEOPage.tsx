@@ -1,13 +1,13 @@
 /**
  * Layer 3 — Dynamic City SEO Page
  * Route: /property-management-:citySlug
- * Falls through from country route when slug matches a city instead of a country.
+ * Uses unique localContext per city for differentiated content.
  */
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
-import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
+import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Building2, Star } from "lucide-react";
@@ -17,12 +17,26 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
   if (!result) return null;
 
   const { city, country } = result;
+  const shouldNoindex = !isIndexableCity(city);
 
+  // Contextual FAQs using unique local data
   const faqs = [
-    { question: `How do I find a rental property in ${city.name}?`, answer: `Easy-Locs provides a searchable rental catalog for ${city.name}, ${country.name}. Browse available properties, view photos, check pricing, and submit booking requests directly through the platform.` },
-    { question: `What services are available in ${city.name}?`, answer: `Our marketplace offers professional services in ${city.name} including cleaning, airport transfers, property maintenance, tours, car rental, and more. Local providers are verified and bookable online.` },
-    { question: `Can I manage my ${city.name} property remotely?`, answer: `Yes. Easy-Locs provides a complete cloud-based platform with tenant management, rent collection in ${country.currency}, automated documents, and a concierge service network in ${city.name}.` },
-    { question: `What activities are available in ${city.name}?`, answer: `Explore tours, experiences, and activities in ${city.name} through the Easy-Locs activities marketplace. From city tours to dining experiences, discover local offerings bookable online.` },
+    {
+      question: `What is the rental market like in ${city.name}?`,
+      answer: city.localContext,
+    },
+    {
+      question: `What services are available for property managers in ${city.name}?`,
+      answer: `Easy-Locs connects property managers in ${city.name} with local service providers for cleaning, maintenance, airport transfers, and guest experiences. All bookable online through the platform.`,
+    },
+    {
+      question: `Can I manage my ${city.name} property remotely?`,
+      answer: `Yes. Easy-Locs provides cloud-based tools for tenant management, rent collection in ${country.currency}, automated documents, and access to local service providers in ${city.name}.`,
+    },
+    {
+      question: `What rental regulations apply in ${city.name}?`,
+      answer: `${city.name} follows ${country.name}'s rental framework. ${country.regulatoryNote} Easy-Locs helps you stay informed about local practices.`,
+    },
   ];
 
   const jsonLd = [
@@ -30,7 +44,7 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
       "@context": "https://schema.org",
       "@type": "WebPage",
       name: `Property Management in ${city.name} — Easy-Locs`,
-      description: `Manage rental properties in ${city.name}, ${country.name}. Find local services, activities, and rental listings.`,
+      description: `${city.localContext.slice(0, 160)}`,
       url: `https://www.easy-locs.com/property-management-${city.slug}`,
       about: {
         "@type": "City",
@@ -49,31 +63,33 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
     },
   ];
 
-  const serviceLinks = SEO_SERVICE_CATEGORIES.map(s => ({
+  // Only link to phase-1 service/city combos
+  const serviceLinks = SEO_SERVICE_CATEGORIES.slice(0, 8).map(s => ({
     to: `/services/${s.slug}-${city.slug}`,
     label: `${s.label}`,
     icon: s.icon,
   }));
 
-  const activityLinks = SEO_ACTIVITY_TYPES.slice(0, 12).map(a => ({
+  const activityLinks = SEO_ACTIVITY_TYPES.slice(0, 8).map(a => ({
     to: `/activities/${a.slug}-${city.slug}`,
     label: `${a.label}`,
     icon: a.icon,
   }));
 
   const siblingCities = country.cities
-    .filter(ci => ci.slug !== city.slug)
-    .slice(0, 8)
+    .filter(ci => ci.slug !== city.slug && ci.phase === 1)
+    .slice(0, 6)
     .map(ci => ({ to: `/property-management-${ci.slug}`, label: ci.name }));
 
   return (
     <SEOPageShell
       title={`Property Management in ${city.name}, ${country.name} — Easy-Locs`}
-      description={`Manage rental properties in ${city.name}. Find cleaning services, airport transfers, tours, and local activities. Rent collection, leases, and tenant portal for ${city.name}.`}
+      description={`${city.localContext.slice(0, 140)} Manage properties with Easy-Locs.`}
       canonical={`https://www.easy-locs.com/property-management-${city.slug}`}
       jsonLd={jsonLd as any}
       ctaTitle={`Start managing properties in ${city.name}`}
       ctaDescription={`Join property owners in ${city.name} using Easy-Locs.`}
+      noindex={shouldNoindex}
     >
       {/* Hero */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
@@ -90,46 +106,48 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
             Property Management in {city.name}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Manage your rental properties in {city.name}, {country.name}. Access local services, activities, and a complete property management toolkit — from lease generation to rent collection.
+            {city.localContext.split(". ").slice(0, 2).join(". ")}.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg"><Link to="/signup">Start Free <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-            <Button asChild size="lg" variant="outline"><Link to={`/rentals/${country.slug}/${city.slug}`}>Browse {city.name} Rentals</Link></Button>
+            <Button asChild size="lg" variant="outline"><Link to={`/rentals`}>Browse Rentals</Link></Button>
           </div>
         </div>
       </section>
 
-      {/* City Context */}
+      {/* Unique City Context */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4 max-w-4xl">
           <h2 className="text-3xl font-bold text-foreground mb-6">Rental Market in {city.name}</h2>
           <div className="prose prose-lg max-w-none text-muted-foreground">
+            <p>{city.localContext}</p>
             <p>
-              {city.name} is one of {country.name}'s key rental markets. Whether you manage long-term residential leases
-              or short-term vacation rentals, Easy-Locs provides the tools you need to operate professionally.
-            </p>
-            <p>
-              Property owners in {city.name} benefit from automated document generation compliant with {country.name} regulations,
-              multi-currency rent collection in {country.currency}, and access to a network of verified local service providers
-              including cleaning, maintenance, airport transfers, and guest experiences.
-            </p>
-            <p>
-              The {city.name} property market offers diverse opportunities — from city-center apartments to suburban homes.
-              Easy-Locs helps you create public listing pages, manage bookings, and grow your rental business with
-              SEO-optimized property pages that attract direct bookings.
+              Property owners in {city.name} benefit from Easy-Locs' automated document generation,
+              rent collection in {country.currency}, and access to a network of local service providers
+              for cleaning, maintenance, and guest experiences.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Key metrics */}
+      {/* Regulatory Context from Country */}
+      <section className="py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="bg-muted/50 border border-border rounded-lg p-6">
+            <h3 className="text-xl font-bold text-foreground mb-3">📋 Rental Regulations in {country.name}</h3>
+            <p className="text-muted-foreground">{country.regulatoryNote}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* What you can do */}
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-5xl">
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">What You Can Do in {city.name}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Building2, title: "Manage Properties", desc: `List and manage rental properties in ${city.name} with professional tools.` },
-              { icon: Star, title: "Find Local Services", desc: `Book cleaning, maintenance, transfers, and more from verified ${city.name} providers.` },
+              { icon: Star, title: "Find Local Services", desc: `Book cleaning, maintenance, and transfers from local ${city.name} providers.` },
               { icon: MapPin, title: "Discover Activities", desc: `Offer guests tours, experiences, and local activities in ${city.name}.` },
             ].map(f => (
               <Card key={f.title} className="border-border">
@@ -145,10 +163,10 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
       </section>
 
       {/* Services */}
-      <InternalLinksGrid title={`Services in ${city.name}`} links={serviceLinks} />
+      {city.phase === 1 && <InternalLinksGrid title={`Services in ${city.name}`} links={serviceLinks} />}
 
       {/* Activities */}
-      <InternalLinksGrid title={`Activities in ${city.name}`} links={activityLinks} />
+      {city.phase === 1 && <InternalLinksGrid title={`Activities in ${city.name}`} links={activityLinks} />}
 
       {/* FAQ */}
       <FAQSection faqs={faqs} />

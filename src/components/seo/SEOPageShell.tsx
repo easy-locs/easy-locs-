@@ -18,11 +18,13 @@ interface SEOPageShellProps {
   children: ReactNode;
   ctaTitle?: string;
   ctaDescription?: string;
+  /** Pass true to add noindex,follow — for thin/phase-2 pages */
+  noindex?: boolean;
 }
 
-const SEOPageShell = ({ title, description, canonical, jsonLd, children, ctaTitle, ctaDescription }: SEOPageShellProps) => (
+const SEOPageShell = ({ title, description, canonical, jsonLd, children, ctaTitle, ctaDescription, noindex }: SEOPageShellProps) => (
   <div className="min-h-screen bg-background">
-    <SEOHead title={title} description={description} canonical={canonical} jsonLd={jsonLd as any} />
+    <SEOHead title={title} description={description} canonical={canonical} jsonLd={jsonLd as any} noindex={noindex} />
     <Navbar />
     <main>{children}</main>
 

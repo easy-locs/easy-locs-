@@ -5,17 +5,20 @@ interface SEOHeadProps {
   description?: string;
   canonical?: string;
   ogImage?: string;
-  jsonLd?: Record<string, unknown>;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   hreflangAlternates?: { lang: string; url: string }[];
+  /** Set to true to add noindex,follow directive */
+  noindex?: boolean;
 }
 
 const SEOHead = ({
   title = "Easy-Locs — Property Management Software for Landlords Worldwide",
-  description = "Manage rental properties in 110+ countries. Leases, receipts, tenant portal, accounting — all-in-one platform for landlords. Free to start.",
+  description = "Manage rental properties worldwide. Leases, receipts, tenant portal, accounting — all-in-one platform for landlords. Free to start.",
   canonical,
   ogImage = "https://www.easy-locs.com/pwa-512x512.png",
   jsonLd,
   hreflangAlternates,
+  noindex = false,
 }: SEOHeadProps) => {
   useEffect(() => {
     document.title = title;
@@ -44,7 +47,7 @@ const SEOHead = ({
     setMeta("twitter:description", description);
     setMeta("twitter:image", ogImage);
     // Robots
-    setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1");
+    setMeta("robots", noindex ? "noindex, follow" : "index, follow, max-image-preview:large, max-snippet:-1");
 
     if (canonical) {
       let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -59,7 +62,6 @@ const SEOHead = ({
 
     // hreflang alternates
     if (hreflangAlternates?.length) {
-      // Remove old hreflang links
       document.querySelectorAll('link[data-hreflang]').forEach(el => el.remove());
       for (const alt of hreflangAlternates) {
         const link = document.createElement("link");
@@ -87,7 +89,7 @@ const SEOHead = ({
       if (script) script.remove();
       document.querySelectorAll('link[data-hreflang]').forEach(el => el.remove());
     };
-  }, [title, description, canonical, ogImage, jsonLd, hreflangAlternates]);
+  }, [title, description, canonical, ogImage, jsonLd, hreflangAlternates, noindex]);
 
   return null;
 };

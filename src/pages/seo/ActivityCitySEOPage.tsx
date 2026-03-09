@@ -1,12 +1,13 @@
 /**
  * Layer 5 — Activity + City SEO Page
  * Route: /activities/:activityCity  (e.g. /activities/desert-safari-dubai)
+ * Only indexes phase-1 city combinations.
  */
 import { useParams, Link } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
-import { getCityBySlug, SEO_ACTIVITY_TYPES } from "@/lib/seo/seo-data";
+import { getCityBySlug, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin } from "lucide-react";
 
@@ -47,11 +48,12 @@ const ActivityCitySEOPage = () => {
   }
 
   const { city, country } = cityResult;
+  const shouldNoindex = !isIndexableCity(city);
 
   const faqs = [
-    { question: `How do I book a ${activity.label.toLowerCase()} in ${city.name}?`, answer: `Browse ${activity.label.toLowerCase()} providers in ${city.name} on Easy-Locs. Select a date and time, add the number of participants, and book online. You'll receive instant confirmation.` },
-    { question: `What should I know before booking a ${activity.label.toLowerCase()} in ${city.name}?`, answer: `Check the provider's description for included items, duration, and any requirements. Most experiences in ${city.name} are available year-round with flexible scheduling.` },
-    { question: `Can I cancel my ${activity.label.toLowerCase()} booking?`, answer: `Cancellation policies vary by provider. Most ${city.name} activity providers offer free cancellation up to 24-48 hours before the experience.` },
+    { question: `How do I book a ${activity.label.toLowerCase()} in ${city.name}?`, answer: `Browse ${activity.label.toLowerCase()} providers in ${city.name} on Easy-Locs. Select a date and time, add the number of participants, and book online. You'll receive confirmation from the provider.` },
+    { question: `What should I know before booking a ${activity.label.toLowerCase()} in ${city.name}?`, answer: `Check the provider's description for included items, duration, and any requirements. Most experiences in ${city.name} offer flexible scheduling. ${city.localContext.split(". ")[0]}.` },
+    { question: `Can I cancel my ${activity.label.toLowerCase()} booking?`, answer: `Cancellation policies vary by provider. Most ${city.name} activity providers offer cancellation options — check the specific terms before booking.` },
   ];
 
   const jsonLd = {
@@ -65,17 +67,18 @@ const ActivityCitySEOPage = () => {
 
   const otherActivities = SEO_ACTIVITY_TYPES
     .filter(a => a.slug !== activity!.slug)
-    .slice(0, 10)
+    .slice(0, 8)
     .map(a => ({ to: `/activities/${a.slug}-${city.slug}`, label: a.label, icon: a.icon }));
 
   return (
     <SEOPageShell
       title={`${activity.label} in ${city.name}, ${country.name} — Easy-Locs`}
-      description={`Book ${activity.label.toLowerCase()} in ${city.name}. Discover unique experiences with local providers. Instant booking, secure payment.`}
+      description={`Book ${activity.label.toLowerCase()} in ${city.name}. Discover unique experiences with local providers. ${city.localContext.slice(0, 80)}`}
       canonical={`https://www.easy-locs.com/activities/${activityCity}`}
       jsonLd={jsonLd as any}
       ctaTitle={`Book your ${activity.label.toLowerCase()} in ${city.name}`}
-      ctaDescription={`Discover unique ${activity.label.toLowerCase()} experiences in ${city.name}, ${country.name}.`}
+      ctaDescription={`Discover ${activity.label.toLowerCase()} experiences in ${city.name}, ${country.name}.`}
+      noindex={shouldNoindex}
     >
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto px-4 max-w-5xl text-center">
@@ -90,7 +93,7 @@ const ActivityCitySEOPage = () => {
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Discover and book {activity.label.toLowerCase()} experiences in {city.name}, {country.name}.
-            Compare providers, check availability, and book instantly through Easy-Locs.
+            Compare providers, check availability, and book through Easy-Locs.
           </p>
           <Button asChild size="lg"><Link to="/signup">Start Free <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
         </div>
@@ -100,15 +103,11 @@ const ActivityCitySEOPage = () => {
         <div className="container mx-auto px-4 max-w-4xl">
           <h2 className="text-3xl font-bold text-foreground mb-6">{activity.label} in {city.name}</h2>
           <div className="prose prose-lg max-w-none text-muted-foreground">
+            <p>{city.localContext}</p>
             <p>
-              {city.name} is a fantastic destination for {activity.label.toLowerCase()}. Whether you're a tourist visiting {country.name}
-              or a local looking for new experiences, Easy-Locs connects you with verified providers offering
-              professional {activity.label.toLowerCase()} experiences in and around {city.name}.
-            </p>
-            <p>
-              All activities are bookable online with secure payment processing. Providers offer detailed descriptions,
-              photos, pricing in {country.currency}, and real-time availability. Property managers can also offer
-              {activity.label.toLowerCase()} as part of their guest concierge services.
+              Easy-Locs connects you with local providers offering {activity.label.toLowerCase()} experiences
+              in and around {city.name}. All activities are bookable online with pricing in {country.currency}
+              and real-time availability.
             </p>
           </div>
         </div>
