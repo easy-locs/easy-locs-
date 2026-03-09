@@ -52,6 +52,7 @@ const ChannelManager = () => {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [editModalRes, setEditModalRes] = useState<Reservation | null>(null);
   const [editDates, setEditDates] = useState({ check_in: "", check_out: "" });
+  const [selectedTab, setSelectedTab] = useState("calendar");
 
   // Fetch org
   const { data: org } = useQuery({
