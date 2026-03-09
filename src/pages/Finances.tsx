@@ -307,10 +307,16 @@ const Finances = () => {
                     {connectStatus.charges_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payments_enabled")}</span>}
                     {connectStatus.payouts_enabled && <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-success" /> {t("page.finances.payouts_enabled")}</span>}
                   </div>
-                  <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="text-sm text-accent hover:underline flex items-center gap-1 mt-2">
-                    {onboardingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
-                    {t("page.finances.edit_bank")}
-                  </button>
+                  <div className="flex items-center gap-3 mt-2">
+                    <button onClick={handleConnectOnboarding} disabled={onboardingLoading} className="text-sm text-accent hover:underline flex items-center gap-1">
+                      {onboardingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
+                      {t("page.finances.edit_bank")}
+                    </button>
+                    <button onClick={handleDisconnectStripe} disabled={disconnectLoading} className="text-sm text-destructive hover:underline flex items-center gap-1">
+                      {disconnectLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                      {t("page.finances.disconnect_stripe")}
+                    </button>
+                  </div>
                 </div>
               ) : connectStatus?.connected ? (
                 <div className="space-y-3">
