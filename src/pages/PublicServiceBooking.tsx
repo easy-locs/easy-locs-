@@ -64,10 +64,9 @@ const PublicServiceBooking = () => {
 
       if (!resolvedService) {
         const { data: fallbackMatch } = await supabase
-          .from("concierge_services")
+          .from("concierge_services_public" as any)
           .select("*")
           .ilike("booking_slug", normalizedSlug)
-          .eq("active", true)
           .order("updated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
