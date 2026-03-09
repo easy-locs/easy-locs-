@@ -408,6 +408,13 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
+
+            {/* Health Tab */}
+            {activeTab === "health" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading health dashboard…</div>}>
+                <HealthDashboard />
+              </Suspense>
+            )}
           </>
         )}
       </div>
