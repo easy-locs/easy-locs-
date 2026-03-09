@@ -76,10 +76,9 @@ const PublicServiceBooking = () => {
       // 2. If not found in concierge, try marketplace_services
       if (!resolvedService) {
         const { data: mpExact } = await supabase
-          .from("marketplace_services")
+          .from("marketplace_services_public" as any)
           .select("*")
           .eq("booking_slug", normalizedSlug)
-          .eq("active", true)
           .limit(1)
           .maybeSingle();
 
