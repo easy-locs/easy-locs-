@@ -138,7 +138,20 @@ const NotificationBell = () => {
   const { t, locale } = useI18n();
   const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
+
+  // Close dropdown on outside click using ref — no backdrop overlay needed
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler, true);
+    return () => document.removeEventListener("mousedown", handler, true);
+  }, [open]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
