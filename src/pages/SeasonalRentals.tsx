@@ -123,7 +123,7 @@ const SeasonalRentals = () => {
     }
     return new Date();
   });
-  const [deepLinkBookingId] = useState(() => deepLink.bookingId);
+  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
   const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
   const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);
