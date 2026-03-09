@@ -103,6 +103,16 @@ const ActivityCitySEOPage = lazy(() => import("./pages/seo/ActivityCitySEOPage")
 const CoreSEOPages = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyOwnerSoftwarePage })));
 const PropertyManagementPlatformPage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyManagementPlatformPage })));
 const RentalManagementSoftwarePage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.RentalManagementSoftwarePage })));
+// Programmatic SEO pages
+const LocationsPage = lazy(() => import("./pages/seo/LocationsPage"));
+const CountryHubPage = lazy(() => import("./pages/seo/CountryHubPage"));
+const CityHubPage = lazy(() => import("./pages/seo/CityHubPage"));
+const MarketplaceHubPage = lazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceHubPage })));
+const MarketplaceCityPage = lazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceCityPage })));
+const MarketplaceServiceCityPage = lazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceServiceCityPage })));
+const ServicesHubPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServicesHubPage })));
+const ServiceCategoryPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCategoryPage })));
+const ServiceCityPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCityPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
