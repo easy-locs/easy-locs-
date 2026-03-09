@@ -422,31 +422,55 @@ const ChannelManager = () => {
           </div>
         </div>
 
-        {/* KPIs */}
+        {/* KPIs — Smart clickable */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <Card><CardContent className="pt-4 pb-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4 pb-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Réservations</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4 pb-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4 pb-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
-            <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4 pb-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
-            <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
-          </CardContent></Card>
+          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => {
+            const tabEl = document.querySelector('[data-state="inactive"][value="connections"]') as HTMLElement;
+            if (tabEl) tabEl.click();
+          }}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les connexions →</p>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => {
+            const tabEl = document.querySelector('[data-state="inactive"][value="reservations"]') as HTMLElement;
+            if (tabEl) tabEl.click();
+          }}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Réservations</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
+              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Locations saisonnières →</p>
+            </CardContent>
+          </Card>
+          <Card className={`cursor-pointer hover:shadow-card-hover transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => {
+            const tabEl = document.querySelector('[data-state="inactive"][value="calendar"]') as HTMLElement;
+            if (tabEl) tabEl.click();
+          }}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
+              <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir le calendrier →</p>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer hover:shadow-card-hover transition-all group" onClick={() => navigate("/dashboard/pricing")}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
+              <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
+            </CardContent>
+          </Card>
         </div>
 
-        <Tabs defaultValue="calendar">
+        <Tabs defaultValue="calendar" onValueChange={() => {}}>
           <TabsList>
             <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
             <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
@@ -534,10 +558,55 @@ const ChannelManager = () => {
 
           {/* ─── Connections Tab ─── */}
           <TabsContent value="connections" className="mt-4">
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Quick-connect guides */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card className="border-[hsl(350,80%,55%)]/30 bg-[hsl(350,80%,55%)]/5">
+                  <CardContent className="pt-4 pb-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🏠</span>
+                      <div>
+                        <p className="font-semibold text-foreground">Airbnb</p>
+                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                      </div>
+                    </div>
+                    <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
+                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
+                      <p>1. Ouvrez Airbnb → <strong>Annonce</strong> → <strong>Tarification et disponibilité</strong></p>
+                      <p>2. Section <strong>"Exporter le calendrier"</strong> → Copiez l'URL iCal</p>
+                      <p>3. Collez-la dans le formulaire <strong>"Ajouter une connexion"</strong></p>
+                    </div>
+                    <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "airbnb" })); setAddOpen(true); }}>
+                      <Plus className="h-4 w-4 mr-1" />Connecter Airbnb
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="border-[hsl(220,80%,45%)]/30 bg-[hsl(220,80%,45%)]/5">
+                  <CardContent className="pt-4 pb-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🅱️</span>
+                      <div>
+                        <p className="font-semibold text-foreground">Booking.com</p>
+                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                      </div>
+                    </div>
+                    <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
+                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
+                      <p>1. Ouvrez l'Extranet Booking.com → <strong>Calendrier</strong></p>
+                      <p>2. Cliquez sur <strong>"Synchroniser les calendriers"</strong></p>
+                      <p>3. Copiez le lien iCal et collez-le ci-dessous</p>
+                    </div>
+                    <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "booking" })); setAddOpen(true); }}>
+                      <Plus className="h-4 w-4 mr-1" />Connecter Booking.com
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Existing connections */}
               {connections.length === 0 && (
-                <Card><CardContent className="py-8 text-center text-muted-foreground">
-                  Aucune connexion OTA. Cliquez "Ajouter une connexion" pour synchroniser Airbnb, Booking.com, etc.
+                <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">
+                  Aucune connexion active. Utilisez les guides ci-dessus pour synchroniser vos calendriers Airbnb et Booking.com.
                 </CardContent></Card>
               )}
               {connections.map(conn => {

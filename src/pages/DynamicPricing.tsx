@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Zap, TrendingUp, Calendar, Percent, Plus, Trash2, BarChart3 } from "lucide-react";
+import { Zap, TrendingUp, Calendar, Percent, Plus, Trash2, BarChart3, ArrowLeft } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -25,6 +26,7 @@ const RULE_TYPES = [
 
 const DynamicPricing = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [newRule, setNewRule] = useState({
@@ -154,10 +156,15 @@ const DynamicPricing = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
-            <p className="text-muted-foreground text-sm">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channel-manager")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
+            </div>
+            <p className="text-muted-foreground text-sm ml-10">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nouvelle règle</Button></DialogTrigger>
