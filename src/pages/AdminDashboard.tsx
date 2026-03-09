@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+
+const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
 
 interface Stats {
   totalUsers: number;
