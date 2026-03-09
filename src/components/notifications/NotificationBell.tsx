@@ -11,13 +11,31 @@ const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
 };
 
-/** Determine which portal a notification belongs to based on its link */
+/** Determine which portal and module a notification belongs to */
 const getNotifPortal = (n: any): "tenant" | "landlord" | "both" => {
   const link = n.link || "";
   if (link.startsWith("/tenant")) return "tenant";
   if (link.startsWith("/dashboard")) return "landlord";
   if (n.type === "message") return "both";
   return "both";
+};
+
+/** Determine module from notification link/metadata */
+const getNotifModule = (n: any): "long_term" | "seasonal" | "marketplace" | null => {
+  const link = n.link || "";
+  const meta = n.metadata_json;
+  if (meta?.target_type === "marketplace_booking" || link.includes("/activities")) return "marketplace";
+  if (meta?.target_type === "concierge_order" || link.includes("/concierge")) return "marketplace";
+  if (meta?.target_type === "booking_request" || link.includes("/seasonal")) return "seasonal";
+  if (link.includes("/rental") || link.includes("/tenant/pay") || link.includes("/tenant/receipts")) return "long_term";
+  if (n.type === "payment" && link.includes("/rental")) return "long_term";
+  return null;
+};
+
+const MODULE_LABELS: Record<string, { label: string; color: string }> = {
+  long_term: { label: "🏠", color: "bg-blue-500/10 text-blue-600" },
+  seasonal: { label: "🏖️", color: "bg-amber-500/10 text-amber-600" },
+  marketplace: { label: "🎯", color: "bg-emerald-500/10 text-emerald-600" },
 };
 
 /**
@@ -225,6 +243,14 @@ const NotificationBell = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className={`text-sm ${!n.read ? "font-semibold" : "font-medium"} text-foreground truncate`}>{n.title}</p>
+                            {(() => {
+                              const mod = getNotifModule(n);
+                              if (mod) {
+                                const cfg = MODULE_LABELS[mod];
+                                return <span className={`text-[9px] font-bold px-1 py-0.5 rounded shrink-0 ${cfg.color}`}>{cfg.label}</span>;
+                              }
+                              return null;
+                            })()}
                             {countryCode && (
                               <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                                 {countryCode}
