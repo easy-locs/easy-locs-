@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.receive-email]
 verify_jwt = false
+
+[functions.translate-message]
+verify_jwt = false
