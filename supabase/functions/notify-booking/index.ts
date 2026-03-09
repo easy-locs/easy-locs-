@@ -273,8 +273,8 @@ serve(async (req) => {
     const mainPhoto = photoUrls.length > 0 ? photoUrls[0] : "";
     const listingUrl = listing?.slug ? `https://www.easy-locs.com/listing/${listing.slug}` : "";
 
-    // Deep-link to owner's calendar with focus on this request
-    const ownerDeepLink = `/dashboard/seasonal?focusRequest=${br.id}&propertyId=${br.property_id}&month=${br.check_in.slice(0, 7)}`;
+    // Deep-link to owner's seasonal page with booking focus — uses standard format
+    const ownerDeepLink = `/dashboard/seasonal?booking=${br.id}`;
 
     // Generate payment link
     let paymentUrl = "";
@@ -324,7 +324,10 @@ serve(async (req) => {
         </p>`
       : "";
 
-    // 1. Notify owner (in-app + email) with deep-link
+    // Build app base URL dynamically
+    const appBaseUrl = "https://easy-locs.lovable.app";
+
+    // 1. Notify owner (in-app + email) with standardized deep-link metadata
     if (org?.owner_user_id) {
       await supabase.from("notifications").insert({
         user_id: org.owner_user_id,
@@ -333,6 +336,16 @@ serve(async (req) => {
         title: t.ownerTitle,
         message: `${safeGuestName} — ${safePropertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
         link: ownerDeepLink,
+        metadata_json: {
+          target_type: "booking_request",
+          target_id: br.id,
+          booking_id: br.id,
+          module: "seasonal",
+          country_code: property?.country || "",
+          org_id: br.org_id,
+          property_id: br.property_id,
+          target_url: ownerDeepLink,
+        },
       });
     }
 
