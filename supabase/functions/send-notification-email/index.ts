@@ -216,10 +216,23 @@ function interpolate(text: string, data: Record<string, any>): string {
 
 function sanitizeHtml(text: string): string {
   return text
+    .replace(/&/g, "&amp;")   // Must be first
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
     .replace(/on\w+\s*=/gi, "")
     .replace(/javascript:/gi, "");
+}
+
+/** Allow only http/https URLs — prevents javascript: URI injection */
+function safeUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    if (!["https:", "http:"].includes(parsed.protocol)) return undefined;
+    return parsed.href;
+  } catch { return undefined; }
 }
 
 function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: string): string {
