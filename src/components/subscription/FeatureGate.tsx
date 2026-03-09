@@ -10,7 +10,7 @@ interface FeatureGateProps {
 const FeatureGate = ({ feature, featureLabel, children }: FeatureGateProps) => {
   const { canAccess, isLoading } = useSubscriptionGating();
 
-  if (isLoading) return <>{children}</>;
+  if (isLoading) return null; // Don't grant access while loading
 
   if (!canAccess(feature)) {
     return <UpgradeBanner featureLabel={featureLabel} />;
