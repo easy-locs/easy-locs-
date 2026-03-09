@@ -4023,6 +4023,7 @@ export type Database = {
         Returns: Json
       }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
+      get_order_by_session: { Args: { _session_id: string }; Returns: Json }
       get_ota_connections: {
         Args: { _org_id: string }
         Returns: {
