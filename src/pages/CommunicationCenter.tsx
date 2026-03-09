@@ -730,7 +730,9 @@ const CommunicationCenter = () => {
 
         await supabase.functions.invoke("send-notification-email", {
           body: {
-            event_type: action === "confirm" ? "booking_confirmed" : action === "cancel" ? "booking_cancelled" : "booking_completed",
+            event_type: selectedThread.bookingType === "seasonal"
+              ? (action === "confirm" ? "seasonal_booking_confirmed" : action === "cancel" ? "seasonal_booking_cancelled" : "marketplace_booking_completed")
+              : (action === "confirm" ? "marketplace_booking_confirmed" : action === "cancel" ? "marketplace_booking_cancelled" : "marketplace_booking_completed"),
             recipient_email: email,
             recipient_name: selectedThread.name,
             data: {
