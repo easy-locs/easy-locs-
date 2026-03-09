@@ -105,6 +105,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
+      <SEOHead title="Login — Easy-Locs" description="Sign in to your Easy-Locs account." noindex />
       <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
