@@ -208,7 +208,7 @@ const NotificationBell = () => {
       .eq("id", notifId);
   }, []);
 
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
 
   /** Core click handler — each notification resolves its own unique target */
   const handleNotificationClick = useCallback((e: React.MouseEvent, n: any) => {
