@@ -21,7 +21,7 @@ const FloatingAIAssistant = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { locale } = useI18n();
 
   useEffect(() => {
