@@ -1999,10 +1999,12 @@ export type Database = {
           created_at: string
           delivered: boolean | null
           id: string
+          inbound_message_id: string | null
           message_type: string | null
           org_id: string
           property_id: string | null
           read: boolean
+          reply_chain_id: string | null
           sender_id: string
           sender_locale: string | null
           tenant_id: string | null
@@ -2020,10 +2022,12 @@ export type Database = {
           created_at?: string
           delivered?: boolean | null
           id?: string
+          inbound_message_id?: string | null
           message_type?: string | null
           org_id: string
           property_id?: string | null
           read?: boolean
+          reply_chain_id?: string | null
           sender_id: string
           sender_locale?: string | null
           tenant_id?: string | null
@@ -2041,10 +2045,12 @@ export type Database = {
           created_at?: string
           delivered?: boolean | null
           id?: string
+          inbound_message_id?: string | null
           message_type?: string | null
           org_id?: string
           property_id?: string | null
           read?: boolean
+          reply_chain_id?: string | null
           sender_id?: string
           sender_locale?: string | null
           tenant_id?: string | null
