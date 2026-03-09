@@ -52,6 +52,9 @@ const ActivitiesMarketplace = () => {
     }
   }, []);
 
+  // Fallback: if deep-linked booking not found after data loaded, show toast
+  const [deepLinkChecked, setDeepLinkChecked] = useState(false);
+
 
   // --- My Provider Profile ---
   const { data: myProvider } = useQuery({

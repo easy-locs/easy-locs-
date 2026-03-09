@@ -79,6 +79,12 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
       };
       const emailEventType = emailEventMap[event.meta.target_type] || "marketplace_notification";
 
+      // Build absolute CTA URL for email using the same deep-link resolver
+      const appBaseUrl = typeof window !== "undefined" ? window.location.origin : "https://easy-locs.lovable.app";
+      const ctaUrl = event.meta.target_url
+        ? `${appBaseUrl}${event.meta.target_url.startsWith("/") ? event.meta.target_url : `/${event.meta.target_url}`}`
+        : undefined;
+
       await supabase.functions.invoke("send-notification-email", {
         body: {
           event_type: emailEventType,
@@ -89,6 +95,9 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
             booking_id: event.meta.booking_id || "",
             attachment_url: event.attachmentUrl || "",
             attachment_name: event.attachmentName || "",
+            cta_url: ctaUrl,
+            cta_label: event.subject,
+            org_id: event.orgId,
           },
           locale: event.emailLocale || "fr",
         },
