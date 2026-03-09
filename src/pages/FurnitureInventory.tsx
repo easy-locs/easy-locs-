@@ -83,7 +83,7 @@ const FurnitureInventory = () => {
   ];
   const DEFAULT_ROOMS = ROOM_KEYS.map(k => t(k));
 
-  const [form, setForm] = useState({ property_id: "", room_name: "", item_name: "", quantity: 1, condition: "good", notes: "" });
+  const [form, setForm] = useState({ property_id: "", room_name: "", item_name: "", quantity: 0, condition: "good", notes: "" });
 
   // Set default room after translations load
   useEffect(() => {

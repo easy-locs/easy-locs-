@@ -66,7 +66,7 @@ const emptyService: ServiceFormData = {
   country: "",
   city: "",
   location: "",
-  max_capacity: 1,
+  max_capacity: 0,
   payment_stripe_link: "",
   payment_paypal_email: "",
   payment_custom_url: "",

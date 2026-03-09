@@ -42,7 +42,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     service_time: "10:00",
     date_from: "",
     date_to: "",
-    quantity: 1,
+    quantity: 0,
     notes: "",
   });
 
