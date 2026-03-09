@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, LogIn, Globe, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, LogIn, Globe, Rocket, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import AppLogo from "@/components/AppLogo";
@@ -67,7 +67,7 @@ const Hero = () => {
               }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              {t("landing.hero.badge") || "AI-Powered Property Management — 110+ Countries"}
+              Run Your Business From Anywhere — 110+ Countries
             </span>
           </motion.div>
 
@@ -82,17 +82,18 @@ const Hero = () => {
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.06]"
               style={{ color: "hsl(var(--primary-foreground))" }}
             >
-              {t("landing.hero.title") || "Manage Properties,"}
+              Build Your Property &
               <br />
+              Service Business{" "}
               <span className="text-gradient-gold">
-                {t("landing.hero.tw_tenants") || "Worldwide."}
+                Globally.
               </span>
             </h1>
             <p
               className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
-              style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}
+              style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}
             >
-              {t("landing.hero.subtitle") || "All-in-one platform for landlords, tenants and concierge professionals. Leases, payments, bookings — 110+ countries."}
+              One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely.
             </p>
           </motion.div>
 
@@ -103,6 +104,21 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
+            <Link
+              to="/signup"
+              className="group inline-flex items-center justify-center gap-2.5 h-13 sm:h-14 px-10 rounded-2xl text-sm font-bold transition-all relative overflow-hidden"
+              style={{
+                background: "var(--gradient-gold)",
+                color: "hsl(var(--accent-foreground))",
+                boxShadow: "0 0 30px hsl(var(--accent) / 0.3)",
+              }}
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Start Free
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            </Link>
             <Link
               to="/login"
               className="group inline-flex items-center justify-center gap-2.5 h-13 sm:h-14 px-8 rounded-2xl text-sm font-semibold transition-all border"
@@ -115,21 +131,6 @@ const Hero = () => {
               <LogIn className="h-4 w-4" />
               {t("landing.nav.login") || "Login"}
             </Link>
-            <Link
-              to="/signup"
-              className="group inline-flex items-center justify-center gap-2.5 h-13 sm:h-14 px-10 rounded-2xl text-sm font-bold transition-all relative overflow-hidden"
-              style={{
-                background: "var(--gradient-gold)",
-                color: "hsl(var(--accent-foreground))",
-                boxShadow: "0 0 30px hsl(var(--accent) / 0.3)",
-              }}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                {t("landing.nav.pro_signup") || "Create Account"}
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </Link>
           </motion.div>
 
           {/* Trust indicators */}
@@ -140,9 +141,9 @@ const Hero = () => {
             className="flex items-center justify-center gap-6 sm:gap-10 pt-6"
           >
             {[
-              { icon: Globe, value: "110+", label: t("landing.hero.trust_countries") || "Countries" },
-              { icon: Shield, value: "GDPR", label: t("landing.hero.trust_gdpr") || "Compliant" },
-              { icon: Sparkles, value: "AI", label: t("landing.hero.trust_ai") || "Powered" },
+              { icon: Globe, value: "110+", label: "Countries" },
+              { icon: Rocket, value: "Remote", label: "Management" },
+              { icon: MapPin, value: "Multi-City", label: "Operations" },
             ].map((s) => (
               <div key={s.value} className="flex items-center gap-2.5">
                 <div
