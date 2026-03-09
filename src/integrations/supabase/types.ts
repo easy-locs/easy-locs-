@@ -4265,6 +4265,21 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_owner_profile_for_tenant: {
+        Args: { _org_id: string }
+        Returns: {
+          address: string
+          city: string
+          company_name: string
+          country: string
+          email: string
+          full_name: string
+          id: string
+          person_type: string
+          phone: string
+          postal_code: string
+        }[]
+      }
       get_public_marketplace_providers: {
         Args: { p_active_only?: boolean; p_slug?: string }
         Returns: {
