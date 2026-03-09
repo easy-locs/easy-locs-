@@ -475,9 +475,20 @@ const CommunicationCenter = () => {
     if (!selectedThread || !orgId || !user) return;
     setSending(true);
     try {
-      const propCountry = selectedThread.propertyCountry || "FR";
-      const tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+      // Resolve customer language: prefer their stored locale, fallback to property country, then "en"
       const senderLocale = locale;
+      let tenantLocale = "en";
+      if (selectedThread.tenantId) {
+        const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+        if (tData?.preferred_locale) tenantLocale = tData.preferred_locale;
+        else {
+          const propCountry = selectedThread.propertyCountry || "FR";
+          tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+        }
+      } else {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        tenantLocale = getCountryConfig(propCountry).locale.slice(0, 2);
+      }
 
       let translatedContent: string | null = null;
       if (senderLocale !== tenantLocale) {
@@ -679,8 +690,14 @@ const CommunicationCenter = () => {
       // Notify client by email — professional template in customer language
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        const propCountry = selectedThread.propertyCountry || "FR";
-        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        // Resolve client language from tenant preferred_locale or property country
+        let clientLang = "en";
+        if (selectedThread.tenantId) {
+          const { data: tL } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+          clientLang = tL?.preferred_locale || getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        } else {
+          clientLang = getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        }
         const actionI18n: Record<string, Record<string, { subject: string; title: string; body: string; cta: string }>> = {
           confirm: {
             fr: { subject: "✅ Réservation confirmée", title: "✅ Votre réservation est confirmée", body: "Votre réservation a été confirmée. Nous avons hâte de vous accueillir !", cta: "Voir ma réservation" },
@@ -713,7 +730,9 @@ const CommunicationCenter = () => {
 
         await supabase.functions.invoke("send-notification-email", {
           body: {
-            event_type: action === "confirm" ? "booking_confirmed" : action === "cancel" ? "booking_cancelled" : "booking_completed",
+            event_type: selectedThread.bookingType === "seasonal"
+              ? (action === "confirm" ? "seasonal_booking_confirmed" : action === "cancel" ? "seasonal_booking_cancelled" : "marketplace_booking_completed")
+              : (action === "confirm" ? "marketplace_booking_confirmed" : action === "cancel" ? "marketplace_booking_cancelled" : "marketplace_booking_completed"),
             recipient_email: email,
             recipient_name: selectedThread.name,
             data: {
@@ -781,8 +800,14 @@ const CommunicationCenter = () => {
       // Email client using premium template
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        const propCountry = selectedThread.propertyCountry || "FR";
-        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        let clientLangPay = "en";
+        if (selectedThread.tenantId) {
+          const { data: tLP } = await supabase.from("tenants").select("preferred_locale").eq("id", selectedThread.tenantId).maybeSingle();
+          clientLangPay = tLP?.preferred_locale || getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        } else {
+          clientLangPay = getCountryConfig(selectedThread.propertyCountry || "FR").locale.slice(0, 2);
+        }
+        const clientLang = clientLangPay;
         const threadRef = selectedThread.bookingId || selectedThread.id;
         
         await supabase.functions.invoke("send-notification-email", {
