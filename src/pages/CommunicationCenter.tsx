@@ -546,28 +546,24 @@ const CommunicationCenter = () => {
         ].filter(Boolean).join("");
 
         try {
-          await supabase.functions.invoke("send-email", {
+          const threadRef = selectedThread.bookingId?.slice(0, 8) || selectedThread.tenantId?.slice(0, 8) || "";
+          const subjectWithRef = threadRef ? `${eL.title} [REF:${selectedThread.bookingId || selectedThread.tenantId}]` : eL.title;
+          
+          await supabase.functions.invoke("send-notification-email", {
             body: {
-              to: recipientEmail,
-              subject: eL.title,
-              html: `<!DOCTYPE html><html lang="${emailLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
-.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}.msg{background:#f8f6f1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:18px 20px;margin:0 0 20px}
-.msg p{color:#1a1a1a;white-space:pre-wrap;margin:0;font-size:15px;line-height:1.6}table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
-.cta{text-align:center;padding:8px 0 16px}
-.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
-.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
-</style></head><body><div class="w"><div class="c">
-<div class="h"><div class="b">EASY-LOCS®</div><h1>${eL.title}</h1></div>
-<div class="bd">
-<div class="msg"><p>${escapeEmailHtml(translatedContent || content)}</p></div>
-${detailRows ? `<table>${detailRows}</table>` : ""}
-<div class="cta"><a href="${appUrl}">${eL.cta}</a></div>
-</div>
-<div class="ft"><p class="bs">EASY-LOCS®</p></div>
-</div></div></body></html>`,
+              event_type: "marketplace_notification",
+              recipient_email: recipientEmail,
+              recipient_name: selectedThread.name,
+              data: {
+                subject: subjectWithRef,
+                message: escapeEmailHtml(translatedContent || content),
+                service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+                booking_id: selectedThread.bookingId || "",
+                cta_url: appUrl,
+                cta_label: eL.cta,
+                org_id: orgId,
+              },
+              locale: emailLang,
             },
           });
         } catch (e) { console.error("Email failed:", e); }
@@ -713,34 +709,25 @@ ${detailRows ? `<table>${detailRows}</table>` : ""}
         };
         const aL = (actionI18n[action]?.[clientLang] || actionI18n[action]?.en)!;
         const bookingRef = bookingId.slice(0, 8);
-        const serviceLabel = selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Service</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "";
-        const priceLabel = selectedThread.totalPrice ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;">Total</td><td style="padding:10px 16px;font-weight:700;font-size:15px;color:#16a34a;">${selectedThread.totalPrice.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</td></tr>` : "";
+        const subjectWithRef = `${aL.subject} [REF:${bookingId}]`;
 
-        await supabase.functions.invoke("send-email", {
+        await supabase.functions.invoke("send-notification-email", {
           body: {
-            to: email,
-            subject: aL.subject,
-            html: `<!DOCTYPE html><html lang="${clientLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
-.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}
-.bd p{color:#333;font-size:15px;line-height:1.7;margin:0 0 16px}
-table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
-.cta{text-align:center;padding:12px 0 20px}
-.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
-.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
-</style></head><body><div class="w"><div class="c">
-<div class="h"><div class="b">EASY-LOCS®</div><h1>${aL.title}</h1></div>
-<div class="bd"><p>${aL.body}</p>
-<table>
-<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Ref</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>
-${serviceLabel}${priceLabel}
-</table>
-<div class="cta"><a href="${buildAppUrl("/")}">${aL.cta}</a></div>
-</div>
-<div class="ft"><p class="bs">EASY-LOCS®</p></div>
-</div></div></body></html>`,
+            event_type: action === "confirm" ? "booking_confirmed" : action === "cancel" ? "booking_cancelled" : "booking_completed",
+            recipient_email: email,
+            recipient_name: selectedThread.name,
+            data: {
+              subject: subjectWithRef,
+              message: aL.body,
+              service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+              booking_id: bookingRef,
+              check_in: "",
+              check_out: "",
+              cta_url: buildAppUrl("/"),
+              cta_label: aL.cta,
+              org_id: orgId,
+            },
+            locale: clientLang,
           },
         });
       }
@@ -791,19 +778,27 @@ ${serviceLabel}${priceLabel}
         read: false,
       } as any);
 
-      // Email client
+      // Email client using premium template
       const email = normalizeEmail(selectedThread.email);
       if (email && isValidEmail(email)) {
-        await supabase.functions.invoke("send-email", {
+        const propCountry = selectedThread.propertyCountry || "FR";
+        const clientLang = getCountryConfig(propCountry).locale.slice(0, 2);
+        const threadRef = selectedThread.bookingId || selectedThread.id;
+        
+        await supabase.functions.invoke("send-notification-email", {
           body: {
-            to: email,
-            subject: `💳 Payment request — ${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}`,
-            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <h2 style="text-align:center;">💳 Payment Request</h2>
-              <p style="text-align:center;font-size:24px;font-weight:bold;color:#1a1a1a;">${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</p>
-              ${paymentDescription ? `<p style="text-align:center;color:#555;">${escapeEmailHtml(paymentDescription)}</p>` : ""}
-              ${paymentUrl ? `<div style="text-align:center;margin:24px 0;"><a href="${paymentUrl}" style="display:inline-block;background:#d4a853;color:#1a1a1a;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:16px;">Pay Now</a></div>` : ""}
-            </div>`,
+            event_type: "payment_link_sent",
+            recipient_email: email,
+            recipient_name: selectedThread.name,
+            data: {
+              service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+              message: `${amount.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}${paymentDescription ? ` — ${paymentDescription}` : ""}`,
+              booking_id: selectedThread.bookingId || "",
+              cta_url: paymentUrl || buildAppUrl("/"),
+              cta_label: clientLang === "fr" ? "Payer maintenant" : clientLang === "es" ? "Pagar ahora" : clientLang === "de" ? "Jetzt bezahlen" : "Pay Now",
+              org_id: orgId,
+            },
+            locale: clientLang,
           },
         });
       }
@@ -859,22 +854,22 @@ ${serviceLabel}${priceLabel}
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-8rem)] flex flex-col">
-        {/* Stats bar */}
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
+      <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
+        {/* Stats bar — compact on mobile */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground">Communication Center</h1>
-            <p className="text-sm text-muted-foreground">Unified inbox — Tenants, Bookings, Services</p>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Communication Center</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">Unified inbox — Tenants, Bookings, Services</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
               { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-primary" },
               { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500" },
               { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive" },
               { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500" },
             ].map(s => (
-              <div key={s.label} className="flex items-center gap-1.5 px-3 py-1.5 bg-card rounded-lg border border-border/50 text-xs">
-                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
+              <div key={s.label} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-card rounded-lg border border-border/50 text-xs">
+                <s.icon className={`h-3 sm:h-3.5 w-3 sm:w-3.5 ${s.color}`} />
                 <span className="font-semibold text-foreground">{s.value}</span>
                 <span className="text-muted-foreground hidden sm:inline">{s.label}</span>
               </div>
@@ -1035,11 +1030,12 @@ ${serviceLabel}${priceLabel}
                         messages.map(msg => {
                           const isMe = msg.sender_id === user?.id;
                           const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+                          const isInboundEmail = msg.message_type === "inbound_email";
 
                           if (isSystem) {
                             return (
                               <div key={msg.id} className="flex justify-center">
-                                <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center">
+                                <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center break-words">
                                   {msg.content}
                                   <span className="ml-2 opacity-60">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
                                 </div>
@@ -1058,17 +1054,22 @@ ${serviceLabel}${priceLabel}
                               animate={{ opacity: 1, y: 0 }}
                               className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                             >
-                              <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                              <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 ${
                                 isPayment
                                   ? "bg-accent/10 border border-accent/20 text-foreground rounded-br-md"
                                   : isMe
                                     ? "bg-primary text-primary-foreground rounded-br-md"
                                     : "bg-muted text-foreground rounded-bl-md"
                               }`}>
-                                {msg.category !== "general" && (
+                                {isInboundEmail && (
+                                  <span className="text-[10px] font-medium text-accent mb-0.5 block flex items-center gap-1">
+                                    <Mail className="h-2.5 w-2.5" /> Email reply
+                                  </span>
+                                )}
+                                {msg.category !== "general" && !isInboundEmail && (
                                   <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
                                 )}
-                                <p className="text-sm whitespace-pre-wrap break-words">
+                                <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                   {isMe
                                     ? msg.content
                                     : showOriginal[msg.id]
@@ -1172,10 +1173,10 @@ ${serviceLabel}${priceLabel}
                       </div>
                     )}
 
-                    {/* Input */}
-                    <div className="p-3 border-t border-border/50 flex gap-2 items-center">
+                    {/* Input — mobile-optimized */}
+                    <div className="p-2 sm:p-3 border-t border-border/50 flex gap-1.5 sm:gap-2 items-center safe-area-pb">
                       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-12 h-10 px-2">
+                        <SelectTrigger className="w-10 sm:w-12 h-10 px-1.5 sm:px-2 shrink-0">
                           <span className="text-sm">{getCategoryIcon(selectedCategory)}</span>
                         </SelectTrigger>
                         <SelectContent>
@@ -1184,16 +1185,18 @@ ${serviceLabel}${priceLabel}
                           ))}
                         </SelectContent>
                       </Select>
-                      <div className="flex-1">
-                        <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Write a message..." className="h-10" />
+                      <div className="flex-1 min-w-0">
+                        <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Write a message..." className="h-10 text-sm" />
                       </div>
                       <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.heic"
                         onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hidden sm:flex" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
-                      <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
-                      <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10">
+                      <div className="hidden sm:block">
+                        <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+                      </div>
+                      <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10 px-3 sm:px-4">
                         {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       </Button>
                     </div>

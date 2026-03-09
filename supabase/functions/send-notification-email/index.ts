@@ -38,6 +38,11 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     de: { subject: "Miete fällig — {month}", title: "🏠 Miete fällig", body: "Ihre Miete für {month} ist fällig. Gesamtbetrag: {amount}." },
     it: { subject: "Affitto dovuto — {month}", title: "🏠 Affitto dovuto", body: "Il suo affitto per {month} è dovuto. Importo totale: {amount}." },
     pt: { subject: "Aluguel devido — {month}", title: "🏠 Aluguel devido", body: "Seu aluguel de {month} está vencido. Valor total: {amount}." },
+    ar: { subject: "إيجار مستحق — {month}", title: "🏠 إيجار مستحق", body: "إيجارك لشهر {month} مستحق. المبلغ الإجمالي: {amount}." },
+    ja: { subject: "家賃のお支払い — {month}", title: "🏠 家賃のお支払い", body: "{month}の家賃のお支払い期限です。合計金額: {amount}。" },
+    tr: { subject: "Kira ödeme — {month}", title: "🏠 Kira ödeme", body: "{month} ayı kiranız vadesi gelmiştir. Toplam tutar: {amount}." },
+    nl: { subject: "Huur verschuldigd — {month}", title: "🏠 Huur verschuldigd", body: "Uw huur voor {month} is verschuldigd. Totaalbedrag: {amount}." },
+    pl: { subject: "Czynsz wymagalny — {month}", title: "🏠 Czynsz wymagalny", body: "Czynsz za {month} jest wymagalny. Łączna kwota: {amount}." },
   },
   payment_received: {
     fr: { subject: "Paiement reçu — {month}", title: "💰 Paiement confirmé", body: "Le paiement du loyer de {month} a été enregistré. Montant : {amount}." },
@@ -239,12 +244,17 @@ function buildHtml(title: string, body: string, ctaUrl?: string, ctaLabel?: stri
   const safeTitle = sanitizeHtml(title);
   const safeBody = sanitizeHtml(body);
   const footerTexts: Record<string, string> = {
-    fr: "Cet email est envoyé automatiquement par Easy-Locs®. Ne répondez pas à cet email.",
-    en: "This email was sent automatically by Easy-Locs®. Please do not reply.",
-    es: "Este correo fue enviado automáticamente por Easy-Locs®. No responda a este correo.",
-    de: "Diese E-Mail wurde automatisch von Easy-Locs® gesendet. Bitte antworten Sie nicht.",
-    it: "Questa email è stata inviata automaticamente da Easy-Locs®. Non rispondere.",
-    pt: "Este email foi enviado automaticamente pelo Easy-Locs®. Não responda.",
+    fr: "Cet email est envoyé automatiquement par Easy-Locs®. Vous pouvez répondre directement à cet email.",
+    en: "This email was sent automatically by Easy-Locs®. You can reply directly to this email.",
+    es: "Este correo fue enviado automáticamente por Easy-Locs®. Puede responder directamente.",
+    de: "Diese E-Mail wurde automatisch von Easy-Locs® gesendet. Sie können direkt antworten.",
+    it: "Questa email è stata inviata automaticamente da Easy-Locs®. Puoi rispondere direttamente.",
+    pt: "Este email foi enviado automaticamente pelo Easy-Locs®. Você pode responder diretamente.",
+    ar: "تم إرسال هذا البريد الإلكتروني تلقائيًا بواسطة Easy-Locs®. يمكنك الرد مباشرة.",
+    ja: "このメールはEasy-Locs®から自動送信されました。直接返信できます。",
+    tr: "Bu e-posta Easy-Locs® tarafından otomatik olarak gönderilmiştir. Doğrudan yanıtlayabilirsiniz.",
+    nl: "Deze e-mail is automatisch verzonden door Easy-Locs®. U kunt direct antwoorden.",
+    pl: "Ten e-mail został wysłany automatycznie przez Easy-Locs®. Możesz odpowiedzieć bezpośrednio.",
   };
   const ctaTexts: Record<string, string> = {
     fr: "Accéder à mon espace", en: "Go to my dashboard", es: "Acceder a mi espacio",
@@ -305,14 +315,14 @@ serve(async (req) => {
       const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
-      if (claimsErr || !claimsData?.claims) {
+      const { data: { user: callerUser }, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !callerUser) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       // Store caller user ID for org membership check below
-      (req as any).__callerId = claimsData.claims.sub;
+      (req as any).__callerId = callerUser.id;
     }
 
     const { event_type, recipient_email, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
