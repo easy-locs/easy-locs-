@@ -2000,6 +2000,7 @@ export type Database = {
           delivered: boolean | null
           id: string
           inbound_message_id: string | null
+          language_detected: string | null
           message_type: string | null
           org_id: string
           property_id: string | null
@@ -2009,6 +2010,7 @@ export type Database = {
           sender_locale: string | null
           tenant_id: string | null
           translated_content: string | null
+          translated_locale: string | null
         }
         Insert: {
           attachment_url?: string | null
@@ -2023,6 +2025,7 @@ export type Database = {
           delivered?: boolean | null
           id?: string
           inbound_message_id?: string | null
+          language_detected?: string | null
           message_type?: string | null
           org_id: string
           property_id?: string | null
@@ -2032,6 +2035,7 @@ export type Database = {
           sender_locale?: string | null
           tenant_id?: string | null
           translated_content?: string | null
+          translated_locale?: string | null
         }
         Update: {
           attachment_url?: string | null
@@ -2046,6 +2050,7 @@ export type Database = {
           delivered?: boolean | null
           id?: string
           inbound_message_id?: string | null
+          language_detected?: string | null
           message_type?: string | null
           org_id?: string
           property_id?: string | null
@@ -2055,6 +2060,7 @@ export type Database = {
           sender_locale?: string | null
           tenant_id?: string | null
           translated_content?: string | null
+          translated_locale?: string | null
         }
         Relationships: [
           {
