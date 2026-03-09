@@ -63,11 +63,32 @@ const TARGET_ROUTE_MAP: Record<string, { landlord: string; tenant?: string }> = 
 
 /**
  * Resolve the deep-link target for a notification.
- * Builds a country-aware URL that opens the exact record.
+ * Priority: 1) metadata_json.target_url  2) route map + IDs  3) n.link  4) type inference
  */
 function resolveNotificationTarget(n: any, activeRole: string): string | null {
   const meta = n.metadata_json;
 
+  // 1. Explicit target_url from metadata — most precise, set by DB triggers
+  if (meta?.target_url) {
+    let url = meta.target_url;
+    // For tenant role, remap landlord URLs to tenant equivalents
+    if (activeRole === "tenant" && meta.target_type) {
+      const routeInfo = TARGET_ROUTE_MAP[meta.target_type];
+      if (routeInfo?.tenant) {
+        // Rebuild URL with tenant base but keep query params
+        const [, qs] = url.split("?");
+        url = qs ? `${routeInfo.tenant}?${qs}` : routeInfo.tenant;
+      }
+    }
+    // Append country if missing
+    if (meta.country_code && !url.includes("country=")) {
+      const sep = url.includes("?") ? "&" : "?";
+      url = `${url}${sep}country=${meta.country_code}`;
+    }
+    return url;
+  }
+
+  // 2. Route map with structured IDs
   if (meta?.target_type) {
     const routeInfo = TARGET_ROUTE_MAP[meta.target_type];
     if (routeInfo) {
@@ -76,11 +97,7 @@ function resolveNotificationTarget(n: any, activeRole: string): string | null {
         : routeInfo.landlord;
 
       const params = new URLSearchParams();
-
-      // Add country context
       if (meta.country_code) params.set("country", meta.country_code);
-
-      // Add target record ID
       if (meta.target_id) params.set("record", meta.target_id);
       if (meta.booking_id) params.set("booking", meta.booking_id);
 
@@ -89,20 +106,10 @@ function resolveNotificationTarget(n: any, activeRole: string): string | null {
     }
   }
 
-  // Use explicit target_url from metadata if present
-  if (meta?.target_url) {
-    const url = meta.target_url;
-    // Append country if needed
-    if (meta.country_code && !url.includes("country=")) {
-      return appendCountryToPath(url, meta.country_code);
-    }
-    return url;
-  }
-
-  // Fallback to stored link
+  // 3. Fallback to stored link column (legacy notifications)
   if (n.link) return n.link;
 
-  // Infer from type
+  // 4. Infer from notification type
   if (n.type === "message") {
     return activeRole === "tenant" ? "/tenant/messages" : "/dashboard/communication";
   }
