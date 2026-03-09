@@ -56,6 +56,16 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Cron-secret authorization check
+    const cronSecret = req.headers.get("x-cron-secret");
+    const { data: cfg } = await supabase.from("internal_config").select("value").eq("key", "cron_secret").single();
+    if (!cronSecret || cronSecret !== cfg?.value) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const today = new Date();
     const formatDate = (d: Date) => d.toISOString().slice(0, 10);
     const todayStr = formatDate(today);
