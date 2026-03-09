@@ -600,6 +600,45 @@ ${detailRows ? `<table>${detailRows}</table>` : ""}
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  /* ────── On-demand translation (Airbnb-style) ────── */
+  const handleTranslateMessage = async (msg: Message) => {
+    if (translatingMsgId) return;
+    const isShowingOriginal = showOriginal[msg.id];
+
+    // Toggle back to translated if already showing original
+    if (isShowingOriginal) {
+      setShowOriginal(prev => ({ ...prev, [msg.id]: false }));
+      return;
+    }
+
+    // If message has no translated_content yet, request translation
+    if (!msg.translated_content) {
+      setTranslatingMsgId(msg.id);
+      try {
+        const senderLocale = msg.sender_locale || "en";
+        const { data: transData } = await supabase.functions.invoke("translate-message", {
+          body: { text: msg.content, from_locale: senderLocale, to_locale: locale },
+        });
+        if (transData?.translated) {
+          // Update local state
+          setMessages(prev => prev.map(m =>
+            m.id === msg.id ? { ...m, translated_content: transData.translated } : m
+          ));
+          // Persist translation
+          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
+        }
+      } catch (e) {
+        console.error("Translation failed:", e);
+        toast.error("Translation failed");
+      }
+      setTranslatingMsgId(null);
+      return;
+    }
+
+    // Toggle to show original
+    setShowOriginal(prev => ({ ...prev, [msg.id]: true }));
+  };
+
   /* ────── Booking actions ────── */
   const handleBookingAction = async (action: "confirm" | "cancel" | "complete") => {
     if (!selectedThread?.bookingId || !orgId || !user) return;
