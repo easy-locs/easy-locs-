@@ -232,6 +232,9 @@ serve(async (req) => {
         } else if (meta.type === "seasonal_booking" && meta.booking_request_id) {
           logStep("PaymentIntent succeeded for booking", { bookingRequestId: meta.booking_request_id });
           await handleBookingPayment(supabase, meta, { payment_intent: pi.id } as any);
+        } else if (meta.type === "marketplace_booking" && meta.marketplace_booking_id) {
+          logStep("PaymentIntent succeeded for marketplace booking", { bookingId: meta.marketplace_booking_id });
+          await handleMarketplacePayment(supabase, meta, pi.id);
         }
         break;
       }
