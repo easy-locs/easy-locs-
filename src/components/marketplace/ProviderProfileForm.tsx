@@ -82,6 +82,7 @@ const emptyForm: ProviderFormData = {
   bank_name: "",
   tax_rate: 0,
   tax_label: "VAT",
+  reviews_enabled: false,
 };
 
 export default function ProviderProfileForm({ open, onOpenChange, onSave, initialData, isPending, orgId }: Props) {
