@@ -173,7 +173,7 @@ const App = () => (
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              <Route path="/property-management-:slug" element={<PropertyManagementSEOResolver />} />
+              {/* property-management-:slug handled by SEOCatchAll on * route */}
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
               <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
