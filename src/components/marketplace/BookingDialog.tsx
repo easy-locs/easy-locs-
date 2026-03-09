@@ -43,7 +43,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     booker_email: "",
     booker_phone: "",
     service_date: format(new Date(), "yyyy-MM-dd"),
-    service_time: "10:00",
+    service_time: "",
     date_from: "",
     date_to: "",
     quantity: 0,
