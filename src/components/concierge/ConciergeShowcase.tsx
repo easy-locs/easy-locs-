@@ -53,7 +53,7 @@ export default function ConciergeShowcase() {
 
         const orgId = profile.org_id;
         const [{ data: svc }, { data: lst }] = await Promise.all([
-          supabase.from("concierge_services").select("*").eq("org_id", orgId).eq("active", true).order("sort_order"),
+          supabase.from("concierge_services_public" as any).select("*").eq("org_id", orgId).order("sort_order"),
           supabase.from("public_listings").select("*").eq("org_id", orgId).eq("active", true).order("created_at", { ascending: false }),
         ]);
         setServices(svc || []);
