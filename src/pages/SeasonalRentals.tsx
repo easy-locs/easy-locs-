@@ -189,33 +189,38 @@ const SeasonalRentals = () => {
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    if (!focusedRequestId || !orgId) return;
+    if (!deepLinkRequestId || !orgId) return;
     const loadRequest = async () => {
-      const { data } = await supabase.from("booking_requests").select("*").eq("id", focusedRequestId).single();
+      const { data } = await supabase.from("booking_requests").select("*").eq("id", deepLinkRequestId).single();
       if (data) setFocusedRequest(data);
     };
     loadRequest();
-  }, [focusedRequestId, orgId]);
+    // Clean URL
+    const next = new URLSearchParams(searchParams);
+    next.delete("focusRequest");
+    setSearchParams(next, { replace: true });
+  }, [deepLinkRequestId, orgId]);
 
-  // Deep-link: scroll to booking from ?booking=ID (runs only once)
+  // Deep-link: scroll to booking from ?booking=ID (runs only once, then cleans URL)
   useEffect(() => {
-    if (hasAppliedSeasonalDeepLink || !focusedBookingId || bookings.length === 0) return;
-    const el = document.getElementById(`booking-${focusedBookingId}`);
+    if (hasAppliedSeasonalDeepLink || !deepLinkBookingId || bookings.length === 0) return;
+    const el = document.getElementById(`booking-${deepLinkBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.classList.add("ring-2", "ring-accent");
       setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 3000);
-      setHasAppliedSeasonalDeepLink(true);
-      console.log("[deep-link] scrolled to seasonal booking:", focusedBookingId);
     } else {
-      const found = bookings.find(b => String(b.id) === String(focusedBookingId));
+      const found = bookings.find(b => String(b.id) === String(deepLinkBookingId));
       if (found) {
         startEdit(found);
-        setHasAppliedSeasonalDeepLink(true);
-        console.log("[deep-link] opened seasonal booking for edit:", focusedBookingId);
+        console.log("[deep-link] opened seasonal booking for edit:", deepLinkBookingId);
       }
     }
-  }, [focusedBookingId, bookings, hasAppliedSeasonalDeepLink]);
+    setHasAppliedSeasonalDeepLink(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("booking");
+    setSearchParams(next, { replace: true });
+  }, [deepLinkBookingId, bookings, hasAppliedSeasonalDeepLink]);
 
   const resetForm = () => {
     setForm({
