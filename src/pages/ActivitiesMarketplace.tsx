@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,7 @@ const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XO
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
   const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [providerFormOpen, setProviderFormOpen] = useState(false);
   const [serviceFormOpen, setServiceFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<any>(null);
@@ -37,23 +39,24 @@ const ActivitiesMarketplace = () => {
   const [revenueOpen, setRevenueOpen] = useState(false);
   const [displayCurrency, setDisplayCurrency] = useState("EUR");
   const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
+  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
-  // Deep-link: read ?booking=ID on mount, then clean URL
+  // Reactive deep-link: read ?booking=ID from searchParams (works on mount AND on subsequent navigations)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const bookingId = params.get("booking");
-    if (bookingId) {
+    const bookingId = searchParams.get("booking");
+    if (bookingId && bookingId !== lastAppliedBookingId) {
       setActiveTab("bookings");
       setDeepLinkedBookingId(String(bookingId));
-      params.delete("booking");
-      const clean = params.toString();
-      window.history.replaceState({}, "", window.location.pathname + (clean ? `?${clean}` : ""));
+      setLastAppliedBookingId(String(bookingId));
+      // Clean URL
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("booking");
+        return next;
+      }, { replace: true });
       console.log("[deep-link] marketplace booking param:", bookingId);
     }
-  }, []);
-
-  // Fallback: if deep-linked booking not found after data loaded, show toast
-  const [deepLinkChecked, setDeepLinkChecked] = useState(false);
+  }, [searchParams, lastAppliedBookingId, setSearchParams]);
 
 
   // --- My Provider Profile ---

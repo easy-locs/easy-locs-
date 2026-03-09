@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { sendCommunicationEvent, createDeepLinkMeta } from "@/lib/shared";
-import { useDeepLink, scrollToAndHighlight } from "@/lib/shared/deep-link";
+import { scrollToAndHighlight } from "@/lib/shared/deep-link";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,7 +109,7 @@ const SeasonalRentals = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
-  const deepLink = useDeepLink();
+  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,10 +123,10 @@ const SeasonalRentals = () => {
     }
     return new Date();
   });
-  const [deepLinkBookingId] = useState(() => deepLink.bookingId);
+  const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
   const [deepLinkRequestId] = useState(() => searchParams.get("focusRequest") || null);
   const initialPropertyId = searchParams.get("propertyId") || "";
-  const [hasAppliedSeasonalDeepLink, setHasAppliedSeasonalDeepLink] = useState(false);
+  
   const [form, setForm] = useState<SeasonalForm>({
     property_id: initialPropertyId,
     guest_name: "",
@@ -204,10 +204,12 @@ const SeasonalRentals = () => {
     setSearchParams(next, { replace: true });
   }, [deepLinkRequestId, orgId]);
 
-  // Deep-link: scroll to booking from ?booking=ID (runs only once, then cleans URL)
+  // Reactive deep-link: scroll to or open booking from ?booking=ID
   useEffect(() => {
-    if (hasAppliedSeasonalDeepLink || !deepLinkBookingId) return;
+    const deepLinkBookingId = searchParams.get("booking");
+    if (!deepLinkBookingId || deepLinkBookingId === lastAppliedBookingId) return;
     if (loading) return; // Wait for data to load
+
     const el = document.getElementById(`booking-${deepLinkBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -218,21 +220,30 @@ const SeasonalRentals = () => {
       if (found) {
         startEdit(found);
         console.log("[deep-link] opened seasonal booking for edit:", deepLinkBookingId);
-      } else if (!loading) {
-        // Data loaded but booking not found
-        toast({
-          title: "Booking not found",
-          description: "This booking is no longer available.",
-          variant: "destructive",
-        });
-        console.warn("[deep-link] seasonal booking not found:", deepLinkBookingId);
+      } else {
+        // Also check booking_requests
+        const req = allRequests.find((r: any) => String(r.id) === String(deepLinkBookingId));
+        if (req) {
+          setFocusedRequest(req);
+          console.log("[deep-link] opened seasonal booking request:", deepLinkBookingId);
+        } else {
+          toast({
+            title: "Booking not found",
+            description: "This booking is no longer available.",
+            variant: "destructive",
+          });
+          console.warn("[deep-link] seasonal booking not found:", deepLinkBookingId);
+        }
       }
     }
-    setHasAppliedSeasonalDeepLink(true);
-    const next = new URLSearchParams(searchParams);
-    next.delete("booking");
-    setSearchParams(next, { replace: true });
-  }, [deepLinkBookingId, bookings, loading, hasAppliedSeasonalDeepLink]);
+    setLastAppliedBookingId(deepLinkBookingId);
+    // Clean URL
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("booking");
+      return next;
+    }, { replace: true });
+  }, [searchParams, bookings, allRequests, loading, lastAppliedBookingId, setSearchParams]);
 
   const resetForm = () => {
     setForm({
