@@ -62,17 +62,27 @@ export async function createNotification(payload: NotificationPayload): Promise<
 }
 
 /**
- * Mark a notification as read.
+ * Mark a notification as read (on click).
+ * Does NOT resolve — the notification stays in the active list.
  */
 export async function markNotificationRead(notifId: string): Promise<void> {
   await supabase
     .from("notifications")
-    .update({ read: true } as any)
+    .update({ read: true })
     .eq("id", notifId);
 }
 
 /**
- * Resolve a notification — removes from active list.
+ * Resolve a notification — call ONLY when the real action is completed:
+ * - booking confirmed/cancelled
+ * - payment validated
+ * - document signed/processed
+ * - status change completed
+ * 
+ * This removes the notification from the active list.
+ * 
+ * @param notifId - The notification ID to resolve
+ * @param targetId - Optional: resolve all notifications pointing to this target
  */
 export async function resolveNotification(notifId: string): Promise<void> {
   await supabase
@@ -83,4 +93,38 @@ export async function resolveNotification(notifId: string): Promise<void> {
       read: true,
     } as any)
     .eq("id", notifId);
+}
+
+/**
+ * Resolve all notifications matching a specific target.
+ * Called by destination pages when an action is completed on a record.
+ * 
+ * @example
+ * // After confirming a booking:
+ * await resolveNotificationsForTarget("marketplace_booking", bookingId);
+ */
+export async function resolveNotificationsForTarget(
+  targetType: string,
+  targetId: string,
+  userId?: string
+): Promise<void> {
+  try {
+    let query = supabase
+      .from("notifications")
+      .update({
+        resolved: true,
+        resolved_at: new Date().toISOString(),
+        read: true,
+      } as any)
+      .contains("metadata_json", { target_type: targetType, target_id: targetId } as any);
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    await query;
+    console.log(`[notification-engine] resolved notifications for ${targetType}:${targetId}`);
+  } catch (e) {
+    console.error("[notification-engine] resolveForTarget failed:", e);
+  }
 }

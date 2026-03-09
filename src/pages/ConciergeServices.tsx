@@ -219,6 +219,12 @@ const ConciergeServices = () => {
     await supabase.from("concierge_orders").update(updates).eq("id", orderId);
     toast.success(`Order ${status}`);
 
+    // Resolve related notifications — real action completed
+    try {
+      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+      await resolveNotificationsForTarget("concierge_order", orderId, user?.id);
+    } catch (e) { console.error("[resolve-notif]", e); }
+
     // Send notification via shared communication pipeline
     const order = orders.find((o: any) => o.id === orderId);
     if (order?.guest_email) {
@@ -254,6 +260,13 @@ const ConciergeServices = () => {
   const markPaid = async (orderId: string) => {
     await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
     toast.success("Payment confirmed");
+
+    // Resolve payment notifications — action completed
+    try {
+      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+      await resolveNotificationsForTarget("concierge_order", orderId, user?.id);
+    } catch (e) { console.error("[resolve-notif]", e); }
+
     await load();
   };
 
