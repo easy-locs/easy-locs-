@@ -383,7 +383,7 @@ const FurnitureInventory = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.quantity")}</label>
-                <input type="number" min={1} value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" />
+                <input type="number" min={1} value={form.quantity || ""} onChange={e => setForm(f => ({ ...f, quantity: e.target.value === "" ? 0 : +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" placeholder="1" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t("page.furniture.condition")}</label>
