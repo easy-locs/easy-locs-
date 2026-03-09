@@ -95,6 +95,14 @@ const ConciergeServicesPage = lazy(() => import("./pages/seo/ConciergeServicesPa
 const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServicesPage"));
 const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
 const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
+// SEO Layer pages
+const PropertyManagementSEOResolver = lazy(() => import("./pages/seo/PropertyManagementSEOResolver"));
+const LongTermRentalsPage = lazy(() => import("./pages/seo/LongTermRentalsPage"));
+const ServiceCitySEOPage = lazy(() => import("./pages/seo/ServiceCitySEOPage"));
+const ActivityCitySEOPage = lazy(() => import("./pages/seo/ActivityCitySEOPage"));
+const CoreSEOPages = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyOwnerSoftwarePage })));
+const PropertyManagementPlatformPage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.PropertyManagementPlatformPage })));
+const RentalManagementSoftwarePage = lazy(() => import("./pages/seo/CoreSEOPages").then(m => ({ default: m.RentalManagementSoftwarePage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,7 +128,9 @@ const RouteAwareAssistant = () => {
   const hideAssistant =
     pathname === "/guest" ||
     pathname.startsWith("/r/") ||
-    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix));
+    publicPathsWithoutAssistant.some((prefix) => pathname.startsWith(prefix)) ||
+    pathname.startsWith("/services/") ||
+    pathname.startsWith("/activities/");
 
   if (hideAssistant) return null;
   return <FloatingAIAssistant />;
@@ -163,13 +173,19 @@ const App = () => (
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
-              <Route path="/property-management-:country" element={<PropertyManagement />} />
+              <Route path="/property-management-:slug" element={<PropertyManagementSEOResolver />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
+              <Route path="/long-term-rentals" element={<LongTermRentalsPage />} />
+              <Route path="/property-owner-software" element={<CoreSEOPages />} />
+              <Route path="/property-management-platform" element={<PropertyManagementPlatformPage />} />
+              <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
               <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
               <Route path="/activities" element={<ActivitiesPage />} />
+              <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
               <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
+              <Route path="/services/:serviceCity" element={<ServiceCitySEOPage />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
