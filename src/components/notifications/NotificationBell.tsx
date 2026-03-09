@@ -223,27 +223,22 @@ const NotificationBell = () => {
 
   
 
-  /** Core click handler — each notification resolves its own unique target */
-  const handleNotificationClick = useCallback((e: React.MouseEvent, n: any) => {
-    // Stop propagation so the backdrop overlay doesn't intercept
-    e.stopPropagation();
-    e.preventDefault();
-
+  /** Core click handler — simple, one notification at a time */
+  const handleNotificationClick = useCallback((n: any) => {
     const outdated = n.metadata_json?.outdated === true;
     if (outdated) return;
 
-    // Resolve the target from THIS notification's own metadata — fully isolated
     const notifId = String(n.id);
     const target = resolveNotificationTarget(n, activeRole);
-    console.log("[notif] click:", notifId, "target:", target, "title:", n.title);
+    console.log("[notif] clicked:", notifId, "target:", target, "title:", n.title);
 
-    // 1. Mark as resolved (removes from active list)
+    // Mark as resolved
     resolveNotification(notifId);
 
-    // 2. Close dropdown
+    // Close dropdown
     setOpen(false);
 
-    // 3. Auto-switch role if needed then navigate
+    // Auto-switch role if needed then navigate
     const isTenantLink = target.startsWith("/tenant");
     const isLandlordLink = target.startsWith("/dashboard");
     const needsSwitch = hasDualRole && (
@@ -253,12 +248,10 @@ const NotificationBell = () => {
 
     if (needsSwitch) {
       const newRole = isTenantLink ? "tenant" : "landlord";
-      console.log("[notif] switching role to:", newRole, "then navigating to:", target);
       switchRole(newRole);
-      setTimeout(() => { console.log("[notif] navigate (after switch):", target); navigate(target, { replace: false }); }, 300);
+      setTimeout(() => navigate(target), 300);
     } else {
-      console.log("[notif] navigating to:", target);
-      setTimeout(() => { console.log("[notif] navigate fired:", target); navigate(target, { replace: false }); }, 50);
+      navigate(target);
     }
   }, [activeRole, hasDualRole, switchRole, navigate, resolveNotification]);
 
@@ -327,20 +320,16 @@ const NotificationBell = () => {
 
                   return (
                     <button
+                      key={String(n.id)}
                       type="button"
-                      key={n.id}
-                      aria-label={n.title}
-                      onClick={(e) => handleNotificationClick(e, n)}
-                      className={[
-                        "w-full text-left px-4 py-3 transition-colors cursor-pointer select-none",
-                        "hover:bg-muted/50 active:bg-muted/70",
-                        "touch-manipulation border-0 bg-transparent",
-                        !n.read ? "bg-accent/5" : "",
-                        outdated ? "opacity-60 cursor-default" : "",
-                      ].filter(Boolean).join(" ")}
-                      style={{ WebkitTapHighlightColor: "transparent" }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleNotificationClick(n);
+                      }}
+                      className={`w-full text-left px-4 py-3 transition-colors cursor-pointer hover:bg-muted/50 active:bg-muted/70 border-0 bg-transparent ${!n.read ? "bg-accent/5" : ""} ${outdated ? "opacity-60 cursor-default" : ""}`}
                     >
-                      <div className="flex items-start gap-2.5 pointer-events-none">
+                      <div className="flex items-start gap-2.5">
                         <span className="text-base mt-0.5">{outdated ? "⚪" : (typeIcon[n.type] || "ℹ️")}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
