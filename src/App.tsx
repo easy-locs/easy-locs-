@@ -91,6 +91,10 @@ const AboutPage = lazy(() => import("./pages/legal/AboutPage"));
 const ContactPage = lazy(() => import("./pages/legal/ContactPage"));
 const HelpPage = lazy(() => import("./pages/legal/HelpPage"));
 const PlatformVision = lazy(() => import("./pages/PlatformVision"));
+const ConciergeServicesPage = lazy(() => import("./pages/seo/ConciergeServicesPage"));
+const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServicesPage"));
+const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
+const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -162,6 +166,10 @@ const App = () => (
               <Route path="/property-management-:country" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
+              <Route path="/concierge-services" element={<ConciergeServicesPage />} />
+              <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
+              <Route path="/activities" element={<ActivitiesPage />} />
+              <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
 
               {/* Legal / Info pages */}
               <Route path="/terms" element={<TermsPage />} />
