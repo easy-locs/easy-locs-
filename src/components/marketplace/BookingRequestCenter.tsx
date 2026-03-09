@@ -29,17 +29,18 @@ export default function BookingRequestCenter({
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [hasAppliedDeepLink, setHasAppliedDeepLink] = useState(false);
 
-  // Deep-link: auto-open booking detail when focusBookingId is provided
+  // Deep-link: auto-open booking detail when focusBookingId is provided (runs only once)
   useEffect(() => {
-    if (focusBookingId && bookings.length > 0 && !selectedBooking) {
-      const found = bookings.find((b) => b.id === focusBookingId);
-      if (found) {
-        setSelectedBooking(found);
-        console.log("[deep-link] auto-opened marketplace booking detail:", focusBookingId);
-      }
+    if (hasAppliedDeepLink || !focusBookingId || bookings.length === 0) return;
+    const found = bookings.find((b) => String(b.id) === String(focusBookingId));
+    if (found) {
+      setSelectedBooking(found);
+      setHasAppliedDeepLink(true);
+      console.log("[deep-link] auto-opened marketplace booking detail:", focusBookingId);
     }
-  }, [focusBookingId, bookings, selectedBooking]);
+  }, [focusBookingId, bookings, hasAppliedDeepLink]);
 
   const getService = (id: string) => services.find((s) => s.id === id);
 

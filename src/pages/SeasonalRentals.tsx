@@ -197,23 +197,25 @@ const SeasonalRentals = () => {
     loadRequest();
   }, [focusedRequestId, orgId]);
 
-  // Deep-link: scroll to booking from ?booking=ID
+  // Deep-link: scroll to booking from ?booking=ID (runs only once)
   useEffect(() => {
-    if (!focusedBookingId || bookings.length === 0) return;
+    if (hasAppliedSeasonalDeepLink || !focusedBookingId || bookings.length === 0) return;
     const el = document.getElementById(`booking-${focusedBookingId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.classList.add("ring-2", "ring-accent");
+      setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 3000);
+      setHasAppliedSeasonalDeepLink(true);
       console.log("[deep-link] scrolled to seasonal booking:", focusedBookingId);
     } else {
-      // Try matching booking_requests
-      const found = bookings.find(b => b.id === focusedBookingId);
+      const found = bookings.find(b => String(b.id) === String(focusedBookingId));
       if (found) {
         startEdit(found);
+        setHasAppliedSeasonalDeepLink(true);
         console.log("[deep-link] opened seasonal booking for edit:", focusedBookingId);
       }
     }
-  }, [focusedBookingId, bookings]);
+  }, [focusedBookingId, bookings, hasAppliedSeasonalDeepLink]);
 
   const resetForm = () => {
     setForm({
