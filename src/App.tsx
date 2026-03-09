@@ -96,7 +96,7 @@ const MarketplaceServicesPage = lazy(() => import("./pages/seo/MarketplaceServic
 const ActivitiesPage = lazy(() => import("./pages/seo/ActivitiesPage"));
 const SeasonalRentalsPage = lazy(() => import("./pages/seo/SeasonalRentalsPage"));
 // SEO Layer pages
-const PropertyManagementSEOResolver = lazy(() => import("./pages/seo/PropertyManagementSEOResolver"));
+const SEOCatchAll = lazy(() => import("./pages/seo/SEOCatchAll"));
 const LongTermRentalsPage = lazy(() => import("./pages/seo/LongTermRentalsPage"));
 const ServiceCitySEOPage = lazy(() => import("./pages/seo/ServiceCitySEOPage"));
 const ActivityCitySEOPage = lazy(() => import("./pages/seo/ActivityCitySEOPage"));
