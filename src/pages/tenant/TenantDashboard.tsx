@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Receipt, FileText, MessageCircle, CreditCard, Home, Star, ClipboardList } from "lucide-react";
+import { Receipt, FileText, MessageCircle, CreditCard, Home, Star, ClipboardList, ArrowRight } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { useI18n } from "@/lib/i18n";
 import TenantLayout from "@/components/tenant/TenantLayout";
@@ -55,12 +55,12 @@ const TenantDashboard = () => {
     ? L.leaseType : L.property;
 
   const quickCards = [
-    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "bg-info/10 text-info" },
-    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "bg-success/10 text-success" },
-    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "bg-warning/10 text-warning" },
-    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "bg-accent/10 text-accent" },
-    { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "bg-primary/10 text-primary" },
-    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "bg-muted-foreground/10 text-muted-foreground" },
+    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "text-info", hint: "Voir mes quittances →" },
+    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "text-success", hint: "Consulter mes documents →" },
+    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "text-warning", hint: "Voir la messagerie →" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "text-accent", hint: "Payer mon loyer →" },
+    { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "text-primary", hint: "Laisser un avis →" },
+    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "text-muted-foreground", hint: "Mes demandes →" },
   ];
 
   return (
@@ -102,17 +102,24 @@ const TenantDashboard = () => {
               </div>
             </motion.div>
 
-            {/* Quick access cards - uniform grid */}
+            {/* Quick access cards - smart clickable */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {quickCards.map((a, i) => (
                 <motion.div key={a.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }} className="h-full">
-                  <StatCard
-                    icon={a.icon}
-                    iconClassName={a.color.replace(/bg-\S+\s/, "")}
-                    label={a.label}
-                    value={a.value}
-                    path={a.path}
-                  />
+                  <Link 
+                    to={a.path} 
+                    className="group flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/40 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+                        <a.icon className={`h-4 w-4 ${a.color}`} />
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-transparent group-hover:text-accent transition-colors shrink-0" />
+                    </div>
+                    <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{a.label}</span>
+                    <div className="font-bold text-foreground mt-auto truncate text-xl sm:text-2xl tabular-nums">{a.value}</div>
+                    <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{a.hint}</p>
+                  </Link>
                 </motion.div>
               ))}
             </div>

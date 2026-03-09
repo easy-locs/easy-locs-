@@ -441,35 +441,40 @@ const ActivitiesMarketplace = () => {
           </div>
         </div>
 
-        {/* KPIs - Clickable */}
+        {/* KPIs - Smart clickable synchronized with tab state */}
         {myProvider && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("my-services")}>
-              <CardContent className="pt-4">
+            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("my-services")}>
+              <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><Store className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Services</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{myServices.length}</p>
+                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Mes services →</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
-              <CardContent className="pt-4">
+            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
+                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setActiveTab("bookings")}>
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
+                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">En attente →</p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:border-accent/50 transition-colors" onClick={() => setRevenueOpen(true)}>
-              <CardContent className="pt-4">
+            <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setRevenueOpen(true)}>
+              <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
-                {Object.keys(revenueByCurrency).length > 1 && (
+                {Object.keys(revenueByCurrency).length > 1 ? (
                   <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
                     <ArrowRightLeft className="h-3 w-3" /> {Object.keys(revenueByCurrency).length} currencies
                   </p>
+                ) : (
+                  <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Détail revenus →</p>
                 )}
               </CardContent>
             </Card>
