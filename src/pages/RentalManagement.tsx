@@ -108,10 +108,10 @@ const RentalManagement = () => {
   } = useRentalData(countryFilter);
 
   const { requiresUpgrade } = useSubscriptionGating();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>((searchParams.get("tab") as Tab) || "dashboard");
 
-  // Sync tab and record from URL params
+  // Sync tab from URL params
   useEffect(() => {
     const tab = searchParams.get("tab") as Tab;
     if (tab && ["dashboard", "properties", "tenants", "payments", "inventory"].includes(tab)) {
@@ -119,22 +119,23 @@ const RentalManagement = () => {
     }
   }, [searchParams]);
 
-  // Deep-link: auto-select tenant or scroll to record from ?record=ID (runs only once)
+  // Deep-link: auto-select tenant or scroll to record from ?record=ID (runs only once, then cleans URL)
   const [hasAppliedRecordDeepLink, setHasAppliedRecordDeepLink] = useState(false);
   useEffect(() => {
     if (hasAppliedRecordDeepLink || loading) return;
     const recordId = searchParams.get("record");
     if (!recordId) return;
-    // Try to match a tenant
     const tenant = tenants.find(t => String(t.id) === String(recordId));
     if (tenant) {
       setActiveTab("tenants");
       setSelectedTenant(tenant);
       setHasAppliedRecordDeepLink(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("record");
+      setSearchParams(next, { replace: true });
       console.log("[deep-link] auto-selected tenant:", recordId);
       return;
     }
-    // Try to scroll to a payment row
     setTimeout(() => {
       const el = document.getElementById(`payment-${recordId}`);
       if (el) {
@@ -142,10 +143,13 @@ const RentalManagement = () => {
         el.classList.add("ring-2", "ring-accent");
         setTimeout(() => el.classList.remove("ring-2", "ring-accent"), 3000);
         setHasAppliedRecordDeepLink(true);
+        const next = new URLSearchParams(searchParams);
+        next.delete("record");
+        setSearchParams(next, { replace: true });
         console.log("[deep-link] scrolled to payment:", recordId);
       }
     }, 100);
-  }, [searchParams, tenants, loading, hasAppliedRecordDeepLink]);
+  }, [searchParams, tenants, loading, hasAppliedRecordDeepLink, setSearchParams]);
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
