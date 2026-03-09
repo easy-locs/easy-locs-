@@ -709,34 +709,25 @@ const CommunicationCenter = () => {
         };
         const aL = (actionI18n[action]?.[clientLang] || actionI18n[action]?.en)!;
         const bookingRef = bookingId.slice(0, 8);
-        const serviceLabel = selectedThread.serviceTitle ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Service</td><td style="padding:10px 16px;font-size:13px;border-bottom:1px solid #f0f0f0;">${escapeEmailHtml(selectedThread.serviceTitle)}</td></tr>` : "";
-        const priceLabel = selectedThread.totalPrice ? `<tr><td style="padding:10px 16px;color:#888;font-size:13px;">Total</td><td style="padding:10px 16px;font-weight:700;font-size:15px;color:#16a34a;">${selectedThread.totalPrice.toFixed(2)} ${(selectedThread.currency || "EUR").toUpperCase()}</td></tr>` : "";
+        const subjectWithRef = `${aL.subject} [REF:${bookingId}]`;
 
-        await supabase.functions.invoke("send-email", {
+        await supabase.functions.invoke("send-notification-email", {
           body: {
-            to: email,
-            subject: aL.subject,
-            html: `<!DOCTYPE html><html lang="${clientLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0ede8}
-.w{max-width:600px;margin:0 auto;padding:24px 16px}.c{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-.h{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:36px 32px;text-align:center}.h .b{color:#c9a84c;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.h h1{color:#fff;font-size:20px;margin:0;font-weight:700}.bd{padding:28px 32px}
-.bd p{color:#333;font-size:15px;line-height:1.7;margin:0 0 16px}
-table{width:100%;border-collapse:collapse;margin:16px 0;background:#fafaf8;border-radius:8px;overflow:hidden}
-.cta{text-align:center;padding:12px 0 20px}
-.cta a{display:inline-block;background:linear-gradient(135deg,#c9a84c,#b8963f);color:#1a1a2e;font-weight:700;padding:14px 40px;border-radius:10px;text-decoration:none;font-size:15px;box-shadow:0 4px 12px rgba(201,168,76,0.3)}
-.ft{padding:20px 32px;text-align:center;border-top:1px solid #eee}.ft p{color:#999;font-size:11px;margin:0}.ft .bs{color:#c9a84c;font-weight:700;font-size:11px}
-</style></head><body><div class="w"><div class="c">
-<div class="h"><div class="b">EASY-LOCS®</div><h1>${aL.title}</h1></div>
-<div class="bd"><p>${aL.body}</p>
-<table>
-<tr><td style="padding:10px 16px;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Ref</td><td style="padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #f0f0f0;font-family:monospace;">${bookingRef}</td></tr>
-${serviceLabel}${priceLabel}
-</table>
-<div class="cta"><a href="${buildAppUrl("/")}">${aL.cta}</a></div>
-</div>
-<div class="ft"><p class="bs">EASY-LOCS®</p></div>
-</div></div></body></html>`,
+            event_type: action === "confirm" ? "booking_confirmed" : action === "cancel" ? "booking_cancelled" : "booking_completed",
+            recipient_email: email,
+            recipient_name: selectedThread.name,
+            data: {
+              subject: subjectWithRef,
+              message: aL.body,
+              service_title: selectedThread.serviceTitle || selectedThread.propertyLabel || "",
+              booking_id: bookingRef,
+              check_in: "",
+              check_out: "",
+              cta_url: buildAppUrl("/"),
+              cta_label: aL.cta,
+              org_id: orgId,
+            },
+            locale: clientLang,
           },
         });
       }
