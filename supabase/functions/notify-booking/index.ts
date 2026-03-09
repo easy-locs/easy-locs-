@@ -187,6 +187,23 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Security: verify the booking was created very recently (within 2 minutes)
+    // This prevents abuse by requiring the caller to have just created the booking
+    const { data: recentCheck } = await supabase
+      .from("booking_requests")
+      .select("id, created_at, notified_at")
+      .eq("id", booking_request_id)
+      .is("notified_at", null)
+      .gte("created_at", new Date(Date.now() - 2 * 60 * 1000).toISOString())
+      .maybeSingle();
+
+    if (!recentCheck) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: booking not found or already notified" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
     // Idempotency check: skip if notification was already sent for this booking
     const { data: existing } = await supabase
       .from("notifications")
