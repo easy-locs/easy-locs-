@@ -3,6 +3,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import RoleCards from "@/components/landing/RoleCards";
 import Features from "@/components/landing/Features";
+import RemoteEntrepreneurship from "@/components/landing/RemoteEntrepreneurship";
 import Pricing from "@/components/landing/Pricing";
 import Newsletter from "@/components/landing/Newsletter";
 import Footer from "@/components/landing/Footer";
@@ -23,7 +24,7 @@ const jsonLd = {
   name: "Easy-Locs",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Global property management platform for landlords, tenants and concierge professionals. Manage leases, receipts, bookings in 110+ countries with AI-powered tools.",
+  description: "Global platform for entrepreneurs to create and manage property rental and service businesses remotely. Long-term rentals, direct short-term bookings, and service marketplace — all from one platform in 110+ countries.",
   url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl", "sv", "da", "nb", "fi", "el", "cs", "hu", "ro", "hr", "bg", "sk", "he", "uk", "hi", "th", "vi", "id", "ms"],
   offers: {
@@ -54,16 +55,16 @@ const jsonLd = {
     },
   },
   featureList: [
-    "Multi-country property management",
+    "Remote property and service business management",
+    "Long-term rental management with lease generation",
+    "Direct short-term booking without intermediaries",
+    "Global service marketplace (cleaning, transport, activities)",
+    "Multi-country operations in 110+ countries",
     "Multi-currency payments (120+ currencies)",
     "Multi-language interface (31 languages)",
     "AI-powered document generation",
-    "Lease and contract management",
     "Tenant portal and communication",
-    "Seasonal rental booking system",
     "Concierge and marketplace services",
-    "GDPR compliant",
-    "Automatic receipt generation",
   ],
 };
 
@@ -72,8 +73,9 @@ const breadcrumbJsonLd = {
   "@type": "BreadcrumbList",
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
-    { "@type": "ListItem", position: 2, name: "Features", item: "https://www.easy-locs.com/#features" },
-    { "@type": "ListItem", position: 3, name: "Pricing", item: "https://www.easy-locs.com/#pricing" },
+    { "@type": "ListItem", position: 2, name: "Property Management", item: "https://www.easy-locs.com/property-management" },
+    { "@type": "ListItem", position: 3, name: "Service Marketplace", item: "https://www.easy-locs.com/marketplace-services" },
+    { "@type": "ListItem", position: 4, name: "Pricing", item: "https://www.easy-locs.com/#pricing" },
   ],
 };
 
@@ -83,18 +85,23 @@ const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
+      name: "Can I manage property and service businesses remotely with Easy-Locs?",
+      acceptedAnswer: { "@type": "Answer", text: "Yes. Easy-Locs allows entrepreneurs to create and manage rental properties, accept direct bookings, and run service businesses in multiple cities worldwide — all remotely from a single platform." },
+    },
+    {
+      "@type": "Question",
+      name: "What types of businesses can I run on Easy-Locs?",
+      acceptedAnswer: { "@type": "Answer", text: "You can manage long-term rental properties (leases, rent collection, tenant management), accept direct short-term bookings without intermediary platforms, and run service businesses like cleaning, car rental, concierge services, activities, and maintenance across multiple cities." },
+    },
+    {
+      "@type": "Question",
       name: "How many countries does Easy-Locs support?",
-      acceptedAnswer: { "@type": "Answer", text: "Easy-Locs supports property management in over 110 countries worldwide, with localized compliance, currencies, and document templates." },
+      acceptedAnswer: { "@type": "Answer", text: "Easy-Locs supports operations in over 110 countries with localized compliance, 120+ currencies, and documents available in 31 languages." },
     },
     {
       "@type": "Question",
       name: "Is Easy-Locs free to start?",
-      acceptedAnswer: { "@type": "Answer", text: "Yes, Easy-Locs offers a free trial period. After that, the Unlimited plan starts at €9.99/month with full access to all features." },
-    },
-    {
-      "@type": "Question",
-      name: "What languages are supported?",
-      acceptedAnswer: { "@type": "Answer", text: "Easy-Locs supports 31 languages including French, English, Spanish, German, Italian, Portuguese, Arabic, Japanese, Korean, Chinese, Hindi, and more." },
+      acceptedAnswer: { "@type": "Answer", text: "Yes, Easy-Locs offers a free trial. After that, plans start at €9.99/month with full access to property management, booking, and marketplace features." },
     },
   ],
 };
@@ -107,14 +114,9 @@ const hreflangAlternates = [
   { lang: "de", url: "https://www.easy-locs.com/property-management-germany" },
   { lang: "it", url: "https://www.easy-locs.com/property-management-italy" },
   { lang: "pt", url: "https://www.easy-locs.com/property-management-portugal" },
-  { lang: "ar", url: "https://www.easy-locs.com/property-management-dubai" },
+  { lang: "ar", url: "https://www.easy-locs.com/property-management-uae" },
   { lang: "ja", url: "https://www.easy-locs.com/property-management-japan" },
   { lang: "tr", url: "https://www.easy-locs.com/property-management-turkey" },
-  { lang: "ko", url: "https://www.easy-locs.com/property-management-korea" },
-  { lang: "zh", url: "https://www.easy-locs.com/property-management-china" },
-  { lang: "hi", url: "https://www.easy-locs.com/property-management-india" },
-  { lang: "nl", url: "https://www.easy-locs.com/property-management-netherlands" },
-  { lang: "pl", url: "https://www.easy-locs.com/property-management-poland" },
 ];
 
 const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
@@ -123,8 +125,8 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Easy-Locs — Global Property Management Platform | 110+ Countries | AI-Powered"
-        description="All-in-one property management software for landlords, tenants & concierge professionals. Leases, payments, bookings in 110+ countries, 31 languages, 120+ currencies. Free to start."
+        title="Easy-Locs — Build & Manage Property & Service Businesses Globally | Remote Platform"
+        description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 110+ countries."
         canonical="https://www.easy-locs.com/"
         jsonLd={combinedJsonLd as any}
         hreflangAlternates={hreflangAlternates}
@@ -132,6 +134,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <RoleCards />
+      <RemoteEntrepreneurship />
       <Features />
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
