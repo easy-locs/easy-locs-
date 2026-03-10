@@ -32,7 +32,9 @@ const recentDispatches = new Map<string, number>();
 function buildDedupeKey(event: SyncEvent): string {
   const ctx = event.context;
   const targetId = resolveTargetId(event);
-  return `${event.type}:${ctx.orgId}:${targetId}:${event.actorUserId}`;
+  // For public visitors (no actorUserId), use targetEmail or a random suffix to avoid collisions
+  const actorKey = event.actorUserId || event.targetEmail || crypto.randomUUID?.() || String(Date.now());
+  return `${event.type}:${ctx.orgId}:${targetId}:${actorKey}`;
 }
 
 function isDuplicate(key: string): boolean {
