@@ -647,13 +647,13 @@ const ChannelManager = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-2 text-muted-foreground font-medium">Voyageur</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Bien</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Plateforme</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Arrivée</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Départ</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Statut</th>
-                          <th className="text-right py-2 text-muted-foreground font-medium">Montant</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Guest</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Property</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Platform</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Check-in</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Check-out</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Status</th>
+                          <th className="text-right py-2 text-muted-foreground font-medium">Amount</th>
                           <th className="text-right py-2 text-muted-foreground font-medium">Actions</th>
                         </tr>
                       </thead>
