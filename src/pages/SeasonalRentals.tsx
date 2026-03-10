@@ -872,6 +872,24 @@ const SeasonalRentals = () => {
                                     });
                                   }
 
+                                  // Sync engine: payment_request_sent (booking thread + notification)
+                                  const prop = properties.find((p: any) => p.id === req.property_id);
+                                  dispatchSyncEvent({
+                                    type: "payment_request_sent",
+                                    context: {
+                                      orgId: orgId!,
+                                      propertyId: req.property_id,
+                                      bookingId: req.id,
+                                      countryCode: prop?.country || "",
+                                    },
+                                    actorUserId: user!.id,
+                                    targetEmail: req.guest_email,
+                                    amount: totalAmount,
+                                    currency: "EUR",
+                                    description: `Payment for ${listingData?.title || ""} — ${req.check_in} → ${req.check_out}`,
+                                    recipientName: req.guest_name,
+                                  }).catch(() => {});
+
                                   toast({ title: "✅ Payment link generated and sent!" });
                                   setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "payment_pending" } : r));
                                 } catch (err: any) {
