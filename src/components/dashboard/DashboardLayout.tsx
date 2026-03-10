@@ -401,7 +401,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="whitespace-normal leading-tight">{item.label}</span>
                 </Link>
               );
             };
