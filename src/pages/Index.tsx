@@ -136,6 +136,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <RoleCards />
+      <HowItWorks />
       <RemoteEntrepreneurship />
       <Features />
       <ExplorePreview />
