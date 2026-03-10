@@ -59,7 +59,7 @@
 | Homepage complète | ✅ Terminé (Hero, Features, DashboardPreview, etc.) |
 | Vitrine locations/conciergerie | ✅ Terminé (PublicListing, ConciergeShowcase) |
 | Liens publics de partage | ✅ Terminé (booking slugs) |
-| Partage WhatsApp/Email | 🔲 À faire |
+| Partage WhatsApp/Email | ✅ Terminé (ShareButtons composant réutilisable) |
 
 ## PHASE 8 — Système de design unifié
 | Tâche | Statut |
@@ -67,4 +67,4 @@
 | Tokens sémantiques CSS | ✅ Terminé (index.css) |
 | Composants shadcn/ui standardisés | ✅ Terminé |
 | Espacement/layout mobile cohérent | ✅ Terminé |
-| Audit visuel complet | 🔲 À faire |
+| Audit visuel complet | ✅ Terminé (tokens sémantiques vérifiés, pas de couleurs hardcodées) |

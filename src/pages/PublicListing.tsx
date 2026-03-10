@@ -7,6 +7,7 @@ import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
+import ShareButtons from "@/components/public/ShareButtons";
 
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
@@ -175,9 +176,7 @@ const PublicListing = () => {
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <AppLogo variant="header" linkTo="/" />
           <div className="flex items-center gap-3">
-            <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Share">
-              <Share2 className="h-4 w-4 text-muted-foreground" />
-            </button>
+            <ShareButtons type="listing" slug={listingSlug || ""} title={listing?.title || "Easy-Locs"} />
             <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
           </div>
         </div>
