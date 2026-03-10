@@ -117,6 +117,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Calendar,
       items: [
         { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
+        { icon: CalendarRange, label: "Property Calendar", path: "/dashboard/calendar" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
         { icon: Zap, label: t("nav.pricing") || "Dynamic Pricing", path: "/dashboard/pricing" },
       ],
@@ -128,6 +129,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Store, label: "Services Marketplace", path: "/dashboard/activities" },
         { icon: MapPin, label: t("nav.local_services") || "Local Services", path: "/dashboard/local-services" },
+        { icon: Building, label: "Real Estate", path: "/dashboard/real-estate" },
       ],
     },
   ];
