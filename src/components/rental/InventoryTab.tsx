@@ -150,24 +150,24 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                   propTenants.filter(isLeaseActive).map(tn => (
                     <div key={tn.id} className="flex gap-2">
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "entry", propertyLabel: p.label })}
-                        className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                        <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.entry")} ({tn.name})
+                        className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors h-9 whitespace-nowrap">
+                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.entry")} ({tn.name})
                       </button>
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "exit", propertyLabel: p.label })}
-                        className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                        <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.exit")} ({tn.name})
+                        className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors h-9 whitespace-nowrap">
+                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.exit")} ({tn.name})
                       </button>
                     </div>
                   ))
                 ) : (
                   <>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "entry", propertyLabel: p.label })}
-                      className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.entry")}
+                      className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors h-9 whitespace-nowrap">
+                      <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.entry")}
                     </button>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "exit", propertyLabel: p.label })}
-                      className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                      <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.exit")}
+                      className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors h-9 whitespace-nowrap">
+                      <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.exit")}
                     </button>
                   </>
                 )}
