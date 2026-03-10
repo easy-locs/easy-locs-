@@ -188,7 +188,7 @@ const Accounting = () => {
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `comptabilite-${selectedCountry !== "all" ? selectedCountry + "-" : ""}${format(now, "yyyy-MM")}.csv`; a.click();
+    a.href = url; a.download = `comptabilite-${selectedCountry}-${format(now, "yyyy-MM")}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
