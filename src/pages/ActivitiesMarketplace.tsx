@@ -465,7 +465,7 @@ const ActivitiesMarketplace = () => {
           <div className="flex gap-2 flex-wrap">
             {!myProvider ? (
               <Button onClick={() => setProviderFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Create Provider Profile
+                <Plus className="h-4 w-4 mr-1" /> Créer un profil prestataire
               </Button>
             ) : (
               <>
