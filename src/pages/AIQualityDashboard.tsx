@@ -447,7 +447,7 @@ const AIQualityDashboard = () => {
   );
 };
 
-const IssueCard = ({ issue }: { issue: AuditIssue }) => {
+const IssueCard = ({ issue, onFix }: { issue: AuditIssue; onFix?: (issue: AuditIssue) => void }) => {
   const Icon = CATEGORY_ICON_MAP[issue.category] || Info;
 
   return (
@@ -469,8 +469,11 @@ const IssueCard = ({ issue }: { issue: AuditIssue }) => {
                 {IMPACT_LABELS[issue.businessImpact] || issue.businessImpact}
               </span>
               {issue.autoFixable && (
-                <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">
-                  <Zap className="h-2.5 w-2.5 mr-0.5" /> Auto-fixable
+                <Badge
+                  className="text-[10px] bg-primary/10 text-primary border-primary/20 cursor-pointer hover:bg-primary/20"
+                  onClick={() => onFix?.(issue)}
+                >
+                  <Zap className="h-2.5 w-2.5 mr-0.5" /> Auto-fix
                 </Badge>
               )}
             </div>
