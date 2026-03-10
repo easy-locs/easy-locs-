@@ -3,7 +3,7 @@
  * Route: /property-management-:country
  * Uses differentiated market context and regulatory info per country.
  */
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
@@ -26,6 +26,11 @@ const CountrySEOPage = ({ slugOverride }: { slugOverride?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug || "";
   const country = getCountryBySlug(slug);
+
+  // Redirect to canonical clean URL
+  if (country && !slugOverride) {
+    return <Navigate to={`/country/${slug}`} replace />;
+  }
 
   if (!country) {
     return (

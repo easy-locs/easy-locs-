@@ -7,6 +7,7 @@ import { buildAppUrl } from "@/lib/app-domain";
 import { toast } from "sonner";
 import BookingAvailabilityCalendar from "./BookingAvailabilityCalendar";
 import GuestBookingReply from "./GuestBookingReply";
+import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 
 interface Props {
   listing: any;
@@ -27,6 +28,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [submittedBookingId, setSubmittedBookingId] = useState<string | null>(null);
   const [bookedDates, setBookedDates] = useState<{ check_in: string; check_out: string }[]>([]);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
@@ -280,6 +282,26 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
               <span className="font-semibold text-foreground">{t("page.listing.total")}</span>
               <span className="font-bold text-foreground whitespace-nowrap">{totalPrice}€</span>
             </div>
+          </div>
+        )}
+
+        {/* Payment method selection */}
+        {nights > 0 && totalPrice > 0 && (
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onSelect={setPaymentMethod}
+            showOffline
+          />
+        )}
+
+        {paymentMethod === "bank_transfer" && (
+          <div className="bg-muted/50 rounded-xl p-3 text-xs text-muted-foreground">
+            💳 {t("page.listing.bank_transfer_note") || "Bank transfer details will be sent after your booking is confirmed."}
+          </div>
+        )}
+        {paymentMethod === "cash" && (
+          <div className="bg-muted/50 rounded-xl p-3 text-xs text-muted-foreground">
+            💵 {t("page.listing.cash_note") || "Cash payment on arrival after booking confirmation."}
           </div>
         )}
 

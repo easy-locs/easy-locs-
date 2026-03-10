@@ -3,7 +3,7 @@
  * Route: /property-management-:citySlug
  * Uses unique localContext per city for differentiated content.
  */
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
@@ -15,6 +15,9 @@ import { ArrowRight, MapPin, Building2, Star } from "lucide-react";
 const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
   const result = getCityBySlug(citySlug);
   if (!result) return null;
+
+  // Redirect to canonical clean URL
+  return <Navigate to={`/city/${citySlug}`} replace />;
 
   const { city, country } = result;
   const shouldNoindex = !isIndexableCity(city);
