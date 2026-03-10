@@ -97,9 +97,11 @@ const Documents = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
-        <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
+          <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
+        </motion.div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <span className="text-lg">{getCountryFlag(activeCountry)}</span>
