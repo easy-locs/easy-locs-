@@ -572,7 +572,7 @@ const ActivitiesMarketplace = () => {
 
             {filterCat !== "all" && (
               <div className="flex gap-2 items-center">
-                <Button size="sm" variant="outline" onClick={() => setFilterCat("all")}>← All Categories</Button>
+                <Button size="sm" variant="outline" onClick={() => setFilterCat("all")}>← Toutes les catégories</Button>
                 <Badge variant="secondary" className="text-sm">
                   {getCategoryInfo(filterCat).icon} {getCategoryInfo(filterCat).label}
                 </Badge>
