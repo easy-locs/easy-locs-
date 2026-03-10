@@ -509,7 +509,7 @@ const ActivitiesMarketplace = () => {
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setRevenueOpen(true)}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
+                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenus</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
                 {Object.keys(revenueByCurrency).length > 1 ? (
                   <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
