@@ -118,7 +118,9 @@ function buildHeaders(): Headers {
 
 function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
   if (shouldServePreviewHtml(req)) {
-    return new Response(html, { status: 200, headers: buildHeaders() });
+    // Use Blob to force text/html Content-Type (Supabase Edge Runtime overrides string responses to text/plain)
+    const blob = new Blob([html], { type: "text/html; charset=utf-8" });
+    return new Response(blob, { status: 200, headers: buildHeaders() });
   }
 
   const redirectHeaders = new Headers();
