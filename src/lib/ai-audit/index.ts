@@ -28,6 +28,17 @@ export {
   getTriggerIssues, subscribeTriggerAudit,
 } from "./triggers";
 
+// Re-export auto-fix system
+export { autoFixIssue, autoFixAll } from "./auto-fix";
+export type { AutoFixResult } from "./auto-fix";
+
+// Re-export integration hooks
+export {
+  wrapPaymentAudit, wrapBookingAudit,
+  notifyListingPublished, notifyListingUpdated,
+  notifyNotificationResult,
+} from "./hooks";
+
 type ScanType = AuditReport["scanType"];
 
 function computeModuleScore(category: AuditCategory, issues: AuditIssue[]): ModuleScore {

@@ -16,8 +16,8 @@ import {
   RefreshCw, Zap, AlertTriangle, CheckCircle2, XCircle, Info, Clock,
   ChevronRight, Sparkles, ArrowUpRight, ArrowDownRight, Minus,
 } from "lucide-react";
-import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit } from "@/lib/ai-audit";
-import type { AuditReport, AuditIssue, ModuleScore, AuditCategory } from "@/lib/ai-audit";
+import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit, autoFixIssue, autoFixAll } from "@/lib/ai-audit";
+import type { AuditReport, AuditIssue, ModuleScore, AuditCategory, AutoFixResult } from "@/lib/ai-audit";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -193,6 +193,22 @@ const AIQualityDashboard = () => {
               <Database className="h-4 w-4 mr-1.5" />
               Backend Audit
             </Button>
+            {report && report.issues.some(i => i.autoFixable) && (
+              <Button variant="outline" size="sm" onClick={() => {
+                const results = autoFixAll(report.issues);
+                const fixed = results.filter(r => r.fixed).length;
+                if (fixed > 0) {
+                  toast.success(`Auto-fixed ${fixed} issue(s)`);
+                  // Re-run light scan to refresh
+                  runScan("light");
+                } else {
+                  toast.info("No issues could be auto-fixed at this time.");
+                }
+              }} className="border-primary/30 text-primary">
+                <Sparkles className="h-4 w-4 mr-1.5" />
+                Auto-Fix ({report.issues.filter(i => i.autoFixable).length})
+              </Button>
+            )}
           </div>
         </div>
 
@@ -319,7 +335,15 @@ const AIQualityDashboard = () => {
                 )}
 
                 {filteredIssues.map((issue) => (
-                  <IssueCard key={issue.id} issue={issue} />
+                  <IssueCard key={issue.id} issue={issue} onFix={(i) => {
+                    const result = autoFixIssue(i);
+                    if (result.fixed) {
+                      toast.success(`Fixed: ${result.action}`, { description: result.details });
+                      runScan("light");
+                    } else {
+                      toast.info(`Could not auto-fix: ${result.action}`, { description: result.details });
+                    }
+                  }} />
                 ))}
               </div>
             </ScrollArea>
@@ -431,7 +455,7 @@ const AIQualityDashboard = () => {
   );
 };
 
-const IssueCard = ({ issue }: { issue: AuditIssue }) => {
+const IssueCard = ({ issue, onFix }: { issue: AuditIssue; onFix?: (issue: AuditIssue) => void }) => {
   const Icon = CATEGORY_ICON_MAP[issue.category] || Info;
 
   return (
@@ -453,8 +477,11 @@ const IssueCard = ({ issue }: { issue: AuditIssue }) => {
                 {IMPACT_LABELS[issue.businessImpact] || issue.businessImpact}
               </span>
               {issue.autoFixable && (
-                <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">
-                  <Zap className="h-2.5 w-2.5 mr-0.5" /> Auto-fixable
+                <Badge
+                  className="text-[10px] bg-primary/10 text-primary border-primary/20 cursor-pointer hover:bg-primary/20"
+                  onClick={() => onFix?.(issue)}
+                >
+                  <Zap className="h-2.5 w-2.5 mr-0.5" /> Auto-fix
                 </Badge>
               )}
             </div>

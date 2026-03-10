@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
+import { auditBookingResult } from "@/lib/ai-audit";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -120,6 +121,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
 
     if (error) {
       console.error("Booking insert error:", error.message, error.details, error.hint);
+      auditBookingResult(false, { module: "seasonal", error: error.message || "Insert failed" });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
         description: error.message || "Please try again.",
@@ -127,6 +129,8 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       });
       return;
     }
+
+    auditBookingResult(true, { bookingId: insertedRequest.id, module: "seasonal" });
 
     dispatchSyncEvent({
       type: "booking_request",
