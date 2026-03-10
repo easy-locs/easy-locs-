@@ -286,7 +286,7 @@ const PublicServiceBooking = () => {
           });
         } catch (e) { console.error("Notification email error:", e); }
 
-        if (paymentMethod === "stripe") {
+        if (paymentMethod === "card") {
           const { data: checkout, error: checkoutError } = await supabase.functions.invoke("create-concierge-payment", {
             body: {
               order_id: order.id,
