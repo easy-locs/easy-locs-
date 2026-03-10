@@ -117,8 +117,12 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     } as any).select().single();
 
     if (error) {
+      console.error("Booking insert error:", error.message, error.details, error.hint);
       setSubmitting(false);
-      alert(t("page.listing.error_submit"));
+      toast.error(t("page.listing.error_submit") || "Booking request failed", {
+        description: error.message || "Please try again.",
+        duration: 8000,
+      });
       return;
     }
 
