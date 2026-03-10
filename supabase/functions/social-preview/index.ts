@@ -288,7 +288,7 @@ async function handleRealEstate(req: Request, slug: string, shareUrl: string, sh
     .from("real_estate_listings")
     .select("*")
     .eq("slug", slug)
-    .eq("active", true)
+    .eq("status", "active")
     .maybeSingle();
 
   if (!listing) {
