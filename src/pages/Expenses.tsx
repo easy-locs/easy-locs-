@@ -139,15 +139,15 @@ const Expenses = () => {
 
         {/* Add form */}
         {showForm && (
-          <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
+          <div className="ui-card mb-6 space-y-4">
             <h3 className="font-semibold text-foreground">{t("page.expenses.new")}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.amount")} *</label><input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.property")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"><option value="">{t("page.expenses.none")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
-              <div><label className="block text-sm font-medium text-foreground mb-1">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm" /></div>
+            <div className="form-grid">
+              <div className="form-group"><label className="form-label">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="form-input" /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.amount")} *</label><input type="number" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className="form-input" /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="form-select">{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.property")}</label><select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="form-select"><option value="">{t("page.expenses.none")}</option>{properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className="form-input" /></div>
+              <div className="form-group"><label className="form-label">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="form-input" /></div>
             </div>
             <div className="flex gap-3">
               <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
