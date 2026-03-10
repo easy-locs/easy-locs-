@@ -3,6 +3,7 @@
  * Uses shared architecture: routes.ts for target resolution, types.ts for metadata format.
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle, CheckCheck, Trash2, X, CreditCard, CalendarCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,18 +70,31 @@ const NotificationBell = () => {
   const [open, setOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const containerRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const [panelPos, setPanelPos] = useState({ top: 0, right: 0 });
   const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
 
   useEffect(() => {
     if (!open) return;
+    // Calculate panel position from bell button
+    if (bellRef.current && !isMobile) {
+      const rect = bellRef.current.getBoundingClientRect();
+      setPanelPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      if (containerRef.current && containerRef.current.contains(target)) return;
+      // Also check if click is inside the portal panel
+      const panel = document.getElementById("notification-panel");
+      if (panel && panel.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener("pointerdown", handler);
     return () => document.removeEventListener("pointerdown", handler);
-  }, [open]);
+  }, [open, isMobile]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -199,6 +213,7 @@ const NotificationBell = () => {
     <div className="relative" ref={containerRef}>
       {/* Bell trigger */}
       <button
+        ref={bellRef}
         onClick={() => setOpen(!open)}
         className="relative p-2 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95"
       >
@@ -214,31 +229,37 @@ const NotificationBell = () => {
         )}
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            {/* Mobile backdrop */}
-            {isMobile && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-                onClick={() => setOpen(false)}
-              />
-            )}
+      {createPortal(
+        <AnimatePresence>
+          {open && (
+            <>
+              {/* Mobile backdrop */}
+              {isMobile && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
+                  onClick={() => setOpen(false)}
+                />
+              )}
 
-            <motion.div
-              initial={{ opacity: 0, y: isMobile ? 20 : -6, scale: isMobile ? 1 : 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: isMobile ? 20 : -6, scale: isMobile ? 1 : 0.97 }}
-              transition={{ duration: 0.22, type: "spring", stiffness: 400, damping: 30 }}
-              className={`${
-                isMobile
-                  ? "fixed inset-x-0 bottom-0 z-50 rounded-b-none rounded-t-2xl safe-bottom"
-                  : "absolute right-0 top-full mt-2 w-[380px] z-50 rounded-2xl"
-              } bg-card shadow-2xl border border-border overflow-hidden flex flex-col`}
-              style={{ maxHeight: isMobile ? "80vh" : "520px", maxWidth: isMobile ? undefined : "calc(100vw - 2rem)" }}
+              <motion.div
+                id="notification-panel"
+                initial={{ opacity: 0, y: isMobile ? 20 : -6, scale: isMobile ? 1 : 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: isMobile ? 20 : -6, scale: isMobile ? 1 : 0.97 }}
+                transition={{ duration: 0.22, type: "spring", stiffness: 400, damping: 30 }}
+                className={`${
+                  isMobile
+                    ? "fixed inset-x-0 bottom-0 rounded-b-none rounded-t-2xl safe-bottom"
+                    : "fixed w-[380px] rounded-2xl"
+                } z-[9999] bg-card shadow-2xl border border-border overflow-hidden flex flex-col`}
+                style={{
+                  maxHeight: isMobile ? "80vh" : "520px",
+                  maxWidth: isMobile ? undefined : "calc(100vw - 2rem)",
+                  ...(isMobile ? {} : { top: panelPos.top, right: panelPos.right }),
+                }}
             >
               {/* ─── Header ─── */}
               <div className="px-4 pt-4 pb-3 border-b border-border/60">
@@ -426,7 +447,9 @@ const NotificationBell = () => {
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </div>
   );
 };
