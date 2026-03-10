@@ -73,6 +73,7 @@ const RealEstateListings = lazy(() => import("./pages/RealEstateListings"));
 const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListing"));
 const PropertiesShowcase = lazy(() => import("./pages/PropertiesShowcase"));
 const AccountShowcase = lazy(() => import("./pages/AccountShowcase"));
+const Explore = lazy(() => import("./pages/Explore"));
 
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
@@ -145,6 +146,7 @@ const PageLoader = () => (
 const seoPublicPrefixes = [
   "/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/",
   "/services/", "/activities/", "/locations", "/country/", "/city/", "/marketplace",
+  "/explore",
 ];
 
 const RouteAwareAssistant = () => {
@@ -191,6 +193,7 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/explore" element={<Explore />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
               <Route path="/properties/:slug" element={<PublicRealEstateListing />} />
               <Route path="/property/:slug" element={<PublicRealEstateListing />} />
