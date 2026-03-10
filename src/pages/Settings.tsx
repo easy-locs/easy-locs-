@@ -263,7 +263,7 @@ const Settings = () => {
             <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
               <div className="flex items-center gap-3">
                 {showcaseEnabled ? (
-                  <Eye className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <Eye className="h-5 w-5 text-success" />
                 ) : (
                   <EyeOff className="h-5 w-5 text-muted-foreground" />
                 )}
