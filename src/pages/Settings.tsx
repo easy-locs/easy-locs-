@@ -295,7 +295,7 @@ const Settings = () => {
                     : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
                 }`}
               >
-                {savingShowcase ? "…" : showcaseEnabled ? "Disable" : "Enable"}
+                {savingShowcase ? "…" : showcaseEnabled ? (t("page.common.disable") || "Disable") : (t("page.common.enable") || "Enable")}
               </button>
             </div>
           </div>
