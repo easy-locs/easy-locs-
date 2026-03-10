@@ -299,7 +299,7 @@ const ConciergeOperations = () => {
                     <Pie data={serviceRevenueData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                       {serviceRevenueData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: number) => [`${v}€`]} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: number) => [fmtPrice(v)]} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex flex-wrap gap-2">
