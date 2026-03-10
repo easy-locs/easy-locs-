@@ -249,7 +249,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
           </div>
         )}
 
-        <button type="submit" disabled={submitting || !!availabilityError || !!minNightsError}
+        <button type="submit" disabled={submitting || !formReady}
           className="w-full bg-accent text-accent-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           {t("page.listing.send_request")}

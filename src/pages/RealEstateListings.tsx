@@ -501,6 +501,19 @@ export default function RealEstateListings() {
                 <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))} /></div>
                 <div><Label>Phone</Label><Input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} /></div>
               </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Camera className="h-4 w-4" /> Photos</h4>
+              <RealEstatePhotoUploader
+                listingId={editId}
+                orgId={orgId!}
+                photos={(editId ? listings.find(l => l.id === editId)?.photo_urls : null) || []}
+                onPhotosChange={(urls) => {
+                  if (editId) {
+                    setListings(prev => prev.map(l => l.id === editId ? { ...l, photo_urls: urls } : l));
+                  }
+                }}
+              />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
