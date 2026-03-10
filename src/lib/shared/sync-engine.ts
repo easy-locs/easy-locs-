@@ -209,7 +209,7 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   booking_request:      { targetType: "booking_request",     module: "seasonal",     notifType: "request" },
   service_booking:      { targetType: "marketplace_booking", module: "marketplace",  notifType: "info" },
   document_shared:      { targetType: "document",            module: "long_term",    notifType: "document" },
-  payment_request_sent: { targetType: "payment",            module: "long_term",    notifType: "payment" },
+  payment_request_sent: { targetType: "payment",            module: "marketplace",  notifType: "payment" },
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
 };
 
