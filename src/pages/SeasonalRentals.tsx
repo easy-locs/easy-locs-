@@ -532,7 +532,7 @@ const SeasonalRentals = () => {
     return bookings.filter(b => b.check_in <= dateStr && b.check_out > dateStr);
   };
 
-  const monthLabel = calMonth.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const monthLabel = calMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const dayNames = t("page.seasonal.day_names").split(",");
 
   return (
