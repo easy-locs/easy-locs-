@@ -1338,7 +1338,7 @@ const CommunicationCenter = () => {
                         <div className="space-y-2 mb-4">
                           <h4 className="text-xs font-semibold text-foreground">Booking</h4>
                           <div className="flex items-center gap-2">
-                            {getBookingTypeBadge(selectedThread.bookingType)}
+                            {getBookingTypeBadge(selectedThread)}
                             {getStatusBadge(selectedThread.bookingStatus)}
                           </div>
                           {selectedThread.bookingId && (
