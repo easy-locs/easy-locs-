@@ -80,7 +80,7 @@ const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
     "PRODID:-//Easy-Locs//Seasonal//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Easy-Locs Saisonnier",
+    "X-WR-CALNAME:Easy-Locs Seasonal",
     ...events,
     "END:VCALENDAR",
   ].join("\r\n");
