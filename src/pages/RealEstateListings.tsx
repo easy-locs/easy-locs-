@@ -109,7 +109,7 @@ const emptyForm = {
   property_type: "apartment", country: "", city: "", address: "", surface_sqm: 0,
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
-  energy_class: "", visibility: "public",
+  energy_class: "", visibility: "public", latitude: 0, longitude: 0,
 };
 
 export default function RealEstateListings() {
