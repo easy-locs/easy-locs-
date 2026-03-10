@@ -3111,6 +3111,20 @@ const pageEn: Record<string, string> = {
   "pagination.results": "results",
   "pagination.page": "Page",
 
+  // Legal Notice page
+  "legal.notice.title": "Legal Notice",
+  "legal.notice.publisher": "Website Publisher",
+  "legal.notice.company_type": "Simplified joint stock company",
+  "legal.notice.website": "Website",
+  "legal.notice.director": "Publication Director",
+  "legal.notice.director_desc": "The publication director is the legal representative of Easy-Locs SAS.",
+  "legal.notice.hosting": "Hosting",
+  "legal.notice.hosting_desc": "The website is hosted within the European Union in compliance with GDPR requirements.",
+  "legal.notice.ip": "Intellectual Property",
+  "legal.notice.ip_desc": "All content on the website (text, graphics, logos, icons, images, software) is the exclusive property of Easy-Locs SAS and is protected by French and international intellectual property laws.",
+  "legal.notice.liability": "Limitation of Liability",
+  "legal.notice.liability_desc": "Easy-Locs® strives to provide accurate and up-to-date information. However, Easy-Locs SAS cannot guarantee the accuracy, completeness, or timeliness of the information published on the website.",
+
   // Company page
   "page.company.title": "Company",
   "page.company.subtitle": "Create, manage and modify your company — SAS, SARL, EURL or sole proprietorship.",
