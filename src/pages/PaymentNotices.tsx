@@ -326,7 +326,10 @@ const PaymentNotices = () => {
                               </thead>
                               <tbody>
                                 {propNotices.map(n => {
-                                  const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                                  const matchingRentCall = rentCalls.find(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                                  const isPaid = !matchingRentCall;
+                                  const paidAmount = matchingRentCall?.paid_amount || 0;
+                                  const remaining = matchingRentCall ? matchingRentCall.total_amount - paidAmount : 0;
                                   return (
                                     <tr key={n.id} className="table-body-row">
                                       <td className="table-cell whitespace-nowrap">{n.month}</td>
@@ -337,6 +340,10 @@ const PaymentNotices = () => {
                                           <span className="badge-success">
                                             <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
                                           </span>
+                                        ) : paidAmount > 0 ? (
+                                          <span className="badge-warning">
+                                            <Banknote className="h-3 w-3" /> {fmt(paidAmount, countryCode)} / {fmt(n.total_amount, countryCode)}
+                                          </span>
                                         ) : (
                                           <span className="badge-danger">
                                             <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
@@ -344,9 +351,23 @@ const PaymentNotices = () => {
                                         )}
                                       </td>
                                       <td className="table-cell-actions">
-                                        <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon">
-                                          <Download className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex items-center gap-1 justify-end">
+                                          {!isPaid && (
+                                            <>
+                                              <button onClick={() => regularize(matchingRentCall!)} className="btn-ghost btn-sm text-xs" title={t("page.notices.regularize") || "Régulariser"}>
+                                                <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                                <span className="hidden sm:inline">{t("page.notices.regularize") || "Régulariser"}</span>
+                                              </button>
+                                              <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="btn-ghost btn-sm text-xs" title={t("page.notices.partial") || "Partiel"}>
+                                                <Banknote className="h-3.5 w-3.5 text-accent" />
+                                                <span className="hidden sm:inline">{t("page.notices.partial") || "Partiel"}</span>
+                                              </button>
+                                            </>
+                                          )}
+                                          <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon">
+                                            <Download className="h-4 w-4" />
+                                          </button>
+                                        </div>
                                       </td>
                                     </tr>
                                   );
