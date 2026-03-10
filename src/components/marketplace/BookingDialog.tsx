@@ -280,17 +280,24 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder="Special requests..." />
             </div>
 
-            {/* Payment methods */}
-            {(paymentStripe || paymentPaypal || paymentCustom) && (
-              <div className="space-y-1.5 border-t border-border pt-2">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase">Payment Options</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {paymentStripe && <Badge variant="outline" className="text-xs"><CreditCard className="h-3 w-3 mr-1" /> Stripe</Badge>}
-                  {paymentPaypal && <Badge variant="outline" className="text-xs"><Mail className="h-3 w-3 mr-1" /> PayPal</Badge>}
-                  {paymentCustom && <Badge variant="outline" className="text-xs"><CreditCard className="h-3 w-3 mr-1" /> Other</Badge>}
-                </div>
-                <p className="text-[10px] text-muted-foreground">Payment link will be sent after confirmation</p>
-              </div>
+            {/* Payment method selector */}
+            <PaymentMethodSelector
+              selectedMethod={paymentMethod}
+              onSelect={setPaymentMethod}
+              hasStripe={!!paymentStripe}
+              hasPaypal={!!paymentPaypal}
+              hasBankDetails={true}
+              showOffline={true}
+            />
+            {paymentMethod === "bank_transfer" && (
+              <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                💳 Bank transfer details will be sent after booking confirmation.
+              </p>
+            )}
+            {paymentMethod === "cash" && (
+              <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                💵 Payment in cash upon arrival or at the time of service.
+              </p>
             )}
           </div>
         )}
