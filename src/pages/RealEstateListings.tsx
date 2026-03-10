@@ -41,7 +41,6 @@ const PROPERTY_TYPES = [
 const LISTING_TYPES = [
   { value: "sale", label: "For Sale", emoji: "🏷️" },
   { value: "long_term_rent", label: "Long-term Rent", emoji: "🏠" },
-  { value: "seasonal_rent", label: "Seasonal Rent", emoji: "🏖️" },
 ];
 
 const STATUS_MAP: Record<string, string> = {
