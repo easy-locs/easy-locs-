@@ -146,9 +146,11 @@ export default function RealEstateListings() {
 
   const handleSave = async () => {
     if (!form.title) { toast({ title: "Title is required", variant: "destructive" }); return; }
-    const payload = {
+    const payload: any = {
       ...form, org_id: orgId!, user_id: user!.id,
       country: form.country || activeCountry || "",
+      latitude: form.latitude || null,
+      longitude: form.longitude || null,
     };
 
     if (editId) {
