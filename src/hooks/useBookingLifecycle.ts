@@ -141,7 +141,51 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     return true;
   };
 
-  // ─── Send Payment Link ───
+  // ─── Modify Booking ───
+  const modifyBooking = async (
+    booking: any,
+    changes: {
+      service_date: string;
+      service_time: string;
+      date_from: string | null;
+      date_to: string | null;
+      quantity: number;
+      total_price: number;
+      modification_reason: string;
+    },
+  ) => {
+    const updates: Record<string, any> = {
+      service_date: changes.service_date,
+      service_time: changes.service_time,
+      date_from: changes.date_from,
+      date_to: changes.date_to,
+      quantity: changes.quantity,
+      total_price: changes.total_price,
+      status: "modified",
+    };
+
+    const { error } = await supabase
+      .from("marketplace_bookings")
+      .update(updates)
+      .eq("id", booking.id);
+    if (error) { toast.error(error.message); return false; }
+
+    toast.success("Réservation modifiée");
+    invalidate();
+
+    const svc = findService(booking.service_id);
+    await notify(
+      booking,
+      `✏️ Booking modified: ${svc?.title || "Service"}`,
+      `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" has been modified.\n\nNew date: ${changes.service_date || changes.date_from || "—"}\nNew amount: ${changes.total_price} ${booking.currency}\nReason: ${changes.modification_reason}\n\nPlease contact us if you have questions.`,
+      "info",
+      svc,
+    );
+
+    return true;
+  };
+
+
   const sendPaymentLink = async (booking: any) => {
     const svc = findService(booking.service_id);
     const link =
