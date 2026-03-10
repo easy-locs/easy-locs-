@@ -145,29 +145,33 @@ const Leases = () => {
       const leaseLabel = selectedLeaseType === "furnished" ? t("page.leases.furnished_lease") : selectedLeaseType === "commercial" ? t("page.leases.commercial_lease") : t("page.leases.empty_lease");
       const title = `${leaseLabel} — ${tenant.name}`;
 
+      let docId = "";
       if (orgId) {
-        await supabase.from("documents").insert({
+        const { data: docInsert } = await supabase.from("documents").insert({
           org_id: orgId, user_id: user!.id, title, doc_type: template.docType,
           template_id: template.id, template_version: template.version,
           data_json: leaseData as any, status: "draft", country: "FR",
-        } as any);
+        } as any).select("id").single();
+        docId = docInsert?.id || "";
       }
       const pdfFileName = `${title.replace(/\s/g, "_")}.pdf`;
       downloadPDF(doc, pdfFileName);
       toast({ title: t("page.leases.generated") + " !", description: `${leaseLabel} — ${tenant.name}` });
 
-      // Sync engine: lease_created
-      dispatchSyncEvent({
-        type: "lease_created",
-        context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: "", countryCode: "FR" },
-        actorUserId: user!.id,
-        targetUserId: tenant.tenant_user_id || undefined,
-        targetEmail: tenant.email || undefined,
-        leaseType: selectedLeaseType,
-        startDate: (leaseData.startDate as string) || today,
-        tenantName: tenant.name,
-        propertyLabel: prop.label || `${prop.address}, ${prop.city}`,
-      }).catch(() => {});
+      // Sync engine: lease_created (uses documentId since lease doc goes into documents table)
+      if (docId) {
+        dispatchSyncEvent({
+          type: "lease_created",
+          context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: docId, countryCode: "FR" },
+          actorUserId: user!.id,
+          targetUserId: tenant.tenant_user_id || undefined,
+          targetEmail: tenant.email || undefined,
+          leaseType: selectedLeaseType,
+          startDate: (leaseData.startDate as string) || today,
+          tenantName: tenant.name,
+          propertyLabel: prop.label || `${prop.address}, ${prop.city}`,
+        }).catch(() => {});
+      }
 
       // Send lease email to tenant with attached PDF
       const pdfDataUri = pdfToDataUri(doc);
