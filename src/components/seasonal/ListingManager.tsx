@@ -33,6 +33,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     max_guests: 4,
     cleaning_fee: 0,
     options: [] as string[],
+    contact_email: "",
+    contact_phone: "",
+    whatsapp_number: "",
+    telegram_username: "",
   });
   const [shareEmail, setShareEmail] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
