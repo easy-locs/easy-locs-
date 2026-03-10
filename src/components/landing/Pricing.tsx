@@ -40,10 +40,10 @@ const Pricing = () => {
           className="text-center mb-10 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight">
-            {t("landing.pricing.title")} <span className="text-gradient-gold">{t("landing.pricing.title_highlight")}</span>
+            {t("landing.pricing.title") || "One Plan,"} <span className="text-gradient-gold">{t("landing.pricing.title_highlight") || "Unlimited Everything"}</span>
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle")}</p>
-          <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment")}</p>
+          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle") || "One platform to manage rentals and services worldwide."}</p>
+          <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment") || "No commitment — Cancel anytime"}</p>
         </motion.div>
 
         {/* Toggle */}
