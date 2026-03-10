@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
+import { getSocialShareUrl, getCleanShareUrl } from "@/lib/social-share";
 import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
