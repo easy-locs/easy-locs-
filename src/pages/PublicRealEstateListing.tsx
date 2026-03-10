@@ -378,7 +378,7 @@ export default function PublicRealEstateListing() {
             {listing.description && (
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">About This Property</h2>
-                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{listing.description}</div>
+                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{translate.get("description")}</div>
               </div>
             )}
 
