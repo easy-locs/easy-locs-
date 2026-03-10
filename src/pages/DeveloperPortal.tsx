@@ -221,9 +221,9 @@ const DeveloperPortal = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <Input placeholder="Nom de la clé" value={keyName} onChange={e => setKeyName(e.target.value)} />
+                    <Input placeholder="Key name" value={keyName} onChange={e => setKeyName(e.target.value)} />
                     <Button className="w-full" onClick={() => createMut.mutate()} disabled={createMut.isPending}>
-                      {createMut.isPending ? "Création..." : "Générer la clé"}
+                      {createMut.isPending ? "Creating..." : "Generate key"}
                     </Button>
                   </div>
                 )}
