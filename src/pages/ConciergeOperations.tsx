@@ -277,7 +277,7 @@ const ConciergeOperations = () => {
                   <BarChart data={revenueData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 11 }} />
-                    <YAxis className="text-xs" tickFormatter={v => `${v}€`} />
+                    <YAxis className="text-xs" tickFormatter={v => fmtPrice(v)} />
                     <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                     <Bar dataKey="bookings" stackId="a" fill="hsl(var(--accent))" radius={[0, 0, 0, 0]} name="Bookings" />
                     <Bar dataKey="services" stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Services" />
