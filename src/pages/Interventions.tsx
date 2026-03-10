@@ -140,9 +140,25 @@ const Interventions = () => {
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
       toast({ title: t("page.interventions.modified") });
     } else {
-      const { error } = await supabase.from("interventions").insert(record);
+      const { data: inserted, error } = await supabase.from("interventions").insert(record).select().single();
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
       toast({ title: t("page.interventions.added") });
+
+      // Sync engine: intervention_created
+      const prop = properties.find(p => p.id === form.property_id);
+      dispatchSyncEvent({
+        type: "intervention_created",
+        context: {
+          orgId: orgId!,
+          propertyId: inserted.property_id || undefined,
+          tenantId: inserted.tenant_id || undefined,
+          countryCode: "",
+        },
+        actorUserId: user.id,
+        title: inserted.title,
+        priority: inserted.priority,
+        propertyLabel: prop?.label || "—",
+      });
     }
     setDialogOpen(false);
     load();
