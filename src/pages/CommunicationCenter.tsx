@@ -833,13 +833,17 @@ const CommunicationCenter = () => {
       // Try to create a Stripe payment link
       let paymentUrl = "";
       try {
-        const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+        // Note: create-concierge-payment / create-booking-payment expect amount in decimal, NOT cents
+        const { data, error } = await supabase.functions.invoke("create-concierge-payment", {
           body: {
-            booking_id: selectedThread.bookingId || selectedThread.id,
-            amount: Math.round(amount * 100),
+            order_id: selectedThread.bookingId || selectedThread.id,
+            service_id: selectedThread.contextId,
+            amount,
             currency: selectedThread.currency || "eur",
-            description: paymentDescription || `Payment — ${selectedThread.name}`,
-            customer_email: selectedThread.email || "",
+            guest_email: selectedThread.email || "",
+            guest_name: selectedThread.name || "",
+            service_title: selectedThread.serviceTitle || paymentDescription || "",
+            origin: window.location.origin,
           },
         });
         if (error) throw error;
