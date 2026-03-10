@@ -179,12 +179,14 @@ const ActivitiesMarketplace = () => {
 
   const createService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
+      const resolvedOrgId = orgId || await ensureOrg();
+      if (!resolvedOrgId) throw new Error("Organisation introuvable");
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const insertData: Record<string, unknown> = {
         ...data,
         booking_slug: slug,
         provider_id: myProvider!.id,
-        org_id: orgId!,
+        org_id: resolvedOrgId,
         user_id: user!.id,
       };
       const { error } = await supabase.from("marketplace_services").insert(insertData as any);
