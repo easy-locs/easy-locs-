@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send } from "lucide-react";
+import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send, Phone, MessageCircle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 
@@ -33,6 +33,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     max_guests: 4,
     cleaning_fee: 0,
     options: [] as string[],
+    contact_email: "",
+    contact_phone: "",
+    whatsapp_number: "",
+    telegram_username: "",
   });
   const [shareEmail, setShareEmail] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -57,6 +61,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
         max_guests: data.max_guests || 4,
         cleaning_fee: typeof cleaningFee === 'object' && cleaningFee ? (cleaningFee as any).amount || 0 : 0,
         options: amenities.filter((a: any) => typeof a === 'string') as string[],
+        contact_email: (data as any).contact_email || "",
+        contact_phone: (data as any).contact_phone || "",
+        whatsapp_number: (data as any).whatsapp_number || "",
+        telegram_username: (data as any).telegram_username || "",
       });
     }
     setLoading(false);
@@ -81,6 +89,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       title: form.title || propertyLabel, description: form.description,
       price_per_night: form.price_per_night, min_nights: form.min_nights,
       max_guests: form.max_guests, amenities: amenities as any,
+      contact_email: form.contact_email || null,
+      contact_phone: form.contact_phone || null,
+      whatsapp_number: form.whatsapp_number || null,
+      telegram_username: form.telegram_username || null,
     } as any).select().single();
     if (error) {
       toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
@@ -100,6 +112,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       title: form.title, description: form.description,
       price_per_night: form.price_per_night, min_nights: form.min_nights,
       max_guests: form.max_guests, amenities: amenities as any,
+      contact_email: form.contact_email || null,
+      contact_phone: form.contact_phone || null,
+      whatsapp_number: form.whatsapp_number || null,
+      telegram_username: form.telegram_username || null,
     } as any).eq("id", listing.id);
     if (error) {
       toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
@@ -198,6 +214,37 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
           <input type="number" value={form.max_guests || ""} onFocus={e => { if (e.target.value === "0" || e.target.value === "4") e.target.value = ""; }}
             onChange={e => setForm(p => ({ ...p, max_guests: e.target.value === "" ? 4 : +e.target.value }))} placeholder="4"
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+        </div>
+        <div className="sm:col-span-2 border-t border-border pt-3 mt-1">
+          <label className="text-xs font-semibold text-muted-foreground mb-2 block flex items-center gap-1.5">
+            <Phone className="h-3.5 w-3.5" /> {t("page.listing_mgr.contact_section") || "Direct contact (public)"}
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Email</label>
+              <input type="email" value={form.contact_email} onChange={e => setForm(p => ({ ...p, contact_email: e.target.value }))}
+                placeholder="owner@example.com"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">{t("page.listing_mgr.phone") || "Phone"}</label>
+              <input type="tel" value={form.contact_phone} onChange={e => setForm(p => ({ ...p, contact_phone: e.target.value }))}
+                placeholder="+33 6 12 34 56 78"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground flex items-center gap-1"><MessageCircle className="h-3 w-3" /> WhatsApp</label>
+              <input type="tel" value={form.whatsapp_number} onChange={e => setForm(p => ({ ...p, whatsapp_number: e.target.value }))}
+                placeholder="+33612345678"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Telegram</label>
+              <input value={form.telegram_username} onChange={e => setForm(p => ({ ...p, telegram_username: e.target.value }))}
+                placeholder="@username"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1" />
+            </div>
+          </div>
         </div>
         <div className="sm:col-span-2">
           <div className="flex items-center justify-between mb-1">
