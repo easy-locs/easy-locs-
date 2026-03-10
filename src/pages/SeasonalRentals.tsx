@@ -799,7 +799,8 @@ const SeasonalRentals = () => {
                          req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
                          req.status}
                       </span>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                       {req.status === "pending" && (
                         <>
                           <button
