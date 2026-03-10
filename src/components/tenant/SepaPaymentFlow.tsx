@@ -172,7 +172,7 @@ export default function SepaPaymentFlow({
 
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="text-sm font-semibold text-foreground mb-4">
-          {t("sepa.transfer_details") || "Informations de virement"}
+          {t("sepa.transfer_details") || "Transfer Details"}
         </h3>
 
         <div className="space-y-3">
