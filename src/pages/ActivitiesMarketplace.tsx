@@ -16,7 +16,8 @@ import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, Externa
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
-import { syncToCommunicationCenter, type NotificationMeta } from "@/components/marketplace/BookingsManager";
+import { type NotificationMeta } from "@/components/marketplace/BookingsManager";
+import { dispatchSyncEvent, syncPaymentRequest } from "@/lib/shared/sync-engine";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
