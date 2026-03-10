@@ -91,7 +91,7 @@ const Hero = () => {
             </h1>
             <p
               className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
-              style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}
+              style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}
             >
               One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely.
             </p>
