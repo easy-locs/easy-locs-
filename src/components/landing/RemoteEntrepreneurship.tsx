@@ -78,7 +78,7 @@ const RemoteEntrepreneurship = () => {
                 }}
               >
                 <Globe className="h-4 w-4" />
-                Explore Marketplace
+                {t("landing.remote.cta_explore") || "Explore Marketplace"}
               </Link>
             </div>
           </motion.div>
