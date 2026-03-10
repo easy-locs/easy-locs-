@@ -46,6 +46,14 @@ const Settings = () => {
         brand_accent_color: (data as any).brand_accent_color || "",
       });
     });
+    // Load showcase setting
+    supabase.from("landlord_profiles").select("id, slug, showcase_enabled").eq("org_id", orgId).limit(1).maybeSingle().then(({ data }) => {
+      if (data) {
+        setLandlordProfileId(data.id);
+        setLandlordSlug((data as any).slug || null);
+        setShowcaseEnabled((data as any).showcase_enabled !== false);
+      }
+    });
   }, [orgId]);
 
   const saveProfile = async () => {
