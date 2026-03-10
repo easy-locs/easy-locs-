@@ -1383,6 +1383,21 @@ const pageFr: Record<string, string> = {
   "landing.ai.pricing": "Optimiser les tarifs",
   "landing.ai.pricing_desc": "Recommandations tarifaires basées sur le marché par région.",
 
+  // ── Landing: Remote Entrepreneurship ──
+  "landing.remote.badge": "Entrepreneuriat à distance",
+  "landing.remote.title_1": "Gérez vos opérations dans",
+  "landing.remote.title_hl": "Plusieurs Villes",
+  "landing.remote.title_2": "Depuis N'importe Où",
+  "landing.remote.desc": "Proposez des services de ménage à Paris, louez des voitures à Phuket, organisez des activités à Dubai et coordonnez la conciergerie à Marrakech — le tout depuis votre ordinateur. Easy-Locs vous donne les outils pour gérer des entreprises de services et de biens à distance dans toute ville du monde.",
+  "landing.remote.cta_create": "Créer Votre Business",
+  "landing.remote.cta_explore": "Explorer le Marketplace",
+  "landing.remote.step1": "Créez Vos Services",
+  "landing.remote.step1_desc": "Configurez ménage, transport, activités ou tout service dans les villes où vous souhaitez opérer.",
+  "landing.remote.step2": "Gérez à Distance",
+  "landing.remote.step2_desc": "Gérez réservations, paiements et communication client depuis n'importe où avec internet.",
+  "landing.remote.step3": "Développez-vous dans de Nouvelles Villes",
+  "landing.remote.step3_desc": "Étendez votre activité sans présence physique. Ajoutez des villes en quelques minutes.",
+
   // ── Landing: Stats ──
   "landing.stats.badge": "Confiance mondiale",
   "landing.stats.title": "La confiance des",
@@ -3118,6 +3133,21 @@ const pageEn: Record<string, string> = {
   "landing.how.step4_title": "Scale & Grow",
   "landing.how.step4_desc": "Track revenue, expand to new cities, and manage everything remotely from a single dashboard.",
   "landing.how.cta": "Start Building Now",
+
+  // Remote Entrepreneurship EN
+  "landing.remote.badge": "Remote Entrepreneurship",
+  "landing.remote.title_1": "Manage Operations in",
+  "landing.remote.title_hl": "Multiple Cities",
+  "landing.remote.title_2": "From Anywhere",
+  "landing.remote.desc": "Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide.",
+  "landing.remote.cta_create": "Create Your Business",
+  "landing.remote.cta_explore": "Explore Marketplace",
+  "landing.remote.step1": "Create Your Services",
+  "landing.remote.step1_desc": "Set up cleaning, transport, activities or any service in the cities you want to operate.",
+  "landing.remote.step2": "Manage Remotely",
+  "landing.remote.step2_desc": "Handle bookings, payments, and client communication from anywhere with internet.",
+  "landing.remote.step3": "Scale to New Cities",
+  "landing.remote.step3_desc": "Expand your business to new locations without physical presence. Add cities in minutes.",
 
   "landing.trust.badge": "Trust & Security",
   "landing.trust.title": "Built for",

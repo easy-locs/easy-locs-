@@ -40,10 +40,10 @@ const Pricing = () => {
           className="text-center mb-10 space-y-4"
         >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight">
-            {t("landing.pricing.title")} <span className="text-gradient-gold">{t("landing.pricing.title_highlight")}</span>
+            {t("landing.pricing.title") || "One Plan,"} <span className="text-gradient-gold">{t("landing.pricing.title_highlight") || "Unlimited Everything"}</span>
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle")}</p>
-          <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment")}</p>
+          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle") || "One platform to manage rentals and services worldwide."}</p>
+          <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment") || "No commitment — Cancel anytime"}</p>
         </motion.div>
 
         {/* Toggle */}
@@ -58,7 +58,7 @@ const Pricing = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {t(`landing.pricing.${v}`)}
+              {t(`landing.pricing.${v}`) || (v === "monthly" ? "Monthly" : "Annual")}
             </motion.button>
           ))}
         </div>
@@ -80,15 +80,15 @@ const Pricing = () => {
               className="absolute -top-0.5 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-b-lg flex items-center gap-1"
             >
               <Sparkles className="h-3 w-3" />
-              {t("landing.pricing.save_annual")}
+              {t("landing.pricing.save_annual") || "Save €20/year"}
             </motion.div>
           )}
 
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-gold" />
-            <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name")}</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name") || "Easy-Locs Unlimited"}</h3>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc")}</p>
+          <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc") || "All-inclusive — Full access"}</p>
 
           <motion.div
             className="mb-4"
@@ -98,9 +98,9 @@ const Pricing = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <span className="text-4xl sm:text-5xl font-extrabold text-foreground">{price}€</span>
-            <span className="text-muted-foreground text-sm ml-1">/ {intLabel}</span>
+            <span className="text-muted-foreground text-sm ml-1">/ {intLabel || "month"}</span>
           </motion.div>
-          <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc")}</p>
+          <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc") || "Unlimited access to all Easy-Locs features."}</p>
 
           <ul className="space-y-2.5 mb-8">
             {featureKeys.map((key, i) => (
@@ -124,15 +124,15 @@ const Pricing = () => {
               className="block w-full text-center py-3.5 rounded-xl font-bold text-sm transition-all relative overflow-hidden group"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 20px hsl(var(--accent) / 0.25)" }}
             >
-              <span className="relative z-10">{t("landing.pricing.cta")}</span>
+              <span className="relative z-10">{t("landing.pricing.cta") || "Free 3-day trial"}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </Link>
           </motion.div>
         </motion.div>
 
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
-          <span>{t("landing.pricing.payment_card")}</span>
-          <span>{t("landing.pricing.payment_sepa")}</span>
+          <span>{t("landing.pricing.payment_card") || "💳 Credit card"}</span>
+          <span>{t("landing.pricing.payment_sepa") || "🏦 SEPA"}</span>
         </div>
       </div>
     </section>

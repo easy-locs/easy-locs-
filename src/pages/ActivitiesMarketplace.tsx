@@ -200,7 +200,7 @@ const ActivitiesMarketplace = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Service updated!");
+      toast.success("Service mis à jour !");
       qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
       qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
       setServiceFormOpen(false);
@@ -215,7 +215,7 @@ const ActivitiesMarketplace = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Service deleted");
+      toast.success("Service supprimé");
       qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
       qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
     },
@@ -291,7 +291,7 @@ const ActivitiesMarketplace = () => {
       }
     },
     onSuccess: () => {
-      toast.success("Booking request sent!");
+      toast.success("Demande de réservation envoyée !");
       setBookingService(null);
       qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
     },
@@ -306,7 +306,7 @@ const ActivitiesMarketplace = () => {
     const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
     if (error) { toast.error(error.message); return; }
 
-    toast.success(`Booking ${status}`);
+    toast.success(`Réservation ${status === "confirmed" ? "confirmée" : status === "cancelled" ? "annulée" : "terminée"}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
     // Resolve related notifications — action is now completed
@@ -367,7 +367,7 @@ const ActivitiesMarketplace = () => {
         recipientName: booking.booker_name,
       });
     } else {
-      toast.error("No payment link configured");
+      toast.error("Aucun lien de paiement configuré");
     }
   };
 
@@ -380,7 +380,7 @@ const ActivitiesMarketplace = () => {
     }).eq("id", id);
     if (error) { toast.error(error.message); return; }
 
-    toast.success("Payment confirmed!");
+    toast.success("Paiement confirmé !");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
     if (booking) {
@@ -415,7 +415,7 @@ const ActivitiesMarketplace = () => {
   const shareStorefront = () => {
     if (storefrontUrl) {
       navigator.clipboard.writeText(storefrontUrl);
-      toast.success("Storefront link copied!");
+      toast.success("Lien vitrine copié !");
     }
   };
 
@@ -458,24 +458,24 @@ const ActivitiesMarketplace = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Compass className="h-6 w-6 text-accent" /> Services Marketplace
+              <Compass className="h-6 w-6 text-accent" /> Marketplace
             </h1>
-            <p className="text-muted-foreground text-sm">Global dynamic marketplace for activities & services</p>
+            <p className="text-muted-foreground text-sm">Activités, services & prestataires à l'international</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             {!myProvider ? (
               <Button onClick={() => setProviderFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Create Provider Profile
+                <Plus className="h-4 w-4 mr-1" /> Créer un profil prestataire
               </Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setProviderFormOpen(true)}>Edit Profile</Button>
+                <Button variant="outline" onClick={() => setProviderFormOpen(true)}>Modifier le profil</Button>
                 <Button onClick={() => setServiceFormOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" /> Add Service
+                  <Plus className="h-4 w-4 mr-1" /> Ajouter un service
                 </Button>
                 {storefrontUrl && (
                   <Button variant="outline" size="sm" onClick={shareStorefront}>
-                    <Share2 className="h-4 w-4 mr-1" /> Share Storefront
+                    <Share2 className="h-4 w-4 mr-1" /> Partager la vitrine
                   </Button>
                 )}
               </>
@@ -495,21 +495,21 @@ const ActivitiesMarketplace = () => {
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
+                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Réservations</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
                 <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
               </CardContent>
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">En attente</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
                 <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">En attente →</p>
               </CardContent>
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setRevenueOpen(true)}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenue</span></div>
+                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[hsl(45,90%,50%)]" /><span className="text-xs text-muted-foreground uppercase">Revenus</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
                 {Object.keys(revenueByCurrency).length > 1 ? (
                   <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
@@ -525,9 +525,9 @@ const ActivitiesMarketplace = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="detail-tab-row">
-            <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
-            {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> My Services</TabsTrigger>}
-            {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Bookings</TabsTrigger>}
+            <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Explorer</TabsTrigger>
+            {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> Mes Services</TabsTrigger>}
+            {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Réservations</TabsTrigger>}
           </TabsList>
 
           {/* Browse Tab */}
@@ -554,7 +554,7 @@ const ActivitiesMarketplace = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  placeholder="Search services, cities..."
+                  placeholder="Rechercher services, villes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -563,7 +563,7 @@ const ActivitiesMarketplace = () => {
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10 w-full sm:w-40"
-                  placeholder="Country..."
+                  placeholder="Pays..."
                   value={filterCountry}
                   onChange={(e) => setFilterCountry(e.target.value)}
                 />
@@ -572,7 +572,7 @@ const ActivitiesMarketplace = () => {
 
             {filterCat !== "all" && (
               <div className="flex gap-2 items-center">
-                <Button size="sm" variant="outline" onClick={() => setFilterCat("all")}>← All Categories</Button>
+                <Button size="sm" variant="outline" onClick={() => setFilterCat("all")}>← Toutes les catégories</Button>
                 <Badge variant="secondary" className="text-sm">
                   {getCategoryInfo(filterCat).icon} {getCategoryInfo(filterCat).label}
                 </Badge>
@@ -582,8 +582,8 @@ const ActivitiesMarketplace = () => {
             {filteredServices.length === 0 ? (
               <Card><CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No services found</p>
-                <p className="text-xs text-muted-foreground mt-1">Be the first to list a service!</p>
+                <p className="text-muted-foreground">Aucun service trouvé</p>
+                <p className="text-xs text-muted-foreground mt-1">Soyez le premier à proposer un service !</p>
               </CardContent></Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -603,11 +603,11 @@ const ActivitiesMarketplace = () => {
           {myProvider && (
             <TabsContent value="my-services" className="mt-4 space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{myServices.length} services listed</p>
+                <p className="text-sm text-muted-foreground">{myServices.length} services proposés</p>
                 {storefrontUrl && (
                   <Button size="sm" variant="outline" asChild>
                     <a href={storefrontUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-1" /> View Storefront
+                      <ExternalLink className="h-4 w-4 mr-1" /> Voir la vitrine
                     </a>
                   </Button>
                 )}
@@ -615,9 +615,9 @@ const ActivitiesMarketplace = () => {
               {myServices.length === 0 ? (
                 <Card><CardContent className="py-12 text-center">
                   <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <p className="text-muted-foreground">No services yet</p>
+                  <p className="text-muted-foreground">Aucun service encore</p>
                   <Button className="mt-4" onClick={() => setServiceFormOpen(true)}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Your First Service
+                    <Plus className="h-4 w-4 mr-1" /> Ajouter votre premier service
                   </Button>
                 </CardContent></Card>
               ) : (
@@ -737,13 +737,13 @@ const ActivitiesMarketplace = () => {
           <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Revenue Details
+                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Détail des Revenus
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {/* Currency Selector */}
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Display in:</span>
+                <span className="text-sm text-muted-foreground">Afficher en :</span>
                 <Select value={displayCurrency} onValueChange={setDisplayCurrency}>
                   <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -756,14 +756,14 @@ const ActivitiesMarketplace = () => {
 
               {/* Total */}
               <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
-                <p className="text-xs text-muted-foreground uppercase">Total Revenue</p>
+                <p className="text-xs text-muted-foreground uppercase">Revenu Total</p>
                 <p className="text-3xl font-bold text-foreground tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
               </div>
 
               {/* Breakdown by currency */}
               {Object.keys(revenueByCurrency).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">By Original Currency</p>
+                  <p className="text-sm font-medium text-foreground">Par devise d'origine</p>
                   {Object.entries(revenueByCurrency).map(([cur, amount]) => (
                     <div key={cur} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
                       <div>
@@ -788,7 +788,7 @@ const ActivitiesMarketplace = () => {
               {/* Transactions */}
               {paidBookings.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">Paid Transactions ({paidBookings.length})</p>
+                  <p className="text-sm font-medium text-foreground">Transactions payées ({paidBookings.length})</p>
                   {paidBookings.map((b: any) => {
                     const svc = myServices.find((s: any) => s.id === b.service_id);
                     return (
@@ -812,7 +812,7 @@ const ActivitiesMarketplace = () => {
               )}
 
               {Object.keys(revenueByCurrency).length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-6">No confirmed payments yet</p>
+                <p className="text-center text-muted-foreground text-sm py-6">Aucun paiement confirmé pour le moment</p>
               )}
             </div>
           </DialogContent>

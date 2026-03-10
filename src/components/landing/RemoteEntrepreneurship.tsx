@@ -6,7 +6,7 @@
 import { motion } from "framer-motion";
 import { Globe, MapPin, ArrowRight, Wifi, Laptop } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import { useI18n } from "@/lib/i18n";
 const cities = [
   { flag: "🇫🇷", city: "Paris", service: "Cleaning services", link: "/city/paris" },
   { flag: "🇹🇭", city: "Phuket", service: "Car rental", link: "/city/phuket" },
@@ -17,6 +17,7 @@ const cities = [
 ];
 
 const RemoteEntrepreneurship = () => {
+  const { t } = useI18n();
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
       {/* Grid pattern */}
@@ -40,16 +41,16 @@ const RemoteEntrepreneurship = () => {
               style={{ color: "hsl(var(--gold-light))", background: "hsl(var(--accent) / 0.1)", borderColor: "hsl(var(--accent) / 0.25)" }}
             >
               <Wifi className="h-3.5 w-3.5" />
-              Remote Entrepreneurship
+              {t("landing.remote.badge") || "Remote Entrepreneurship"}
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(var(--primary-foreground))" }}>
-              Manage Operations in{" "}
-              <span className="text-gradient-gold">Multiple Cities</span>
+              {t("landing.remote.title_1") || "Manage Operations in"}{" "}
+              <span className="text-gradient-gold">{t("landing.remote.title_hl") || "Multiple Cities"}</span>
               <br />
-              From Anywhere
+              {t("landing.remote.title_2") || "From Anywhere"}
             </h2>
             <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
-              Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide.
+              {t("landing.remote.desc") || "Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -63,8 +64,8 @@ const RemoteEntrepreneurship = () => {
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Create Your Business
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                   {t("landing.remote.cta_create") || "Create Your Business"}
+                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </Link>
@@ -77,7 +78,7 @@ const RemoteEntrepreneurship = () => {
                 }}
               >
                 <Globe className="h-4 w-4" />
-                Explore Marketplace
+                {t("landing.remote.cta_explore") || "Explore Marketplace"}
               </Link>
             </div>
           </motion.div>
@@ -133,9 +134,9 @@ const RemoteEntrepreneurship = () => {
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-5"
         >
           {[
-            { step: "01", icon: Laptop, title: "Create Your Services", desc: "Set up cleaning, transport, activities or any service in the cities you want to operate." },
-            { step: "02", icon: Globe, title: "Manage Remotely", desc: "Handle bookings, payments, and client communication from anywhere with internet." },
-            { step: "03", icon: MapPin, title: "Scale to New Cities", desc: "Expand your business to new locations without physical presence. Add cities in minutes." },
+            { step: "01", icon: Laptop, title: t("landing.remote.step1") || "Create Your Services", desc: t("landing.remote.step1_desc") || "Set up cleaning, transport, activities or any service in the cities you want to operate." },
+            { step: "02", icon: Globe, title: t("landing.remote.step2") || "Manage Remotely", desc: t("landing.remote.step2_desc") || "Handle bookings, payments, and client communication from anywhere with internet." },
+            { step: "03", icon: MapPin, title: t("landing.remote.step3") || "Scale to New Cities", desc: t("landing.remote.step3_desc") || "Expand your business to new locations without physical presence. Add cities in minutes." },
           ].map((s, i) => (
             <div
               key={s.step}
