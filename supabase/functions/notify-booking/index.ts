@@ -181,6 +181,8 @@ serve(async (req) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(booking_request_id)) throw new Error("Invalid booking_request_id format");
 
+    const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY") || "";
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -188,7 +190,6 @@ serve(async (req) => {
     );
 
     // Security: verify the booking was created very recently (within 2 minutes)
-    // This prevents abuse by requiring the caller to have just created the booking
     const { data: recentCheck } = await supabase
       .from("booking_requests")
       .select("id, created_at, notified_at")
@@ -202,20 +203,6 @@ serve(async (req) => {
         JSON.stringify({ error: "Unauthorized: booking not found or already notified" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
       );
-    }
-
-    // Idempotency check: skip if notification was already sent for this booking
-    const { data: existing } = await supabase
-      .from("notifications")
-      .select("id")
-      .eq("type", "info")
-      .ilike("message", `%${booking_request_id}%`)
-      .limit(1);
-    if (existing && existing.length > 0) {
-      return new Response(JSON.stringify({ skipped: true, reason: "already_notified" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
     }
 
     const { data: br, error: brErr } = await supabase
@@ -242,7 +229,7 @@ serve(async (req) => {
 
     const { data: listing } = await supabase
       .from("public_listings")
-      .select("title, price_per_night, slug")
+      .select("title, price_per_night, slug, contact_email")
       .eq("id", br.listing_id)
       .single();
 
@@ -273,8 +260,134 @@ serve(async (req) => {
     const mainPhoto = photoUrls.length > 0 ? photoUrls[0] : "";
     const listingUrl = listing?.slug ? `https://www.easy-locs.com/listing/${listing.slug}` : "";
 
-    // Deep-link to owner's seasonal page with booking focus — uses standard format
+    // Deep-link to owner's seasonal page with booking focus
     const ownerDeepLink = `/dashboard/seasonal?booking=${br.id}`;
+    const appBaseUrl = "https://easy-locs.lovable.app";
+
+    // Escape all user-supplied values for safe HTML embedding
+    const safeGuestName = esc(br.guest_name);
+    const safeGuestEmail = esc(br.guest_email);
+    const safeGuestPhone = esc(br.guest_phone);
+    const safeMessage = esc(br.message);
+    const safePropertyLabel = esc(propertyLabel);
+
+    const photoBlock = mainPhoto
+      ? `<div style="text-align:center;margin-bottom:20px;">
+          <img src="${mainPhoto}" alt="${safePropertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
+        </div>`
+      : "";
+
+    const listingBlock = listingUrl
+      ? `<p style="text-align:center;margin:8px 0 16px;">
+          <a href="${listingUrl}" style="color:#2563eb;font-size:13px;text-decoration:underline;">${t.viewListing}</a>
+        </p>`
+      : "";
+
+    // ═══════════════════════════════════════════════════════
+    // 1. OWNER NOTIFICATION (in-app) — always created
+    // ═══════════════════════════════════════════════════════
+    if (org?.owner_user_id) {
+      const notifMeta = {
+        target_type: "booking_request",
+        target_id: br.id,
+        booking_id: br.id,
+        country_code: property?.country || "",
+        org_id: br.org_id,
+        target_url: ownerDeepLink,
+        module: "seasonal",
+      };
+
+      try {
+        await supabase.from("notifications").insert({
+          user_id: org.owner_user_id,
+          org_id: br.org_id,
+          type: "info",
+          title: tpl(t.ownerSubject, { guest: safeGuestName }),
+          message: `${safeGuestName} wants to book "${safePropertyLabel}" from ${br.check_in} to ${br.check_out} (${nights} ${nightsWord}).`,
+          link: ownerDeepLink,
+          metadata_json: notifMeta,
+        });
+        console.log("[notify-booking] ✓ Owner notification created");
+      } catch (e) {
+        console.error("[notify-booking] Owner notification failed:", e);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 2. COMMUNICATION CENTER — create message thread
+    // ═══════════════════════════════════════════════════════
+    try {
+      const messageContent = br.message
+        ? `${safeGuestName} wants to book "${safePropertyLabel}" from ${br.check_in} to ${br.check_out} (${nights} ${nightsWord}).\n\nMessage: ${esc(br.message)}\n\n[Booking: ${br.id}]`
+        : `${safeGuestName} wants to book "${safePropertyLabel}" from ${br.check_in} to ${br.check_out} (${nights} ${nightsWord}).\n\n[Booking: ${br.id}]`;
+
+      await supabase.from("messages").insert({
+        org_id: br.org_id,
+        sender_id: null,
+        content: messageContent,
+        category: "booking",
+        read: false,
+        context_type: "seasonal_booking",
+        context_id: br.id,
+        contact_name: br.guest_name,
+        contact_email: br.guest_email,
+      });
+      console.log("[notify-booking] ✓ Communication center message created");
+    } catch (e) {
+      console.error("[notify-booking] Comm center message failed:", e);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 3. OWNER EMAIL — resolve email from listing or org
+    // ═══════════════════════════════════════════════════════
+    const ownerEmail = (listing as any)?.contact_email || org?.email;
+    if (ownerEmail && SENDGRID_API_KEY) {
+      try {
+        const ownerManageUrl = `${appBaseUrl}${ownerDeepLink}`;
+        await fetch("https://api.sendgrid.com/v3/mail/send", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${SENDGRID_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: ownerEmail }] }],
+            from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
+            subject: tpl(t.ownerSubject, { guest: br.guest_name }),
+            content: [{
+              type: "text/html",
+              value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+                <div style="text-align:center;margin-bottom:24px;">
+                  <h1 style="color:#1a1a1a;font-size:22px;">${t.ownerTitle}</h1>
+                </div>
+                ${photoBlock}
+                <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">
+                  <tr><td style="padding:10px 12px;color:#888;">${t.traveler}</td><td style="padding:10px 12px;font-weight:600;">${safeGuestName}</td></tr>
+                  <tr><td style="padding:10px 12px;color:#888;">${t.email}</td><td style="padding:10px 12px;">${safeGuestEmail}</td></tr>
+                  ${br.guest_phone ? `<tr><td style="padding:10px 12px;color:#888;">${t.phone}</td><td style="padding:10px 12px;">${safeGuestPhone}</td></tr>` : ""}
+                  <tr><td style="padding:10px 12px;color:#888;">${t.property}</td><td style="padding:10px 12px;">${safePropertyLabel}</td></tr>
+                  <tr><td style="padding:10px 12px;color:#888;">${t.arrival}</td><td style="padding:10px 12px;font-weight:600;">${br.check_in}</td></tr>
+                  <tr><td style="padding:10px 12px;color:#888;">${t.departure}</td><td style="padding:10px 12px;font-weight:600;">${br.check_out}</td></tr>
+                  <tr><td style="padding:10px 12px;color:#888;">${t.duration}</td><td style="padding:10px 12px;">${nights} ${nightsWord}</td></tr>
+                  ${totalPrice > 0 ? `<tr><td style="padding:10px 12px;color:#888;">${t.total}</td><td style="padding:10px 12px;font-weight:700;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>` : ""}
+                  ${br.message ? `<tr><td style="padding:10px 12px;color:#888;">${t.message}</td><td style="padding:10px 12px;">${safeMessage}</td></tr>` : ""}
+                </table>
+                <div style="text-align:center;margin:24px 0;">
+                  <a href="${ownerManageUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">${t.manageBtn}</a>
+                </div>
+                <p style="text-align:center;color:#aaa;font-size:11px;margin-top:32px;">${t.footer}</p>
+              </div>`,
+            }],
+          }),
+        });
+        console.log("[notify-booking] ✓ Owner email sent to", ownerEmail);
+      } catch (e) {
+        console.error("[notify-booking] Owner email failed:", e);
+      }
+    } else {
+      console.warn("[notify-booking] No owner email available or SENDGRID_API_KEY missing. ownerEmail:", ownerEmail, "SENDGRID:", !!SENDGRID_API_KEY);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 4. GUEST EMAIL (localized confirmation + payment link)
+    // ═══════════════════════════════════════════════════════
 
     // Generate payment link
     let paymentUrl = "";
@@ -305,33 +418,6 @@ serve(async (req) => {
       }
     }
 
-    // Escape all user-supplied values for safe HTML embedding
-    const safeGuestName = esc(br.guest_name);
-    const safeGuestEmail = esc(br.guest_email);
-    const safeGuestPhone = esc(br.guest_phone);
-    const safeMessage = esc(br.message);
-    const safePropertyLabel = esc(propertyLabel);
-
-    const photoBlock = mainPhoto
-      ? `<div style="text-align:center;margin-bottom:20px;">
-          <img src="${mainPhoto}" alt="${safePropertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:300px;object-fit:cover;" />
-        </div>`
-      : "";
-
-    const listingBlock = listingUrl
-      ? `<p style="text-align:center;margin:8px 0 16px;">
-          <a href="${listingUrl}" style="color:#2563eb;font-size:13px;text-decoration:underline;">${t.viewListing}</a>
-        </p>`
-      : "";
-
-    // Build app base URL dynamically
-    const appBaseUrl = "https://easy-locs.lovable.app";
-
-    // Owner notification + communication thread is now handled by
-    // dispatchSyncEvent("booking_request") in the client (sync engine).
-    // This edge function only handles guest-facing email + payment link.
-
-    // 2. Email to guest (localized)
     if (br.guest_email && SENDGRID_API_KEY) {
       const paymentSection = paymentUrl
         ? `<div style="text-align:center;margin:24px 0;">
@@ -371,9 +457,9 @@ serve(async (req) => {
           }],
         }),
       });
+      console.log("[notify-booking] ✓ Guest email sent to", br.guest_email);
     }
 
-    // Do not expose payment_url to the caller to prevent leakage
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
