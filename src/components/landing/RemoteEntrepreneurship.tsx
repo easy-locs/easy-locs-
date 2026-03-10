@@ -41,16 +41,16 @@ const RemoteEntrepreneurship = () => {
               style={{ color: "hsl(var(--gold-light))", background: "hsl(var(--accent) / 0.1)", borderColor: "hsl(var(--accent) / 0.25)" }}
             >
               <Wifi className="h-3.5 w-3.5" />
-              Remote Entrepreneurship
+              {t("landing.remote.badge") || "Remote Entrepreneurship"}
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(var(--primary-foreground))" }}>
-              Manage Operations in{" "}
-              <span className="text-gradient-gold">Multiple Cities</span>
+              {t("landing.remote.title_1") || "Manage Operations in"}{" "}
+              <span className="text-gradient-gold">{t("landing.remote.title_hl") || "Multiple Cities"}</span>
               <br />
-              From Anywhere
+              {t("landing.remote.title_2") || "From Anywhere"}
             </h2>
             <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
-              Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide.
+              {t("landing.remote.desc") || "Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide."}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
