@@ -289,6 +289,7 @@ const App = () => (
               <Route path="/dashboard/candidates" element={<ProtectedRoute><CountryGuard><Candidates /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/seasonal" element={<ProtectedRoute><SeasonalRentals /></ProtectedRoute>} />
               <Route path="/dashboard/notices" element={<ProtectedRoute><CountryGuard><PaymentNotices /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/receipts" element={<ProtectedRoute><CountryGuard><Receipts /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/dunning" element={<ProtectedRoute><CountryGuard><DunningLetters /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/furniture" element={<ProtectedRoute><CountryGuard><FurnitureInventory /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/buildings" element={<ProtectedRoute><CountryGuard><Buildings /></CountryGuard></ProtectedRoute>} />
