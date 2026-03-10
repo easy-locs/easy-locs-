@@ -6,7 +6,7 @@ import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
-import ListingLocalServices from "@/components/public/ListingLocalServices";
+
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -250,15 +250,6 @@ const PublicListing = () => {
               </div>
             )}
 
-            {/* Activities & Local Services */}
-            {listing?.org_id && property && (
-              <ListingLocalServices
-                orgId={listing.org_id}
-                propertyId={property.id || ""}
-                propertyCity={property.city || ""}
-                propertyCountry={property.country || ""}
-              />
-            )}
           </div>
 
           {/* Booking form */}

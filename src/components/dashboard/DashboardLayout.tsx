@@ -94,7 +94,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Store,
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services Marketplace", path: "/dashboard/activities" },
-        { icon: MapPin, label: t("nav.local_services") || "Local Services", path: "/dashboard/local-services" },
       ],
     },
 
