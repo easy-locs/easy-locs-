@@ -291,7 +291,7 @@ const ActivitiesMarketplace = () => {
       }
     },
     onSuccess: () => {
-      toast.success("Booking request sent!");
+      toast.success("Demande de réservation envoyée !");
       setBookingService(null);
       qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
     },
