@@ -157,7 +157,7 @@ const RemoteEntrepreneurship = () => {
               <h4 className="font-bold text-sm mb-1.5" style={{ color: "hsl(var(--primary-foreground))" }}>
                 {s.title}
               </h4>
-              <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+              <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
                 {s.desc}
               </p>
             </div>
