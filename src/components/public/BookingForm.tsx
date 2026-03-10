@@ -4,6 +4,8 @@ import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import BookingAvailabilityCalendar from "./BookingAvailabilityCalendar";
+import GuestBookingReply from "./GuestBookingReply";
 
 interface Props {
   listing: any;
@@ -24,10 +26,19 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedBookingId, setSubmittedBookingId] = useState<string | null>(null);
   const [bookedDates, setBookedDates] = useState<{ check_in: string; check_out: string }[]>([]);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
-  // Load existing bookings for this property to check availability
+  // Dynamic max guests from listing/property
+  const maxGuests = useMemo(() => {
+    const fromListing = listing?.max_guests;
+    const fromProperty = property?.guest_capacity || property?.max_guests;
+    const val = fromListing || fromProperty;
+    return val && val > 0 ? val : 20;
+  }, [listing?.max_guests, property?.guest_capacity, property?.max_guests]);
+
+  // Load existing bookings for availability
   useEffect(() => {
     if (!property?.id) return;
     const loadBookings = async () => {
@@ -47,7 +58,6 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
         ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
         ...(requests || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
       ];
-      // Deduplicate
       const seen = new Set<string>();
       setBookedDates(all.filter(b => {
         const key = `${b.check_in}-${b.check_out}`;
@@ -75,12 +85,17 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }, [form.check_in, form.check_out]);
 
-  // Check min nights
   const minNightsError = nights > 0 && listing?.min_nights && nights < listing.min_nights;
-
   const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
-
   const formReady = !!listing && !!property?.id && !!form.guest_name && !!form.guest_email && !!form.check_in && !!form.check_out && !availabilityError && !minNightsError && nights > 0;
+
+  // Minimum check-out date based on min_nights
+  const minCheckOut = useMemo(() => {
+    if (!form.check_in) return new Date().toISOString().slice(0, 10);
+    const d = new Date(form.check_in);
+    d.setDate(d.getDate() + (listing?.min_nights || 1));
+    return d.toISOString().slice(0, 10);
+  }, [form.check_in, listing?.min_nights]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +121,6 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       return;
     }
 
-    // Sync engine: booking_request (owner-side: communication thread + notification)
     dispatchSyncEvent({
       type: "booking_request",
       context: {
@@ -123,7 +137,6 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       listingTitle: listing.title || property.label || "",
     }).catch(() => {});
 
-    // Guest confirmation email + payment link generation (server-side, keeps Stripe logic)
     try {
       await supabase.functions.invoke("notify-booking", {
         body: { booking_request_id: insertedRequest.id },
@@ -133,27 +146,28 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     }
 
     setSubmitting(false);
+    setSubmittedBookingId(insertedRequest.id);
     setSubmitted(true);
   };
 
   const today = new Date().toISOString().slice(0, 10);
   const updateField = (key: string, value: any) => setForm(p => ({ ...p, [key]: value }));
 
-  // Calculate min check-out based on min_nights
-  const minCheckOut = useMemo(() => {
-    if (!form.check_in || !listing?.min_nights) return form.check_in || today;
-    const d = new Date(form.check_in);
-    d.setDate(d.getDate() + (listing.min_nights || 1));
-    return d.toISOString().slice(0, 10);
-  }, [form.check_in, listing?.min_nights, today]);
-
-  if (submitted) {
+  if (submitted && submittedBookingId) {
     return (
-      <div className="text-center py-8">
-        <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{t("page.listing.request_sent_desc")}</p>
-        <p className="text-xs text-muted-foreground">{t("page.listing.awaiting_approval")}</p>
+      <div className="space-y-6">
+        <div className="text-center py-6">
+          <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
+          <p className="text-sm text-muted-foreground mb-4">{t("page.listing.request_sent_desc")}</p>
+          <p className="text-xs text-muted-foreground">{t("page.listing.awaiting_approval")}</p>
+        </div>
+        {/* Bidirectional communication thread */}
+        <GuestBookingReply
+          bookingId={submittedBookingId}
+          guestName={form.guest_name}
+          guestEmail={form.guest_email}
+        />
       </div>
     );
   }
@@ -188,22 +202,28 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
             className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-shadow" />
         </fieldset>
 
-        <div className="grid grid-cols-2 gap-3">
-          <fieldset className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_in")} *</label>
-            <input required type="date" value={form.check_in} min={today}
-              onChange={e => updateField("check_in", e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-shadow appearance-none" />
-          </fieldset>
-          <fieldset className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">{t("page.listing.check_out")} *</label>
-            <input required type="date" value={form.check_out} min={minCheckOut}
-              onChange={e => updateField("check_out", e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-shadow appearance-none" />
-          </fieldset>
+        {/* Visual availability calendars */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <BookingAvailabilityCalendar
+            label={t("page.listing.check_in")}
+            value={form.check_in}
+            onChange={(v) => {
+              updateField("check_in", v);
+              // Reset check_out if it's before new check_in
+              if (form.check_out && form.check_out <= v) updateField("check_out", "");
+            }}
+            minDate={today}
+            bookedDates={bookedDates}
+          />
+          <BookingAvailabilityCalendar
+            label={t("page.listing.check_out")}
+            value={form.check_out}
+            onChange={(v) => updateField("check_out", v)}
+            minDate={minCheckOut}
+            bookedDates={bookedDates}
+          />
         </div>
 
-        {/* Availability error */}
         {availabilityError && (
           <div className="flex items-center gap-2 bg-destructive/10 text-destructive text-xs p-3 rounded-xl">
             <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -211,7 +231,6 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
           </div>
         )}
 
-        {/* Min nights error */}
         {minNightsError && (
           <div className="flex items-center gap-2 bg-amber-500/10 text-amber-600 text-xs p-3 rounded-xl">
             <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -220,11 +239,13 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
         )}
 
         <fieldset className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">{t("page.listing.guests_count")}</label>
-          <input type="number" inputMode="numeric" min={1} max={listing.max_guests || 20}
+          <label className="text-xs font-medium text-muted-foreground">
+            {t("page.listing.guests_count")} <span className="text-muted-foreground/60">(max {maxGuests})</span>
+          </label>
+          <input type="number" inputMode="numeric" min={1} max={maxGuests}
             value={form.guests_count}
             onChange={e => {
-              const val = Math.max(1, Math.min(listing.max_guests || 20, parseInt(e.target.value) || 1));
+              const val = Math.max(1, Math.min(maxGuests, parseInt(e.target.value) || 1));
               updateField("guests_count", val);
             }}
             onFocus={e => e.target.select()}
