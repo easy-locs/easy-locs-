@@ -453,6 +453,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   )}
                 </button>
 
+                {!sectionLocked && (
                 <div
                   className={`overflow-hidden transition-all duration-200 ease-in-out ${
                     isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
