@@ -336,7 +336,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-sidebar-foreground truncate">{countryEntry.name}</p>
                 <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
-                  {t("sidebar.workspace") || "Espace de travail"}
+                  {t("sidebar.workspace") || "Workspace"}
                 </p>
               </div>
             </div>
