@@ -337,22 +337,56 @@ export default function RealEstateListings() {
                               <div className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(lead.created_at), "PPp")}</div>
                             </div>
                           </div>
-                          <div className="flex gap-1.5 shrink-0 self-end sm:self-start">
-                            {lead.status === "new" && (
-                              <Button size="sm" variant="outline" className="text-xs h-8 min-h-[36px]" onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}>
-                                Mark Contacted
-                              </Button>
-                            )}
-                            {lead.status === "contacted" && (
-                              <Button size="sm" variant="outline" className="text-xs h-8 min-h-[36px]" onClick={() => handleUpdateLeadStatus(lead.id, "qualified")}>
-                                Qualify
-                              </Button>
-                            )}
-                            {lead.status !== "closed" && (
-                              <Button size="sm" variant="ghost" className="text-xs h-8 min-h-[36px] text-muted-foreground" onClick={() => handleUpdateLeadStatus(lead.id, "closed")}>
-                                Close
-                              </Button>
-                            )}
+                          <div className="flex flex-col gap-1.5 shrink-0 self-end sm:self-start">
+                            {/* CRM Quick Actions */}
+                            <TooltipProvider delayDuration={200}>
+                              <div className="flex gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => handleReplyEmail(lead)}>
+                                      <Send className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Reply by email</TooltipContent>
+                                </Tooltip>
+                                {lead.phone && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => handleCallLead(lead)}>
+                                        <PhoneCall className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Call {lead.phone}</TooltipContent>
+                                  </Tooltip>
+                                )}
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => handleOpenConversation(lead)}>
+                                      <MessageCircle className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Open conversation</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TooltipProvider>
+                            {/* Status Actions */}
+                            <div className="flex gap-1">
+                              {lead.status === "new" && (
+                                <Button size="sm" variant="default" className="text-xs h-7 flex-1" onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}>
+                                  Mark Contacted
+                                </Button>
+                              )}
+                              {lead.status === "contacted" && (
+                                <Button size="sm" variant="outline" className="text-xs h-7 flex-1" onClick={() => handleUpdateLeadStatus(lead.id, "qualified")}>
+                                  Qualify
+                                </Button>
+                              )}
+                              {lead.status !== "closed" && (
+                                <Button size="sm" variant="ghost" className="text-xs h-7 text-muted-foreground" onClick={() => handleUpdateLeadStatus(lead.id, "closed")}>
+                                  Close
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
