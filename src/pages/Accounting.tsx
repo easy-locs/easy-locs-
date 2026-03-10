@@ -320,7 +320,7 @@ const Accounting = () => {
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="mt-6">
-                  <h4 className="text-sm font-semibold text-foreground mb-2">{t("page.accounting.net_monthly") || "Résultat net mensuel"}</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">{t("page.accounting.net_monthly") || "Monthly net result"}</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={cashflowData}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
