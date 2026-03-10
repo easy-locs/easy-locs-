@@ -226,7 +226,7 @@ const Dashboard = () => {
                 <Globe className="h-8 w-8 text-accent" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
+                {t("page.dashboard.no_properties") || "No properties or services registered"}
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
                 {t("page.dashboard.add_first_hint") || "Add your first property or create a service to get started."}
