@@ -28,6 +28,10 @@ import {
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import CountrySelect from "@/components/ui/CountrySelect";
+import MapPreview from "@/components/ui/MapPreview";
+import { getCountryConfig } from "@/lib/country-config";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
