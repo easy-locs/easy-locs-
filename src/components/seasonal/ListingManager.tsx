@@ -112,6 +112,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       title: form.title, description: form.description,
       price_per_night: form.price_per_night, min_nights: form.min_nights,
       max_guests: form.max_guests, amenities: amenities as any,
+      contact_email: form.contact_email || null,
+      contact_phone: form.contact_phone || null,
+      whatsapp_number: form.whatsapp_number || null,
+      telegram_username: form.telegram_username || null,
     } as any).eq("id", listing.id);
     if (error) {
       toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
