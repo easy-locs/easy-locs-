@@ -264,7 +264,7 @@ const DeveloperPortal = () => {
             <Card>
               <CardContent className="pt-4">
                 {apiKeys.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune clé API. Créez-en une pour commencer.</p>
+                  <p className="text-center text-muted-foreground py-8">No API keys. Create one to get started.</p>
                 ) : (
                   <div className="space-y-3">
                     {apiKeys.map(k => (
