@@ -123,7 +123,7 @@ const Collaboration = () => {
 
   const getRoleDisplay = (role: string) => {
     const config = ROLE_CONFIG[role as OrgRole];
-    if (!config) return { icon: "👤", label: role, color: "text-muted-foreground" };
+    if (!config) return { icon: "👤", label: role, labelEn: role, description: "", color: "text-muted-foreground" };
     return config;
   };
 
