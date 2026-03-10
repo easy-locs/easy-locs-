@@ -146,10 +146,18 @@ const ConciergeOperations = () => {
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
 
+  const fmtPrice = (amount: number) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} €`;
+    }
+  };
+
   const kpis = [
     { icon: Home, label: "Occupancy (30d)", value: `${avgOccupancy}%`, cls: "text-accent" },
-    { icon: DollarSign, label: "Booking Revenue", value: `${totalBookingRevenue.toLocaleString()}€`, cls: "text-emerald-500" },
-    { icon: ShoppingBag, label: "Service Revenue", value: `${totalServiceRevenue.toLocaleString()}€`, cls: "text-blue-500" },
+    { icon: DollarSign, label: "Booking Revenue", value: fmtPrice(totalBookingRevenue), cls: "text-emerald-500" },
+    { icon: ShoppingBag, label: "Service Revenue", value: fmtPrice(totalServiceRevenue), cls: "text-blue-500" },
     { icon: Plane, label: "Arrivals (7d)", value: String(upcomingArrivals.length), cls: "text-accent" },
     { icon: PlaneLanding, label: "Departures (7d)", value: String(upcomingDepartures.length), cls: "text-amber-500" },
     { icon: Clock, label: "Pending Tasks", value: String(pendingTasks), cls: "text-orange-500" },
@@ -269,7 +277,7 @@ const ConciergeOperations = () => {
                   <BarChart data={revenueData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 11 }} />
-                    <YAxis className="text-xs" tickFormatter={v => `${v}€`} />
+                    <YAxis className="text-xs" tickFormatter={v => fmtPrice(v)} />
                     <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                     <Bar dataKey="bookings" stackId="a" fill="hsl(var(--accent))" radius={[0, 0, 0, 0]} name="Bookings" />
                     <Bar dataKey="services" stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Services" />
@@ -291,7 +299,7 @@ const ConciergeOperations = () => {
                     <Pie data={serviceRevenueData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                       {serviceRevenueData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: number) => [`${v}€`]} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} formatter={(v: number) => [fmtPrice(v)]} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex flex-wrap gap-2">
@@ -299,7 +307,7 @@ const ConciergeOperations = () => {
                     <div key={d.name} className="flex items-center gap-2 text-sm">
                       <div className="w-3 h-3 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
                       <span className="text-foreground">{d.name}</span>
-                      <span className="text-muted-foreground font-medium">{d.value}€</span>
+                      <span className="text-muted-foreground font-medium">{fmtPrice(d.value)}</span>
                     </div>
                   ))}
                 </div>
@@ -327,7 +335,7 @@ const ConciergeOperations = () => {
                         <p className="text-xs text-muted-foreground">{svc?.title || "Service"} — {propName(o.property_id)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-accent">{o.total_price}€</p>
+                        <p className="text-sm font-bold text-accent">{fmtPrice(o.total_price)}</p>
                         <Badge variant="outline" className="text-[10px]">{o.payment_status}</Badge>
                       </div>
                     </div>
