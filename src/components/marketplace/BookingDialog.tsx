@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Mail, MapPin, Users, Clock } from "lucide-react";
+import { CreditCard, Mail, MapPin, Users, Clock, Upload } from "lucide-react";
 import PaymentMethodSelector, { type PaymentMethod } from "./PaymentMethodSelector";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
 
@@ -71,7 +72,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     return_time: "",
   });
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
-
+  const [idDocUrl, setIdDocUrl] = useState<string | null>(null);
+  const [idDocUploading, setIdDocUploading] = useState(false);
   const [bookedDates, setBookedDates] = useState<{ from: string; to: string }[]>([]);
 
   useEffect(() => {
@@ -137,9 +139,10 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     }));
   };
 
+  const needsDoc = !!service?.requires_id_document;
   const isValid = form.booker_name && form.booker_email && !dateOverlap &&
-    (isRange ? (form.date_from && form.date_to) : !!form.service_date);
-
+    (isRange ? (form.date_from && form.date_to) : !!form.service_date) &&
+    (!needsDoc || !!idDocUrl);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col">
@@ -191,6 +194,37 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 )}
               </div>
             </div>
+
+            {/* ID Document upload */}
+            {needsDoc && (
+              <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <Upload className="h-3 w-3" /> 🪪 ID Document Required *
+                </Label>
+                <p className="text-[11px] text-muted-foreground">This service requires a copy of your identity document (passport, ID card, or driver's license).</p>
+                <Input
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="h-9 text-sm cursor-pointer"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) { toast.error("File too large (max 10MB)"); return; }
+                    setIdDocUploading(true);
+                    try {
+                      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+                      const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
+                      const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+                      if (error) { toast.error("Upload failed: " + error.message); return; }
+                      setIdDocUrl(path);
+                      toast.success("ID document uploaded");
+                    } finally { setIdDocUploading(false); }
+                  }}
+                />
+                {idDocUploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
+                {idDocUrl && !idDocUploading && <p className="text-xs text-accent">✓ Document uploaded</p>}
+              </div>
+            )}
 
             {/* Passengers */}
             {config.showPassengers && (

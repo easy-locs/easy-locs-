@@ -187,6 +187,20 @@ const Hero = () => {
                 {t("landing.hero.cta_explore") || "Explore Listings"}
               </Link>
             </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/dashboard/seasonal"
+                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
+                style={{
+                  borderColor: "hsl(var(--accent) / 0.25)",
+                  color: "hsl(var(--accent))",
+                  background: "hsl(var(--accent) / 0.08)",
+                }}
+              >
+                <Building2 className="h-4 w-4 opacity-70" />
+                {t("landing.hero.cta_publish") || "Publish a Listing"}
+              </Link>
+            </motion.div>
           </motion.div>
 
           {/* ─── Trust stats ─── */}
@@ -241,7 +255,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
@@ -251,7 +265,7 @@ const Hero = () => {
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105"
+                    className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105 w-full"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",
@@ -259,7 +273,7 @@ const Hero = () => {
                     }}
                   >
                     <span>{dest.flag}</span>
-                    <span>{dest.name}</span>
+                    <span className="truncate">{dest.name}</span>
                   </Link>
                 </motion.div>
               ))}
@@ -273,17 +287,17 @@ const Hero = () => {
             transition={{ delay: 1.4, duration: 0.6 }}
             className="pt-2"
           >
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-6 text-[11px] font-medium" style={{ color: "hsl(220 15% 55%)" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 items-center justify-center gap-2 sm:gap-4 text-[11px] font-medium max-w-lg mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
               {[
-                { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management" },
-                { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings" },
-                { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace" },
-                { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics" },
+                { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management", to: "/property-management" },
+                { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings", to: "/explore" },
+                { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace", to: "/marketplace-services" },
+                { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics", to: "/signup" },
               ].map((vp) => (
-                <span key={vp.text} className="inline-flex items-center gap-1.5 justify-center">
+                <Link key={vp.text} to={vp.to} className="inline-flex items-center gap-1.5 justify-center hover:text-accent transition-colors">
                   <vp.icon className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
                   <span className="truncate">{vp.text}</span>
-                </span>
+                </Link>
               ))}
             </div>
           </motion.div>
