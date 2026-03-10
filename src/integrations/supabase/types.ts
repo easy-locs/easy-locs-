@@ -1991,6 +1991,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          assigned_to: string | null
           attachment_url: string | null
           booking_id: string | null
           booking_type: string | null
@@ -1998,6 +1999,8 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           content: string
+          context_id: string | null
+          context_type: string | null
           conversation_status: string | null
           created_at: string
           delivered: boolean | null
@@ -2016,6 +2019,7 @@ export type Database = {
           translated_locale: string | null
         }
         Insert: {
+          assigned_to?: string | null
           attachment_url?: string | null
           booking_id?: string | null
           booking_type?: string | null
@@ -2023,6 +2027,8 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           content: string
+          context_id?: string | null
+          context_type?: string | null
           conversation_status?: string | null
           created_at?: string
           delivered?: boolean | null
@@ -2041,6 +2047,7 @@ export type Database = {
           translated_locale?: string | null
         }
         Update: {
+          assigned_to?: string | null
           attachment_url?: string | null
           booking_id?: string | null
           booking_type?: string | null
@@ -2048,6 +2055,8 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           content?: string
+          context_id?: string | null
+          context_type?: string | null
           conversation_status?: string | null
           created_at?: string
           delivered?: boolean | null

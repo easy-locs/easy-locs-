@@ -42,6 +42,10 @@ export async function sendCommunicationEvent(event: CommunicationEvent): Promise
       category: event.category || "general",
       attachment_url: event.attachmentUrl || null,
       read: false,
+      context_type: event.meta.target_type || "general",
+      context_id: event.meta.target_id || null,
+      contact_name: event.recipientEmail ? undefined : undefined,
+      contact_email: event.recipientEmail || null,
     } as any);
     results.message = true;
   } catch (e) {

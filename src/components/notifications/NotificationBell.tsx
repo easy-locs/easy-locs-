@@ -21,6 +21,7 @@ const MODULE_LABELS: Record<AppModule, { label: string; color: string }> = {
   long_term: { label: "🏠", color: "bg-blue-500/10 text-blue-600" },
   seasonal: { label: "🏖️", color: "bg-amber-500/10 text-amber-600" },
   marketplace: { label: "🎯", color: "bg-emerald-500/10 text-emerald-600" },
+  real_estate: { label: "🏡", color: "bg-purple-500/10 text-purple-600" },
 };
 
 function getHumanActionLabel(n: any, t: (k: string) => string): string | null {

@@ -30,8 +30,10 @@ const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 
 /* ────── Types ────── */
 interface ConversationThread {
-  id: string; // tenant_id or booking_id
-  type: "tenant" | "booking";
+  id: string; // tenant_id or booking_id or lead_id
+  type: "tenant" | "booking" | "lead";
+  contextType: string; // unified context: tenant, seasonal_booking, marketplace_booking, concierge_booking, real_estate_lead, etc.
+  contextId: string; // actual record ID
   name: string;
   email: string | null;
   phone?: string | null;
@@ -48,6 +50,10 @@ interface ConversationThread {
   lastMessage?: string;
   lastMessageTime?: string;
   tenantId?: string;
+  leadId?: string;
+  listingTitle?: string;
+  listingType?: string;
+  assignedTo?: string;
 }
 
 interface Message {
@@ -80,6 +86,7 @@ const MESSAGE_CATEGORIES = [
   { value: "lease", label: "📝 Bail", icon: "📝" },
   { value: "maintenance", label: "🔧 Maintenance", icon: "🔧" },
   { value: "legal", label: "⚖️ Juridique", icon: "⚖️" },
+  { value: "real_estate", label: "🏠 Immobilier", icon: "🏠" },
 ];
 
 const CONV_STATUSES = [
@@ -156,6 +163,8 @@ const CommunicationCenter = () => {
         threadMap.set(`tenant-${t.id}`, {
           id: `tenant-${t.id}`,
           type: "tenant",
+          contextType: "tenant",
+          contextId: t.id,
           name: t.name,
           email: t.email,
           tenantId: t.id,
@@ -191,6 +200,8 @@ const CommunicationCenter = () => {
         threadMap.set(`booking-${b.id}`, {
           id: `booking-${b.id}`,
           type: "booking",
+          contextType: "marketplace_booking",
+          contextId: b.id,
           name: b.booker_name || "Client",
           email: b.booker_email || null,
           phone: b.booker_phone,
@@ -228,6 +239,8 @@ const CommunicationCenter = () => {
         threadMap.set(`booking-${o.id}`, {
           id: `booking-${o.id}`,
           type: "booking",
+          contextType: "concierge_booking",
+          contextId: o.id,
           name: o.guest_name || "Client",
           email: o.guest_email || null,
           phone: o.guest_phone,
@@ -262,6 +275,8 @@ const CommunicationCenter = () => {
         threadMap.set(`booking-${b.id}`, {
           id: `booking-${b.id}`,
           type: "booking",
+          contextType: "seasonal_booking",
+          contextId: b.id,
           name: b.guest_name || "Guest",
           email: b.guest_email || null,
           phone: b.guest_phone,
@@ -276,17 +291,62 @@ const CommunicationCenter = () => {
       }
     }
 
-    // 5. Load message metadata (unread counts + last messages)
+    // 5. Load real estate leads as conversation threads
+    const { data: reLeads } = await supabase
+      .from("real_estate_leads")
+      .select("id, name, email, phone, status, message, listing_id, created_at")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (reLeads?.length) {
+      const listingIds = [...new Set(reLeads.map(l => l.listing_id).filter(Boolean))];
+      let listingMap: Record<string, { title: string; listing_type: string; country: string }> = {};
+      if (listingIds.length > 0) {
+        const { data: listings } = await supabase
+          .from("real_estate_listings")
+          .select("id, title, listing_type, country")
+          .in("id", listingIds);
+        if (listings) listingMap = Object.fromEntries(listings.map(l => [l.id, { title: l.title, listing_type: l.listing_type, country: l.country || "" }]));
+      }
+      for (const lead of reLeads) {
+        const listing = lead.listing_id ? listingMap[lead.listing_id] : null;
+        threadMap.set(`lead-${lead.id}`, {
+          id: `lead-${lead.id}`,
+          type: "lead",
+          contextType: "real_estate_lead",
+          contextId: lead.id,
+          name: lead.name || "Visitor",
+          email: lead.email || null,
+          phone: lead.phone,
+          leadId: lead.id,
+          listingTitle: listing?.title,
+          listingType: listing?.listing_type,
+          propertyCountry: listing?.country,
+          bookingStatus: lead.status,
+          unreadCount: 0,
+          lastMessage: lead.message || undefined,
+          lastMessageTime: lead.created_at,
+        });
+      }
+    }
+
+    // 6. Load message metadata (unread counts + last messages)
     const { data: allMsgs } = await supabase
       .from("messages")
-      .select("tenant_id, booking_id, content, created_at, read, sender_id")
+      .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(1000);
 
     if (allMsgs) {
       for (const m of allMsgs) {
-        const key = m.booking_id ? `booking-${m.booking_id}` : m.tenant_id ? `tenant-${m.tenant_id}` : null;
+        // Try context-based key first, then legacy
+        const ctxKey = (m as any).context_type && (m as any).context_id
+          ? `${(m as any).context_type === "real_estate_lead" ? "lead" : (m as any).context_type === "tenant" ? "tenant" : "booking"}-${(m as any).context_id}`
+          : null;
+        const legacyKey = m.booking_id ? `booking-${m.booking_id}` : m.tenant_id ? `tenant-${m.tenant_id}` : null;
+        const key = ctxKey || legacyKey;
         if (!key) continue;
         const thread = threadMap.get(key);
         if (!thread) continue;
@@ -335,7 +395,10 @@ const CommunicationCenter = () => {
       .eq("org_id", orgId)
       .order("created_at", { ascending: true });
 
-    if (selectedThread.type === "booking" && selectedThread.bookingId) {
+    // Use context-based query for leads, legacy for others
+    if (selectedThread.type === "lead" && selectedThread.leadId) {
+      query = query.eq("context_type", "real_estate_lead").eq("context_id", selectedThread.leadId);
+    } else if (selectedThread.type === "booking" && selectedThread.bookingId) {
       query = query.eq("booking_id", selectedThread.bookingId);
     } else if (selectedThread.tenantId) {
       query = query.eq("tenant_id", selectedThread.tenantId).is("booking_id", null);
@@ -508,16 +571,18 @@ const CommunicationCenter = () => {
         tenant_id: selectedThread.tenantId || null,
         booking_id: selectedThread.bookingId || null,
         booking_type: selectedThread.bookingType || null,
-        contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
-        contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
+        contact_name: selectedThread.type !== "tenant" ? selectedThread.name : null,
+        contact_email: selectedThread.type !== "tenant" ? selectedThread.email : null,
         content,
         translated_content: translatedContent,
-        category,
+        category: selectedThread.type === "lead" ? "real_estate" : category,
         sender_locale: senderLocale,
         read: false,
         message_type: "user",
         property_id: selectedThread.propertyId || null,
         conversation_status: "waiting_tenant",
+        context_type: selectedThread.contextType,
+        context_id: selectedThread.contextId,
       } as any);
 
       setNewMessage("");
@@ -843,20 +908,23 @@ const CommunicationCenter = () => {
   /* ────── Filters ────── */
   const filteredThreads = useMemo(() =>
     threads
-      .filter(t => filterType === "all" || t.type === filterType || t.bookingType === filterType)
+      .filter(t => filterType === "all" || t.type === filterType || t.bookingType === filterType || (filterType === "lead" && t.type === "lead"))
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.propertyLabel?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.serviceTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.bookingId?.includes(searchQuery)
+        t.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.bookingId?.includes(searchQuery) ||
+        t.leadId?.includes(searchQuery)
       ),
     [threads, filterType, searchQuery]
   );
 
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
-  const getBookingTypeBadge = (type?: string) => {
-    switch (type) {
+  const getBookingTypeBadge = (thread: ConversationThread) => {
+    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏡 Real Estate</Badge>;
+    switch (thread.bookingType) {
       case "marketplace": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🛍️ Marketplace</Badge>;
       case "concierge": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🎯 Concierge</Badge>;
       case "seasonal": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏖️ Seasonal</Badge>;
@@ -916,6 +984,7 @@ const CommunicationCenter = () => {
                 {[
                   { value: "all", label: "All" },
                   { value: "tenant", label: "🏠 Tenants" },
+                  { value: "lead", label: "🏡 Leads" },
                   { value: "marketplace", label: "🛍️ Market" },
                   { value: "concierge", label: "🎯 Concierge" },
                   { value: "seasonal", label: "🏖️ Seasonal" },
@@ -953,10 +1022,12 @@ const CommunicationCenter = () => {
                     <div className="flex items-start gap-3">
                       <div className="relative">
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                          thread.type === "booking" ? "bg-accent/10" : "bg-primary/10"
+                          thread.type === "booking" ? "bg-accent/10" : thread.type === "lead" ? "bg-emerald-500/10" : "bg-primary/10"
                         }`}>
                           {thread.type === "booking" ? (
                             <Hash className="h-4 w-4 text-accent" />
+                          ) : thread.type === "lead" ? (
+                            <Building className="h-4 w-4 text-emerald-600" />
                           ) : (
                             <User className="h-4 w-4 text-primary" />
                           )}
@@ -979,12 +1050,12 @@ const CommunicationCenter = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          {thread.type === "booking" && getBookingTypeBadge(thread.bookingType)}
+                          {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
                           {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
                           {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
+                          {thread.listingTitle || thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
                         </p>
                         {thread.lastMessage && (
                           <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
@@ -1017,8 +1088,9 @@ const CommunicationCenter = () => {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">{selectedThread.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {selectedThread.type === "booking" && getBookingTypeBadge(selectedThread.bookingType)}
+                        {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
                         {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
+                        {selectedThread.listingTitle && <span className="truncate">{selectedThread.listingTitle}</span>}
                         {selectedThread.serviceTitle && <span className="truncate">{selectedThread.serviceTitle}</span>}
                         {selectedThread.propertyLabel && <span className="truncate">{selectedThread.propertyLabel}</span>}
                       </div>
@@ -1268,7 +1340,7 @@ const CommunicationCenter = () => {
                         <div className="space-y-2 mb-4">
                           <h4 className="text-xs font-semibold text-foreground">Booking</h4>
                           <div className="flex items-center gap-2">
-                            {getBookingTypeBadge(selectedThread.bookingType)}
+                            {getBookingTypeBadge(selectedThread)}
                             {getStatusBadge(selectedThread.bookingStatus)}
                           </div>
                           {selectedThread.bookingId && (

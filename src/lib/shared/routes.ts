@@ -23,6 +23,9 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   marketplace_service: { landlord: "/dashboard/activities" },
   concierge_order:     { landlord: "/dashboard/concierge" },
   concierge_service:   { landlord: "/dashboard/concierge" },
+  // Real Estate
+  real_estate_lead:    { landlord: "/dashboard/real-estate?tab=leads" },
+  real_estate_listing: { landlord: "/dashboard/real-estate" },
   // General
   message:             { landlord: "/dashboard/communication",   tenant: "/tenant/messages" },
 };
