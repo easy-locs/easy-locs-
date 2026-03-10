@@ -85,8 +85,31 @@ export default function Explore() {
         supabase.rpc("get_public_marketplace_services", {}),
       ]);
       setRealEstate((reRes.data || []) as RealEstateListing[]);
-      setSeasonal((seaRes.data || []) as SeasonalListing[]);
       setServices((svcRes.data || []) as ServiceListing[]);
+
+      // Enrich seasonal listings with property data (city, country, photo)
+      const rawListings = (seaRes.data || []) as any[];
+      const propertyIds = [...new Set(rawListings.map(l => l.property_id))];
+      let propMap: Record<string, any> = {};
+      if (propertyIds.length > 0) {
+        const { data: props } = await supabase
+          .from("properties")
+          .select("id, city, country, photo_urls")
+          .in("id", propertyIds);
+        if (props) {
+          for (const p of props) propMap[p.id] = p;
+        }
+      }
+      setSeasonal(rawListings.map(l => {
+        const prop = propMap[l.property_id];
+        const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
+        return {
+          ...l,
+          city: prop?.city || "",
+          country: prop?.country || "",
+          cover_url: photos[0] || null,
+        };
+      }));
       setLoading(false);
     };
     load();
