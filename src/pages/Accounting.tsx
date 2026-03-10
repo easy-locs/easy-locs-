@@ -233,8 +233,8 @@ const Accounting = () => {
                   <Input placeholder="Notes" value={newEntry.notes} onChange={e => setNewEntry(p => ({ ...p, notes: e.target.value }))} />
                   {/* Show fiscal info */}
                   <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-                    <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Infos fiscales"} — {activeRules.country}</p>
-                    {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Taux forfaitaire"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
+                    <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Fiscal info"} — {activeRules.country}</p>
+                    {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Flat tax rate"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
                     {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Progressive taxation"}</p>}
                     {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exempt from rental income tax"}</p>}
                     {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Social charges"}: {activeRules.socialCharges}%</p>}
