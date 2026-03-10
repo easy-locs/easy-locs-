@@ -191,6 +191,25 @@ export default function RealEstateListings() {
     toast({ title: `Lead marked as ${status}` });
   };
 
+  const navigate = useNavigate();
+
+  const handleReplyEmail = (lead: Lead) => {
+    const listing = listings.find(l => l.id === lead.listing_id);
+    const subject = encodeURIComponent(`Re: ${listing?.title || "Property inquiry"}`);
+    const body = encodeURIComponent(`Hello ${lead.name},\n\nThank you for your interest in "${listing?.title || "our property"}".\n\n`);
+    window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, "_blank");
+    if (lead.status === "new") handleUpdateLeadStatus(lead.id, "contacted");
+  };
+
+  const handleCallLead = (lead: Lead) => {
+    if (lead.phone) window.open(`tel:${lead.phone}`, "_self");
+  };
+
+  const handleOpenConversation = (lead: Lead) => {
+    const listing = listings.find(l => l.id === lead.listing_id);
+    navigate(`/dashboard/messages?contact=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name)}&context=${encodeURIComponent(listing?.title || "Property inquiry")}`);
+  };
+
   const copyLink = (slug: string) => {
     const url = buildAppUrl(`/properties/${slug}`);
     navigator.clipboard.writeText(url);
