@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -27,10 +28,8 @@ const Login = () => {
 
   const redirectAfterLogin = useCallback(async (knownUserId?: string) => {
     if (hasRedirected.current) return;
-
     const userId = knownUserId ?? (await waitForAuthenticatedUser())?.id;
     if (!userId) return;
-
     const route = await getPostLoginRoute(userId);
     hasRedirected.current = true;
     navigate(route, { replace: true });
@@ -73,10 +72,7 @@ const Login = () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: buildAppUrl("/login?otp=1"),
-      },
+      options: { shouldCreateUser: false, emailRedirectTo: buildAppUrl("/login?otp=1") },
     });
     setLoading(false);
     if (error) {
@@ -103,24 +99,38 @@ const Login = () => {
     }
   };
 
+  const inputClass = "w-full bg-background border border-border rounded-xl pl-10 pr-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
+
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
       <SEOHead title="Login — Easy-Locs" description="Sign in to your Easy-Locs account." noindex />
       <AuthBrand />
 
-      <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+        className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full border border-border/50"
+      >
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("auth.login.title")}</h1>
         <p className="text-muted-foreground text-sm mb-6">{t("auth.login.subtitle")}</p>
 
-        <div className="flex gap-1 bg-muted/50 rounded-lg p-1 mb-6">
-          <button type="button" onClick={() => { setMode("password"); setOtpSent(false); setOtp(""); }}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${mode === "password" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <Lock className="h-3.5 w-3.5" /> {t("auth.login.password_tab")}
-          </button>
-          <button type="button" onClick={() => { setMode("otp"); setOtpSent(false); setOtp(""); }}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${mode === "otp" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <Sparkles className="h-3.5 w-3.5" /> {t("auth.login.otp_tab")}
-          </button>
+        {/* Tabs */}
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
+          {(["password", "otp"] as const).map((m) => (
+            <motion.button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); setOtpSent(false); setOtp(""); }}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              whileTap={{ scale: 0.97 }}
+            >
+              {m === "password" ? <Lock className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+              {m === "password" ? t("auth.login.password_tab") : t("auth.login.otp_tab")}
+            </motion.button>
+          ))}
         </div>
 
         {mode === "password" && (
@@ -130,7 +140,7 @@ const Login = () => {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" placeholder={t("auth.login.placeholder_email")} />
+                  className={inputClass} placeholder={t("auth.login.placeholder_email")} />
               </div>
             </div>
             <div>
@@ -138,15 +148,23 @@ const Login = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  className={`${inputClass} pr-10`} placeholder="••••••••" />
+                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50">
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm relative overflow-hidden"
+              style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.submit")}
-            </button>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+            </motion.button>
           </form>
         )}
 
@@ -157,45 +175,63 @@ const Login = () => {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" placeholder={t("auth.login.placeholder_email")} />
+                  className={inputClass} placeholder={t("auth.login.placeholder_email")} />
               </div>
             </div>
             <p className="text-xs text-muted-foreground">{t("auth.login.otp_hint")}</p>
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50">
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm"
+              style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.send_code")}
-            </button>
+            </motion.button>
           </form>
         )}
 
         {mode === "otp" && otpSent && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="text-center mb-2">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-3">
-                <Mail className="h-6 w-6 text-accent" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center mb-2"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                <Mail className="h-7 w-7 text-accent" />
               </div>
               <p className="text-sm text-muted-foreground">{t("auth.login.code_sent_to")} <strong className="text-foreground">{email}</strong></p>
-            </div>
+            </motion.div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.otp_label")}</label>
               <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-ring" placeholder="000000" autoFocus />
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-accent/40 transition-all" placeholder="000000" autoFocus />
             </div>
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50">
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm"
+              style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.verify")}
-            </button>
-            <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-sm text-muted-foreground hover:text-foreground">{t("auth.login.change_email")}</button>
+            </motion.button>
+            <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">{t("auth.login.change_email")}</button>
           </form>
         )}
 
         <SocialLoginButtons />
 
         <div className="flex items-center justify-between mt-6">
-          <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground">{t("auth.login.forgot")}</Link>
+          <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-accent transition-colors">{t("auth.login.forgot")}</Link>
           <p className="text-sm text-muted-foreground">
-            <Link to="/signup" className="text-foreground font-medium hover:underline">{t("auth.login.create_account")}</Link>
+            <Link to="/signup" className="text-foreground font-medium hover:text-accent transition-colors">{t("auth.login.create_account")}</Link>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
