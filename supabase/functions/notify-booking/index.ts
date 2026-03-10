@@ -327,65 +327,9 @@ serve(async (req) => {
     // Build app base URL dynamically
     const appBaseUrl = "https://easy-locs.lovable.app";
 
-    // 1. Notify owner (in-app + email) with standardized deep-link metadata
-    if (org?.owner_user_id) {
-      await supabase.from("notifications").insert({
-        user_id: org.owner_user_id,
-        org_id: br.org_id,
-        type: "info",
-        title: t.ownerTitle,
-        message: `${safeGuestName} — ${safePropertyLabel} — ${br.check_in} → ${br.check_out} (${nights} ${nightsWord}, ${totalPrice}${locale.symbol}).`,
-        link: ownerDeepLink,
-        metadata_json: {
-          target_type: "booking_request",
-          target_id: br.id,
-          booking_id: br.id,
-          module: "seasonal",
-          country_code: property?.country || "",
-          org_id: br.org_id,
-          property_id: br.property_id,
-          target_url: ownerDeepLink,
-        },
-      });
-    }
-
-    const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
-
-    // Email to owner with deep-link button
-    if (org?.email && SENDGRID_API_KEY) {
-      await fetch("https://api.sendgrid.com/v3/mail/send", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${SENDGRID_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          personalizations: [{ to: [{ email: org.email }] }],
-          from: { email: "noreply@easy-locs.com", name: "Easy-Locs" },
-          reply_to: { email: "contact@easy-locs.com", name: "Easy-Locs" },
-          subject: tpl(t.ownerSubject, { guest: safeGuestName }),
-          content: [{
-            type: "text/html",
-            value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <div style="text-align:center;margin-bottom:24px;">
-                <h1 style="color:#1a1a1a;font-size:22px;">${t.ownerTitle}</h1>
-              </div>
-              ${photoBlock}
-              <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.traveler}</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;">${safeGuestName}</td></tr>
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.email}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeGuestEmail}</td></tr>
-                ${br.guest_phone ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.phone}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeGuestPhone}</td></tr>` : ""}
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.property}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safePropertyLabel}</td></tr>
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.dates}</td><td style="padding:8px;border-bottom:1px solid #eee;">${br.check_in} → ${br.check_out} (${nights} ${nightsWord})</td></tr>
-                <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.amount}</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>
-                ${br.message ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#888;">${t.message}</td><td style="padding:8px;border-bottom:1px solid #eee;">${safeMessage}</td></tr>` : ""}
-              </table>
-              <p style="text-align:center;margin-top:24px;">
-                <a href="${appBaseUrl}${ownerDeepLink}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">${t.manageBtn}</a>
-              </p>
-              <p style="text-align:center;color:#aaa;font-size:11px;margin-top:24px;">${t.footer}</p>
-            </div>`,
-          }],
-        }),
-      });
-    }
+    // Owner notification + communication thread is now handled by
+    // dispatchSyncEvent("booking_request") in the client (sync engine).
+    // This edge function only handles guest-facing email + payment link.
 
     // 2. Email to guest (localized)
     if (br.guest_email && SENDGRID_API_KEY) {

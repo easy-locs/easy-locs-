@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -105,12 +106,30 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       return;
     }
 
+    // Sync engine: booking_request (owner-side: communication thread + notification)
+    dispatchSyncEvent({
+      type: "booking_request",
+      context: {
+        orgId: listing.org_id,
+        propertyId: property.id,
+        bookingId: insertedRequest.id,
+        countryCode: property.country || "",
+      },
+      actorUserId: "",
+      targetEmail: listing.contact_email || undefined,
+      guestName: form.guest_name,
+      checkIn: form.check_in,
+      checkOut: form.check_out,
+      listingTitle: listing.title || property.label || "",
+    }).catch(() => {});
+
+    // Guest confirmation email + payment link generation (server-side, keeps Stripe logic)
     try {
       await supabase.functions.invoke("notify-booking", {
         body: { booking_request_id: insertedRequest.id },
       });
     } catch (e) {
-      console.error("Notification error:", e);
+      console.error("Guest notification error:", e);
     }
 
     setSubmitting(false);
