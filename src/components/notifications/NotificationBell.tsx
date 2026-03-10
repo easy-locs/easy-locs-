@@ -235,10 +235,10 @@ const NotificationBell = () => {
               transition={{ duration: 0.22, type: "spring", stiffness: 400, damping: 30 }}
               className={`${
                 isMobile
-                  ? "fixed inset-x-3 bottom-3 top-auto z-50 max-h-[80vh]"
+                  ? "fixed left-2 right-2 bottom-2 z-50"
                   : "absolute right-0 top-full mt-2 w-[380px] z-50"
               } bg-card rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col`}
-              style={{ maxWidth: isMobile ? undefined : "calc(100vw - 2rem)" }}
+              style={{ maxHeight: isMobile ? "75vh" : "520px", maxWidth: isMobile ? undefined : "calc(100vw - 2rem)" }}
             >
               {/* ─── Header ─── */}
               <div className="px-4 pt-4 pb-3 border-b border-border/60">
