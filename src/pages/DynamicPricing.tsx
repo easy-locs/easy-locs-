@@ -162,9 +162,9 @@ const DynamicPricing = () => {
               <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channel-manager")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
+              <h1 className="text-2xl font-bold text-foreground">Dynamic Pricing</h1>
             </div>
-            <p className="text-muted-foreground text-sm ml-10">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
+            <p className="text-muted-foreground text-sm ml-10">Optimize your prices based on demand and seasonality</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nouvelle règle</Button></DialogTrigger>
