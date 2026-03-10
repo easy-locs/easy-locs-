@@ -737,7 +737,7 @@ const ActivitiesMarketplace = () => {
           <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Revenue Details
+                <Star className="h-5 w-5 text-[hsl(45,90%,50%)]" /> Détail des Revenus
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
