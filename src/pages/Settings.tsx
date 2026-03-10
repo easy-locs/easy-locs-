@@ -374,7 +374,7 @@ const Settings = () => {
             {(org.brand_name || org.brand_primary_color) && (
               <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
                 <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
-                <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>Aperçu du branding sur vos documents</p>
+                <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>{t("page.settings.branding_preview") || "Branding preview on your documents"}</p>
               </div>
             )}
             <button onClick={async () => {
