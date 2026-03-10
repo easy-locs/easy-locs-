@@ -922,8 +922,9 @@ const CommunicationCenter = () => {
 
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
-  const getBookingTypeBadge = (type?: string) => {
-    switch (type) {
+  const getBookingTypeBadge = (thread: ConversationThread) => {
+    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏡 Real Estate</Badge>;
+    switch (thread.bookingType) {
       case "marketplace": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🛍️ Marketplace</Badge>;
       case "concierge": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🎯 Concierge</Badge>;
       case "seasonal": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏖️ Seasonal</Badge>;
