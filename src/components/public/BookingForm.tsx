@@ -4,6 +4,7 @@ import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import { toast } from "sonner";
 import BookingAvailabilityCalendar from "./BookingAvailabilityCalendar";
 import GuestBookingReply from "./GuestBookingReply";
 
@@ -116,8 +117,12 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     } as any).select().single();
 
     if (error) {
+      console.error("Booking insert error:", error.message, error.details, error.hint);
       setSubmitting(false);
-      alert(t("page.listing.error_submit"));
+      toast.error(t("page.listing.error_submit") || "Booking request failed", {
+        description: error.message || "Please try again.",
+        duration: 8000,
+      });
       return;
     }
 
