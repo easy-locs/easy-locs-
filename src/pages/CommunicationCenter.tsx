@@ -968,27 +968,37 @@ const CommunicationCenter = () => {
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-        {/* Stats bar — compact on mobile */}
-        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
+        {/* ═══ Header bar — dynamic KPIs ═══ */}
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Communication Center</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">Unified inbox — Tenants, Bookings, Services</p>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-accent shrink-0" />
+              Communication Center
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Unified inbox — Long-term · Seasonal · Marketplace · Real Estate
+            </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
-              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-primary" },
-              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500" },
-              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive" },
-              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500" },
+              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8" },
+              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8" },
+              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8" },
+              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8" },
             ].map(s => (
-              <div key={s.label} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-card rounded-lg border border-border/50 text-xs">
-                <s.icon className={`h-3 sm:h-3.5 w-3 sm:w-3.5 ${s.color}`} />
-                <span className="font-semibold text-foreground">{s.value}</span>
-                <span className="text-muted-foreground hidden sm:inline">{s.label}</span>
-              </div>
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105`}
+              >
+                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
+                <span className="font-bold text-foreground tabular-nums">{s.value}</span>
+                <span className="text-muted-foreground hidden sm:inline text-[11px]">{s.label}</span>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
           {/* ────── Thread list ────── */}
