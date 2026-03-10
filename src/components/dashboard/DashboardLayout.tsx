@@ -110,13 +110,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 5. Marketplace — services only
+    // 5. Marketplace — services & concierge
     {
       key: "marketplace",
       title: "Marketplace",
       icon: Store,
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services Marketplace", path: "/dashboard/activities" },
+        { icon: Sparkles, label: t("nav.concierge") || "Concierge", path: "/dashboard/concierge" },
       ],
     },
 
