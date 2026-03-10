@@ -1033,68 +1033,83 @@ const CommunicationCenter = () => {
 
             <ScrollArea className="flex-1">
               {loading ? (
-                <div className="p-4 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
+                <div className="p-8 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-accent" />
+                  <p className="text-xs text-muted-foreground mt-2">Loading conversations…</p>
+                </div>
               ) : filteredThreads.length === 0 ? (
-                <div className="p-6 text-center">
-                  <MessageCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-muted-foreground text-sm">No conversations found</p>
+                <div className="p-8 text-center">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-foreground">No conversations</p>
+                  <p className="text-xs text-muted-foreground mt-1">Messages will appear here when clients interact.</p>
                 </div>
               ) : (
-                filteredThreads.map(thread => (
-                  <button
-                    key={thread.id}
-                    onClick={() => setSelectedThread(thread)}
-                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b border-border/20 ${
-                      selectedThread?.id === thread.id ? "bg-muted/70" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                          thread.type === "booking" ? "bg-accent/10" : thread.type === "lead" ? "bg-emerald-500/10" : "bg-primary/10"
-                        }`}>
-                          {thread.type === "booking" ? (
-                            <Hash className="h-4 w-4 text-accent" />
-                          ) : thread.type === "lead" ? (
-                            <Building className="h-4 w-4 text-emerald-600" />
-                          ) : (
-                            <User className="h-4 w-4 text-primary" />
-                          )}
-                        </div>
-                        {thread.unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                            {thread.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
-                            {thread.name}
-                          </p>
-                          {thread.lastMessageTime && (
-                            <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                              {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                filteredThreads.map((thread, i) => {
+                  const pillar = getPillarColor(thread);
+                  return (
+                    <motion.button
+                      key={thread.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: Math.min(i * 0.015, 0.3) }}
+                      onClick={() => setSelectedThread(thread)}
+                      className={`w-full text-left p-3 hover:bg-muted/50 transition-all border-b border-border/10 ${
+                        selectedThread?.id === thread.id ? "bg-accent/5 border-l-2 border-l-accent" : "border-l-2 border-l-transparent"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${pillar.bg} transition-colors`}>
+                            {thread.type === "booking" ? (
+                              <Hash className={`h-4 w-4 ${pillar.text}`} />
+                            ) : thread.type === "lead" ? (
+                              <Building className={`h-4 w-4 ${pillar.text}`} />
+                            ) : (
+                              <User className={`h-4 w-4 ${pillar.text}`} />
+                            )}
+                          </div>
+                          {thread.unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                              {thread.unreadCount}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
-                          {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
-                          {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
+                              {thread.name}
+                            </p>
+                            {thread.lastMessageTime && (
+                              <span className="text-[10px] text-muted-foreground shrink-0 ml-2 tabular-nums">
+                                {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
+                            {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
+                            {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                          </div>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="text-xs text-muted-foreground truncate flex-1">
+                              {thread.serviceTitle || thread.listingTitle || thread.propertyLabel || thread.email || "—"}
+                            </p>
+                            {thread.totalPrice != null && thread.totalPrice > 0 && (
+                              <span className="text-[10px] font-bold text-foreground ml-2 shrink-0 tabular-nums">
+                                {thread.totalPrice.toFixed(0)} {(thread.currency || "€").toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          {thread.lastMessage && (
+                            <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground/70"}`}>
+                              {thread.lastMessage.slice(0, 50)}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {thread.listingTitle || thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
-                        </p>
-                        {thread.lastMessage && (
-                          <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                            {thread.lastMessage.slice(0, 60)}
-                          </p>
-                        )}
                       </div>
-                    </div>
-                  </button>
-                ))
+                    </motion.button>
+                  );
+                })
               )}
             </ScrollArea>
           </div>
