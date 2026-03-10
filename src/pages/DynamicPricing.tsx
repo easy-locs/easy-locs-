@@ -17,11 +17,11 @@ import { format, parseISO, differenceInDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const RULE_TYPES = [
-  { value: "seasonal", label: "Saisonnier", desc: "Haute/basse saison", icon: "☀️" },
-  { value: "weekend", label: "Week-end", desc: "Majoration samedi/dimanche", icon: "📅" },
-  { value: "event", label: "Événement", desc: "Fêtes, salons, concerts", icon: "🎉" },
-  { value: "occupancy", label: "Taux occupation", desc: "Prix dynamique selon remplissage", icon: "📊" },
-  { value: "last_minute", label: "Dernière minute", desc: "Réduction J-3 / J-7", icon: "⏰" },
+  { value: "seasonal", label: "Seasonal", desc: "High/low season", icon: "☀️" },
+  { value: "weekend", label: "Weekend", desc: "Saturday/Sunday surcharge", icon: "📅" },
+  { value: "event", label: "Event", desc: "Festivals, conferences, concerts", icon: "🎉" },
+  { value: "occupancy", label: "Occupancy rate", desc: "Dynamic pricing based on occupancy", icon: "📊" },
+  { value: "last_minute", label: "Last minute", desc: "Discount D-3 / D-7", icon: "⏰" },
 ];
 
 const DynamicPricing = () => {
