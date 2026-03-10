@@ -573,3 +573,15 @@ function EmptyState({ label }: { label: string }) {
     </div>
   );
 }
+
+function LoadMoreButton({ total, visible, onLoadMore }: { total: number; visible: number; onLoadMore: () => void }) {
+  if (visible >= total) return null;
+  return (
+    <div className="flex justify-center pt-8">
+      <Button variant="outline" size="lg" onClick={onLoadMore} className="rounded-xl gap-2 min-h-[44px]">
+        Show more ({visible} of {total})
+        <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
