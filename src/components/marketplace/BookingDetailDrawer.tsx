@@ -84,13 +84,15 @@ interface Props {
   onConfirmPayment: (id: string) => void;
   onGenerateInvoice?: (booking: any) => void;
   onModifyBooking?: (booking: any, changes: any) => Promise<boolean>;
+  onSendQuote?: (booking: any, data: { quoted_price: number; quote_message: string }) => Promise<boolean>;
 }
 
 export default function BookingDetailDrawer({
   open, onOpenChange, booking, service, provider, orgId,
-  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice, onModifyBooking,
+  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice, onModifyBooking, onSendQuote,
 }: Props) {
   const [modifyOpen, setModifyOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
   if (!booking) return null;
 
 
