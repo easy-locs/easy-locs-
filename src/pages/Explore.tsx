@@ -158,8 +158,11 @@ export default function Explore() {
   };
 
   const clearFilters = () => {
-    setSearch(""); setCountryFilter("all"); setCityFilter(""); setTypeFilter("all");
+    setSearch(""); setCountryFilter("all"); setCityFilter(""); setTypeFilter("all"); setVisibleCount(ITEMS_PER_PAGE);
   };
+
+  // Reset pagination on tab or filter change
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [tab, search, countryFilter, cityFilter, typeFilter]);
 
   const hasActiveFilters = search || countryFilter !== "all" || cityFilter || typeFilter !== "all";
 
