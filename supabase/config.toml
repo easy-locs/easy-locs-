@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.social-preview]
 verify_jwt = false
+
+[functions.run-scheduled-audit]
+verify_jwt = false
