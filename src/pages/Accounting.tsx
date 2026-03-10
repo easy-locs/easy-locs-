@@ -121,12 +121,8 @@ const Accounting = () => {
       property_id: e.property_id,
     }));
     let all = [...manual, ...rents, ...exps];
-    // STRICT COUNTRY ISOLATION: when a country is selected, only show
-    // transactions from properties in that country. Unlinked transactions
-    // are excluded to prevent cross-country contamination.
-    if (selectedCountry !== "all") {
-      all = all.filter(tx => tx.property_id && countryPropertyIds.has(tx.property_id));
-    }
+    // STRICT COUNTRY ISOLATION: only show transactions from properties in this country
+    all = all.filter(tx => tx.property_id && countryPropertyIds.has(tx.property_id));
     all.sort((a, b) => b.date.localeCompare(a.date));
     return filterCat === "all" ? all : all.filter(t => t.category === filterCat);
   }, [journal, rentCalls, expenses, filterCat, selectedCountry, countryPropertyIds, activeRules]);
