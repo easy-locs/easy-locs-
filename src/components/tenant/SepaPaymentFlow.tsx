@@ -127,7 +127,7 @@ export default function SepaPaymentFlow({
 
           <div className="bg-background rounded-lg p-3 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t("page.tenant_pay.rent_line") || "Loyer"}</span>
+              <span className="text-muted-foreground">{t("page.tenant_pay.rent_line") || "Rent"}</span>
               <span className="text-foreground font-medium">{fmt(rentCall.rent_amount)}</span>
             </div>
             <div className="flex justify-between text-sm mt-1">
