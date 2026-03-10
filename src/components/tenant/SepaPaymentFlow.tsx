@@ -244,7 +244,7 @@ export default function SepaPaymentFlow({
 
         <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border">
           <p className="text-xs text-muted-foreground">
-            ⚠️ {t("sepa.manual_notice") || "Indiquez impérativement la référence ci-dessus dans le libellé de votre virement. Votre bailleur sera notifié automatiquement dès réception du paiement."}
+            ⚠️ {t("sepa.manual_notice") || "Please include the reference above in your transfer description. Your landlord will be notified automatically upon receipt."}
           </p>
         </div>
       </div>
