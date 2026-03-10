@@ -8,12 +8,12 @@ const HelpPage = () => {
   const { t } = useI18n();
 
   const faqs = [
-    { icon: Home, q: "Comment ajouter un bien immobilier ?", a: "Depuis le tableau de bord, allez dans « Gestion locative » → « Biens » et cliquez sur « Ajouter un bien ». Renseignez les informations du bien et validez." },
-    { icon: Users, q: "Comment inviter un locataire ?", a: "Dans « Gestion locative » → « Locataires », cliquez sur « Ajouter un locataire ». Renseignez son email, il recevra une invitation pour accéder à son espace." },
-    { icon: FileText, q: "Comment générer une quittance ?", a: "Les quittances sont générées automatiquement chaque mois. Vous pouvez aussi en créer manuellement depuis « Quittances » → « Nouvelle quittance »." },
-    { icon: CreditCard, q: "Comment fonctionne la facturation ?", a: "Easy-Locs® propose un essai gratuit de 3 jours. Ensuite, choisissez un abonnement mensuel ou annuel. La résiliation est possible à tout moment." },
-    { icon: Shield, q: "Mes données sont-elles sécurisées ?", a: "Oui, vos données sont hébergées dans l'Union Européenne et protégées par des mesures de sécurité conformes au RGPD." },
-    { icon: Mail, q: "Comment contacter le support ?", a: "Envoyez un email à contact@easy-locs.com ou utilisez le formulaire de contact. Nous répondons sous 24 à 48 heures." },
+    { icon: Home, q: t("help.faq.q1") || "How do I add a property?", a: t("help.faq.a1") || "From the dashboard, go to 'Property Management' → 'Properties' and click 'Add a Property'. Fill in the details and save." },
+    { icon: Users, q: t("help.faq.q2") || "How do I invite a tenant?", a: t("help.faq.a2") || "In 'Property Management' → 'Tenants', click 'Add a Tenant'. Enter their email — they'll receive an invitation to access their portal." },
+    { icon: FileText, q: t("help.faq.q3") || "How do I generate a receipt?", a: t("help.faq.a3") || "Receipts are generated automatically each month. You can also create one manually from 'Receipts' → 'New Receipt'." },
+    { icon: CreditCard, q: t("help.faq.q4") || "How does billing work?", a: t("help.faq.a4") || "Easy-Locs® offers a free trial. Then choose a monthly or annual subscription. You can cancel anytime." },
+    { icon: Shield, q: t("help.faq.q5") || "Is my data secure?", a: t("help.faq.a5") || "Yes, your data is hosted in the European Union and protected with GDPR-compliant security measures." },
+    { icon: Mail, q: t("help.faq.q6") || "How do I contact support?", a: t("help.faq.a6") || "Send an email to contact@easy-locs.com or use the contact form. We respond within 24–48 hours." },
   ];
 
   const faqJsonLd = {
