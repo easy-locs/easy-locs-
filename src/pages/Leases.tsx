@@ -163,7 +163,7 @@ const Leases = () => {
       if (docId) {
         dispatchSyncEvent({
           type: "lease_created",
-          context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: docId, countryCode: "FR" },
+          context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: docId, countryCode: propCountry },
           actorUserId: user!.id,
           targetUserId: tenant.tenant_user_id || undefined,
           targetEmail: tenant.email || undefined,
