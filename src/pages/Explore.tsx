@@ -24,10 +24,11 @@ interface RealEstateListing {
 }
 
 interface SeasonalListing {
-  id: string; title: string; slug: string; price_per_night: number; currency: string;
-  max_guests: number; min_nights: number; city: string; country: string;
-  cover_url: string | null; active: boolean; description: string;
+  id: string; title: string; slug: string; price_per_night: number;
+  max_guests: number; min_nights: number; active: boolean; description: string;
   property_id: string; org_id: string;
+  // Enriched from property
+  city?: string; country?: string; cover_url?: string | null;
 }
 
 interface ServiceListing {
