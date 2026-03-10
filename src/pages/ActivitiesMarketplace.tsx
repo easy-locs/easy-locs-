@@ -367,7 +367,7 @@ const ActivitiesMarketplace = () => {
         recipientName: booking.booker_name,
       });
     } else {
-      toast.error("No payment link configured");
+      toast.error("Aucun lien de paiement configuré");
     }
   };
 
