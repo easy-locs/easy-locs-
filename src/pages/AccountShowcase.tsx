@@ -39,7 +39,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; ic
   long_term_rent: { label: "Long-term Rent", color: "text-sky-700 dark:text-sky-300",        bg: "bg-sky-500/10",      icon: "🏠", border: "border-sky-500/30" },
 };
 
-const PRICE_LABEL: Record<string, string> = { sale: "", long_term_rent: "/mo", seasonal_rent: "/night" };
+const PRICE_LABEL: Record<string, string> = { sale: "", long_term_rent: "/mo" };
 
 export default function AccountShowcase() {
   const { accountSlug } = useParams<{ accountSlug: string }>();
