@@ -182,7 +182,7 @@ const ConciergeServices = () => {
     }
     const slug = form.booking_slug || generateSlug(form.title);
     const record: any = {
-      ...form, org_id: orgId, user_id: user.id, booking_slug: slug,
+      ...form, org_id: resolvedOrgId, user_id: user.id, booking_slug: slug,
       photo_urls: form.photo_urls, time_slots: form.time_slots,
       blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
       bank_details: form.bank_details,
