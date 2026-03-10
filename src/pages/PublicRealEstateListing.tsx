@@ -569,15 +569,15 @@ function ContactCard({
           <span className="text-xs sm:text-sm text-muted-foreground font-semibold uppercase tracking-wider">Share this listing</span>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + socialUrl)}`, "_blank"); }}>
+              onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.open(links.whatsapp, "_blank"); }}>
               <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
+              onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.open(links.telegram, "_blank"); }}>
               <Send className="h-4 w-4 shrink-0" /> Telegram
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => { window.location.href = `mailto:?subject=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(listing.title + "\n" + window.location.href)}`; }}>
+              onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.location.href = links.email; }}>
               <Mail className="h-4 w-4 shrink-0" /> Email
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium" onClick={handleShare}>
