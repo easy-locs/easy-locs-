@@ -326,7 +326,10 @@ export default function PublicRealEstateListing() {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-extrabold text-foreground leading-tight tracking-tight">{listing.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-extrabold text-foreground leading-tight tracking-tight">{translate.get("title")}</h1>
+              {translate.isTranslated && (
+                <p className="text-xs text-muted-foreground mt-1 italic">🌐 Auto-translated to {translate.browserLang.toUpperCase()}</p>
+              )}
               <div className="flex items-center gap-2 mt-3 sm:mt-4 text-muted-foreground">
                 <MapPin className="h-4 w-4 shrink-0 text-accent" />
                 <span className="text-sm sm:text-base">{listing.address ? `${listing.address}, ` : ""}{listing.city}{listing.country ? `, ${listing.country}` : ""}</span>
