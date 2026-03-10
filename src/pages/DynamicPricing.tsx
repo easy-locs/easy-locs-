@@ -252,7 +252,7 @@ const DynamicPricing = () => {
                 <div key={d.property} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div>
                     <p className="font-medium text-foreground">{d.property}</p>
-                    <p className="text-xs text-muted-foreground">Occupation : {d.occupancy}% — {d.rulesCount} règle(s) active(s)</p>
+                    <p className="text-xs text-muted-foreground">Occupancy: {d.occupancy}% — {d.rulesCount} active rule(s)</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground line-through">{d.basePrice} €/nuit</p>
