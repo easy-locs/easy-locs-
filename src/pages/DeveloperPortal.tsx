@@ -177,11 +177,11 @@ const DeveloperPortal = () => {
                     <Input placeholder="https://your-app.com/webhooks" value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
                   </div>
                   <div>
-                    <Label className="mb-2 block">Événements</Label>
+                    <Label className="mb-2 block">Events</Label>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Checkbox checked={webhookEvents.includes("*")} onCheckedChange={() => toggleEvent("*")} />
-                        <span className="text-sm">Tous les événements</span>
+                        <span className="text-sm">All events</span>
                       </div>
                       {WEBHOOK_EVENTS.map(ev => (
                         <div key={ev.value} className="flex items-center gap-2 ml-4">
