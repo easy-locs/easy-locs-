@@ -121,6 +121,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
 
     if (error) {
       console.error("Booking insert error:", error.message, error.details, error.hint);
+      auditBookingResult(false, { module: "seasonal", error: error.message || "Insert failed" });
       setSubmitting(false);
       toast.error(t("page.listing.error_submit") || "Booking request failed", {
         description: error.message || "Please try again.",
@@ -128,6 +129,8 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
       });
       return;
     }
+
+    auditBookingResult(true, { bookingId: insertedRequest.id, module: "seasonal" });
 
     dispatchSyncEvent({
       type: "booking_request",
