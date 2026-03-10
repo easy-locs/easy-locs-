@@ -245,7 +245,7 @@ const DynamicPricing = () => {
 
         {/* Pricing recommendations */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">💡 Recommandations de prix</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">💡 Price recommendations</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {occupancyData.map(d => (
