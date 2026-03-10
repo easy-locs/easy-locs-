@@ -36,9 +36,9 @@
 ## PHASE 4 — Documents de réservation
 | Tâche | Statut |
 |-------|--------|
-| Upload passeport/ID/visa/documents par booking | 🔲 À faire |
-| Documents attachés à la réservation | 🔲 À faire |
-| Recherche dans les documents | 🔲 À faire |
+| Upload passeport/ID/visa/documents par booking | ✅ Terminé (BookingDocumentsPanel partagé) |
+| Documents attachés à la réservation | ✅ Terminé (booking_requests + concierge_orders) |
+| Recherche dans les documents | ✅ Terminé (recherche intégrée dans le panel) |
 
 ## PHASE 5 — Géolocalisation et adresse intelligente
 | Tâche | Statut |
