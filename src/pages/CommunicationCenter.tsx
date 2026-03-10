@@ -30,8 +30,10 @@ const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 
 /* ────── Types ────── */
 interface ConversationThread {
-  id: string; // tenant_id or booking_id
-  type: "tenant" | "booking";
+  id: string; // tenant_id or booking_id or lead_id
+  type: "tenant" | "booking" | "lead";
+  contextType: string; // unified context: tenant, seasonal_booking, marketplace_booking, concierge_booking, real_estate_lead, etc.
+  contextId: string; // actual record ID
   name: string;
   email: string | null;
   phone?: string | null;
@@ -48,6 +50,10 @@ interface ConversationThread {
   lastMessage?: string;
   lastMessageTime?: string;
   tenantId?: string;
+  leadId?: string;
+  listingTitle?: string;
+  listingType?: string;
+  assignedTo?: string;
 }
 
 interface Message {
