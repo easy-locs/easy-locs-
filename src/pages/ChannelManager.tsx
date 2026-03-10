@@ -482,7 +482,7 @@ const ChannelManager = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-7 gap-1">
-                  {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(d => (
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
                     <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
                   ))}
                   {Array.from({ length: (calendarDays[0]?.getDay() + 6) % 7 }).map((_, i) => (
