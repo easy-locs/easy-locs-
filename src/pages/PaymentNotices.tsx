@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe } from "lucide-react";
+import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
 import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
