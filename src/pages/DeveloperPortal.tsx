@@ -173,7 +173,7 @@ const DeveloperPortal = () => {
                 <DialogHeader><DialogTitle>Create a webhook</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>URL de destination</Label>
+                    <Label>Destination URL</Label>
                     <Input placeholder="https://your-app.com/webhooks" value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
                   </div>
                   <div>
