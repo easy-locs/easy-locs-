@@ -3,7 +3,7 @@
  * Route: /property-management-:citySlug
  * Uses unique localContext per city for differentiated content.
  */
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";

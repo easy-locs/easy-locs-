@@ -285,6 +285,26 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
           </div>
         )}
 
+        {/* Payment method selection */}
+        {nights > 0 && totalPrice > 0 && (
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onSelect={setPaymentMethod}
+            showOffline
+          />
+        )}
+
+        {paymentMethod === "bank_transfer" && (
+          <div className="bg-muted/50 rounded-xl p-3 text-xs text-muted-foreground">
+            💳 {t("page.listing.bank_transfer_note") || "Bank transfer details will be sent after your booking is confirmed."}
+          </div>
+        )}
+        {paymentMethod === "cash" && (
+          <div className="bg-muted/50 rounded-xl p-3 text-xs text-muted-foreground">
+            💵 {t("page.listing.cash_note") || "Cash payment on arrival after booking confirmation."}
+          </div>
+        )}
+
         <button type="submit" disabled={submitting || !formReady}
           className="w-full bg-accent text-accent-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
