@@ -743,7 +743,7 @@ const ActivitiesMarketplace = () => {
             <div className="space-y-4">
               {/* Currency Selector */}
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Display in:</span>
+                <span className="text-sm text-muted-foreground">Afficher en :</span>
                 <Select value={displayCurrency} onValueChange={setDisplayCurrency}>
                   <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
                   <SelectContent>
