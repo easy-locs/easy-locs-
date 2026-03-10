@@ -190,7 +190,7 @@ const Interventions = () => {
             <Button onClick={openNew} className="btn-primary shrink-0">
               <Plus className="h-4 w-4 mr-2" />{t("page.interventions.new")}
             </Button>
-          </div>
+          </motion.div>
 
           <div className="flex gap-2 flex-wrap">
             <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>{t("page.interventions.all")}</Button>
