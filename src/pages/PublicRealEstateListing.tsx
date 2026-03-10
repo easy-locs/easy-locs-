@@ -46,7 +46,6 @@ const ENERGY_COLORS: Record<string, string> = {
 const PRICE_LABEL: Record<string, string> = {
   sale: "",
   long_term_rent: "/month",
-  seasonal_rent: "/night",
 };
 
 export default function PublicRealEstateListing() {

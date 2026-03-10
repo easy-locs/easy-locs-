@@ -90,7 +90,6 @@ export default function AccountShowcase() {
     all: listings.length,
     sale: listings.filter(l => l.listing_type === "sale").length,
     long_term_rent: listings.filter(l => l.listing_type === "long_term_rent").length,
-    seasonal_rent: listings.filter(l => l.listing_type === "seasonal_rent").length,
   }), [listings]);
 
   const handleContact = async () => {

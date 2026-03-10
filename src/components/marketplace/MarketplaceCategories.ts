@@ -6,7 +6,7 @@ export const MARKETPLACE_CATEGORIES = [
   { value: "tours", label: "Tours & Activities", icon: "🗺️" },
   { value: "airport_transfer", label: "Airport Transfer", icon: "✈️" },
   { value: "personal", label: "Personal Services", icon: "💆" },
-  { value: "real_estate", label: "Real Estate", icon: "🏢" },
+  
   { value: "spa", label: "Wellness / Spa", icon: "🧖" },
   { value: "water_sport", label: "Water Sport", icon: "🚤" },
   { value: "restaurant", label: "Restaurant", icon: "🍽️" },
