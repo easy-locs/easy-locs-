@@ -115,7 +115,7 @@ const Dashboard = () => {
       label: t("page.dashboard.properties") || "Properties",
       value: loading ? "…" : String(stats.totalProperties),
       path: "/dashboard/properties",
-      sub: t("page.dashboard.view_all") || "Voir les biens →",
+      sub: t("page.dashboard.view_all") || "View all properties →",
     },
     {
       icon: MapPin,
