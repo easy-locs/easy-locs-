@@ -232,10 +232,12 @@ export default function BookingRequestCenter({
         service={selectedBooking ? getService(selectedBooking.service_id) : null}
         provider={provider}
         orgId={orgId}
-        onUpdateStatus={(id, status) => { onUpdateStatus(id, status); setSelectedBooking(null); }}
-        onSendPaymentLink={(b) => { onSendPaymentLink(b); }}
-        onConfirmPayment={(id) => { onConfirmPayment(id); setSelectedBooking(null); }}
-        onGenerateInvoice={handleInvoice}
+        onUpdateStatus={can("bookings:write") ? (id, status) => { onUpdateStatus(id, status); setSelectedBooking(null); } : () => {}}
+        onSendPaymentLink={can("bookings:write") ? (b) => { onSendPaymentLink(b); } : () => {}}
+        onConfirmPayment={can("payments:write") ? (id) => { onConfirmPayment(id); setSelectedBooking(null); } : () => {}}
+        onGenerateInvoice={can("bookings:manage") ? handleInvoice : undefined}
+        onModifyBooking={can("bookings:manage") ? onModifyBooking : undefined}
+        onSendQuote={can("bookings:manage") ? onSendQuote : undefined}
       />
     </div>
   );
