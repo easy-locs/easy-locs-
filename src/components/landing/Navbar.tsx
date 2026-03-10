@@ -12,6 +12,16 @@ const LANG_FLAGS: Record<string, string> = {
   zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾",
   sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿",
   hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦",
+  ru: "🇷🇺", sw: "🇰🇪", bn: "🇧🇩", ta: "🇱🇰", te: "🇮🇳",
+};
+
+const LANG_NATIVE: Record<string, string> = {
+  en: "English", fr: "Français", es: "Español", de: "Deutsch", it: "Italiano", pt: "Português",
+  nl: "Nederlands", pl: "Polski", tr: "Türkçe", ar: "العربية", ja: "日本語", ko: "한국어",
+  zh: "中文", hi: "हिन्दी", th: "ไทย", vi: "Tiếng Việt", id: "Bahasa", ms: "Melayu",
+  sv: "Svenska", da: "Dansk", nb: "Norsk", fi: "Suomi", el: "Ελληνικά", cs: "Čeština",
+  hu: "Magyar", ro: "Română", hr: "Hrvatski", bg: "Български", sk: "Slovenčina", he: "עברית", uk: "Українська",
+  ru: "Русский", sw: "Kiswahili", bn: "বাংলা",
 };
 
 const POPULAR_LOCALES: Locale[] = ["en", "fr", "es", "de", "it", "pt", "nl", "ar", "ja", "ko", "zh", "tr"];
