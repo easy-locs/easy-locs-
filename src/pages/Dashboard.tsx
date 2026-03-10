@@ -195,7 +195,7 @@ const Dashboard = () => {
         {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
           <div className="mb-8 rounded-xl border border-border/50 bg-card p-4">
             <p className="text-sm text-muted-foreground">
-              Carte mondiale indisponible sur cet appareil.
+              {t("page.dashboard.map_unavailable") || "World map unavailable on this device."}
             </p>
           </div>
         )}
