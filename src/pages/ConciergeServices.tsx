@@ -95,6 +95,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
+  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [services, setServices] = useState<any[]>([]);
