@@ -68,7 +68,7 @@ export default function SepaPaymentFlow({
                 {t("sepa.direct_debit") || "Automatic SEPA Direct Debit"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("sepa.direct_debit_desc") || "Entrez votre IBAN — paiement sécurisé via Stripe"}
+                {t("sepa.direct_debit_desc") || "Enter your IBAN — secure payment via Stripe"}
               </p>
             </div>
             <Shield className="h-4 w-4 text-accent shrink-0" />
