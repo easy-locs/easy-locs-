@@ -184,8 +184,8 @@ const DynamicPricing = () => {
                   <Select value={newRule.adjustment_type} onValueChange={v => setNewRule(p => ({ ...p, adjustment_type: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="percentage">Pourcentage (%)</SelectItem>
-                      <SelectItem value="fixed">Montant fixe (€)</SelectItem>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      <SelectItem value="fixed">Fixed amount (€)</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input type="number" placeholder={newRule.adjustment_type === "percentage" ? "+15%" : "+20€"} value={newRule.adjustment_value} onChange={e => setNewRule(p => ({ ...p, adjustment_value: e.target.value }))} />
