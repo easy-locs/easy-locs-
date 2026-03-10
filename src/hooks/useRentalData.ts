@@ -394,7 +394,7 @@ export function useRentalData(countryFilter?: string | null) {
             targetEmail: tenant.email || undefined,
             month: call.month,
             totalAmount: call.total_amount,
-            currency: getCountryConfig(propCountryCode).currencyCode || "EUR",
+            currency: getCountryConfig(propCountryCode).currency || "EUR",
             tenantName: tenant.name,
             receiptId: call.id,
           }).catch(() => {});
