@@ -266,7 +266,9 @@ const Dashboard = () => {
                             {c.count > 0 && (
                               <span className="flex items-center gap-1">
                                 <Building className="h-3.5 w-3.5 shrink-0" />
-                                {c.count} {c.count > 1 ? "biens" : "bien"}
+                                {c.count} {c.count > 1
+                                  ? (t("common.properties") || "properties")
+                                  : (t("common.property") || "property")}
                               </span>
                             )}
                             {c.tenants > 0 && (

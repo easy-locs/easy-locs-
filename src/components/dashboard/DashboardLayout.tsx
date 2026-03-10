@@ -463,7 +463,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
           >
-            <Zap className="h-4 w-4 shrink-0" /> AI Quality Center
+            <Zap className="h-4 w-4 shrink-0" /> {t("nav.ai_quality") || "AI Quality Center"}
           </Link>
           <button
             onClick={handleLogout}
