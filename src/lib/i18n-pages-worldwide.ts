@@ -246,6 +246,7 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "landing.hero.title": "Die weltweit erste Plattform", "landing.hero.title_highlight": "für Mietverwaltung",
     "landing.hero.subtitle": "Automatisierte Rechtsdokumente in Profi-Qualität, angepasst an jedes Land.",
     "landing.hero.cta": "Kostenlos starten", "landing.hero.pricing": "Preise ansehen",
+    "landing.hero.vp_properties": "Immobilienverwaltung", "landing.hero.vp_bookings": "Direktbuchungen", "landing.hero.vp_marketplace": "Service-Marktplatz", "landing.hero.vp_analytics": "Umsatzanalyse",
     "landing.nav.features": "Funktionen", "landing.nav.pricing": "Preise",
     "landing.nav.login": "Anmelden", "landing.nav.signup": "Registrieren",
     "landing.footer.desc": "Ihr intelligenter Mietverwaltungsassistent.",
