@@ -131,8 +131,8 @@ const Pricing = () => {
         </motion.div>
 
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
-          <span>{t("landing.pricing.payment_card")}</span>
-          <span>{t("landing.pricing.payment_sepa")}</span>
+          <span>{t("landing.pricing.payment_card") || "💳 Credit card"}</span>
+          <span>{t("landing.pricing.payment_sepa") || "🏦 SEPA"}</span>
         </div>
       </div>
     </section>
