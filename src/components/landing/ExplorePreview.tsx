@@ -177,7 +177,7 @@ export default function ExplorePreview() {
                     </div>
                     <div className="pt-2 mt-auto">
                       <span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
-                        {tab === "services" ? "Book now" : "View details"} <ArrowRight className="h-3 w-3" />
+                        {tab === "services" ? (t("landing.explore.book_now") || "Book now") : (t("landing.explore.view_details") || "View details")} <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>
                   </div>

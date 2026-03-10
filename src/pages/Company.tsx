@@ -489,8 +489,8 @@ const Company = () => {
         {companyTemplates.length === 0 ? (
           <div className="bg-card rounded-xl shadow-card border border-border/50 p-12 text-center">
             <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-muted-foreground text-sm">Aucun document entreprise disponible pour {getCountryFlag(selectedCountry)} {selectedCountry}</p>
-            <p className="text-muted-foreground/60 text-xs mt-2">Les modèles entreprise sont disponibles pour la France. D'autres pays seront ajoutés prochainement.</p>
+            <p className="text-muted-foreground text-sm">{t("page.company.no_templates") || `No company documents available for ${selectedCountry}`}</p>
+            <p className="text-muted-foreground/60 text-xs mt-2">{t("page.company.templates_coming") || "Company templates are available for France. More countries coming soon."}</p>
           </div>
         ) : (
         <>

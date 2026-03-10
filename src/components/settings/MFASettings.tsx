@@ -115,11 +115,11 @@ const MFASettings = () => {
             <button onClick={verifyCode} disabled={loading || code.length !== 6}
               className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-2">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Vérifier et activer
+              Verify & activate
             </button>
             <button onClick={() => { setStep("idle"); setCode(""); }}
               className="bg-muted text-foreground font-medium px-5 py-2 rounded-lg text-sm hover:bg-muted/80 flex items-center gap-2">
-              <X className="h-4 w-4" /> Annuler
+              <X className="h-4 w-4" /> Cancel
             </button>
           </div>
         </div>
