@@ -1,0 +1,423 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import FeatureGate from "@/components/subscription/FeatureGate";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import {
+  Plus, Building2, MapPin, Ruler, BedDouble, Bath, Euro,
+  Eye, Edit, Trash2, Link2, Copy, Check, Users, Clock,
+  Home, Tag, ArrowUpRight, Mail, Phone, MessageCircle,
+} from "lucide-react";
+import { format } from "date-fns";
+import { buildAppUrl } from "@/lib/app-domain";
+
+const PROPERTY_TYPES = [
+  { value: "apartment", label: "Apartment" },
+  { value: "house", label: "House" },
+  { value: "studio", label: "Studio" },
+  { value: "villa", label: "Villa" },
+  { value: "office", label: "Office" },
+  { value: "land", label: "Land" },
+  { value: "commercial", label: "Commercial" },
+];
+
+const LISTING_TYPES = [
+  { value: "sale", label: "For Sale", emoji: "🏷️" },
+  { value: "long_term_rent", label: "Long-term Rent", emoji: "🏠" },
+  { value: "seasonal_rent", label: "Seasonal Rent", emoji: "🏖️" },
+];
+
+const STATUS_MAP: Record<string, string> = {
+  active: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+  under_offer: "bg-amber-500/20 text-amber-700 dark:text-amber-400",
+  sold: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  rented: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  archived: "bg-muted text-muted-foreground",
+};
+
+interface Listing {
+  id: string;
+  title: string;
+  description: string;
+  listing_type: string;
+  price: number;
+  currency: string;
+  property_type: string;
+  country: string;
+  city: string;
+  address: string;
+  surface_sqm: number;
+  rooms: number;
+  bedrooms: number;
+  bathrooms: number;
+  photo_urls: string[];
+  status: string;
+  slug: string;
+  contact_email: string;
+  contact_phone: string;
+  features: string[];
+  parking: boolean;
+  garden: boolean;
+  terrace: boolean;
+  elevator: boolean;
+  furnished: boolean;
+  energy_class: string;
+  views_count: number;
+  created_at: string;
+}
+
+interface Lead {
+  id: string;
+  listing_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+const emptyForm = {
+  title: "", description: "", listing_type: "sale", price: 0, currency: "EUR",
+  property_type: "apartment", country: "", city: "", address: "", surface_sqm: 0,
+  rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
+  parking: false, garden: false, terrace: false, elevator: false, furnished: false,
+  energy_class: "",
+};
+
+export default function RealEstateListings() {
+  const { orgId, user } = useAuth();
+  const activeCountry = useCountryFilter();
+  const { toast } = useToast();
+
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [activeTab, setActiveTab] = useState("listings");
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  // Fetch data
+  useEffect(() => {
+    if (!orgId) return;
+    const fetch = async () => {
+      setLoading(true);
+      let q = supabase.from("real_estate_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+      if (activeCountry) q = q.eq("country", activeCountry);
+      const { data } = await q;
+      setListings((data || []) as any);
+
+      const { data: leadsData } = await supabase.from("real_estate_leads").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+      setLeads((leadsData || []) as any);
+      setLoading(false);
+    };
+    fetch();
+  }, [orgId, activeCountry]);
+
+  const handleSave = async () => {
+    if (!form.title) { toast({ title: "Title is required", variant: "destructive" }); return; }
+    const payload = {
+      ...form, org_id: orgId!, user_id: user!.id,
+      country: form.country || activeCountry || "",
+    };
+
+    if (editId) {
+      const { error } = await supabase.from("real_estate_listings").update(payload).eq("id", editId);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Listing updated" });
+    } else {
+      const { error } = await supabase.from("real_estate_listings").insert(payload);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Listing created" });
+    }
+    setCreateOpen(false);
+    setEditId(null);
+    setForm(emptyForm);
+    // Refresh
+    const { data } = await supabase.from("real_estate_listings").select("*").eq("org_id", orgId!).order("created_at", { ascending: false });
+    setListings((data || []) as any);
+  };
+
+  const handleDelete = async (id: string) => {
+    await supabase.from("real_estate_listings").delete().eq("id", id);
+    setListings(prev => prev.filter(l => l.id !== id));
+    toast({ title: "Listing deleted" });
+  };
+
+  const handleEdit = (listing: Listing) => {
+    setForm({
+      title: listing.title, description: listing.description, listing_type: listing.listing_type,
+      price: listing.price, currency: listing.currency, property_type: listing.property_type,
+      country: listing.country, city: listing.city, address: listing.address,
+      surface_sqm: listing.surface_sqm, rooms: listing.rooms, bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms, contact_email: listing.contact_email, contact_phone: listing.contact_phone,
+      parking: listing.parking, garden: listing.garden, terrace: listing.terrace,
+      elevator: listing.elevator, furnished: listing.furnished, energy_class: listing.energy_class,
+    });
+    setEditId(listing.id);
+    setCreateOpen(true);
+  };
+
+  const handleUpdateLeadStatus = async (id: string, status: string) => {
+    await supabase.from("real_estate_leads").update({ status }).eq("id", id);
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
+    toast({ title: `Lead marked as ${status}` });
+  };
+
+  const copyLink = (slug: string) => {
+    const url = buildAppUrl(`/property/${slug}`);
+    navigator.clipboard.writeText(url);
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  const newLeadsCount = leads.filter(l => l.status === "new").length;
+
+  return (
+    <DashboardLayout>
+      <FeatureGate>
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-accent" /> Real Estate
+              </h1>
+              <p className="text-sm text-muted-foreground">Manage property listings for sale and rent</p>
+            </div>
+            <Button onClick={() => { setForm(emptyForm); setEditId(null); setCreateOpen(true); }}>
+              <Plus className="h-4 w-4 mr-1" /> New Listing
+            </Button>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="listings">Listings ({listings.length})</TabsTrigger>
+              <TabsTrigger value="leads" className="relative">
+                Leads ({leads.length})
+                {newLeadsCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{newLeadsCount}</span>}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="listings" className="space-y-3 mt-4">
+              {loading ? (
+                <div className="text-center py-12 text-muted-foreground">Loading…</div>
+              ) : listings.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">
+                  No listings yet. Create your first property listing.
+                </CardContent></Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {listings.map(listing => (
+                    <Card key={listing.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      {/* Photo */}
+                      <div className="h-40 bg-muted/50 relative">
+                        {listing.photo_urls?.[0] ? (
+                          <img src={listing.photo_urls[0]} alt={listing.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Home className="h-12 w-12 text-muted-foreground/30" /></div>
+                        )}
+                        <Badge className={`absolute top-2 left-2 ${STATUS_MAP[listing.status] || ""}`}>{listing.status}</Badge>
+                        <Badge variant="outline" className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs">
+                          {LISTING_TYPES.find(t => t.value === listing.listing_type)?.emoji} {LISTING_TYPES.find(t => t.value === listing.listing_type)?.label}
+                        </Badge>
+                      </div>
+                      <CardContent className="p-4 space-y-2">
+                        <h3 className="font-semibold text-foreground truncate">{listing.title}</h3>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3" /> {listing.city}{listing.country ? `, ${listing.country}` : ""}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="font-bold text-accent text-lg">{Number(listing.price).toLocaleString()} {listing.currency}</span>
+                          {listing.listing_type !== "sale" && <span className="text-xs text-muted-foreground">/month</span>}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {listing.surface_sqm > 0 && <span className="flex items-center gap-1"><Ruler className="h-3 w-3" />{listing.surface_sqm}m²</span>}
+                          {listing.rooms > 0 && <span>{listing.rooms} rooms</span>}
+                          {listing.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="h-3 w-3" />{listing.bedrooms}</span>}
+                          {listing.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="h-3 w-3" />{listing.bathrooms}</span>}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3" /> {listing.views_count || 0} views
+                        </div>
+                        <Separator />
+                        <div className="flex items-center gap-1.5">
+                          <Button size="sm" variant="ghost" className="h-7 text-xs flex-1" onClick={() => handleEdit(listing)}>
+                            <Edit className="h-3 w-3 mr-1" /> Edit
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => copyLink(listing.slug)}>
+                            {copiedSlug === listing.slug ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="leads" className="space-y-3 mt-4">
+              {leads.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">No leads yet.</CardContent></Card>
+              ) : (
+                <div className="space-y-2">
+                  {leads.map(lead => {
+                    const listing = listings.find(l => l.id === lead.listing_id);
+                    return (
+                      <Card key={lead.id} className="hover:shadow-sm transition-shadow">
+                        <CardContent className="p-4 flex items-start gap-4">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${lead.status === "new" ? "bg-red-500" : lead.status === "contacted" ? "bg-amber-500" : "bg-emerald-500"}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-foreground">{lead.name}</span>
+                              <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              <Mail className="h-3 w-3 inline mr-1" />{lead.email}
+                              {lead.phone && <span className="ml-2"><Phone className="h-3 w-3 inline mr-1" />{lead.phone}</span>}
+                            </div>
+                            {listing && <div className="text-xs text-muted-foreground mt-0.5">Property: {listing.title}</div>}
+                            {lead.message && <p className="text-sm text-muted-foreground mt-1 italic">"{lead.message}"</p>}
+                            <div className="text-[10px] text-muted-foreground mt-1">{format(new Date(lead.created_at), "PPp")}</div>
+                          </div>
+                          <div className="flex gap-1">
+                            {lead.status === "new" && (
+                              <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}>
+                                Mark Contacted
+                              </Button>
+                            )}
+                            {lead.status === "contacted" && (
+                              <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "qualified")}>
+                                Qualify
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "closed")}>
+                              Close
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* ─── Create/Edit Dialog ─── */}
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editId ? "Edit Listing" : "Create New Listing"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label>Title *</Label>
+                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Beautiful apartment in Paris" />
+                </div>
+                <div>
+                  <Label>Listing Type</Label>
+                  <Select value={form.listing_type} onValueChange={v => setForm(f => ({ ...f, listing_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LISTING_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.emoji} {t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Property Type</Label>
+                  <Select value={form.property_type} onValueChange={v => setForm(f => ({ ...f, property_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PROPERTY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Price *</Label>
+                  <Input type="number" value={form.price || ""} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} />
+                </div>
+                <div>
+                  <Label>Currency</Label>
+                  <Input value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))} />
+                </div>
+              </div>
+
+              <div className="col-span-2">
+                <Label>Description</Label>
+                <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+              </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground">Location</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Country</Label><Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="FR" /></div>
+                <div><Label>City</Label><Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
+                <div className="col-span-2"><Label>Address</Label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
+              </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground">Property Details</h4>
+              <div className="grid grid-cols-4 gap-3">
+                <div><Label>Surface (m²)</Label><Input type="number" value={form.surface_sqm || ""} onChange={e => setForm(f => ({ ...f, surface_sqm: Number(e.target.value) }))} /></div>
+                <div><Label>Rooms</Label><Input type="number" value={form.rooms || ""} onChange={e => setForm(f => ({ ...f, rooms: Number(e.target.value) }))} /></div>
+                <div><Label>Bedrooms</Label><Input type="number" value={form.bedrooms || ""} onChange={e => setForm(f => ({ ...f, bedrooms: Number(e.target.value) }))} /></div>
+                <div><Label>Bathrooms</Label><Input type="number" value={form.bathrooms || ""} onChange={e => setForm(f => ({ ...f, bathrooms: Number(e.target.value) }))} /></div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {([
+                  ["parking", "Parking"], ["garden", "Garden"], ["terrace", "Terrace"],
+                  ["elevator", "Elevator"], ["furnished", "Furnished"],
+                ] as const).map(([key, label]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Switch checked={(form as any)[key]} onCheckedChange={v => setForm(f => ({ ...f, [key]: v }))} />
+                    <Label className="text-sm">{label}</Label>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <Label>Energy Class</Label>
+                <Input value={form.energy_class} onChange={e => setForm(f => ({ ...f, energy_class: e.target.value }))} placeholder="A, B, C…" />
+              </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground">Contact</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))} /></div>
+                <div><Label>Phone</Label><Input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} /></div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+              <Button onClick={handleSave}>{editId ? "Update" : "Create"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </FeatureGate>
+    </DashboardLayout>
+  );
+}
