@@ -227,7 +227,7 @@ const DynamicPricing = () => {
         {/* Occupancy chart */}
         {occupancyData.length > 0 && (
           <Card>
-            <CardHeader><CardTitle className="text-lg">Taux d'occupation & prix suggéré</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-lg">Occupancy rate & suggested price</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={occupancyData}>
