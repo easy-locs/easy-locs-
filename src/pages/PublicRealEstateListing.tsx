@@ -569,11 +569,11 @@ function ContactCard({
           <span className="text-xs sm:text-sm text-muted-foreground font-semibold uppercase tracking-wider">Share this listing</span>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + window.location.href)}`, "_blank")}>
+              onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + socialUrl)}`, "_blank"); }}>
               <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(listing.title)}`, "_blank")}>
+              onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
               <Send className="h-4 w-4 shrink-0" /> Telegram
             </Button>
             <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
