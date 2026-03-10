@@ -385,22 +385,25 @@ const ActivitiesMarketplace = () => {
 
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
-      await syncToCommunicationCenter({
+      const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
+      const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
+      const meta = createDeepLinkMeta({
+        targetType: "marketplace_booking",
+        targetId: booking.id,
+        module: "marketplace",
+        countryCode: svc?.country || "",
+        bookingId: booking.id,
         orgId: booking.org_id || orgId!,
-        userId: myProvider?.user_id,
-        email: booking.booker_email,
+        propertyId: booking.property_id,
+      });
+      await sendCommunicationEvent({
+        orgId: booking.org_id || orgId!,
+        senderId: myProvider?.user_id,
+        recipientEmail: booking.booker_email,
         subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
         category: "payment",
-        meta: {
-          event_type: "payment_received",
-          booking_id: booking.id,
-          property_id: booking.property_id,
-          country_code: svc?.country || "",
-          workspace_id: booking.org_id || orgId!,
-          target_type: "marketplace_booking",
-          service_title: svc?.title,
-        },
+        meta,
       });
     }
   };
