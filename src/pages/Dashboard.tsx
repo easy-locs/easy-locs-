@@ -229,7 +229,7 @@ const Dashboard = () => {
                 {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Ajoutez votre premier bien ou créez un service pour commencer
+                {t("page.dashboard.add_first_hint") || "Add your first property or create a service to get started."}
               </p>
               <Link
                 to="/dashboard/add-property"
