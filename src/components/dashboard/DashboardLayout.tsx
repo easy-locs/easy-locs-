@@ -134,7 +134,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: FileText,
       items: [
         { icon: FileText, label: t("nav.all_documents") || "Documents", path: cPath("/dashboard/documents") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
