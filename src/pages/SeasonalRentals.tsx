@@ -1063,9 +1063,9 @@ const SeasonalRentals = () => {
               );
             })}
           </div>
-        </div>
+        </div>}
 
-        {properties.length > 0 && (
+        {viewMode === "bookings" && properties.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
