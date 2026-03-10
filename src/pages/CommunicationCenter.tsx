@@ -163,6 +163,8 @@ const CommunicationCenter = () => {
         threadMap.set(`tenant-${t.id}`, {
           id: `tenant-${t.id}`,
           type: "tenant",
+          contextType: "tenant",
+          contextId: t.id,
           name: t.name,
           email: t.email,
           tenantId: t.id,
