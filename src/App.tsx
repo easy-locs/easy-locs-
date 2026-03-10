@@ -71,6 +71,7 @@ const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
 const PropertyCalendar = lazy(() => import("./pages/PropertyCalendar"));
 const RealEstateListings = lazy(() => import("./pages/RealEstateListings"));
 const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListing"));
+const PropertiesShowcase = lazy(() => import("./pages/PropertiesShowcase"));
 
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
@@ -189,6 +190,8 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/properties" element={<PropertiesShowcase />} />
+              <Route path="/properties/:slug" element={<PublicRealEstateListing />} />
               <Route path="/property/:slug" element={<PublicRealEstateListing />} />
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />

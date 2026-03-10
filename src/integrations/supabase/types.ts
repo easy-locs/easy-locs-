@@ -4679,6 +4679,49 @@ export type Database = {
           title: string
         }[]
       }
+      get_public_real_estate_listing: {
+        Args: { p_slug: string }
+        Returns: Json
+      }
+      get_public_real_estate_listings: {
+        Args: {
+          p_city?: string
+          p_country?: string
+          p_limit?: number
+          p_listing_type?: string
+          p_max_price?: number
+          p_min_price?: number
+          p_offset?: number
+          p_property_type?: string
+        }
+        Returns: {
+          address: string
+          bathrooms: number
+          bedrooms: number
+          city: string
+          country: string
+          created_at: string
+          currency: string
+          description: string
+          elevator: boolean
+          energy_class: string
+          features: Json
+          furnished: boolean
+          garden: boolean
+          id: string
+          listing_type: string
+          parking: boolean
+          photo_urls: Json
+          price: number
+          property_type: string
+          rooms: number
+          slug: string
+          surface_sqm: number
+          terrace: boolean
+          title: string
+          views_count: number
+        }[]
+      }
       get_public_service_availability: {
         Args: { p_service_id: string }
         Returns: {
@@ -4697,6 +4740,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean

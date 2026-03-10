@@ -183,7 +183,7 @@ export default function RealEstateListings() {
   };
 
   const copyLink = (slug: string) => {
-    const url = buildAppUrl(`/property/${slug}`);
+    const url = buildAppUrl(`/properties/${slug}`);
     navigator.clipboard.writeText(url);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
