@@ -361,11 +361,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin">
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
-            const hasActiveItem = section.items.some(isItemActive);
-            const isSingleItem = section.items.length === 1;
+            const allItems = getAllSectionItems(section);
+            const hasActiveItem = allItems.some(isItemActive);
+            const isSingleItem = allItems.length === 1 && !section.subGroups;
 
             if (isSingleItem) {
-              const item = section.items[0];
+              const item = allItems[0];
               const active = isItemActive(item);
               return (
                 <div key={section.key} className="mb-1">
@@ -384,6 +385,26 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
               );
             }
+
+            // Render nav item link
+            const renderNavItem = (item: NavItem) => {
+              const active = isItemActive(item);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            };
 
             return (
               <div key={section.key} className="mb-1">
@@ -406,28 +427,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
                 <div
                   className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                    isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                    isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="pl-2 space-y-0.5 pb-1">
-                    {section.items.map((item) => {
-                      const active = isItemActive(item);
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            active
-                              ? "bg-sidebar-accent text-sidebar-primary"
-                              : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
+                    {/* Flat items (no subGroups) */}
+                    {section.items.map(renderNavItem)}
+
+                    {/* Sub-grouped items */}
+                    {section.subGroups?.map((sg, sgIdx) => (
+                      <div key={sgIdx} className="mt-1.5">
+                        <p className="px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-sidebar-foreground/30">
+                          {sg.label}
+                        </p>
+                        {sg.items.map(renderNavItem)}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
