@@ -373,6 +373,9 @@
     height: var(--input-height);
     border-radius: var(--btn-radius);
   }
+  .btn > svg {
+    flex-shrink: 0;
+  }
   .btn-primary {
     @apply btn bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90;
   }
