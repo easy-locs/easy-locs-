@@ -16,6 +16,9 @@ const CitySEOPage = ({ citySlug }: { citySlug: string }) => {
   const result = getCityBySlug(citySlug);
   if (!result) return null;
 
+  // Redirect to canonical clean URL
+  return <Navigate to={`/city/${citySlug}`} replace />;
+
   const { city, country } = result;
   const shouldNoindex = !isIndexableCity(city);
 
