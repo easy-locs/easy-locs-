@@ -314,113 +314,15 @@ const ActivitiesMarketplace = () => {
   });
 
   const updateBookingStatus = async (id: string, status: string) => {
-    const booking = myBookings.find((b: any) => b.id === id);
-    const updates: any = { status };
-    if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
-    if (status === "completed") updates.completed_at = new Date().toISOString();
-    const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-
-    toast.success(`Réservation ${status === "confirmed" ? "confirmée" : status === "cancelled" ? "annulée" : "terminée"}`);
-    qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
-
-    // Resolve related notifications — action is now completed
-    try {
-      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
-      await resolveNotificationsForTarget("marketplace_booking", id, user?.id);
-    } catch (e) { console.error("[resolve-notif]", e); }
-
-    // Sync status change via shared pipeline (operational follow-up, not a new sync event type)
-    if (booking) {
-      const svc = myServices.find((s: any) => s.id === booking.service_id);
-      const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
-      const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
-      const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
-      const meta = createDeepLinkMeta({
-        targetType: "marketplace_booking",
-        targetId: booking.id,
-        module: "marketplace",
-        countryCode: svc?.country || "",
-        bookingId: booking.id,
-        orgId: booking.org_id || orgId!,
-        propertyId: booking.property_id,
-      });
-      await sendCommunicationEvent({
-        orgId: booking.org_id || orgId!,
-        senderId: myProvider?.user_id,
-        recipientEmail: booking.booker_email,
-        subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
-        message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
-        category: status === "cancelled" ? "info" : "payment",
-        meta,
-      });
-    }
+    await lifecycle.updateStatusById(myBookings, id, status as any);
   };
 
   const sendPaymentLink = (booking: any) => {
-    const svc = myServices.find((s: any) => s.id === booking.service_id);
-    const link = svc?.payment_stripe_link || myProvider?.payment_stripe_link || svc?.payment_paypal_email || myProvider?.payment_paypal_email;
-    if (link) {
-      window.open(`mailto:${booking.booker_email}?subject=Payment for ${svc?.title || "service"}&body=Please complete your payment: ${link}`, "_blank");
-      supabase.from("marketplace_bookings").update({ payment_link_sent: true }).eq("id", booking.id).then(() => {
-        qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
-      });
-      // Sync engine: payment_request_sent (context-aware → marketplace)
-      syncPaymentRequest({
-        type: "payment_request_sent",
-        context: {
-          orgId: booking.org_id || orgId!,
-          bookingId: booking.id,
-          propertyId: booking.property_id || undefined,
-          countryCode: svc?.country || "",
-        },
-        actorUserId: user?.id || "",
-        targetEmail: booking.booker_email,
-        amount: Number(booking.total_price),
-        currency: booking.currency,
-        description: `Payment for "${svc?.title || "Service"}" — ${link}`,
-        recipientName: booking.booker_name,
-      });
-    } else {
-      toast.error("Aucun lien de paiement configuré");
-    }
+    lifecycle.sendPaymentLink(booking);
   };
 
   const confirmPayment = async (id: string) => {
-    const booking = myBookings.find((b: any) => b.id === id);
-    const { error } = await supabase.from("marketplace_bookings").update({
-      payment_confirmed: true,
-      payment_confirmed_at: new Date().toISOString(),
-      payment_method: "manual",
-    }).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-
-    toast.success("Paiement confirmé !");
-    qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
-
-    if (booking) {
-      const svc = myServices.find((s: any) => s.id === booking.service_id);
-      const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
-      const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
-      const meta = createDeepLinkMeta({
-        targetType: "marketplace_booking",
-        targetId: booking.id,
-        module: "marketplace",
-        countryCode: svc?.country || "",
-        bookingId: booking.id,
-        orgId: booking.org_id || orgId!,
-        propertyId: booking.property_id,
-      });
-      await sendCommunicationEvent({
-        orgId: booking.org_id || orgId!,
-        senderId: myProvider?.user_id,
-        recipientEmail: booking.booker_email,
-        subject: `💰 Payment confirmed: ${svc?.title || "Service"}`,
-        message: `Hello ${booking.booker_name},\n\nYour payment of ${booking.total_price} ${booking.currency} for "${svc?.title || "Service"}" has been confirmed.\nDate: ${booking.service_date || booking.date_from || "—"}\n\nThank you!`,
-        category: "payment",
-        meta,
-      });
-    }
+    await lifecycle.confirmPaymentById(myBookings, id);
   };
 
   const storefrontUrl = myProvider?.slug
