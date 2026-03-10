@@ -362,7 +362,7 @@ const Settings = () => {
                 </div>
               </div>
               <div>
-                <label className="form-label">Couleur accent</label>
+                <label className="form-label">{t("page.settings.accent_color") || "Accent Color"}</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))}
                     className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
