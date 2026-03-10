@@ -241,7 +241,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
@@ -251,7 +251,7 @@ const Hero = () => {
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105"
+                    className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105 w-full"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",
@@ -259,7 +259,7 @@ const Hero = () => {
                     }}
                   >
                     <span>{dest.flag}</span>
-                    <span>{dest.name}</span>
+                    <span className="truncate">{dest.name}</span>
                   </Link>
                 </motion.div>
               ))}
