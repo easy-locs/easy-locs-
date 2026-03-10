@@ -35,12 +35,13 @@ const Receipts = () => {
   // Load receipts from DB
   const loadReceipts = async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
       .select("id, title, doc_type, data_json, created_at")
       .eq("org_id", orgId)
-      .eq("doc_type", "rent-receipt")
-      .order("created_at", { ascending: false });
+      .eq("doc_type", "rent-receipt");
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query.order("created_at", { ascending: false });
     setReceipts((data as DBDocument[]) || []);
     setLoading(false);
   };
