@@ -1071,6 +1071,10 @@ html {
   .will-change-transform {
     will-change: transform;
   }
+  .will-change-scroll {
+    will-change: scroll-position;
+    -webkit-overflow-scrolling: touch;
+  }
   .gpu-accelerate {
     transform: translateZ(0);
     backface-visibility: hidden;

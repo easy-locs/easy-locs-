@@ -357,7 +357,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         {/* Scrollable nav */}
-        <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin">
+        <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin will-change-scroll">
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
             const allItems = getAllSectionItems(section);
@@ -469,7 +469,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="h-14 border-b border-border bg-card flex items-center px-3 sm:px-6 gap-2 sm:gap-3 sticky top-0 z-30">
+        <header className="h-14 border-b border-border bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-6 gap-2 sm:gap-3 sticky top-0 z-30">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>

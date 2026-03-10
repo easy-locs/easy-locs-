@@ -120,7 +120,7 @@ const Pricing = () => {
 
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
-              to="/onboarding"
+              to="/signup"
               className="block w-full text-center py-3.5 rounded-xl font-bold text-sm transition-all relative overflow-hidden group"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 20px hsl(var(--accent) / 0.25)" }}
             >
