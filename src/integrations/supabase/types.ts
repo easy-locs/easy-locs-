@@ -1357,6 +1357,7 @@ export type Database = {
           org_id: string
           properties_count: number | null
           rating: number | null
+          showcase_enabled: boolean
           slug: string
           updated_at: string | null
           user_id: string
@@ -1374,6 +1375,7 @@ export type Database = {
           org_id: string
           properties_count?: number | null
           rating?: number | null
+          showcase_enabled?: boolean
           slug: string
           updated_at?: string | null
           user_id: string
@@ -1391,6 +1393,7 @@ export type Database = {
           org_id?: string
           properties_count?: number | null
           rating?: number | null
+          showcase_enabled?: boolean
           slug?: string
           updated_at?: string | null
           user_id?: string

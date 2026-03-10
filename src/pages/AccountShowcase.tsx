@@ -62,7 +62,14 @@ export default function AccountShowcase() {
     const load = async () => {
       const { data } = await supabase.rpc("get_real_estate_showcase", { p_slug: accountSlug });
       if (data) {
-        setProfile((data as any).profile);
+        const p = (data as any).profile;
+        // If showcase is disabled, treat as not found
+        if (p && p.showcase_enabled === false) {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        setProfile(p);
         setListings((data as any).listings || []);
         setCountries((data as any).countries || []);
         setCities((data as any).cities || []);

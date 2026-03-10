@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,10 @@ const Settings = () => {
   const [savingBrand, setSavingBrand] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamp, setUploadingStamp] = useState(false);
+  const [showcaseEnabled, setShowcaseEnabled] = useState(true);
+  const [savingShowcase, setSavingShowcase] = useState(false);
+  const [landlordProfileId, setLandlordProfileId] = useState<string | null>(null);
+  const [landlordSlug, setLandlordSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +45,14 @@ const Settings = () => {
         brand_name: (data as any).brand_name || "", brand_primary_color: (data as any).brand_primary_color || "",
         brand_accent_color: (data as any).brand_accent_color || "",
       });
+    });
+    // Load showcase setting
+    supabase.from("landlord_profiles").select("id, slug, showcase_enabled").eq("org_id", orgId).limit(1).maybeSingle().then(({ data }) => {
+      if (data) {
+        setLandlordProfileId(data.id);
+        setLandlordSlug((data as any).slug || null);
+        setShowcaseEnabled((data as any).showcase_enabled !== false);
+      }
     });
   }, [orgId]);
 
@@ -237,6 +249,57 @@ const Settings = () => {
             </button>
           </div>
         </div>
+
+        {/* Public Showcase */}
+        {landlordProfileId && (
+          <div className="ui-card">
+            <div className="flex items-center gap-3 mb-5">
+              <Globe className="h-5 w-5 text-muted-foreground" />
+              <h2 className="font-semibold text-foreground">Public Showcase</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Control whether your agency showcase page is publicly visible. Individual listing visibility settings remain independent.
+            </p>
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
+              <div className="flex items-center gap-3">
+                {showcaseEnabled ? (
+                  <Eye className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <EyeOff className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <div className="font-medium text-sm text-foreground">
+                    {showcaseEnabled ? "Showcase Enabled" : "Showcase Disabled"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {showcaseEnabled && landlordSlug
+                      ? `Visible at /agency/${landlordSlug}`
+                      : "Your showcase page is not publicly accessible"}
+                  </div>
+                </div>
+              </div>
+              <button
+                disabled={savingShowcase}
+                onClick={async () => {
+                  if (!landlordProfileId) return;
+                  setSavingShowcase(true);
+                  const newVal = !showcaseEnabled;
+                  await supabase.from("landlord_profiles").update({ showcase_enabled: newVal } as any).eq("id", landlordProfileId);
+                  setShowcaseEnabled(newVal);
+                  toast({ title: newVal ? "Showcase enabled" : "Showcase disabled" });
+                  setSavingShowcase(false);
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  showcaseEnabled
+                    ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+                }`}
+              >
+                {savingShowcase ? "…" : showcaseEnabled ? "Disable" : "Enable"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Payment Providers */}
         <PaymentProvidersSettings />
