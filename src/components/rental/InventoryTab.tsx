@@ -112,13 +112,13 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
         <h2 className="font-semibold text-foreground">{t("comp.inventory.inventory_by_property")}</h2>
         <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} {t("comp.inventory.reports_total")}</span>
       </div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
         {properties.map(p => {
           const propTenants = tenants.filter(tn => tn.property_id === p.id);
           const propReports = reports.filter(r => r.property_id === p.id);
 
           return (
-            <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
+            <div key={p.id} className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ borderRadius: "var(--card-radius)" }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
