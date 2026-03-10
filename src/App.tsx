@@ -127,6 +127,8 @@ const ServicesHubPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m =
 const ServiceCategoryPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCategoryPage })));
 const ServiceCityPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCityPage })));
 const ProviderSEOPage = lazy(() => import("./pages/seo/ProviderSEOPage"));
+const SlugResolver = lazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })));
+const SlugCategoryResolver = lazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })));
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -174,7 +176,7 @@ const PageLoader = () => (
 const seoPublicPrefixes = [
   "/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/",
   "/services/", "/activities/", "/locations", "/country/", "/city/", "/marketplace",
-  "/explore",
+  "/explore", "/properties",
 ];
 
 const RouteAwareAssistant = () => {
@@ -269,6 +271,12 @@ const App = () => (
               {/* /activities — Activities hub + city combinations */}
               <Route path="/activities" element={<ActivitiesPage />} />
               <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
+
+              {/* ══════ BOOKING.COM-STYLE CLEAN URL ROUTES ══════ */}
+              {/* /:slug — resolves to country or city hub (e.g. /dubai, /france) */}
+              <Route path="/:slug" element={<SlugResolver />} />
+              {/* /:slug/:category — city + category (e.g. /dubai/services, /dubai/car-rental) */}
+              <Route path="/:slug/:category" element={<SlugCategoryResolver />} />
 
               {/* Legacy SEO routes — backward compatible */}
               <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
