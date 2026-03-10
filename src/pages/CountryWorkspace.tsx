@@ -98,11 +98,10 @@ const CountryWorkspace = () => {
     },
     {
       title: t("nav.documents") || "Documents",
-      description: t("section.documents_desc") || "Legal documents, tasks & interventions",
+      description: t("section.documents_desc") || "Legal documents & tasks",
       items: [
         { icon: FileText, label: t("nav.documents") || "Documents", path: cp("/dashboard/documents"), count: stats.documents },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cp("/dashboard/tasks") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
       ],
     },
     {

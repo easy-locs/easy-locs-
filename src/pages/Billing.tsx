@@ -1,17 +1,18 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Infinity } from "lucide-react";
+import { CheckCircle, AlertTriangle, Loader2, ExternalLink, Clock, Sparkles, Infinity, HelpCircle, LogOut, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
 import { PLANS, getPlanDisplay } from "@/lib/stripe-plans";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 
 const Billing = () => {
-  const { subscription, refreshSubscription } = useAuth();
+  const { subscription, refreshSubscription, user } = useAuth();
   const { t, locale } = useI18n();
+  const navigate = useNavigate();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -50,6 +51,11 @@ const Billing = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
   const isSubscribed = subscription.subscribed && !subscription.isTrial;
   const plan = PLANS.find((p) => p.key === (billingInterval === "monthly" ? "unlimited_monthly" : "unlimited_annual"));
   const planDisplay = plan ? getPlanDisplay(plan, t) : null;
@@ -71,9 +77,7 @@ const Billing = () => {
               </span>
             </div>
             <Progress value={subscription.trialDaysLeft != null ? ((3 - subscription.trialDaysLeft) / 3) * 100 : 0} className="h-2 mb-3" />
-            <p className="text-sm text-muted-foreground">
-              {t("page.billing.trial_desc")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("page.billing.trial_desc")}</p>
           </div>
         )}
 
@@ -90,7 +94,7 @@ const Billing = () => {
                 {t("page.billing.next_renewal")} : {new Date(subscription.subscriptionEnd).toLocaleDateString(locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : locale === "es" ? "es-ES" : locale === "it" ? "it-IT" : locale === "pt" ? "pt-PT" : "en-US")}
               </p>
             )}
-            <button onClick={handlePortal} disabled={portalLoading} className="flex items-center gap-2 text-sm font-medium text-accent hover:underline">
+            <button onClick={handlePortal} disabled={portalLoading} className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline h-9 px-3 rounded-lg hover:bg-accent/10 transition-colors">
               {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
               {t("page.billing.manage")}
             </button>
@@ -101,13 +105,13 @@ const Billing = () => {
         <div className="flex items-center justify-center gap-3 mb-8">
           <button
             onClick={() => setBillingInterval("monthly")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "monthly" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all h-10 ${billingInterval === "monthly" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             {t("page.billing.monthly")}
           </button>
           <button
             onClick={() => setBillingInterval("annual")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${billingInterval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all h-10 ${billingInterval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             {t("page.billing.annual")}
           </button>
@@ -146,12 +150,12 @@ const Billing = () => {
               ))}
             </ul>
             {isSubscribed ? (
-              <button disabled className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default">{t("page.billing.current")}</button>
+              <button disabled className="w-full py-3 rounded-lg text-sm font-semibold bg-success/10 text-success cursor-default h-12">{t("page.billing.current")}</button>
             ) : (
               <button
                 onClick={() => handleCheckout(plan.priceId)}
                 disabled={!!loadingPriceId}
-                className="w-full py-3 rounded-lg text-sm font-semibold bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90 transition-all disabled:opacity-50"
+                className="w-full py-3 rounded-lg text-sm font-semibold bg-gradient-gold text-accent-foreground shadow-gold hover:opacity-90 transition-all disabled:opacity-50 h-12"
               >
                 {loadingPriceId === plan.priceId ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t("page.billing.subscribe")}
               </button>
@@ -166,18 +170,63 @@ const Billing = () => {
           <span>🟢 Google Pay</span>
         </div>
 
-        <p className="text-xs text-center text-muted-foreground mt-4">
-          {t("page.billing.no_commitment")}
-        </p>
+        <p className="text-xs text-center text-muted-foreground mt-4">{t("page.billing.no_commitment")}</p>
 
         {!subscription.subscribed && !subscription.loading && !subscription.isTrial && (
           <div className="mt-6 flex items-start gap-3 bg-muted/50 rounded-lg p-4">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground">
-              {t("page.billing.trial_ended")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("page.billing.trial_ended")}</p>
           </div>
         )}
+
+        {/* Support & Account section */}
+        <div className="mt-10 border-t border-border/50 pt-8 space-y-4">
+          <h3 className="text-sm font-semibold text-foreground mb-4">
+            {t("page.billing.support_title") || "Support & Account"}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <a
+              href="mailto:support@easy-locs.com"
+              className="flex items-center gap-3 bg-card rounded-xl p-4 border border-border/50 hover:border-accent/30 transition-all group"
+            >
+              <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+                <Mail className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("page.billing.contact_support") || "Contact Support"}</p>
+                <p className="text-xs text-muted-foreground">support@easy-locs.com</p>
+              </div>
+            </a>
+
+            <a
+              href="/help"
+              className="flex items-center gap-3 bg-card rounded-xl p-4 border border-border/50 hover:border-accent/30 transition-all group"
+            >
+              <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+                <HelpCircle className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("page.billing.help_center") || "Help Center"}</p>
+                <p className="text-xs text-muted-foreground">{t("page.billing.help_desc") || "FAQ & guides"}</p>
+              </div>
+            </a>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl p-3 transition-colors mt-4 h-11"
+          >
+            <LogOut className="h-4 w-4" />
+            {t("nav.logout") || "Log out"}
+          </button>
+
+          {user?.email && (
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              {t("page.billing.logged_as") || "Logged in as"} {user.email}
+            </p>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );
