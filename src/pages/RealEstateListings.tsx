@@ -278,42 +278,48 @@ export default function RealEstateListings() {
 
             <TabsContent value="leads" className="space-y-3 mt-4">
               {leads.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground">No leads yet.</CardContent></Card>
+                <Card><CardContent className="py-12 text-center text-muted-foreground">No leads yet. Leads from your public property pages will appear here.</CardContent></Card>
               ) : (
                 <div className="space-y-2">
                   {leads.map(lead => {
                     const listing = listings.find(l => l.id === lead.listing_id);
+                    const listingType = listing ? LISTING_TYPES.find(t => t.value === listing.listing_type) : null;
                     return (
-                      <Card key={lead.id} className="hover:shadow-sm transition-shadow">
-                        <CardContent className="p-4 flex items-start gap-4">
-                          <div className={`w-2 h-2 rounded-full mt-2 ${lead.status === "new" ? "bg-red-500" : lead.status === "contacted" ? "bg-amber-500" : "bg-emerald-500"}`} />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-foreground">{lead.name}</span>
-                              <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
+                      <Card key={lead.id} className={`hover:shadow-sm transition-shadow ${lead.status === "new" ? "border-l-4 border-l-red-500" : ""}`}>
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className={`w-3 h-3 rounded-full shrink-0 ${lead.status === "new" ? "bg-red-500 animate-pulse" : lead.status === "contacted" ? "bg-amber-500" : lead.status === "qualified" ? "bg-emerald-500" : "bg-muted-foreground"}`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-foreground">{lead.name}</span>
+                                <Badge variant="outline" className={`text-[10px] ${lead.status === "new" ? "border-red-500/30 text-red-600 dark:text-red-400" : ""}`}>{lead.status}</Badge>
+                                {listingType && <Badge variant="outline" className="text-[10px]">{listingType.emoji} {listingType.label}</Badge>}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                                <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>
+                                {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
+                              </div>
+                              {listing && <div className="text-xs text-muted-foreground mt-1">🏠 {listing.title}</div>}
+                              {lead.message && <p className="text-sm text-muted-foreground mt-1.5 italic border-l-2 border-border pl-2">"{lead.message}"</p>}
+                              <div className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(lead.created_at), "PPp")}</div>
                             </div>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              <Mail className="h-3 w-3 inline mr-1" />{lead.email}
-                              {lead.phone && <span className="ml-2"><Phone className="h-3 w-3 inline mr-1" />{lead.phone}</span>}
-                            </div>
-                            {listing && <div className="text-xs text-muted-foreground mt-0.5">Property: {listing.title}</div>}
-                            {lead.message && <p className="text-sm text-muted-foreground mt-1 italic">"{lead.message}"</p>}
-                            <div className="text-[10px] text-muted-foreground mt-1">{format(new Date(lead.created_at), "PPp")}</div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1.5 shrink-0 self-end sm:self-start">
                             {lead.status === "new" && (
-                              <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}>
+                              <Button size="sm" variant="outline" className="text-xs h-8 min-h-[36px]" onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}>
                                 Mark Contacted
                               </Button>
                             )}
                             {lead.status === "contacted" && (
-                              <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "qualified")}>
+                              <Button size="sm" variant="outline" className="text-xs h-8 min-h-[36px]" onClick={() => handleUpdateLeadStatus(lead.id, "qualified")}>
                                 Qualify
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => handleUpdateLeadStatus(lead.id, "closed")}>
-                              Close
-                            </Button>
+                            {lead.status !== "closed" && (
+                              <Button size="sm" variant="ghost" className="text-xs h-8 min-h-[36px] text-muted-foreground" onClick={() => handleUpdateLeadStatus(lead.id, "closed")}>
+                                Close
+                              </Button>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
