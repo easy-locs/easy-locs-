@@ -8,6 +8,7 @@ import {
   Bell, Layers, ClipboardCheck,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { SmartActionCard } from "@/components/ui/SmartActionCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -23,7 +24,6 @@ const CountryWorkspace = () => {
   const { t } = useI18n();
   const entry = getCountryEntryOrDefault(country);
   const profile = getCountryProfile(country);
-  const fmt = (n: number) => formatCurrency(n, country);
 
   const [stats, setStats] = useState({
     properties: 0, tenants: 0, leases: 0, documents: 0,
@@ -43,7 +43,6 @@ const CountryWorkspace = () => {
     ]).then(([props, tenants, docs, buildings, inventories, furniture]) => {
       const propIds = new Set((props.data || []).map(p => p.id));
       const countryTenants = (tenants.data || []).filter(t => t.property_id && propIds.has(t.property_id));
-      // Leases = tenants with a property assignment and a lease_start date
       const countryLeases = countryTenants.filter(t => t.lease_start);
       const countryInventories = (inventories.data || []).filter(i => i.property_id && propIds.has(i.property_id));
       const countryFurniture = (furniture.data || []).filter(f => f.property_id && propIds.has(f.property_id));
@@ -134,7 +133,7 @@ const CountryWorkspace = () => {
             <div className="text-5xl">{entry.flag}</div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">{entry.name}</h1>
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
                 <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded font-medium">{profile.currency} ({profile.currencySymbol})</span>
                 <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">{profile.locale}</span>
                 <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">{profile.measurementUnit === "metric" ? "Métrique" : "Impérial"}</span>
@@ -143,7 +142,7 @@ const CountryWorkspace = () => {
           </div>
         </motion.div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats — using stat-card class */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {[
             { label: t("nav.properties") || "Properties", value: stats.properties, icon: Home },
@@ -160,17 +159,17 @@ const CountryWorkspace = () => {
               className="stat-card"
             >
               <div className="flex items-center gap-1.5 mb-1.5">
-                <stat.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="text-[10px] text-muted-foreground font-medium truncate">{stat.label}</span>
               </div>
-              <div className="text-xl font-bold text-foreground tabular-nums">
-                {loading ? "..." : stat.value}
+              <div className="text-xl font-bold text-foreground tabular-nums mt-auto">
+                {loading ? "…" : stat.value}
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Module Sections */}
+        {/* Module Sections — using SmartActionCard */}
         <div className="space-y-8">
           {sections.map((section, si) => (
             <motion.div
@@ -187,23 +186,14 @@ const CountryWorkspace = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {section.items.map((item) => (
-                  <Link
+                  <SmartActionCard
                     key={item.path}
-                    to={item.path}
-                    className="group flex items-center gap-3 bg-card rounded-xl p-4 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all"
-                  >
-                    <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-                      <item.icon className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-foreground">{item.label}</div>
-                    </div>
-                    {"count" in item && item.count !== undefined && (
-                      <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold">
-                        {item.count}
-                      </span>
-                    )}
-                  </Link>
+                    icon={item.icon}
+                    label={item.label}
+                    path={item.path}
+                    count={"count" in item ? item.count : undefined}
+                    loading={loading}
+                  />
                 ))}
               </div>
             </motion.div>

@@ -546,6 +546,38 @@
   .floating-safe-zone {
     @apply pb-24;
   }
+
+  /* ── Button groups — uniform spacing and wrapping ── */
+  .btn-group {
+    @apply flex flex-wrap items-center gap-2;
+  }
+  .btn-group > * {
+    @apply shrink-0;
+  }
+  .btn-group-stretch {
+    @apply flex flex-wrap items-center gap-2;
+  }
+  @media (max-width: 640px) {
+    .btn-group-stretch > * {
+      @apply flex-1 min-w-0;
+    }
+  }
+
+  /* ── Action card grid — uniform responsive grid for SmartActionCard ── */
+  .action-card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3;
+  }
+
+  /* ── Section block — title + description + content ── */
+  .section-block {
+    @apply space-y-3;
+  }
+  .section-block-title {
+    @apply text-xs font-bold uppercase tracking-wider text-muted-foreground;
+  }
+  .section-block-desc {
+    @apply text-[11px] text-muted-foreground/60 mt-0.5;
+  }
 }
 
 /* ══════════════════════════════════════════════════
