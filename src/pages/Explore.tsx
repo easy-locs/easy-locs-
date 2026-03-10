@@ -245,7 +245,7 @@ export default function Explore() {
           {/* Search bar */}
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -253,7 +253,7 @@ export default function Explore() {
                 className="pl-12 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2">
+                <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
                   <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
               )}
