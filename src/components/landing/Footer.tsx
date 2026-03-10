@@ -62,6 +62,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
 
   return (
     <footer
+      aria-label="Site footer"
       ref={ref}
       className="py-16 relative overflow-hidden"
       style={{ background: "hsl(var(--navy-deep))", color: "hsl(var(--primary-foreground) / 0.55)" }}
