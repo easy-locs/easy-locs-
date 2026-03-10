@@ -30,7 +30,7 @@ const MFASettings = () => {
     setLoading(true);
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Easy-Locs TOTP" });
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else if (data) {
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
@@ -45,15 +45,15 @@ const MFASettings = () => {
     setLoading(true);
     const challenge = await supabase.auth.mfa.challenge({ factorId });
     if (challenge.error) {
-      toast({ title: "Erreur", description: challenge.error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: challenge.error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
     const { error } = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code });
     if (error) {
-      toast({ title: "Code invalide", description: error.message, variant: "destructive" });
+      toast({ title: t("page.settings.mfa_invalid_code") || "Invalid code", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "✅ 2FA activé", description: "L'authentification à deux facteurs est maintenant active." });
+      toast({ title: t("page.settings.mfa_activated") || "✅ 2FA activated", description: t("page.settings.mfa_activated_desc") || "Two-factor authentication is now active." });
       setStep("enrolled");
       loadFactors();
     }
@@ -64,9 +64,9 @@ const MFASettings = () => {
     setLoading(true);
     const { error } = await supabase.auth.mfa.unenroll({ factorId: fId });
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "2FA désactivé" });
+      toast({ title: t("page.settings.mfa_deactivated") || "2FA disabled" });
       setStep("idle");
       setFactors([]);
     }
@@ -74,21 +74,21 @@ const MFASettings = () => {
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+    <div className="ui-card">
       <div className="flex items-center gap-3 mb-5">
         <Shield className="h-5 w-5 text-muted-foreground" />
-        <h2 className="font-semibold text-foreground">Authentification à deux facteurs (2FA)</h2>
+        <h2 className="font-semibold text-foreground">{t("page.settings.mfa_title") || "Two-Factor Authentication (2FA)"}</h2>
       </div>
 
       {step === "idle" && (
         <div>
           <p className="text-sm text-muted-foreground mb-4">
-            Protégez votre compte avec une application d'authentification (Google Authenticator, Authy, etc.)
+            {t("page.settings.mfa_desc") || "Protect your account with an authenticator app (Google Authenticator, Authy, etc.)"}
           </p>
           <button onClick={startEnroll} disabled={loading}
-            className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-2">
+            className="btn-primary flex items-center gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
-            Activer le 2FA
+            {t("page.settings.mfa_enable") || "Enable 2FA"}
           </button>
         </div>
       )}
@@ -96,30 +96,30 @@ const MFASettings = () => {
       {step === "enrolling" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Scannez ce QR code avec votre application d'authentification :
+            {t("page.settings.mfa_scan") || "Scan this QR code with your authenticator app:"}
           </p>
           <div className="flex justify-center">
             <img src={qrCode} alt="QR Code TOTP" className="w-48 h-48 rounded-lg border border-border" />
           </div>
           <div className="bg-muted rounded-lg p-3">
-            <p className="text-xs text-muted-foreground mb-1">Clé secrète (saisie manuelle) :</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("page.settings.mfa_secret") || "Secret key (manual entry):"}</p>
             <code className="text-xs font-mono text-foreground break-all">{secret}</code>
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Code de vérification (6 chiffres)</label>
+            <label className="form-label">{t("page.settings.mfa_code_label") || "Verification code (6 digits)"}</label>
             <input type="text" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
               placeholder="000000"
-              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-ring" />
+              className="form-input font-mono text-center tracking-widest" />
           </div>
           <div className="flex gap-3">
             <button onClick={verifyCode} disabled={loading || code.length !== 6}
-              className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-2">
+              className="btn-primary flex items-center gap-2">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Verify & activate
+              {t("page.settings.mfa_verify") || "Verify & activate"}
             </button>
             <button onClick={() => { setStep("idle"); setCode(""); }}
-              className="bg-muted text-foreground font-medium px-5 py-2 rounded-lg text-sm hover:bg-muted/80 flex items-center gap-2">
-              <X className="h-4 w-4" /> Cancel
+              className="btn-secondary flex items-center gap-2">
+              <X className="h-4 w-4" /> {t("page.common.cancel") || "Cancel"}
             </button>
           </div>
         </div>
@@ -131,14 +131,14 @@ const MFASettings = () => {
             <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
               <Check className="h-4 w-4 text-accent" />
             </div>
-            <p className="text-sm font-medium text-foreground">2FA est activé sur votre compte</p>
+            <p className="text-sm font-medium text-foreground">{t("page.settings.mfa_active") || "2FA is active on your account"}</p>
           </div>
           {factors.map(f => (
             <div key={f.id} className="flex items-center justify-between bg-muted rounded-lg p-3 mb-2">
               <span className="text-sm text-foreground">{f.friendly_name || "TOTP"}</span>
               <button onClick={() => unenroll(f.id)} disabled={loading}
                 className="text-xs text-destructive hover:underline">
-                Désactiver
+                {t("page.common.disable") || "Disable"}
               </button>
             </div>
           ))}
