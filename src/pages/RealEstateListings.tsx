@@ -193,7 +193,7 @@ export default function RealEstateListings() {
 
   return (
     <DashboardLayout>
-      <FeatureGate>
+      <FeatureGate feature="real_estate" featureLabel="Real Estate">
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

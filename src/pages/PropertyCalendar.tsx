@@ -299,7 +299,7 @@ export default function PropertyCalendar() {
 
   return (
     <DashboardLayout>
-      <FeatureGate>
+      <FeatureGate feature="calendar" featureLabel="Property Calendar">
         <div className="space-y-4">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
