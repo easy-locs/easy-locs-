@@ -14,6 +14,7 @@ import {
   Search, MapPin, Globe, Home, Sun, Briefcase, ArrowRight, Eye,
   Users, Moon, SlidersHorizontal, X, Building2, Waves, Car, Sparkles,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
