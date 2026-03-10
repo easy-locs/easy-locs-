@@ -234,6 +234,16 @@ const TEMPLATES: Record<string, Record<string, { subject: string; title: string;
     it: { subject: "Avviso account — {message}", title: "🔔 Avviso account", body: "{message}" },
     pt: { subject: "Alerta de conta — {message}", title: "🔔 Alerta de conta", body: "{message}" },
   },
+
+  /* ─── Real Estate Leads ─── */
+  real_estate_lead: {
+    fr: { subject: "🏠 Nouvelle demande immobilière — {lead_name}", title: "🏠 Nouvelle demande immobilière", body: "{lead_name} est intéressé(e) par votre bien « {listing_title} » ({listing_type}).\n\n📧 Email : {lead_email}\n📱 Téléphone : {lead_phone}\n\n💬 Message : {lead_message}" },
+    en: { subject: "🏠 New Property Inquiry — {lead_name}", title: "🏠 New Property Inquiry", body: "{lead_name} is interested in your property \"{listing_title}\" ({listing_type}).\n\n📧 Email: {lead_email}\n📱 Phone: {lead_phone}\n\n💬 Message: {lead_message}" },
+    es: { subject: "🏠 Nueva consulta inmobiliaria — {lead_name}", title: "🏠 Nueva consulta inmobiliaria", body: "{lead_name} está interesado/a en su propiedad \"{listing_title}\" ({listing_type}).\n\n📧 Email: {lead_email}\n📱 Teléfono: {lead_phone}\n\n💬 Mensaje: {lead_message}" },
+    de: { subject: "🏠 Neue Immobilienanfrage — {lead_name}", title: "🏠 Neue Immobilienanfrage", body: "{lead_name} interessiert sich für Ihre Immobilie \"{listing_title}\" ({listing_type}).\n\n📧 E-Mail: {lead_email}\n📱 Telefon: {lead_phone}\n\n💬 Nachricht: {lead_message}" },
+    it: { subject: "🏠 Nuova richiesta immobiliare — {lead_name}", title: "🏠 Nuova richiesta immobiliare", body: "{lead_name} è interessato/a al tuo immobile \"{listing_title}\" ({listing_type}).\n\n📧 Email: {lead_email}\n📱 Telefono: {lead_phone}\n\n💬 Messaggio: {lead_message}" },
+    pt: { subject: "🏠 Nova consulta imobiliária — {lead_name}", title: "🏠 Nova consulta imobiliária", body: "{lead_name} está interessado(a) no seu imóvel \"{listing_title}\" ({listing_type}).\n\n📧 Email: {lead_email}\n📱 Telefone: {lead_phone}\n\n💬 Mensagem: {lead_message}" },
+  },
 };
 
 /* ── Backwards compatibility aliases for old event_type names ── */
