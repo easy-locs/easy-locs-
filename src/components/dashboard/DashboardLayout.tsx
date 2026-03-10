@@ -458,6 +458,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "AI Assistant"}
           </Link>
+          <Link
+            to="/dashboard/ai-quality"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
+          >
+            <Zap className="h-4 w-4 shrink-0" /> AI Quality Center
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
