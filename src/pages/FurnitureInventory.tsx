@@ -422,7 +422,7 @@ const FurnitureInventory = () => {
                 ) : (
                   <button type="button" onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-2 border border-dashed border-border rounded-lg px-4 py-3 text-sm text-muted-foreground hover:border-accent hover:text-foreground transition-colors">
-                    <Camera className="h-4 w-4" /> Ajouter une photo
+                    <Camera className="h-4 w-4" /> {t("common.add_photo") || "Add Photo"}
                   </button>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />

@@ -392,10 +392,10 @@ const ChannelManager = () => {
             </Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />Ajouter une connexion</Button>
+                <Button><Plus className="h-4 w-4 mr-2" />{t("channel.add_connection") || "Add Connection"}</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Nouvelle connexion OTA</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t("channel.new_ota") || "New OTA Connection"}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <Select value={newConn.provider} onValueChange={v => setNewConn(p => ({ ...p, provider: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
