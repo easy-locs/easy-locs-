@@ -56,6 +56,8 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
   const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState(booking?.notes || "");
   const [saving, setSaving] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   const documentUrls: string[] = Array.isArray(booking?.document_urls) ? booking.document_urls : [];
   const statusInfo = STATUS_MAP[booking?.status] || STATUS_MAP.pending;
