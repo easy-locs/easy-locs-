@@ -277,7 +277,7 @@ const DeveloperPortal = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant={k.active ? "default" : "secondary"}>{k.active ? "Actif" : "Inactif"}</Badge>
+                          <Badge variant={k.active ? "default" : "secondary"}>{k.active ? "Active" : "Inactive"}</Badge>
                           <span className="text-xs text-muted-foreground hidden sm:inline">{format(parseISO(k.created_at), "dd/MM/yyyy")}</span>
                           <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteMut.mutate(k.id)}>
                             <Trash2 className="h-4 w-4" />
