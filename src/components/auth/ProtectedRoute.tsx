@@ -19,20 +19,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
+  const isClientRoute = location.pathname.startsWith("/client");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
-    return <Navigate to={activeRole === "tenant" ? "/tenant" : "/dashboard"} replace />;
+    const dest = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
+    return <Navigate to={dest} replace />;
   }
 
-  // Use activeRole (not userType) to enforce interface separation
+  // Client role: can only access /client/* routes
+  if (activeRole === "client" && !isClientRoute && !isOnboarding) {
+    return <Navigate to="/client" replace />;
+  }
+
   // Tenant role users should only access /tenant/* routes
   if (activeRole === "tenant" && !isTenantRoute && !isOnboarding) {
     return <Navigate to="/tenant" replace />;
   }
 
-  // Landlord role users should not access /tenant/* routes
-  if (activeRole === "landlord" && isTenantRoute) {
+  // Landlord role users should not access /tenant/* or /client/* routes
+  if (activeRole === "landlord" && (isTenantRoute || isClientRoute)) {
     return <Navigate to="/dashboard" replace />;
   }
 
