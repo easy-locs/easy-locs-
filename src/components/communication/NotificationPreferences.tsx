@@ -71,9 +71,9 @@ export default function NotificationPreferences() {
       { onConflict: "user_id" }
     );
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: t("page.settings.profile_updated") || "Préférences mises à jour" });
+      toast({ title: t("page.settings.profile_updated") || "Preferences updated" });
     }
     setSaving(false);
   };

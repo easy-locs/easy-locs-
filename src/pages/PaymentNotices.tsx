@@ -354,9 +354,9 @@ const PaymentNotices = () => {
                                         <div className="flex items-center gap-1.5 justify-end flex-wrap">
                                           {!isPaid && (
                                             <>
-                                              <button onClick={() => regularize(matchingRentCall!)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors whitespace-nowrap" title={t("page.notices.regularize") || "Régulariser"}>
+                                              <button onClick={() => regularize(matchingRentCall!)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors whitespace-nowrap" title={t("page.notices.regularize") || "Regularize"}>
                                                 <CheckCircle className="h-3.5 w-3.5 shrink-0" />
-                                                {t("page.notices.regularize") || "Régulariser"}
+                                                {t("page.notices.regularize") || "Regularize"}
                                               </button>
                                               <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap" title={t("page.notices.partial") || "Partiel"}>
                                                 <Banknote className="h-3.5 w-3.5 shrink-0" />
@@ -395,9 +395,9 @@ const PaymentNotices = () => {
                   {tenantName(partialDialog.tenant_id)} — {partialDialog.month}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {t("page.notices.total_due") || "Total dû"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
+                  {t("page.notices.total_due") || "Total due"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
                   {(partialDialog.paid_amount || 0) > 0 && (
-                    <> · {t("page.notices.already_paid") || "Déjà payé"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
+                    <> · {t("page.notices.already_paid") || "Already paid"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
                   )}
                 </p>
                 <div className="form-group mb-4">

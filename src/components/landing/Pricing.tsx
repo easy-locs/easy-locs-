@@ -113,7 +113,7 @@ const Pricing = () => {
                 transition={{ delay: i * 0.03 }}
               >
                 <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                <span>{t(key)}</span>
+                <span>{t(key) !== key ? t(key) : key.split(".").pop()?.replace(/_/g, " ") || key}</span>
               </motion.li>
             ))}
           </ul>

@@ -9,27 +9,27 @@ const LegalNoticePage = () => {
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">
-          <h1 className="text-3xl font-bold text-foreground mb-6">{t("legal.notice.title")}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-6">{t("legal.notice.title") || "Legal Notice"}</h1>
           <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Éditeur du site</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("legal.notice.publisher") || "Website Publisher"}</h2>
             <p>
               <strong>Easy-Locs SAS</strong><br />
-              Société par actions simplifiée<br />
+              {t("legal.notice.company_type") || "Simplified joint stock company"}<br />
               Email : <a href="mailto:contact@easy-locs.com" className="text-accent hover:underline">contact@easy-locs.com</a><br />
-              Site web : <a href="https://www.easy-locs.com" className="text-accent hover:underline">www.easy-locs.com</a>
+              {t("legal.notice.website") || "Website"} : <a href="https://www.easy-locs.com" className="text-accent hover:underline">www.easy-locs.com</a>
             </p>
 
-            <h2 className="text-lg font-semibold text-foreground">Directeur de la publication</h2>
-            <p>Le directeur de la publication est le représentant légal d'Easy-Locs SAS.</p>
+            <h2 className="text-lg font-semibold text-foreground">{t("legal.notice.director") || "Publication Director"}</h2>
+            <p>{t("legal.notice.director_desc") || "The publication director is the legal representative of Easy-Locs SAS."}</p>
 
-            <h2 className="text-lg font-semibold text-foreground">Hébergement</h2>
-            <p>Le site est hébergé au sein de l'Union Européenne conformément aux exigences du RGPD.</p>
+            <h2 className="text-lg font-semibold text-foreground">{t("legal.notice.hosting") || "Hosting"}</h2>
+            <p>{t("legal.notice.hosting_desc") || "The website is hosted within the European Union in compliance with GDPR requirements."}</p>
 
-            <h2 className="text-lg font-semibold text-foreground">Propriété intellectuelle</h2>
-            <p>L'ensemble du contenu du site (textes, graphismes, logos, icônes, images, logiciels) est la propriété exclusive d'Easy-Locs SAS et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle.</p>
+            <h2 className="text-lg font-semibold text-foreground">{t("legal.notice.ip") || "Intellectual Property"}</h2>
+            <p>{t("legal.notice.ip_desc") || "All content on the website (text, graphics, logos, icons, images, software) is the exclusive property of Easy-Locs SAS and is protected by French and international intellectual property laws."}</p>
 
-            <h2 className="text-lg font-semibold text-foreground">Limitation de responsabilité</h2>
-            <p>Easy-Locs® s'efforce de fournir des informations exactes et à jour. Toutefois, Easy-Locs SAS ne saurait garantir l'exactitude, la complétude ou l'actualité des informations diffusées sur le site.</p>
+            <h2 className="text-lg font-semibold text-foreground">{t("legal.notice.liability") || "Limitation of Liability"}</h2>
+            <p>{t("legal.notice.liability_desc") || "Easy-Locs® strives to provide accurate and up-to-date information. However, Easy-Locs SAS cannot guarantee the accuracy, completeness, or timeliness of the information published on the website."}</p>
           </div>
         </div>
       </main>

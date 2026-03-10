@@ -173,7 +173,7 @@ const Accounting = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(t("page.accounting.entry_added") || "Écriture ajoutée");
+      toast.success(t("page.accounting.entry_added") || "Entry added");
       qc.invalidateQueries({ queryKey: ["journal"] });
       setAddOpen(false);
       setNewEntry({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
@@ -183,7 +183,7 @@ const Accounting = () => {
 
   const exportCSV = () => {
     const sym = activeRules.currencySymbol;
-    const headers = `Date,${t("page.accounting.label") || "Libellé"},${t("page.accounting.category") || "Catégorie"},${t("page.accounting.debit") || "Débit"},${t("page.accounting.credit") || "Crédit"},Source\n`;
+    const headers = `Date,${t("page.accounting.label") || "Label"},${t("page.accounting.category") || "Category"},${t("page.accounting.debit") || "Debit"},${t("page.accounting.credit") || "Credit"},Source\n`;
     const rows = allTransactions.map(t => `${t.date},"${t.label}",${t.category},${t.debit},${t.credit},${t.source}`).join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -199,8 +199,8 @@ const Accounting = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Comptabilité"}</h1>
-            <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow et rapports financiers"}</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Accounting"}</h1>
+            <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow and financial reports"}</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mr-2">
@@ -219,8 +219,8 @@ const Accounting = () => {
                     <SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
                   </Select>
                   <div className="grid grid-cols-2 gap-3">
-                    <Input type="number" placeholder={`${t("page.accounting.debit") || "Débit"} (${sym})`} value={newEntry.debit} onChange={e => setNewEntry(p => ({ ...p, debit: e.target.value }))} />
-                    <Input type="number" placeholder={`${t("page.accounting.credit") || "Crédit"} (${sym})`} value={newEntry.credit} onChange={e => setNewEntry(p => ({ ...p, credit: e.target.value }))} />
+                    <Input type="number" placeholder={`${t("page.accounting.debit") || "Debit"} (${sym})`} value={newEntry.debit} onChange={e => setNewEntry(p => ({ ...p, debit: e.target.value }))} />
+                    <Input type="number" placeholder={`${t("page.accounting.credit") || "Credit"} (${sym})`} value={newEntry.credit} onChange={e => setNewEntry(p => ({ ...p, credit: e.target.value }))} />
                   </div>
                   <Input type="date" value={newEntry.transaction_date} onChange={e => setNewEntry(p => ({ ...p, transaction_date: e.target.value }))} />
                   <Select value={newEntry.property_id || "none"} onValueChange={v => setNewEntry(p => ({ ...p, property_id: v === "none" ? "" : v }))}>
@@ -233,8 +233,8 @@ const Accounting = () => {
                   <Input placeholder="Notes" value={newEntry.notes} onChange={e => setNewEntry(p => ({ ...p, notes: e.target.value }))} />
                   {/* Show fiscal info */}
                   <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-                    <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Infos fiscales"} — {activeRules.country}</p>
-                    {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Taux forfaitaire"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
+                    <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Fiscal info"} — {activeRules.country}</p>
+                    {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Flat tax rate"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
                     {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Progressive taxation"}</p>}
                     {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exempt from rental income tax"}</p>}
                     {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Social charges"}: {activeRules.socialCharges}%</p>}
@@ -267,11 +267,11 @@ const Accounting = () => {
           <TabsContent value="journal" className="mt-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg">{t("page.accounting.transaction_journal") || "Journal des transactions"}</CardTitle>
+                <CardTitle className="text-lg">{t("page.accounting.transaction_journal") || "Transaction Journal"}</CardTitle>
                 <Select value={filterCat} onValueChange={setFilterCat}>
                   <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("page.accounting.all_categories") || "Toutes catégories"}</SelectItem>
+                    <SelectItem value="all">{t("page.accounting.all_categories") || "All categories"}</SelectItem>
                     {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -307,7 +307,7 @@ const Accounting = () => {
 
           <TabsContent value="cashflow" className="mt-4">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Cashflow — {t("page.accounting.last_6_months") || "6 derniers mois"}</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Cashflow — {t("page.accounting.last_6_months") || "Last 6 months"}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={cashflowData}>
@@ -315,12 +315,12 @@ const Accounting = () => {
                     <XAxis dataKey="month" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                    <Bar dataKey="revenus" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name={t("page.accounting.revenue") || "Revenus"} />
-                    <Bar dataKey="depenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name={t("page.accounting.expenses") || "Dépenses"} />
+                    <Bar dataKey="revenus" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name={t("page.accounting.revenue") || "Revenue"} />
+                    <Bar dataKey="depenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name={t("page.accounting.expenses") || "Expenses"} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="mt-6">
-                  <h4 className="text-sm font-semibold text-foreground mb-2">{t("page.accounting.net_monthly") || "Résultat net mensuel"}</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">{t("page.accounting.net_monthly") || "Monthly net result"}</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={cashflowData}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

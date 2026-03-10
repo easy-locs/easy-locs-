@@ -1621,6 +1621,19 @@ const pageFr: Record<string, string> = {
   "page.charges.balanced": "Équilibré",
   "page.charges.legal_notice": "La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).",
 
+  // Legal Notice page (extended)
+  "legal.notice.publisher": "Éditeur du site",
+  "legal.notice.company_type": "Société par actions simplifiée",
+  "legal.notice.website": "Site web",
+  "legal.notice.director": "Directeur de la publication",
+  "legal.notice.director_desc": "Le directeur de la publication est le représentant légal d'Easy-Locs SAS.",
+  "legal.notice.hosting": "Hébergement",
+  "legal.notice.hosting_desc": "Le site est hébergé au sein de l'Union Européenne conformément aux exigences du RGPD.",
+  "legal.notice.ip": "Propriété intellectuelle",
+  "legal.notice.ip_desc": "L'ensemble du contenu du site (textes, graphismes, logos, icônes, images, logiciels) est la propriété exclusive d'Easy-Locs SAS et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle.",
+  "legal.notice.liability": "Limitation de responsabilité",
+  "legal.notice.liability_desc": "Easy-Locs® s'efforce de fournir des informations exactes et à jour. Toutefois, Easy-Locs SAS ne saurait garantir l'exactitude, la complétude ou l'actualité des informations diffusées sur le site.",
+
   // Newsletter
   "newsletter.badge": "Newsletter",
   "newsletter.title": "Restez informé des nouveautés",
@@ -3096,6 +3109,19 @@ const pageEn: Record<string, string> = {
   "embed.copied": "Code copied!",
   "pagination.results": "results",
   "pagination.page": "Page",
+
+  // Legal Notice page (extended)
+  "legal.notice.publisher": "Website Publisher",
+  "legal.notice.company_type": "Simplified joint stock company",
+  "legal.notice.website": "Website",
+  "legal.notice.director": "Publication Director",
+  "legal.notice.director_desc": "The publication director is the legal representative of Easy-Locs SAS.",
+  "legal.notice.hosting": "Hosting",
+  "legal.notice.hosting_desc": "The website is hosted within the European Union in compliance with GDPR requirements.",
+  "legal.notice.ip": "Intellectual Property",
+  "legal.notice.ip_desc": "All content on the website (text, graphics, logos, icons, images, software) is the exclusive property of Easy-Locs SAS and is protected by French and international intellectual property laws.",
+  "legal.notice.liability": "Limitation of Liability",
+  "legal.notice.liability_desc": "Easy-Locs® strives to provide accurate and up-to-date information. However, Easy-Locs SAS cannot guarantee the accuracy, completeness, or timeliness of the information published on the website.",
 
   // Company page
   "page.company.title": "Company",

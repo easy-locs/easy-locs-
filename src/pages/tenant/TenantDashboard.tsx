@@ -55,12 +55,12 @@ const TenantDashboard = () => {
     ? L.leaseType : L.property;
 
   const quickCards = [
-    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "text-info", hint: "Voir mes quittances →" },
-    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "text-success", hint: "Consulter mes documents →" },
-    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "text-warning", hint: "Voir la messagerie →" },
-    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "text-accent", hint: "Payer mon loyer →" },
-    { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "text-primary", hint: "Laisser un avis →" },
-    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "text-muted-foreground", hint: "Mes demandes →" },
+    { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts", value: `${receiptsCount}`, color: "text-info", hint: t("tenant.hint_receipts") || "View my receipts →" },
+    { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents", value: T.sendDocument, color: "text-success", hint: t("tenant.hint_documents") || "View my documents →" },
+    { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages", value: unreadMessages > 0 ? `${unreadMessages}` : "0", color: "text-warning", hint: t("tenant.hint_messages") || "View messages →" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay", value: tenantInfo ? fmt(Number(tenantInfo.rent_amount) + Number(tenantInfo.charges_amount)) : "—", color: "text-accent", hint: t("tenant.hint_pay") || "Pay my rent →" },
+    { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews", value: "—", color: "text-primary", hint: t("tenant.hint_reviews") || "Leave a review →" },
+    { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests", value: "—", color: "text-muted-foreground", hint: t("tenant.hint_requests") || "My requests →" },
   ];
 
   return (

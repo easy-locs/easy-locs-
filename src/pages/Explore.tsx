@@ -206,8 +206,8 @@ export default function Explore() {
               }}
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-success" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
               </span>
               Live worldwide listings
             </motion.div>

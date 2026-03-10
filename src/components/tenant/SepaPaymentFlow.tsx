@@ -44,7 +44,7 @@ export default function SepaPaymentFlow({
       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border hover:bg-muted transition-colors"
     >
       {copiedField === field ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-      {copiedField === field ? (t("common.copied") || "Copié") : label}
+      {copiedField === field ? (t("common.copied") || "Copied") : label}
     </button>
   );
 
