@@ -475,7 +475,7 @@ const ActivitiesMarketplace = () => {
                 </Button>
                 {storefrontUrl && (
                   <Button variant="outline" size="sm" onClick={shareStorefront}>
-                    <Share2 className="h-4 w-4 mr-1" /> Share Storefront
+                    <Share2 className="h-4 w-4 mr-1" /> Partager la vitrine
                   </Button>
                 )}
               </>
