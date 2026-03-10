@@ -97,9 +97,8 @@ const Accounting = () => {
     enabled: !!org,
   });
 
-  // Filter by country (match property_id → country)
+  // Filter properties by country context
   const countryFilteredProperties = useMemo(() => {
-    if (selectedCountry === "all") return properties;
     return properties.filter((p: any) => (p.country || "FR") === selectedCountry);
   }, [properties, selectedCountry]);
 
