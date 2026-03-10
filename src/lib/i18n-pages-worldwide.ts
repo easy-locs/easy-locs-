@@ -492,6 +492,7 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "landing.hero.title": "Het eerste wereldwijde platform", "landing.hero.title_highlight": "voor huurverwaltung",
     "landing.hero.subtitle": "Geautomatiseerde juridische documenten aangepast aan elk land.",
     "landing.hero.cta": "Gratis starten", "landing.hero.pricing": "Prijzen bekijken",
+    "landing.hero.vp_properties": "Vastgoedbeheer", "landing.hero.vp_bookings": "Directe boekingen", "landing.hero.vp_marketplace": "Diensten marktplaats", "landing.hero.vp_analytics": "Omzetanalyse",
     "landing.nav.features": "Functies", "landing.nav.pricing": "Prijzen", "landing.nav.login": "Inloggen", "landing.nav.signup": "Registreren",
     "landing.footer.desc": "Uw intelligente huurbeheersassistent.", "landing.footer.product": "Product",
     "landing.footer.features": "Functies", "landing.footer.pricing": "Prijzen", "landing.footer.legal": "Juridisch",
