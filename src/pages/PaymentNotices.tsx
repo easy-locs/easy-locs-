@@ -350,25 +350,25 @@ const PaymentNotices = () => {
                                           </span>
                                         )}
                                       </td>
-                                      <td className="table-cell-actions">
-                                        <div className="flex items-center gap-1 justify-end">
+                                       <td className="table-cell-actions">
+                                        <div className="flex items-center gap-1.5 justify-end flex-wrap">
                                           {!isPaid && (
                                             <>
-                                              <button onClick={() => regularize(matchingRentCall!)} className="btn-ghost btn-sm text-xs" title={t("page.notices.regularize") || "Régulariser"}>
-                                                <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                                <span className="hidden sm:inline">{t("page.notices.regularize") || "Régulariser"}</span>
+                                              <button onClick={() => regularize(matchingRentCall!)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors whitespace-nowrap" title={t("page.notices.regularize") || "Régulariser"}>
+                                                <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                                                {t("page.notices.regularize") || "Régulariser"}
                                               </button>
-                                              <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="btn-ghost btn-sm text-xs" title={t("page.notices.partial") || "Partiel"}>
-                                                <Banknote className="h-3.5 w-3.5 text-accent" />
-                                                <span className="hidden sm:inline">{t("page.notices.partial") || "Partiel"}</span>
+                                              <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap" title={t("page.notices.partial") || "Partiel"}>
+                                                <Banknote className="h-3.5 w-3.5 shrink-0" />
+                                                {t("page.notices.partial") || "Partiel"}
                                               </button>
                                             </>
                                           )}
-                                          <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon">
-                                            <Download className="h-4 w-4" />
+                                          <button onClick={() => downloadNoticePDF(n)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted transition-colors">
+                                            <Download className="h-4 w-4 text-muted-foreground" />
                                           </button>
                                         </div>
-                                      </td>
+                                       </td>
                                     </tr>
                                   );
                                 })}

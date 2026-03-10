@@ -83,6 +83,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
         { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
         { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
     },
 
@@ -103,7 +104,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Building,
       items: [
         { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
-        { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
       ],
     },
 
@@ -134,7 +134,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: FileText,
       items: [
         { icon: FileText, label: t("nav.all_documents") || "Documents", path: cPath("/dashboard/documents") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },

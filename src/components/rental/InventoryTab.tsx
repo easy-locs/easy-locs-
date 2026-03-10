@@ -112,34 +112,34 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
         <h2 className="font-semibold text-foreground">{t("comp.inventory.inventory_by_property")}</h2>
         <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">{reports.length} {t("comp.inventory.reports_total")}</span>
       </div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
         {properties.map(p => {
           const propTenants = tenants.filter(tn => tn.property_id === p.id);
           const propReports = reports.filter(r => r.property_id === p.id);
 
           return (
-            <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+            <div key={p.id} className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ borderRadius: "var(--card-radius)" }}>
+              <div className="flex items-center justify-between p-4 sm:p-5 pb-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="icon-box shrink-0">
                     <Home className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <div>
-                    <span className="font-semibold text-foreground text-sm">{p.label}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{p.address}, {p.city}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{p.label}</p>
+                    <p className="text-xs text-muted-foreground truncate">{p.address}, {p.city}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                <span className="badge-neutral shrink-0">
                   {propReports.length} {t("comp.inventory.inventory_reports")}
                 </span>
               </div>
 
               {propTenants.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs text-muted-foreground mb-1">{t("comp.inventory.tenants_label")}</p>
-                  <div className="flex flex-wrap gap-1">
+                <div className="px-4 sm:px-5 mb-3">
+                  <p className="text-xs text-muted-foreground mb-1.5">{t("comp.inventory.tenants_label")}</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {propTenants.map(tn => (
-                      <span key={tn.id} className={`text-xs px-2 py-0.5 rounded-full ${isLeaseActive(tn) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                      <span key={tn.id} className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${isLeaseActive(tn) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {tn.name} {!isLeaseActive(tn) && t("comp.inventory.terminated")}
                       </span>
                     ))}
@@ -147,47 +147,47 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                 </div>
               )}
 
-              <div className="flex gap-2 flex-wrap mb-4">
+              <div className="flex gap-2 flex-wrap px-4 sm:px-5 mb-4">
                 {propTenants.filter(isLeaseActive).length > 0 ? (
                   propTenants.filter(isLeaseActive).map(tn => (
                     <div key={tn.id} className="flex gap-2">
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "entry", propertyLabel: p.label })}
-                        className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                        <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.entry")} ({tn.name})
+                        className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
+                        <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.entry")} ({tn.name})
                       </button>
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "exit", propertyLabel: p.label })}
-                        className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                        <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.exit")} ({tn.name})
+                        className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
+                        <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.exit")} ({tn.name})
                       </button>
                     </div>
                   ))
                 ) : (
                   <>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "entry", propertyLabel: p.label })}
-                      className="flex items-center gap-2 text-sm bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.entry")}
+                      className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors">
+                      <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.entry")}
                     </button>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "exit", propertyLabel: p.label })}
-                      className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
-                      <ClipboardCheck className="h-4 w-4" />{t("comp.inventory.exit")}
+                      className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors">
+                      <ClipboardCheck className="h-3.5 w-3.5" />{t("comp.inventory.exit")}
                     </button>
                   </>
                 )}
               </div>
 
               {propReports.length > 0 && (
-                <div>
+                <div className="border-t border-border/30 px-4 sm:px-5 py-3">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("comp.inventory.history")}</p>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {propReports.map(r => {
                       const reportTenant = tenants.find(tn => tn.id === r.tenant_id);
                       return (
-                        <div key={r.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
+                        <div key={r.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`badge-status text-[10px] ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
                               {r.report_type === "entry" ? t("comp.inventory.entry") : t("comp.inventory.exit")}
                             </span>
-                            <span className="text-sm text-foreground flex items-center gap-1">
+                            <span className="text-xs text-foreground flex items-center gap-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" /> {r.report_date}
                             </span>
                             {reportTenant && (
@@ -196,7 +196,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             <button
                               onClick={() => setInventoryMode({
                                 propertyId: p.id,
@@ -206,7 +206,6 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                                 existingReportId: r.id,
                               })}
                               className="text-[10px] flex items-center gap-1 text-accent hover:underline"
-                              title={t("comp.inventory.open_tooltip")}
                             >
                               <Eye className="h-3 w-3" /> {t("comp.inventory.open")}
                             </button>
@@ -215,12 +214,11 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                                 onClick={() => handleResendEmail(r, p, reportTenant)}
                                 disabled={resendingId === r.id}
                                 className="text-[10px] flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
-                                title={t("comp.inventory.email_resend_tooltip")}
                               >
                                 {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />} Email
                               </button>
                             )}
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-green-500/20 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                            <span className={`badge-status text-[10px] ${r.status === "completed" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"}`}>
                               {r.status === "completed" ? t("comp.inventory.finalized") : t("comp.inventory.draft")}
                             </span>
                           </div>

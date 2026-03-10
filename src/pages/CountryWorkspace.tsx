@@ -4,7 +4,7 @@ import {
   Home, Users, KeyRound, FileText, Wallet,
   Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
-  Calendar, Sofa, Zap, CheckSquare, UserSearch,
+  Calendar, Sofa, Zap, CheckSquare,
   Bell, Layers, ClipboardCheck,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -75,6 +75,7 @@ const CountryWorkspace = () => {
         { icon: Bell, label: t("nav.rent_calls") || "Rent Calls", path: cp("/dashboard/reminders") },
         { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cp("/dashboard/receipts") },
         { icon: AlertTriangle, label: t("nav.dunning") || "Dunning Letters", path: cp("/dashboard/dunning") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
         { icon: ClipboardCheck, label: t("nav.inventory") || "Inventories", path: cp("/dashboard/rental?tab=inventory"), count: stats.inventories },
         { icon: Sofa, label: t("nav.furniture") || "Furniture", path: cp("/dashboard/furniture"), count: stats.furniture },
       ],
@@ -102,7 +103,6 @@ const CountryWorkspace = () => {
         { icon: FileText, label: t("nav.documents") || "Documents", path: cp("/dashboard/documents"), count: stats.documents },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cp("/dashboard/tasks") },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
-        { icon: UserSearch, label: t("nav.candidates") || "Candidates", path: cp("/dashboard/candidates") },
       ],
     },
     {
@@ -147,11 +147,11 @@ const CountryWorkspace = () => {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {[
-            { label: "Biens", value: stats.properties, icon: Home },
-            { label: "Locataires", value: stats.tenants, icon: Users },
-            { label: "Baux", value: stats.leases, icon: KeyRound },
-            { label: "Documents", value: stats.documents, icon: FileText },
-            { label: "Immeubles", value: stats.buildings, icon: Building },
+            { label: t("nav.properties") || "Properties", value: stats.properties, icon: Home },
+            { label: t("nav.tenants") || "Tenants", value: stats.tenants, icon: Users },
+            { label: t("nav.leases") || "Leases", value: stats.leases, icon: KeyRound },
+            { label: t("nav.documents") || "Documents", value: stats.documents, icon: FileText },
+            { label: t("nav.buildings") || "Buildings", value: stats.buildings, icon: Building },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
