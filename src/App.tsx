@@ -147,29 +147,12 @@ const queryClient = new QueryClient({
 });
 
 const PageLoader = () => (
-  <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-    {/* Top progress bar */}
-    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5">
-      <div
-        className="h-full animate-pulse"
-        style={{
-          background: "var(--gradient-gold)",
-          animation: "loader-progress 1.2s ease-in-out infinite",
-        }}
-      />
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5 bg-primary/20 overflow-hidden">
+      <div className="h-full bg-primary animate-[loader-slide_0.8s_ease-in-out_infinite]" />
     </div>
-    <div className="relative">
-      <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      <div className="absolute inset-0 h-8 w-8 rounded-full animate-ping opacity-20 bg-accent" />
-    </div>
-    <span className="text-xs text-muted-foreground animate-pulse">Loading...</span>
-    <style>{`
-      @keyframes loader-progress {
-        0% { width: 0%; margin-left: 0; }
-        50% { width: 60%; margin-left: 20%; }
-        100% { width: 0%; margin-left: 100%; }
-      }
-    `}</style>
+    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    <style>{`@keyframes loader-slide{0%{width:0;margin-left:0}50%{width:50%;margin-left:25%}100%{width:0;margin-left:100%}}`}</style>
   </div>
 );
 
