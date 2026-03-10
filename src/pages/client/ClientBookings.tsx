@@ -102,10 +102,10 @@ const ClientBookings = () => {
         <h1 className="text-2xl font-bold text-foreground mb-6">{t("nav.bookings") || "My Bookings"}</h1>
         <Tabs defaultValue="all">
           <TabsList className="mb-4">
-            <TabsTrigger value="all">All ({bookings.length})</TabsTrigger>
-            <TabsTrigger value="seasonal">Seasonal</TabsTrigger>
-            <TabsTrigger value="concierge">Concierge</TabsTrigger>
-            <TabsTrigger value="marketplace">Services</TabsTrigger>
+            <TabsTrigger value="all">{t("client.tab_all") || "All"} ({bookings.length})</TabsTrigger>
+            <TabsTrigger value="seasonal">{t("client.type_seasonal") || "Seasonal"}</TabsTrigger>
+            <TabsTrigger value="concierge">{t("client.type_concierge") || "Concierge"}</TabsTrigger>
+            <TabsTrigger value="marketplace">{t("client.type_service") || "Services"}</TabsTrigger>
           </TabsList>
           <TabsContent value="all">{loading ? <p className="text-muted-foreground text-sm">Loading...</p> : renderList(bookings)}</TabsContent>
           <TabsContent value="seasonal">{renderList(filterByType("seasonal"))}</TabsContent>
