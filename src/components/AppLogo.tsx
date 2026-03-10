@@ -10,7 +10,7 @@ interface AppLogoProps {
 
 const AppLogo = ({
   linkTo = "/dashboard",
-  showLabel = true,
+  showLabel = false,
   variant = "sidebar",
   className = "",
 }: AppLogoProps) => {
@@ -18,41 +18,25 @@ const AppLogo = ({
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
 
-  const imgSize = isLanding || isAuth ? "h-8 sm:h-10" : "h-8 sm:h-10";
-
-  const textColor =
-    variant === "footer"
-      ? "text-muted-foreground"
-      : isLanding || isAuth
-        ? "text-primary-foreground"
-        : "text-sidebar-foreground";
-
-  const supColor =
-    variant === "footer"
-      ? "text-muted-foreground/50"
-      : isLanding || isAuth
-        ? "text-primary-foreground/40"
-        : "text-sidebar-foreground/40";
+  const sizeMap = {
+    sidebar: "h-9 sm:h-10",
+    header: "h-9 sm:h-10",
+    landing: "h-12 sm:h-16",
+    footer: "h-8 sm:h-10",
+    auth: "h-14 sm:h-20",
+  };
 
   return (
     <Link
       to={href}
-      className={`flex items-center gap-2 shrink-0 group select-none ${className}`}
+      className={`flex items-center gap-2 shrink-0 select-none ${className}`}
     >
       <img
         src={logoSrc}
-        alt="EASY-LOCS"
-        className={`${imgSize} w-auto object-contain`}
+        alt="Easy-Locs — Gestion Locative"
+        className={`${sizeMap[variant]} w-auto object-contain drop-shadow-lg`}
         draggable={false}
-        width={40}
-        height={40}
       />
-      {showLabel && (
-        <span className={`font-extrabold tracking-tight whitespace-nowrap leading-none text-sm sm:text-base ${textColor}`}>
-          EASY-LOCS
-          <sup className={`text-[7px] align-super ml-0.5 font-bold ${supColor}`}>®</sup>
-        </span>
-      )}
     </Link>
   );
 };
