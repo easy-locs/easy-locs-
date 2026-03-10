@@ -317,6 +317,14 @@ const App = () => (
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
               <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
 
+              {/* Protected — Client portal */}
+              <Route path="/client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+              <Route path="/client/bookings" element={<ProtectedRoute><ClientBookings /></ProtectedRoute>} />
+              <Route path="/client/messages" element={<ProtectedRoute><ClientMessages /></ProtectedRoute>} />
+              <Route path="/client/documents" element={<ProtectedRoute><ClientDocuments /></ProtectedRoute>} />
+              <Route path="/client/payments" element={<ProtectedRoute><ClientPayments /></ProtectedRoute>} />
+              <Route path="/client/settings" element={<ProtectedRoute><ClientSettings /></ProtectedRoute>} />
+
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
