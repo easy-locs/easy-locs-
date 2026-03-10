@@ -930,7 +930,7 @@ html {
   .page-header {
     margin-bottom: var(--section-gap);
   }
-  .page-header h1 {
+  .app-main .page-header h1 {
     font-size: 1.25rem !important;
   }
 
