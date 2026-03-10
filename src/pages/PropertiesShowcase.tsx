@@ -68,7 +68,7 @@ export default function PropertiesShowcase() {
       if (maxPrice) params.p_max_price = Number(maxPrice);
 
       const { data } = await supabase.rpc("get_public_real_estate_listings", params);
-      setListings((data || []) as PublicListing[]);
+      setListings(((data || []) as PublicListing[]).filter(l => l.listing_type !== "seasonal_rent"));
       setLoading(false);
     };
     load();
