@@ -23,6 +23,7 @@ interface DBDocument {
 const Receipts = () => {
   const { t } = useI18n();
   const { user, orgId, userCountry } = useAuth();
+  const countryFilter = useCountryFilter();
   const [showForm, setShowForm] = useState(false);
   const [receipts, setReceipts] = useState<DBDocument[]>([]);
   const [loading, setLoading] = useState(true);
