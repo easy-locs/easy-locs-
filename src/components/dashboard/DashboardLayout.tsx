@@ -351,7 +351,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               className="flex items-center gap-2 text-xs text-accent hover:underline"
             >
               <Globe className="h-3.5 w-3.5" />
-              {t("sidebar.select_country") || "Sélectionnez un pays pour commencer"}
+              {t("sidebar.select_country") || "Select a country to get started"}
             </Link>
           </div>
         )}
