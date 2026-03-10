@@ -219,8 +219,8 @@ const Accounting = () => {
                     <SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
                   </Select>
                   <div className="grid grid-cols-2 gap-3">
-                    <Input type="number" placeholder={`${t("page.accounting.debit") || "Débit"} (${sym})`} value={newEntry.debit} onChange={e => setNewEntry(p => ({ ...p, debit: e.target.value }))} />
-                    <Input type="number" placeholder={`${t("page.accounting.credit") || "Crédit"} (${sym})`} value={newEntry.credit} onChange={e => setNewEntry(p => ({ ...p, credit: e.target.value }))} />
+                    <Input type="number" placeholder={`${t("page.accounting.debit") || "Debit"} (${sym})`} value={newEntry.debit} onChange={e => setNewEntry(p => ({ ...p, debit: e.target.value }))} />
+                    <Input type="number" placeholder={`${t("page.accounting.credit") || "Credit"} (${sym})`} value={newEntry.credit} onChange={e => setNewEntry(p => ({ ...p, credit: e.target.value }))} />
                   </div>
                   <Input type="date" value={newEntry.transaction_date} onChange={e => setNewEntry(p => ({ ...p, transaction_date: e.target.value }))} />
                   <Select value={newEntry.property_id || "none"} onValueChange={v => setNewEntry(p => ({ ...p, property_id: v === "none" ? "" : v }))}>
