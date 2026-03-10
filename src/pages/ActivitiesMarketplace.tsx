@@ -28,6 +28,7 @@ const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XO
 
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
+  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [providerFormOpen, setProviderFormOpen] = useState(false);
