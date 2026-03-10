@@ -393,7 +393,8 @@ export default function Explore() {
           {/* ═══ Real Estate Tab ═══ */}
           <TabsContent value="real-estate" className="mt-0">
             {loading ? <GridSkeleton /> : filteredRE.length === 0 ? <EmptyState label="real estate listings" /> : (
-              <CountryGroupedGrid items={filteredRE} groupByCategory={(l: any) => (RE_TYPE_LABELS[l.listing_type]?.label || l.listing_type)} renderCard={(l: any) => {
+              <>
+              <CountryGroupedGrid items={filteredRE.slice(0, visibleCount)} groupByCategory={(l: any) => (RE_TYPE_LABELS[l.listing_type]?.label || l.listing_type)} renderCard={(l: any) => {
                 const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                 const cfg = RE_TYPE_LABELS[l.listing_type] || { label: l.listing_type, icon: "🏠" };
                 return (
@@ -421,6 +422,8 @@ export default function Explore() {
                   </Link>
                 );
               }} />
+              <LoadMoreButton total={filteredRE.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
 
