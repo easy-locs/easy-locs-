@@ -217,7 +217,7 @@ const ConciergeServices = () => {
 
   const remove = async (id: string) => {
     await supabase.from("concierge_services").delete().eq("id", id);
-    toast.success("Service deleted");
+    toast.success(t("page.concierge.service_deleted") || "Service deleted");
     await load();
   };
 
