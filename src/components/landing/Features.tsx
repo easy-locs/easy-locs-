@@ -24,21 +24,22 @@ const Features = () => {
         backgroundImage: `linear-gradient(hsl(var(--accent) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.3) 1px, transparent 1px)`,
         backgroundSize: "60px 60px",
       }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.03] blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[150px] pointer-events-none" />
 
       <div className="container max-w-6xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
           className="text-center mb-16 space-y-4"
         >
-          <span
+          <motion.span
             className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 rounded-full border"
             style={{ color: "hsl(var(--gold-light))", background: "hsl(var(--accent) / 0.1)", borderColor: "hsl(var(--accent) / 0.25)" }}
+            whileHover={{ scale: 1.05 }}
           >
             {t("landing.features.badge") || "Global Platform"}
-          </span>
+          </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(var(--primary-foreground))" }}>
             {t("landing.features.title") || "Everything You Need to"}{" "}
             <span className="text-gradient-gold">{t("landing.features.title_highlight") || "Scale Globally"}</span>
@@ -54,11 +55,11 @@ const Features = () => {
               key={f.key}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.06 }}
-              whileHover={{ y: -5 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ delay: i * 0.08, type: "spring", stiffness: 200 }}
+              whileHover={{ y: -6, transition: { duration: 0.25 } }}
               className="group rounded-2xl p-7 border transition-all duration-300 relative overflow-hidden"
-              style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)", background: "hsl(var(--primary-foreground) / 0.03)" }}
+              style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)", background: "hsl(var(--primary-foreground) / 0.04)" }}
             >
               {/* Hover accent line */}
               <div
@@ -67,16 +68,18 @@ const Features = () => {
               />
               {/* Hover glow */}
               <div
-                className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-[60px] opacity-0 group-hover:opacity-15 transition-opacity duration-500"
+                className="absolute -top-10 -right-10 w-28 h-28 rounded-full blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-500"
                 style={{ background: `hsl(var(--${f.color}))` }}
               />
               <div className="relative z-10">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                <motion.div
+                  className="w-13 h-13 rounded-xl flex items-center justify-center mb-5"
                   style={{ background: `hsl(var(--${f.color}) / 0.12)` }}
+                  whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
+                  transition={{ duration: 0.4 }}
                 >
-                  <f.icon className="h-5.5 w-5.5" style={{ color: `hsl(var(--${f.color}))` }} />
-                </div>
+                  <f.icon className="h-6 w-6" style={{ color: `hsl(var(--${f.color}))` }} />
+                </motion.div>
                 <h3 className="font-bold text-foreground text-base mb-2" style={{ color: "hsl(var(--primary-foreground))" }}>
                   {t(`landing.features.${f.key}.title`) || f.fallback}
                 </h3>
