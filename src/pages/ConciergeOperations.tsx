@@ -146,10 +146,18 @@ const ConciergeOperations = () => {
 
   const propName = (id: string) => properties.find(p => p.id === id)?.label || "—";
 
+  const fmtPrice = (amount: number) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    } catch {
+      return `${amount.toLocaleString()} €`;
+    }
+  };
+
   const kpis = [
     { icon: Home, label: "Occupancy (30d)", value: `${avgOccupancy}%`, cls: "text-accent" },
-    { icon: DollarSign, label: "Booking Revenue", value: `${totalBookingRevenue.toLocaleString()}€`, cls: "text-emerald-500" },
-    { icon: ShoppingBag, label: "Service Revenue", value: `${totalServiceRevenue.toLocaleString()}€`, cls: "text-blue-500" },
+    { icon: DollarSign, label: "Booking Revenue", value: fmtPrice(totalBookingRevenue), cls: "text-emerald-500" },
+    { icon: ShoppingBag, label: "Service Revenue", value: fmtPrice(totalServiceRevenue), cls: "text-blue-500" },
     { icon: Plane, label: "Arrivals (7d)", value: String(upcomingArrivals.length), cls: "text-accent" },
     { icon: PlaneLanding, label: "Departures (7d)", value: String(upcomingDepartures.length), cls: "text-amber-500" },
     { icon: Clock, label: "Pending Tasks", value: String(pendingTasks), cls: "text-orange-500" },
