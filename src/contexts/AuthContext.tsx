@@ -204,31 +204,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
   }, [user]);
 
-  const refreshSubscription = useCallback(async () => {
-    if (!session?.access_token) return;
-    setSubscription((prev) => ({ ...prev, loading: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      if (data) {
-        const isTrial = data.plan === "trial";
-        const trialDaysLeft = isTrial && data.subscription_end
-          ? Math.max(0, Math.ceil((new Date(data.subscription_end).getTime() - Date.now()) / 86400000))
-          : null;
-        setSubscription({
-          subscribed: !!data.subscribed,
-          plan: data.plan || "free",
-          subscriptionEnd: data.subscription_end || null,
-          loading: false,
-          isTrial,
-          trialDaysLeft,
-        });
-      }
-    } catch (err) {
-      console.error("[AuthContext] check-subscription error:", err);
-      setSubscription((prev) => ({ ...prev, loading: false, subscribed: false, plan: "free" }));
-    }
-  }, [session?.access_token]);
+  const { subscription, refreshSubscription, resetSubscription, setSubscription } = useSubscriptionLoader(session, user?.id);
 
   useEffect(() => {
     let mounted = true;
