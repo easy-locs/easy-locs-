@@ -189,7 +189,7 @@ export default function Explore() {
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5" />
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium">
               <Sparkles className="h-3 w-3" /> Live worldwide listings
             </div>
@@ -199,7 +199,7 @@ export default function Explore() {
             <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
               Properties, vacation rentals, and services — all published live by verified hosts and professionals.
             </p>
-          </div>
+          </motion.div>
 
           {/* Search bar */}
           <div className="mt-8 max-w-2xl mx-auto">
