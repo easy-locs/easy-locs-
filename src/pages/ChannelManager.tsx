@@ -464,9 +464,9 @@ const ChannelManager = () => {
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList>
-            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
-            <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
-            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Réservations ({reservations.length})</TabsTrigger>
+            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendar</TabsTrigger>
+            <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connections</TabsTrigger>
+            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Reservations ({reservations.length})</TabsTrigger>
           </TabsList>
 
           {/* ─── Calendar Tab ─── */}
