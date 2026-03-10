@@ -111,6 +111,9 @@ const SeasonalRentals = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useState<"showcase" | "bookings">(() => {
+    return searchParams.get("booking") || searchParams.get("focusRequest") ? "bookings" : "showcase";
+  });
   
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
