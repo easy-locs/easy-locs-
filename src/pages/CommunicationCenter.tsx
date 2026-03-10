@@ -571,16 +571,18 @@ const CommunicationCenter = () => {
         tenant_id: selectedThread.tenantId || null,
         booking_id: selectedThread.bookingId || null,
         booking_type: selectedThread.bookingType || null,
-        contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
-        contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
+        contact_name: selectedThread.type !== "tenant" ? selectedThread.name : null,
+        contact_email: selectedThread.type !== "tenant" ? selectedThread.email : null,
         content,
         translated_content: translatedContent,
-        category,
+        category: selectedThread.type === "lead" ? "real_estate" : category,
         sender_locale: senderLocale,
         read: false,
         message_type: "user",
         property_id: selectedThread.propertyId || null,
         conversation_status: "waiting_tenant",
+        context_type: selectedThread.contextType,
+        context_id: selectedThread.contextId,
       } as any);
 
       setNewMessage("");
