@@ -18,6 +18,15 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
       ],
     },
     {
+      title: t("landing.footer.services") || "Services",
+      links: [
+        { label: t("landing.footer.long_term") || "Long-Term Rentals", to: "/long-term-rentals" },
+        { label: t("landing.footer.seasonal") || "Seasonal Rentals", to: "/seasonal-rentals" },
+        { label: t("landing.footer.marketplace") || "Marketplace", to: "/marketplace-services" },
+        { label: t("landing.footer.concierge") || "Concierge", to: "/concierge-services" },
+      ],
+    },
+    {
       title: t("landing.footer.about") || "About",
       links: [
         { label: t("landing.footer.about") || "About", to: "/about" },
@@ -34,12 +43,21 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
         { label: t("landing.footer.cookies") || "Cookies", to: "/cookies" },
       ],
     },
-    {
-      title: "Contact",
-      links: [
-        { label: "contact@easy-locs.com", to: "mailto:contact@easy-locs.com", external: true },
-      ],
-    },
+  ];
+
+  const topCities = [
+    { name: "Paris", slug: "paris" },
+    { name: "Dubai", slug: "dubai" },
+    { name: "Barcelona", slug: "barcelona" },
+    { name: "London", slug: "london" },
+    { name: "Marrakech", slug: "marrakech" },
+    { name: "Lisbon", slug: "lisbon" },
+    { name: "Bangkok", slug: "bangkok" },
+    { name: "Tokyo", slug: "tokyo" },
+    { name: "Istanbul", slug: "istanbul" },
+    { name: "Bali", slug: "bali" },
+    { name: "Miami", slug: "miami" },
+    { name: "Rome", slug: "rome" },
   ];
 
   return (
@@ -60,6 +78,9 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           <div className="col-span-2 md:col-span-1">
             <AppLogo variant="footer" linkTo="/" className="mb-4" />
             <p className="text-sm leading-relaxed">{t("landing.footer.desc") || "Global property & service business platform for entrepreneurs worldwide."}</p>
+            <p className="text-xs mt-3">
+              <a href="mailto:contact@easy-locs.com" className="hover:text-accent transition-colors">contact@easy-locs.com</a>
+            </p>
           </div>
 
           {columns.map((col) => (
@@ -70,9 +91,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
               <ul className="space-y-2.5 text-sm">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    {"external" in link ? (
-                      <a href={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</a>
-                    ) : link.to.startsWith("/") ? (
+                    {link.to.startsWith("/") ? (
                       <Link to={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</Link>
                     ) : (
                       <a href={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</a>
@@ -82,6 +101,25 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* SEO city links */}
+        <div className="border-t pt-6 mb-6" style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}>
+          <p className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>
+            {t("landing.footer.top_cities") || "Top Cities"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {topCities.map((city) => (
+              <Link
+                key={city.slug}
+                to={`/city/${city.slug}`}
+                className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:border-accent/30 hover:text-accent"
+                style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)", color: "hsl(var(--primary-foreground) / 0.5)" }}
+              >
+                {city.name}
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Countries line */}

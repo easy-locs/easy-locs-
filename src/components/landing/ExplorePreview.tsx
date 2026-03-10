@@ -91,20 +91,21 @@ export default function ExplorePreview() {
         </motion.div>
 
         {/* Tab pills */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-2 mb-8 overflow-x-auto scrollbar-none -mx-4 px-4">
           {TABS.map(tb => (
             <button
               key={tb.key}
               onClick={() => setTab(tb.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 tab === tb.key
                   ? "bg-accent text-accent-foreground shadow-md"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
               }`}
             >
-              <tb.icon className="h-4 w-4" />
-              {tb.label}
-              {(tab === "seasonal" ? seasonal : tab === "real-estate" ? realEstate : services).length > 0 && (
+              <tb.icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{tb.label}</span>
+              <span className="sm:hidden">{tb.emoji}</span>
+              {(tb.key === "seasonal" ? seasonal : tb.key === "real-estate" ? realEstate : services).length > 0 && (
                 <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
                   {(tb.key === "seasonal" ? seasonal : tb.key === "real-estate" ? realEstate : services).length}
                 </Badge>
