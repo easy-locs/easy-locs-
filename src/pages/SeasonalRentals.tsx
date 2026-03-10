@@ -538,35 +538,35 @@ const SeasonalRentals = () => {
     <DashboardLayout>
       <FeatureGate feature="ota_sync" featureLabel={t("page.seasonal.feature_label")}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6">
           <div className="page-header mb-0">
             <h1>{t("page.seasonal.title_page")}</h1>
             <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             {/* View toggle */}
             <div className="flex items-center bg-muted rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode("showcase")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
                   viewMode === "showcase" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <LayoutGrid className="h-3.5 w-3.5" /> {t("page.seasonal.showcase") || "Properties"}
+                <LayoutGrid className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("page.seasonal.showcase") || "Properties"}</span>
               </button>
               <button
                 onClick={() => setViewMode("bookings")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
                   viewMode === "bookings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <List className="h-3.5 w-3.5" /> {t("page.seasonal.bookings_view") || "Bookings"}
+                <List className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("page.seasonal.bookings_view") || "Bookings"}</span>
               </button>
             </div>
-            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
-              <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
+            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm min-h-[36px]">
+              <Link2 className="h-4 w-4" /> <span className="hidden sm:inline">{t("page.seasonal.sync_ical")}</span>
             </button>
-            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary">
+            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary min-h-[36px]">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
