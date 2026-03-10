@@ -193,6 +193,22 @@ const AIQualityDashboard = () => {
               <Database className="h-4 w-4 mr-1.5" />
               Backend Audit
             </Button>
+            {report && report.issues.some(i => i.autoFixable) && (
+              <Button variant="outline" size="sm" onClick={() => {
+                const results = autoFixAll(report.issues);
+                const fixed = results.filter(r => r.fixed).length;
+                if (fixed > 0) {
+                  toast.success(`Auto-fixed ${fixed} issue(s)`);
+                  // Re-run light scan to refresh
+                  runScan("light");
+                } else {
+                  toast.info("No issues could be auto-fixed at this time.");
+                }
+              }} className="border-primary/30 text-primary">
+                <Sparkles className="h-4 w-4 mr-1.5" />
+                Auto-Fix ({report.issues.filter(i => i.autoFixable).length})
+              </Button>
+            )}
           </div>
         </div>
 
