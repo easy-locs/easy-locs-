@@ -156,7 +156,7 @@ export default function SepaPaymentFlow({
           </button>
 
           <p className="text-[10px] text-muted-foreground text-center mt-2">
-            {t("sepa.mandate_notice") || "En procédant, vous acceptez le mandat de prélèvement SEPA Direct Debit."}
+            {t("sepa.mandate_notice") || "By proceeding, you accept the SEPA Direct Debit mandate."}
           </p>
         </div>
       </div>
