@@ -9,6 +9,7 @@ import Newsletter from "@/components/landing/Newsletter";
 import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Loader2 } from "lucide-react";
+import ExplorePreview from "@/components/landing/ExplorePreview";
 
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
 
@@ -136,6 +137,7 @@ const Index = () => {
       <RoleCards />
       <RemoteEntrepreneurship />
       <Features />
+      <ExplorePreview />
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
