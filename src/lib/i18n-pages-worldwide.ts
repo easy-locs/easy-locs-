@@ -164,6 +164,7 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "landing.hero.title_highlight": "de gestión de alquileres",
     "landing.hero.subtitle": "Documentos legales automatizados de calidad profesional, adaptados a cada país. Gestione sus alquileres de larga duración, Airbnb y Booking desde una sola plataforma.",
     "landing.hero.cta": "Empezar gratis", "landing.hero.pricing": "Ver precios",
+    "landing.hero.vp_properties": "Gestión inmobiliaria", "landing.hero.vp_bookings": "Reservas directas", "landing.hero.vp_marketplace": "Marketplace de servicios", "landing.hero.vp_analytics": "Análisis de ingresos",
     "landing.nav.features": "Funcionalidades", "landing.nav.pricing": "Precios",
     "landing.nav.login": "Iniciar sesión", "landing.nav.signup": "Registrarse",
     "landing.footer.desc": "Su asistente inteligente de gestión de alquileres.",
