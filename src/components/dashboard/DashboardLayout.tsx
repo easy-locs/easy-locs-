@@ -329,14 +329,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors mb-1.5"
             >
               <ArrowLeft className="h-3 w-3" />
-              {t("page.dashboard.world_map") || "Portefeuille mondial"}
+              {t("page.dashboard.world_map") || "World Portfolio"}
             </Link>
             <div className="flex items-center gap-2.5">
               <span className="text-2xl leading-none">{countryEntry.flag}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-sidebar-foreground truncate">{countryEntry.name}</p>
                 <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
-                  {t("sidebar.workspace") || "Espace de travail"}
+                  {t("sidebar.workspace") || "Workspace"}
                 </p>
               </div>
             </div>
@@ -351,7 +351,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               className="flex items-center gap-2 text-xs text-accent hover:underline"
             >
               <Globe className="h-3.5 w-3.5" />
-              {t("sidebar.select_country") || "Sélectionnez un pays pour commencer"}
+              {t("sidebar.select_country") || "Select a country to get started"}
             </Link>
           </div>
         )}
@@ -463,7 +463,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
           >
-            <Zap className="h-4 w-4 shrink-0" /> AI Quality Center
+            <Zap className="h-4 w-4 shrink-0" /> {t("nav.ai_quality") || "AI Quality Center"}
           </Link>
           <button
             onClick={handleLogout}

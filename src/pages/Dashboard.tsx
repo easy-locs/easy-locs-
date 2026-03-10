@@ -112,23 +112,23 @@ const Dashboard = () => {
   const kpis = [
     {
       icon: Building,
-      label: t("page.dashboard.properties") || "Biens",
+      label: t("page.dashboard.properties") || "Properties",
       value: loading ? "…" : String(stats.totalProperties),
       path: "/dashboard/properties",
-      sub: t("page.dashboard.view_all") || "Voir les biens →",
+      sub: t("page.dashboard.view_all") || "View all properties →",
     },
     {
       icon: MapPin,
-      label: t("page.dashboard.countries") || "Pays actifs",
+      label: t("page.dashboard.countries") || "Active Countries",
       value: loading ? "…" : String(stats.totalCountries),
-      sub: t("page.dashboard.select_country_hint") || "Sélectionnez ci-dessous",
+      sub: t("page.dashboard.select_country_hint") || "Select below",
     },
     {
       icon: TrendingUp,
-      label: t("page.dashboard.collected_month") || "Encaissé ce mois",
+      label: t("page.dashboard.collected_month") || "Collected This Month",
       value: loading ? "…" : fmt(stats.revenueThisMonth),
       path: "/dashboard/receipts",
-      sub: t("page.dashboard.view_receipts") || "Voir les quittances →",
+      sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
   ];
 
@@ -148,10 +148,10 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
+                {t("page.dashboard.world_map") || "My World Portfolio"}
               </h1>
               <p className="text-muted-foreground text-sm">
-                {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
+                {t("page.dashboard.global_overview") || "Global overview — real estate, services & bookings"}
               </p>
             </div>
           </div>
@@ -195,7 +195,7 @@ const Dashboard = () => {
         {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
           <div className="mb-8 rounded-xl border border-border/50 bg-card p-4">
             <p className="text-sm text-muted-foreground">
-              Carte mondiale indisponible sur cet appareil.
+              {t("page.dashboard.map_unavailable") || "World map unavailable on this device."}
             </p>
           </div>
         )}
@@ -207,7 +207,7 @@ const Dashboard = () => {
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            {t("page.dashboard.select_country") || "Sélectionnez un pays pour gérer"}
+            {t("page.dashboard.select_country") || "Select a country to manage"}
           </h2>
 
           {loading ? (
@@ -226,10 +226,10 @@ const Dashboard = () => {
                 <Globe className="h-8 w-8 text-accent" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
+                {t("page.dashboard.no_properties") || "No properties or services registered"}
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Ajoutez votre premier bien ou créez un service pour commencer
+                {t("page.dashboard.add_first_hint") || "Add your first property or create a service to get started."}
               </p>
               <Link
                 to="/dashboard/add-property"
@@ -237,7 +237,7 @@ const Dashboard = () => {
                 style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
               >
                 <Plus className="h-4 w-4" />
-                {t("page.rental.add_property") || "Ajouter un bien"}
+                {t("page.rental.add_property") || "Add a Property"}
               </Link>
             </motion.div>
           ) : (
@@ -266,7 +266,9 @@ const Dashboard = () => {
                             {c.count > 0 && (
                               <span className="flex items-center gap-1">
                                 <Building className="h-3.5 w-3.5 shrink-0" />
-                                {c.count} {c.count > 1 ? "biens" : "bien"}
+                                {c.count} {c.count > 1
+                                  ? (t("common.properties") || "properties")
+                                  : (t("common.property") || "property")}
                               </span>
                             )}
                             {c.tenants > 0 && (
@@ -298,7 +300,7 @@ const Dashboard = () => {
                     <Plus className="h-5 w-5 text-accent" />
                   </div>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
-                    {t("page.rental.add_property") || "Ajouter un bien"}
+                    {t("page.rental.add_property") || "Add a Property"}
                   </span>
                 </Link>
               </motion.div>

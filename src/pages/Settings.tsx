@@ -385,10 +385,10 @@ const Settings = () => {
                 brand_primary_color: org.brand_primary_color || null,
                 brand_accent_color: org.brand_accent_color || null,
               } as any).eq("id", orgId);
-              toast({ title: "Branding mis à jour" });
+              toast({ title: t("page.settings.branding_updated") || "Branding updated" });
               setSavingBrand(false);
             }} disabled={savingBrand} className="btn-primary">
-              {savingBrand ? t("page.settings.saving") : "Enregistrer le branding"}
+              {savingBrand ? t("page.settings.saving") : t("page.settings.save_branding") || "Save Branding"}
             </button>
           </div>
         </div>
