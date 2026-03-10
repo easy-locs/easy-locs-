@@ -762,11 +762,11 @@ const SeasonalRentals = () => {
                 const nights = Math.max(1, Math.ceil((new Date(req.check_out).getTime() - new Date(req.check_in).getTime()) / 86400000));
                 const isActive = ["pending", "approved", "paid", "payment_pending"].includes(req.status);
                 return (
-                  <div key={req.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                  <div key={req.id} className="py-3 flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-xs text-muted-foreground block">{t("page.seasonal.guest")}</span>
-                        <span className="font-medium text-foreground">{req.guest_name}</span>
+                        <span className="font-medium text-foreground truncate block">{req.guest_name}</span>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>
@@ -780,26 +780,25 @@ const SeasonalRentals = () => {
                         <span className="text-xs text-muted-foreground block">{t("page.seasonal.departure")}</span>
                         <span className="text-foreground">{req.check_out}</span>
                       </div>
-                      <div>
-                        <span className={`badge-status ${
-                          req.status === "paid" ? "badge-success" :
-                          req.status === "approved" ? "badge-info" :
-                          req.status === "rejected" ? "badge-danger" :
-                          req.status === "cancelled" ? "badge-danger" :
-                          req.status === "payment_pending" ? "badge-warning" :
-                          req.status === "pending" ? "badge-warning" :
-                          "badge-neutral"
-                        }`}>
-                          {req.status === "paid" ? "✅ " + t("page.seasonal.status_paid") :
-                           req.status === "approved" ? "📧 " + t("page.seasonal.status_approved") :
-                           req.status === "rejected" ? "❌ " + t("page.seasonal.status_rejected") :
-                           req.status === "cancelled" ? "🚫 " + t("page.seasonal.status_cancelled_label") :
-                           req.status === "payment_pending" ? "⏳ " + t("page.seasonal.status_payment_pending") :
-                           req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
-                           req.status}
-                        </span>
-                      </div>
                     </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`badge-status ${
+                        req.status === "paid" ? "badge-success" :
+                        req.status === "approved" ? "badge-info" :
+                        req.status === "rejected" ? "badge-danger" :
+                        req.status === "cancelled" ? "badge-danger" :
+                        req.status === "payment_pending" ? "badge-warning" :
+                        req.status === "pending" ? "badge-warning" :
+                        "badge-neutral"
+                      }`}>
+                        {req.status === "paid" ? "✅ " + t("page.seasonal.status_paid") :
+                         req.status === "approved" ? "📧 " + t("page.seasonal.status_approved") :
+                         req.status === "rejected" ? "❌ " + t("page.seasonal.status_rejected") :
+                         req.status === "cancelled" ? "🚫 " + t("page.seasonal.status_cancelled_label") :
+                         req.status === "payment_pending" ? "⏳ " + t("page.seasonal.status_payment_pending") :
+                         req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
+                         req.status}
+                      </span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {req.status === "pending" && (
                         <>
