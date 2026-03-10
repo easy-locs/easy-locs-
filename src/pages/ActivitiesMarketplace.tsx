@@ -525,9 +525,9 @@ const ActivitiesMarketplace = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="detail-tab-row">
-            <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Browse</TabsTrigger>
-            {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> My Services</TabsTrigger>}
-            {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Bookings</TabsTrigger>}
+            <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Explorer</TabsTrigger>
+            {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> Mes Services</TabsTrigger>}
+            {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Réservations</TabsTrigger>}
           </TabsList>
 
           {/* Browse Tab */}
