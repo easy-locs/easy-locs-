@@ -204,10 +204,10 @@ const DeveloperPortal = () => {
             </Dialog>
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) setNewKey(null); }}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />Nouvelle clé API</Button>
+                <Button><Plus className="h-4 w-4 mr-2" />New API key</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>{newKey ? "Clé API créée !" : "Créer une clé API"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{newKey ? "API key created!" : "Create an API key"}</DialogTitle></DialogHeader>
                 {newKey ? (
                   <div className="space-y-4">
                     <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg">
