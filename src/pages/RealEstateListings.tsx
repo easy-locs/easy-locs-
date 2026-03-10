@@ -92,12 +92,18 @@ interface Lead {
   created_at: string;
 }
 
+const VISIBILITY_OPTIONS = [
+  { value: "public", label: "🌍 Public", desc: "Visible in global catalogue & search engines" },
+  { value: "unlisted", label: "🔗 Unlisted", desc: "Only accessible via direct link" },
+  { value: "private", label: "🔒 Private", desc: "Only visible in your dashboard" },
+];
+
 const emptyForm = {
   title: "", description: "", listing_type: "sale", price: 0, currency: "EUR",
   property_type: "apartment", country: "", city: "", address: "", surface_sqm: 0,
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
-  energy_class: "",
+  energy_class: "", visibility: "public",
 };
 
 export default function RealEstateListings() {
