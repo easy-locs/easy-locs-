@@ -3,6 +3,7 @@
  * Uses shared architecture: routes.ts for target resolution, types.ts for metadata format.
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle, CheckCheck, Trash2, X, CreditCard, CalendarCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
