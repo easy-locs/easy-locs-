@@ -292,7 +292,7 @@ const Settings = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   showcaseEnabled
                     ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+                    : "bg-success/10 text-success hover:bg-success/20"
                 }`}
               >
                 {savingShowcase ? "…" : showcaseEnabled ? (t("page.common.disable") || "Disable") : (t("page.common.enable") || "Enable")}
