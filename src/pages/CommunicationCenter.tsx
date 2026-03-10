@@ -1313,28 +1313,40 @@ const CommunicationCenter = () => {
                       )}
                     </div>
 
-                    {/* Quick action bar for bookings */}
-                    {selectedThread.type === "booking" && (
-                      <div className="px-3 py-2 border-t border-border/30 flex items-center gap-2 flex-wrap bg-muted/30">
-                        <span className="text-xs text-muted-foreground mr-1">Actions:</span>
-                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1" onClick={() => setPaymentLinkDialog(true)}>
-                          <CreditCard className="h-3 w-3" /> Payment Link
-                        </Button>
-                        {selectedThread.bookingStatus === "pending" && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-emerald-600" onClick={() => handleBookingAction("confirm")}>
-                            <CalendarCheck className="h-3 w-3" /> Confirm
+                    {/* ═══ Quick action bar — booking lifecycle ═══ */}
+                    {(selectedThread.type === "booking" || selectedThread.type === "lead") && (
+                      <div className="px-3 py-2.5 border-t border-border/30 bg-muted/20">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Actions</span>
+                          <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg" onClick={() => setPaymentLinkDialog(true)}>
+                            <CreditCard className="h-3.5 w-3.5" /> Payment Link
                           </Button>
-                        )}
-                        {selectedThread.bookingStatus === "confirmed" && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-blue-600" onClick={() => handleBookingAction("complete")}>
-                            <CalendarCheck className="h-3 w-3" /> Complete
-                          </Button>
-                        )}
-                        {!["cancelled", "completed"].includes(selectedThread.bookingStatus || "") && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-destructive" onClick={() => handleBookingAction("cancel")}>
-                            <Ban className="h-3 w-3" /> Cancel
-                          </Button>
-                        )}
+                          {selectedThread.bookingStatus === "pending" && (
+                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleBookingAction("confirm")}>
+                              <CalendarCheck className="h-3.5 w-3.5" /> Confirm
+                            </Button>
+                          )}
+                          {selectedThread.bookingStatus === "confirmed" && (
+                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50" onClick={() => handleBookingAction("complete")}>
+                              <CalendarCheck className="h-3.5 w-3.5" /> Complete
+                            </Button>
+                          )}
+                          {!["cancelled", "completed"].includes(selectedThread.bookingStatus || "") && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => handleBookingAction("cancel")}>
+                              <Ban className="h-3.5 w-3.5" /> Cancel
+                            </Button>
+                          )}
+                          {selectedThread.email && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg ml-auto" asChild>
+                              <a href={`mailto:${selectedThread.email}`}><Mail className="h-3.5 w-3.5" /> Email</a>
+                            </Button>
+                          )}
+                          {selectedThread.phone && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg" asChild>
+                              <a href={`tel:${selectedThread.phone}`}><Phone className="h-3.5 w-3.5" /> Call</a>
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     )}
 
