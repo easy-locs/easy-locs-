@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Globe, Rocket, MapPin, Shield, Zap } from "lucide-react";
+import { ArrowRight, Globe, Rocket, MapPin, Shield, Zap, Building2, Star, Users, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import AppLogo from "@/components/AppLogo";
 import type { Transition } from "framer-motion";
 
 const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
@@ -10,83 +9,90 @@ const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
   transition: { duration: 5, repeat: Infinity, ease: "easeInOut" as const, delay },
 });
 
+/** SEO city showcase — programmatic internal links */
+const TOP_DESTINATIONS = [
+  { name: "Dubai", slug: "dubai", flag: "🇦🇪" },
+  { name: "Paris", slug: "paris", flag: "🇫🇷" },
+  { name: "Barcelona", slug: "barcelona", flag: "🇪🇸" },
+  { name: "Marrakech", slug: "marrakech", flag: "🇲🇦" },
+  { name: "Bali", slug: "bali", flag: "🇮🇩" },
+  { name: "Lisbon", slug: "lisbon", flag: "🇵🇹" },
+  { name: "Bangkok", slug: "bangkok", flag: "🇹🇭" },
+  { name: "London", slug: "london", flag: "🇬🇧" },
+];
+
 const Hero = () => {
   const { t } = useI18n();
 
   return (
     <section
-      className="relative min-h-[94vh] flex items-center overflow-hidden"
-      style={{ background: "var(--gradient-hero)" }}
+      className="relative min-h-[96vh] flex items-center overflow-hidden"
+      style={{ background: "linear-gradient(145deg, hsl(222 50% 6%) 0%, hsl(220 45% 12%) 35%, hsl(222 42% 16%) 65%, hsl(220 38% 10%) 100%)" }}
     >
       {/* ─── Background FX ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Central glow */}
+        {/* Primary accent glow */}
         <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full"
-          style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.15) 0%, transparent 60%)" }}
+          className="absolute top-[20%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full"
+          style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12) 0%, transparent 55%)" }}
         />
-        {/* Accent orbs */}
-        <motion.div
-          className="absolute top-[12%] right-[8%] w-80 h-80 rounded-full blur-[160px]"
-          style={{ background: "hsl(200 70% 50% / 0.12)" }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.08, 0.16, 0.08] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-[15%] left-[3%] w-64 h-64 rounded-full blur-[130px]"
-          style={{ background: "hsl(140 60% 45% / 0.1)" }}
-          animate={{ scale: [1, 1.25, 1], opacity: [0.06, 0.14, 0.06] }}
-          transition={{ duration: 13, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-        />
-        {/* Grid overlay */}
+        {/* Secondary deep glow */}
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] rounded-full"
+          style={{ background: "radial-gradient(circle, hsl(210 60% 40% / 0.08) 0%, transparent 60%)" }}
+        />
+        {/* Animated orbs */}
+        <motion.div
+          className="absolute top-[8%] right-[12%] w-72 h-72 rounded-full blur-[140px]"
+          style={{ background: "hsl(var(--accent) / 0.1)" }}
+          animate={{ scale: [1, 1.3, 1], opacity: [0.06, 0.14, 0.06] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-[20%] left-[5%] w-56 h-56 rounded-full blur-[120px]"
+          style={{ background: "hsl(152 60% 42% / 0.08)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.04, 0.1, 0.04] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+        />
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(hsl(var(--accent) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.3) 1px, transparent 1px)`,
-            backgroundSize: "80px 80px",
+            backgroundImage: `linear-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.4) 1px, transparent 1px)`,
+            backgroundSize: "60px 60px",
           }}
         />
         {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 rounded-full"
             style={{
-              background: "hsl(var(--accent) / 0.5)",
-              top: `${15 + i * 13}%`,
-              left: `${8 + i * 16}%`,
+              background: `hsl(var(--accent) / ${0.3 + i * 0.05})`,
+              top: `${10 + i * 10}%`,
+              left: `${5 + i * 12}%`,
             }}
-            animate={{ y: [0, -25, 0], opacity: [0.15, 0.5, 0.15] }}
-            transition={{ duration: 3.5 + i * 0.7, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
+            animate={{ y: [0, -20, 0], opacity: [0.1, 0.45, 0.1] }}
+            transition={{ duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
           />
         ))}
       </div>
 
-      <div className="container relative z-10 py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto text-center space-y-7 sm:space-y-9">
-
-          {/* ─── Logo ─── */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.7, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, type: "spring", stiffness: 180, damping: 18 }}
-            className="flex justify-center"
-          >
-            <AppLogo variant="landing" linkTo="/" />
-          </motion.div>
+      <div className="container relative z-10 py-20 sm:py-28">
+        <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
 
           {/* ─── Badge ─── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             className="flex justify-center"
           >
             <motion.span
               className="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs font-semibold border backdrop-blur-md"
               style={{
-                background: "hsl(var(--accent) / 0.08)",
-                borderColor: "hsl(var(--accent) / 0.2)",
+                background: "hsl(var(--accent) / 0.1)",
+                borderColor: "hsl(var(--accent) / 0.25)",
                 color: "hsl(var(--gold-light))",
               }}
               whileHover={{ scale: 1.04 }}
@@ -103,12 +109,12 @@ const Hero = () => {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="space-y-5"
           >
             <h1
               className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.08]"
-              style={{ color: "hsl(var(--primary-foreground))" }}
+              style={{ color: "hsl(40 50% 97%)" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
               <br className="hidden sm:block" />
@@ -133,7 +139,7 @@ const Hero = () => {
             </h1>
             <p
               className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
-              style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}
+              style={{ color: "hsl(220 15% 75%)" }}
             >
               {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
             </p>
@@ -143,7 +149,7 @@ const Hero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -153,7 +159,7 @@ const Hero = () => {
                 style={{
                   background: "var(--gradient-gold)",
                   color: "hsl(var(--accent-foreground))",
-                  boxShadow: "0 0 40px hsl(var(--accent) / 0.25), 0 4px 20px hsl(0 0% 0% / 0.2)",
+                  boxShadow: "0 0 40px hsl(var(--accent) / 0.3), 0 4px 20px hsl(0 0% 0% / 0.25)",
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -169,9 +175,9 @@ const Hero = () => {
                 to="/explore"
                 className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
                 style={{
-                  borderColor: "hsl(var(--primary-foreground) / 0.12)",
-                  color: "hsl(var(--primary-foreground))",
-                  background: "hsl(var(--primary-foreground) / 0.05)",
+                  borderColor: "hsl(220 15% 75% / 0.15)",
+                  color: "hsl(220 15% 85%)",
+                  background: "hsl(220 15% 85% / 0.06)",
                 }}
               >
                 <Globe className="h-4 w-4 opacity-70" />
@@ -184,8 +190,8 @@ const Hero = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.7 }}
-            className="pt-8"
+            transition={{ delay: 0.7, duration: 0.7 }}
+            className="pt-6"
           >
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               {[
@@ -198,22 +204,22 @@ const Hero = () => {
                   key={s.label}
                   className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl backdrop-blur-sm"
                   style={{
-                    background: "hsl(var(--primary-foreground) / 0.04)",
-                    border: "1px solid hsl(var(--primary-foreground) / 0.06)",
+                    background: "hsl(220 20% 90% / 0.06)",
+                    border: "1px solid hsl(220 20% 90% / 0.08)",
                   }}
                   animate={floatAnim(i * 0.6)}
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "hsl(var(--accent) / 0.12)" }}
+                    style={{ background: "hsl(var(--accent) / 0.15)" }}
                   >
                     <s.icon className="h-3.5 w-3.5" style={{ color: "hsl(var(--accent))" }} />
                   </div>
                   <div className="text-left">
-                    <div className="text-xs font-extrabold leading-none" style={{ color: "hsl(var(--primary-foreground))" }}>
+                    <div className="text-xs font-extrabold leading-none" style={{ color: "hsl(40 50% 95%)" }}>
                       {s.value}
                     </div>
-                    <div className="text-[9px] font-medium mt-0.5 leading-none" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+                    <div className="text-[9px] font-medium mt-0.5 leading-none" style={{ color: "hsl(220 15% 60%)" }}>
                       {s.label}
                     </div>
                   </div>
@@ -221,11 +227,68 @@ const Hero = () => {
               ))}
             </div>
           </motion.div>
+
+          {/* ─── SEO: Top Destinations — Programmatic Internal Links ─── */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="pt-4"
+          >
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
+              {t("landing.hero.top_destinations") || "Top Destinations"}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {TOP_DESTINATIONS.map((dest, i) => (
+                <motion.div
+                  key={dest.slug}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.1 + i * 0.06, duration: 0.3 }}
+                >
+                  <Link
+                    to={`/city/${dest.slug}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105"
+                    style={{
+                      background: "hsl(220 20% 90% / 0.07)",
+                      border: "1px solid hsl(220 20% 90% / 0.1)",
+                      color: "hsl(220 15% 75%)",
+                    }}
+                  >
+                    <span>{dest.flag}</span>
+                    <span>{dest.name}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ─── SEO: Value Propositions Row ─── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4, duration: 0.6 }}
+            className="pt-2"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px] font-medium" style={{ color: "hsl(220 15% 55%)" }}>
+              {[
+                { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management" },
+                { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings" },
+                { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace" },
+                { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics" },
+              ].map((vp) => (
+                <span key={vp.text} className="inline-flex items-center gap-1.5">
+                  <vp.icon className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
+                  {vp.text}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };

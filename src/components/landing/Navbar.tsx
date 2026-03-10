@@ -107,10 +107,11 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1 w-52 max-h-72 overflow-y-auto bg-card rounded-xl shadow-2xl border border-border z-50 py-1"
+                  className="absolute right-0 top-full mt-1 w-56 max-h-80 overflow-y-auto bg-card rounded-xl shadow-2xl border border-border z-50 py-1"
                 >
-                  {sortedLocales.map((l) => {
-                    const labelObj = availableLocales.find(a => a.value === l);
+                  <p className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Popular</p>
+                  {sortedLocales.slice(0, POPULAR_LOCALES.length).map((l) => {
+                    const nativeName = LANG_NATIVE[l] || l.toUpperCase();
                     return (
                       <button
                         key={l}
@@ -120,11 +121,33 @@ const Navbar = () => {
                         }`}
                       >
                         <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
-                        <span>{labelObj?.label || l.toUpperCase()}</span>
+                        <span>{nativeName}</span>
                         {l === locale && <span className="ml-auto text-accent">✓</span>}
                       </button>
                     );
                   })}
+                  {sortedLocales.length > POPULAR_LOCALES.length && (
+                    <>
+                      <div className="my-1 border-t border-border" />
+                      <p className="px-3 pt-1 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">More</p>
+                      {sortedLocales.slice(POPULAR_LOCALES.length).map((l) => {
+                        const nativeName = LANG_NATIVE[l] || l.toUpperCase();
+                        return (
+                          <button
+                            key={l}
+                            onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
+                              l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
+                            }`}
+                          >
+                            <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
+                            <span>{nativeName}</span>
+                            {l === locale && <span className="ml-auto text-accent">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
