@@ -582,8 +582,8 @@ const ActivitiesMarketplace = () => {
             {filteredServices.length === 0 ? (
               <Card><CardContent className="py-12 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No services found</p>
-                <p className="text-xs text-muted-foreground mt-1">Be the first to list a service!</p>
+                <p className="text-muted-foreground">Aucun service trouvé</p>
+                <p className="text-xs text-muted-foreground mt-1">Soyez le premier à proposer un service !</p>
               </CardContent></Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
