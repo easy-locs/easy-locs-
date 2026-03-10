@@ -23,7 +23,7 @@ import {
   Plus, Building2, MapPin, Ruler, BedDouble, Bath, Euro,
   Eye, Edit, Trash2, Link2, Copy, Check, Users, Clock,
   Home, Tag, ArrowUpRight, Mail, Phone, MessageCircle,
-  ExternalLink, PhoneCall, Send,
+  ExternalLink, PhoneCall, Send, Upload, X as XIcon, Camera,
 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
