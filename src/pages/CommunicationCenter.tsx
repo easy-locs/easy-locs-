@@ -911,10 +911,20 @@ const CommunicationCenter = () => {
     setSendingPaymentLink(false);
   };
 
+  /* ────── Property list for filter ────── */
+  const propertyOptions = useMemo(() => {
+    const props = new Map<string, string>();
+    threads.forEach(t => {
+      if (t.propertyId && t.propertyLabel) props.set(t.propertyId, t.propertyLabel);
+    });
+    return Array.from(props.entries()).map(([id, label]) => ({ id, label }));
+  }, [threads]);
+
   /* ────── Filters ────── */
   const filteredThreads = useMemo(() =>
     threads
       .filter(t => filterType === "all" || t.type === filterType || t.bookingType === filterType || (filterType === "lead" && t.type === "lead"))
+      .filter(t => filterProperty === "all" || t.propertyId === filterProperty)
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.propertyLabel?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -923,7 +933,7 @@ const CommunicationCenter = () => {
         t.bookingId?.includes(searchQuery) ||
         t.leadId?.includes(searchQuery)
       ),
-    [threads, filterType, searchQuery]
+    [threads, filterType, filterProperty, searchQuery]
   );
 
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
