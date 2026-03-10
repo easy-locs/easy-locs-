@@ -22,7 +22,7 @@ const Navbar = () => {
         {/* Center links — desktop */}
         <div
           className="hidden md:flex items-center gap-8 text-sm font-medium"
-          style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}
+          style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}
         >
           <Link to="/explore" className="hover:text-accent transition-colors duration-200">
             Explore
