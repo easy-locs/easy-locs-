@@ -41,7 +41,7 @@ const ClientBookings = () => {
       const [{ data: seasonal }, { data: concierge }, { data: marketplace }] = await Promise.all([
         supabase.from("booking_requests").select("id, guest_name, check_in, check_out, status, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
         supabase.from("concierge_orders").select("id, guest_name, service_date, status, total_price, currency, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("marketplace_bookings").select("id, customer_name, service_date, status, total_price, currency, created_at").eq("customer_email", email).order("created_at", { ascending: false }).limit(50),
+        supabase.from("marketplace_bookings").select("id, booker_name, service_date, status, total_price, currency, created_at").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
       ]);
 
       const items: BookingItem[] = [

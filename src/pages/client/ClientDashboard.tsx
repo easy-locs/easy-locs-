@@ -19,10 +19,10 @@ const ClientDashboard = () => {
       // Count seasonal booking requests made by this user's email
       const email = user.email || "";
 
-      const [{ count: seasonalCount }, { count: conciergeCount }, { count: marketplaceCount }] = await Promise.all([
+      const [seasonalRes, conciergeRes, marketplaceRes] = await Promise.all([
         supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("guest_email", email),
         supabase.from("concierge_orders").select("id", { count: "exact", head: true }).eq("guest_email", email),
-        supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("customer_email", email),
+        supabase.from("marketplace_bookings").select("id", { count: "exact", head: true }).eq("booker_email", email),
       ]);
 
       setStats({
