@@ -564,6 +564,8 @@ const ActivitiesMarketplace = () => {
                 onUpdateStatus={updateBookingStatus}
                 onSendPaymentLink={sendPaymentLink}
                 onConfirmPayment={confirmPayment}
+                onModifyBooking={lifecycle.modifyBooking}
+                onSendQuote={lifecycle.sendQuote}
                 focusBookingId={deepLinkedBookingId}
               />
             </TabsContent>
