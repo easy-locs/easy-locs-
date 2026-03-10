@@ -98,7 +98,7 @@ export default function SepaPaymentFlow({
           <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
             <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             <p className="text-sm text-muted-foreground">
-              {t("sepa.not_configured") || "Le paiement SEPA n'est pas encore configuré par votre bailleur. Contactez-le pour plus d'informations."}
+              {t("sepa.not_configured") || "SEPA payment has not been configured by your landlord yet. Contact them for more information."}
             </p>
           </div>
         )}
