@@ -378,10 +378,8 @@ function ListingCard({
           <Button variant="outline" size="sm" onClick={onBookings} className="text-xs h-9 min-h-[36px] w-full justify-center gap-1.5">
             <BookOpen className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.bookings_btn") || "Réservations"}</span>
           </Button>
-          <Button variant="outline" size="sm" asChild className="text-xs h-9 min-h-[36px] w-full justify-center gap-1.5">
-            <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.view_page") || "Voir l'annonce"}</span>
-            </a>
+          <Button variant="outline" size="sm" onClick={() => window.open(publicUrl, "_blank", "noopener,noreferrer")} className="text-xs h-9 min-h-[36px] w-full justify-center gap-1.5">
+            <ExternalLink className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.view_page") || "Voir l'annonce"}</span>
           </Button>
         </div>
       </CardContent>
