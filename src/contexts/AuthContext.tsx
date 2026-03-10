@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userCountry, setUserCountry] = useState("FR");
   const [userCurrency, setUserCurrency] = useState("EUR");
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
+  // Subscription state managed by extracted hook (L2.6)
   const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
   const [hasDualRole, setHasDualRole] = useState(false);
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
