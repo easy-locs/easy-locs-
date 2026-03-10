@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import BookingStatusBadge from "./BookingStatusBadge";
 import BookingCommunicationThread from "./BookingCommunicationThread";
 import BookingActivityLog from "./BookingActivityLog";
+import BookingModifyDialog from "./BookingModifyDialog";
+import BookingQuoteDialog from "./BookingQuoteDialog";
 
 function IdDocumentCard({ booking }: { booking: any }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
@@ -81,13 +83,18 @@ interface Props {
   onSendPaymentLink: (booking: any) => void;
   onConfirmPayment: (id: string) => void;
   onGenerateInvoice?: (booking: any) => void;
+  onModifyBooking?: (booking: any, changes: any) => Promise<boolean>;
+  onSendQuote?: (booking: any, data: { quoted_price: number; quote_message: string }) => Promise<boolean>;
 }
 
 export default function BookingDetailDrawer({
   open, onOpenChange, booking, service, provider, orgId,
-  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice,
+  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice, onModifyBooking, onSendQuote,
 }: Props) {
+  const [modifyOpen, setModifyOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
   if (!booking) return null;
+
 
   const status = booking.status || "pending";
 
@@ -225,6 +232,11 @@ export default function BookingDetailDrawer({
                     <Button size="sm" onClick={() => onUpdateStatus(booking.id, "confirmed")} className="w-full">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Validate
                     </Button>
+                    {onSendQuote && (
+                      <Button size="sm" variant="outline" onClick={() => setQuoteOpen(true)} className="w-full">
+                        <DollarSign className="h-3 w-3 mr-1" /> Send Quote
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" onClick={() => onUpdateStatus(booking.id, "awaiting_payment")} className="w-full">
                       <CreditCard className="h-3 w-3 mr-1" /> Await Payment
                     </Button>
@@ -261,6 +273,12 @@ export default function BookingDetailDrawer({
                     </Button>
                   </>
                 )}
+                {/* Modify — available for pending, confirmed, modified */}
+                {(status === "pending" || status === "new" || status === "confirmed" || status === "modified") && onModifyBooking && (
+                  <Button size="sm" variant="outline" onClick={() => setModifyOpen(true)} className="w-full">
+                    <Edit className="h-3 w-3 mr-1" /> Modify
+                  </Button>
+                )}
                 {status === "completed" && booking.payment_confirmed && (
                   <Button size="sm" variant="outline" onClick={() => onUpdateStatus(booking.id, "refunded")} className="w-full">
                     <RefreshCw className="h-3 w-3 mr-1" /> Refund
@@ -291,6 +309,34 @@ export default function BookingDetailDrawer({
             <BookingActivityLog bookingId={booking.id} orgId={orgId} />
           </TabsContent>
         </Tabs>
+
+        {/* Modification Dialog */}
+        {onModifyBooking && (
+          <BookingModifyDialog
+            open={modifyOpen}
+            onOpenChange={setModifyOpen}
+            booking={booking}
+            service={service}
+            onSubmit={async (changes) => {
+              const ok = await onModifyBooking(booking, changes);
+              if (ok) setModifyOpen(false);
+            }}
+          />
+        )}
+
+        {/* Quote Dialog */}
+        {onSendQuote && (
+          <BookingQuoteDialog
+            open={quoteOpen}
+            onOpenChange={setQuoteOpen}
+            booking={booking}
+            service={service}
+            onSubmit={async (data) => {
+              const ok = await onSendQuote(booking, data);
+              if (ok) setQuoteOpen(false);
+            }}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

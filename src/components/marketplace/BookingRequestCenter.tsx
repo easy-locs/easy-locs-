@@ -9,6 +9,7 @@ import BookingDetailDrawer from "./BookingDetailDrawer";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { syncToCommunicationCenter, uploadBookingInvoiceAttachment } from "./BookingsManager";
 import { format } from "date-fns";
+import { useOrgRole } from "@/hooks/useOrgRole";
 
 interface Props {
   bookings: any[];
@@ -18,14 +19,18 @@ interface Props {
   onUpdateStatus: (id: string, status: string) => void;
   onSendPaymentLink: (booking: any) => void;
   onConfirmPayment: (id: string) => void;
+  onModifyBooking?: (booking: any, changes: any) => Promise<boolean>;
+  onSendQuote?: (booking: any, data: { quoted_price: number; quote_message: string }) => Promise<boolean>;
   focusBookingId?: string | null;
 }
 
 export default function BookingRequestCenter({
   bookings, services, provider, orgId,
   onUpdateStatus, onSendPaymentLink, onConfirmPayment,
+  onModifyBooking, onSendQuote,
   focusBookingId,
 }: Props) {
+  const { can } = useOrgRole();
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -227,10 +232,12 @@ export default function BookingRequestCenter({
         service={selectedBooking ? getService(selectedBooking.service_id) : null}
         provider={provider}
         orgId={orgId}
-        onUpdateStatus={(id, status) => { onUpdateStatus(id, status); setSelectedBooking(null); }}
-        onSendPaymentLink={(b) => { onSendPaymentLink(b); }}
-        onConfirmPayment={(id) => { onConfirmPayment(id); setSelectedBooking(null); }}
-        onGenerateInvoice={handleInvoice}
+        onUpdateStatus={can("bookings:write") ? (id, status) => { onUpdateStatus(id, status); setSelectedBooking(null); } : () => {}}
+        onSendPaymentLink={can("bookings:write") ? (b) => { onSendPaymentLink(b); } : () => {}}
+        onConfirmPayment={can("payments:write") ? (id) => { onConfirmPayment(id); setSelectedBooking(null); } : () => {}}
+        onGenerateInvoice={can("bookings:manage") ? handleInvoice : undefined}
+        onModifyBooking={can("bookings:manage") ? onModifyBooking : undefined}
+        onSendQuote={can("bookings:manage") ? onSendQuote : undefined}
       />
     </div>
   );
