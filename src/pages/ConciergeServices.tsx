@@ -26,6 +26,7 @@ import {
   Search, ExternalLink, FileText, MessageCircle, Copy
 } from "lucide-react";
 import { format } from "date-fns";
+import { useI18n } from "@/lib/i18n";
 
 const SERVICE_CATEGORIES = [
   { value: "transfer", label: "✈️ Airport Transfer" },
@@ -94,6 +95,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [services, setServices] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -181,10 +183,10 @@ const ConciergeServices = () => {
     };
     if (editingId) {
       await supabase.from("concierge_services").update(record).eq("id", editingId);
-      toast.success("Service updated");
+      toast.success(t("page.concierge.service_updated") || "Service updated");
     } else {
       await supabase.from("concierge_services").insert(record);
-      toast.success("Service created");
+      toast.success(t("page.concierge.service_created") || "Service created");
     }
     setShowForm(false); setEditingId(null); setForm(emptyForm);
     await load();
@@ -215,7 +217,7 @@ const ConciergeServices = () => {
 
   const remove = async (id: string) => {
     await supabase.from("concierge_services").delete().eq("id", id);
-    toast.success("Service deleted");
+    toast.success(t("page.concierge.service_deleted") || "Service deleted");
     await load();
   };
 
@@ -226,7 +228,7 @@ const ConciergeServices = () => {
     if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
     if (status === "refunded") updates.refunded_at = new Date().toISOString();
     await supabase.from("concierge_orders").update(updates).eq("id", orderId);
-    toast.success(`Order ${status}`);
+    toast.success(t("page.concierge.order_status_updated") || `Order ${status}`);
 
     // Resolve related notifications — real action completed
     try {
@@ -268,7 +270,7 @@ const ConciergeServices = () => {
 
   const markPaid = async (orderId: string) => {
     await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
-    toast.success("Payment confirmed");
+    toast.success(t("page.concierge.payment_confirmed") || "Payment confirmed");
 
     // Resolve payment notifications — action completed
     try {
@@ -329,9 +331,9 @@ const ConciergeServices = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent" /> Concierge Pro
+              <Sparkles className="h-6 w-6 text-accent" /> {t?.("page.concierge.title") || "Concierge Pro"}
             </h1>
-            <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
+            <p className="text-sm text-muted-foreground">{t?.("page.concierge.subtitle") || "Manage services, bookings, payments & commissions"}</p>
           </div>
           <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
             {showcaseUrl && (
@@ -351,7 +353,7 @@ const ConciergeServices = () => {
               </Button>
             )}
             <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
-              <Plus className="h-4 w-4 mr-1" /> New Service
+              <Plus className="h-4 w-4 mr-1" /> {t?.("page.concierge.new_service") || "New Service"}
             </Button>
           </div>
         </div>
@@ -359,12 +361,12 @@ const ConciergeServices = () => {
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {[
-            { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
-            { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
-            { icon: DollarSign, label: `Revenue (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
-            { icon: TrendingUp, label: `Commission (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
-            { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
-            { icon: CreditCard, label: "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
+            { icon: Sparkles, label: t?.("page.concierge.kpi_active") || "Active Services", value: String(activeServices), cls: "text-accent" },
+            { icon: ShoppingBag, label: t?.("page.concierge.kpi_pending") || "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
+            { icon: DollarSign, label: `${t?.("page.concierge.kpi_revenue") || "Revenue"} (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
+            { icon: TrendingUp, label: `${t?.("page.concierge.kpi_commission") || "Commission"} (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
+            { icon: CheckCircle2, label: t?.("page.concierge.kpi_completed") || "Completed", value: String(completedCount), cls: "text-emerald-500" },
+            { icon: CreditCard, label: t?.("page.concierge.kpi_pending_pay") || "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className="h-full">

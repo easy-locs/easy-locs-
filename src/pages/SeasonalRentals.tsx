@@ -62,13 +62,13 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 const toICalDate = (d: string) => d.replace(/-/g, "");
 
 const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
-  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Logement";
-  const events = bookings.map(b => [
+  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Property";
+    const events = bookings.map(b => [
     "BEGIN:VEVENT",
     `DTSTART;VALUE=DATE:${toICalDate(b.check_in)}`,
     `DTEND;VALUE=DATE:${toICalDate(b.check_out)}`,
     `SUMMARY:${b.guest_name} — ${propName(b.property_id)}`,
-    `DESCRIPTION:Prix: ${b.total_price}€ | Tél: ${b.guest_phone || "—"} | Email: ${b.guest_email || "—"}`,
+    `DESCRIPTION:Price: ${b.total_price} | Phone: ${b.guest_phone || "—"} | Email: ${b.guest_email || "—"}`,
     `UID:${b.id}@easy-locs`,
     `STATUS:${b.status === "cancelled" ? "CANCELLED" : "CONFIRMED"}`,
     "END:VEVENT",
@@ -77,10 +77,10 @@ const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Easy-Locs//Saisonnier//FR",
+    "PRODID:-//Easy-Locs//Seasonal//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Easy-Locs Saisonnier",
+    "X-WR-CALNAME:Easy-Locs Seasonal",
     ...events,
     "END:VCALENDAR",
   ].join("\r\n");
@@ -532,7 +532,7 @@ const SeasonalRentals = () => {
     return bookings.filter(b => b.check_in <= dateStr && b.check_out > dateStr);
   };
 
-  const monthLabel = calMonth.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  const monthLabel = calMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const dayNames = t("page.seasonal.day_names").split(",");
 
   return (

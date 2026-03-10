@@ -255,10 +255,10 @@ const Settings = () => {
           <div className="ui-card">
             <div className="flex items-center gap-3 mb-5">
               <Globe className="h-5 w-5 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">Public Showcase</h2>
+              <h2 className="font-semibold text-foreground">{t("page.settings.showcase_title") || "Public Showcase"}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Control whether your agency showcase page is publicly visible. Individual listing visibility settings remain independent.
+              {t("page.settings.showcase_desc") || "Control whether your agency showcase page is publicly visible. Individual listing visibility settings remain independent."}
             </p>
             <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
               <div className="flex items-center gap-3">
@@ -269,12 +269,12 @@ const Settings = () => {
                 )}
                 <div>
                   <div className="font-medium text-sm text-foreground">
-                    {showcaseEnabled ? "Showcase Enabled" : "Showcase Disabled"}
+                    {showcaseEnabled ? (t("page.settings.showcase_on") || "Showcase Enabled") : (t("page.settings.showcase_off") || "Showcase Disabled")}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {showcaseEnabled && landlordSlug
-                      ? `Visible at /agency/${landlordSlug}`
-                      : "Your showcase page is not publicly accessible"}
+                      ? `${t("page.settings.visible_at") || "Visible at"} /agency/${landlordSlug}`
+                      : (t("page.settings.showcase_hidden") || "Your showcase page is not publicly accessible")}
                   </div>
                 </div>
               </div>
@@ -295,7 +295,7 @@ const Settings = () => {
                     : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
                 }`}
               >
-                {savingShowcase ? "…" : showcaseEnabled ? "Disable" : "Enable"}
+                {savingShowcase ? "…" : showcaseEnabled ? (t("page.common.disable") || "Disable") : (t("page.common.enable") || "Enable")}
               </button>
             </div>
           </div>
@@ -342,18 +342,18 @@ const Settings = () => {
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">White-label / Branding</h2>
+            <h2 className="font-semibold text-foreground">{t("page.settings.branding_title") || "White-label / Branding"}</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">Personnalisez l'apparence de vos documents et du portail locataire avec votre marque.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t("page.settings.branding_desc") || "Customize the look of your documents and tenant portal with your brand."}</p>
           <div className="space-y-4">
             <div>
-              <label className="form-label">Nom de marque</label>
-              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder="Ex: Mon Agence Immo"
+              <label className="form-label">{t("page.settings.brand_name") || "Brand Name"}</label>
+              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder={t("page.settings.brand_name_placeholder") || "e.g. My Agency"}
                 className="form-input" />
             </div>
             <div className="form-grid">
               <div>
-                <label className="form-label">Couleur principale</label>
+                <label className="form-label">{t("page.settings.primary_color") || "Primary Color"}</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))}
                     className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
@@ -362,7 +362,7 @@ const Settings = () => {
                 </div>
               </div>
               <div>
-                <label className="form-label">Couleur accent</label>
+                <label className="form-label">{t("page.settings.accent_color") || "Accent Color"}</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))}
                     className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
@@ -374,7 +374,7 @@ const Settings = () => {
             {(org.brand_name || org.brand_primary_color) && (
               <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
                 <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
-                <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>Aperçu du branding sur vos documents</p>
+                <p className="text-xs mt-1" style={{ color: (org.brand_primary_color ? "#ffffff" : undefined) }}>{t("page.settings.branding_preview") || "Branding preview on your documents"}</p>
               </div>
             )}
             <button onClick={async () => {
@@ -397,15 +397,14 @@ const Settings = () => {
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Shield className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">Reviews & Ratings</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Control whether customers can leave reviews on your marketplace services and listings.
-            Reviews can be enabled per-provider in the Marketplace settings.
-          </p>
-          <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
-            Go to <strong>Marketplace → Provider Profile</strong> to enable or disable reviews for your services.
-          </div>
+              <h2 className="font-semibold text-foreground">{t("page.settings.reviews_title") || "Reviews & Ratings"}</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("page.settings.reviews_desc") || "Control whether customers can leave reviews on your marketplace services and listings. Reviews can be enabled per-provider in the Marketplace settings."}
+            </p>
+            <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
+              {t("page.settings.reviews_hint") || "Go to Marketplace → Provider Profile to enable or disable reviews for your services."}
+            </div>
         </div>
 
         {/* GDPR */}
