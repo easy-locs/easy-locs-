@@ -211,7 +211,7 @@ const DynamicPricing = () => {
             <p className="text-2xl font-bold text-foreground">{rules.filter(r => r.active).length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Taux d'occupation</span></div>
+            <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Occupancy rate</span></div>
             <p className="text-2xl font-bold text-foreground">{avgOccupancy}%</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
