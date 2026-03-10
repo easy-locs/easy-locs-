@@ -237,7 +237,7 @@ export default function SepaPaymentFlow({
               <code className="text-sm font-mono text-foreground bg-accent/10 border border-accent/20 px-3 py-1.5 rounded font-bold flex-1">
                 {paymentReference}
               </code>
-              <CopyBtn value={paymentReference} field="ref" label={t("sepa.copy_ref") || "Copier réf."} />
+              <CopyBtn value={paymentReference} field="ref" label={t("sepa.copy_ref") || "Copy ref."} />
             </div>
           </div>
         </div>
