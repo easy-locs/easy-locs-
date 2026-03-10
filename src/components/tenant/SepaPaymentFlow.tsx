@@ -167,7 +167,7 @@ export default function SepaPaymentFlow({
   return (
     <div className="space-y-4">
       <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("common.back") || "Retour"}
+        ← {t("common.back") || "Back"}
       </button>
 
       <div className="bg-card border border-border rounded-xl p-5">
