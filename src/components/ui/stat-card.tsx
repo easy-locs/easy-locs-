@@ -1,8 +1,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -16,8 +17,55 @@ interface StatCardProps {
 }
 
 /**
+ * Animated number counter for stat values.
+ * Detects numeric values and animates from 0 to target.
+ */
+function AnimatedValue({ value, className }: { value: string; className?: string }) {
+  const isNumeric = /^[\d\s.,]+[€$£¥₹%]?$/.test(value.trim());
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayed, setDisplayed] = useState(value);
+
+  useEffect(() => {
+    if (!isNumeric) {
+      setDisplayed(value);
+      return;
+    }
+
+    // Extract numeric part
+    const cleaned = value.replace(/[^\d.,]/g, "").replace(",", ".");
+    const target = parseFloat(cleaned);
+    if (isNaN(target)) {
+      setDisplayed(value);
+      return;
+    }
+
+    const suffix = value.replace(/[\d\s.,]+/, "").trim();
+    const hasDecimals = cleaned.includes(".") && cleaned.split(".")[1]?.length > 0;
+    const decimals = hasDecimals ? Math.min(cleaned.split(".")[1].length, 2) : 0;
+
+    const motionVal = { val: 0 };
+    const controls = animate(motionVal, { val: target }, {
+      duration: 0.8,
+      ease: "easeOut",
+      onUpdate: (latest) => {
+        const formatted = latest.val.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+        setDisplayed(`${formatted}${suffix ? ` ${suffix}` : ""}`);
+      },
+    });
+
+    return () => controls.stop();
+  }, [value, isNumeric]);
+
+  return <span className={className}>{displayed}</span>;
+}
+
+/**
  * Uniform stat/KPI card used across dashboard, finances, fiscal, tenant pages.
  * Structure: Icon → Label → Value → Sub-text, all vertically stacked with equal height.
+ * Features: animated number counter, hover micro-interactions.
  */
 const StatCard = ({
   icon: Icon,
@@ -38,7 +86,13 @@ const StatCard = ({
       )}
     >
       {/* Hover accent line */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-0.5 bg-accent origin-left"
+        initial={{ scaleX: 0, opacity: 0 }}
+        whileInView={{ scaleX: 1, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+      />
 
       {/* Row 1: Icon + optional arrow */}
       <div className="flex items-center justify-between mb-3">
@@ -51,7 +105,7 @@ const StatCard = ({
       </div>
       {/* Row 2: Label — single line */}
       <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{label}</span>
-      {/* Row 3: Value — prominent, pushed to bottom */}
+      {/* Row 3: Value — prominent, animated counter */}
       <div className={cn(
         "font-bold text-foreground mt-auto truncate",
         /^[\d\s.,€$£¥₹%—–-]+$/.test(value)
@@ -59,7 +113,7 @@ const StatCard = ({
           : "text-sm sm:text-base",
         valueClassName,
       )}>
-        {value}
+        <AnimatedValue value={value} />
       </div>
       {/* Row 4: Secondary info */}
       {sub && (
@@ -74,5 +128,5 @@ const StatCard = ({
   return content;
 };
 
-export { StatCard };
+export { StatCard, AnimatedValue };
 export type { StatCardProps };
