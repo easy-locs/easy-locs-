@@ -98,6 +98,25 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
+  // ── Webhook authentication: verify shared secret ──
+  const WEBHOOK_SECRET = Deno.env.get("SENDGRID_INBOUND_SECRET");
+  if (WEBHOOK_SECRET) {
+    const providedSecret = req.headers.get("x-webhook-secret") ||
+      new URL(req.url).searchParams.get("secret");
+    if (providedSecret !== WEBHOOK_SECRET) {
+      console.warn("[receive-email] Rejected: invalid webhook secret");
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  } else {
+    // If no secret is configured, reject all requests as a safety measure
+    console.error("[receive-email] SENDGRID_INBOUND_SECRET not configured — rejecting request");
+    return new Response(JSON.stringify({ error: "Webhook not configured" }), {
+      status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     let fromEmail = "", subject = "", textBody = "", messageId = "";
