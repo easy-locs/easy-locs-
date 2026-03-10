@@ -1,0 +1,1 @@
+ALTER TABLE public.rent_calls ADD COLUMN IF NOT EXISTS paid_amount numeric NOT NULL DEFAULT 0;
