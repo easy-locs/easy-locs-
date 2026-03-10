@@ -11,6 +11,8 @@ export type TargetType =
   | "booking_request"
   // Marketplace / Concierge
   | "marketplace_booking" | "marketplace_service" | "concierge_order" | "concierge_service"
+  // Real Estate
+  | "real_estate_lead" | "real_estate_listing"
   // General
   | "message";
 
