@@ -80,11 +80,11 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
 
   const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
 
+  const formReady = !!listing && !!property?.id && !!form.guest_name && !!form.guest_email && !!form.check_in && !!form.check_out && !availabilityError && !minNightsError && nights > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!listing || !property || submitting) return;
-    if (!form.guest_name || !form.guest_email || !form.check_in || !form.check_out) return;
-    if (availabilityError || minNightsError) return;
+    if (!formReady || submitting) return;
 
     setSubmitting(true);
     const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
