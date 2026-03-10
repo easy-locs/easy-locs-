@@ -8,15 +8,6 @@ interface AppLogoProps {
   className?: string;
 }
 
-/**
- * Unified logo component — single source of truth for brand identity.
- *
- * Fixed sizing per context:
- *  - sidebar/header: 32→40px
- *  - landing/auth/footer: 28→36px
- *
- * Uses semantic color tokens for all text.
- */
 const AppLogo = ({
   linkTo = "/dashboard",
   showLabel = true,
@@ -27,44 +18,39 @@ const AppLogo = ({
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
 
-  // Fixed pixel sizes — no layout shifts
-  const imgClass = isLanding || isAuth
-    ? "h-7 sm:h-9 w-auto"
-    : "h-8 sm:h-10 w-auto";
+  const imgSize = isLanding || isAuth ? "h-8 sm:h-10" : "h-8 sm:h-10";
 
-  const labelClass = isLanding || isAuth
-    ? "text-sm sm:text-lg"
-    : "text-base lg:text-lg";
+  const textColor =
+    variant === "footer"
+      ? "text-muted-foreground"
+      : isLanding || isAuth
+        ? "text-primary-foreground"
+        : "text-sidebar-foreground";
 
-  const textColor = isLanding || isAuth
-    ? "text-primary-foreground"
-    : "text-sidebar-foreground";
-
-  const supColor = isLanding || isAuth
-    ? "text-primary-foreground/40"
-    : "text-sidebar-foreground/50";
+  const supColor =
+    variant === "footer"
+      ? "text-muted-foreground/50"
+      : isLanding || isAuth
+        ? "text-primary-foreground/40"
+        : "text-sidebar-foreground/40";
 
   return (
     <Link
       to={href}
-      className={`flex items-center gap-2.5 shrink-0 group select-none ${className}`}
+      className={`flex items-center gap-2 shrink-0 group select-none ${className}`}
     >
       <img
         src={logoSrc}
         alt="EASY-LOCS"
-        className={`${imgClass} object-contain transition-all duration-200`}
+        className={`${imgSize} w-auto object-contain`}
         draggable={false}
-        style={{ background: "transparent" }}
         width={40}
         height={40}
       />
-
       {showLabel && (
-        <span
-          className={`font-bold tracking-tight whitespace-nowrap leading-none ${labelClass} ${textColor} transition-colors`}
-        >
+        <span className={`font-extrabold tracking-tight whitespace-nowrap leading-none text-sm sm:text-base ${textColor}`}>
           EASY-LOCS
-          <sup className={`text-[7px] align-super ml-0.5 ${supColor}`}>®</sup>
+          <sup className={`text-[7px] align-super ml-0.5 font-bold ${supColor}`}>®</sup>
         </span>
       )}
     </Link>
