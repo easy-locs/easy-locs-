@@ -15,6 +15,7 @@ import ListingManager from "@/components/seasonal/ListingManager";
 import SeasonalShowcase from "@/components/seasonal/SeasonalShowcase";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
+import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
 
 type IdentityType = "none" | "cni" | "passport";
 
@@ -745,6 +746,20 @@ const SeasonalRentals = () => {
                 >
                   <X className="h-4 w-4" /> {t("page.seasonal.reject_btn")}
                 </button>
+              </div>
+            )}
+
+            {/* Documents Panel */}
+            {orgId && (
+              <div className="pt-3 border-t border-border/50">
+                <BookingDocumentsPanel
+                  bookingId={focusedRequest.id}
+                  orgId={orgId}
+                  tableName="booking_requests"
+                  documentUrls={Array.isArray(focusedRequest.document_urls) ? focusedRequest.document_urls : []}
+                  onUpdate={load}
+                  compact
+                />
               </div>
             )}
           </div>

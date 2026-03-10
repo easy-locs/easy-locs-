@@ -231,6 +231,7 @@ export type Database = {
           check_out: string
           created_at: string | null
           customer_currency: string | null
+          document_urls: Json | null
           exchange_rate: number | null
           guest_email: string
           guest_name: string
@@ -249,6 +250,7 @@ export type Database = {
           check_out: string
           created_at?: string | null
           customer_currency?: string | null
+          document_urls?: Json | null
           exchange_rate?: number | null
           guest_email: string
           guest_name: string
@@ -267,6 +269,7 @@ export type Database = {
           check_out?: string
           created_at?: string | null
           customer_currency?: string | null
+          document_urls?: Json | null
           exchange_rate?: number | null
           guest_email?: string
           guest_name?: string

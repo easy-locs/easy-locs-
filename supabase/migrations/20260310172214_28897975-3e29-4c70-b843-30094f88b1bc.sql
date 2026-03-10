@@ -1,0 +1,1 @@
+ALTER TABLE public.booking_requests ADD COLUMN IF NOT EXISTS document_urls jsonb DEFAULT '[]'::jsonb;

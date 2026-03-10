@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import BookingCommunicationThread from "@/components/marketplace/BookingCommunicationThread";
 import { generateConciergeInvoice } from "./ConciergeInvoiceAdapter";
+import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -300,44 +301,14 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
 
           <Separator />
 
-          {/* Documents / ID Upload */}
-          <section className="space-y-2">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5" /> Identity Documents
-            </h3>
-
-            {documentUrls.length > 0 && (
-              <div className="space-y-2">
-                {documentUrls.map((url, i) => {
-                  const filename = url.split("/").pop() || `Document ${i + 1}`;
-                  return (
-                    <div key={i} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="text-xs text-foreground truncate">{filename}</span>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(url, "_blank")}>
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => removeDoc(i)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-[var(--card-radius)] p-4 cursor-pointer hover:bg-muted/20 transition-colors">
-              <Upload className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                {uploading ? "Uploading..." : "Upload passport, ID card, visa..."}
-              </span>
-              <input type="file" className="hidden" multiple accept="image/*,.pdf" onChange={handleDocUpload} disabled={uploading} />
-            </label>
-          </section>
+          {/* Documents / ID Upload — shared component */}
+          <BookingDocumentsPanel
+            bookingId={booking.id}
+            orgId={orgId}
+            tableName="concierge_orders"
+            documentUrls={documentUrls}
+            onUpdate={onUpdate}
+          />
 
           <Separator />
 
