@@ -86,6 +86,7 @@ const MESSAGE_CATEGORIES = [
   { value: "lease", label: "📝 Bail", icon: "📝" },
   { value: "maintenance", label: "🔧 Maintenance", icon: "🔧" },
   { value: "legal", label: "⚖️ Juridique", icon: "⚖️" },
+  { value: "real_estate", label: "🏠 Immobilier", icon: "🏠" },
 ];
 
 const CONV_STATUSES = [
