@@ -357,7 +357,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         {/* Scrollable nav */}
-        <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin">
+        <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin will-change-scroll">
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
             const allItems = getAllSectionItems(section);
