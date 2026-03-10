@@ -199,8 +199,8 @@ const Accounting = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Comptabilité"}</h1>
-            <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow et rapports financiers"}</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Accounting"}</h1>
+            <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow and financial reports"}</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mr-2">
