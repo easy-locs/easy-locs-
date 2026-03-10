@@ -495,7 +495,7 @@ const ActivitiesMarketplace = () => {
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Bookings</span></div>
+                <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Réservations</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{totalBookings}</p>
                 <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
               </CardContent>
