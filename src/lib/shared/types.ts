@@ -17,7 +17,7 @@ export type TargetType =
   | "message";
 
 /** Business module for notification categorization */
-export type AppModule = "long_term" | "seasonal" | "marketplace";
+export type AppModule = "long_term" | "seasonal" | "marketplace" | "real_estate";
 
 /** Notification status lifecycle */
 export type NotificationStatus = "new" | "read" | "resolved";

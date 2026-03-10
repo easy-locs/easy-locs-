@@ -1022,10 +1022,12 @@ const CommunicationCenter = () => {
                     <div className="flex items-start gap-3">
                       <div className="relative">
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                          thread.type === "booking" ? "bg-accent/10" : "bg-primary/10"
+                          thread.type === "booking" ? "bg-accent/10" : thread.type === "lead" ? "bg-emerald-500/10" : "bg-primary/10"
                         }`}>
                           {thread.type === "booking" ? (
                             <Hash className="h-4 w-4 text-accent" />
+                          ) : thread.type === "lead" ? (
+                            <Building className="h-4 w-4 text-emerald-600" />
                           ) : (
                             <User className="h-4 w-4 text-primary" />
                           )}
