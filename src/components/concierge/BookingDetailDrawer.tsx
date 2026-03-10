@@ -10,14 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
   CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
-  DollarSign, Send, Copy, ExternalLink, MessageCircle
+  DollarSign, Send, Copy, ExternalLink, MessageCircle, Receipt
 } from "lucide-react";
 import { format } from "date-fns";
+import BookingCommunicationThread from "@/components/marketplace/BookingCommunicationThread";
+import { generateConciergeInvoice } from "./ConciergeInvoiceAdapter";
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -53,6 +56,8 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
   const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState(booking?.notes || "");
   const [saving, setSaving] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   const documentUrls: string[] = Array.isArray(booking?.document_urls) ? booking.document_urls : [];
   const statusInfo = STATUS_MAP[booking?.status] || STATUS_MAP.pending;
@@ -123,6 +128,17 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
     toast.success("Copied!");
   };
 
+  const handleGenerateInvoice = useCallback(async () => {
+    setGeneratingInvoice(true);
+    try {
+      await generateConciergeInvoice(booking, service, orgId);
+    } catch (err: any) {
+      toast.error("Invoice generation failed: " + err.message);
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  }, [booking, service, orgId]);
+
   if (!booking) return null;
 
   const bankDetails = typeof service?.bank_details === "object" ? service.bank_details : {};
@@ -137,15 +153,27 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
           </SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-5 mt-4">
-          {/* Status & Quick Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
-            <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
-              {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
-            </Badge>
-          </div>
+        {/* Status badges */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+          <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
+          <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
+            {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
+          </Badge>
+        </div>
 
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs">
+              <MessageCircle className="h-3 w-3 mr-1" /> Chat
+            </TabsTrigger>
+            <TabsTrigger value="invoice" className="text-xs">
+              <Receipt className="h-3 w-3 mr-1" /> Invoice
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ─── DETAILS TAB ─── */}
+          <TabsContent value="details" className="space-y-5 mt-4">
           {/* Client Info */}
           <section className="space-y-2">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client</h3>
@@ -167,7 +195,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <span className="text-foreground">{booking.guest_phone}</span>
                 </div>
               )}
-              {/* Contact buttons */}
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`mailto:${booking.guest_email}?subject=Booking ${service?.title || ""}`, "_blank")}>
                   <Mail className="h-3 w-3 mr-1" /> Email
@@ -240,7 +267,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                 </Button>
               )}
 
-              {/* Bank details for bank transfer */}
               {booking.payment_method === "bank_transfer" && bankDetails.iban && (
                 <div className="bg-background rounded-lg p-2 space-y-1 text-xs mt-2">
                   <p className="font-semibold text-foreground">Bank Details</p>
@@ -257,7 +283,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                 </div>
               )}
 
-              {/* Quick payment actions */}
               <div className="flex flex-wrap gap-2 pt-1">
                 {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
                   <Button size="sm" className="flex-1 min-w-[9rem] text-xs" onClick={markPaid}>
@@ -361,7 +386,41 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             {booking.completed_at && <p>Completed: {format(new Date(booking.completed_at), "PPp")}</p>}
             {booking.cancelled_at && <p>Cancelled: {format(new Date(booking.cancelled_at), "PPp")}</p>}
           </div>
-        </div>
+          </TabsContent>
+
+          {/* ─── MESSAGES TAB ─── */}
+          <TabsContent value="messages" className="mt-4">
+            <BookingCommunicationThread
+              bookingId={booking.id}
+              orgId={orgId}
+              customerName={booking.guest_name || "Guest"}
+              customerEmail={booking.guest_email}
+            />
+          </TabsContent>
+
+          {/* ─── INVOICE TAB ─── */}
+          <TabsContent value="invoice" className="mt-4 space-y-4">
+            <div className="bg-muted/30 rounded-[var(--card-radius)] p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-accent" />
+                <h3 className="font-medium text-foreground">Generate Invoice</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Generate a professional PDF invoice for this booking. Requires a provider profile with invoicing enabled.
+              </p>
+              <div className="bg-background rounded-lg p-3 space-y-1 text-xs">
+                <div className="flex justify-between"><span className="text-muted-foreground">Service</span><span className="text-foreground font-medium">{service?.title || "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Client</span><span className="text-foreground">{booking.guest_name}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-foreground font-bold">{fmtPrice(booking.total_price, booking.currency)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Payment</span><span className={booking.payment_status === "paid" ? "text-emerald-600 font-medium" : "text-amber-600"}>{booking.payment_status === "paid" ? "✓ Paid" : "Pending"}</span></div>
+              </div>
+              <Button onClick={handleGenerateInvoice} disabled={generatingInvoice} className="w-full text-xs">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                {generatingInvoice ? "Generating..." : "Download Invoice PDF"}
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
