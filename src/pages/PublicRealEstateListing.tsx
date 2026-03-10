@@ -83,6 +83,29 @@ export default function PublicRealEstateListing() {
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setSubmitted(true);
     toast({ title: "✅ Message sent!", description: "The property owner will contact you shortly." });
+
+    // Trigger email notification to owner (fire-and-forget)
+    try {
+      await supabase.functions.invoke("send-notification-email", {
+        body: {
+          event_type: "real_estate_lead",
+          recipient_email: listing.contact_email || "",
+          recipient_name: "",
+          locale: "en",
+          data: {
+            lead_name: contactForm.name,
+            lead_email: contactForm.email,
+            lead_phone: contactForm.phone || "N/A",
+            lead_message: contactForm.message || "",
+            listing_title: listing.title,
+            listing_type: listing.listing_type,
+            org_id: listing.org_id,
+            cta_url: `${window.location.origin}/dashboard/real-estate?tab=leads`,
+            cta_label: "View Lead",
+          },
+        },
+      });
+    } catch { /* non-blocking */ }
   };
 
   const handleShare = () => {
