@@ -6,11 +6,11 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
+import { Suspense, lazy } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
-const FloatingAIAssistant = lazy(() => import("@/components/ai/FloatingAIAssistant"));
 import CountryGuard from "@/components/dashboard/CountryGuard";
-import { Suspense, lazy } from "react";
+const FloatingAIAssistant = lazy(() => import("@/components/ai/FloatingAIAssistant"));
 import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
