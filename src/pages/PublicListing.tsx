@@ -257,6 +257,13 @@ const PublicListing = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-16 bg-card border border-border rounded-2xl p-6 shadow-card space-y-5">
               <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
+              <ListingContactButtons
+                contactEmail={property?.contact_email}
+                contactPhone={property?.contact_phone}
+                whatsappNumber={property?.whatsapp_number}
+                telegramUsername={property?.telegram_username}
+                listingTitle={listingTitle}
+              />
             </div>
           </div>
         </div>
