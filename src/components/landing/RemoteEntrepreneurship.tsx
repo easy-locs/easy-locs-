@@ -83,7 +83,7 @@ const RemoteEntrepreneurship = () => {
           </motion.div>
 
           {/* Right — City cards grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {cities.map((c, i) => (
               <motion.div
                 key={c.city}
@@ -95,7 +95,7 @@ const RemoteEntrepreneurship = () => {
               >
                 <Link
                   to={c.link}
-                  className="group flex flex-col items-center text-center rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden"
+                  className="group flex flex-col items-center text-center rounded-2xl p-3 sm:p-5 border transition-all duration-300 relative overflow-hidden"
                   style={{
                     borderColor: "hsl(var(--primary-foreground) / 0.06)",
                     background: "hsl(var(--primary-foreground) / 0.03)",
@@ -105,7 +105,7 @@ const RemoteEntrepreneurship = () => {
                   <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-accent" />
 
                   <div className="relative z-10">
-                    <span className="text-3xl mb-2 block">{c.flag}</span>
+                    <span className="text-2xl sm:text-3xl mb-1.5 sm:mb-2 block">{c.flag}</span>
                     <div className="font-bold text-sm mb-0.5" style={{ color: "hsl(var(--primary-foreground))" }}>
                       {c.city}
                     </div>

@@ -127,24 +127,26 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="border-t pt-5 mb-5 text-xs text-center leading-relaxed"
+          className="border-t pt-5 mb-5 text-[10px] sm:text-xs text-center leading-relaxed flex flex-wrap justify-center gap-1"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          🇫🇷 🇪🇸 🇩🇪 🇮🇹 🇵🇹 🇬🇧 🇳🇱 🇧🇪 🇨🇭 🇦🇹 🇲🇦 🇦🇪 🇸🇦 🇯🇵 🇰🇷 🇨🇳 🇮🇳 🇧🇷 🇺🇸 🇨🇦 🇦🇺 🇹🇷 🇵🇱 🇷🇴 🇬🇷 🇨🇿 🇭🇺 🇭🇷 🇧🇬 🇸🇰 🇺🇦 🇮🇱
+          {["🇫🇷","🇪🇸","🇩🇪","🇮🇹","🇵🇹","🇬🇧","🇳🇱","🇧🇪","🇨🇭","🇦🇹","🇲🇦","🇦🇪","🇸🇦","🇯🇵","🇰🇷","🇨🇳","🇮🇳","🇧🇷","🇺🇸","🇨🇦","🇦🇺","🇹🇷","🇵🇱","🇷🇴","🇬🇷","🇨🇿","🇭🇺","🇭🇷","🇧🇬","🇸🇰","🇺🇦","🇮🇱"].map(f => (
+            <span key={f}>{f}</span>
+          ))}
         </motion.div>
 
         <div
-          className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
+          className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          <span>
+          <span className="text-center sm:text-left">
             © {new Date().getFullYear()}{" "}
             <span className="font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}>
               Easy-Locs<sup className="text-[8px]">®</sup>
             </span>
             . {t("landing.footer.rights") || "All rights reserved."}
           </span>
-          <div className="flex items-center gap-4 text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+          <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
             <span>SaaS Platform</span>
             <span>·</span>
             <span>110+ Countries</span>
