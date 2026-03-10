@@ -83,7 +83,7 @@ const RemoteEntrepreneurship = () => {
           </motion.div>
 
           {/* Right — City cards grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {cities.map((c, i) => (
               <motion.div
                 key={c.city}
