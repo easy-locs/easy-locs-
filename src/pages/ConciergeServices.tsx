@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { computeExchangeRate } from "@/hooks/useCurrencyConversion";
+import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -95,6 +96,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 
 const ConciergeServices = () => {
   const { user, orgId } = useAuth();
+  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [services, setServices] = useState<any[]>([]);
@@ -173,10 +175,14 @@ const ConciergeServices = () => {
   }, [orgId, load]);
 
   const save = async () => {
-    if (!orgId || !user || !form.title) return;
+    const resolvedOrgId = orgId || await ensureOrg();
+    if (!resolvedOrgId || !user || !form.title) {
+      if (!resolvedOrgId) toast.error("Impossible de créer votre espace. Veuillez vous reconnecter.");
+      return;
+    }
     const slug = form.booking_slug || generateSlug(form.title);
     const record: any = {
-      ...form, org_id: orgId, user_id: user.id, booking_slug: slug,
+      ...form, org_id: resolvedOrgId, user_id: user.id, booking_slug: slug,
       photo_urls: form.photo_urls, time_slots: form.time_slots,
       blocked_dates: form.blocked_dates, payment_methods: form.payment_methods,
       bank_details: form.bank_details,

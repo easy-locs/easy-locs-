@@ -22,11 +22,13 @@ import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter"
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
 const ActivitiesMarketplace = () => {
   const { user, orgId } = useAuth();
+  const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [providerFormOpen, setProviderFormOpen] = useState(false);
@@ -142,12 +144,15 @@ const ActivitiesMarketplace = () => {
   // --- Mutations ---
   const createProvider = useMutation({
     mutationFn: async (data: any) => {
+      // Auto-create org for free accounts
+      const resolvedOrgId = await ensureOrg();
+      if (!resolvedOrgId) throw new Error("Impossible de créer votre espace. Veuillez vous reconnecter.");
       const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const { error } = await supabase.from("marketplace_providers").insert({
         ...data,
         slug,
         user_id: user!.id,
-        org_id: orgId!,
+        org_id: resolvedOrgId,
       });
       if (error) throw error;
     },
@@ -174,12 +179,14 @@ const ActivitiesMarketplace = () => {
 
   const createService = useMutation({
     mutationFn: async (data: ServiceFormData) => {
+      const resolvedOrgId = orgId || await ensureOrg();
+      if (!resolvedOrgId) throw new Error("Organisation introuvable");
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const insertData: Record<string, unknown> = {
         ...data,
         booking_slug: slug,
         provider_id: myProvider!.id,
-        org_id: orgId!,
+        org_id: resolvedOrgId,
         user_id: user!.id,
       };
       const { error } = await supabase.from("marketplace_services").insert(insertData as any);

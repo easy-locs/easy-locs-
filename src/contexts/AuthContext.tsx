@@ -201,8 +201,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (user) await fetchUserType(user.id);
-  }, [user, fetchUserType]);
+    if (user) {
+      await Promise.all([
+        fetchUserType(user.id),
+        fetchOrgId(user.id),
+      ]);
+    }
+  }, [user, fetchUserType, fetchOrgId]);
 
   const switchRole = useCallback((role: ActiveRole) => {
     setActiveRole(role);
