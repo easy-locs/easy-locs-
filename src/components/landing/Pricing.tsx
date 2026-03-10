@@ -86,7 +86,7 @@ const Pricing = () => {
 
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-gold" />
-            <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name")}</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name") || "Easy-Locs Unlimited"}</h3>
           </div>
           <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc")}</p>
 
