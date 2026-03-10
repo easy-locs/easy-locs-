@@ -625,17 +625,14 @@ const PublicServiceBooking = () => {
 
               {step === 3 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground">Payment Method</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {availablePayments.map(pm => (
-                      <button key={pm} onClick={() => setPaymentMethod(pm)}
-                        className={`p-4 rounded-xl border-2 text-left transition-colors ${
-                          paymentMethod === pm ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
-                        }`}>
-                        <span className="text-sm font-medium text-foreground">{PAYMENT_LABELS[pm] || pm}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <PaymentMethodSelector
+                    selectedMethod={paymentMethod}
+                    onSelect={setPaymentMethod}
+                    hasStripe={hasStripe}
+                    hasPaypal={hasPaypal}
+                    hasBankDetails={hasBankDetails}
+                    showOffline
+                  />
 
                   {paymentMethod === "bank_transfer" && Object.keys(bankDetails).length > 0 && (
                     <div className="bg-muted/30 rounded-xl p-4 space-y-2">
@@ -648,11 +645,17 @@ const PublicServiceBooking = () => {
                     </div>
                   )}
 
+                  {paymentMethod === "cash" && (
+                    <div className="bg-muted/30 rounded-xl p-3 text-xs text-muted-foreground">
+                      💵 Cash payment on arrival. The provider will confirm your booking.
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
-                    <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
+                    <Button onClick={handleSubmit} disabled={submitting || !paymentMethod} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "stripe" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
+                      {paymentMethod === "card" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
                     </Button>
                   </div>
                 </div>
