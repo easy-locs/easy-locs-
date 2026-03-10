@@ -80,7 +80,7 @@ const Pricing = () => {
               className="absolute -top-0.5 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-b-lg flex items-center gap-1"
             >
               <Sparkles className="h-3 w-3" />
-              {t("landing.pricing.save_annual")}
+              {t("landing.pricing.save_annual") || "Save €20/year"}
             </motion.div>
           )}
 
