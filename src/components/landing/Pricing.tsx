@@ -88,7 +88,7 @@ const Pricing = () => {
             <Sparkles className="h-5 w-5 text-gold" />
             <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name") || "Easy-Locs Unlimited"}</h3>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc")}</p>
+          <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc") || "All-inclusive — Full access"}</p>
 
           <motion.div
             className="mb-4"
