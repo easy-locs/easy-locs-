@@ -124,7 +124,7 @@ const Pricing = () => {
               className="block w-full text-center py-3.5 rounded-xl font-bold text-sm transition-all relative overflow-hidden group"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 20px hsl(var(--accent) / 0.25)" }}
             >
-              <span className="relative z-10">{t("landing.pricing.cta")}</span>
+              <span className="relative z-10">{t("landing.pricing.cta") || "Free 3-day trial"}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </Link>
           </motion.div>
