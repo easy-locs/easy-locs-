@@ -293,10 +293,10 @@ const DeveloperPortal = () => {
 
           <TabsContent value="webhooks" className="mt-4 space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Webhooks configurés</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Configured webhooks</CardTitle></CardHeader>
               <CardContent>
                 {webhooks.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucun webhook. Créez-en un pour recevoir des notifications en temps réel.</p>
+                  <p className="text-center text-muted-foreground py-8">No webhooks. Create one to receive real-time notifications.</p>
                 ) : (
                   <div className="space-y-3">
                     {webhooks.map(w => (
