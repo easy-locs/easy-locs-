@@ -123,7 +123,7 @@ const DynamicPricing = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Règle de tarification ajoutée");
+      toast.success("Pricing rule added");
       qc.invalidateQueries({ queryKey: ["pricing_rules"] });
       setAddOpen(false);
     },
