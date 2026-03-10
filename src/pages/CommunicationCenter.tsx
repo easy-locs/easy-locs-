@@ -1045,6 +1045,31 @@ const CommunicationCenter = () => {
                   </Button>
                 ))}
               </div>
+              {propertyOptions.length > 1 && (
+                <Select value={filterProperty} onValueChange={setFilterProperty}>
+                  <SelectTrigger className="h-7 text-xs">
+                    <MapPin className="h-3 w-3 mr-1 text-muted-foreground" />
+                    <span className="truncate">{filterProperty === "all" ? "All properties" : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All properties</SelectItem>
+                    {propertyOptions.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+                    key={f.value}
+                    size="sm"
+                    variant={filterType === f.value ? "default" : "ghost"}
+                    onClick={() => setFilterType(f.value)}
+                    className={`text-xs h-7 px-2 gap-1 ${filterType === f.value ? "" : "text-muted-foreground"}`}
+                  >
+                    {f.label}
+                    {f.count > 0 && <span className="text-[9px] opacity-60">{f.count}</span>}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             <ScrollArea className="flex-1">
