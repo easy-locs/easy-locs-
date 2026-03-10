@@ -336,7 +336,7 @@ const DeveloperPortal = () => {
 
             {deliveries.length > 0 && (
               <Card>
-                <CardHeader><CardTitle className="text-lg">Dernières livraisons</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg">Recent deliveries</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {deliveries.slice(0, 20).map(d => (
