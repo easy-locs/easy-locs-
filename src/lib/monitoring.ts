@@ -269,7 +269,7 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       checkedAt: now,
     });
 
-    // 5. Check messaging system
+    // 7. Check messaging system
     const { count: msgCount } = await supabase
       .from("messages")
       .select("id", { count: "exact", head: true });
@@ -281,7 +281,7 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       checkedAt: now,
     });
 
-    // 6. Edge function health
+    // 8. Edge function health
     try {
       const { error } = await supabase.functions.invoke("check-subscription", {
         body: {},

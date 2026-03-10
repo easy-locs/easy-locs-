@@ -27,14 +27,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const defaultSubscription: SubscriptionState = {
-  subscribed: false,
-  plan: "free",
-  subscriptionEnd: null,
-  loading: true,
-  isTrial: false,
-  trialDaysLeft: null,
-};
+// defaultSubscription imported from useSubscription
 
 const AuthContext = createContext<AuthContextType>({
   user: null,

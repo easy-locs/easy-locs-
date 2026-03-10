@@ -257,12 +257,46 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     return true;
   };
 
+  // ─── Refund Booking (L2.8) ───
+  const refundBooking = async (booking: any, reason: string = "") => {
+    const { error } = await supabase
+      .from("marketplace_bookings")
+      .update({
+        status: "refunded",
+        refunded_at: new Date().toISOString(),
+        payment_confirmed: false,
+      })
+      .eq("id", booking.id);
+    if (error) { toast.error(error.message); return false; }
+
+    toast.success("Réservation remboursée");
+    invalidate();
+
+    // Resolve notifications
+    try {
+      const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
+      await resolveNotificationsForTarget("marketplace_booking", booking.id, user?.id);
+    } catch (e) { console.error("[resolve-notif]", e); }
+
+    const svc = findService(booking.service_id);
+    await notify(
+      booking,
+      `💸 Refund processed: ${svc?.title || "Service"}`,
+      `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" has been refunded.\nAmount: ${booking.total_price} ${booking.currency}${reason ? `\nReason: ${reason}` : ""}\n\nThe refund will be processed according to the original payment method.\n\nThank you!`,
+      "payment",
+      svc,
+    );
+
+    return true;
+  };
+
   return {
     updateStatus,
     confirmPayment,
     sendPaymentLink,
     modifyBooking,
     sendQuote,
+    refundBooking,
     /** Convenience: update by ID (finds booking in provided list) */
     updateStatusById: async (bookings: any[], id: string, status: BookingStatus) => {
       const booking = bookings.find((b: any) => b.id === id);
