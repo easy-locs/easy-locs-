@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,13 +109,36 @@ const Dashboard = () => {
       });
   }, [orgId]);
 
+  const kpis = [
+    {
+      icon: Building,
+      label: t("page.dashboard.properties") || "Biens",
+      value: loading ? "…" : String(stats.totalProperties),
+      path: "/dashboard/properties",
+      sub: t("page.dashboard.view_all") || "Voir les biens →",
+    },
+    {
+      icon: MapPin,
+      label: t("page.dashboard.countries") || "Pays actifs",
+      value: loading ? "…" : String(stats.totalCountries),
+      sub: t("page.dashboard.select_country_hint") || "Sélectionnez ci-dessous",
+    },
+    {
+      icon: TrendingUp,
+      label: t("page.dashboard.collected_month") || "Encaissé ce mois",
+      value: loading ? "…" : fmt(stats.revenueThisMonth),
+      path: "/dashboard/receipts",
+      sub: t("page.dashboard.view_receipts") || "Voir les quittances →",
+    },
+  ];
+
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-3 mb-1">
-            <Globe className="h-6 w-6 text-accent" />
+            <Globe className="h-6 w-6 text-accent shrink-0" />
             <h1 className="text-2xl font-bold text-foreground">
               {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
             </h1>
@@ -124,43 +148,23 @@ const Dashboard = () => {
           </p>
         </motion.div>
 
-        {/* Quick Add Property — moved below country cards */}
-
-        {/* Global KPIs — smart clickable navigation cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {[
-            { icon: Building, label: t("page.dashboard.properties") || "Biens", value: loading ? "..." : String(stats.totalProperties), path: "/dashboard/properties", hint: "Voir les biens →" },
-            { icon: MapPin, label: t("page.dashboard.countries") || "Pays actifs", value: loading ? "..." : String(stats.totalCountries), path: null, hint: "Sélectionnez un pays ci-dessous" },
-            { icon: TrendingUp, label: t("page.dashboard.collected_month") || "Encaissé ce mois", value: loading ? "..." : fmt(stats.revenueThisMonth), path: "/dashboard/receipts", hint: "Voir les quittances →" },
-          ].map((stat, i) => (
+        {/* Global KPIs — using StatCard for uniform rendering */}
+        <div className="stats-grid mb-8">
+          {kpis.map((kpi, i) => (
             <motion.div
-              key={stat.label}
+              key={kpi.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + i * 0.03 }}
+              className="h-full"
             >
-              {stat.path ? (
-                <Link to={stat.path} className="group block stat-card cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all h-full">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <stat.icon className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
-                      <span className="text-xs text-muted-foreground font-medium truncate">{stat.label}</span>
-                    </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-transparent group-hover:text-accent transition-colors shrink-0" />
-                  </div>
-                  <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
-                  <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{stat.hint}</p>
-                </Link>
-              ) : (
-                <div className="stat-card h-full">
-                  <div className="flex items-center gap-2 mb-2">
-                    <stat.icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground font-medium truncate">{stat.label}</span>
-                  </div>
-                  <div className="text-xl font-bold text-foreground mt-auto tabular-nums">{stat.value}</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">{stat.hint}</p>
-                </div>
-              )}
+              <StatCard
+                icon={kpi.icon}
+                label={kpi.label}
+                value={kpi.value}
+                sub={kpi.sub}
+                path={kpi.path}
+              />
             </motion.div>
           ))}
         </div>
@@ -194,12 +198,12 @@ const Dashboard = () => {
               ))}
             </div>
           ) : stats.propertiesByCountry.length === 0 ? (
-            <div className="text-center py-16 bg-card rounded-xl border border-border/50">
-              <Globe className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+            <div className="empty-state bg-card rounded-xl border border-border/50">
+              <Globe className="empty-state-icon" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
               </h3>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="empty-state-text mb-6">
                 Ajoutez votre premier bien ou créez un service pour commencer
               </p>
               <Link to="/dashboard/add-property" className="btn-primary">
@@ -229,13 +233,13 @@ const Dashboard = () => {
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
                             {c.count > 0 && (
                               <span className="flex items-center gap-1">
-                                <Building className="h-3.5 w-3.5" />
+                                <Building className="h-3.5 w-3.5 shrink-0" />
                                 {c.count} {c.count > 1 ? "biens" : "bien"}
                               </span>
                             )}
                             {c.tenants > 0 && (
                               <span className="flex items-center gap-1">
-                                <Users className="h-3.5 w-3.5" />
+                                <Users className="h-3.5 w-3.5 shrink-0" />
                                 {c.tenants}
                               </span>
                             )}
@@ -247,7 +251,7 @@ const Dashboard = () => {
                 ))}
               </div>
 
-              {/* Add Property card — below country cards */}
+              {/* Add Property card */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -258,7 +262,7 @@ const Dashboard = () => {
                   to="/dashboard/add-property"
                   className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all min-h-[4rem]"
                 >
-                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
                     <Plus className="h-5 w-5 text-accent" />
                   </div>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
