@@ -2863,6 +2863,8 @@ export type Database = {
         Row: {
           active: boolean | null
           amenities: Json | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -2872,13 +2874,17 @@ export type Database = {
           price_per_night: number | null
           property_id: string
           slug: string
+          telegram_username: string | null
           title: string
           updated_at: string | null
           user_id: string
+          whatsapp_number: string | null
         }
         Insert: {
           active?: boolean | null
           amenities?: Json | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2888,13 +2894,17 @@ export type Database = {
           price_per_night?: number | null
           property_id: string
           slug: string
+          telegram_username?: string | null
           title?: string
           updated_at?: string | null
           user_id: string
+          whatsapp_number?: string | null
         }
         Update: {
           active?: boolean | null
           amenities?: Json | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2904,9 +2914,11 @@ export type Database = {
           price_per_night?: number | null
           property_id?: string
           slug?: string
+          telegram_username?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
