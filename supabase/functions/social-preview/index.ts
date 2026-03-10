@@ -31,19 +31,11 @@ function toVersionToken(value?: string | null): string | null {
 }
 
 function buildOptimizedOgImageUrl(image: string): string {
+  // Use raw public URL directly — no image transform (requires paid plan)
+  // Just ensure the URL is absolute and accessible
   try {
-    const parsed = new URL(image);
-    const marker = "/storage/v1/object/public/";
-    const idx = parsed.pathname.indexOf(marker);
-    if (idx === -1) return image;
-
-    const objectPath = parsed.pathname.slice(idx + marker.length);
-    const optimized = new URL(`${parsed.origin}/storage/v1/render/image/public/${objectPath}`);
-    optimized.searchParams.set("width", "1200");
-    optimized.searchParams.set("height", "630");
-    optimized.searchParams.set("resize", "cover");
-    optimized.searchParams.set("quality", "80");
-    return optimized.toString();
+    new URL(image);
+    return image;
   } catch {
     return image;
   }
