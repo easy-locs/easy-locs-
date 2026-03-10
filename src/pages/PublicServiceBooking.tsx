@@ -248,7 +248,7 @@ const PublicServiceBooking = () => {
           service_date: dateFrom,
           end_time: dateTo,
           service_time: selectedTime || null,
-          payment_method: paymentMethod,
+          payment_method: paymentMethod === "card" ? "stripe" : paymentMethod || "cash",
           status: "pending",
           payment_status: paymentMethod === "bank_transfer" ? "awaiting_transfer" : "unpaid",
           commission_type: service.commission_type || "percentage",
