@@ -287,7 +287,7 @@ const Hero = () => {
             transition={{ delay: 1.4, duration: 0.6 }}
             className="pt-2"
           >
-            <div className="grid grid-cols-2 sm:grid-cols-4 items-center justify-center gap-2 sm:gap-4 text-[11px] font-medium max-w-lg mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 items-center justify-center gap-2 sm:gap-4 text-[11px] font-medium max-w-xl mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
               {[
                 { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management", to: "/property-management" },
                 { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings", to: "/explore" },
