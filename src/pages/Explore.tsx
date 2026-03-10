@@ -362,7 +362,8 @@ export default function Explore() {
           {/* ═══ Seasonal Tab ═══ */}
           <TabsContent value="seasonal" className="mt-0">
             {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
-              <CountryGroupedGrid items={filteredSeasonal} renderCard={(l) => (
+              <>
+              <CountryGroupedGrid items={filteredSeasonal.slice(0, visibleCount)} renderCard={(l) => (
                 <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group h-full">
                   <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
@@ -384,6 +385,8 @@ export default function Explore() {
                   </div>
                 </Link>
               )} />
+              <LoadMoreButton total={filteredSeasonal.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
 
