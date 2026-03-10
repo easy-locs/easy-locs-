@@ -1024,7 +1024,7 @@ const SeasonalRentals = () => {
                 "bg-orange-500/15 text-orange-700 border-l-2 border-orange-400/40",
               ];
               return (
-                <div key={i} className={`min-h-[68px] p-1 rounded-lg border text-xs relative overflow-hidden ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
+                <div key={i} className={`min-h-[52px] sm:min-h-[68px] p-0.5 sm:p-1 rounded-lg border text-xs relative overflow-hidden ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
                   <span className="text-foreground font-medium block mb-0.5">{day}</span>
                   <div className="space-y-0.5">
                     {visible.map((b, idx) => (
