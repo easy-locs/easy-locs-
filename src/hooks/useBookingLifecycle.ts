@@ -228,10 +228,41 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     return true;
   };
 
+  // ─── Send Quote ───
+  const sendQuote = async (
+    booking: any,
+    data: { quoted_price: number; quote_message: string },
+  ) => {
+    const { error } = await supabase
+      .from("marketplace_bookings")
+      .update({
+        total_price: data.quoted_price,
+        status: "awaiting_payment",
+      })
+      .eq("id", booking.id);
+    if (error) { toast.error(error.message); return false; }
+
+    toast.success("Devis envoyé !");
+    invalidate();
+
+    const svc = findService(booking.service_id);
+    await notify(
+      booking,
+      `💼 Quote for: ${svc?.title || "Service"}`,
+      `Hello ${booking.booker_name},\n\nYou have received a quote for "${svc?.title || "Service"}".\n\nQuoted amount: ${data.quoted_price.toLocaleString()} ${booking.currency}\n${data.quote_message ? `\nMessage: ${data.quote_message}` : ""}\n\nPlease contact us to confirm or discuss.\n\nThank you!`,
+      "payment",
+      svc,
+    );
+
+    return true;
+  };
+
   return {
     updateStatus,
     confirmPayment,
     sendPaymentLink,
+    modifyBooking,
+    sendQuote,
     /** Convenience: update by ID (finds booking in provided list) */
     updateStatusById: async (bookings: any[], id: string, status: BookingStatus) => {
       const booking = bookings.find((b: any) => b.id === id);
@@ -243,6 +274,5 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
       if (!booking) { toast.error("Booking not found"); return false; }
       return confirmPayment(booking);
     },
-    modifyBooking,
   };
 }
