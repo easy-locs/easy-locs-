@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import SocialProofStrip from "@/components/landing/SocialProofStrip";
 import RoleCards from "@/components/landing/RoleCards";
 import Features from "@/components/landing/Features";
 import HowItWorks from "@/components/landing/HowItWorks";
