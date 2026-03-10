@@ -426,9 +426,9 @@ export default function Explore() {
                   const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                   const catLabel = SERVICE_CATEGORIES[l.category] || l.category;
                   return (
-                    <Link key={l.id} to={l.booking_slug ? `/book/${l.booking_slug}` : "#"} className="group">
-                      <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300">
-                        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    <Link key={l.id} to={l.booking_slug ? `/book/${l.booking_slug}` : "#"} className="group h-full">
+                      <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
                           <img
                             src={photos[0] || PLACEHOLDER_IMG}
                             alt={l.title}
@@ -441,18 +441,18 @@ export default function Explore() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="p-4 space-y-2">
+                        <div className="p-4 flex flex-col flex-1 min-h-[140px]">
                           <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
                             {l.title}
                           </h3>
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
                             <MapPin className="h-3 w-3 shrink-0" />
                             <span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span>
                           </div>
                           {l.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-2">{l.description}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1.5">{l.description}</p>
                           )}
-                          <div className="flex items-center justify-between pt-2 border-t border-border">
+                          <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
                             <span className="text-sm font-bold text-foreground">
                               {l.price > 0 ? `${l.price} ${l.currency || "€"}` : "Free"}
                             </span>
