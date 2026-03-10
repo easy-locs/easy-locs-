@@ -472,6 +472,16 @@ const PublicServiceBooking = () => {
                 </div>
               )}
 
+              {/* Direct contact buttons for free/basic listings */}
+              <ListingContactButtons
+                contactEmail={service.provider_email || null}
+                contactPhone={service.provider_phone || null}
+                whatsappNumber={service.provider_phone || null}
+                listingTitle={service.title}
+                serviceId={service.id}
+                orgId={service.org_id}
+              />
+
               {service.conditions && (
                 <div className="bg-muted/30 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-foreground mb-2">Conditions</h3>
