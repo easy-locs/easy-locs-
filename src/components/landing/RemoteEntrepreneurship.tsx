@@ -48,7 +48,7 @@ const RemoteEntrepreneurship = () => {
               <br />
               From Anywhere
             </h2>
-            <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}>
+            <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
               Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide.
             </p>
 
