@@ -428,7 +428,10 @@ const PublicServiceBooking = () => {
             {/* Service Info */}
             <div className="lg:col-span-2 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">{service.title}</h1>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <h1 className="text-3xl font-bold text-foreground">{service.title}</h1>
+                  {slug && <ShareButtons type="service" slug={slug} title={service.title} />}
+                </div>
                 <div className="flex items-center gap-3 flex-wrap">
                   {service.city && (
                     <Badge variant="outline" className="text-xs">
