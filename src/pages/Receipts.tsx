@@ -100,12 +100,12 @@ const Receipts = () => {
     <DashboardLayout>
        <FeatureGate feature="receipts" featureLabel={t("page.receipts.title")}>
       <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="page-header mb-0">
             <h1>{t("page.receipts.title")}</h1>
             <p>{t("page.receipts.subtitle")}</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Owner info banner */}
         {ownerName && (

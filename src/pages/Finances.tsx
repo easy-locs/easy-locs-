@@ -288,7 +288,7 @@ const Finances = () => {
               </button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Stripe Connect Card */}
         <div className={`ui-card ${

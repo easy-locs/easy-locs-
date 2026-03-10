@@ -216,10 +216,10 @@ const Leases = () => {
     <DashboardLayout>
       <FeatureGate feature="legal_documents" featureLabel={t("page.leases.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">{t("page.leases.title")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("page.leases.subtitle")}</p>
-        </div>
+        </motion.div>
 
         {/* Main toggle */}
         <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">

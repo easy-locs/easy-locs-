@@ -132,11 +132,12 @@ const Expenses = () => {
         </div>
 
         {/* Summary */}
-        <div className="ui-card mb-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="ui-card mb-6 relative overflow-hidden group hover:shadow-card-hover transition-all">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
           <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
           <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
           <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
-        </div>
+        </motion.div>
 
         {/* Add form */}
         {showForm && (
