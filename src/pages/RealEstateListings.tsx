@@ -92,12 +92,18 @@ interface Lead {
   created_at: string;
 }
 
+const VISIBILITY_OPTIONS = [
+  { value: "public", label: "🌍 Public", desc: "Visible in global catalogue & search engines" },
+  { value: "unlisted", label: "🔗 Unlisted", desc: "Only accessible via direct link" },
+  { value: "private", label: "🔒 Private", desc: "Only visible in your dashboard" },
+];
+
 const emptyForm = {
   title: "", description: "", listing_type: "sale", price: 0, currency: "EUR",
   property_type: "apartment", country: "", city: "", address: "", surface_sqm: 0,
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
-  energy_class: "",
+  energy_class: "", visibility: "public",
 };
 
 export default function RealEstateListings() {
@@ -171,6 +177,7 @@ export default function RealEstateListings() {
       bathrooms: listing.bathrooms, contact_email: listing.contact_email, contact_phone: listing.contact_phone,
       parking: listing.parking, garden: listing.garden, terrace: listing.terrace,
       elevator: listing.elevator, furnished: listing.furnished, energy_class: listing.energy_class,
+      visibility: (listing as any).visibility || "public",
     });
     setEditId(listing.id);
     setCreateOpen(true);
@@ -238,6 +245,11 @@ export default function RealEstateListings() {
                         <Badge variant="outline" className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs">
                           {LISTING_TYPES.find(t => t.value === listing.listing_type)?.emoji} {LISTING_TYPES.find(t => t.value === listing.listing_type)?.label}
                         </Badge>
+                        {(listing as any).visibility && (listing as any).visibility !== "public" && (
+                          <Badge variant="outline" className={`absolute bottom-2 left-2 text-[10px] backdrop-blur-sm ${(listing as any).visibility === "unlisted" ? "bg-amber-500/20 text-amber-700 border-amber-500/30" : "bg-muted text-muted-foreground"}`}>
+                            {(listing as any).visibility === "unlisted" ? "🔗 Unlisted" : "🔒 Private"}
+                          </Badge>
+                        )}
                       </div>
                       <CardContent className="p-4 space-y-2">
                         <h3 className="font-semibold text-foreground truncate">{listing.title}</h3>
@@ -408,6 +420,25 @@ export default function RealEstateListings() {
               <div>
                 <Label>Energy Class</Label>
                 <Input value={form.energy_class} onChange={e => setForm(f => ({ ...f, energy_class: e.target.value }))} placeholder="A, B, C…" />
+              </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground">Visibility</h4>
+              <div className="space-y-2">
+                {VISIBILITY_OPTIONS.map(v => (
+                  <label key={v.value}
+                    className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                      form.visibility === v.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                    }`}>
+                    <input type="radio" name="visibility" value={v.value} checked={form.visibility === v.value}
+                      onChange={() => setForm(f => ({ ...f, visibility: v.value }))}
+                      className="mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-sm">{v.label}</div>
+                      <div className="text-xs text-muted-foreground">{v.desc}</div>
+                    </div>
+                  </label>
+                ))}
               </div>
 
               <Separator />

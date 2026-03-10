@@ -2987,6 +2987,7 @@ export type Database = {
           updated_at: string
           user_id: string
           views_count: number | null
+          visibility: string
           year_built: number | null
         }
         Insert: {
@@ -3026,6 +3027,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           views_count?: number | null
+          visibility?: string
           year_built?: number | null
         }
         Update: {
@@ -3065,6 +3067,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           views_count?: number | null
+          visibility?: string
           year_built?: number | null
         }
         Relationships: [
@@ -4732,6 +4735,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
