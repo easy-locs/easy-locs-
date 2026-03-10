@@ -148,7 +148,7 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
+                {t("page.dashboard.world_map") || "My World Portfolio"}
               </h1>
               <p className="text-muted-foreground text-sm">
                 {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
