@@ -60,6 +60,12 @@ export default function PublicRealEstateListing() {
   const [submitted, setSubmitted] = useState(false);
   const [fullscreenGallery, setFullscreenGallery] = useState(false);
 
+  // Auto-translate listing content based on visitor's browser language
+  const translate = useAutoTranslateBatch(
+    { title: listing?.title, description: listing?.description },
+    listing?.country?.toLowerCase() === "fr" ? "fr" : listing?.country?.toLowerCase() === "es" ? "es" : "en"
+  );
+
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
