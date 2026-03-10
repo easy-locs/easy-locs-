@@ -98,9 +98,9 @@ const Pricing = () => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <span className="text-4xl sm:text-5xl font-extrabold text-foreground">{price}€</span>
-            <span className="text-muted-foreground text-sm ml-1">/ {intLabel}</span>
+            <span className="text-muted-foreground text-sm ml-1">/ {intLabel || "month"}</span>
           </motion.div>
-          <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc")}</p>
+          <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc") || "Unlimited access to all Easy-Locs features."}</p>
 
           <ul className="space-y-2.5 mb-8">
             {featureKeys.map((key, i) => (
