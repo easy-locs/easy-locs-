@@ -192,7 +192,39 @@ const PaymentNotices = () => {
   };
 
   const tenantName = (id: string) => tenants.find(te => te.id === id)?.name || "—";
-  const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount || 0), 0);
+  const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount - (c.paid_amount || 0)), 0);
+
+  // Regularize: mark rent call as fully paid
+  const regularize = async (rentCall: RentCall) => {
+    await supabase.from("rent_calls").update({
+      paid: true,
+      paid_date: new Date().toISOString().split("T")[0],
+      paid_amount: rentCall.total_amount,
+      payment_status: "paid",
+    }).eq("id", rentCall.id);
+    toast({ title: t("page.common.paid") });
+    await load();
+  };
+
+  // Partial payment dialog
+  const [partialDialog, setPartialDialog] = useState<RentCall | null>(null);
+  const [partialAmount, setPartialAmount] = useState(0);
+
+  const handlePartialPayment = async () => {
+    if (!partialDialog || partialAmount <= 0) return;
+    const newPaid = Math.min((partialDialog.paid_amount || 0) + partialAmount, partialDialog.total_amount);
+    const isFullyPaid = newPaid >= partialDialog.total_amount;
+    await supabase.from("rent_calls").update({
+      paid: isFullyPaid,
+      paid_date: new Date().toISOString().split("T")[0],
+      paid_amount: newPaid,
+      payment_status: isFullyPaid ? "paid" : "partial",
+    }).eq("id", partialDialog.id);
+    toast({ title: isFullyPaid ? t("page.common.paid") : `${t("page.notices.partial_recorded")} — ${fmt(newPaid)}` });
+    setPartialDialog(null);
+    setPartialAmount(0);
+    await load();
+  };
 
   return (
     <DashboardLayout>
