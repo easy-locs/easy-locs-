@@ -443,6 +443,12 @@ export const pageIt: Record<string, string> = {
   "page.listing.per_night": "/ notte", "page.listing.book_title": "Prenota questo alloggio",
   "page.listing.send_request": "Invia richiesta", "page.listing.pay_now": "Paga ora",
   "page.listing_mgr.title": "Annuncio pubblico", "page.listing_mgr.create_btn": "Crea annuncio",
+  "page.listing_mgr.active": "Attivo", "page.listing_mgr.draft": "Bozza", "page.listing_mgr.night": "notte",
+  "page.seasonal.showcase": "Proprietà", "page.seasonal.bookings_view": "Prenotazioni",
+  "page.seasonal.next_booking": "Prossima prenotazione", "page.seasonal.no_upcoming": "Nessuna prenotazione in arrivo",
+  "page.seasonal.edit": "Modifica", "page.seasonal.bookings_btn": "Prenotazioni",
+  "page.seasonal.view_page": "Pagina pubblica", "page.seasonal.no_listings": "Nessun annuncio stagionale",
+  "page.seasonal.no_listings_hint": "Crea il tuo primo annuncio dalla scheda stagionale di una proprietà.",
 
   // Referrals
   "nav.referrals": "Referral", "referral.title": "Programma di referral",
