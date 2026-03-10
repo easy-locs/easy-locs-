@@ -19,6 +19,8 @@ const TOP_DESTINATIONS = [
   { name: "Lisbon", slug: "lisbon", flag: "🇵🇹" },
   { name: "Bangkok", slug: "bangkok", flag: "🇹🇭" },
   { name: "London", slug: "london", flag: "🇬🇧" },
+  { name: "Tokyo", slug: "tokyo", flag: "🇯🇵" },
+  { name: "Istanbul", slug: "istanbul", flag: "🇹🇷" },
 ];
 
 const Hero = () => {

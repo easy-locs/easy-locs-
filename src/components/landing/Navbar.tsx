@@ -109,7 +109,7 @@ const Navbar = () => {
                   transition={{ duration: 0.15 }}
                   className="absolute right-0 top-full mt-1 w-56 max-h-80 overflow-y-auto bg-card rounded-xl shadow-2xl border border-border z-50 py-1"
                 >
-                  <p className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Popular</p>
+                  <p className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">⭐ Popular</p>
                   {sortedLocales.slice(0, POPULAR_LOCALES.length).map((l) => {
                     const nativeName = LANG_NATIVE[l] || l.toUpperCase();
                     return (
