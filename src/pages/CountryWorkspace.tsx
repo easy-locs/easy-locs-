@@ -5,7 +5,7 @@ import {
   Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
   Calendar, Sofa, Zap, CheckSquare, UserSearch,
-  Bell, Layers,
+  Bell, Layers, ClipboardCheck,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
