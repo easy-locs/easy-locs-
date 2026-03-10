@@ -148,7 +148,8 @@ export default function PropertiesShowcase() {
           <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 max-w-2xl mx-auto px-2">
             {[
               { key: "all", label: "All", fullLabel: "All Properties", icon: "🏢", count: counts.all },
-              ...Object.entries(TYPE_CONFIG).map(([k, v]) => ({ key: k, label: v.label.split(" ").pop()!, fullLabel: v.label, icon: v.icon, count: (counts as any)[k] || 0 })),
+              { key: "sale", label: "Sale", fullLabel: "For Sale", icon: "🏷️", count: counts.sale },
+              { key: "long_term_rent", label: "Rent", fullLabel: "Long-term Rent", icon: "🏠", count: counts.long_term_rent },
             ].map(t => (
               <button
                 key={t.key}

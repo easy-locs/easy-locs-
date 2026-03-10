@@ -279,7 +279,7 @@ export default function RealEstateListings() {
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <span className="font-bold text-accent text-lg">{Number(listing.price).toLocaleString()} {listing.currency}</span>
-                          {listing.listing_type !== "sale" && <span className="text-xs text-muted-foreground">/month</span>}
+                          {listing.listing_type !== "sale" && <span className="text-xs text-muted-foreground">{listing.listing_type === "seasonal_rent" ? "/night" : "/month"}</span>}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           {listing.surface_sqm > 0 && <span className="flex items-center gap-1"><Ruler className="h-3 w-3" />{listing.surface_sqm}m²</span>}
