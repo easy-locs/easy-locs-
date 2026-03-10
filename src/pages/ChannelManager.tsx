@@ -641,7 +641,7 @@ const ChannelManager = () => {
             <Card>
               <CardContent className="pt-4">
                 {reservations.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune réservation. Synchronisez vos calendriers ou ajoutez des réservations manuelles.</p>
+                  <p className="text-center text-muted-foreground py-8">No reservations. Sync your calendars or add manual reservations.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
