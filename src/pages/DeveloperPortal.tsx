@@ -125,7 +125,7 @@ const DeveloperPortal = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Webhook créé");
+      toast.success("Webhook created");
       setWebhookOpen(false); setWebhookUrl(""); setWebhookEvents(["*"]);
       qc.invalidateQueries({ queryKey: ["webhooks"] });
     },
