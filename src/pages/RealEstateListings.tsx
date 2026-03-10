@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
+import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
