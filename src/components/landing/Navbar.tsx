@@ -24,6 +24,9 @@ const Navbar = () => {
           className="hidden md:flex items-center gap-8 text-sm font-medium"
           style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}
         >
+          <Link to="/explore" className="hover:text-accent transition-colors duration-200">
+            Explore
+          </Link>
           <a href="#features" className="hover:text-accent transition-colors duration-200">
             {t("landing.nav.features")}
           </a>

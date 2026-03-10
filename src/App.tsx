@@ -192,6 +192,7 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/explore" element={<Explore />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
               <Route path="/properties/:slug" element={<PublicRealEstateListing />} />
               <Route path="/property/:slug" element={<PublicRealEstateListing />} />
