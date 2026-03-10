@@ -454,9 +454,42 @@ export default function RealEstateListings() {
               <Separator />
               <h4 className="text-sm font-semibold text-foreground">Location</h4>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Country</Label><Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="FR" /></div>
+                <div>
+                  <Label>Country</Label>
+                  <CountrySelect
+                    value={form.country}
+                    onChange={(code) => {
+                      const cc = getCountryConfig(code);
+                      setForm(f => ({ ...f, country: code, currency: cc.currency }));
+                    }}
+                  />
+                </div>
                 <div><Label>City</Label><Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
-                <div className="col-span-2"><Label>Address</Label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
+                <div className="col-span-2">
+                  <Label>Address</Label>
+                  <AddressAutocomplete
+                    value={form.address}
+                    onChange={(val) => setForm(f => ({ ...f, address: val }))}
+                    onSelect={(result: AddressResult) => {
+                      setForm(f => ({
+                        ...f,
+                        address: result.label || "",
+                        city: result.city || f.city,
+                        country: result.countryCode || f.country,
+                        latitude: result.lat || 0,
+                        longitude: result.lng || 0,
+                        currency: result.countryCode ? getCountryConfig(result.countryCode).currency : f.currency,
+                      }));
+                    }}
+                    countryCode={form.country}
+                    placeholder="Search address…"
+                  />
+                </div>
+                {form.latitude !== 0 && form.longitude !== 0 && (
+                  <div className="col-span-2">
+                    <MapPreview lat={form.latitude} lng={form.longitude} className="h-[200px]" />
+                  </div>
+                )}
               </div>
 
               <Separator />
