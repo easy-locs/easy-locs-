@@ -4662,6 +4662,15 @@ export type Database = {
           postal_code: string
         }[]
       }
+      get_public_listing_properties: {
+        Args: { p_property_ids: string[] }
+        Returns: {
+          city: string
+          country: string
+          id: string
+          photo_urls: Json
+        }[]
+      }
       get_public_marketplace_providers: {
         Args: { p_active_only?: boolean; p_slug?: string }
         Returns: {
