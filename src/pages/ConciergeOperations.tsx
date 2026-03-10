@@ -307,7 +307,7 @@ const ConciergeOperations = () => {
                     <div key={d.name} className="flex items-center gap-2 text-sm">
                       <div className="w-3 h-3 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
                       <span className="text-foreground">{d.name}</span>
-                      <span className="text-muted-foreground font-medium">{d.value}€</span>
+                      <span className="text-muted-foreground font-medium">{fmtPrice(d.value)}</span>
                     </div>
                   ))}
                 </div>
