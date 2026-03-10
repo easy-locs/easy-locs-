@@ -18,12 +18,12 @@ const AppLogo = ({
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
 
-  const sizeMap = {
-    sidebar: "h-9 sm:h-10",
-    header: "h-9 sm:h-10",
-    landing: "h-8 sm:h-9",
-    footer: "h-8 sm:h-10",
-    auth: "h-14 sm:h-20",
+  const sizeMap: Record<string, string> = {
+    sidebar: "max-h-10",
+    header: "max-h-10",
+    landing: "max-h-10",
+    footer: "max-h-9",
+    auth: "max-h-16 sm:max-h-20",
   };
 
   return (
@@ -33,8 +33,9 @@ const AppLogo = ({
     >
       <img
         src={logoSrc}
-        alt="Easy-Locs — Gestion Locative"
-        className={`${sizeMap[variant]} w-auto object-contain drop-shadow-lg`}
+        alt="Easy-Locs® — Global Property & Service Platform"
+        className={`${sizeMap[variant]} w-auto object-contain`}
+        style={{ height: "auto" }}
         draggable={false}
       />
     </Link>
