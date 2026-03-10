@@ -127,10 +127,12 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="border-t pt-5 mb-5 text-xs text-center leading-relaxed"
+          className="border-t pt-5 mb-5 text-[10px] sm:text-xs text-center leading-relaxed flex flex-wrap justify-center gap-1"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          🇫🇷 🇪🇸 🇩🇪 🇮🇹 🇵🇹 🇬🇧 🇳🇱 🇧🇪 🇨🇭 🇦🇹 🇲🇦 🇦🇪 🇸🇦 🇯🇵 🇰🇷 🇨🇳 🇮🇳 🇧🇷 🇺🇸 🇨🇦 🇦🇺 🇹🇷 🇵🇱 🇷🇴 🇬🇷 🇨🇿 🇭🇺 🇭🇷 🇧🇬 🇸🇰 🇺🇦 🇮🇱
+          {["🇫🇷","🇪🇸","🇩🇪","🇮🇹","🇵🇹","🇬🇧","🇳🇱","🇧🇪","🇨🇭","🇦🇹","🇲🇦","🇦🇪","🇸🇦","🇯🇵","🇰🇷","🇨🇳","🇮🇳","🇧🇷","🇺🇸","🇨🇦","🇦🇺","🇹🇷","🇵🇱","🇷🇴","🇬🇷","🇨🇿","🇭🇺","🇭🇷","🇧🇬","🇸🇰","🇺🇦","🇮🇱"].map(f => (
+            <span key={f}>{f}</span>
+          ))}
         </motion.div>
 
         <div

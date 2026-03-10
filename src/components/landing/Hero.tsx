@@ -272,16 +272,16 @@ const Hero = () => {
             transition={{ delay: 1.4, duration: 0.6 }}
             className="pt-2"
           >
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px] font-medium" style={{ color: "hsl(220 15% 55%)" }}>
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-6 text-[11px] font-medium" style={{ color: "hsl(220 15% 55%)" }}>
               {[
                 { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management" },
                 { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings" },
                 { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace" },
                 { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics" },
               ].map((vp) => (
-                <span key={vp.text} className="inline-flex items-center gap-1.5">
-                  <vp.icon className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-                  {vp.text}
+                <span key={vp.text} className="inline-flex items-center gap-1.5 justify-center">
+                  <vp.icon className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
+                  <span className="truncate">{vp.text}</span>
                 </span>
               ))}
             </div>
