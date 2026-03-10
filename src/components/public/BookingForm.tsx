@@ -7,6 +7,7 @@ import { buildAppUrl } from "@/lib/app-domain";
 import { toast } from "sonner";
 import BookingAvailabilityCalendar from "./BookingAvailabilityCalendar";
 import GuestBookingReply from "./GuestBookingReply";
+import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 
 interface Props {
   listing: any;
