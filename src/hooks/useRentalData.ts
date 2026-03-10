@@ -80,16 +80,17 @@ export function useRentalData(countryFilter?: string | null) {
   const [rentCalls, setRentCalls] = useState<RentCall[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /* ─── Load all data ─── */
-  const loadProperties = useCallback(async () => {
-    if (!orgId) return;
-    let query = supabase
-      .from("properties")
-      .select("*")
-      .eq("org_id", orgId);
-    if (countryFilter) query = query.eq("country", countryFilter);
-    const { data } = await query.order("label");
-    if (data) setProperties(data.map(p => ({
+  /* ─── Load all data in a single batch to avoid N+1 queries ─── */
+  const loadAll = useCallback(async () => {
+    if (!orgId) { setLoading(false); return; }
+    setLoading(true);
+
+    // 1. Load properties first (needed for country filtering tenants/rents)
+    let propsQuery = supabase.from("properties").select("*").eq("org_id", orgId);
+    if (countryFilter) propsQuery = propsQuery.eq("country", countryFilter);
+    const { data: propsData } = await propsQuery.order("label");
+
+    const mappedProps = (propsData || []).map(p => ({
       id: p.id, label: p.label, address: p.address, postal_code: p.postal_code,
       city: p.city, property_type: p.property_type, surface: Number(p.surface) || 0,
       rooms: p.rooms || 1, floor: p.floor, heating: p.heating || "individual-gas",
@@ -97,60 +98,37 @@ export function useRentalData(countryFilter?: string | null) {
       monthly_charges: Number(p.monthly_charges) || 0, deposit_amount: Number(p.deposit_amount) || 0,
       notes: p.notes || "", building_name: (p as any).building_name || null, lot_number: (p as any).lot_number || null,
       building_id: (p as any).building_id || null, country: p.country || "FR",
-    })));
-  }, [orgId, countryFilter]);
+    }));
+    setProperties(mappedProps);
 
+    // Build property ID set for country filtering (reused for tenants + rent calls)
+    const propIds = countryFilter ? new Set(mappedProps.map(p => p.id)) : null;
 
-  const loadTenants = useCallback(async () => {
-    if (!orgId) return;
-    const { data } = await supabase
-      .from("tenants")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("name");
-    if (data) {
-      let filtered = data;
-      // If country filter, we need to filter tenants by their property's country
-      if (countryFilter) {
-        const { data: countryProps } = await supabase
-          .from("properties")
-          .select("id")
-          .eq("org_id", orgId)
-          .eq("country", countryFilter);
-        const propIds = new Set((countryProps || []).map(p => p.id));
-        filtered = data.filter(t => t.property_id && propIds.has(t.property_id));
-      }
-      setTenants(filtered.map(t => ({
-        id: t.id, name: t.name, email: t.email || "", phone: t.phone || "",
-        property_id: t.property_id, lease_start: t.lease_start, lease_end: t.lease_end,
-        rent_amount: Number(t.rent_amount) || 0, charges_amount: Number(t.charges_amount) || 0,
-        deposit_amount: Number(t.deposit_amount) || 0, lease_type: t.lease_type || "empty",
-        notes: t.notes || "", birth_date: t.birth_date, birth_place: t.birth_place,
-        nationality: t.nationality, profession: t.profession,
-        guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
-        current_address: t.current_address,
-        tenant_user_id: t.tenant_user_id,
-        caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
-      })));
+    // 2. Load tenants + rent calls in parallel (no extra property query needed)
+    const [tenantsRes, rentRes] = await Promise.all([
+      supabase.from("tenants").select("*").eq("org_id", orgId).order("name"),
+      supabase.from("rent_calls").select("*").eq("org_id", orgId).order("month", { ascending: false }),
+    ]);
+
+    let filteredTenants = tenantsRes.data || [];
+    if (propIds) {
+      filteredTenants = filteredTenants.filter(t => t.property_id && propIds.has(t.property_id));
     }
-  }, [orgId, countryFilter]);
+    setTenants(filteredTenants.map(t => ({
+      id: t.id, name: t.name, email: t.email || "", phone: t.phone || "",
+      property_id: t.property_id, lease_start: t.lease_start, lease_end: t.lease_end,
+      rent_amount: Number(t.rent_amount) || 0, charges_amount: Number(t.charges_amount) || 0,
+      deposit_amount: Number(t.deposit_amount) || 0, lease_type: t.lease_type || "empty",
+      notes: t.notes || "", birth_date: t.birth_date, birth_place: t.birth_place,
+      nationality: t.nationality, profession: t.profession,
+      guarantor_name: t.guarantor_name, guarantor_phone: t.guarantor_phone,
+      current_address: t.current_address,
+      tenant_user_id: t.tenant_user_id,
+      caf_apl_amount: Number((t as any).caf_apl_amount) || 0,
+    })));
 
-  const loadRentCalls = useCallback(async () => {
-    if (!orgId) return;
-    let rentCallData: any[] = [];
-    const { data } = await supabase
-      .from("rent_calls")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("month", { ascending: false });
-    rentCallData = data || [];
-    if (countryFilter && rentCallData.length > 0) {
-      const { data: countryProps } = await supabase
-        .from("properties")
-        .select("id")
-        .eq("org_id", orgId)
-        .eq("country", countryFilter);
-      const propIds = new Set((countryProps || []).map(p => p.id));
+    let rentCallData = rentRes.data || [];
+    if (propIds) {
       rentCallData = rentCallData.filter(r => r.property_id && propIds.has(r.property_id));
     }
     setRentCalls(rentCallData.map(r => ({
@@ -160,13 +138,14 @@ export function useRentalData(countryFilter?: string | null) {
       paid: r.paid || false, paid_date: r.paid_date, payment_method: r.payment_method || null,
       receipt_validated: r.receipt_validated || false, receipt_pdf_url: r.receipt_pdf_url,
     })));
+
+    setLoading(false);
   }, [orgId, countryFilter]);
 
-  const loadAll = useCallback(async () => {
-    setLoading(true);
-    await Promise.all([loadProperties(), loadTenants(), loadRentCalls()]);
-    setLoading(false);
-  }, [loadProperties, loadTenants, loadRentCalls]);
+  // Aliases for backward compat — all reload the full dataset to stay consistent
+  const loadProperties = loadAll;
+  const loadTenants = loadAll;
+  const loadRentCalls = loadAll;
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
