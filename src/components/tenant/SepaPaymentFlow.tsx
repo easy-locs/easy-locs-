@@ -192,7 +192,7 @@ export default function SepaPaymentFlow({
                 {ownerBank?.bank_iban || "—"}
               </code>
               {ownerBank?.bank_iban && (
-                <CopyBtn value={ownerBank.bank_iban} field="iban" label={t("sepa.copy_iban") || "Copier IBAN"} />
+                <CopyBtn value={ownerBank.bank_iban} field="iban" label={t("sepa.copy_iban") || "Copy IBAN"} />
               )}
             </div>
           </div>
