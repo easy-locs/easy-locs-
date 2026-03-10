@@ -55,17 +55,10 @@ const Accounting = () => {
     enabled: !!org,
   });
 
-  // Get unique countries from properties
-  const propertyCountries = useMemo(() => {
-    const countries = [...new Set(properties.map((p: any) => p.country || "FR"))];
-    return countries.sort();
-  }, [properties]);
-
-  // Active accounting rules — STRICTLY from selected country profile
+  // Active accounting rules — STRICTLY from country context
   const activeCountryProfile = useMemo(() => {
-    const code = selectedCountry !== "all" ? selectedCountry : (org?.country || "FR");
-    return getCountryProfile(code);
-  }, [selectedCountry, org]);
+    return getCountryProfile(selectedCountry);
+  }, [selectedCountry]);
 
   const activeRules: CountryAccountingRules = activeCountryProfile.accounting;
 
