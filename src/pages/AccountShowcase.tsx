@@ -97,6 +97,27 @@ export default function AccountShowcase() {
         name: contactForm.name, email: contactForm.email,
         phone: contactForm.phone, message: `[General inquiry via showcase] ${contactForm.message}`,
       });
+      // Trigger email notification (fire-and-forget)
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: "real_estate_lead",
+            recipient_email: targetListing.contact_email || "",
+            locale: "en",
+            data: {
+              lead_name: contactForm.name,
+              lead_email: contactForm.email,
+              lead_phone: contactForm.phone || "N/A",
+              lead_message: contactForm.message || "",
+              listing_title: targetListing.title || "",
+              listing_type: targetListing.listing_type || "",
+              org_id: profile.org_id,
+              cta_url: `${window.location.origin}/dashboard/real-estate?tab=leads`,
+              cta_label: "View Lead",
+            },
+          },
+        });
+      } catch { /* non-blocking */ }
     }
     setSubmitting(false);
     setSubmitted(true);
