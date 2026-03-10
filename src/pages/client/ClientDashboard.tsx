@@ -36,10 +36,11 @@ const ClientDashboard = () => {
   }, [user]);
 
   const quickCards = [
-    { icon: Search, label: t("nav.explore") || "Explore", path: "/explore", value: "Browse", color: "text-primary", hint: "Discover listings & services" },
-    { icon: CalendarCheck, label: t("nav.bookings") || "My Bookings", path: "/client/bookings", value: `${stats.bookings}`, color: "text-info", hint: "View my reservations" },
-    { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/client/messages", value: `${stats.messages}`, color: "text-warning", hint: "Conversations with providers" },
-    { icon: CreditCard, label: t("nav.payments") || "Payments", path: "/client/payments", value: "—", color: "text-success", hint: "Payment history" },
+    { icon: Search, label: t("nav.explore") || "Explore", path: "/explore", value: t("client.browse") || "Browse", color: "text-primary", hint: t("client.hint_explore") || "Discover listings & services" },
+    { icon: CalendarCheck, label: t("nav.bookings") || "My Bookings", path: "/client/bookings", value: `${stats.bookings}`, color: "text-info", hint: t("client.hint_bookings") || "View my reservations" },
+    { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/client/messages", value: `${stats.messages}`, color: "text-warning", hint: t("client.hint_messages") || "Conversations with providers" },
+    { icon: FileText, label: t("nav.documents") || "Documents", path: "/client/documents", value: `${stats.documents}`, color: "text-muted-foreground", hint: t("client.hint_documents") || "Invoices & confirmations" },
+    { icon: CreditCard, label: t("nav.payments") || "Payments", path: "/client/payments", value: "—", color: "text-success", hint: t("client.hint_payments") || "Payment history" },
   ];
 
   return (
@@ -54,7 +55,7 @@ const ClientDashboard = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {quickCards.map((card, i) => (
             <motion.div key={card.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
               <Link

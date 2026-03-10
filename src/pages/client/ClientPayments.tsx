@@ -101,7 +101,7 @@ const ClientPayments = () => {
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-foreground tabular-nums">{fmtAmount(p.amount, p.currency)}</p>
                   <Badge variant={p.paid ? "default" : "outline"} className="text-[10px]">
-                    {p.paid ? "Paid" : "Pending"}
+                    {p.paid ? (t("client.status_paid") || "Paid") : (t("client.status_pending") || "Pending")}
                   </Badge>
                 </div>
               </motion.div>
