@@ -214,7 +214,7 @@ export default function SepaPaymentFlow({
           {ownerBank?.bank_name && (
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                {t("sepa.bank") || "Banque"}
+                {t("sepa.bank") || "Bank"}
               </p>
               <p className="text-sm text-foreground">{ownerBank.bank_name}</p>
             </div>
