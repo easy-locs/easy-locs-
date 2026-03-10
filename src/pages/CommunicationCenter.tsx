@@ -908,12 +908,14 @@ const CommunicationCenter = () => {
   /* ────── Filters ────── */
   const filteredThreads = useMemo(() =>
     threads
-      .filter(t => filterType === "all" || t.type === filterType || t.bookingType === filterType)
+      .filter(t => filterType === "all" || t.type === filterType || t.bookingType === filterType || (filterType === "lead" && t.type === "lead"))
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.propertyLabel?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.serviceTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.bookingId?.includes(searchQuery)
+        t.listingTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.bookingId?.includes(searchQuery) ||
+        t.leadId?.includes(searchQuery)
       ),
     [threads, filterType, searchQuery]
   );
