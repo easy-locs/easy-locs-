@@ -4,6 +4,7 @@ import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
+import { toast } from "sonner";
 import BookingAvailabilityCalendar from "./BookingAvailabilityCalendar";
 import GuestBookingReply from "./GuestBookingReply";
 
