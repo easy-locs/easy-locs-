@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
+import { useAutoTranslateBatch } from "@/hooks/useAutoTranslate";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,12 @@ export default function PublicRealEstateListing() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fullscreenGallery, setFullscreenGallery] = useState(false);
+
+  // Auto-translate listing content based on visitor's browser language
+  const translate = useAutoTranslateBatch(
+    { title: listing?.title, description: listing?.description },
+    listing?.country?.toLowerCase() === "fr" ? "fr" : listing?.country?.toLowerCase() === "es" ? "es" : "en"
+  );
 
   useEffect(() => {
     if (!slug) return;
@@ -319,7 +326,10 @@ export default function PublicRealEstateListing() {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-extrabold text-foreground leading-tight tracking-tight">{listing.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-extrabold text-foreground leading-tight tracking-tight">{translate.get("title")}</h1>
+              {translate.isTranslated && (
+                <p className="text-xs text-muted-foreground mt-1 italic">🌐 Auto-translated to {translate.browserLang.toUpperCase()}</p>
+              )}
               <div className="flex items-center gap-2 mt-3 sm:mt-4 text-muted-foreground">
                 <MapPin className="h-4 w-4 shrink-0 text-accent" />
                 <span className="text-sm sm:text-base">{listing.address ? `${listing.address}, ` : ""}{listing.city}{listing.country ? `, ${listing.country}` : ""}</span>
@@ -368,7 +378,7 @@ export default function PublicRealEstateListing() {
             {listing.description && (
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">About This Property</h2>
-                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{listing.description}</div>
+                <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{translate.get("description")}</div>
               </div>
             )}
 

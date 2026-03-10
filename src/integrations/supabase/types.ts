@@ -3008,7 +3008,9 @@ export type Database = {
           garden: boolean | null
           heating_type: string | null
           id: string
+          latitude: number | null
           listing_type: string
+          longitude: number | null
           org_id: string
           parking: boolean | null
           photo_urls: Json | null
@@ -3048,7 +3050,9 @@ export type Database = {
           garden?: boolean | null
           heating_type?: string | null
           id?: string
+          latitude?: number | null
           listing_type?: string
+          longitude?: number | null
           org_id: string
           parking?: boolean | null
           photo_urls?: Json | null
@@ -3088,7 +3092,9 @@ export type Database = {
           garden?: boolean | null
           heating_type?: string | null
           id?: string
+          latitude?: number | null
           listing_type?: string
+          longitude?: number | null
           org_id?: string
           parking?: boolean | null
           photo_urls?: Json | null

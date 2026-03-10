@@ -28,6 +28,10 @@ import {
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
+import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
+import CountrySelect from "@/components/ui/CountrySelect";
+import MapPreview from "@/components/ui/MapPreview";
+import { getCountryConfig } from "@/lib/country-config";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
@@ -105,7 +109,7 @@ const emptyForm = {
   property_type: "apartment", country: "", city: "", address: "", surface_sqm: 0,
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
-  energy_class: "", visibility: "public",
+  energy_class: "", visibility: "public", latitude: 0, longitude: 0,
 };
 
 export default function RealEstateListings() {
@@ -142,9 +146,11 @@ export default function RealEstateListings() {
 
   const handleSave = async () => {
     if (!form.title) { toast({ title: "Title is required", variant: "destructive" }); return; }
-    const payload = {
+    const payload: any = {
       ...form, org_id: orgId!, user_id: user!.id,
       country: form.country || activeCountry || "",
+      latitude: form.latitude || null,
+      longitude: form.longitude || null,
     };
 
     if (editId) {
@@ -180,6 +186,8 @@ export default function RealEstateListings() {
       parking: listing.parking, garden: listing.garden, terrace: listing.terrace,
       elevator: listing.elevator, furnished: listing.furnished, energy_class: listing.energy_class,
       visibility: (listing as any).visibility || "public",
+      latitude: (listing as any).latitude || 0,
+      longitude: (listing as any).longitude || 0,
     });
     setEditId(listing.id);
     setCreateOpen(true);
@@ -446,9 +454,42 @@ export default function RealEstateListings() {
               <Separator />
               <h4 className="text-sm font-semibold text-foreground">Location</h4>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Country</Label><Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="FR" /></div>
+                <div>
+                  <Label>Country</Label>
+                  <CountrySelect
+                    value={form.country}
+                    onChange={(code) => {
+                      const cc = getCountryConfig(code);
+                      setForm(f => ({ ...f, country: code, currency: cc.currency }));
+                    }}
+                  />
+                </div>
                 <div><Label>City</Label><Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} /></div>
-                <div className="col-span-2"><Label>Address</Label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
+                <div className="col-span-2">
+                  <Label>Address</Label>
+                  <AddressAutocomplete
+                    value={form.address}
+                    onChange={(val) => setForm(f => ({ ...f, address: val }))}
+                    onSelect={(result: AddressResult) => {
+                      setForm(f => ({
+                        ...f,
+                        address: result.label || "",
+                        city: result.city || f.city,
+                        country: result.countryCode || f.country,
+                        latitude: result.lat || 0,
+                        longitude: result.lng || 0,
+                        currency: result.countryCode ? getCountryConfig(result.countryCode).currency : f.currency,
+                      }));
+                    }}
+                    countryCode={form.country}
+                    placeholder="Search address…"
+                  />
+                </div>
+                {form.latitude !== 0 && form.longitude !== 0 && (
+                  <div className="col-span-2">
+                    <MapPreview lat={form.latitude} lng={form.longitude} className="h-[200px]" />
+                  </div>
+                )}
               </div>
 
               <Separator />
