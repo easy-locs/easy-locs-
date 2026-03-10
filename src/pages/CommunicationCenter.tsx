@@ -1086,8 +1086,9 @@ const CommunicationCenter = () => {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">{selectedThread.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {selectedThread.type === "booking" && getBookingTypeBadge(selectedThread.bookingType)}
+                        {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
                         {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
+                        {selectedThread.listingTitle && <span className="truncate">{selectedThread.listingTitle}</span>}
                         {selectedThread.serviceTitle && <span className="truncate">{selectedThread.serviceTitle}</span>}
                         {selectedThread.propertyLabel && <span className="truncate">{selectedThread.propertyLabel}</span>}
                       </div>
