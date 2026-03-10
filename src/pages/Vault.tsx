@@ -8,6 +8,7 @@ import {
   FolderLock, Upload, Trash2, Download, FileText, Image,
   File, Loader2, Search, X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface VaultFile {
   id: string;

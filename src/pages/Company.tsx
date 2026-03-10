@@ -14,6 +14,7 @@ import {
   Newspaper, CreditCard, ExternalLink, Loader2, Search
 } from "lucide-react";
 import CountrySelect from "@/components/ui/CountrySelect";
+import { Input } from "@/components/ui/input";
 import { getCountryFlag } from "@/lib/global-country-registry";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { useAuth } from "@/contexts/AuthContext";

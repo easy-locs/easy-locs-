@@ -5,6 +5,7 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DocumentBuilder from "@/components/documents/DocumentBuilder";
 import { Home, FileText, ChevronRight, Users, Calendar, Euro, MapPin, Plus, Download, Building, ExternalLink, CheckCircle, XCircle, Search, ClipboardCheck, AlertTriangle, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { getTemplatesByCategory } from "@/lib/templates/registry";
 import { frLeaseEmpty } from "@/lib/templates/fr/lease-empty";
