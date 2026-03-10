@@ -18,6 +18,7 @@ import ServiceForm, { type ServiceFormData } from "@/components/marketplace/Serv
 import ServiceCard from "@/components/marketplace/ServiceCard";
 import { type NotificationMeta } from "@/components/marketplace/BookingsManager";
 import { dispatchSyncEvent, syncPaymentRequest } from "@/lib/shared/sync-engine";
+import { useBookingLifecycle } from "@/hooks/useBookingLifecycle";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
