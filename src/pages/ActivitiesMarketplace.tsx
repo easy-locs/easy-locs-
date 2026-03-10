@@ -144,12 +144,15 @@ const ActivitiesMarketplace = () => {
   // --- Mutations ---
   const createProvider = useMutation({
     mutationFn: async (data: any) => {
+      // Auto-create org for free accounts
+      const resolvedOrgId = await ensureOrg();
+      if (!resolvedOrgId) throw new Error("Impossible de créer votre espace. Veuillez vous reconnecter.");
       const slug = data.display_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const { error } = await supabase.from("marketplace_providers").insert({
         ...data,
         slug,
         user_id: user!.id,
-        org_id: orgId!,
+        org_id: resolvedOrgId,
       });
       if (error) throw error;
     },
