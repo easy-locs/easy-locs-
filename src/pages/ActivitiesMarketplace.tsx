@@ -415,7 +415,7 @@ const ActivitiesMarketplace = () => {
   const shareStorefront = () => {
     if (storefrontUrl) {
       navigator.clipboard.writeText(storefrontUrl);
-      toast.success("Storefront link copied!");
+      toast.success("Lien vitrine copié !");
     }
   };
 
