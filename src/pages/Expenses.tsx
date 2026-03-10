@@ -131,10 +131,10 @@ const Expenses = () => {
         </div>
 
         {/* Summary */}
-        <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
+        <div className="ui-card mb-6">
           <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
-          <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap">{fmt(total)}</p>
-          <p className="text-xs text-muted-foreground">{filtered.length} {t("page.finances.expense_count")}</p>
+          <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
         </div>
 
         {/* Add form */}
