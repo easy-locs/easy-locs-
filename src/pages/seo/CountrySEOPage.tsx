@@ -27,6 +27,11 @@ const CountrySEOPage = ({ slugOverride }: { slugOverride?: string }) => {
   const slug = slugOverride || paramSlug || "";
   const country = getCountryBySlug(slug);
 
+  // Redirect to canonical clean URL
+  if (country && !slugOverride) {
+    return <Navigate to={`/country/${slug}`} replace />;
+  }
+
   if (!country) {
     return (
       <SEOPageShell
