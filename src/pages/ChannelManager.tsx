@@ -448,9 +448,9 @@ const ChannelManager = () => {
           </Card>
           <Card className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflicts</p>
               <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir le calendrier →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View calendar →</p>
             </CardContent>
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/pricing")}>
