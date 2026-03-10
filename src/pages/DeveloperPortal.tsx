@@ -167,10 +167,10 @@ const DeveloperPortal = () => {
           <div className="flex gap-2">
             <Dialog open={webhookOpen} onOpenChange={setWebhookOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline"><Webhook className="h-4 w-4 mr-2" />Nouveau webhook</Button>
+                <Button variant="outline"><Webhook className="h-4 w-4 mr-2" />New webhook</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Créer un webhook</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>Create a webhook</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div>
                     <Label>URL de destination</Label>
