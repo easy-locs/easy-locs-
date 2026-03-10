@@ -325,7 +325,7 @@ const DeveloperPortal = () => {
                           ))}
                         </div>
                         {w.failure_count > 0 && (
-                          <p className="text-xs text-destructive">⚠️ {w.failure_count} échec(s) récent(s)</p>
+                          <p className="text-xs text-destructive">⚠️ {w.failure_count} recent failure(s)</p>
                         )}
                       </div>
                     ))}
