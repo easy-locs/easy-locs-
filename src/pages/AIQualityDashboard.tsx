@@ -335,7 +335,15 @@ const AIQualityDashboard = () => {
                 )}
 
                 {filteredIssues.map((issue) => (
-                  <IssueCard key={issue.id} issue={issue} />
+                  <IssueCard key={issue.id} issue={issue} onFix={(i) => {
+                    const result = autoFixIssue(i);
+                    if (result.fixed) {
+                      toast.success(`Fixed: ${result.action}`, { description: result.details });
+                      runScan("light");
+                    } else {
+                      toast.info(`Could not auto-fix: ${result.action}`, { description: result.details });
+                    }
+                  }} />
                 ))}
               </div>
             </ScrollArea>
