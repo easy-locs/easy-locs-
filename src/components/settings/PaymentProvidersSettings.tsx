@@ -1,10 +1,30 @@
 import { useState, useEffect, useMemo } from "react";
-import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle, Building2, Link as LinkIcon } from "lucide-react";
+import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle, Building2, Link as LinkIcon, XCircle, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { isSepaCountry } from "@/lib/sepa-countries";
+
+type ProviderStatus = "connected" | "incomplete" | "missing";
+
+const StatusBadge = ({ status }: { status: ProviderStatus }) => {
+  if (status === "connected") return (
+    <span className="flex items-center gap-1 text-xs font-medium text-success">
+      <CheckCircle className="h-3.5 w-3.5" /> Connected
+    </span>
+  );
+  if (status === "incomplete") return (
+    <span className="flex items-center gap-1 text-xs font-medium text-warning">
+      <AlertCircle className="h-3.5 w-3.5" /> Incomplete
+    </span>
+  );
+  return (
+    <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+      <XCircle className="h-3.5 w-3.5" /> Not configured
+    </span>
+  );
+};
 
 const PaymentProvidersSettings = () => {
   const { orgId, userCountry } = useAuth();
@@ -20,7 +40,6 @@ const PaymentProvidersSettings = () => {
   const [orgCountry, setOrgCountry] = useState(userCountry || "FR");
   const sepaEligible = useMemo(() => isSepaCountry(orgCountry), [orgCountry]);
 
-  // Bank transfer fields
   const [bankHolder, setBankHolder] = useState("");
   const [bankIban, setBankIban] = useState("");
   const [bankBic, setBankBic] = useState("");
@@ -58,6 +77,12 @@ const PaymentProvidersSettings = () => {
     };
     fetchData();
   }, [orgId]);
+
+  // Provider status helpers
+  const stripeStatus: ProviderStatus = connectStatus?.onboarding_complete ? "connected" : connectStatus?.connected ? "incomplete" : "missing";
+  const bankStatus: ProviderStatus = bankIban && bankHolder ? "connected" : bankIban || bankHolder ? "incomplete" : "missing";
+  const linkStatus: ProviderStatus = paymentLinkUrl ? "connected" : "missing";
+  const paypalStatus: ProviderStatus = paypalEmail ? "connected" : "missing";
 
   const handleConnectStripe = async () => {
     setConnectingStripe(true);
@@ -117,11 +142,36 @@ const PaymentProvidersSettings = () => {
 
   return (
     <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
-      <div className="flex items-center gap-3 mb-5">
+      <div className="flex items-center gap-3 mb-2">
         <CreditCard className="h-5 w-5 text-muted-foreground" />
         <h2 className="font-semibold text-foreground">{t("page.settings.payment_providers")}</h2>
       </div>
-      <p className="text-sm text-muted-foreground mb-5">{t("page.settings.payment_providers_desc")}</p>
+      <p className="text-sm text-muted-foreground mb-4">{t("page.settings.payment_providers_desc")}</p>
+
+      {/* Provider overview status */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {[
+          { label: "Stripe", status: stripeStatus },
+          { label: "Bank Transfer", status: bankStatus },
+          { label: "Payment Link", status: linkStatus },
+          { label: "PayPal", status: paypalStatus },
+        ].map((p) => (
+          <div key={p.label} className={`rounded-lg border p-3 text-center ${
+            p.status === "connected" ? "border-success/30 bg-success/5" : p.status === "incomplete" ? "border-warning/30 bg-warning/5" : "border-border bg-muted/20"
+          }`}>
+            <p className="text-xs font-medium text-foreground mb-1">{p.label}</p>
+            <StatusBadge status={p.status} />
+          </div>
+        ))}
+      </div>
+
+      {/* SaaS architecture disclaimer */}
+      <div className="flex items-start gap-2.5 bg-accent/5 border border-accent/20 rounded-lg p-3 mb-6">
+        <Shield className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          <strong className="text-foreground">SaaS Architecture:</strong> {t("page.settings.saas_disclaimer") || "Easy-Locs only collects subscription fees. All operational payments go directly to your organization's accounts. No funds transit through the platform."}
+        </p>
+      </div>
 
       <div className="space-y-4">
         {/* Stripe Connect */}
@@ -136,15 +186,7 @@ const PaymentProvidersSettings = () => {
                 <p className="text-[10px] text-muted-foreground">{t("page.settings.stripe_desc")}</p>
               </div>
             </div>
-            {connectStatus?.onboarding_complete ? (
-              <span className="flex items-center gap-1 text-xs font-medium text-success">
-                <CheckCircle className="h-3.5 w-3.5" /> {t("page.settings.connected")}
-              </span>
-            ) : connectStatus?.connected ? (
-              <span className="flex items-center gap-1 text-xs font-medium text-warning">
-                <AlertCircle className="h-3.5 w-3.5" /> {t("page.settings.pending")}
-              </span>
-            ) : null}
+            <StatusBadge status={stripeStatus} />
           </div>
           <div className="flex items-center gap-2 mt-2">
             {!connectStatus?.onboarding_complete && (
@@ -170,24 +212,22 @@ const PaymentProvidersSettings = () => {
           </div>
         </div>
 
-        {/* SEPA Direct Debit */}
+        {/* SEPA */}
         {sepaEligible ? (
           <div className="border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-[#0070ba]/10 rounded-lg flex items-center justify-center">
                   <span className="text-sm font-bold text-[#0070ba]">€</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">SEPA Direct Debit</p>
-                  <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_desc") || "Prélèvement SEPA automatique (zone SEPA uniquement)"}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_desc") || "Automatic SEPA direct debit (SEPA zone only)"}</p>
                 </div>
               </div>
-              <span className="flex items-center gap-1 text-xs font-medium text-success">
-                <CheckCircle className="h-3.5 w-3.5" /> {t("page.settings.sepa_eligible") || "Zone SEPA"}
-              </span>
+              <StatusBadge status={stripeStatus === "connected" ? "connected" : "missing"} />
             </div>
-            <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_via_stripe") || "Activé via Stripe Connect. Les locataires pourront payer par prélèvement SEPA."}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{t("page.settings.sepa_via_stripe") || "Enabled via Stripe Connect."}</p>
           </div>
         ) : (
           <div className="border border-border/50 rounded-xl p-4 bg-muted/30">
@@ -197,24 +237,25 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">SEPA Direct Debit</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_unavailable") || "Non disponible — Votre pays n'est pas dans la zone SEPA"}</p>
+                <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_unavailable") || "Not available — your country is not in the SEPA zone"}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Bank Transfer Details */}
+        {/* Bank Transfer */}
         <div className="border border-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-accent-foreground" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("page.settings.bank_transfer") || "Bank Transfer"}</p>
+                <p className="text-[10px] text-muted-foreground">{t("page.settings.bank_transfer_desc") || "Clients pay directly via wire transfer"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">{t("page.settings.bank_transfer") || "Bank Transfer"}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {t("page.settings.bank_transfer_desc") || "Clients can pay directly via wire transfer to your bank account"}
-              </p>
-            </div>
+            <StatusBadge status={bankStatus} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -236,51 +277,44 @@ const PaymentProvidersSettings = () => {
           </div>
         </div>
 
-        {/* Custom Payment Link */}
+        {/* Payment Link */}
         <div className="border border-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-              <LinkIcon className="h-4 w-4 text-accent-foreground" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <LinkIcon className="h-4 w-4 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("page.settings.payment_link") || "Payment Link"}</p>
+                <p className="text-[10px] text-muted-foreground">{t("page.settings.payment_link_desc") || "Custom payment link (Stripe, PayPal.me, Wise, etc.)"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">{t("page.settings.payment_link") || "Payment Link"}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {t("page.settings.payment_link_desc") || "Add a custom payment link (Stripe, PayPal.me, Wise, etc.)"}
-              </p>
-            </div>
+            <StatusBadge status={linkStatus} />
           </div>
-          <input
-            type="url"
-            value={paymentLinkUrl}
-            onChange={(e) => setPaymentLinkUrl(e.target.value)}
-            placeholder="https://pay.stripe.com/... or https://paypal.me/..."
-            className={inputClass}
-          />
+          <input type="url" value={paymentLinkUrl} onChange={(e) => setPaymentLinkUrl(e.target.value)} placeholder="https://pay.stripe.com/... or https://paypal.me/..." className={inputClass} />
         </div>
 
         {/* PayPal */}
         <div className="border border-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-[#003087]/10 rounded-lg flex items-center justify-center">
-              <span className="text-sm font-bold text-[#003087]">P</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[#003087]/10 rounded-lg flex items-center justify-center">
+                <span className="text-sm font-bold text-[#003087]">P</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">PayPal</p>
+                <p className="text-[10px] text-muted-foreground">{t("page.settings.paypal_desc")}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">PayPal</p>
-              <p className="text-[10px] text-muted-foreground">{t("page.settings.paypal_desc")}</p>
-            </div>
+            <StatusBadge status={paypalStatus} />
           </div>
-          <input
-            type="email"
-            placeholder="votre@email-paypal.com"
-            value={paypalEmail}
-            onChange={(e) => setPaypalEmail(e.target.value)}
-            className={inputClass}
-          />
+          <input type="email" placeholder="your@paypal-email.com" value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} className={inputClass} />
         </div>
 
         {/* Default provider */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.default_provider")}</label>
+        <div className="border border-border rounded-xl p-4">
+          <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.default_provider") || "Default Payment Provider"}</label>
+          <p className="text-[10px] text-muted-foreground mb-2">If the default provider is not fully configured, the system will automatically fallback to the next available method.</p>
           <select value={defaultProvider} onChange={(e) => setDefaultProvider(e.target.value)} className={inputClass}>
             <option value="stripe">Stripe (Card)</option>
             {sepaEligible && <option value="sepa">SEPA Direct Debit</option>}
@@ -290,18 +324,12 @@ const PaymentProvidersSettings = () => {
           </select>
         </div>
 
-        <div className="bg-muted/50 rounded-lg p-3">
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <strong>SaaS pur :</strong> {t("page.settings.saas_disclaimer")}
-          </p>
-        </div>
-
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-accent text-accent-foreground font-medium px-5 py-2 rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+          className="w-full bg-accent text-accent-foreground font-medium px-5 py-3 rounded-lg text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
-          {saving ? t("page.settings.saving") : t("page.settings.save_org")}
+          {saving ? t("page.settings.saving") : t("page.settings.save_org") || "Save Payment Settings"}
         </button>
       </div>
     </div>

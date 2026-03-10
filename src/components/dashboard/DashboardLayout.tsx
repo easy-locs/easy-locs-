@@ -9,12 +9,12 @@ import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
-  LayoutDashboard, Home, Users, KeyRound, ClipboardList, FileText, Building,
-  Wallet, Contact, Wrench, CheckSquare, MessageCircle,
+  LayoutDashboard, Home, Users, KeyRound, FileText, Building,
+  Wallet, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Gift, Shield,
-  Layers, BookOpen, Zap, Store, Code, ChevronDown,
-  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe,
+  Receipt, UserSearch, Calendar,
+  Layers, BookOpen, Zap, Store, ChevronDown,
+  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe, Clock,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
@@ -51,104 +51,89 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const cPath = (path: string) => appendCountryToPath(path, activeCountry);
 
   // ═══════════════════════════════════════════════════════
-  // NAVIGATION: Country-aware structure
+  // NAVIGATION: Unified clean structure
   // ═══════════════════════════════════════════════════════
 
-  const globalSections: NavSection[] = [
+  const navSections: NavSection[] = [
+    // 1. Dashboard — always visible, single item
     {
       key: "dashboard",
       title: "Dashboard",
       icon: LayoutDashboard,
       items: [
-        { icon: LayoutDashboard, label: t("nav.dashboard") || "Tableau de bord", path: "/dashboard" },
+        { icon: LayoutDashboard, label: t("nav.dashboard") || "Dashboard", path: "/dashboard" },
       ],
     },
-  ];
 
-  // Operational sections — only shown when inside a country workspace
-  const countrySections: NavSection[] = [
+    // 2. Real Estate — all property business
     {
-      key: "property",
-      title: t("section.property") || "Long-Term Rental",
+      key: "real_estate",
+      title: t("section.real_estate") || "Real Estate",
       icon: Home,
       items: [
+        // Long-term rental
         { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
-        { icon: Building, label: t("nav.buildings") || "Buildings", path: cPath("/dashboard/buildings") },
         { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
         { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
-        { icon: ClipboardList, label: t("nav.inventory") || "Inventory", path: cPath("/dashboard/rental?tab=inventory") },
-        { icon: Sofa, label: t("nav.furniture") || "Furniture", path: cPath("/dashboard/furniture") },
-        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
-      ],
-    },
-    {
-      key: "finance",
-      title: "Finance",
-      icon: Wallet,
-      items: [
-        { icon: Wallet, label: t("nav.finances") || "Finances", path: cPath("/dashboard/finances") },
-        { icon: Receipt, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: Layers, label: t("nav.charges") || "Charges", path: cPath("/dashboard/charges") },
-        { icon: Bell, label: t("nav.notices") || "Payment Notices", path: cPath("/dashboard/notices") },
-        { icon: AlertTriangle, label: t("nav.dunning") || "Dunning", path: cPath("/dashboard/dunning") },
-        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal Report", path: cPath("/dashboard/fiscal") },
-        { icon: BookOpen, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/accounting") },
-      ],
-    },
-    {
-      key: "communication",
-      title: "Communication",
-      icon: MessageCircle,
-      items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
-        { icon: Clock, label: t("nav.reminders") || "Reminders", path: cPath("/dashboard/reminders") },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
-        { icon: UserSearch, label: t("nav.candidates") || "Candidates", path: cPath("/dashboard/candidates") },
-      ],
-    },
-  ];
-
-  // Seasonal — global module
-  const seasonalSection: NavSection[] = [
-    {
-      key: "seasonal",
-      title: t("section.rental") || "Seasonal Rentals",
-      icon: Calendar,
-      items: [
+        // Seasonal rental
         { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
-        { icon: CalendarRange, label: "Property Calendar", path: "/dashboard/calendar" },
         { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
         { icon: Zap, label: t("nav.pricing") || "Dynamic Pricing", path: "/dashboard/pricing" },
+        // Sales
+        { icon: Building, label: t("nav.real_estate_listings") || "Sales Listings", path: "/dashboard/real-estate" },
+        // Calendar & Leads
+        { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
+        { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
       ],
     },
+
+    // 3. Marketplace — services only
     {
       key: "marketplace",
       title: "Marketplace",
       icon: Store,
       items: [
-        { icon: Store, label: "Services Marketplace", path: "/dashboard/activities" },
+        { icon: Store, label: t("nav.marketplace") || "Services Marketplace", path: "/dashboard/activities" },
         { icon: MapPin, label: t("nav.local_services") || "Local Services", path: "/dashboard/local-services" },
-        { icon: Building, label: "Real Estate", path: "/dashboard/real-estate" },
       ],
     },
-  ];
 
-  // Always-visible global sections (not country-dependent) — core only
-  const alwaysSections: NavSection[] = [
+    // 4. Messages
     {
-      key: "company",
-      title: t("nav.company") || "Entreprise",
-      icon: Shield,
+      key: "messages",
+      title: t("nav.messages") || "Messages",
+      icon: MessageCircle,
       items: [
-        { icon: Contact, label: t("nav.company") || "Entreprise", path: "/dashboard/company" },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
+      ],
+    },
+
+    // 5. Documents
+    {
+      key: "documents",
+      title: t("nav.documents") || "Documents",
+      icon: FileText,
+      items: [
+        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
+      ],
+    },
+
+    // 6. Accounting
+    {
+      key: "accounting",
+      title: t("nav.accounting") || "Accounting",
+      icon: Wallet,
+      items: [
+        { icon: Wallet, label: t("nav.finances") || "Finances", path: cPath("/dashboard/finances") },
+        { icon: Receipt, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
+        { icon: Bell, label: t("nav.notices") || "Payment Notices", path: cPath("/dashboard/notices") },
+        { icon: BookOpen, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/accounting") },
+        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal Report", path: cPath("/dashboard/fiscal") },
       ],
     },
   ];
-
-  const navSections = activeCountry
-    ? [...globalSections, ...countrySections, ...seasonalSection, ...alwaysSections]
-    : [...globalSections, ...seasonalSection, ...alwaysSections];
 
   // Determine active items
   const isItemActive = (item: NavItem) => {
@@ -336,7 +321,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
             const hasActiveItem = section.items.some(isItemActive);
-            const isSingleItem = section.key === "dashboard";
+            const isSingleItem = section.items.length === 1;
 
             if (isSingleItem) {
               const item = section.items[0];
@@ -416,19 +401,27 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
           >
-            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "Assistant IA"}
+            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "AI Assistant"}
           </Link>
           <Link
             to="/dashboard/billing"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              location.pathname === "/dashboard/billing"
+                ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+            }`}
           >
-            <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing")}
+            <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing") || "Subscription"}
           </Link>
           <Link
             to="/dashboard/settings"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              location.pathname === "/dashboard/settings"
+                ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+            }`}
           >
             <Settings className="h-4 w-4 shrink-0" /> {t("nav.settings")}
           </Link>
