@@ -75,6 +75,7 @@ const CountryWorkspace = () => {
         { icon: Bell, label: t("nav.rent_calls") || "Rent Calls", path: cp("/dashboard/reminders") },
         { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cp("/dashboard/receipts") },
         { icon: AlertTriangle, label: t("nav.dunning") || "Dunning Letters", path: cp("/dashboard/dunning") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
         { icon: ClipboardCheck, label: t("nav.inventory") || "Inventories", path: cp("/dashboard/rental?tab=inventory"), count: stats.inventories },
         { icon: Sofa, label: t("nav.furniture") || "Furniture", path: cp("/dashboard/furniture"), count: stats.furniture },
       ],

@@ -103,7 +103,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Building,
       items: [
         { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
-        { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
       ],
     },
 
