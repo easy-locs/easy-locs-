@@ -128,7 +128,7 @@ const Dashboard = () => {
       label: t("page.dashboard.collected_month") || "Collected This Month",
       value: loading ? "…" : fmt(stats.revenueThisMonth),
       path: "/dashboard/receipts",
-      sub: t("page.dashboard.view_receipts") || "Voir les quittances →",
+      sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
   ];
 
