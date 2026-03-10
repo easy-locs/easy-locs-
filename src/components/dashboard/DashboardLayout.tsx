@@ -26,11 +26,17 @@ interface NavItem {
   path: string;
 }
 
+interface NavSubGroup {
+  label: string;
+  items: NavItem[];
+}
+
 interface NavSection {
   key: string;
   title: string;
   icon: React.ElementType;
   items: NavItem[];
+  subGroups?: NavSubGroup[];
 }
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
