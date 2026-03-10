@@ -17,6 +17,7 @@ const cities = [
 ];
 
 const RemoteEntrepreneurship = () => {
+  const { t } = useI18n();
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
       {/* Grid pattern */}
