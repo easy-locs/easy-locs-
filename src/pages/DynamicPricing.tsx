@@ -177,7 +177,7 @@ const DynamicPricing = () => {
                   <SelectContent>{RULE_TYPES.map(r => <SelectItem key={r.value} value={r.value}>{r.icon} {r.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={newRule.property_id} onValueChange={v => setNewRule(p => ({ ...p, property_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select a property" /></SelectTrigger>
                   <SelectContent>{properties.map(p => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <div className="grid grid-cols-2 gap-3">
