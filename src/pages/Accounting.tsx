@@ -207,22 +207,11 @@ const Accounting = () => {
             <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Comptabilité"}</h1>
             <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow et rapports financiers"}</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            {/* Country filter */}
-            {propertyCountries.length > 1 && (
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-[160px]">
-                  <span className="mr-1">{selectedCountry === "all" ? "🌍" : getCountryFlag(selectedCountry)}</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">🌍 {t("common.all_countries") || "Tous les pays"}</SelectItem>
-                  {propertyCountries.map(c => (
-                    <SelectItem key={c} value={c}>{getCountryFlag(c)} {c} — {COUNTRY_CURRENCY_MAP[c] || "EUR"}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+          <div className="flex gap-2 flex-wrap items-center">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mr-2">
+              <span className="text-lg">{getCountryFlag(selectedCountry)}</span>
+              <span className="font-medium text-foreground">{selectedCountry} — {COUNTRY_CURRENCY_MAP[selectedCountry] || "EUR"}</span>
+            </div>
             <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "Nouvelle écriture"}</Button></DialogTrigger>

@@ -101,18 +101,9 @@ const Documents = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
         <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="text-lg">{getCountryFlag(activeCountry)}</span>
-            <span>{t("page.documents.country") !== "page.documents.country" ? t("page.documents.country") : "Pays du document"}</span>
-          </div>
-          <div className="w-full sm:w-[360px]">
-            <CountrySelect
-              value={activeCountry}
-              onChange={(code) => setSelectedCountry(code || userCountry)}
-              placeholder={t("page.documents.select_country") !== "page.documents.select_country" ? t("page.documents.select_country") : "Choisir un pays"}
-            />
-          </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <span className="text-lg">{getCountryFlag(activeCountry)}</span>
+          <span className="font-medium text-foreground">{countryLabels[activeCountry] || activeCountry}</span>
         </div>
 
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
