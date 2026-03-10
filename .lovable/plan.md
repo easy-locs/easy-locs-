@@ -30,8 +30,8 @@
 | Statut de service | ✅ Terminé (concierge_orders.status) |
 | Paiement Stripe | ✅ Terminé (edge function) |
 | Virement bancaire | ✅ Terminé (bank_details, payment_method) |
-| Génération facture | 🔲 À faire |
-| Communication client liée au booking | 🔲 À faire |
+| Génération facture | ✅ Terminé (ConciergeInvoiceAdapter + InvoicePdfGenerator) |
+| Communication client liée au booking | ✅ Terminé (BookingCommunicationThread intégré dans BookingDetailDrawer) |
 
 ## PHASE 4 — Documents de réservation
 | Tâche | Statut |
