@@ -87,17 +87,16 @@ export default function Explore() {
       setRealEstate((reRes.data || []) as RealEstateListing[]);
       setServices((svcRes.data || []) as ServiceListing[]);
 
-      // Enrich seasonal listings with property data (city, country, photo)
+      // Enrich seasonal listings with property data via secure RPC
       const rawListings = (seaRes.data || []) as any[];
       const propertyIds = [...new Set(rawListings.map(l => l.property_id))];
       let propMap: Record<string, any> = {};
       if (propertyIds.length > 0) {
-        const { data: props } = await supabase
-          .from("properties")
-          .select("id, city, country, photo_urls")
-          .in("id", propertyIds);
+        const { data: props } = await supabase.rpc("get_public_listing_properties", {
+          p_property_ids: propertyIds,
+        });
         if (props) {
-          for (const p of props) propMap[p.id] = p;
+          for (const p of props as any[]) propMap[p.id] = p;
         }
       }
       setSeasonal(rawListings.map(l => {
@@ -318,7 +317,7 @@ export default function Explore() {
             {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {filteredSeasonal.map(l => (
-                  <Link key={l.id} to={`/listing/${l.slug}`} className="group">
+                  <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group">
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300">
                       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                         <img
@@ -426,7 +425,7 @@ export default function Explore() {
                   const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                   const catLabel = SERVICE_CATEGORIES[l.category] || l.category;
                   return (
-                    <Link key={l.id} to={`/book/${l.booking_slug}`} className="group">
+                    <Link key={l.id} to={l.booking_slug ? `/book/${l.booking_slug}` : "#"} className="group">
                       <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300">
                         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                           <img
