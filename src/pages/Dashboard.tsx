@@ -121,7 +121,7 @@ const Dashboard = () => {
       icon: MapPin,
       label: t("page.dashboard.countries") || "Active Countries",
       value: loading ? "…" : String(stats.totalCountries),
-      sub: t("page.dashboard.select_country_hint") || "Sélectionnez ci-dessous",
+      sub: t("page.dashboard.select_country_hint") || "Select below",
     },
     {
       icon: TrendingUp,
