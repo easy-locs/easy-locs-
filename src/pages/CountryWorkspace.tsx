@@ -146,11 +146,11 @@ const CountryWorkspace = () => {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {[
-            { label: "Biens", value: stats.properties, icon: Home },
-            { label: "Locataires", value: stats.tenants, icon: Users },
-            { label: "Baux", value: stats.leases, icon: KeyRound },
-            { label: "Documents", value: stats.documents, icon: FileText },
-            { label: "Immeubles", value: stats.buildings, icon: Building },
+            { label: t("nav.properties") || "Properties", value: stats.properties, icon: Home },
+            { label: t("nav.tenants") || "Tenants", value: stats.tenants, icon: Users },
+            { label: t("nav.leases") || "Leases", value: stats.leases, icon: KeyRound },
+            { label: t("nav.documents") || "Documents", value: stats.documents, icon: FileText },
+            { label: t("nav.buildings") || "Buildings", value: stats.buildings, icon: Building },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
