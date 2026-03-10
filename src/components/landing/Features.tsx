@@ -80,7 +80,7 @@ const Features = () => {
                 <h3 className="font-bold text-foreground text-base mb-2" style={{ color: "hsl(var(--primary-foreground))" }}>
                   {t(`landing.features.${f.key}.title`) || f.fallback}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
                   {t(`landing.features.${f.key}.desc`) || f.fallbackDesc}
                 </p>
               </div>
