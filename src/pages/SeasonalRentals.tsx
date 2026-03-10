@@ -1136,7 +1136,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        <div className="space-y-3">
+        {viewMode === "bookings" && <div className="space-y-3">
           {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
