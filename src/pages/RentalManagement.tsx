@@ -1715,41 +1715,43 @@ const RentalManagement = () => {
                                 {unpaid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
-                                        <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
-                                      </div>
-                                      <div className="flex items-center gap-2 shrink-0 relative">
-                                        <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center h-7 text-xs px-3 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors">
-                                          {L.markPaid}
-                                        </button>
-                                        <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
-                                          className="inline-flex items-center gap-1 h-7 text-xs px-3 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50">
-                                          {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-                                          {L.online}
-                                        </button>
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col gap-2 px-4 py-3 hover:bg-muted/20 transition-all">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
+                                          <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
+                                        </div>
                                         <button
                                           onClick={() => handleNotifyRentCall(p)}
                                           disabled={notifyingRentId === p.id}
-                                          className="inline-flex items-center gap-1 h-7 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50">
+                                          className="inline-flex items-center gap-1 h-8 text-xs px-2.5 rounded-full font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50 shrink-0">
                                           {notifyingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                                        </button>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 relative">
+                                        <button onClick={() => setPaymentMethodDialog(p.id)} className="inline-flex items-center h-8 text-xs px-4 rounded-full font-medium bg-accent/20 text-accent hover:bg-accent/30 transition-colors min-h-[32px]">
+                                          {L.markPaid}
+                                        </button>
+                                        <button onClick={() => handlePayRent(p)} disabled={payingRentId === p.id}
+                                          className="inline-flex items-center gap-1.5 h-8 text-xs px-4 rounded-full font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 min-h-[32px]">
+                                          {payingRentId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+                                          {L.online}
                                         </button>
                                         {/* Payment method dialog */}
                                         {paymentMethodDialog === p.id && (
-                                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-52">
+                                          <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg p-3 z-50 w-56">
                                             <p className="text-xs font-semibold text-foreground mb-2">{t("page.rental.payment_method")}</p>
                                             {[
                                               { id: "online", label: t("page.rental.payment_method_online"), icon: CreditCard },
                                               { id: "bank_transfer", label: t("page.rental.payment_method_transfer"), icon: Wallet },
                                               { id: "cash", label: t("page.rental.payment_method_cash"), icon: Euro },
                                             ].map(m => (
-                                              <button key={m.id} onClick={() => { togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
-                                                className="flex items-center gap-2 w-full text-left text-sm px-3 py-1.5 rounded-lg hover:bg-muted transition-colors">
+                                              <button key={m.id} onClick={(e) => { e.stopPropagation(); togglePayment(p.id, m.id); setPaymentMethodDialog(null); }}
+                                                className="flex items-center gap-2 w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors min-h-[36px]">
                                                 <m.icon className="h-3.5 w-3.5 text-muted-foreground" /> {m.label}
                                               </button>
                                             ))}
-                                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-xs text-muted-foreground hover:text-foreground w-full text-center">{t("page.rental.cancel")}</button>
+                                            <button onClick={() => setPaymentMethodDialog(null)} className="mt-1 text-xs text-muted-foreground hover:text-foreground w-full text-center py-1">{t("page.rental.cancel")}</button>
                                           </div>
                                         )}
                                       </div>
