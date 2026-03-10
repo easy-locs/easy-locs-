@@ -401,19 +401,27 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
           >
-            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "Assistant IA"}
+            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "AI Assistant"}
           </Link>
           <Link
             to="/dashboard/billing"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              location.pathname === "/dashboard/billing"
+                ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+            }`}
           >
-            <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing")}
+            <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing") || "Subscription"}
           </Link>
           <Link
             to="/dashboard/settings"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              location.pathname === "/dashboard/settings"
+                ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+            }`}
           >
             <Settings className="h-4 w-4 shrink-0" /> {t("nav.settings")}
           </Link>
