@@ -392,9 +392,25 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               );
             }
 
+            const sectionLocked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
+
             // Render nav item link
             const renderNavItem = (item: NavItem) => {
               const active = isItemActive(item);
+              if (sectionLocked) {
+                return (
+                  <Link
+                    key={item.path}
+                    to="/dashboard/billing"
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="whitespace-normal leading-tight flex-1">{item.label}</span>
+                    <Lock className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                  </Link>
+                );
+              }
               return (
                 <Link
                   key={item.path}
@@ -415,20 +431,26 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             return (
               <div key={section.key} className="mb-1">
                 <button
-                  onClick={() => toggleSection(section.key)}
+                  onClick={() => sectionLocked ? navigate("/dashboard/billing") : toggleSection(section.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors ${
-                    hasActiveItem
+                    sectionLocked
+                      ? "text-sidebar-foreground/30 hover:text-sidebar-foreground/50"
+                      : hasActiveItem
                       ? "text-sidebar-primary"
                       : "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
                   }`}
                 >
                   <section.icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="flex-1 text-left">{section.title}</span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
-                      isOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                  {sectionLocked ? (
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                  ) : (
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  )}
                 </button>
 
                 <div
