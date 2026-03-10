@@ -83,6 +83,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
         { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
         { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
       ],
     },
 
