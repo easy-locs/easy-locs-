@@ -62,7 +62,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // ═══════════════════════════════════════════════════════
 
   const navSections: NavSection[] = [
-    // 1. Dashboard — global overview only
+    // 1. Dashboard — global overview
     {
       key: "dashboard",
       title: "Dashboard",
@@ -72,41 +72,42 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 2. Real Estate — organized with clear sub-groups
+    // 2. Long-term — country-scoped
     {
-      key: "real_estate",
-      title: t("section.real_estate") || "Real Estate",
+      key: "long_term",
+      title: t("section.long_term") || "Long-term",
       icon: Home,
-      items: [], // items are in subGroups
-      subGroups: [
-        {
-          label: t("section.long_term") || "Long-term Rental",
-          items: [
-            { icon: Home, label: t("nav.long_term") || "Properties", path: cPath("/dashboard/rental") },
-            { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
-            { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
-            { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
-            { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
-          ],
-        },
-        {
-          label: t("nav.seasonal") || "Seasonal",
-          items: [
-            { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rental", path: "/dashboard/seasonal" },
-            { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
-          ],
-        },
-        {
-          label: t("nav.real_estate_listings") || "Sales / Listings",
-          items: [
-            { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
-            { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
-          ],
-        },
+      items: [
+        { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
+        { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
+        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+        { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
+        { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
       ],
     },
 
-    // 3. Marketplace — services only
+    // 3. Seasonal Rentals
+    {
+      key: "seasonal",
+      title: t("nav.seasonal") || "Seasonal Rentals",
+      icon: Calendar,
+      items: [
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
+      ],
+    },
+
+    // 4. Sales / Listings
+    {
+      key: "sales",
+      title: t("nav.real_estate_listings") || "Sales / Listings",
+      icon: Building,
+      items: [
+        { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
+        { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
+      ],
+    },
+
+    // 5. Marketplace — services only
     {
       key: "marketplace",
       title: "Marketplace",
@@ -116,30 +117,29 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 4. Communication
+    // 6. Communication — messages only, no payment notices
     {
       key: "communication",
       title: t("section.communication") || "Communication",
       icon: MessageCircle,
       items: [
         { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
-        { icon: Bell, label: t("nav.notifications") || "Notifications", path: cPath("/dashboard/notices") },
       ],
     },
 
-    // 5. Documents — generation & archives (no duplication with Real Estate)
+    // 7. Documents
     {
       key: "documents",
       title: t("nav.documents") || "Documents",
       icon: FileText,
       items: [
-        { icon: FileText, label: t("nav.all_documents") || "All Documents", path: cPath("/dashboard/documents") },
+        { icon: FileText, label: t("nav.all_documents") || "Documents", path: cPath("/dashboard/documents") },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
 
-    // 6. Finance
+    // 8. Finance — country-scoped
     {
       key: "finance",
       title: t("section.finance") || "Finance",
@@ -148,11 +148,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
         { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
         { icon: BookOpen, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/accounting") },
-        { icon: CreditCard, label: t("nav.subscription") || "Subscription / Plan", path: "/dashboard/billing" },
+        { icon: CreditCard, label: t("nav.subscription") || "Plan", path: "/dashboard/billing" },
       ],
     },
 
-    // 7. Settings
+    // 9. Settings
     {
       key: "settings",
       title: t("nav.settings") || "Settings",
@@ -160,7 +160,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
-        { icon: Shield, label: t("settings.payment_providers") || "Payment Providers", path: "/dashboard/settings?tab=payments" },
+        { icon: Shield, label: t("settings.payment_providers") || "Payments", path: "/dashboard/settings?tab=payments" },
       ],
     },
   ];
