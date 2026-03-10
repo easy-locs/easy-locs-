@@ -136,8 +136,8 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        {/* Source / Provider Contact */}
-        {service.source_contact_name && (
+        {/* Source / Provider Contact — only visible in dashboard (showActions mode) */}
+        {showActions && service.source_contact_name && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-accent/5 rounded-lg border border-accent/10">
             <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
               {service.source_contact_name.charAt(0)}
