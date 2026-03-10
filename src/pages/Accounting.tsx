@@ -183,7 +183,7 @@ const Accounting = () => {
 
   const exportCSV = () => {
     const sym = activeRules.currencySymbol;
-    const headers = `Date,${t("page.accounting.label") || "Libellé"},${t("page.accounting.category") || "Catégorie"},${t("page.accounting.debit") || "Débit"},${t("page.accounting.credit") || "Crédit"},Source\n`;
+    const headers = `Date,${t("page.accounting.label") || "Label"},${t("page.accounting.category") || "Category"},${t("page.accounting.debit") || "Debit"},${t("page.accounting.credit") || "Credit"},Source\n`;
     const rows = allTransactions.map(t => `${t.date},"${t.label}",${t.category},${t.debit},${t.credit},${t.source}`).join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
