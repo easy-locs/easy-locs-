@@ -125,7 +125,7 @@ const Dashboard = () => {
     },
     {
       icon: TrendingUp,
-      label: t("page.dashboard.collected_month") || "Encaissé ce mois",
+      label: t("page.dashboard.collected_month") || "Collected This Month",
       value: loading ? "…" : fmt(stats.revenueThisMonth),
       path: "/dashboard/receipts",
       sub: t("page.dashboard.view_receipts") || "Voir les quittances →",
