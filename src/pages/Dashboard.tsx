@@ -252,7 +252,7 @@ const Dashboard = () => {
                   >
                     <Link
                       to={`/dashboard/country/${c.code.toLowerCase()}`}
-                      className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all duration-300 relative overflow-hidden"
+                      className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all duration-300 relative overflow-hidden min-h-[88px]"
                     >
                       {/* Hover accent */}
                       <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
