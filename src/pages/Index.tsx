@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
+import SocialProofStrip from "@/components/landing/SocialProofStrip";
 import RoleCards from "@/components/landing/RoleCards";
 import Features from "@/components/landing/Features";
 import HowItWorks from "@/components/landing/HowItWorks";
@@ -112,13 +113,18 @@ const hreflangAlternates = [
   { lang: "x-default", url: "https://www.easy-locs.com/" },
   { lang: "fr", url: "https://www.easy-locs.com/" },
   { lang: "en", url: "https://www.easy-locs.com/" },
-  { lang: "es", url: "https://www.easy-locs.com/property-management-spain" },
-  { lang: "de", url: "https://www.easy-locs.com/property-management-germany" },
-  { lang: "it", url: "https://www.easy-locs.com/property-management-italy" },
-  { lang: "pt", url: "https://www.easy-locs.com/property-management-portugal" },
-  { lang: "ar", url: "https://www.easy-locs.com/property-management-uae" },
-  { lang: "ja", url: "https://www.easy-locs.com/property-management-japan" },
-  { lang: "tr", url: "https://www.easy-locs.com/property-management-turkey" },
+  { lang: "es", url: "https://www.easy-locs.com/country/spain" },
+  { lang: "de", url: "https://www.easy-locs.com/country/germany" },
+  { lang: "it", url: "https://www.easy-locs.com/country/italy" },
+  { lang: "pt", url: "https://www.easy-locs.com/country/portugal" },
+  { lang: "ar", url: "https://www.easy-locs.com/country/uae" },
+  { lang: "ja", url: "https://www.easy-locs.com/country/japan" },
+  { lang: "tr", url: "https://www.easy-locs.com/country/turkey" },
+  { lang: "nl", url: "https://www.easy-locs.com/country/netherlands" },
+  { lang: "ko", url: "https://www.easy-locs.com/country/south-korea" },
+  { lang: "zh", url: "https://www.easy-locs.com/country/china" },
+  { lang: "th", url: "https://www.easy-locs.com/country/thailand" },
+  { lang: "pl", url: "https://www.easy-locs.com/country/poland" },
 ];
 
 const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
@@ -135,6 +141,7 @@ const Index = () => {
       />
       <Navbar />
       <Hero />
+      <SocialProofStrip />
       <RoleCards />
       <HowItWorks />
       <RemoteEntrepreneurship />
