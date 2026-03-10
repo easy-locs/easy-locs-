@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CheckSquare, Plus, Calendar, AlertTriangle, Clock, Trash2, Edit, X, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
