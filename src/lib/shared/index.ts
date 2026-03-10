@@ -6,3 +6,4 @@ export * from "./routes";
 export * from "./notification-engine";
 export * from "./communication-pipeline";
 export * from "./deep-link";
+export * from "./payment-request";
