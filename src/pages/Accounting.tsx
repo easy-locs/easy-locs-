@@ -307,7 +307,7 @@ const Accounting = () => {
 
           <TabsContent value="cashflow" className="mt-4">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Cashflow — {t("page.accounting.last_6_months") || "6 derniers mois"}</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Cashflow — {t("page.accounting.last_6_months") || "Last 6 months"}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={cashflowData}>
