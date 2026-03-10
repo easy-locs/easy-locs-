@@ -441,9 +441,9 @@ const ChannelManager = () => {
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Locations saisonnières →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Seasonal rentals →</p>
             </CardContent>
           </Card>
           <Card className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
