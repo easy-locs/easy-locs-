@@ -105,7 +105,7 @@ const DeveloperPortal = () => {
       if (!result.success) throw new Error(result.error);
       return result.key as string;
     },
-    onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("Clé API créée"); },
+    onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("API key created"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
