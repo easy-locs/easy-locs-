@@ -148,7 +148,7 @@ const DeveloperPortal = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }),
   });
 
-  const copyKey = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copié"); };
+  const copyKey = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copied"); };
 
   const toggleEvent = (ev: string) => {
     if (ev === "*") { setWebhookEvents(["*"]); return; }
