@@ -270,7 +270,7 @@ const Documents = () => {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
       </FeatureGate>
     </DashboardLayout>
   );
