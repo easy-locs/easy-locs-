@@ -153,11 +153,27 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
           </SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-5 mt-4">
-          {/* Status & Quick Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
-            <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
+        {/* Status badges */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+          <Badge className={statusInfo.cls}>{statusInfo.label}</Badge>
+          <Badge variant="outline" className={booking.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
+            {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
+          </Badge>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs">
+              <MessageCircle className="h-3 w-3 mr-1" /> Chat
+            </TabsTrigger>
+            <TabsTrigger value="invoice" className="text-xs">
+              <Receipt className="h-3 w-3 mr-1" /> Invoice
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ─── DETAILS TAB ─── */}
+          <TabsContent value="details" className="space-y-5 mt-4">
               {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
             </Badge>
           </div>
