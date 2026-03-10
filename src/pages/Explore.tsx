@@ -267,21 +267,21 @@ export default function Explore() {
         <Tabs value={tab} onValueChange={setTab}>
           {/* Tab triggers */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <TabsList className="bg-muted/50 p-1 rounded-xl h-auto flex-wrap">
-              <TabsTrigger value="seasonal" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Sun className="h-4 w-4" />
-                <span>Seasonal</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.seasonal}</Badge>
+            <TabsList className="bg-muted/50 p-1 rounded-xl h-auto w-full sm:w-auto grid grid-cols-3 sm:flex">
+              <TabsTrigger value="seasonal" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Sun className="h-4 w-4 shrink-0" />
+                <span className="truncate">Seasonal</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.seasonal}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="real-estate" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Home className="h-4 w-4" />
-                <span>Real Estate</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.realEstate}</Badge>
+              <TabsTrigger value="real-estate" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Home className="h-4 w-4 shrink-0" />
+                <span className="truncate">Property</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.realEstate}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="services" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Briefcase className="h-4 w-4" />
-                <span>Services</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.services}</Badge>
+              <TabsTrigger value="services" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Briefcase className="h-4 w-4 shrink-0" />
+                <span className="truncate">Services</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.services}</Badge>
               </TabsTrigger>
             </TabsList>
 
