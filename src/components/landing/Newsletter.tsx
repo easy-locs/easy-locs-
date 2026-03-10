@@ -32,21 +32,32 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-accent/[0.04] blur-[120px] pointer-events-none" />
+
       <div className="container max-w-xl text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
           className="space-y-6"
         >
-          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5">
+          <motion.span
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border"
+            style={{ color: "hsl(var(--gold-light))", background: "hsl(var(--accent) / 0.1)", borderColor: "hsl(var(--accent) / 0.25)" }}
+            whileHover={{ scale: 1.05 }}
+          >
             <Sparkles className="h-3.5 w-3.5" />
             {t("newsletter.badge")}
-          </span>
+          </motion.span>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">{t("newsletter.title")}</h2>
-          <p className="text-muted-foreground text-sm sm:text-base">{t("newsletter.subtitle")}</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
+            {t("newsletter.title")}
+          </h2>
+          <p className="text-sm sm:text-base" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
+            {t("newsletter.subtitle")}
+          </p>
 
           {submitted ? (
             <motion.div
@@ -60,27 +71,35 @@ const Newsletter = () => {
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <div className="relative flex-1">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("newsletter.placeholder")}
-                  className="w-full pl-10 pr-4 h-12 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm"
+                  className="w-full pl-10 pr-4 h-12 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  style={{
+                    background: "hsl(var(--primary-foreground) / 0.06)",
+                    borderColor: "hsl(var(--primary-foreground) / 0.12)",
+                    color: "hsl(var(--primary-foreground))",
+                  }}
                 />
               </div>
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
                 className="group inline-flex items-center justify-center gap-2 font-bold px-6 h-12 rounded-xl transition-all disabled:opacity-50 text-sm relative overflow-hidden"
-                style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 16px hsl(var(--accent) / 0.15)" }}
+                style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 16px hsl(var(--accent) / 0.2)" }}
               >
                 <span className="relative z-10 flex items-center gap-2">
                   {t("newsletter.cta")}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              </motion.button>
             </form>
           )}
         </motion.div>

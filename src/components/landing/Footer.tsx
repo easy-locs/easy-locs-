@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import AppLogo from "@/components/AppLogo";
 
@@ -44,7 +45,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
     <footer
       ref={ref}
       className="py-16 relative overflow-hidden"
-      style={{ background: "hsl(var(--navy-deep))", color: "hsl(var(--primary-foreground) / 0.45)" }}
+      style={{ background: "hsl(var(--navy-deep))", color: "hsl(var(--primary-foreground) / 0.55)" }}
     >
       {/* Subtle grid */}
       <div className="absolute inset-0 opacity-[0.015]" style={{
@@ -62,18 +63,18 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
 
           {columns.map((col) => (
             <div key={col.title}>
-              <h4 className="font-semibold text-sm mb-4" style={{ color: "hsl(var(--primary-foreground))" }}>
+              <h4 className="font-semibold text-sm mb-4" style={{ color: "hsl(var(--primary-foreground) / 0.9)" }}>
                 {col.title}
               </h4>
               <ul className="space-y-2.5 text-sm">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     {"external" in link ? (
-                      <a href={link.to} className="hover:text-primary-foreground transition-colors duration-200">{link.label}</a>
+                      <a href={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</a>
                     ) : link.to.startsWith("/") ? (
-                      <Link to={link.to} className="hover:text-primary-foreground transition-colors duration-200">{link.label}</Link>
+                      <Link to={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</Link>
                     ) : (
-                      <a href={link.to} className="hover:text-primary-foreground transition-colors duration-200">{link.label}</a>
+                      <a href={link.to} className="hover:text-accent transition-colors duration-200">{link.label}</a>
                     )}
                   </li>
                 ))}
@@ -83,18 +84,21 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
         </div>
 
         {/* Countries line */}
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           className="border-t pt-5 mb-5 text-xs text-center"
-          style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}
+          style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
           🇫🇷 🇪🇸 🇩🇪 🇮🇹 🇵🇹 🇬🇧 🇳🇱 🇧🇪 🇨🇭 🇦🇹 🇲🇦 🇦🇪 🇸🇦 🇯🇵 🇰🇷 🇨🇳 🇮🇳 🇧🇷 🇺🇸 🇨🇦 🇦🇺 🇹🇷 🇵🇱 🇷🇴 🇬🇷 🇨🇿 🇭🇺 🇭🇷 🇧🇬 🇸🇰 🇺🇦 🇮🇱
-        </div>
+        </motion.div>
 
         <div
           className="border-t pt-6 text-sm text-center"
-          style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}
+          style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          © {new Date().getFullYear()} Easy-Locs®. {t("landing.footer.rights") || "All rights reserved."}
+          © {new Date().getFullYear()} <span className="font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}>Easy-Locs®</span>. {t("landing.footer.rights") || "All rights reserved."}
         </div>
       </div>
     </footer>
