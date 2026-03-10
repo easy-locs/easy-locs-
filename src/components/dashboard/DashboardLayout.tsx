@@ -9,12 +9,12 @@ import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
-  LayoutDashboard, Home, Users, KeyRound, ClipboardList, FileText, Building,
-  Wallet, Contact, Wrench, CheckSquare, MessageCircle,
+  LayoutDashboard, Home, Users, KeyRound, FileText, Building,
+  Wallet, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, UserSearch, Calendar, AlertTriangle, Sofa, Clock, Gift, Shield,
-  Layers, BookOpen, Zap, Store, Code, ChevronDown,
-  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe,
+  Receipt, UserSearch, Calendar,
+  Layers, BookOpen, Zap, Store, ChevronDown,
+  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe, Clock,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
