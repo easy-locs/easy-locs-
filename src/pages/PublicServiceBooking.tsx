@@ -13,6 +13,7 @@ import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import ShareButtons from "@/components/public/ShareButtons";
+import ListingContactButtons from "@/components/public/ListingContactButtons";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -470,6 +471,16 @@ const PublicServiceBooking = () => {
                   </div>
                 </div>
               )}
+
+              {/* Direct contact buttons for free/basic listings */}
+              <ListingContactButtons
+                contactEmail={service.provider_email || null}
+                contactPhone={service.provider_phone || null}
+                whatsappNumber={service.provider_phone || null}
+                listingTitle={service.title}
+                serviceId={service.id}
+                orgId={service.org_id}
+              />
 
               {service.conditions && (
                 <div className="bg-muted/30 rounded-xl p-4">

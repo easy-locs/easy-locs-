@@ -1,5 +1,7 @@
-import { Mail, Phone, MessageCircle, Send } from "lucide-react";
+import { Mail, Phone, MessageCircle, Send, MessageSquare, Link2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Props {
   contactEmail?: string | null;
@@ -7,7 +9,22 @@ interface Props {
   whatsappNumber?: string | null;
   telegramUsername?: string | null;
   listingTitle?: string;
+  /** Pass listing_id OR service_id for click tracking */
+  listingId?: string | null;
+  serviceId?: string | null;
+  orgId?: string | null;
 }
+
+/** Fire-and-forget click tracking — never blocks UI */
+const trackClick = (channel: string, opts: { listingId?: string | null; serviceId?: string | null; orgId?: string | null }) => {
+  supabase.from("contact_clicks" as any).insert({
+    channel,
+    listing_id: opts.listingId || null,
+    service_id: opts.serviceId || null,
+    org_id: opts.orgId || null,
+    referrer: typeof document !== "undefined" ? document.referrer?.slice(0, 500) : null,
+  } as any).then(() => {});
+};
 
 const ListingContactButtons = ({
   contactEmail,
@@ -15,14 +32,20 @@ const ListingContactButtons = ({
   whatsappNumber,
   telegramUsername,
   listingTitle = "",
+  listingId,
+  serviceId,
+  orgId,
 }: Props) => {
   const { t } = useI18n();
 
   const hasAny = contactEmail || contactPhone || whatsappNumber || telegramUsername;
   if (!hasAny) return null;
 
+  const trackOpts = { listingId, serviceId, orgId };
+  const msgText = `Hi, I'm interested in "${listingTitle}"`;
+
   const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi, I'm interested in "${listingTitle}"`)}`
+    ? `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(msgText)}`
     : null;
 
   const telegramUrl = telegramUsername
@@ -36,53 +59,93 @@ const ListingContactButtons = ({
     : null;
 
   const phoneUrl = contactPhone ? `tel:${contactPhone}` : null;
+  const smsUrl = contactPhone
+    ? `sms:${contactPhone}?body=${encodeURIComponent(msgText)}`
+    : null;
+
+  const handleShare = async () => {
+    trackClick("share", trackOpts);
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: listingTitle, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied!");
+      }
+    } catch {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied!");
+    }
+  };
+
+  const buttons: { url: string | null; channel: string; label: string; icon: React.ReactNode; colors: string }[] = [
+    {
+      url: whatsappUrl,
+      channel: "whatsapp",
+      label: "WhatsApp",
+      icon: <MessageCircle className="h-4 w-4" />,
+      colors: "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20",
+    },
+    {
+      url: telegramUrl,
+      channel: "telegram",
+      label: "Telegram",
+      icon: <Send className="h-4 w-4" />,
+      colors: "bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20",
+    },
+    {
+      url: phoneUrl,
+      channel: "call",
+      label: t("page.listing.call") || "Call",
+      icon: <Phone className="h-4 w-4" />,
+      colors: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20",
+    },
+    {
+      url: smsUrl,
+      channel: "sms",
+      label: "SMS",
+      icon: <MessageSquare className="h-4 w-4" />,
+      colors: "bg-sky-500/10 text-sky-600 hover:bg-sky-500/20",
+    },
+    {
+      url: mailUrl,
+      channel: "email",
+      label: "Email",
+      icon: <Mail className="h-4 w-4" />,
+      colors: "bg-accent/10 text-accent hover:bg-accent/20",
+    },
+  ];
 
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {t("page.listing.contact_direct") || "Contact directly"}
       </p>
-      <div className="flex flex-wrap gap-2">
-        {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          >
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </a>
-        )}
-        {telegramUrl && (
-          <a
-            href={telegramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          >
-            <Send className="h-4 w-4" />
-            Telegram
-          </a>
-        )}
-        {mailUrl && (
-          <a
-            href={mailUrl}
-            className="flex items-center gap-2 bg-accent/10 text-accent hover:bg-accent/20 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          >
-            <Mail className="h-4 w-4" />
-            Email
-          </a>
-        )}
-        {phoneUrl && (
-          <a
-            href={phoneUrl}
-            className="flex items-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-          >
-            <Phone className="h-4 w-4" />
-            {contactPhone}
-          </a>
-        )}
+      <div className="grid grid-cols-2 gap-2">
+        {buttons
+          .filter((b) => b.url)
+          .map((b) => (
+            <a
+              key={b.channel}
+              href={b.url!}
+              target={b.channel === "whatsapp" || b.channel === "telegram" ? "_blank" : undefined}
+              rel={b.channel === "whatsapp" || b.channel === "telegram" ? "noopener noreferrer" : undefined}
+              onClick={() => trackClick(b.channel, trackOpts)}
+              className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
+            >
+              {b.icon}
+              {b.label}
+            </a>
+          ))}
+        {/* Share link — always visible */}
+        <button
+          onClick={handleShare}
+          className="flex items-center justify-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        >
+          <Link2 className="h-4 w-4" />
+          {t("page.listing.share") || "Share"}
+        </button>
       </div>
     </div>
   );

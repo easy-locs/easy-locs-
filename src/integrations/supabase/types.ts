@@ -823,6 +823,39 @@ export type Database = {
           },
         ]
       }
+      contact_clicks: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          listing_id: string | null
+          org_id: string | null
+          referrer: string | null
+          service_id: string | null
+          visitor_fingerprint: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          org_id?: string | null
+          referrer?: string | null
+          service_id?: string | null
+          visitor_fingerprint?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          org_id?: string | null
+          referrer?: string | null
+          service_id?: string | null
+          visitor_fingerprint?: string | null
+        }
+        Relationships: []
+      }
       document_requests: {
         Row: {
           created_at: string
