@@ -231,7 +231,7 @@ export default function SepaPaymentFlow({
           {/* Reference */}
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.reference") || "Référence de paiement (obligatoire)"}
+              {t("sepa.reference") || "Payment reference (required)"}
             </p>
             <div className="flex items-center gap-2">
               <code className="text-sm font-mono text-foreground bg-accent/10 border border-accent/20 px-3 py-1.5 rounded font-bold flex-1">
