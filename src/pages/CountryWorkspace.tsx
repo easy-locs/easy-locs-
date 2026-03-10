@@ -102,7 +102,6 @@ const CountryWorkspace = () => {
         { icon: FileText, label: t("nav.documents") || "Documents", path: cp("/dashboard/documents"), count: stats.documents },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cp("/dashboard/tasks") },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cp("/dashboard/interventions") },
-        { icon: UserSearch, label: t("nav.candidates") || "Candidates", path: cp("/dashboard/candidates") },
       ],
     },
     {
