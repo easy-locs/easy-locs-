@@ -2,8 +2,35 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
+/** Dashboard paths that require an active subscription (pro features) */
+const PRO_DASHBOARD_PREFIXES = [
+  "/dashboard/rental",
+  "/dashboard/leases",
+  "/dashboard/finances",
+  "/dashboard/accounting",
+  "/dashboard/documents",
+  "/dashboard/interventions",
+  "/dashboard/calendar",
+  "/dashboard/channel-manager",
+  "/dashboard/dynamic-pricing",
+  "/dashboard/fiscal",
+  "/dashboard/expenses",
+  "/dashboard/receipts",
+  "/dashboard/payment-notices",
+  "/dashboard/dunning",
+  "/dashboard/charges",
+  "/dashboard/vault",
+  "/dashboard/audit",
+  "/dashboard/candidates",
+  "/dashboard/buildings",
+  "/dashboard/collaboration",
+  "/dashboard/reminders",
+  "/dashboard/data-import",
+  "/dashboard/developer",
+];
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, activeRole, onboardingCompleted } = useAuth();
+  const { user, loading, emailVerified, activeRole, onboardingCompleted, subscription } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -65,6 +92,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Landlord role users should not access /tenant/* or /client/* routes
   if (activeRole === "landlord" && (isTenantRoute || isClientRoute)) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  // Subscription gate: redirect free landlord accounts away from pro pages
+  if (activeRole === "landlord" && !subscription.loading && !subscription.subscribed) {
+    const isProPath = PRO_DASHBOARD_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
+    if (isProPath) {
+      return <Navigate to="/dashboard/billing" replace />;
+    }
   }
 
   return <>{children}</>;
