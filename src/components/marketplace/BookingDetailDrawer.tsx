@@ -323,6 +323,20 @@ export default function BookingDetailDrawer({
             }}
           />
         )}
+
+        {/* Quote Dialog */}
+        {onSendQuote && (
+          <BookingQuoteDialog
+            open={quoteOpen}
+            onOpenChange={setQuoteOpen}
+            booking={booking}
+            service={service}
+            onSubmit={async (data) => {
+              const ok = await onSendQuote(booking, data);
+              if (ok) setQuoteOpen(false);
+            }}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );
