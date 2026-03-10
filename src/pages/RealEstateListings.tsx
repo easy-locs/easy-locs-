@@ -268,7 +268,7 @@ export default function RealEstateListings() {
                         </Badge>
                         {(listing as any).visibility && (listing as any).visibility !== "public" && (
                           <Badge variant="outline" className={`absolute bottom-2 left-2 text-[10px] backdrop-blur-sm ${(listing as any).visibility === "unlisted" ? "bg-amber-500/20 text-amber-700 border-amber-500/30" : "bg-muted text-muted-foreground"}`}>
-                            {(listing as any).visibility === "unlisted" ? "🔗 Unlisted" : "🔒 Private"}
+                            {(listing as any).visibility === "unlisted" ? "🔗 Private Link" : "🔒 Private"}
                           </Badge>
                         )}
                       </div>
