@@ -146,7 +146,7 @@ export default function ExplorePreview() {
                     />
                     <div className="absolute top-3 left-3">
                       <Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-sm border border-border/50">
-                        {tab === "seasonal" ? "🏖️ Seasonal" : tab === "real-estate" ? "🏠 Real Estate" : "🛍️ Service"}
+                        {tab === "seasonal" ? `🏖️ ${t("landing.explore.seasonal") || "Seasonal"}` : tab === "real-estate" ? `🏠 ${t("landing.explore.real_estate") || "Real Estate"}` : `🛍️ ${t("landing.explore.service") || "Service"}`}
                       </Badge>
                     </div>
                     {tab === "seasonal" && item.price_per_night && (
