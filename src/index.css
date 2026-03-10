@@ -1010,22 +1010,29 @@ html {
 /* ══════════════════════════════════════════════════
    GLOBAL SCROLLBAR STYLING
    ══════════════════════════════════════════════════ */
+*,
 html {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
 }
-body::-webkit-scrollbar {
-  width: 6px;
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
-body::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent;
 }
-body::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 9999px;
 }
-body::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.4);
+}
+/* Hide scrollbar on tab lists */
+[role="tablist"]::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ══════════════════════════════════════════════════
