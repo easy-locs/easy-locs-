@@ -199,7 +199,6 @@ const AIQualityDashboard = () => {
                 const fixed = results.filter(r => r.fixed).length;
                 if (fixed > 0) {
                   toast.success(`Auto-fixed ${fixed} issue(s)`);
-                  // Re-run light scan to refresh
                   runScan("light");
                 } else {
                   toast.info("No issues could be auto-fixed at this time.");
@@ -211,6 +210,38 @@ const AIQualityDashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Loading state */}
+        {scanning && !report && (
+          <Card className="py-16">
+            <CardContent className="flex flex-col items-center justify-center gap-4">
+              <RefreshCw className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-lg font-medium text-foreground">Analyse en cours…</p>
+              <p className="text-sm text-muted-foreground">Scan de 15 modules qualité</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Empty state before first scan */}
+        {!scanning && !report && (
+          <Card className="py-16">
+            <CardContent className="flex flex-col items-center justify-center gap-4">
+              <Sparkles className="h-10 w-10 text-primary" />
+              <p className="text-lg font-medium text-foreground">Centre Qualité IA</p>
+              <p className="text-sm text-muted-foreground text-center max-w-md">
+                Lancez un audit pour analyser la qualité de votre plateforme : SEO, UX, sécurité, performance, marketplace et plus.
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={() => runScan("light")}>
+                  <Zap className="h-4 w-4 mr-1.5" /> Scan Rapide
+                </Button>
+                <Button variant="outline" onClick={() => runScan("full")}>
+                  <RefreshCw className="h-4 w-4 mr-1.5" /> Audit Complet
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Global Score Card */}
         {report && (
