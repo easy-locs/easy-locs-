@@ -5274,6 +5274,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return "en";
   });
 
+  // Set HTML lang attribute on initial render
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
+  }, [locale]);
+
   /* Sync locale from profile on login */
   useEffect(() => {
     const syncLocale = async () => {
