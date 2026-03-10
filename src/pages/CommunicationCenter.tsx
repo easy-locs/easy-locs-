@@ -200,6 +200,8 @@ const CommunicationCenter = () => {
         threadMap.set(`booking-${b.id}`, {
           id: `booking-${b.id}`,
           type: "booking",
+          contextType: "marketplace_booking",
+          contextId: b.id,
           name: b.booker_name || "Client",
           email: b.booker_email || null,
           phone: b.booker_phone,
