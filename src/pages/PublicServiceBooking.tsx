@@ -322,7 +322,7 @@ const PublicServiceBooking = () => {
           notes: form.notes,
           date_from: isRangeMode ? dateFrom : null,
           date_to: dateTo,
-          payment_method: paymentMethod,
+          payment_method: paymentMethod === "card" ? "stripe" : paymentMethod || "cash",
           status: "pending",
         };
 
