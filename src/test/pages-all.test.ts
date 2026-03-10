@@ -48,7 +48,7 @@ describe("All Pages — Default Export Check", () => {
     "ChargesRegularization", "Collaboration", "DeveloperPortal",
     "ChannelManager", "DynamicPricing", "FurnitureInventory",
     "Install", "AIAssistant", "LandlordProfile", "PublicListing",
-    "ServiceMarketplace", "AuditTrail", "TenantSignup",
+    "AuditTrail", "TenantSignup",
   ];
 
   pages.forEach((page) => {

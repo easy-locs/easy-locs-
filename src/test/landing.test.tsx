@@ -26,16 +26,22 @@ vi.mock("@/integrations/lovable/index", () => ({
   lovable: { auth: { signInWithOAuth: vi.fn() } },
 }));
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    section: ({ children, ...props }: any) => <section {...props}>{children}</section>,
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
+vi.mock("framer-motion", () => {
+  const handler = {
+    get(_: any, tag: string) {
+      if (tag === '__esModule') return false;
+      return ({ children, ...props }: any) => {
+        const safe = Object.fromEntries(Object.entries(props).filter(([k]) => !['initial','animate','exit','whileInView','whileHover','whileTap','transition','variants','viewport'].includes(k)));
+        const El = typeof tag === 'string' && /^[a-z]/.test(tag) ? tag : 'div';
+        return <El {...safe}>{children}</El>;
+      };
+    },
+  };
+  return {
+    motion: new Proxy({}, handler),
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+  };
+});
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <I18nProvider>
