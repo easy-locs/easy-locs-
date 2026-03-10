@@ -175,6 +175,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return false;
   };
 
+  // Helper to get all items including subGroups
+  const getAllSectionItems = (section: NavSection): NavItem[] => {
+    const items = [...section.items];
+    if (section.subGroups) {
+      for (const sg of section.subGroups) {
+        items.push(...sg.items);
+      }
+    }
+    return items;
+  };
+
   const getDefaultOpen = () => {
     const open: Record<string, boolean> = {};
     for (const section of navSections) {
@@ -182,11 +193,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         open[section.key] = true;
         continue;
       }
-      open[section.key] = section.items.some(isItemActive);
+      open[section.key] = getAllSectionItems(section).some(isItemActive);
     }
     if (!Object.values(open).some(Boolean)) {
       open["dashboard"] = true;
-      if (activeCountry) open["property"] = true;
+      if (activeCountry) open["real_estate"] = true;
     }
     return open;
   };
