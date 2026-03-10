@@ -751,7 +751,7 @@ const SeasonalRentals = () => {
         )}
 
         {/* All Booking Requests panel — always visible */}
-        {allRequests.length > 0 && (
+        {viewMode === "bookings" && allRequests.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               📩 {t("page.seasonal.all_requests") !== "page.seasonal.all_requests" ? t("page.seasonal.all_requests") : "Demandes de réservation"}
