@@ -306,7 +306,7 @@ const ActivitiesMarketplace = () => {
     const { error } = await supabase.from("marketplace_bookings").update(updates).eq("id", id);
     if (error) { toast.error(error.message); return; }
 
-    toast.success(`Booking ${status}`);
+    toast.success(`Réservation ${status === "confirmed" ? "confirmée" : status === "cancelled" ? "annulée" : "terminée"}`);
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
     // Resolve related notifications — action is now completed
