@@ -29,7 +29,8 @@ const Accounting = () => {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
-  const [selectedCountry, setSelectedCountry] = useState(countryFilter || "all");
+  // Country is enforced by CountryGuard — no internal selector needed
+  const selectedCountry = countryFilter || "FR";
   const [newEntry, setNewEntry] = useState({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
 
   const { data: org } = useQuery({

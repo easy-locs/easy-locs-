@@ -44,61 +44,26 @@ const Documents = () => {
   const { orgId } = useAuth();
   const { t } = useI18n();
 
-  // Detect user country from profile + property countries
-  const [userCountry, setUserCountry] = useState<string>(countryFilter || "FR");
-  const [propertyCountries, setPropertyCountries] = useState<string[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>(countryFilter || "");
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user?.id) {
-        supabase.from("profiles").select("country").eq("id", data.user.id).single()
-          .then(({ data: p }) => {
-            if (p?.country) {
-              setUserCountry(p.country);
-              setSelectedCountry(p.country);
-            }
-          });
-      }
-    });
-  }, []);
-
-  // Load unique countries from user's properties
-  useEffect(() => {
-    if (!orgId) return;
-    supabase.from("properties").select("country").eq("org_id", orgId).then(({ data: props }) => {
-      if (props) {
-        const countries = [...new Set(props.map((p) => p.country))].filter(Boolean);
-        setPropertyCountries(countries);
-        // If user has properties, default to first property country
-        if (countries.length > 0 && !selectedCountry) {
-          setSelectedCountry(countries[0]);
-        }
-      }
-    });
-  }, [orgId]);
-
-  const activeCountry = selectedCountry || userCountry;
+  // Country is enforced by CountryGuard — always available
+  const activeCountry = countryFilter || "FR";
   const activeLocale = getCountryEntry(activeCountry)?.locale || "en-GB";
   const activeTemplates = getActiveTemplates(activeCountry as any);
   const allTemplates = getAllTemplates();
-  const europeTemplates = allTemplates.filter((t) => t.country !== activeCountry);
+  const europeTemplates = allTemplates.filter((tpl) => tpl.country !== activeCountry);
 
   const fetchDocs = async () => {
     if (!orgId) return;
-    let query = supabase
+    const { data } = await supabase
       .from("documents")
       .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country")
       .eq("org_id", orgId)
+      .eq("country", activeCountry)
       .order("created_at", { ascending: false });
-    if (countryFilter) query = query.eq("country", countryFilter);
-    const { data } = await query;
     setDocs((data as DocRow[]) ?? []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchDocs(); }, [orgId]);
-
+  useEffect(() => { fetchDocs(); }, [orgId, activeCountry]);
   const byCategory = activeTemplates.reduce((acc, t) => {
     if (!acc[t.category]) acc[t.category] = [];
     acc[t.category].push(t);
