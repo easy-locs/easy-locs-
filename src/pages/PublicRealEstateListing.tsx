@@ -74,38 +74,34 @@ export default function PublicRealEstateListing() {
   const handleSubmitContact = async () => {
     if (!contactForm.name || !contactForm.email || !listing) return;
     setSubmitting(true);
-    const { error } = await supabase.from("real_estate_leads").insert({
+    const { data: inserted, error } = await supabase.from("real_estate_leads").insert({
       org_id: listing.org_id, listing_id: listing.id,
       name: contactForm.name, email: contactForm.email,
       phone: contactForm.phone, message: contactForm.message,
-    });
+    }).select("id").single();
     setSubmitting(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setSubmitted(true);
     toast({ title: "✅ Message sent!", description: "The property owner will contact you shortly." });
 
-    // Trigger email notification to owner (fire-and-forget)
-    try {
-      await supabase.functions.invoke("send-notification-email", {
-        body: {
-          event_type: "real_estate_lead",
-          recipient_email: listing.contact_email || "",
-          recipient_name: "",
-          locale: "en",
-          data: {
-            lead_name: contactForm.name,
-            lead_email: contactForm.email,
-            lead_phone: contactForm.phone || "N/A",
-            lead_message: contactForm.message || "",
-            listing_title: listing.title,
-            listing_type: listing.listing_type,
-            org_id: listing.org_id,
-            cta_url: `${window.location.origin}/dashboard/real-estate?tab=leads`,
-            cta_label: "View Lead",
-          },
+    // Sync engine: lead_created (replaces legacy direct email + DB trigger notification)
+    if (inserted?.id) {
+      dispatchSyncEvent({
+        type: "lead_created",
+        context: {
+          orgId: listing.org_id,
+          leadId: inserted.id,
+          countryCode: listing.country || "",
         },
-      });
-    } catch { /* non-blocking */ }
+        actorUserId: "", // public visitor, no auth
+        targetEmail: listing.contact_email || undefined,
+        leadName: contactForm.name,
+        leadEmail: contactForm.email,
+        leadMessage: contactForm.message || "",
+        listingTitle: listing.title,
+        listingId: listing.id,
+      }).catch(() => {});
+    }
   };
 
   const handleShare = () => {

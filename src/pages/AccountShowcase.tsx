@@ -96,35 +96,32 @@ export default function AccountShowcase() {
   const handleContact = async () => {
     if (!contactForm.name || !contactForm.email || !profile) return;
     setSubmitting(true);
-    // Insert a lead for the first listing or a general inquiry
     const targetListing = listings[0];
     if (targetListing) {
-      await supabase.from("real_estate_leads").insert({
+      const { data: inserted } = await supabase.from("real_estate_leads").insert({
         org_id: profile.org_id, listing_id: targetListing.id,
         name: contactForm.name, email: contactForm.email,
         phone: contactForm.phone, message: `[General inquiry via showcase] ${contactForm.message}`,
-      });
-      // Trigger email notification (fire-and-forget)
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            event_type: "real_estate_lead",
-            recipient_email: (targetListing as any).contact_email || "",
-            locale: "en",
-            data: {
-              lead_name: contactForm.name,
-              lead_email: contactForm.email,
-              lead_phone: contactForm.phone || "N/A",
-              lead_message: contactForm.message || "",
-              listing_title: targetListing.title || "",
-              listing_type: targetListing.listing_type || "",
-              org_id: profile.org_id,
-              cta_url: `${window.location.origin}/dashboard/real-estate?tab=leads`,
-              cta_label: "View Lead",
-            },
+      }).select("id").single();
+
+      // Sync engine: lead_created (replaces legacy direct email + DB trigger notification)
+      if (inserted?.id) {
+        dispatchSyncEvent({
+          type: "lead_created",
+          context: {
+            orgId: profile.org_id,
+            leadId: inserted.id,
+            countryCode: (targetListing as any).country || "",
           },
-        });
-      } catch { /* non-blocking */ }
+          actorUserId: "",
+          targetEmail: (targetListing as any).contact_email || undefined,
+          leadName: contactForm.name,
+          leadEmail: contactForm.email,
+          leadMessage: contactForm.message || "",
+          listingTitle: targetListing.title || "",
+          listingId: targetListing.id,
+        }).catch(() => {});
+      }
     }
     setSubmitting(false);
     setSubmitted(true);
