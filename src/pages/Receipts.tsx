@@ -46,7 +46,7 @@ const Receipts = () => {
     setLoading(false);
   };
 
-  useEffect(() => { loadReceipts(); }, [orgId]);
+  useEffect(() => { loadReceipts(); }, [orgId, countryFilter]);
 
   // Load landlord signature + owner info + stamp on mount
   useEffect(() => {
