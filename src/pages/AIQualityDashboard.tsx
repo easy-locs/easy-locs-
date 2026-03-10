@@ -287,6 +287,9 @@ const AIQualityDashboard = () => {
               Issues {report ? `(${filteredIssues.length})` : ""}
             </TabsTrigger>
             <TabsTrigger value="copilot">AI Copilot</TabsTrigger>
+            <TabsTrigger value="history">
+              History {history.length > 0 ? `(${history.length})` : ""}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="issues">
