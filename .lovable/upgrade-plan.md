@@ -1,6 +1,7 @@
-# Easy-Locs® Progressive Upgrade Plan — Business-Ready Edition
+# Easy-Locs® Progressive Upgrade Plan — Complete Business Edition
 > Updated: 2026-03-10 — Non-destructive, 3-layer approach  
-> Status: **VALIDATED by product owner**
+> Status: **VALIDATED by product owner**  
+> Version: 3.0 — Includes provider model, payment architecture, QA scenarios, delivery checklist
 
 ---
 
@@ -11,243 +12,303 @@ No full rewrites. Every change is additive and backward-compatible.
 
 ---
 
-## Current State Assessment
+## PART A — Current State Assessment
 
 ### ✅ Already Solid (Keep as-is)
-| Area | Status | Details |
-|------|--------|---------|
-| Lazy loading | ✅ | 90+ pages via React.lazy |
-| Bundle splitting | ✅ | Manual chunks: React, Three.js, Radix, Recharts, Supabase, jsPDF |
-| React Query | ✅ | 5min stale / 10min GC / no refetch on focus |
-| Sync Engine | ✅ | 10 event types, 10s dedup, strict context validation |
-| Communication Pipeline | ✅ | Triple-sync (DB + notification + email) centralized |
-| Deep-link system | ✅ | Unified route resolution via `shared/routes.ts` |
-| Auth hardening | ✅ | Retry logic, hydration guard, deferred subscription |
-| PWA | ✅ | SW cleanup, Safari-safe |
-| Permissions | ✅ | 6-level RBAC (owner→member), 30+ permissions, DB-enforced |
-| Monitoring | ✅ | Runtime errors, network failures, long tasks, CLS, page load |
-| Booking lifecycle | ✅ | 8 statuses: new→pending→awaiting_payment→confirmed→modified→cancelled→completed→refunded |
-
-### ⚠️ Bottlenecks Requiring Action
-| Area | Issue | Impact | Layer |
-|------|-------|--------|-------|
-| `useRentalData` | ~~N+1 queries for country filter~~ | High | ✅ Fixed |
-| `shared/index.ts` | ~~Duplicate barrel exports~~ | Low | ✅ Fixed |
-| `AuthContext` | 327 lines, 6+ queries on login | Medium | Layer 2 |
-| `NotificationBell` | 457 lines, heavy imports | Medium | Layer 2 |
-| Calendar sync | Seasonal + Marketplace query independently | Medium | Layer 2 |
-| Image loading | No `loading="lazy"` on photos | Medium | Layer 1 |
-| Explore page | No pagination on public queries | High | Layer 1 |
-| Booking lifecycle | Logic duplicated across 3 components | High | Layer 2 |
-| Mobile overflow | Some cards/tables break on 375px | Medium | Layer 1 |
+| Area | Status |
+|------|--------|
+| Lazy loading (90+ pages) | ✅ |
+| Bundle splitting (7 vendor chunks) | ✅ |
+| React Query (5min stale / 10min GC) | ✅ |
+| Sync Engine (10 events, 10s dedup, strict validation) | ✅ |
+| Triple-Sync Pipeline (DB + notification + email) | ✅ |
+| Deep-link system (unified route resolution) | ✅ |
+| Auth hardening (retry, hydration guard) | ✅ |
+| PWA (SW cleanup, Safari-safe) | ✅ |
+| RBAC (6 levels, 30+ permissions, DB-enforced) | ✅ |
+| Monitoring (errors, network, long tasks, CLS) | ✅ |
+| Booking lifecycle (8 statuses) | ✅ |
+| N+1 query fix in useRentalData | ✅ Fixed |
+| Barrel export cleanup | ✅ Fixed |
 
 ---
 
-## LAYER 1: Immediate Performance & Stability
-> **Timeline:** This sprint  
-> **Risk:** Low — no structural changes
+## PART B — CLARIFICATION 1: Provider Operational Model
 
-### 1.1 Image Lazy Loading
-- Add `loading="lazy"` to ServiceCard, ListingPhotoGallery, PropertyPhotos
-- **Type:** Technical | **Affects:** UX (load speed) | **DB:** No | **QA:** Visual check on mobile
+### Definition
+A **Provider** is any professional (freelancer, company, concierge) who publishes services on the marketplace. Providers operate within an **Organization** (`org_id`) and manage their own bookings.
 
-### 1.2 Explore Page Pagination
-- Limit public queries to 50 results, add "Load more" button
-- **Type:** Technical + UX | **Affects:** UX | **DB:** No | **QA:** Test all 3 tabs (Seasonal, Real Estate, Services)
+### Provider = Organization Owner/Admin
 
-### 1.3 Mobile-First Stability Audit
-- **Text overflow:** Audit all cards/headers on 375px viewport
-- **Button clickability:** Ensure all touch targets ≥ 44px
-- **Card spacing:** Fix cramped margins on mobile grids
-- **Headers/navigation:** Verify sidebar collapse and mobile menu
-- **Form usability:** Test all booking/service forms on iPhone Safari
-- **Type:** UX | **Affects:** UX | **DB:** No | **QA:** Full mobile pass on iPhone/Android
+There is **no separate "provider" role** in the RBAC system. Instead:
+- A provider is an **org owner or admin** who has created a `marketplace_providers` record linked to their `org_id`
+- The provider profile (`marketplace_providers`) stores public identity + payment config
+- All booking data is scoped by `org_id`, not by provider role
 
-### 1.4 Public Pages & SEO Stability Guarantee
-**Current state — all confirmed stable:**
-- ✅ All public URLs (`/book/:slug`, `/listing/:slug`, `/store/:slug`, `/shop/:cat-:city`, etc.)
-- ✅ Sitemap generation via `vite-plugin-sitemap.ts`
-- ✅ Canonical tags via `SEOHead` component
-- ✅ Meta/OG structure per page
-- ✅ `hreflang` for 15 languages
-- ✅ Programmatic SEO routes (`/country/:slug`, `/city/:slug`, `/services/:service/:city`)
-- ✅ `SlugResolver` for clean short URLs
+### Provider Capabilities Matrix
 
-**Rule:** No SEO route changes during any refactor. All public URL patterns are frozen.
-- **Type:** Constraint | **QA:** Run sitemap validator after each deploy
+| Capability | How it works | Status |
+|-----------|-------------|--------|
+| **Receive bookings** | Public booking form (`/book/:slug`) inserts into `marketplace_bookings` with provider's `org_id` | ✅ Working |
+| **View own bookings** | Filtered by `org_id` in `ActivitiesMarketplace` query | ✅ Working |
+| **Confirm bookings** | Status update `pending → confirmed` via `BookingDetailDrawer` actions | ✅ Working |
+| **Modify bookings** | Status `modified` exists in `BookingStatusBadge` | ⚠️ Status only — no modification form yet |
+| **Cancel bookings** | Status update `→ cancelled` + notification + email | ✅ Working |
+| **Complete bookings** | Status update `→ completed` | ✅ Working |
+| **Send payment links** | `PaymentMethodSelector` → Stripe/PayPal/Bank/Custom link sent via communication pipeline | ✅ Working |
+| **Confirm payment** | Manual `payment_confirmed = true` update | ✅ Working |
+| **Generate invoices** | `InvoicePdfGenerator` → PDF uploaded to storage → emailed to client | ✅ Working |
+| **View communication history** | `BookingCommunicationThread` grouped by `context_id = booking.id` | ✅ Working |
+| **View activity log** | `BookingActivityLog` shows all events for a booking | ✅ Working |
+| **Only see own data** | All queries filtered by `org_id` + RLS enforced | ✅ Working |
 
----
+### Provider Isolation Rules
+- Provider A cannot see Provider B's bookings (RLS on `org_id`)
+- Provider data is scoped per organization
+- Public views (`marketplace_services_public`) mask private fields (bank details, commissions)
 
-## LAYER 2: Structural Reinforcement
-> **Timeline:** Next 2 sprints  
-> **Risk:** Medium — partial refactors, no breaking changes
-
-### 2.1 Marketplace End-to-End Lifecycle Centralization
-
-**Current status of each step:**
-
-| Step | Status | Where | Gap |
-|------|--------|-------|-----|
-| 1. Inquiry | ✅ | `PublicServiceBooking` → booking form | — |
-| 2. Quotation/Approval | ⚠️ | Manual status change only | No structured quote flow |
-| 3. Booking confirmation | ✅ | `BookingRequestCenter` → status update | — |
-| 4. Payment link | ✅ | `PaymentMethodSelector` + Stripe/PayPal/Bank | — |
-| 5. Payment status | ✅ | Webhook + manual confirmation | — |
-| 6. Modification | ⚠️ | Status "modified" exists | No structured modification form |
-| 7. Cancellation | ✅ | Status update + notification | — |
-| 8. Refund logic | ⚠️ | Status "refunded" exists | No Stripe refund automation |
-| 9. Provider confirmation | ✅ | In-app notification + email | — |
-| 10. Communication history | ✅ | Grouped by `context_id` in messages | — |
-
-**Action plan:**
-- [ ] Create `useBookingLifecycle(bookingType)` hook — centralize status transitions
-- [ ] Add structured quotation step (optional quote amount before confirmation)
-- [ ] Add structured modification form (date/quantity change with re-notification)
-- [ ] Wire Stripe refund API call for automated refunds
-- [ ] All steps fire through `dispatchSyncEvent` — no duplicate triggers
-- **Type:** Technical + UX | **Affects:** UX, DB (new columns for quotes) | **QA:** Full E2E test per booking type
-
-### 2.2 Roles & Permissions Full Audit
-
-**Current RBAC matrix (verified in `src/lib/permissions.ts`):**
-
-| Permission | Owner | Admin | Agent | Staff | Accountant | Member |
-|-----------|-------|-------|-------|-------|------------|--------|
-| org:manage | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| org:billing | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| org:invite | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| properties:write | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| properties:delete | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| tenants:write | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| leases:write | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| payments:write | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| accounting:write | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| bookings:manage | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| bookings:write | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| services:write | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| documents:sign | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| messages:write | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| leads:write | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-
-**Cross-role portals:**
-| Portal | Role | Detection | Status |
-|--------|------|-----------|--------|
-| `/dashboard/*` | Owner/Admin/Agent/Staff | `org_members` table | ✅ |
-| `/tenant/*` | Tenant | `tenants.tenant_user_id` | ✅ |
-| `/client/*` | Client | No org + no tenant link | ✅ |
-| Dual role | Landlord+Tenant | Both detected | ✅ switchable |
-
-**Gaps identified:**
-- [ ] `PermissionGate` used in some pages but not all write actions — needs audit pass
-- [ ] Staff can `bookings:write` but not `bookings:manage` — verify UI hides manage-only actions
-- [ ] Accountant has no `messages:read` — may block communication visibility
-- [ ] Provider profile (`marketplace_providers`) — no specific `provider` role in org_members
-- [ ] RLS policies enforce `org_id` scoping but don't check role level for write operations
-- **Type:** Security + UX | **Affects:** DB (RLS policies), UX | **QA:** Permission matrix E2E test per role
-
-### 2.3 Calendar Data Unification
-- Create `useCalendarData(propertyId)` merging:
-  - Seasonal reservations (`booking_requests`)
-  - iCal imports (`reservations`)
-  - Marketplace bookings (`marketplace_bookings` with date ranges)
-  - Concierge orders (`concierge_orders`)
-- Single source for PropertyCalendar, ChannelManager, BookingAvailabilityCalendar
-- **Type:** Technical | **Affects:** UX (unified availability) | **DB:** No (read-only) | **QA:** Calendar accuracy test
-
-### 2.4 Auth Context Split
-- Split `AuthContext` (327 lines) into 3 smaller contexts:
-  - `AuthSessionContext`: session, user, signOut (rarely changes)
-  - `ProfileContext`: userType, country, currency, orgId (changes on org switch)
-  - `SubscriptionContext`: plan, trial, gating (changes on payment)
-- Prevents full-tree re-renders when subscription check completes
-- **Type:** Technical | **Affects:** UX (faster renders) | **DB:** No | **QA:** Auth flow regression test
-
-### 2.5 Provider Data Caching
-- Cache provider/storefront data in React Query (10min stale)
-- Currently re-fetched on every public page visit
-- **Type:** Technical | **Affects:** UX | **DB:** No | **QA:** Public page load test
+### Gap: No structured modification form
+**Action (Layer 2):** Create a modification dialog that allows date/quantity changes, recalculates price, and triggers `booking_modified` sync event with re-notification to customer.
 
 ---
 
-## LAYER 3: Scalable Architecture
-> **Timeline:** Q3-Q4 2026  
-> **Risk:** Higher — requires careful migration
+## PART C — CLARIFICATION 2: Zero-Commission Payment Architecture
 
-### 3.1 Move Heavy Logic to Edge Functions
-- Receipt PDF generation → Edge Function (reduce bundle ~200KB)
-- Invoice PDF generation → Edge Function
-- Benefits: background processing, smaller client bundle
-- **Type:** Technical | **Affects:** UX (speed), DB (storage) | **QA:** PDF output comparison test
+### Core Principle
+> The platform is a **SaaS tool**, NOT a payment intermediary. All payments flow directly between client and provider.
 
-### 3.2 Database Optimization
-- Composite indexes: `(org_id, country)`, `(org_id, status)`, `(service_id, status)`
-- Materialized views for dashboard KPIs
-- RPC functions for complex aggregations (monthly revenue, occupancy rate)
-- **Type:** Technical | **Affects:** DB | **QA:** Query performance benchmark
+### Payment Flow Diagram
 
-### 3.3 Real-time Subscriptions
-- Add Supabase Realtime channels for:
-  - Notifications (instant bell updates)
-  - Messages (live chat)
-  - Booking status changes (live dashboard)
-- **Type:** Technical | **Affects:** UX | **DB:** Enable realtime on tables | **QA:** Concurrent user test
+```
+Client → [Selects payment method] → Provider's payment processor
+                                    ↓
+                              Stripe (provider's account)
+                              PayPal (provider's email)
+                              Bank Transfer (provider's IBAN)
+                              Custom URL (provider's link)
+```
 
-### 3.4 State Management Upgrade
-- Consider Zustand for cross-component state
-- Replace localStorage-based org/role switching
-- Keep React Query for server state
-- **Type:** Technical | **Affects:** UX | **DB:** No | **QA:** Full regression
+### Who Collects Payment
+| Method | Collector | Config Location |
+|--------|-----------|-----------------|
+| Credit Card | Provider's Stripe Connect account | `orgs.stripe_account_id` |
+| PayPal | Provider's PayPal email | `marketplace_providers.payment_paypal_email` |
+| Bank Transfer | Provider's bank account | `marketplace_providers.bank_iban/bic/holder/name` |
+| Custom Link | Provider's custom URL | `marketplace_providers.payment_custom_url` |
+| Cash | Provider directly (in person) | N/A — no digital flow |
+
+### How Payment Links Are Generated
+
+1. **Stripe:** Edge Function `create-booking-payment` creates a Checkout Session on the **provider's connected Stripe account** (using `stripe_account` parameter). Session URL is sent to client via email + in-app message.
+
+2. **PayPal:** Direct link generated: `https://paypal.me/{paypal_email}/{amount}`. Sent via communication pipeline.
+
+3. **Bank Transfer:** Provider's IBAN/BIC displayed to client after booking confirmation. Instructions sent via email.
+
+4. **Custom URL:** Provider-configured external payment page URL sent to client.
+
+### Payment Status Tracking
+
+| Source | How tracked | Where stored |
+|--------|------------|--------------|
+| Stripe webhook | `stripe-webhook` Edge Function decodes `metadata.type` | Updates `payment_status` on booking record |
+| Manual confirmation | Provider clicks "Confirm Payment" in BookingDetailDrawer | `payment_confirmed = true` on booking |
+| PayPal/Bank/Cash | Provider manually confirms after receiving funds | Same manual confirmation |
+
+### How the App Avoids Acting as Intermediary
+
+1. **No platform Stripe account processes provider payments** — only provider's own connected account
+2. **No funds flow through the platform** — Stripe Connect uses `transfer_data.destination` or direct charges
+3. **No commission deduction** — `commission_rate = 0` by default (future-ready field exists)
+4. **No escrow or holding** — payment goes directly to provider
+5. **Invoice is between provider and client** — platform just generates the PDF document
+6. **Platform revenue = SaaS subscription only** — billed separately via `create-checkout` Edge Function
+
+### Refund Logic in Zero-Commission Model
+
+| Step | Who | How |
+|------|-----|-----|
+| 1. Client requests refund | Client contacts provider via booking chat | Communication pipeline |
+| 2. Provider approves refund | Provider clicks action in BookingDetailDrawer | Status → `refunded` |
+| 3. Actual refund | **Provider initiates directly** in their Stripe dashboard / PayPal / bank | Platform does NOT process refunds |
+| 4. Platform records status | Booking status updated to `refunded`, `refunded_at` timestamp set | Notification sent to client |
+
+**Gap (Layer 2):** Add optional Stripe Refund API call via Edge Function (using provider's connected account) for automated card refunds. This is an enhancement, not a requirement — providers can always refund manually.
+
+### Legal Compliance Checklist
+- [x] Platform does not hold client funds
+- [x] Platform does not process payments on behalf of providers
+- [x] No payment splitting or commission deduction
+- [x] Invoices clearly show provider as the seller
+- [x] Provider configures their own payment methods
+- [x] Platform subscription is billed separately
 
 ---
 
-## PRIORITY 5: Monitoring & Observability
+## PART D — CLARIFICATION 3: QA by Real Business Scenarios
 
-### Current State (already implemented in `monitoring.ts`):
-| Capability | Status | Details |
-|-----------|--------|---------|
-| Runtime error logging | ✅ | Global `window.onerror` + `unhandledrejection` |
-| Network failure tracking | ✅ | Fetch interceptor catches 500+ errors |
-| Long task detection | ✅ | PerformanceObserver > 200ms |
-| CLS detection | ✅ | Layout shift > 0.25 flagged |
-| Slow page load | ✅ | domContentLoaded > 3s flagged |
-| Audit log persistence | ✅ | Critical errors saved to `audit_logs` table |
-| Sync health checks | ✅ | 6 checks: booking-payment sync, notification queue, edge functions |
+### Scenario 1: Full Marketplace Booking Lifecycle
 
-### Gaps to fill:
-- [ ] **Failed payment tracking:** Add `pushEvent` call in Stripe webhook error paths
-- [ ] **Failed email tracking:** Add error callback in `send-notification-email` edge function
-- [ ] **Booking lifecycle failures:** Log when `dispatchSyncEvent` dedup rejects or context validation fails
-- [ ] **Slow query visibility:** Add timing to `useRentalData.loadAll()` and flag if > 2s
-- [ ] **Dashboard visibility:** Surface monitoring events in `HealthDashboard` component
-- **Type:** Technical | **Affects:** DB (audit_logs) | **QA:** Simulate failures and verify logging
+| Step | Actor | Action | Expected Result | Roles to Test |
+|------|-------|--------|----------------|---------------|
+| 1. Browse | Client | Opens `/explore` or `/book/:slug` | Service card displays with price, availability | Client, Anonymous |
+| 2. Inquiry | Client | Fills booking form, selects dates/quantity | Booking created with status `pending` | Client, Anonymous |
+| 3. Notification | System | Triple-sync fires | Provider gets: in-app notification + email + message in communication center | Provider (Owner) |
+| 4. Review | Provider | Opens BookingDetailDrawer via notification deep-link | Sees customer info, service details, amount | Owner, Admin, Agent, Staff |
+| 5. Quote (future) | Provider | Sets custom quote amount | Client notified with quote for approval | Owner, Admin |
+| 6. Confirm | Provider | Clicks "Confirm" | Status → `confirmed`, client notified | Owner, Admin, Agent |
+| 7. Send Payment | Provider | Clicks "Send Payment Link" | Payment link sent via email + message thread | Owner, Admin |
+| 8. Pay | Client | Clicks payment link | Stripe Checkout / PayPal / Bank instructions shown | Client |
+| 9. Payment Status | System | Webhook or manual confirmation | `payment_confirmed = true`, provider notified | System/Provider |
+| 10. Modification | Client | Requests date change via chat | Provider reviews and approves modification | Provider + Client |
+| 11. Complete | Provider | Marks booking as completed | Status → `completed`, activity logged | Owner, Admin, Agent |
+| 12. Invoice | Provider | Generates invoice PDF | PDF emailed to client with attachment | Owner, Admin |
+| 13. Cancel | Either | Cancellation request | Status → `cancelled`, both parties notified | Provider + Client |
+| 14. Refund | Provider | Approves refund | Status → `refunded`, client notified | Owner, Admin |
+
+### Scenario 2: Long-Term Rental — Landlord + Tenant
+
+| Step | Actor | Action | Expected |
+|------|-------|--------|----------|
+| 1 | Landlord | Adds property + tenant | Property and tenant created in DB |
+| 2 | Landlord | Creates lease | Lease document generated |
+| 3 | Landlord | Generates rent calls | Monthly rent_calls created |
+| 4 | Tenant | Receives invitation email | Can create account and link |
+| 5 | Tenant | Views dashboard | Sees rent due, documents, receipts |
+| 6 | Landlord | Marks payment received | Receipt auto-generated + emailed |
+| 7 | Tenant | Views receipt | PDF visible in tenant portal |
+| 8 | Landlord | Creates intervention | Tenant notified |
+
+**Roles:** Owner, Admin, Agent (write), Staff (read bookings), Accountant (read payments), Tenant
+
+### Scenario 3: Seasonal Rental — Booking Request
+
+| Step | Actor | Action | Expected |
+|------|-------|--------|----------|
+| 1 | Guest | Submits booking via `/listing/:slug` | `booking_requests` row created |
+| 2 | Owner | Reviews in Seasonal dashboard | Sees request with dates, guest info |
+| 3 | Owner | Confirms + sends payment link | Guest receives email with link |
+| 4 | Guest | Pays | Webhook updates status |
+| 5 | System | Pre-arrival email (J-2) | Automated via `booking-lifecycle` |
+| 6 | Guest | Replies via guest portal | Message threaded to booking |
+
+### Scenario 4: Permission Boundary Testing
+
+| Test | Actor | Expected |
+|------|-------|----------|
+| Staff tries to delete property | Staff | Action blocked (no `properties:delete`) |
+| Accountant tries to send message | Accountant | Action blocked (no `messages:write`) |
+| Member tries to confirm booking | Member | Action blocked (no `bookings:write`) |
+| Agent tries to manage org settings | Agent | Action blocked (no `org:manage`) |
+| Client tries to access `/dashboard` | Client | Redirected to `/client/dashboard` |
+| Tenant tries to access `/dashboard` | Tenant | Redirected to `/tenant` |
+
+### Scenario 5: Mobile-First Validation
+
+| Test | Device | Check |
+|------|--------|-------|
+| Booking form | iPhone 13 mini (375px) | No overflow, all fields reachable, calendar not cropped |
+| Service card grid | iPhone 13 (390px) | Cards don't overflow, images lazy-loaded |
+| BookingDetailDrawer | iPhone SE (320px) | Sheet scrollable, action buttons clickable (≥44px) |
+| Navigation sidebar | Mobile | Collapses to hamburger, all items accessible |
+| Payment method selector | Mobile | 2-column grid fits without horizontal scroll |
+| Communication center | Mobile | Thread list scrollable, message input above keyboard |
 
 ---
 
-## Implementation Priority Order
+## PART E — Delivery Checklist Template
 
-| Priority | Action | Layer | Sprint |
-|----------|--------|-------|--------|
-| 1 | Mobile stability audit & fixes | L1 | Current |
-| 2 | Image lazy loading | L1 | Current |
-| 3 | Explore pagination | L1 | Current |
-| 4 | Booking lifecycle hook | L2 | Next |
-| 5 | Calendar unification | L2 | Next |
-| 6 | Permission audit pass | L2 | Next |
-| 7 | Monitoring gaps | L2 | Next |
-| 8 | Auth context split | L2 | Sprint +2 |
-| 9 | Quotation + modification flows | L2 | Sprint +2 |
-| 10 | Edge Function PDFs | L3 | Q3 2026 |
-| 11 | DB indexes + materialized views | L3 | Q3 2026 |
-| 12 | Realtime subscriptions | L3 | Q4 2026 |
+Every implementation block MUST complete this checklist before merge:
+
+```markdown
+## Delivery Checklist — [Feature Name]
+
+### What Changed
+- [ ] List of files modified
+- [ ] List of new files created
+- [ ] Database migrations (if any)
+- [ ] Edge functions modified (if any)
+
+### What Was Tested
+- [ ] Unit tests passing (134+ Vitest)
+- [ ] Manual E2E scenario tested (reference scenario #)
+- [ ] Error cases tested (invalid input, network failure)
+
+### Roles Tested
+- [ ] Owner
+- [ ] Admin
+- [ ] Agent
+- [ ] Staff
+- [ ] Accountant
+- [ ] Member
+- [ ] Tenant
+- [ ] Client (free)
+- [ ] Anonymous visitor
+
+### Mobile Views Tested
+- [ ] 375px (iPhone SE / 13 mini)
+- [ ] 390px (iPhone 13/14)
+- [ ] 402px (current preview viewport)
+- [ ] 768px (tablet)
+- [ ] Desktop (1280px+)
+
+### Database Impact
+- [ ] New tables: [list]
+- [ ] New columns: [list]
+- [ ] New RLS policies: [list]
+- [ ] New indexes: [list]
+- [ ] Migration file: [path]
+
+### Rollback Path
+- [ ] Revert commit hash: [hash]
+- [ ] Database rollback SQL: [if applicable]
+- [ ] Feature flag to disable: [if applicable]
+- [ ] No data migration needed / Data migration reversible
+```
 
 ---
 
-## Rules (Locked)
+## PART F — Implementation Layers (Updated)
+
+### LAYER 1: Immediate (This Sprint)
+| # | Action | Type | UX | DB | QA |
+|---|--------|------|----|----|-----|
+| 1.1 | Image lazy loading | Tech | ✅ Speed | No | Visual mobile check |
+| 1.2 | Explore pagination (limit 50) | Tech+UX | ✅ Speed | No | 3 tabs tested |
+| 1.3 | Mobile stability audit | UX | ✅ Layout | No | Full mobile pass |
+| 1.4 | SEO stability guarantee | Constraint | No | No | Sitemap validator |
+
+### LAYER 2: Reinforcement (Next 2 Sprints)
+| # | Action | Type | UX | DB | QA |
+|---|--------|------|----|----|-----|
+| 2.1 | Booking lifecycle hook | Tech+UX | ✅ Consistency | No | Scenario 1 full |
+| 2.2 | Modification flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 10 |
+| 2.3 | Quotation flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 5 |
+| 2.4 | Permission audit pass | Security | ✅ Blocked actions | RLS updates | Scenario 4 full |
+| 2.5 | Calendar unification | Tech | ✅ Accuracy | No (read-only) | Calendar accuracy |
+| 2.6 | Auth context split | Tech | ✅ Speed | No | Auth regression |
+| 2.7 | Monitoring gaps | Tech | No | audit_logs | Simulate failures |
+| 2.8 | Stripe refund automation | Tech+UX | ✅ New feature | No | Scenario 1 step 14 |
+
+### LAYER 3: Scale (Q3-Q4 2026)
+| # | Action | Type | UX | DB | QA |
+|---|--------|------|----|----|-----|
+| 3.1 | PDF generation → Edge Functions | Tech | ✅ Speed | Storage | PDF output comparison |
+| 3.2 | DB indexes + materialized views | Tech | ✅ Speed | ✅ Indexes | Query benchmark |
+| 3.3 | Realtime subscriptions | Tech | ✅ Live updates | Enable RT | Concurrent user |
+| 3.4 | State management (Zustand) | Tech | ✅ Speed | No | Full regression |
+
+---
+
+## PART G — Locked Rules
 
 1. **No full rewrites** — progressive improvement only
 2. **134+ Vitest tests must pass** after each change
 3. **All public URLs frozen** — no SEO route changes
-4. **Architecture freeze respected** — 3-level hierarchy (Org → Country → Module)
-5. **Zero-commission model preserved** — no payment intermediation
+4. **Architecture freeze** — 3-level hierarchy (Org → Country → Module)
+5. **Zero-commission model** — no payment intermediation, ever
 6. **Mobile-first** — every UI change tested at 375px minimum
-7. **Every sync event through `dispatchSyncEvent`** — no legacy duplicate triggers
+7. **Every sync event through `dispatchSyncEvent`** — no legacy duplicates
+8. **Delivery checklist required** for every implementation block
+9. **Provider = Org Owner/Admin** — no separate provider role in RBAC
+10. **Payment flows directly to provider** — platform never touches funds
