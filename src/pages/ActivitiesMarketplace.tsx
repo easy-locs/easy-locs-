@@ -106,6 +106,13 @@ const ActivitiesMarketplace = () => {
     enabled: !!orgId,
   });
 
+  // --- Centralized Booking Lifecycle ---
+  const lifecycle = useBookingLifecycle({
+    provider: myProvider,
+    services: myServices,
+    queryKeys: [["my_marketplace_bookings"]],
+  });
+
   // --- Browse all active services ---
   const { data: allServices = [] } = useQuery({
     queryKey: ["browse_marketplace_services", filterCat, filterCountry],
