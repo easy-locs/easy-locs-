@@ -62,11 +62,11 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     service_time: "",
     date_from: "",
     date_to: "",
-    quantity: 0,
+    quantity: 1,
     notes: "",
     pickup_location: "",
     dropoff_location: "",
-    passengers: 0,
+    passengers: 1,
     return_time: "",
   });
 
