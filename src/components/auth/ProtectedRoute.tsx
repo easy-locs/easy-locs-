@@ -27,8 +27,33 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to={dest} replace />;
   }
 
-  // Client role: can only access /client/* routes
-  if (activeRole === "client" && !isClientRoute && !isOnboarding) {
+  // Routes accessible to free/client accounts (publishing, communication, explore, marketplace)
+  const FREE_ACCESS_PREFIXES = [
+    "/dashboard/marketplace",
+    "/dashboard/concierge",
+    "/dashboard/activities",
+    "/dashboard/real-estate",
+    "/dashboard/seasonal",
+    "/dashboard/messages",
+    "/dashboard/communication",
+    "/dashboard/billing",
+    "/dashboard/settings",
+    "/dashboard/company",
+    "/dashboard/onboarding",
+    "/explore",
+    "/messages",
+    "/add-property",
+    "/properties-showcase",
+    "/host-catalog",
+    "/rental-catalog",
+    "/account-showcase",
+  ];
+
+  const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix))
+    || location.pathname === "/dashboard";
+
+  // Client role: can access /client/*, free publishing routes, and onboarding
+  if (activeRole === "client" && !isClientRoute && !isOnboarding && !isFreePath) {
     return <Navigate to="/client" replace />;
   }
 
