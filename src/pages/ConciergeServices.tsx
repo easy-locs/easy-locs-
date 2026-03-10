@@ -359,12 +359,12 @@ const ConciergeServices = () => {
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
           {[
-            { icon: Sparkles, label: "Active Services", value: String(activeServices), cls: "text-accent" },
-            { icon: ShoppingBag, label: "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
-            { icon: DollarSign, label: `Revenue (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
-            { icon: TrendingUp, label: `Commission (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
-            { icon: CheckCircle2, label: "Completed", value: String(completedCount), cls: "text-emerald-500" },
-            { icon: CreditCard, label: "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
+            { icon: Sparkles, label: t?.("page.concierge.kpi_active") || "Active Services", value: String(activeServices), cls: "text-accent" },
+            { icon: ShoppingBag, label: t?.("page.concierge.kpi_pending") || "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
+            { icon: DollarSign, label: `${t?.("page.concierge.kpi_revenue") || "Revenue"} (${preferredCurrency})`, value: fmtPrice(totalRevenue, preferredCurrency), cls: "text-emerald-500" },
+            { icon: TrendingUp, label: `${t?.("page.concierge.kpi_commission") || "Commission"} (${preferredCurrency})`, value: fmtPrice(commissionEarned, preferredCurrency), cls: "text-blue-500" },
+            { icon: CheckCircle2, label: t?.("page.concierge.kpi_completed") || "Completed", value: String(completedCount), cls: "text-emerald-500" },
+            { icon: CreditCard, label: t?.("page.concierge.kpi_pending_pay") || "Pending Pay", value: String(pendingPayments), cls: "text-orange-500" },
           ].map((kpi, i) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className="h-full">

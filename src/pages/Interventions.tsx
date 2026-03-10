@@ -287,7 +287,7 @@ const Interventions = () => {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.category")}</label>
                   <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>

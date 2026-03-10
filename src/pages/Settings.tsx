@@ -397,15 +397,14 @@ const Settings = () => {
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Shield className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">Reviews & Ratings</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Control whether customers can leave reviews on your marketplace services and listings.
-            Reviews can be enabled per-provider in the Marketplace settings.
-          </p>
-          <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
-            Go to <strong>Marketplace → Provider Profile</strong> to enable or disable reviews for your services.
-          </div>
+              <h2 className="font-semibold text-foreground">{t("page.settings.reviews_title") || "Reviews & Ratings"}</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("page.settings.reviews_desc") || "Control whether customers can leave reviews on your marketplace services and listings. Reviews can be enabled per-provider in the Marketplace settings."}
+            </p>
+            <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
+              {t("page.settings.reviews_hint") || "Go to Marketplace → Provider Profile to enable or disable reviews for your services."}
+            </div>
         </div>
 
         {/* GDPR */}

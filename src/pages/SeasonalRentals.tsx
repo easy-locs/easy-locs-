@@ -62,7 +62,7 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 const toICalDate = (d: string) => d.replace(/-/g, "");
 
 const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
-  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Logement";
+  const propName = (id: string) => properties.find(p => p.id === id)?.label || "Property";
     const events = bookings.map(b => [
     "BEGIN:VEVENT",
     `DTSTART;VALUE=DATE:${toICalDate(b.check_in)}`,
