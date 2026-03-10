@@ -563,7 +563,7 @@ const ActivitiesMarketplace = () => {
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10 w-full sm:w-40"
-                  placeholder="Country..."
+                  placeholder="Pays..."
                   value={filterCountry}
                   onChange={(e) => setFilterCountry(e.target.value)}
                 />
