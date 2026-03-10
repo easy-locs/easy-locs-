@@ -380,7 +380,7 @@ const ActivitiesMarketplace = () => {
     }).eq("id", id);
     if (error) { toast.error(error.message); return; }
 
-    toast.success("Payment confirmed!");
+    toast.success("Paiement confirmé !");
     qc.invalidateQueries({ queryKey: ["my_marketplace_bookings"] });
 
     if (booking) {
