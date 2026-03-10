@@ -137,7 +137,7 @@ const DeveloperPortal = () => {
       const { error } = await supabase.from("webhooks" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Webhook supprimé"); qc.invalidateQueries({ queryKey: ["webhooks"] }); },
+    onSuccess: () => { toast.success("Webhook deleted"); qc.invalidateQueries({ queryKey: ["webhooks"] }); },
   });
 
   const toggleWebhookMut = useMutation({
