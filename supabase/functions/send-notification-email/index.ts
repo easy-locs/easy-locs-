@@ -404,7 +404,7 @@ serve(async (req) => {
       (req as any).__callerId = callerUser.id;
     }
 
-    const { event_type: rawEventType, recipient_email, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
+    const { event_type: rawEventType, recipient_email: rawRecipientEmail, recipient_name, data, locale = "fr" } = await req.json() as EmailRequest;
 
     // Resolve aliases for backwards compat
     const event_type = EVENT_TYPE_ALIASES[rawEventType] || rawEventType;
@@ -425,6 +425,23 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Forbidden: not an org member" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
+    }
+
+    // Fallback: if recipient_email is empty but org_id is provided, resolve from org owner profile
+    let recipient_email = rawRecipientEmail;
+    if (!recipient_email && data?.org_id) {
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: org } = await supabaseAdmin
+        .from("orgs").select("owner_user_id, email")
+        .eq("id", data.org_id).maybeSingle();
+      if (org?.email) {
+        recipient_email = org.email;
+      } else if (org?.owner_user_id) {
+        const { data: profile } = await supabaseAdmin
+          .from("profiles").select("email")
+          .eq("id", org.owner_user_id).maybeSingle();
+        if (profile?.email) recipient_email = profile.email;
       }
     }
 
