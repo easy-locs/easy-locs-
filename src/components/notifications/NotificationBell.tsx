@@ -70,6 +70,8 @@ const NotificationBell = () => {
   const [open, setOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const containerRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const [panelPos, setPanelPos] = useState({ top: 0, right: 0 });
   const dfLocale = useMemo(() => dateFnsLocaleMap[locale] || enUS, [locale]);
 
   useEffect(() => {
