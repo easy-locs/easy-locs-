@@ -197,7 +197,7 @@ const DynamicPricing = () => {
                   </div>
                 )}
                 <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newRule.name || !newRule.property_id || addMut.isPending}>
-                  {addMut.isPending ? "Ajout..." : "Créer la règle"}
+                  {addMut.isPending ? "Adding..." : "Create rule"}
                 </Button>
               </div>
             </DialogContent>
