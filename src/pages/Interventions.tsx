@@ -152,7 +152,7 @@ const Interventions = () => {
           orgId: orgId!,
           propertyId: inserted.property_id || undefined,
           tenantId: inserted.tenant_id || undefined,
-          countryCode: "",
+          countryCode: prop?.country || "",
         },
         actorUserId: user.id,
         title: inserted.title,
