@@ -607,7 +607,7 @@ const ActivitiesMarketplace = () => {
                 {storefrontUrl && (
                   <Button size="sm" variant="outline" asChild>
                     <a href={storefrontUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-1" /> View Storefront
+                      <ExternalLink className="h-4 w-4 mr-1" /> Voir la vitrine
                     </a>
                   </Button>
                 )}
