@@ -563,10 +563,10 @@ const ChannelManager = () => {
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
-                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
-                      <p>1. Ouvrez Airbnb → <strong>Annonce</strong> → <strong>Tarification et disponibilité</strong></p>
-                      <p>2. Section <strong>"Exporter le calendrier"</strong> → Copiez l'URL iCal</p>
-                      <p>3. Collez-la dans le formulaire <strong>"Ajouter une connexion"</strong></p>
+                       <p className="font-medium text-foreground text-sm">📋 How to get the iCal URL:</p>
+                      <p>1. Open Airbnb → <strong>Listing</strong> → <strong>Pricing and availability</strong></p>
+                      <p>2. Section <strong>"Export calendar"</strong> → Copy the iCal URL</p>
+                      <p>3. Paste it in the <strong>"Add a connection"</strong> form</p>
                     </div>
                     <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "airbnb" })); setAddOpen(true); }}>
                       <Plus className="h-4 w-4 mr-1" />Connecter Airbnb
