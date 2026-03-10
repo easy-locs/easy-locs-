@@ -9,6 +9,7 @@ import BookingDetailDrawer from "./BookingDetailDrawer";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { syncToCommunicationCenter, uploadBookingInvoiceAttachment } from "./BookingsManager";
 import { format } from "date-fns";
+import { useOrgRole } from "@/hooks/useOrgRole";
 
 interface Props {
   bookings: any[];
@@ -18,12 +19,15 @@ interface Props {
   onUpdateStatus: (id: string, status: string) => void;
   onSendPaymentLink: (booking: any) => void;
   onConfirmPayment: (id: string) => void;
+  onModifyBooking?: (booking: any, changes: any) => Promise<boolean>;
+  onSendQuote?: (booking: any, data: { quoted_price: number; quote_message: string }) => Promise<boolean>;
   focusBookingId?: string | null;
 }
 
 export default function BookingRequestCenter({
   bookings, services, provider, orgId,
   onUpdateStatus, onSendPaymentLink, onConfirmPayment,
+  onModifyBooking, onSendQuote,
   focusBookingId,
 }: Props) {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
