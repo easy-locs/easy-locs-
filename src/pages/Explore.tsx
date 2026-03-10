@@ -87,17 +87,16 @@ export default function Explore() {
       setRealEstate((reRes.data || []) as RealEstateListing[]);
       setServices((svcRes.data || []) as ServiceListing[]);
 
-      // Enrich seasonal listings with property data (city, country, photo)
+      // Enrich seasonal listings with property data via secure RPC
       const rawListings = (seaRes.data || []) as any[];
       const propertyIds = [...new Set(rawListings.map(l => l.property_id))];
       let propMap: Record<string, any> = {};
       if (propertyIds.length > 0) {
-        const { data: props } = await supabase
-          .from("properties")
-          .select("id, city, country, photo_urls")
-          .in("id", propertyIds);
+        const { data: props } = await supabase.rpc("get_public_listing_properties", {
+          p_property_ids: propertyIds,
+        });
         if (props) {
-          for (const p of props) propMap[p.id] = p;
+          for (const p of props as any[]) propMap[p.id] = p;
         }
       }
       setSeasonal(rawListings.map(l => {
