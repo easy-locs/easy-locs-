@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Banknote, Building2, Globe, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 export type PaymentMethod = "card" | "cash" | "bank_transfer" | "paypal" | "custom";
 
@@ -31,33 +32,35 @@ export default function PaymentMethodSelector({
   showOffline = true,
   className,
 }: Props) {
+  const { t } = useI18n();
+
   const options: PaymentOption[] = [
     ...(hasStripe ? [{
       method: "card" as PaymentMethod,
-      label: "Credit Card",
+      label: t("payment.card") || "Credit Card",
       icon: CreditCard,
-      description: "Pay securely with Stripe",
+      description: t("payment.card_desc") || "Pay securely with Stripe",
       available: true,
     }] : []),
     ...(showOffline ? [{
       method: "cash" as PaymentMethod,
-      label: "Cash",
+      label: t("payment.cash") || "Cash",
       icon: Banknote,
-      description: "Pay in person on arrival",
+      description: t("payment.cash_desc") || "Pay in person on arrival",
       available: true,
     }] : []),
     ...(showOffline || hasBankDetails ? [{
       method: "bank_transfer" as PaymentMethod,
-      label: "Bank Transfer",
+      label: t("payment.bank_transfer") || "Bank Transfer",
       icon: Building2,
-      description: "Pay via wire transfer / IBAN",
+      description: t("payment.bank_transfer_desc") || "Pay via wire transfer / IBAN",
       available: true,
     }] : []),
     ...(hasPaypal ? [{
       method: "paypal" as PaymentMethod,
       label: "PayPal",
       icon: Globe,
-      description: "Pay with PayPal",
+      description: t("payment.paypal_desc") || "Pay with PayPal",
       available: true,
     }] : []),
   ];
@@ -67,7 +70,7 @@ export default function PaymentMethodSelector({
   return (
     <div className={cn("space-y-1.5", className)}>
       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-        Payment Method
+        {t("payment.method") || "Payment Method"}
       </p>
       <div className="grid grid-cols-2 gap-1.5">
         {options.map(({ method, label, icon: Icon, description }) => {

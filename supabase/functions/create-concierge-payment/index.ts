@@ -97,7 +97,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      payment_method_types: ["card"],
+      payment_method_types: serviceCurrency === "eur" ? ["card", "sepa_debit"] : ["card"],
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
