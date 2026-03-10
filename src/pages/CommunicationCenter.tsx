@@ -983,6 +983,7 @@ const CommunicationCenter = () => {
                 {[
                   { value: "all", label: "All" },
                   { value: "tenant", label: "🏠 Tenants" },
+                  { value: "lead", label: "🏡 Leads" },
                   { value: "marketplace", label: "🛍️ Market" },
                   { value: "concierge", label: "🎯 Concierge" },
                   { value: "seasonal", label: "🏖️ Seasonal" },
