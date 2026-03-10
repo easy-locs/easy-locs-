@@ -217,7 +217,7 @@ const DeveloperPortal = () => {
                         <Button size="sm" variant="outline" onClick={() => copyKey(newKey)}><Copy className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <Button className="w-full" onClick={() => { setCreateOpen(false); setNewKey(null); }}>Fermer</Button>
+                    <Button className="w-full" onClick={() => { setCreateOpen(false); setNewKey(null); }}>Close</Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
