@@ -423,6 +423,25 @@ export default function RealEstateListings() {
               </div>
 
               <Separator />
+              <h4 className="text-sm font-semibold text-foreground">Visibility</h4>
+              <div className="space-y-2">
+                {VISIBILITY_OPTIONS.map(v => (
+                  <label key={v.value}
+                    className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                      form.visibility === v.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                    }`}>
+                    <input type="radio" name="visibility" value={v.value} checked={form.visibility === v.value}
+                      onChange={() => setForm(f => ({ ...f, visibility: v.value }))}
+                      className="mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-sm">{v.label}</div>
+                      <div className="text-xs text-muted-foreground">{v.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              <Separator />
               <h4 className="text-sm font-semibold text-foreground">Contact</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))} /></div>
