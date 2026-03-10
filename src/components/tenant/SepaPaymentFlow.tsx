@@ -179,7 +179,7 @@ export default function SepaPaymentFlow({
           {/* Beneficiary */}
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.beneficiary") || "Bénéficiaire"}
+              {t("sepa.beneficiary") || "Beneficiary"}
             </p>
             <p className="text-sm font-medium text-foreground">{ownerBank?.full_name || "—"}</p>
           </div>
