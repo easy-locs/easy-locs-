@@ -8,12 +8,12 @@ import { Globe, MapPin, ArrowRight, Wifi, Laptop } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const cities = [
-  { flag: "🇫🇷", city: "Paris", service: "Cleaning services", link: "/property-management-paris" },
-  { flag: "🇹🇭", city: "Phuket", service: "Car rental", link: "/property-management-phuket" },
-  { flag: "🇦🇪", city: "Dubai", service: "Activities & tours", link: "/property-management-dubai" },
-  { flag: "🇲🇦", city: "Marrakech", service: "Concierge services", link: "/property-management-marrakech" },
-  { flag: "🇬🇧", city: "London", service: "Property management", link: "/property-management-london" },
-  { flag: "🇺🇸", city: "Miami", service: "Seasonal rentals", link: "/property-management-miami" },
+  { flag: "🇫🇷", city: "Paris", service: "Cleaning services", link: "/city/paris" },
+  { flag: "🇹🇭", city: "Phuket", service: "Car rental", link: "/city/phuket" },
+  { flag: "🇦🇪", city: "Dubai", service: "Activities & tours", link: "/city/dubai" },
+  { flag: "🇲🇦", city: "Marrakech", service: "Concierge services", link: "/city/marrakech" },
+  { flag: "🇬🇧", city: "London", service: "Property management", link: "/city/london" },
+  { flag: "🇺🇸", city: "Miami", service: "Seasonal rentals", link: "/city/miami" },
 ];
 
 const RemoteEntrepreneurship = () => {

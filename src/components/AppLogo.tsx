@@ -21,7 +21,7 @@ const AppLogo = ({
   const sizeMap = {
     sidebar: "h-9 sm:h-10",
     header: "h-9 sm:h-10",
-    landing: "h-12 sm:h-16",
+    landing: "h-8 sm:h-9",
     footer: "h-8 sm:h-10",
     auth: "h-14 sm:h-20",
   };

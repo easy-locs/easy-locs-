@@ -3,6 +3,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import RoleCards from "@/components/landing/RoleCards";
 import Features from "@/components/landing/Features";
+import HowItWorks from "@/components/landing/HowItWorks";
 import RemoteEntrepreneurship from "@/components/landing/RemoteEntrepreneurship";
 import Pricing from "@/components/landing/Pricing";
 import Newsletter from "@/components/landing/Newsletter";
@@ -135,6 +136,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <RoleCards />
+      <HowItWorks />
       <RemoteEntrepreneurship />
       <Features />
       <ExplorePreview />
