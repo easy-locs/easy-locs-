@@ -583,10 +583,10 @@ const ChannelManager = () => {
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
-                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
-                      <p>1. Ouvrez l'Extranet Booking.com → <strong>Calendrier</strong></p>
-                      <p>2. Cliquez sur <strong>"Synchroniser les calendriers"</strong></p>
-                      <p>3. Copiez le lien iCal et collez-le ci-dessous</p>
+                       <p className="font-medium text-foreground text-sm">📋 How to get the iCal URL:</p>
+                      <p>1. Open Booking.com Extranet → <strong>Calendar</strong></p>
+                      <p>2. Click <strong>"Sync calendars"</strong></p>
+                      <p>3. Copy the iCal link and paste it below</p>
                     </div>
                     <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "booking" })); setAddOpen(true); }}>
                       <Plus className="h-4 w-4 mr-1" />Connecter Booking.com
