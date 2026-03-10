@@ -267,7 +267,7 @@ const Accounting = () => {
           <TabsContent value="journal" className="mt-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg">{t("page.accounting.transaction_journal") || "Journal des transactions"}</CardTitle>
+                <CardTitle className="text-lg">{t("page.accounting.transaction_journal") || "Transaction Journal"}</CardTitle>
                 <Select value={filterCat} onValueChange={setFilterCat}>
                   <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
