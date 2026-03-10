@@ -68,6 +68,9 @@ const Install = lazy(() => import("./pages/Install"));
 const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
+const PropertyCalendar = lazy(() => import("./pages/PropertyCalendar"));
+const RealEstateListings = lazy(() => import("./pages/RealEstateListings"));
+const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListing"));
 
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
@@ -186,6 +189,7 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
+              <Route path="/property/:slug" element={<PublicRealEstateListing />} />
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
               <Route path="/property-management" element={<PropertyManagement />} />
@@ -285,6 +289,8 @@ const App = () => (
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/local-services" element={<ProtectedRoute><LocalServices /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
+              <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />
+              <Route path="/dashboard/real-estate" element={<ProtectedRoute><RealEstateListings /></ProtectedRoute>} />
 
               {/* Protected — Tenant portal */}
               <Route path="/tenant" element={<ProtectedRoute><TenantDashboard /></ProtectedRoute>} />

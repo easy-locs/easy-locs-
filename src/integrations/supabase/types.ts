@@ -2787,6 +2787,51 @@ export type Database = {
           },
         ]
       }
+      property_blocked_dates: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          org_id: string
+          property_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          id?: string
+          org_id: string
+          property_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          id?: string
+          org_id?: string
+          property_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_blocked_dates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_blocked_dates_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_listings: {
         Row: {
           active: boolean | null
@@ -2846,6 +2891,192 @@ export type Database = {
           },
           {
             foreignKeyName: "public_listings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      real_estate_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          listing_id: string
+          message: string | null
+          name: string
+          org_id: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          listing_id: string
+          message?: string | null
+          name: string
+          org_id: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          listing_id?: string
+          message?: string | null
+          name?: string
+          org_id?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "real_estate_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "real_estate_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "real_estate_leads_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      real_estate_listings: {
+        Row: {
+          address: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string
+          contact_email: string | null
+          contact_phone: string | null
+          country: string
+          created_at: string
+          currency: string
+          description: string | null
+          elevator: boolean | null
+          energy_class: string | null
+          features: Json | null
+          floor_number: number | null
+          furnished: boolean | null
+          garden: boolean | null
+          heating_type: string | null
+          id: string
+          listing_type: string
+          org_id: string
+          parking: boolean | null
+          photo_urls: Json | null
+          postal_code: string | null
+          price: number
+          property_id: string | null
+          property_type: string | null
+          rooms: number | null
+          slug: string | null
+          status: string
+          surface_sqm: number | null
+          terrace: boolean | null
+          title: string
+          total_floors: number | null
+          updated_at: string
+          user_id: string
+          views_count: number | null
+          year_built: number | null
+        }
+        Insert: {
+          address?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          elevator?: boolean | null
+          energy_class?: string | null
+          features?: Json | null
+          floor_number?: number | null
+          furnished?: boolean | null
+          garden?: boolean | null
+          heating_type?: string | null
+          id?: string
+          listing_type?: string
+          org_id: string
+          parking?: boolean | null
+          photo_urls?: Json | null
+          postal_code?: string | null
+          price?: number
+          property_id?: string | null
+          property_type?: string | null
+          rooms?: number | null
+          slug?: string | null
+          status?: string
+          surface_sqm?: number | null
+          terrace?: boolean | null
+          title: string
+          total_floors?: number | null
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+          year_built?: number | null
+        }
+        Update: {
+          address?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          elevator?: boolean | null
+          energy_class?: string | null
+          features?: Json | null
+          floor_number?: number | null
+          furnished?: boolean | null
+          garden?: boolean | null
+          heating_type?: string | null
+          id?: string
+          listing_type?: string
+          org_id?: string
+          parking?: boolean | null
+          photo_urls?: Json | null
+          postal_code?: string | null
+          price?: number
+          property_id?: string | null
+          property_type?: string | null
+          rooms?: number | null
+          slug?: string | null
+          status?: string
+          surface_sqm?: number | null
+          terrace?: boolean | null
+          title?: string
+          total_floors?: number | null
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+          year_built?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "real_estate_listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "real_estate_listings_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
