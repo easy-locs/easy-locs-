@@ -122,7 +122,7 @@ export default function SepaPaymentFlow({
           </div>
 
           <p className="text-xs text-muted-foreground mb-4">
-            {t("sepa.stripe_desc") || "Vous serez redirigé vers notre page de paiement sécurisé Stripe pour saisir votre IBAN et autoriser le prélèvement. Le mandat SEPA sera enregistré pour les paiements futurs."}
+            {t("sepa.stripe_desc") || "You will be redirected to our secure Stripe payment page to enter your IBAN and authorize the direct debit."}
           </p>
 
           <div className="bg-background rounded-lg p-3 mb-4">
