@@ -158,6 +158,14 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
     );
   }
 
+  if (!property?.id) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-sm text-muted-foreground">{t("page.listing.loading") || "Loading property details…"}</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <h3 className="font-semibold text-foreground text-center text-base">{t("page.listing.book_title")}</h3>
