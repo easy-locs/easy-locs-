@@ -15,6 +15,7 @@ import ListingManager from "@/components/seasonal/ListingManager";
 import SeasonalShowcase from "@/components/seasonal/SeasonalShowcase";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
+import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
 
 type IdentityType = "none" | "cni" | "passport";
 
