@@ -83,7 +83,7 @@ const Interventions = () => {
     if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
     const { data: propData } = await propQuery;
     const filteredProps = propData || [];
-    setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
+    setProperties(filteredProps.map(p => ({ id: p.id, label: p.label, country: p.country })));
     const propIds = filteredProps.map(p => p.id);
 
     let intQuery = supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
