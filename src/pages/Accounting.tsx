@@ -209,11 +209,11 @@ const Accounting = () => {
             </div>
             <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "Nouvelle écriture"}</Button></DialogTrigger>
+              <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "New Entry"}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>{t("page.accounting.new_entry") || "Nouvelle écriture comptable"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t("page.accounting.new_entry") || "New Accounting Entry"}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <Input placeholder={t("page.accounting.label") || "Libellé"} value={newEntry.label} onChange={e => setNewEntry(p => ({ ...p, label: e.target.value }))} />
+                  <Input placeholder={t("page.accounting.label") || "Label"} value={newEntry.label} onChange={e => setNewEntry(p => ({ ...p, label: e.target.value }))} />
                   <Select value={newEntry.category} onValueChange={v => setNewEntry(p => ({ ...p, category: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
