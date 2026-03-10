@@ -2737,8 +2737,10 @@ export type Database = {
           referral_code: string | null
           signature_url: string | null
           tax_id: string | null
+          telegram_username: string | null
           updated_at: string
           user_type: string
+          whatsapp_number: string | null
         }
         Insert: {
           address?: string | null
@@ -2765,8 +2767,10 @@ export type Database = {
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
+          telegram_username?: string | null
           updated_at?: string
           user_type?: string
+          whatsapp_number?: string | null
         }
         Update: {
           address?: string | null
@@ -2793,8 +2797,10 @@ export type Database = {
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
+          telegram_username?: string | null
           updated_at?: string
           user_type?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }

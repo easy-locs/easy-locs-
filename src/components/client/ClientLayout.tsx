@@ -1,21 +1,48 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Search, MessageCircle, CalendarCheck,
-  Settings, LogOut, Menu, X, FileText, CreditCard,
+  Settings, LogOut, Menu, X, FileText, CreditCard, Globe,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
+const LOCALE_FLAGS: Record<string, string> = {
+  fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱",
+  pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳",
+  th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴",
+  fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬",
+  sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦",
+};
+
+const QUICK_LOCALES: { value: Locale; label: string }[] = [
+  { value: "fr", label: "Français" }, { value: "en", label: "English" },
+  { value: "es", label: "Español" }, { value: "de", label: "Deutsch" },
+  { value: "it", label: "Italiano" }, { value: "pt", label: "Português" },
+  { value: "nl", label: "Nederlands" }, { value: "ar", label: "العربية" },
+  { value: "tr", label: "Türkçe" }, { value: "ja", label: "日本語" },
+  { value: "zh", label: "中文" }, { value: "ko", label: "한국어" },
+];
+
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { t } = useI18n();
+  const { t, locale, setLocale } = useI18n();
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard") || "Dashboard", path: "/client" },
@@ -57,12 +84,10 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="space-y-1">
             {navItems.map((item) => {
               const active = location.pathname === item.path;
-              const isExternal = item.path === "/explore";
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  {...(isExternal ? { target: "_self" } : {})}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     active ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -98,6 +123,33 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+
+          {/* Language switcher */}
+          <div className="relative" ref={langRef}>
+            <button
+              onClick={() => setLangOpen(v => !v)}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <span className="text-lg">{LOCALE_FLAGS[locale] || "🌐"}</span>
+            </button>
+            {langOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-popover border border-border rounded-xl shadow-lg p-2 z-50 w-40 max-h-72 overflow-y-auto">
+                {QUICK_LOCALES.map(l => (
+                  <button
+                    key={l.value}
+                    onClick={() => { setLocale(l.value); setLangOpen(false); }}
+                    className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors ${
+                      locale === l.value ? "bg-accent text-accent-foreground font-medium" : "text-popover-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <span>{LOCALE_FLAGS[l.value]}</span>
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <ThemeSwitcher />
           <NotificationBell />
         </header>
