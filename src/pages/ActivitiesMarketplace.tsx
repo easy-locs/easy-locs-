@@ -812,7 +812,7 @@ const ActivitiesMarketplace = () => {
               )}
 
               {Object.keys(revenueByCurrency).length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-6">No confirmed payments yet</p>
+                <p className="text-center text-muted-foreground text-sm py-6">Aucun paiement confirmé pour le moment</p>
               )}
             </div>
           </DialogContent>
