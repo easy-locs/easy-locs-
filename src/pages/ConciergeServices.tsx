@@ -186,7 +186,7 @@ const ConciergeServices = () => {
       toast.success(t("page.concierge.service_updated") || "Service updated");
     } else {
       await supabase.from("concierge_services").insert(record);
-      toast.success("Service created");
+      toast.success(t("page.concierge.service_created") || "Service created");
     }
     setShowForm(false); setEditingId(null); setForm(emptyForm);
     await load();
