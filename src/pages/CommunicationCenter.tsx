@@ -1010,21 +1010,22 @@ const CommunicationCenter = () => {
               </div>
               <div className="flex gap-1 flex-wrap">
                 {[
-                  { value: "all", label: "All" },
-                  { value: "tenant", label: "🏠 Tenants" },
-                  { value: "lead", label: "🏡 Leads" },
-                  { value: "marketplace", label: "🛍️ Market" },
-                  { value: "concierge", label: "🎯 Concierge" },
-                  { value: "seasonal", label: "🏖️ Seasonal" },
+                  { value: "all", label: "All", count: threads.length },
+                  { value: "tenant", label: "🏠 Long-term", count: threads.filter(t => t.type === "tenant").length },
+                  { value: "lead", label: "🏡 Leads", count: threads.filter(t => t.type === "lead").length },
+                  { value: "seasonal", label: "🏖️ Seasonal", count: threads.filter(t => t.bookingType === "seasonal").length },
+                  { value: "marketplace", label: "🛍️ Market", count: threads.filter(t => t.bookingType === "marketplace").length },
+                  { value: "concierge", label: "🎯 Concierge", count: threads.filter(t => t.bookingType === "concierge").length },
                 ].map(f => (
                   <Button
                     key={f.value}
                     size="sm"
                     variant={filterType === f.value ? "default" : "ghost"}
                     onClick={() => setFilterType(f.value)}
-                    className="text-xs h-7 px-2"
+                    className={`text-xs h-7 px-2 gap-1 ${filterType === f.value ? "" : "text-muted-foreground"}`}
                   >
                     {f.label}
+                    {f.count > 0 && <span className="text-[9px] opacity-60">{f.count}</span>}
                   </Button>
                 ))}
               </div>
