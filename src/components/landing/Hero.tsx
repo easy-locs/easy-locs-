@@ -195,7 +195,7 @@ const Hero = () => {
             transition={{ delay: 0.7, duration: 0.7 }}
             className="pt-6"
           >
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2.5 sm:gap-4">
               {[
                 { icon: Globe, value: "110+", label: t("landing.hero.stat_countries") || "Countries" },
                 { icon: Shield, value: t("landing.hero.stat_remote_val") || "Secure", label: t("landing.hero.stat_remote") || "Management" },
@@ -204,7 +204,7 @@ const Hero = () => {
               ].map((s, i) => (
                 <motion.div
                   key={s.label}
-                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl backdrop-blur-sm"
+                  className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl backdrop-blur-sm"
                   style={{
                     background: "hsl(220 20% 90% / 0.06)",
                     border: "1px solid hsl(220 20% 90% / 0.08)",
@@ -212,16 +212,16 @@ const Hero = () => {
                   animate={floatAnim(i * 0.6)}
                 >
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0"
                     style={{ background: "hsl(var(--accent) / 0.15)" }}
                   >
-                    <s.icon className="h-3.5 w-3.5" style={{ color: "hsl(var(--accent))" }} />
+                    <s.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: "hsl(var(--accent))" }} />
                   </div>
-                  <div className="text-left">
-                    <div className="text-xs font-extrabold leading-none" style={{ color: "hsl(40 50% 95%)" }}>
+                  <div className="text-left min-w-0">
+                    <div className="text-[11px] sm:text-xs font-extrabold leading-none truncate" style={{ color: "hsl(40 50% 95%)" }}>
                       {s.value}
                     </div>
-                    <div className="text-[9px] font-medium mt-0.5 leading-none" style={{ color: "hsl(220 15% 60%)" }}>
+                    <div className="text-[9px] font-medium mt-0.5 leading-none truncate" style={{ color: "hsl(220 15% 60%)" }}>
                       {s.label}
                     </div>
                   </div>
