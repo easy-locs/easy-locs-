@@ -258,15 +258,15 @@ describe("Tenant Portal Access", () => {
       const { buildTargetUrl } = await import("@/lib/shared/routes");
       
       // Tenant receipt deep link
-      const receiptUrl = buildTargetUrl("receipt", "r123", { userRole: "tenant" });
+      const receiptUrl = buildTargetUrl("receipt", { targetId: "r123", role: "tenant" });
       expect(receiptUrl).toContain("/tenant");
       
       // Tenant payment deep link
-      const payUrl = buildTargetUrl("payment", "p123", { userRole: "tenant" });
+      const payUrl = buildTargetUrl("payment", { targetId: "p123", role: "tenant" });
       expect(payUrl).toContain("/tenant");
       
       // Tenant message deep link
-      const msgUrl = buildTargetUrl("message", "m123", { userRole: "tenant" });
+      const msgUrl = buildTargetUrl("message", { targetId: "m123", role: "tenant" });
       expect(msgUrl).toContain("/tenant");
     });
   });
