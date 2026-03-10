@@ -255,8 +255,8 @@ const DynamicPricing = () => {
                     <p className="text-xs text-muted-foreground">Occupancy: {d.occupancy}% — {d.rulesCount} active rule(s)</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground line-through">{d.basePrice} €/nuit</p>
-                    <p className="text-lg font-bold text-accent">{d.suggestedPrice} €/nuit</p>
+                    <p className="text-sm text-muted-foreground line-through">{d.basePrice} €/night</p>
+                    <p className="text-lg font-bold text-accent">{d.suggestedPrice} €/night</p>
                   </div>
                 </div>
               ))}
