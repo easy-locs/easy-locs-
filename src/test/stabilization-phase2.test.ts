@@ -336,7 +336,7 @@ describe("Cross-cutting Stabilization", () => {
   it("Shared notification engine has required exports", async () => {
     const engine = await import("@/lib/shared/notification-engine");
     expect(engine.createDeepLinkMeta).toBeDefined();
-    expect(engine.formatNotification).toBeDefined();
+    expect(engine.createNotification).toBeDefined();
   });
 
   it("Shared sync engine has required exports", async () => {
