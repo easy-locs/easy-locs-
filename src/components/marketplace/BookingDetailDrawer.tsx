@@ -265,6 +265,12 @@ export default function BookingDetailDrawer({
                     </Button>
                   </>
                 )}
+                {/* Modify — available for pending, confirmed, modified */}
+                {(status === "pending" || status === "new" || status === "confirmed" || status === "modified") && onModifyBooking && (
+                  <Button size="sm" variant="outline" onClick={() => setModifyOpen(true)} className="w-full">
+                    <Edit className="h-3 w-3 mr-1" /> Modify
+                  </Button>
+                )}
                 {status === "completed" && booking.payment_confirmed && (
                   <Button size="sm" variant="outline" onClick={() => onUpdateStatus(booking.id, "refunded")} className="w-full">
                     <RefreshCw className="h-3 w-3 mr-1" /> Refund
