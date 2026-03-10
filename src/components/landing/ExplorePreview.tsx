@@ -146,12 +146,12 @@ export default function ExplorePreview() {
                     />
                     <div className="absolute top-3 left-3">
                       <Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-sm border border-border/50">
-                        {tab === "seasonal" ? "🏖️ Seasonal" : tab === "real-estate" ? "🏠 Real Estate" : "🛍️ Service"}
+                        {tab === "seasonal" ? `🏖️ ${t("landing.explore.seasonal") || "Seasonal"}` : tab === "real-estate" ? `🏠 ${t("landing.explore.real_estate") || "Real Estate"}` : `🛍️ ${t("landing.explore.service") || "Service"}`}
                       </Badge>
                     </div>
                     {tab === "seasonal" && item.price_per_night && (
                       <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {item.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/night</span>
+                        {item.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/{t("landing.explore.per_night") || "night"}</span>
                       </div>
                     )}
                     {tab === "real-estate" && item.price && (
@@ -177,7 +177,7 @@ export default function ExplorePreview() {
                     </div>
                     <div className="pt-2 mt-auto">
                       <span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
-                        {tab === "services" ? "Book now" : "View details"} <ArrowRight className="h-3 w-3" />
+                        {tab === "services" ? (t("landing.explore.book_now") || "Book now") : (t("landing.explore.view_details") || "View details")} <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>
                   </div>

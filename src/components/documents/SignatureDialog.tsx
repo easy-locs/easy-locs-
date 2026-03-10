@@ -91,15 +91,15 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
             height={180}
           />
           <p className="text-xs text-muted-foreground mt-2">
-            En signant, vous acceptez les termes du document. Cette action est tracée et horodatée.
+            By signing, you accept the terms of this document. This action is logged and timestamped.
           </p>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSign} disabled={!signature || saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <PenTool className="h-4 w-4 mr-2" />}
-            Signer
+            Sign
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -17,11 +17,11 @@ import { format, parseISO, differenceInDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const RULE_TYPES = [
-  { value: "seasonal", label: "Saisonnier", desc: "Haute/basse saison", icon: "☀️" },
-  { value: "weekend", label: "Week-end", desc: "Majoration samedi/dimanche", icon: "📅" },
-  { value: "event", label: "Événement", desc: "Fêtes, salons, concerts", icon: "🎉" },
-  { value: "occupancy", label: "Taux occupation", desc: "Prix dynamique selon remplissage", icon: "📊" },
-  { value: "last_minute", label: "Dernière minute", desc: "Réduction J-3 / J-7", icon: "⏰" },
+  { value: "seasonal", label: "Seasonal", desc: "High/low season", icon: "☀️" },
+  { value: "weekend", label: "Weekend", desc: "Saturday/Sunday surcharge", icon: "📅" },
+  { value: "event", label: "Event", desc: "Festivals, conferences, concerts", icon: "🎉" },
+  { value: "occupancy", label: "Occupancy rate", desc: "Dynamic pricing based on occupancy", icon: "📊" },
+  { value: "last_minute", label: "Last minute", desc: "Discount D-3 / D-7", icon: "⏰" },
 ];
 
 const DynamicPricing = () => {
@@ -123,7 +123,7 @@ const DynamicPricing = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Règle de tarification ajoutée");
+      toast.success("Pricing rule added");
       qc.invalidateQueries({ queryKey: ["pricing_rules"] });
       setAddOpen(false);
     },
@@ -144,7 +144,7 @@ const DynamicPricing = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Règle supprimée");
+      toast.success("Rule deleted");
       qc.invalidateQueries({ queryKey: ["pricing_rules"] });
     },
   });
@@ -162,30 +162,30 @@ const DynamicPricing = () => {
               <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/dashboard/channel-manager")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <h1 className="text-2xl font-bold text-foreground">Tarification dynamique</h1>
+              <h1 className="text-2xl font-bold text-foreground">Dynamic Pricing</h1>
             </div>
-            <p className="text-muted-foreground text-sm ml-10">Optimisez vos prix en fonction de la demande et de la saisonnalité</p>
+            <p className="text-muted-foreground text-sm ml-10">Optimize your prices based on demand and seasonality</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nouvelle règle</Button></DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />New rule</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Ajouter une règle de prix</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Add a pricing rule</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <Input placeholder="Nom de la règle" value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} />
+                <Input placeholder="Rule name" value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} />
                 <Select value={newRule.rule_type} onValueChange={v => setNewRule(p => ({ ...p, rule_type: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{RULE_TYPES.map(r => <SelectItem key={r.value} value={r.value}>{r.icon} {r.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={newRule.property_id} onValueChange={v => setNewRule(p => ({ ...p, property_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select a property" /></SelectTrigger>
                   <SelectContent>{properties.map(p => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <div className="grid grid-cols-2 gap-3">
                   <Select value={newRule.adjustment_type} onValueChange={v => setNewRule(p => ({ ...p, adjustment_type: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="percentage">Pourcentage (%)</SelectItem>
-                      <SelectItem value="fixed">Montant fixe (€)</SelectItem>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      <SelectItem value="fixed">Fixed amount (€)</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input type="number" placeholder={newRule.adjustment_type === "percentage" ? "+15%" : "+20€"} value={newRule.adjustment_value} onChange={e => setNewRule(p => ({ ...p, adjustment_value: e.target.value }))} />
@@ -197,7 +197,7 @@ const DynamicPricing = () => {
                   </div>
                 )}
                 <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newRule.name || !newRule.property_id || addMut.isPending}>
-                  {addMut.isPending ? "Ajout..." : "Créer la règle"}
+                  {addMut.isPending ? "Adding..." : "Create rule"}
                 </Button>
               </div>
             </DialogContent>
@@ -207,19 +207,19 @@ const DynamicPricing = () => {
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Règles actives</span></div>
+            <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active rules</span></div>
             <p className="text-2xl font-bold text-foreground">{rules.filter(r => r.active).length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Taux d'occupation</span></div>
+            <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Occupancy rate</span></div>
             <p className="text-2xl font-bold text-foreground">{avgOccupancy}%</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">Biens saisonniers</span></div>
+            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">Seasonal properties</span></div>
             <p className="text-2xl font-bold text-foreground">{properties.length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Revenus saisonniers</span></div>
+            <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Seasonal revenue</span></div>
             <p className="text-2xl font-bold text-accent">{occupancyData.reduce((s, d) => s + d.revenue, 0).toLocaleString()} €</p>
           </CardContent></Card>
         </div>
@@ -227,7 +227,7 @@ const DynamicPricing = () => {
         {/* Occupancy chart */}
         {occupancyData.length > 0 && (
           <Card>
-            <CardHeader><CardTitle className="text-lg">Taux d'occupation & prix suggéré</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-lg">Occupancy rate & suggested price</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={occupancyData}>
@@ -235,8 +235,8 @@ const DynamicPricing = () => {
                   <XAxis dataKey="property" className="text-xs" />
                   <YAxis className="text-xs" />
                   <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                  <Bar dataKey="occupancy" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name="Occupation (%)" />
-                  <Bar dataKey="suggestedPrice" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Prix suggéré (€)" />
+                  <Bar dataKey="occupancy" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name="Occupancy (%)" />
+                  <Bar dataKey="suggestedPrice" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Suggested price (€)" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -245,32 +245,32 @@ const DynamicPricing = () => {
 
         {/* Pricing recommendations */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">💡 Recommandations de prix</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">💡 Price recommendations</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {occupancyData.map(d => (
                 <div key={d.property} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div>
                     <p className="font-medium text-foreground">{d.property}</p>
-                    <p className="text-xs text-muted-foreground">Occupation : {d.occupancy}% — {d.rulesCount} règle(s) active(s)</p>
+                    <p className="text-xs text-muted-foreground">Occupancy: {d.occupancy}% — {d.rulesCount} active rule(s)</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground line-through">{d.basePrice} €/nuit</p>
-                    <p className="text-lg font-bold text-accent">{d.suggestedPrice} €/nuit</p>
+                    <p className="text-sm text-muted-foreground line-through">{d.basePrice} €/night</p>
+                    <p className="text-lg font-bold text-accent">{d.suggestedPrice} €/night</p>
                   </div>
                 </div>
               ))}
-              {occupancyData.length === 0 && <p className="text-center text-muted-foreground py-4">Ajoutez des biens saisonniers pour voir les recommandations</p>}
+              {occupancyData.length === 0 && <p className="text-center text-muted-foreground py-4">Add seasonal properties to see recommendations</p>}
             </div>
           </CardContent>
         </Card>
 
         {/* Rules list */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">Règles de tarification</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">Pricing rules</CardTitle></CardHeader>
           <CardContent>
             {rules.length === 0 ? (
-              <p className="text-center text-muted-foreground py-6">Aucune règle configurée</p>
+              <p className="text-center text-muted-foreground py-6">No rules configured</p>
             ) : (
               <div className="space-y-2">
                 {rules.map(rule => {

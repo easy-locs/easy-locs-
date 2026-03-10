@@ -74,7 +74,7 @@ const LocalServices = () => {
     const newVal = !featureEnabled;
     await supabase.from("orgs").update({ local_services_enabled: newVal } as any).eq("id", orgId);
     setFeatureEnabled(newVal);
-    toast({ title: newVal ? (t("page.services.feature_enabled") !== "page.services.feature_enabled" ? t("page.services.feature_enabled") : "Activités activées") : (t("page.services.feature_disabled") !== "page.services.feature_disabled" ? t("page.services.feature_disabled") : "Activités désactivées") });
+    toast({ title: newVal ? (t("page.services.feature_enabled") || "Activities enabled") : (t("page.services.feature_disabled") || "Activities disabled") });
   };
 
   const save = async () => {
@@ -97,14 +97,14 @@ const LocalServices = () => {
     setEditingId(null);
     setForm(emptyForm);
     await load();
-    toast({ title: editingId ? "Service modifié" : "Service ajouté" });
+    toast({ title: editingId ? (t("page.services.updated") || "Service updated") : (t("page.services.added") || "Service added") });
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Supprimer ce service ?")) return;
+    if (!confirm(t("page.services.delete_confirm") || "Delete this service?")) return;
     await supabase.from("local_services").delete().eq("id", id);
     await load();
-    toast({ title: "Service supprimé" });
+    toast({ title: t("page.services.deleted") || "Service deleted" });
   };
 
   const startEdit = (s: any) => {
@@ -130,23 +130,23 @@ const LocalServices = () => {
       <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">🎯 Activités & Services locaux</h1>
-            <p className="text-sm text-muted-foreground mt-1">Recommandations conciergerie pour vos voyageurs</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">🎯 {t("page.services.title") || "Activities & Local Services"}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.services.subtitle") || "Concierge recommendations for your travelers"}</p>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={toggleFeature} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${featureEnabled ? "bg-success/10 text-success border border-success/30" : "bg-muted text-muted-foreground border border-border"}`}>
               {featureEnabled ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
-              {featureEnabled ? "Activé" : "Désactivé"}
+              {featureEnabled ? (t("common.enabled") || "Enabled") : (t("common.disabled") || "Disabled")}
             </button>
             <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true); }} className="bg-gradient-gold text-accent-foreground px-4 py-2 rounded-xl text-sm font-semibold shadow-gold hover:opacity-90 flex items-center gap-2">
-              <Plus className="h-4 w-4" /> Ajouter
+              <Plus className="h-4 w-4" /> {t("common.add") || "Add"}
             </button>
           </div>
         </div>
 
         {!featureEnabled && (
           <div className="bg-muted/50 border border-border rounded-xl p-4 text-sm text-muted-foreground text-center">
-            Cette fonctionnalité est désactivée. Activez-la pour afficher les services sur vos pages d'annonces.
+            {t("page.services.disabled_hint") || "This feature is disabled. Enable it to display services on your listing pages."}
           </div>
         )}
 
@@ -154,77 +154,77 @@ const LocalServices = () => {
         {showForm && (
           <div className="bg-card rounded-xl border border-border p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">{editingId ? "Modifier le service" : "Nouveau service"}</h3>
+              <h3 className="font-semibold text-foreground">{editingId ? (t("page.services.edit_service") || "Edit service") : (t("page.services.new_service") || "New service")}</h3>
               <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Titre *</label>
-                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="Ex: Transfert aéroport" />
+                <label className="block text-sm font-medium text-foreground mb-1">{t("common.title") || "Title"} *</label>
+                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.title_placeholder") || "e.g. Airport Transfer"} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Catégorie</label>
+                <label className="block text-sm font-medium text-foreground mb-1">{t("common.category") || "Category"}</label>
                 <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm">
                   {SERVICE_CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_ICONS[c] || "📌"} {catLabel(c)}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-1">Description</label>
-                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-none" placeholder="Courte description du service..." />
+                <label className="block text-sm font-medium text-foreground mb-1">{t("common.description") || "Description"}</label>
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-none" placeholder={t("page.services.desc_placeholder") || "Short description of the service..."} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Pays</label>
-                <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="Ex: Maroc, Thaïlande" />
+                <label className="block text-sm font-medium text-foreground mb-1">{t("common.country") || "Country"}</label>
+                <input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.country_placeholder") || "e.g. Morocco, Thailand"} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Ville</label>
-                <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="Ex: Marrakech, Phuket" />
+                <label className="block text-sm font-medium text-foreground mb-1">{t("common.city") || "City"}</label>
+                <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.city_placeholder") || "e.g. Marrakech, Phuket"} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">📱 WhatsApp</label>
                 <input value={form.whatsapp_number} onChange={e => setForm(f => ({ ...f, whatsapp_number: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="+212 6XX XXX XXX" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">🌐 Site web</label>
+                <label className="block text-sm font-medium text-foreground mb-1">🌐 {t("common.website") || "Website"}</label>
                 <input value={form.website_url} onChange={e => setForm(f => ({ ...f, website_url: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="https://..." />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">💰 Indication de prix</label>
-                <input value={form.price_indication} onChange={e => setForm(f => ({ ...f, price_indication: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="Ex: À partir de 30€" />
+                <label className="block text-sm font-medium text-foreground mb-1">💰 {t("page.services.price_hint") || "Price indication"}</label>
+                <input value={form.price_indication} onChange={e => setForm(f => ({ ...f, price_indication: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.price_placeholder") || "e.g. From €30"} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">📅 Disponibilité</label>
-                <input value={form.availability_note} onChange={e => setForm(f => ({ ...f, availability_note: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="Ex: Tous les jours, 7j/7" />
+                <label className="block text-sm font-medium text-foreground mb-1">📅 {t("page.services.availability") || "Availability"}</label>
+                <input value={form.availability_note} onChange={e => setForm(f => ({ ...f, availability_note: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder={t("page.services.availability_placeholder") || "e.g. Daily, 7 days/week"} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">🏠 Lier à un bien</label>
+                <label className="block text-sm font-medium text-foreground mb-1">🏠 {t("page.services.link_property") || "Link to property"}</label>
                 <select value={form.property_id} onChange={e => setForm(f => ({ ...f, property_id: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm">
-                  <option value="">Tous les biens (par ville)</option>
+                  <option value="">{t("page.services.all_properties") || "All properties (by city)"}</option>
                   {properties.map(p => <option key={p.id} value={p.id}>{p.label} — {p.city}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">🖼️ URL photo</label>
+                <label className="block text-sm font-medium text-foreground mb-1">🖼️ {t("page.services.photo_url") || "Photo URL"}</label>
                 <input value={form.photo_url} onChange={e => setForm(f => ({ ...f, photo_url: e.target.value }))} className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm" placeholder="https://..." />
               </div>
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={save} className="bg-gradient-gold text-accent-foreground px-6 py-2.5 rounded-lg text-sm font-semibold shadow-gold hover:opacity-90">
-                {editingId ? "Enregistrer" : "Ajouter"}
+                {editingId ? (t("common.save") || "Save") : (t("common.add") || "Add")}
               </button>
-              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="border border-border text-foreground px-6 py-2.5 rounded-lg text-sm hover:bg-muted">Annuler</button>
+              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="border border-border text-foreground px-6 py-2.5 rounded-lg text-sm hover:bg-muted">{t("common.cancel") || "Cancel"}</button>
             </div>
           </div>
         )}
 
         {/* Services list */}
         {loading ? (
-          <p className="text-center text-muted-foreground py-8">Chargement...</p>
+          <p className="text-center text-muted-foreground py-8">{t("common.loading") || "Loading..."}</p>
         ) : services.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Aucun service ajouté</p>
-            <p className="text-sm mt-1">Ajoutez des activités et services locaux pour vos voyageurs</p>
+            <p className="font-medium">{t("page.services.empty") || "No services added"}</p>
+            <p className="text-sm mt-1">{t("page.services.empty_hint") || "Add local activities and services for your travelers"}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -250,7 +250,7 @@ const LocalServices = () => {
                   <div className="flex flex-wrap gap-1.5 text-[10px]">
                     {s.city && <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{s.city}</span>}
                     {s.price_indication && <span className="bg-accent/10 text-accent px-2 py-0.5 rounded-full">{s.price_indication}</span>}
-                    {!s.active && <span className="bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Inactif</span>}
+                    {!s.active && <span className="bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">{t("common.inactive") || "Inactive"}</span>}
                   </div>
                   <div className="flex items-center gap-2 pt-1">
                     {s.whatsapp_number && (
@@ -260,7 +260,7 @@ const LocalServices = () => {
                     )}
                     {s.website_url && (
                       <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                        <ExternalLink className="h-3 w-3" /> Site
+                        <ExternalLink className="h-3 w-3" /> {t("common.website") || "Website"}
                       </a>
                     )}
                   </div>

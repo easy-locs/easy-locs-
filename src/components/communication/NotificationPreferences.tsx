@@ -129,11 +129,11 @@ export default function NotificationPreferences() {
 
       <div className="flex items-center gap-2 mt-2 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
         <Smartphone className="h-4 w-4 shrink-0" />
-        <span>Les notifications push seront disponibles prochainement via l'application mobile.</span>
+        <span>Push notifications will be available soon via the mobile app.</span>
       </div>
 
       <button onClick={save} disabled={saving} className="btn-primary mt-4">
-        {saving ? "Enregistrement..." : "Enregistrer les préférences"}
+        {saving ? "Saving..." : "Save preferences"}
       </button>
     </div>
   );

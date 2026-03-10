@@ -406,7 +406,7 @@ const ChannelManager = () => {
                     </SelectContent>
                   </Select>
                   <Select value={newConn.property_id} onValueChange={v => setNewConn(p => ({ ...p, property_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select a property" /></SelectTrigger>
                     <SelectContent>
                       {properties.map(p => (
                         <SelectItem key={p.id} value={p.id}>{p.label} — {p.city}</SelectItem>
@@ -415,7 +415,7 @@ const ChannelManager = () => {
                   </Select>
                   <Input placeholder="URL iCal (https://...)" value={newConn.ical_url} onChange={e => setNewConn(p => ({ ...p, ical_url: e.target.value }))} />
                   <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newConn.ical_url || !newConn.property_id || addMut.isPending}>
-                    {addMut.isPending ? "Ajout..." : "Ajouter"}
+                    {addMut.isPending ? "Adding..." : "Add"}
                   </Button>
                 </div>
               </DialogContent>
@@ -427,35 +427,35 @@ const ChannelManager = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("connections")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connections</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les connexions →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View connections →</p>
             </CardContent>
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("reservations")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Réservations</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Reservations</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeReservations.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les réservations →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View reservations →</p>
             </CardContent>
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/seasonal")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenus</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Revenue</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{totalRevenue.toLocaleString()} €</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Locations saisonnières →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Seasonal rentals →</p>
             </CardContent>
           </Card>
           <Card className={`cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group ${conflicts.length > 0 ? "border-destructive/50" : ""}`} onClick={() => setSelectedTab("calendar")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflits</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Conflicts</p>
               <p className={`text-xl sm:text-2xl font-bold tabular-nums mt-1 ${conflicts.length > 0 ? "text-destructive" : "text-accent"}`}>{conflicts.length}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir le calendrier →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View calendar →</p>
             </CardContent>
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/pricing")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Price rules</p>
               <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
               <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
             </CardContent>
@@ -464,9 +464,9 @@ const ChannelManager = () => {
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList>
-            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendrier</TabsTrigger>
-            <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connexions</TabsTrigger>
-            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Réservations ({reservations.length})</TabsTrigger>
+            <TabsTrigger value="calendar"><Calendar className="h-4 w-4 mr-1" />Calendar</TabsTrigger>
+            <TabsTrigger value="connections"><Link2 className="h-4 w-4 mr-1" />Connections</TabsTrigger>
+            <TabsTrigger value="reservations"><Globe className="h-4 w-4 mr-1" />Reservations ({reservations.length})</TabsTrigger>
           </TabsList>
 
           {/* ─── Calendar Tab ─── */}
@@ -476,13 +476,13 @@ const ChannelManager = () => {
                 <CardTitle className="text-lg">Calendrier — {format(selectedMonth, "MMMM yyyy")}</CardTitle>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}>←</Button>
-                  <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date())}>Aujourd'hui</Button>
+                  <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date())}>Today</Button>
                   <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}>→</Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-7 gap-1">
-                  {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(d => (
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
                     <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
                   ))}
                   {Array.from({ length: (calendarDays[0]?.getDay() + 6) % 7 }).map((_, i) => (
@@ -537,7 +537,7 @@ const ChannelManager = () => {
                   <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-destructive">Double-bookings détectés</span>
+                      <span className="text-sm font-semibold text-destructive">Double-bookings detected</span>
                     </div>
                     {conflicts.map((c, i) => (
                       <p key={i} className="text-xs text-destructive/80">{c}</p>
@@ -559,14 +559,14 @@ const ChannelManager = () => {
                       <span className="text-2xl">🏠</span>
                       <div>
                         <p className="font-semibold text-foreground">Airbnb</p>
-                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                         <p className="text-[11px] text-muted-foreground">iCal sync</p>
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
-                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
-                      <p>1. Ouvrez Airbnb → <strong>Annonce</strong> → <strong>Tarification et disponibilité</strong></p>
-                      <p>2. Section <strong>"Exporter le calendrier"</strong> → Copiez l'URL iCal</p>
-                      <p>3. Collez-la dans le formulaire <strong>"Ajouter une connexion"</strong></p>
+                       <p className="font-medium text-foreground text-sm">📋 How to get the iCal URL:</p>
+                      <p>1. Open Airbnb → <strong>Listing</strong> → <strong>Pricing and availability</strong></p>
+                      <p>2. Section <strong>"Export calendar"</strong> → Copy the iCal URL</p>
+                      <p>3. Paste it in the <strong>"Add a connection"</strong> form</p>
                     </div>
                     <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "airbnb" })); setAddOpen(true); }}>
                       <Plus className="h-4 w-4 mr-1" />Connecter Airbnb
@@ -579,14 +579,14 @@ const ChannelManager = () => {
                       <span className="text-2xl">🅱️</span>
                       <div>
                         <p className="font-semibold text-foreground">Booking.com</p>
-                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                        <p className="text-[11px] text-muted-foreground">iCal sync</p>
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
-                      <p className="font-medium text-foreground text-sm">📋 Comment obtenir l'URL iCal :</p>
-                      <p>1. Ouvrez l'Extranet Booking.com → <strong>Calendrier</strong></p>
-                      <p>2. Cliquez sur <strong>"Synchroniser les calendriers"</strong></p>
-                      <p>3. Copiez le lien iCal et collez-le ci-dessous</p>
+                       <p className="font-medium text-foreground text-sm">📋 How to get the iCal URL:</p>
+                      <p>1. Open Booking.com Extranet → <strong>Calendar</strong></p>
+                      <p>2. Click <strong>"Sync calendars"</strong></p>
+                      <p>3. Copy the iCal link and paste it below</p>
                     </div>
                     <Button size="sm" className="w-full" onClick={() => { setNewConn(p => ({ ...p, provider: "booking" })); setAddOpen(true); }}>
                       <Plus className="h-4 w-4 mr-1" />Connecter Booking.com
@@ -598,7 +598,7 @@ const ChannelManager = () => {
               {/* Existing connections */}
               {connections.length === 0 && (
                 <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">
-                  Aucune connexion active. Utilisez les guides ci-dessus pour synchroniser vos calendriers Airbnb et Booking.com.
+                  No active connections. Use the guides above to sync your Airbnb and Booking.com calendars.
                 </CardContent></Card>
               )}
               {connections.map(conn => {
@@ -613,11 +613,11 @@ const ChannelManager = () => {
                         <div>
                           <p className="font-semibold text-foreground">{plat.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Dernière sync : {conn.last_sync_at ? format(parseISO(conn.last_sync_at), "dd/MM/yyyy HH:mm") : "Jamais"}
+                            Last sync: {conn.last_sync_at ? format(parseISO(conn.last_sync_at), "dd/MM/yyyy HH:mm") : "Never"}
                           </p>
                         </div>
                         <Badge variant={conn.status === "active" ? "default" : "secondary"}>
-                          {conn.status === "active" ? <><CheckCircle2 className="h-3 w-3 mr-1" />Actif</> : conn.status}
+                          {conn.status === "active" ? <><CheckCircle2 className="h-3 w-3 mr-1" />Active</> : conn.status}
                         </Badge>
                       </div>
                       <div className="flex gap-2">
@@ -641,19 +641,19 @@ const ChannelManager = () => {
             <Card>
               <CardContent className="pt-4">
                 {reservations.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune réservation. Synchronisez vos calendriers ou ajoutez des réservations manuelles.</p>
+                  <p className="text-center text-muted-foreground py-8">No reservations. Sync your calendars or add manual reservations.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-2 text-muted-foreground font-medium">Voyageur</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Bien</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Plateforme</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Arrivée</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Départ</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Statut</th>
-                          <th className="text-right py-2 text-muted-foreground font-medium">Montant</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Guest</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Property</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Platform</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Check-in</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Check-out</th>
+                          <th className="text-left py-2 text-muted-foreground font-medium">Status</th>
+                          <th className="text-right py-2 text-muted-foreground font-medium">Amount</th>
                           <th className="text-right py-2 text-muted-foreground font-medium">Actions</th>
                         </tr>
                       </thead>
@@ -682,7 +682,7 @@ const ChannelManager = () => {
                                     </Button>
                                     <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive hover:text-destructive"
                                       disabled={cancellingId === r.id}
-                                      onClick={() => { if (confirm(`Annuler la réservation de ${r.guest_name} ?`)) cancelReservation(r); }}>
+                                      onClick={() => { if (confirm(`Cancel the reservation for ${r.guest_name}?`)) cancelReservation(r); }}>
                                       <XCircle className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
@@ -705,7 +705,7 @@ const ChannelManager = () => {
       <Dialog open={!!editModalRes} onOpenChange={(open) => { if (!open) setEditModalRes(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Modifier la réservation</DialogTitle>
+            <DialogTitle>Edit reservation</DialogTitle>
           </DialogHeader>
           {editModalRes && (
             <div className="space-y-4">
@@ -730,10 +730,10 @@ const ChannelManager = () => {
               </div>
               <div className="flex gap-2">
                 <Button className="flex-1" onClick={modifyDates}>
-                  <Mail className="h-4 w-4 mr-1" />Modifier & notifier
+                  <Mail className="h-4 w-4 mr-1" />Edit & notify
                 </Button>
-                <Button variant="destructive" onClick={() => { if (confirm(`Annuler la réservation de ${editModalRes.guest_name} ?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
-                  <XCircle className="h-4 w-4 mr-1" />Annuler
+                <Button variant="destructive" onClick={() => { if (confirm(`Cancel the reservation for ${editModalRes.guest_name}?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
+                  <XCircle className="h-4 w-4 mr-1" />Cancel
                 </Button>
               </div>
             </div>

@@ -16,26 +16,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 const API_ENDPOINTS = [
-  { method: "GET", path: "/properties", desc: "Lister les biens immobiliers" },
-  { method: "GET", path: "/tenants", desc: "Lister les locataires" },
-  { method: "GET", path: "/leases", desc: "Lister les baux" },
-  { method: "GET", path: "/rent-calls", desc: "Lister les appels de loyer" },
-  { method: "GET", path: "/documents", desc: "Lister les documents" },
-  { method: "POST", path: "/properties", desc: "Créer un bien" },
-  { method: "POST", path: "/tenants", desc: "Créer un locataire" },
-  { method: "POST", path: "/documents/generate", desc: "Générer un document PDF" },
-  { method: "GET", path: "/accounting/journal", desc: "Journal comptable" },
-  { method: "GET", path: "/reservations", desc: "Lister les réservations saisonnières" },
+  { method: "GET", path: "/properties", desc: "List properties" },
+  { method: "GET", path: "/tenants", desc: "List tenants" },
+  { method: "GET", path: "/leases", desc: "List leases" },
+  { method: "GET", path: "/rent-calls", desc: "List rent calls" },
+  { method: "GET", path: "/documents", desc: "List documents" },
+  { method: "POST", path: "/properties", desc: "Create a property" },
+  { method: "POST", path: "/tenants", desc: "Create a tenant" },
+  { method: "POST", path: "/documents/generate", desc: "Generate a PDF document" },
+  { method: "GET", path: "/accounting/journal", desc: "Accounting journal" },
+  { method: "GET", path: "/reservations", desc: "List seasonal reservations" },
 ];
 
 const WEBHOOK_EVENTS = [
-  { value: "payment.received", label: "Paiement reçu" },
-  { value: "lease.created", label: "Bail créé" },
-  { value: "tenant.created", label: "Locataire créé" },
-  { value: "intervention.created", label: "Intervention créée" },
-  { value: "booking.created", label: "Réservation créée" },
-  { value: "document.generated", label: "Document généré" },
-  { value: "inventory.completed", label: "État des lieux finalisé" },
+  { value: "payment.received", label: "Payment received" },
+  { value: "lease.created", label: "Lease created" },
+  { value: "tenant.created", label: "Tenant created" },
+  { value: "intervention.created", label: "Intervention created" },
+  { value: "booking.created", label: "Booking created" },
+  { value: "document.generated", label: "Document generated" },
+  { value: "inventory.completed", label: "Inventory completed" },
 ];
 
 const DeveloperPortal = () => {
@@ -105,7 +105,7 @@ const DeveloperPortal = () => {
       if (!result.success) throw new Error(result.error);
       return result.key as string;
     },
-    onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("Clé API créée"); },
+    onSuccess: (key) => { setNewKey(key); qc.invalidateQueries({ queryKey: ["api_keys"] }); toast.success("API key created"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -114,7 +114,7 @@ const DeveloperPortal = () => {
       const { error } = await supabase.from("api_keys" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Clé supprimée"); qc.invalidateQueries({ queryKey: ["api_keys"] }); },
+    onSuccess: () => { toast.success("Key deleted"); qc.invalidateQueries({ queryKey: ["api_keys"] }); },
   });
 
   const createWebhookMut = useMutation({
@@ -125,7 +125,7 @@ const DeveloperPortal = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Webhook créé");
+      toast.success("Webhook created");
       setWebhookOpen(false); setWebhookUrl(""); setWebhookEvents(["*"]);
       qc.invalidateQueries({ queryKey: ["webhooks"] });
     },
@@ -137,7 +137,7 @@ const DeveloperPortal = () => {
       const { error } = await supabase.from("webhooks" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Webhook supprimé"); qc.invalidateQueries({ queryKey: ["webhooks"] }); },
+    onSuccess: () => { toast.success("Webhook deleted"); qc.invalidateQueries({ queryKey: ["webhooks"] }); },
   });
 
   const toggleWebhookMut = useMutation({
@@ -148,7 +148,7 @@ const DeveloperPortal = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }),
   });
 
-  const copyKey = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copié"); };
+  const copyKey = (text: string) => { navigator.clipboard.writeText(text); toast.success("Copied"); };
 
   const toggleEvent = (ev: string) => {
     if (ev === "*") { setWebhookEvents(["*"]); return; }
@@ -162,26 +162,26 @@ const DeveloperPortal = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Developer Portal</h1>
-            <p className="text-muted-foreground text-sm">API REST & Webhooks pour intégrer Easy-Locs</p>
+            <p className="text-muted-foreground text-sm">REST API & Webhooks to integrate Easy-Locs</p>
           </div>
           <div className="flex gap-2">
             <Dialog open={webhookOpen} onOpenChange={setWebhookOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline"><Webhook className="h-4 w-4 mr-2" />Nouveau webhook</Button>
+                <Button variant="outline"><Webhook className="h-4 w-4 mr-2" />New webhook</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Créer un webhook</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>Create a webhook</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>URL de destination</Label>
+                    <Label>Destination URL</Label>
                     <Input placeholder="https://your-app.com/webhooks" value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
                   </div>
                   <div>
-                    <Label className="mb-2 block">Événements</Label>
+                    <Label className="mb-2 block">Events</Label>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Checkbox checked={webhookEvents.includes("*")} onCheckedChange={() => toggleEvent("*")} />
-                        <span className="text-sm">Tous les événements</span>
+                        <span className="text-sm">All events</span>
                       </div>
                       {WEBHOOK_EVENTS.map(ev => (
                         <div key={ev.value} className="flex items-center gap-2 ml-4">
@@ -197,33 +197,33 @@ const DeveloperPortal = () => {
                     </div>
                   </div>
                   <Button className="w-full" onClick={() => createWebhookMut.mutate()} disabled={createWebhookMut.isPending || !webhookUrl}>
-                    {createWebhookMut.isPending ? "Création..." : "Créer le webhook"}
+                    {createWebhookMut.isPending ? "Creating..." : "Create webhook"}
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) setNewKey(null); }}>
               <DialogTrigger asChild>
-                <Button><Plus className="h-4 w-4 mr-2" />Nouvelle clé API</Button>
+                <Button><Plus className="h-4 w-4 mr-2" />New API key</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>{newKey ? "Clé API créée !" : "Créer une clé API"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{newKey ? "API key created!" : "Create an API key"}</DialogTitle></DialogHeader>
                 {newKey ? (
                   <div className="space-y-4">
                     <div className="p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">⚠️ Copiez cette clé maintenant, elle ne sera plus affichée.</p>
+                      <p className="text-xs text-muted-foreground mb-1">⚠️ Copy this key now — it won't be shown again.</p>
                       <div className="flex items-center gap-2">
                         <code className="flex-1 text-sm font-mono text-foreground bg-muted px-3 py-2 rounded break-all">{newKey}</code>
                         <Button size="sm" variant="outline" onClick={() => copyKey(newKey)}><Copy className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <Button className="w-full" onClick={() => { setCreateOpen(false); setNewKey(null); }}>Fermer</Button>
+                    <Button className="w-full" onClick={() => { setCreateOpen(false); setNewKey(null); }}>Close</Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <Input placeholder="Nom de la clé" value={keyName} onChange={e => setKeyName(e.target.value)} />
+                    <Input placeholder="Key name" value={keyName} onChange={e => setKeyName(e.target.value)} />
                     <Button className="w-full" onClick={() => createMut.mutate()} disabled={createMut.isPending}>
-                      {createMut.isPending ? "Création..." : "Générer la clé"}
+                      {createMut.isPending ? "Creating..." : "Generate key"}
                     </Button>
                   </div>
                 )}
@@ -235,7 +235,7 @@ const DeveloperPortal = () => {
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><Key className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Clés actives</span></div>
+            <div className="flex items-center gap-2"><Key className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active keys</span></div>
             <p className="text-2xl font-bold text-foreground">{apiKeys.filter(k => k.active).length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
@@ -254,7 +254,7 @@ const DeveloperPortal = () => {
 
         <Tabs defaultValue="keys">
           <TabsList className="flex-wrap">
-            <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" />Clés API</TabsTrigger>
+            <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" />API Keys</TabsTrigger>
             <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
             <TabsTrigger value="docs"><BookOpen className="h-4 w-4 mr-1" />Documentation</TabsTrigger>
             <TabsTrigger value="examples"><Code className="h-4 w-4 mr-1" />Exemples</TabsTrigger>
@@ -264,7 +264,7 @@ const DeveloperPortal = () => {
             <Card>
               <CardContent className="pt-4">
                 {apiKeys.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune clé API. Créez-en une pour commencer.</p>
+                  <p className="text-center text-muted-foreground py-8">No API keys. Create one to get started.</p>
                 ) : (
                   <div className="space-y-3">
                     {apiKeys.map(k => (
@@ -277,7 +277,7 @@ const DeveloperPortal = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant={k.active ? "default" : "secondary"}>{k.active ? "Actif" : "Inactif"}</Badge>
+                          <Badge variant={k.active ? "default" : "secondary"}>{k.active ? "Active" : "Inactive"}</Badge>
                           <span className="text-xs text-muted-foreground hidden sm:inline">{format(parseISO(k.created_at), "dd/MM/yyyy")}</span>
                           <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteMut.mutate(k.id)}>
                             <Trash2 className="h-4 w-4" />
@@ -293,10 +293,10 @@ const DeveloperPortal = () => {
 
           <TabsContent value="webhooks" className="mt-4 space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-lg">Webhooks configurés</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Configured webhooks</CardTitle></CardHeader>
               <CardContent>
                 {webhooks.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucun webhook. Créez-en un pour recevoir des notifications en temps réel.</p>
+                  <p className="text-center text-muted-foreground py-8">No webhooks. Create one to receive real-time notifications.</p>
                 ) : (
                   <div className="space-y-3">
                     {webhooks.map(w => (
@@ -307,9 +307,9 @@ const DeveloperPortal = () => {
                             <code className="text-sm font-mono text-foreground truncate">{w.url}</code>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            <Badge variant={w.active ? "default" : "secondary"}>{w.active ? "Actif" : "Inactif"}</Badge>
+                            <Badge variant={w.active ? "default" : "secondary"}>{w.active ? "Active" : "Inactive"}</Badge>
                             <Button size="sm" variant="ghost" onClick={() => toggleWebhookMut.mutate({ id: w.id, active: !w.active })}>
-                              {w.active ? "Désactiver" : "Activer"}
+                              {w.active ? "Disable" : "Enable"}
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => copyKey(w.secret)} title="Copier le secret">
                               <Copy className="h-4 w-4" />
@@ -325,7 +325,7 @@ const DeveloperPortal = () => {
                           ))}
                         </div>
                         {w.failure_count > 0 && (
-                          <p className="text-xs text-destructive">⚠️ {w.failure_count} échec(s) récent(s)</p>
+                          <p className="text-xs text-destructive">⚠️ {w.failure_count} recent failure(s)</p>
                         )}
                       </div>
                     ))}
@@ -336,7 +336,7 @@ const DeveloperPortal = () => {
 
             {deliveries.length > 0 && (
               <Card>
-                <CardHeader><CardTitle className="text-lg">Dernières livraisons</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg">Recent deliveries</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {deliveries.slice(0, 20).map(d => (
