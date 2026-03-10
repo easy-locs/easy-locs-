@@ -208,10 +208,11 @@ const Tasks = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.map((task) => {
+            {tasks.map((task, idx) => {
               const propLabel = properties.find(p => p.id === task.property_id)?.label;
               return (
-                <div key={task.id} className={`bg-card rounded-xl p-4 border shadow-card flex items-start gap-4 group transition-colors ${isOverdue(task) ? "border-destructive/50 bg-destructive/5" : "border-border/50"}`}>
+                <motion.div key={task.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
+                  className={`bg-card rounded-xl p-4 border shadow-card flex items-start gap-4 group transition-all hover:shadow-card-hover ${isOverdue(task) ? "border-destructive/50 bg-destructive/5" : "border-border/50 hover:border-accent/30"}`}>
                   <button onClick={() => toggleStatus(task)} className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${task.status === "done" ? "bg-green-500 border-green-500 text-white" : task.status === "in_progress" ? "border-blue-500 bg-blue-50" : "border-muted-foreground/40"}`}>
                     {task.status === "done" && <CheckSquare className="h-3 w-3" />}
                   </button>
