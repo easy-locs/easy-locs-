@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserType = useCallback(async (userId: string) => {
     try {
-      // Profile may not exist yet (trigger race) — retry once after short delay
+      // Profile may not exist yet (trigger race) — retry with short backoff
       let data: any = null;
       const { data: d1, error: e1 } = await supabase
         .from("profiles")
@@ -130,8 +130,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (e1 || !d1) {
-        // Wait for trigger to create profile row
-        await new Promise(r => setTimeout(r, 1500));
+        // Quick retry (300ms instead of 1500ms) — profile trigger is fast
+        await new Promise(r => setTimeout(r, 300));
         const { data: d2 } = await supabase
           .from("profiles")
           .select("user_type, onboarding_completed, country, currency")
