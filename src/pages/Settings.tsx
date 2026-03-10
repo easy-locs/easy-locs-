@@ -23,6 +23,10 @@ const Settings = () => {
   const [savingBrand, setSavingBrand] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingStamp, setUploadingStamp] = useState(false);
+  const [showcaseEnabled, setShowcaseEnabled] = useState(true);
+  const [savingShowcase, setSavingShowcase] = useState(false);
+  const [landlordProfileId, setLandlordProfileId] = useState<string | null>(null);
+  const [landlordSlug, setLandlordSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
