@@ -250,7 +250,7 @@ const Finances = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.finances.title")}>
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="page-header mb-0">
             <h1>{t("page.finances.title")}</h1>
             <p>{t("page.finances.subtitle")}</p>
