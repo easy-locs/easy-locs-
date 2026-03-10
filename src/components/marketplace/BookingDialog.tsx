@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Mail, MapPin, Users, Clock } from "lucide-react";
+import PaymentMethodSelector, { type PaymentMethod } from "./PaymentMethodSelector";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
