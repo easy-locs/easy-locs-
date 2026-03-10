@@ -10,13 +10,14 @@ import { APP_BASE_URL } from "@/lib/app-domain";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-export type ShareableType = "listing" | "service" | "host" | "provider";
+export type ShareableType = "listing" | "service" | "host" | "provider" | "real-estate";
 
 const TYPE_PATH_MAP: Record<ShareableType, string> = {
   listing: "/listing/",
   service: "/book/",
   host: "/host/",
   provider: "/provider/",
+  "real-estate": "/properties/",
 };
 
 function normalizeVersion(version?: string | number): string | undefined {

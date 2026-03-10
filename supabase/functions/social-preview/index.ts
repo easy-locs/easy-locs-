@@ -283,6 +283,60 @@ async function handleProvider(req: Request, slug: string, shareUrl: string, shar
   return buildSocialResponse(req, htmlPage({ title, description: desc, image, url: shareUrl, redirectUrl, type: "profile" }), redirectUrl);
 }
 
+async function handleRealEstate(req: Request, slug: string, shareUrl: string, shareVersion?: string | null): Promise<Response> {
+  const { data: listing } = await supabase
+    .from("real_estate_listings")
+    .select("*")
+    .eq("slug", slug)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (!listing) {
+    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+  }
+
+  const photos: string[] = Array.isArray(listing.photo_urls) ? (listing.photo_urls as string[]) : [];
+  const rawImage = photos[0] || DEFAULT_OG_IMAGE;
+  const image = withCacheBust(rawImage, shareVersion || listing.updated_at || null);
+
+  const priceLabel = listing.listing_type === "long_term_rent" ? "/month" : "";
+  const title = `${listing.title || listing.property_type || "Property"} — ${listing.city || ""}${listing.country ? `, ${listing.country}` : ""} | Easy-Locs`.slice(0, 60);
+  const desc = `${listing.title || listing.property_type || "Property"} in ${listing.city || ""}. ${listing.surface_sqm ? listing.surface_sqm + " m²" : ""}${listing.bedrooms ? ", " + listing.bedrooms + " bed" : ""}. ${listing.price > 0 ? listing.price.toLocaleString() + " " + (listing.currency || "EUR") + priceLabel : ""} — Easy-Locs`.slice(0, 160);
+  const redirectUrl = `${APP_URL}/properties/${slug}`;
+
+  return buildSocialResponse(
+    req,
+    htmlPage({
+      title,
+      description: desc,
+      image,
+      url: shareUrl,
+      redirectUrl,
+      type: "website",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "RealEstateListing",
+        name: listing.title,
+        description: listing.description?.slice(0, 300) || desc,
+        url: redirectUrl,
+        image,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: listing.city,
+          addressCountry: listing.country,
+          streetAddress: listing.address || undefined,
+        },
+        ...(listing.price > 0
+          ? {
+              offers: { "@type": "Offer", price: listing.price, priceCurrency: listing.currency || "EUR" },
+            }
+          : {}),
+      },
+    }),
+    redirectUrl
+  );
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -316,6 +370,8 @@ Deno.serve(async (req) => {
         return await handleHost(req, slug, shareUrl, v);
       case "provider":
         return await handleProvider(req, slug, shareUrl, v);
+      case "real-estate":
+        return await handleRealEstate(req, slug, shareUrl, v);
       default:
         return new Response("Unknown type", { status: 400, headers: corsHeaders });
     }
