@@ -463,6 +463,71 @@ export default function Explore() {
   );
 }
 
+/* ─── Country-grouped grid ─── */
+function CountryGroupedGrid({ items, renderCard, groupByCategory }: {
+  items: any[];
+  renderCard: (item: any) => React.ReactNode;
+  groupByCategory?: (item: any) => string;
+}) {
+  // Group by country
+  const byCountry: Record<string, any[]> = {};
+  for (const item of items) {
+    const country = (item.country || "Other").toUpperCase();
+    if (!byCountry[country]) byCountry[country] = [];
+    byCountry[country].push(item);
+  }
+  const sortedCountries = Object.keys(byCountry).sort();
+
+  return (
+    <div className="space-y-10">
+      {sortedCountries.map(country => {
+        const countryItems = byCountry[country];
+        if (groupByCategory) {
+          // Sub-group by category within the country
+          const byCat: Record<string, any[]> = {};
+          for (const item of countryItems) {
+            const cat = groupByCategory(item);
+            if (!byCat[cat]) byCat[cat] = [];
+            byCat[cat].push(item);
+          }
+          const sortedCats = Object.keys(byCat).sort();
+          return (
+            <div key={country}>
+              <div className="flex items-center gap-2 mb-5">
+                <Globe className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-bold text-foreground">{country}</h2>
+                <Badge variant="secondary" className="text-[10px]">{countryItems.length}</Badge>
+              </div>
+              <div className="space-y-6 pl-2 border-l-2 border-border ml-2">
+                {sortedCats.map(cat => (
+                  <div key={cat} className="pl-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">{cat}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {byCat[cat].map(renderCard)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div key={country}>
+            <div className="flex items-center gap-2 mb-5">
+              <Globe className="h-5 w-5 text-accent" />
+              <h2 className="text-lg font-bold text-foreground">{country}</h2>
+              <Badge variant="secondary" className="text-[10px]">{countryItems.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {countryItems.map(renderCard)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ─── Helpers ─── */
 function GridSkeleton() {
   return (
