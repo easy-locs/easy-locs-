@@ -249,14 +249,29 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
           <label className="text-xs font-medium text-muted-foreground">
             {t("page.listing.guests_count")} <span className="text-muted-foreground/60">(max {maxGuests})</span>
           </label>
-          <input type="number" inputMode="numeric" min={1} max={maxGuests}
-            value={form.guests_count}
-            onChange={e => {
-              const val = Math.max(1, Math.min(maxGuests, parseInt(e.target.value) || 1));
-              updateField("guests_count", val);
-            }}
-            onFocus={e => e.target.select()}
-            className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 transition-shadow" />
+          <div className="flex items-center gap-0 border border-border rounded-xl overflow-hidden bg-background">
+            <button
+              type="button"
+              onClick={() => updateField("guests_count", Math.max(1, form.guests_count - 1))}
+              disabled={form.guests_count <= 1}
+              className="h-12 w-12 flex items-center justify-center text-lg font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+              aria-label="Decrease guests"
+            >−</button>
+            <div className="flex-1 text-center">
+              <span className="text-base font-semibold text-foreground">{form.guests_count}</span>
+              <span className="text-xs text-muted-foreground ml-1">/ {maxGuests}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => updateField("guests_count", Math.min(maxGuests, form.guests_count + 1))}
+              disabled={form.guests_count >= maxGuests}
+              className="h-12 w-12 flex items-center justify-center text-lg font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+              aria-label="Increase guests"
+            >+</button>
+          </div>
+          {form.guests_count >= maxGuests && (
+            <p className="text-[10px] text-amber-500 mt-1">{t("page.listing.max_guests_reached") || `Maximum ${maxGuests} guests`}</p>
+          )}
         </fieldset>
 
         <fieldset className="space-y-1">
