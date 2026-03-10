@@ -351,7 +351,7 @@ const ConciergeServices = () => {
               </Button>
             )}
             <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}>
-              <Plus className="h-4 w-4 mr-1" /> New Service
+              <Plus className="h-4 w-4 mr-1" /> {t?.("page.concierge.new_service") || "New Service"}
             </Button>
           </div>
         </div>
