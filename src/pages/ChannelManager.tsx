@@ -476,7 +476,7 @@ const ChannelManager = () => {
                 <CardTitle className="text-lg">Calendrier — {format(selectedMonth, "MMMM yyyy")}</CardTitle>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1))}>←</Button>
-                  <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date())}>Aujourd'hui</Button>
+                  <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date())}>Today</Button>
                   <Button size="sm" variant="outline" onClick={() => setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1))}>→</Button>
                 </div>
               </CardHeader>
