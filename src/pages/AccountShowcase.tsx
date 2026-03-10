@@ -102,7 +102,7 @@ export default function AccountShowcase() {
         await supabase.functions.invoke("send-notification-email", {
           body: {
             event_type: "real_estate_lead",
-            recipient_email: targetListing.contact_email || "",
+            recipient_email: (targetListing as any).contact_email || "",
             locale: "en",
             data: {
               lead_name: contactForm.name,
