@@ -145,12 +145,13 @@ const Leases = () => {
       const leaseLabel = selectedLeaseType === "furnished" ? t("page.leases.furnished_lease") : selectedLeaseType === "commercial" ? t("page.leases.commercial_lease") : t("page.leases.empty_lease");
       const title = `${leaseLabel} — ${tenant.name}`;
 
+      const propCountry = prop.country || userCountry || "FR";
       let docId = "";
       if (orgId) {
         const { data: docInsert } = await supabase.from("documents").insert({
           org_id: orgId, user_id: user!.id, title, doc_type: template.docType,
           template_id: template.id, template_version: template.version,
-          data_json: leaseData as any, status: "draft", country: "FR",
+          data_json: leaseData as any, status: "draft", country: propCountry,
         } as any).select("id").single();
         docId = docInsert?.id || "";
       }
