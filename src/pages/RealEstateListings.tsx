@@ -86,6 +86,7 @@ interface Listing {
   energy_class: string;
   views_count: number;
   created_at: string;
+  updated_at?: string;
 }
 
 interface Lead {
@@ -315,11 +316,11 @@ export default function RealEstateListings() {
                         {/* Share buttons */}
                         <div className="flex items-center gap-1.5">
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + socialUrl)}`, "_blank"); }}>
+                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug, listing.updated_at); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + socialUrl)}`, "_blank"); }}>
                             <MessageCircle className="h-3 w-3 shrink-0" /> WhatsApp
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
+                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug, listing.updated_at); window.open(`https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
                             <Send className="h-3 w-3 shrink-0" /> Telegram
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
