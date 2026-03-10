@@ -72,6 +72,7 @@ const AIQualityDashboard = () => {
   const [copilotReply, setCopilotReply] = useState("");
   const [copilotLoading, setCopilotLoading] = useState(false);
   const [triggerIssueCount, setTriggerIssueCount] = useState(0);
+  const [history, setHistory] = useState<Array<{ created_at: string; global_score: number; total_issues: number; scan_type: string }>>([]);
 
   // Subscribe to trigger-based issues
   useEffect(() => {
@@ -79,6 +80,19 @@ const AIQualityDashboard = () => {
     update();
     return subscribeTriggerAudit(update);
   }, []);
+
+  // Load audit history
+  useEffect(() => {
+    const loadHistory = async () => {
+      const { data } = await supabase
+        .from("audit_reports")
+        .select("created_at, global_score, total_issues, scan_type")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (data) setHistory(data);
+    };
+    loadHistory();
+  }, [report]);
 
   const runScan = useCallback(async (type: "full" | "light") => {
     setScanning(true);
@@ -94,6 +108,28 @@ const AIQualityDashboard = () => {
       toast.success(`Scan complete — Score: ${result.globalScore}/100 — ${result.totalIssues} issue(s) found`);
     } catch (err) {
       toast.error("Scan failed");
+      console.error(err);
+    } finally {
+      setScanning(false);
+    }
+  }, []);
+
+  const runScheduledScan = useCallback(async () => {
+    setScanning(true);
+    toast.info("Running backend scheduled audit...");
+    try {
+      const { data, error } = await supabase.functions.invoke("run-scheduled-audit", { body: {} });
+      if (error) throw error;
+      toast.success(`Backend audit complete — Score: ${data.globalScore}/100 — ${data.totalIssues} issue(s)`);
+      // Reload history
+      const { data: hist } = await supabase
+        .from("audit_reports")
+        .select("created_at, global_score, total_issues, scan_type")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (hist) setHistory(hist);
+    } catch (err) {
+      toast.error("Backend audit failed");
       console.error(err);
     } finally {
       setScanning(false);
@@ -145,13 +181,17 @@ const AIQualityDashboard = () => {
               15-engine audit system • Continuous quality monitoring
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => runScan("light")} disabled={scanning}>
               <Zap className="h-4 w-4 mr-1.5" /> Quick Scan
             </Button>
             <Button size="sm" onClick={() => runScan("full")} disabled={scanning}>
               <RefreshCw className={`h-4 w-4 mr-1.5 ${scanning ? "animate-spin" : ""}`} />
               Full Audit
+            </Button>
+            <Button variant="secondary" size="sm" onClick={runScheduledScan} disabled={scanning}>
+              <Database className="h-4 w-4 mr-1.5" />
+              Backend Audit
             </Button>
           </div>
         </div>
@@ -247,6 +287,9 @@ const AIQualityDashboard = () => {
               Issues {report ? `(${filteredIssues.length})` : ""}
             </TabsTrigger>
             <TabsTrigger value="copilot">AI Copilot</TabsTrigger>
+            <TabsTrigger value="history">
+              History {history.length > 0 ? `(${history.length})` : ""}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="issues">
@@ -336,6 +379,47 @@ const AIQualityDashboard = () => {
                 {copilotReply && (
                   <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">
                     {copilotReply}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Scan History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {history.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No historical scans yet. Run a backend audit to start tracking.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {history.map((h, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <div className="flex items-center gap-3">
+                          <span className={`text-lg font-bold ${getScoreColor(h.global_score)}`}>
+                            {h.global_score}
+                          </span>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {h.scan_type.charAt(0).toUpperCase() + h.scan_type.slice(1)} scan
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(h.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant={h.total_issues > 0 ? "secondary" : "outline"}>
+                          {h.total_issues} issue{h.total_issues !== 1 ? "s" : ""}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

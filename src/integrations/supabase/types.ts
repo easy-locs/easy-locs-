@@ -178,6 +178,53 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_reports: {
+        Row: {
+          created_at: string
+          critical_issues: number
+          global_score: number
+          id: string
+          issues_json: Json
+          modules_json: Json
+          org_id: string | null
+          scan_type: string
+          source: string
+          total_issues: number
+        }
+        Insert: {
+          created_at?: string
+          critical_issues?: number
+          global_score?: number
+          id?: string
+          issues_json?: Json
+          modules_json?: Json
+          org_id?: string | null
+          scan_type?: string
+          source?: string
+          total_issues?: number
+        }
+        Update: {
+          created_at?: string
+          critical_issues?: number
+          global_score?: number
+          id?: string
+          issues_json?: Json
+          modules_json?: Json
+          org_id?: string | null
+          scan_type?: string
+          source?: string
+          total_issues?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_requests: {
         Row: {
           check_in: string
