@@ -211,12 +211,14 @@ const Interventions = () => {
             </div>
           ) : (
             <div className="grid gap-4">
-              {filtered.map(i => {
+              {filtered.map((i, idx) => {
                 const pri = getPriorityBadge(i.priority);
                 const sti = getStatusInfo(i.status);
                 const StatusIcon = sti.icon;
                 return (
-                  <div key={i.id} className="bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-md transition-shadow">
+                  <motion.div key={i.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}
+                    className="bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
