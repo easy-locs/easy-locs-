@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.translate-message]
 verify_jwt = false
+
+[functions.social-preview]
+verify_jwt = false
