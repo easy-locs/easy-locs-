@@ -82,13 +82,16 @@ interface Props {
   onSendPaymentLink: (booking: any) => void;
   onConfirmPayment: (id: string) => void;
   onGenerateInvoice?: (booking: any) => void;
+  onModifyBooking?: (booking: any, changes: any) => Promise<boolean>;
 }
 
 export default function BookingDetailDrawer({
   open, onOpenChange, booking, service, provider, orgId,
-  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice,
+  onUpdateStatus, onSendPaymentLink, onConfirmPayment, onGenerateInvoice, onModifyBooking,
 }: Props) {
+  const [modifyOpen, setModifyOpen] = useState(false);
   if (!booking) return null;
+
 
   const status = booking.status || "pending";
 
