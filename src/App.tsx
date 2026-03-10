@@ -65,6 +65,7 @@ const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
 const LandlordProfile = lazy(() => import("./pages/LandlordProfile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AIQualityDashboard = lazy(() => import("./pages/AIQualityDashboard"));
 const Install = lazy(() => import("./pages/Install"));
 const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
