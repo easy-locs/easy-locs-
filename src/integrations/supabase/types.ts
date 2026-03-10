@@ -4595,6 +4595,10 @@ export type Database = {
       }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
       get_order_by_session: { Args: { _session_id: string }; Returns: Json }
+      get_org_role: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: string
+      }
       get_ota_connections: {
         Args: { _org_id: string }
         Returns: {
@@ -4740,6 +4744,10 @@ export type Database = {
       }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
+      has_min_role: {
+        Args: { _min_role: string; _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4755,7 +4763,7 @@ export type Database = {
       validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
-      app_role: "owner" | "admin" | "member"
+      app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4883,7 +4891,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "admin", "member"],
+      app_role: ["owner", "admin", "member", "agent", "staff", "accountant"],
     },
   },
 } as const
