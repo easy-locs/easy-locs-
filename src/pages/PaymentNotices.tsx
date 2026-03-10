@@ -418,7 +418,7 @@ const PaymentNotices = () => {
                     {t("page.notices.record_payment") || "Record Payment"}
                   </button>
                   <button onClick={() => setPartialDialog(null)} className="btn-secondary">
-                    {t("page.common.cancel") || "Annuler"}
+                    {t("page.common.cancel") || "Cancel"}
                   </button>
                 </div>
               </div>

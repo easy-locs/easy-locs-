@@ -242,7 +242,7 @@ const Accounting = () => {
                     {activeRules.vatApplicable && <p>📋 TVA/VAT: {activeRules.vatRates.standard}%</p>}
                   </div>
                   <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newEntry.label || addMut.isPending}>
-                    {addMut.isPending ? "..." : t("common.save") || "Enregistrer"}
+                    {addMut.isPending ? "..." : t("common.save") || "Save"}
                   </Button>
                 </div>
               </DialogContent>
