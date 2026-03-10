@@ -274,10 +274,14 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
   const { subject, message } = buildEventContent(event);
   const targetId = resolveTargetId(event);
 
+  // Resolve effective config — payment_request_sent is context-aware:
+  // If context has bookingId but no leaseId/tenantId → marketplace context
+  const effectiveConfig = resolveEffectiveConfig(event, config);
+
   const meta = createDeepLinkMeta({
-    targetType: config.targetType,
+    targetType: effectiveConfig.targetType,
     targetId,
-    module: config.module,
+    module: effectiveConfig.module,
     countryCode: event.context.countryCode,
     bookingId: event.context.bookingId,
     orgId: event.context.orgId,
@@ -293,12 +297,12 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
     recipientEmail: event.targetEmail,
     subject,
     message,
-    category: config.notifType,
+    category: effectiveConfig.notifType,
     emailLocale: event.locale || "en",
     meta,
   });
 
-  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${config.targetType}:${targetId}`);
+  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${effectiveConfig.targetType}:${targetId}`);
   return true;
 }
 
