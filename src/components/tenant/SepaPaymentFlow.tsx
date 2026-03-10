@@ -117,7 +117,7 @@ export default function SepaPaymentFlow({
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-4 w-4 text-accent" />
             <h3 className="text-sm font-semibold text-foreground">
-              {t("sepa.stripe_title") || "Prélèvement SEPA sécurisé"}
+              {t("sepa.stripe_title") || "Secure SEPA Direct Debit"}
             </h3>
           </div>
 
