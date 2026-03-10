@@ -3225,6 +3225,7 @@ export type Database = {
           month: string
           org_id: string
           paid: boolean | null
+          paid_amount: number
           paid_date: string | null
           payment_method: string | null
           payment_reference: string | null
@@ -3245,6 +3246,7 @@ export type Database = {
           month: string
           org_id: string
           paid?: boolean | null
+          paid_amount?: number
           paid_date?: string | null
           payment_method?: string | null
           payment_reference?: string | null
@@ -3265,6 +3267,7 @@ export type Database = {
           month?: string
           org_id?: string
           paid?: boolean | null
+          paid_amount?: number
           paid_date?: string | null
           payment_method?: string | null
           payment_reference?: string | null

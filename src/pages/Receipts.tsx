@@ -7,6 +7,7 @@ import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/country-config";
 import type { Json } from "@/integrations/supabase/types";
@@ -22,6 +23,7 @@ interface DBDocument {
 const Receipts = () => {
   const { t } = useI18n();
   const { user, orgId, userCountry } = useAuth();
+  const countryFilter = useCountryFilter();
   const [showForm, setShowForm] = useState(false);
   const [receipts, setReceipts] = useState<DBDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,17 +35,18 @@ const Receipts = () => {
   // Load receipts from DB
   const loadReceipts = async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
       .select("id, title, doc_type, data_json, created_at")
       .eq("org_id", orgId)
-      .eq("doc_type", "rent-receipt")
-      .order("created_at", { ascending: false });
+      .eq("doc_type", "rent-receipt");
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query.order("created_at", { ascending: false });
     setReceipts((data as DBDocument[]) || []);
     setLoading(false);
   };
 
-  useEffect(() => { loadReceipts(); }, [orgId]);
+  useEffect(() => { loadReceipts(); }, [orgId, countryFilter]);
 
   // Load landlord signature + owner info + stamp on mount
   useEffect(() => {

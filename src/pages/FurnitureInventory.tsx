@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +60,7 @@ const FurnitureInventory = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const countryFilter = useCountryFilter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<FurnitureItem[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -94,14 +96,26 @@ const FurnitureInventory = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: f }, { data: p }] = await Promise.all([
-      supabase.from("furniture_items").select("*").eq("org_id", orgId),
-      supabase.from("properties").select("id, label, furnished, country").eq("org_id", orgId).order("country").order("label"),
-    ]);
-    if (f) setItems(f as FurnitureItem[]);
-    if (p) setProperties(p as Property[]);
+    let propQuery = supabase.from("properties").select("id, label, furnished, country").eq("org_id", orgId);
+    if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
+    propQuery = propQuery.order("country").order("label");
+    const { data: p } = await propQuery;
+    const filteredProps = p || [];
+    setProperties(filteredProps as Property[]);
+
+    // Filter furniture items to only properties in the current country
+    const propIds = filteredProps.map(pr => pr.id);
+    if (propIds.length > 0) {
+      const { data: f } = await supabase.from("furniture_items").select("*").eq("org_id", orgId).in("property_id", propIds);
+      setItems((f || []) as FurnitureItem[]);
+    } else if (!countryFilter) {
+      const { data: f } = await supabase.from("furniture_items").select("*").eq("org_id", orgId);
+      setItems((f || []) as FurnitureItem[]);
+    } else {
+      setItems([]);
+    }
     setLoading(false);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { load(); }, [load]);
 

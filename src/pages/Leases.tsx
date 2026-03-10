@@ -59,14 +59,15 @@ const Leases = () => {
   const [savedLeases, setSavedLeases] = useState<any[]>([]);
   const loadSavedLeases = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
       .select("*")
       .eq("org_id", orgId)
-      .in("doc_type", ["lease-empty", "lease-furnished", "lease-commercial"])
-      .order("created_at", { ascending: false });
+      .in("doc_type", ["lease-empty", "lease-furnished", "lease-commercial"]);
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query.order("created_at", { ascending: false });
     setSavedLeases(data || []);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { loadSavedLeases(); }, [loadSavedLeases]);
 
@@ -145,12 +146,13 @@ const Leases = () => {
       const leaseLabel = selectedLeaseType === "furnished" ? t("page.leases.furnished_lease") : selectedLeaseType === "commercial" ? t("page.leases.commercial_lease") : t("page.leases.empty_lease");
       const title = `${leaseLabel} — ${tenant.name}`;
 
+      const propCountry = prop.country || userCountry || "FR";
       let docId = "";
       if (orgId) {
         const { data: docInsert } = await supabase.from("documents").insert({
           org_id: orgId, user_id: user!.id, title, doc_type: template.docType,
           template_id: template.id, template_version: template.version,
-          data_json: leaseData as any, status: "draft", country: "FR",
+          data_json: leaseData as any, status: "draft", country: propCountry,
         } as any).select("id").single();
         docId = docInsert?.id || "";
       }
@@ -162,7 +164,7 @@ const Leases = () => {
       if (docId) {
         dispatchSyncEvent({
           type: "lease_created",
-          context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: docId, countryCode: "FR" },
+          context: { orgId: orgId!, propertyId: prop.id, tenantId: tenant.id, leaseId: docId, countryCode: propCountry },
           actorUserId: user!.id,
           targetUserId: tenant.tenant_user_id || undefined,
           targetEmail: tenant.email || undefined,

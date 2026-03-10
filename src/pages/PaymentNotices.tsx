@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe } from "lucide-react";
+import { FileText, Plus, Download, AlertTriangle, CheckCircle, Clock, Building, Globe, CreditCard, Banknote } from "lucide-react";
 import jsPDF from "jspdf";
 import { useI18n } from "@/lib/i18n";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/country-config";
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
 interface Property { id: string; label: string; address: string; city: string; country: string; }
 interface Notice { id: string; tenant_id: string; property_id: string | null; month: string; rent_amount: number; charges_amount: number; total_amount: number; due_date: string; sent: boolean; }
-interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; }
+interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; paid_amount?: number; }
 
 const PaymentNotices = () => {
   const { user, orgId, userCountry } = useAuth();
@@ -192,7 +192,39 @@ const PaymentNotices = () => {
   };
 
   const tenantName = (id: string) => tenants.find(te => te.id === id)?.name || "—";
-  const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount || 0), 0);
+  const unpaidTotal = rentCalls.reduce((s, c) => s + (c.total_amount - (c.paid_amount || 0)), 0);
+
+  // Regularize: mark rent call as fully paid
+  const regularize = async (rentCall: RentCall) => {
+    await supabase.from("rent_calls").update({
+      paid: true,
+      paid_date: new Date().toISOString().split("T")[0],
+      paid_amount: rentCall.total_amount,
+      payment_status: "paid",
+    }).eq("id", rentCall.id);
+    toast({ title: t("page.common.paid") });
+    await load();
+  };
+
+  // Partial payment dialog
+  const [partialDialog, setPartialDialog] = useState<RentCall | null>(null);
+  const [partialAmount, setPartialAmount] = useState(0);
+
+  const handlePartialPayment = async () => {
+    if (!partialDialog || partialAmount <= 0) return;
+    const newPaid = Math.min((partialDialog.paid_amount || 0) + partialAmount, partialDialog.total_amount);
+    const isFullyPaid = newPaid >= partialDialog.total_amount;
+    await supabase.from("rent_calls").update({
+      paid: isFullyPaid,
+      paid_date: new Date().toISOString().split("T")[0],
+      paid_amount: newPaid,
+      payment_status: isFullyPaid ? "paid" : "partial",
+    }).eq("id", partialDialog.id);
+    toast({ title: isFullyPaid ? t("page.common.paid") : `${t("page.notices.partial_recorded")} — ${fmt(newPaid)}` });
+    setPartialDialog(null);
+    setPartialAmount(0);
+    await load();
+  };
 
   return (
     <DashboardLayout>
@@ -294,7 +326,10 @@ const PaymentNotices = () => {
                               </thead>
                               <tbody>
                                 {propNotices.map(n => {
-                                  const isPaid = !rentCalls.some(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                                  const matchingRentCall = rentCalls.find(c => c.tenant_id === n.tenant_id && c.month === n.month);
+                                  const isPaid = !matchingRentCall;
+                                  const paidAmount = matchingRentCall?.paid_amount || 0;
+                                  const remaining = matchingRentCall ? matchingRentCall.total_amount - paidAmount : 0;
                                   return (
                                     <tr key={n.id} className="table-body-row">
                                       <td className="table-cell whitespace-nowrap">{n.month}</td>
@@ -305,6 +340,10 @@ const PaymentNotices = () => {
                                           <span className="badge-success">
                                             <CheckCircle className="h-3 w-3" /> {t("page.common.paid")}
                                           </span>
+                                        ) : paidAmount > 0 ? (
+                                          <span className="badge-warning">
+                                            <Banknote className="h-3 w-3" /> {fmt(paidAmount, countryCode)} / {fmt(n.total_amount, countryCode)}
+                                          </span>
                                         ) : (
                                           <span className="badge-danger">
                                             <Clock className="h-3 w-3" /> {t("page.common.unpaid")}
@@ -312,9 +351,23 @@ const PaymentNotices = () => {
                                         )}
                                       </td>
                                       <td className="table-cell-actions">
-                                        <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon">
-                                          <Download className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex items-center gap-1 justify-end">
+                                          {!isPaid && (
+                                            <>
+                                              <button onClick={() => regularize(matchingRentCall!)} className="btn-ghost btn-sm text-xs" title={t("page.notices.regularize") || "Régulariser"}>
+                                                <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                                <span className="hidden sm:inline">{t("page.notices.regularize") || "Régulariser"}</span>
+                                              </button>
+                                              <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="btn-ghost btn-sm text-xs" title={t("page.notices.partial") || "Partiel"}>
+                                                <Banknote className="h-3.5 w-3.5 text-accent" />
+                                                <span className="hidden sm:inline">{t("page.notices.partial") || "Partiel"}</span>
+                                              </button>
+                                            </>
+                                          )}
+                                          <button onClick={() => downloadNoticePDF(n)} className="btn-ghost btn-icon">
+                                            <Download className="h-4 w-4" />
+                                          </button>
+                                        </div>
                                       </td>
                                     </tr>
                                   );
@@ -328,6 +381,47 @@ const PaymentNotices = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Partial Payment Dialog */}
+          {partialDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
+              <div className="bg-card rounded-xl border border-border shadow-lg p-6 w-full max-w-md mx-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  {t("page.notices.partial_title") || "Paiement partiel"}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {tenantName(partialDialog.tenant_id)} — {partialDialog.month}
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t("page.notices.total_due") || "Total dû"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
+                  {(partialDialog.paid_amount || 0) > 0 && (
+                    <> · {t("page.notices.already_paid") || "Déjà payé"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
+                  )}
+                </p>
+                <div className="form-group mb-4">
+                  <label className="form-label">{t("page.notices.amount_received") || "Montant reçu"}</label>
+                  <input
+                    type="number"
+                    value={partialAmount || ""}
+                    onChange={e => setPartialAmount(+e.target.value)}
+                    className="form-input"
+                    min={0}
+                    max={partialDialog.total_amount - (partialDialog.paid_amount || 0)}
+                    step={0.01}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={handlePartialPayment} className="btn-primary flex-1">
+                    <CreditCard className="h-4 w-4" />
+                    {t("page.notices.record_payment") || "Enregistrer"}
+                  </button>
+                  <button onClick={() => setPartialDialog(null)} className="btn-secondary">
+                    {t("page.common.cancel") || "Annuler"}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
