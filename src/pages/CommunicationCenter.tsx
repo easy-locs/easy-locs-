@@ -923,13 +923,14 @@ const CommunicationCenter = () => {
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
   const getBookingTypeBadge = (thread: ConversationThread) => {
-    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏡 Real Estate</Badge>;
-    switch (thread.bookingType) {
-      case "marketplace": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🛍️ Marketplace</Badge>;
-      case "concierge": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🎯 Concierge</Badge>;
-      case "seasonal": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏖️ Seasonal</Badge>;
-      default: return null;
-    }
+    const cfg: Record<string, { emoji: string; label: string; cls: string }> = {
+      marketplace: { emoji: "🛍️", label: "Marketplace", cls: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
+      concierge: { emoji: "🎯", label: "Concierge", cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+      seasonal: { emoji: "🏖️", label: "Seasonal", cls: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
+    };
+    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">🏡 Real Estate</Badge>;
+    const c = cfg[thread.bookingType || ""];
+    return c ? <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${c.cls}`}>{c.emoji} {c.label}</Badge> : null;
   };
 
   const getStatusBadge = (status?: string) => {
@@ -938,13 +939,30 @@ const CommunicationCenter = () => {
       confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
       completed: "bg-blue-500/10 text-blue-600 border-blue-500/20",
       cancelled: "bg-destructive/10 text-destructive border-destructive/20",
-      awaiting_payment: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      awaiting_payment: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+      paid: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      new: "bg-primary/10 text-primary border-primary/20",
+    };
+    const labels: Record<string, string> = {
+      pending: "⏳ Pending", confirmed: "✅ Confirmed", completed: "🏁 Completed",
+      cancelled: "❌ Cancelled", awaiting_payment: "💰 Awaiting Payment", paid: "💚 Paid", new: "🆕 New",
     };
     return status ? (
-      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${colors[status] || ""}`}>
-        {status}
+      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${colors[status] || "bg-muted text-muted-foreground"}`}>
+        {labels[status] || status}
       </Badge>
     ) : null;
+  };
+
+  const getPillarColor = (thread: ConversationThread) => {
+    if (thread.type === "tenant") return { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" };
+    if (thread.type === "lead") return { bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-500/20" };
+    switch (thread.bookingType) {
+      case "marketplace": return { bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-500/20" };
+      case "concierge": return { bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-500/20" };
+      case "seasonal": return { bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-500/20" };
+      default: return { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
+    }
   };
 
   return (
