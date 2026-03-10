@@ -22,6 +22,7 @@ import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter"
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
