@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -63,7 +64,7 @@ const Interventions = () => {
   const { toast } = useToast();
 
   const [interventions, setInterventions] = useState<Intervention[]>([]);
-  const [properties, setProperties] = useState<{ id: string; label: string }[]>([]);
+  const [properties, setProperties] = useState<{ id: string; label: string; country?: string }[]>([]);
   const [tenants, setTenants] = useState<{ id: string; name: string; property_id: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -82,7 +83,7 @@ const Interventions = () => {
     if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
     const { data: propData } = await propQuery;
     const filteredProps = propData || [];
-    setProperties(filteredProps.map(p => ({ id: p.id, label: p.label })));
+    setProperties(filteredProps.map(p => ({ id: p.id, label: p.label, country: p.country })));
     const propIds = filteredProps.map(p => p.id);
 
     let intQuery = supabase.from("interventions").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
@@ -139,9 +140,25 @@ const Interventions = () => {
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
       toast({ title: t("page.interventions.modified") });
     } else {
-      const { error } = await supabase.from("interventions").insert(record);
+      const { data: inserted, error } = await supabase.from("interventions").insert(record).select().single();
       if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
       toast({ title: t("page.interventions.added") });
+
+      // Sync engine: intervention_created
+      const prop = properties.find(p => p.id === form.property_id);
+      dispatchSyncEvent({
+        type: "intervention_created",
+        context: {
+          orgId: orgId!,
+          propertyId: inserted.property_id || undefined,
+          tenantId: inserted.tenant_id || undefined,
+          countryCode: prop?.country || "",
+        },
+        actorUserId: user.id,
+        title: inserted.title,
+        priority: inserted.priority,
+        propertyLabel: prop?.label || "—",
+      });
     }
     setDialogOpen(false);
     load();
