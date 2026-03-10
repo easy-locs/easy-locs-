@@ -128,6 +128,17 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
     toast.success("Copied!");
   };
 
+  const handleGenerateInvoice = useCallback(async () => {
+    setGeneratingInvoice(true);
+    try {
+      await generateConciergeInvoice(booking, service, orgId);
+    } catch (err: any) {
+      toast.error("Invoice generation failed: " + err.message);
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  }, [booking, service, orgId]);
+
   if (!booking) return null;
 
   const bankDetails = typeof service?.bank_details === "object" ? service.bank_details : {};
