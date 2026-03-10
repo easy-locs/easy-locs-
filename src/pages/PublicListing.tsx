@@ -250,15 +250,6 @@ const PublicListing = () => {
               </div>
             )}
 
-            {/* Activities & Local Services */}
-            {listing?.org_id && property && (
-              <ListingLocalServices
-                orgId={listing.org_id}
-                propertyId={property.id || ""}
-                propertyCity={property.city || ""}
-                propertyCountry={property.country || ""}
-              />
-            )}
           </div>
 
           {/* Booking form */}
