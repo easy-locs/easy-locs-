@@ -241,8 +241,8 @@ const Leases = () => {
             <div className="flex items-center gap-3 mb-4 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={t("page.leases.search_tenant")} className="w-full pl-9 pr-3 py-2 text-sm bg-card border border-border rounded-lg focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none" />
+                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={t("page.leases.search_tenant")} className="pl-9" />
               </div>
               <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
                 {([

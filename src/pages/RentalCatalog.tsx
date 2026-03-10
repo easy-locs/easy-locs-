@@ -108,11 +108,11 @@ const RentalCatalog = () => {
         <div className="flex flex-wrap gap-3 mb-8">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
+            <Input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t("page.catalog.search_placeholder")}
-              className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="pl-10"
             />
           </div>
           <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-3">

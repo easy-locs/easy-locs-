@@ -221,11 +221,11 @@ const Company = () => {
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 value={jalDepartment}
                 onChange={(e) => setJalDepartment(e.target.value)}
                 placeholder={t("page.company.jal_search_placeholder")}
-                className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="pl-9"
               />
             </div>
           </div>
