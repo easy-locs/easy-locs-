@@ -1312,9 +1312,9 @@ const RentalManagement = () => {
         {/* ─── Properties Tab ─── */}
         {activeTab === "properties" && (
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <h2 className="font-semibold text-foreground">{properties.length} {L.properties.toLowerCase()}</h2>
-              <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
+              <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px] w-full sm:w-auto justify-center sm:justify-start">
                 <Plus className="h-4 w-4" />{L.addProperty}
               </button>
             </div>
