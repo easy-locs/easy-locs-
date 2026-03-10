@@ -2269,6 +2269,10 @@ export type Database = {
       orgs: {
         Row: {
           address: string | null
+          bank_bic: string | null
+          bank_holder_name: string | null
+          bank_iban: string | null
+          bank_name: string | null
           brand_accent_color: string | null
           brand_favicon_url: string | null
           brand_name: string | null
@@ -2284,6 +2288,7 @@ export type Database = {
           logo_url: string | null
           name: string
           owner_user_id: string
+          payment_link_url: string | null
           payment_providers: Json
           paypal_email: string | null
           phone: string | null
@@ -2295,6 +2300,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          bank_bic?: string | null
+          bank_holder_name?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           brand_accent_color?: string | null
           brand_favicon_url?: string | null
           brand_name?: string | null
@@ -2310,6 +2319,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           owner_user_id: string
+          payment_link_url?: string | null
           payment_providers?: Json
           paypal_email?: string | null
           phone?: string | null
@@ -2321,6 +2331,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          bank_bic?: string | null
+          bank_holder_name?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           brand_accent_color?: string | null
           brand_favicon_url?: string | null
           brand_name?: string | null
@@ -2336,6 +2350,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           owner_user_id?: string
+          payment_link_url?: string | null
           payment_providers?: Json
           paypal_email?: string | null
           phone?: string | null
