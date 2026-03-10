@@ -383,6 +383,47 @@ const PaymentNotices = () => {
               })}
             </div>
           )}
+
+          {/* Partial Payment Dialog */}
+          {partialDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
+              <div className="bg-card rounded-xl border border-border shadow-lg p-6 w-full max-w-md mx-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  {t("page.notices.partial_title") || "Paiement partiel"}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {tenantName(partialDialog.tenant_id)} — {partialDialog.month}
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t("page.notices.total_due") || "Total dû"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
+                  {(partialDialog.paid_amount || 0) > 0 && (
+                    <> · {t("page.notices.already_paid") || "Déjà payé"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
+                  )}
+                </p>
+                <div className="form-group mb-4">
+                  <label className="form-label">{t("page.notices.amount_received") || "Montant reçu"}</label>
+                  <input
+                    type="number"
+                    value={partialAmount || ""}
+                    onChange={e => setPartialAmount(+e.target.value)}
+                    className="form-input"
+                    min={0}
+                    max={partialDialog.total_amount - (partialDialog.paid_amount || 0)}
+                    step={0.01}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={handlePartialPayment} className="btn-primary flex-1">
+                    <CreditCard className="h-4 w-4" />
+                    {t("page.notices.record_payment") || "Enregistrer"}
+                  </button>
+                  <button onClick={() => setPartialDialog(null)} className="btn-secondary">
+                    {t("page.common.cancel") || "Annuler"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </FeatureGate>
     </DashboardLayout>
