@@ -102,8 +102,8 @@ const Expenses = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
-      <div className="max-w-5xl mx-auto">
-        <div className="page-content flex flex-col section-gap">
+      <div className="page-content">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div>
             <h1>{t("page.expenses.title")}</h1>
             <p>{t("page.expenses.subtitle")}</p>
