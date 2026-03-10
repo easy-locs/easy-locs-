@@ -8,6 +8,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import RemoteEntrepreneurship from "@/components/landing/RemoteEntrepreneurship";
 import Pricing from "@/components/landing/Pricing";
 import Newsletter from "@/components/landing/Newsletter";
+import LandingFAQ from "@/components/landing/LandingFAQ";
 import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Loader2 } from "lucide-react";
