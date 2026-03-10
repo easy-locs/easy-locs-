@@ -384,6 +384,47 @@ const AIQualityDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Scan History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {history.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No historical scans yet. Run a backend audit to start tracking.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {history.map((h, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <div className="flex items-center gap-3">
+                          <span className={`text-lg font-bold ${getScoreColor(h.global_score)}`}>
+                            {h.global_score}
+                          </span>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {h.scan_type.charAt(0).toUpperCase() + h.scan_type.slice(1)} scan
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(h.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant={h.total_issues > 0 ? "secondary" : "outline"}>
+                          {h.total_issues} issue{h.total_issues !== 1 ? "s" : ""}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
