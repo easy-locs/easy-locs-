@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
+import { auditBookingResult } from "@/lib/ai-audit";
 import { useI18n } from "@/lib/i18n";
 import { Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
