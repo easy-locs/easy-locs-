@@ -193,7 +193,7 @@ const ClientSettings = () => {
                     </div>
                     <div className="col-span-2 sm:col-span-1">
                       <Label className="text-xs text-muted-foreground">{t("form.country") || "Country"}</Label>
-                      <CountrySelect value={form.country} onValueChange={v => up("country", v)} />
+                      <CountrySelect value={form.country} onChange={v => up("country", v)} />
                     </div>
                   </div>
                 </div>
