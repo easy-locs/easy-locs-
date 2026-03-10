@@ -137,6 +137,7 @@ const Index = () => {
       <RoleCards />
       <RemoteEntrepreneurship />
       <Features />
+      <ExplorePreview />
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
