@@ -235,10 +235,10 @@ const Accounting = () => {
                   <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
                     <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Infos fiscales"} — {activeRules.country}</p>
                     {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Taux forfaitaire"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
-                    {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Imposition progressive"}</p>}
-                    {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exonéré d'impôt sur les revenus locatifs"}</p>}
-                    {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Prélèvements sociaux"}: {activeRules.socialCharges}%</p>}
-                    {activeRules.depositCap && <p>🏦 {t("page.accounting.deposit_cap") || "Plafond dépôt"}: {activeRules.depositCap}</p>}
+                    {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Progressive taxation"}</p>}
+                    {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exempt from rental income tax"}</p>}
+                    {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Social charges"}: {activeRules.socialCharges}%</p>}
+                    {activeRules.depositCap && <p>🏦 {t("page.accounting.deposit_cap") || "Deposit cap"}: {activeRules.depositCap}</p>}
                     {activeRules.vatApplicable && <p>📋 TVA/VAT: {activeRules.vatRates.standard}%</p>}
                   </div>
                   <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newEntry.label || addMut.isPending}>
