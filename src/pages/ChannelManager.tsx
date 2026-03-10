@@ -730,10 +730,10 @@ const ChannelManager = () => {
               </div>
               <div className="flex gap-2">
                 <Button className="flex-1" onClick={modifyDates}>
-                  <Mail className="h-4 w-4 mr-1" />Modifier & notifier
+                  <Mail className="h-4 w-4 mr-1" />Edit & notify
                 </Button>
-                <Button variant="destructive" onClick={() => { if (confirm(`Annuler la réservation de ${editModalRes.guest_name} ?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
-                  <XCircle className="h-4 w-4 mr-1" />Annuler
+                <Button variant="destructive" onClick={() => { if (confirm(`Cancel the reservation for ${editModalRes.guest_name}?`)) { cancelReservation(editModalRes); setEditModalRes(null); } }}>
+                  <XCircle className="h-4 w-4 mr-1" />Cancel
                 </Button>
               </div>
             </div>
