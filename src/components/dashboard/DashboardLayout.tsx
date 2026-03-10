@@ -109,16 +109,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 5. Documents
+    // 5. Documents — generation & archives (no duplication with Real Estate)
     {
       key: "documents",
       title: t("nav.documents") || "Documents",
       icon: FileText,
       items: [
-        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
-        { icon: Receipt, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
-        { icon: FileCheck, label: t("nav.rent_notices") || "Rent Notices", path: cPath("/dashboard/reminders") },
         { icon: FileText, label: t("nav.all_documents") || "All Documents", path: cPath("/dashboard/documents") },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
 
@@ -144,8 +143,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
         { icon: Shield, label: t("settings.payment_providers") || "Payment Providers", path: "/dashboard/settings?tab=payments" },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
   ];
