@@ -207,7 +207,7 @@ const Dashboard = () => {
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            {t("page.dashboard.select_country") || "Sélectionnez un pays pour gérer"}
+            {t("page.dashboard.select_country") || "Select a country to manage"}
           </h2>
 
           {loading ? (
