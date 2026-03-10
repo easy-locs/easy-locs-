@@ -10,14 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   User, Mail, Phone, Calendar, Clock, CreditCard, FileText, Upload,
   CheckCircle2, XCircle, MapPin, Building2, Eye, Trash2, Download,
-  DollarSign, Send, Copy, ExternalLink, MessageCircle
+  DollarSign, Send, Copy, ExternalLink, MessageCircle, Receipt
 } from "lucide-react";
 import { format } from "date-fns";
+import BookingCommunicationThread from "@/components/marketplace/BookingCommunicationThread";
+import { generateConciergeInvoice } from "./ConciergeInvoiceAdapter";
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
