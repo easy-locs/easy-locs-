@@ -127,6 +127,8 @@ const ServicesHubPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m =
 const ServiceCategoryPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCategoryPage })));
 const ServiceCityPage = lazy(() => import("./pages/seo/ServiceHubPage").then(m => ({ default: m.ServiceCityPage })));
 const ProviderSEOPage = lazy(() => import("./pages/seo/ProviderSEOPage"));
+const SlugResolver = lazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })));
+const SlugCategoryResolver = lazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })));
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
