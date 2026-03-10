@@ -286,7 +286,7 @@ const Settings = () => {
                   const newVal = !showcaseEnabled;
                   await supabase.from("landlord_profiles").update({ showcase_enabled: newVal } as any).eq("id", landlordProfileId);
                   setShowcaseEnabled(newVal);
-                  toast({ title: newVal ? "Showcase enabled" : "Showcase disabled" });
+                  toast({ title: newVal ? (t("page.settings.showcase_on") || "Showcase enabled") : (t("page.settings.showcase_off") || "Showcase disabled") });
                   setSavingShowcase(false);
                 }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
