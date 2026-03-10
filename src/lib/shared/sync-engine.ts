@@ -1,6 +1,8 @@
 /**
  * Cross-Module Synchronization Engine
  * 
+ * SINGLE SOURCE OF TRUTH for cross-module synchronization.
+ * 
  * Ensures every important business event propagates correctly across:
  * - Communication Center (threaded messages with context)
  * - Notifications (in-app + email via triple-sync)
@@ -8,17 +10,46 @@
  * - Finance (payment request linkage)
  * - Tenant/Client portal (visibility)
  * 
- * RULE: Every entity must carry strong context references:
- *   org_id, property_id, tenant_id, lease_id, booking_id, lead_id, document_id
- * 
- * This engine does NOT replace database triggers — it complements them
- * with client-side orchestration for actions initiated from the UI.
+ * HARDENED RULES:
+ * 1. NO DUPLICATE TRIGGERS — modules using dispatchSyncEvent() must not
+ *    also fire legacy notification/message inserts for the same action.
+ * 2. STRICT CONTEXT VALIDATION — each event type requires its critical IDs.
+ * 3. IDEMPOTENCY — dedupe key prevents duplicate dispatches within a window.
  */
 
 import { sendCommunicationEvent } from "./communication-pipeline";
-import { createDeepLinkMeta, createNotification } from "./notification-engine";
+import { createDeepLinkMeta } from "./notification-engine";
 import { createPaymentRequest } from "./payment-request";
 import type { TargetType, AppModule } from "./types";
+
+// ═══════════════════════════════════════════════════════
+// Deduplication — prevents double-sync from retries/clicks
+// ═══════════════════════════════════════════════════════
+
+const DEDUPE_WINDOW_MS = 10_000; // 10 seconds
+const recentDispatches = new Map<string, number>();
+
+function buildDedupeKey(event: SyncEvent): string {
+  const ctx = event.context;
+  const targetId = resolveTargetId(event);
+  return `${event.type}:${ctx.orgId}:${targetId}:${event.actorUserId}`;
+}
+
+function isDuplicate(key: string): boolean {
+  const lastTime = recentDispatches.get(key);
+  if (lastTime && Date.now() - lastTime < DEDUPE_WINDOW_MS) {
+    return true;
+  }
+  // Prune old entries periodically (keep map small)
+  if (recentDispatches.size > 200) {
+    const cutoff = Date.now() - DEDUPE_WINDOW_MS;
+    for (const [k, v] of recentDispatches) {
+      if (v < cutoff) recentDispatches.delete(k);
+    }
+  }
+  recentDispatches.set(key, Date.now());
+  return false;
+}
 
 // ═══════════════════════════════════════════════════════
 // Context Reference — every sync event must carry this
@@ -146,6 +177,24 @@ export type SyncEvent =
   | InterventionCreatedEvent;
 
 // ═══════════════════════════════════════════════════════
+// Strict Context Validation — rejects incomplete events
+// ═══════════════════════════════════════════════════════
+
+const REQUIRED_CONTEXT: Record<SyncEvent["type"], (ctx: SyncContext, event: SyncEvent) => string | null> = {
+  lease_created:        (ctx) => ctx.leaseId ? null : "lease_created requires context.leaseId",
+  rent_call_created:    (ctx, e) => (e as RentCallCreatedEvent).rentCallId ? null : "rent_call_created requires rentCallId",
+  receipt_generated:    (ctx, e) => (e as ReceiptGeneratedEvent).receiptId ? null : "receipt_generated requires receiptId",
+  payment_received:     (ctx, e) => (e as PaymentReceivedEvent).paymentId ? null : "payment_received requires paymentId",
+  lead_created:         (ctx) => ctx.leadId ? null : "lead_created requires context.leadId",
+  booking_request:      (ctx) => ctx.bookingId ? null : "booking_request requires context.bookingId",
+  service_booking:      (ctx) => ctx.bookingId ? null : "service_booking requires context.bookingId",
+  document_shared:      (ctx) => ctx.documentId ? null : "document_shared requires context.documentId",
+  payment_request_sent: (ctx) => (ctx.paymentRequestId || ctx.bookingId || ctx.leaseId || ctx.tenantId)
+    ? null : "payment_request_sent requires paymentRequestId, bookingId, leaseId, or tenantId",
+  intervention_created: (ctx) => ctx.propertyId ? null : "intervention_created requires context.propertyId",
+};
+
+// ═══════════════════════════════════════════════════════
 // Event → Target Type / Module Mapping
 // ═══════════════════════════════════════════════════════
 
@@ -169,17 +218,21 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
 /**
  * Dispatch a cross-module sync event.
  * 
- * This orchestrates:
- * 1. Communication Center message (with context_type + context_id)
- * 2. In-app notification (with DeepLinkMeta)
- * 3. Email notification (via SendGrid)
+ * HARDENED with:
+ * - Strict context validation (rejects incomplete events)
+ * - Deduplication (10s window prevents double-sync)
+ * - Full context propagation (all IDs carried through)
  * 
- * All outputs carry the full SyncContext for traceability.
+ * IMPORTANT: When a module adopts dispatchSyncEvent(), it MUST remove
+ * any legacy direct inserts to `messages` or `notifications` tables
+ * for the same action to prevent duplicate triggers.
+ * 
+ * @returns true if dispatched, false if rejected (validation/dedupe)
  * 
  * @example
- * await dispatchSyncEvent({
+ * const sent = await dispatchSyncEvent({
  *   type: "lease_created",
- *   context: { orgId, propertyId, tenantId, leaseId, countryCode: "FR" },
+ *   context: { orgId, propertyId, tenantId, leaseId: newLease.id, countryCode: "FR" },
  *   actorUserId: user.id,
  *   targetUserId: tenantUserId,
  *   targetEmail: tenant.email,
@@ -189,11 +242,31 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
  *   propertyLabel: "Apt 3B - Rue de Paris",
  * });
  */
-export async function dispatchSyncEvent(event: SyncEvent): Promise<void> {
+export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
   const config = EVENT_CONFIG[event.type];
   if (!config) {
     console.warn(`[sync-engine] Unknown event type: ${event.type}`);
-    return;
+    return false;
+  }
+
+  // 1. Validate orgId (always required)
+  if (!event.context.orgId) {
+    console.error(`[sync-engine] REJECTED ${event.type}: missing context.orgId`);
+    return false;
+  }
+
+  // 2. Strict context validation per event type
+  const validationError = REQUIRED_CONTEXT[event.type]?.(event.context, event);
+  if (validationError) {
+    console.error(`[sync-engine] REJECTED ${event.type}: ${validationError}`);
+    return false;
+  }
+
+  // 3. Deduplication check
+  const dedupeKey = buildDedupeKey(event);
+  if (isDuplicate(dedupeKey)) {
+    console.warn(`[sync-engine] DEDUPE blocked: ${event.type} (key: ${dedupeKey})`);
+    return false;
   }
 
   const { subject, message } = buildEventContent(event);
@@ -223,7 +296,8 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<void> {
     meta,
   });
 
-  console.log(`[sync-engine] dispatched: ${event.type} → ${config.targetType}:${targetId}`);
+  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${config.targetType}:${targetId}`);
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -233,14 +307,20 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<void> {
 /**
  * Send a payment request through the sync engine.
  * Uses org's own payment configuration (SaaS isolation).
+ * 
+ * NOTE: This calls dispatchSyncEvent internally — do NOT also call
+ * dispatchSyncEvent separately for the same payment request.
  */
 export async function syncPaymentRequest(
   event: PaymentRequestSentEvent
 ): Promise<{ success: boolean; instructions: string }> {
-  // First dispatch the sync event for communication/notification
-  await dispatchSyncEvent(event);
+  // Dispatch handles validation + dedupe
+  const dispatched = await dispatchSyncEvent(event);
+  if (!dispatched) {
+    return { success: false, instructions: "Event rejected (validation or dedupe)." };
+  }
 
-  // Then create the actual payment request with org-specific instructions
+  // Create the actual payment request with org-specific instructions
   return createPaymentRequest({
     orgId: event.context.orgId,
     senderId: event.actorUserId,
@@ -290,61 +370,51 @@ function buildEventContent(event: SyncEvent): { subject: string; message: string
         subject: `📝 New lease created — ${event.tenantName}`,
         message: `Lease (${event.leaseType}) created for ${event.tenantName} at ${event.propertyLabel}, starting ${event.startDate}.`,
       };
-
     case "rent_call_created":
       return {
         subject: `🔔 Rent call — ${event.month}`,
         message: `Rent call for ${event.tenantName}: ${event.totalAmount} ${event.currency} for ${event.month} at ${event.propertyLabel}.`,
       };
-
     case "receipt_generated":
       return {
         subject: `🧾 Receipt generated — ${event.month}`,
         message: `Receipt for ${event.tenantName}: ${event.totalAmount} ${event.currency} for ${event.month}.`,
       };
-
     case "payment_received":
       return {
         subject: `💰 Payment received — ${event.month}`,
         message: `Payment of ${event.totalAmount} ${event.currency} received from ${event.tenantName} for ${event.month}.`,
       };
-
     case "lead_created":
       return {
         subject: `🏠 New inquiry — ${event.leadName}`,
         message: `${event.leadName} (${event.leadEmail}) is interested in "${event.listingTitle}".\n\nMessage: ${event.leadMessage}`,
       };
-
     case "booking_request":
       return {
         subject: `📩 Booking request — ${event.guestName}`,
         message: `${event.guestName} wants to book "${event.listingTitle}" from ${event.checkIn} to ${event.checkOut}.`,
       };
-
     case "service_booking":
       return {
         subject: `🎯 Service booking — ${event.clientName}`,
         message: `${event.clientName} booked "${event.serviceTitle}" on ${event.serviceDate} — ${event.totalPrice} ${event.currency}.`,
       };
-
     case "document_shared":
       return {
         subject: `📄 Document shared — ${event.documentTitle}`,
         message: `Document "${event.documentTitle}" (${event.documentType}) has been shared.${event.documentUrl ? `\n\nDownload: ${event.documentUrl}` : ""}`,
       };
-
     case "payment_request_sent":
       return {
         subject: `💳 Payment request — ${event.amount} ${event.currency}`,
         message: `Payment request of ${event.amount} ${event.currency} sent to ${event.recipientName}.\n\n${event.description}`,
       };
-
     case "intervention_created":
       return {
         subject: `🔧 New intervention — ${event.title}`,
         message: `Intervention "${event.title}" created for ${event.propertyLabel} — Priority: ${event.priority}.`,
       };
-
     default:
       return { subject: "Platform notification", message: "An event occurred." };
   }
