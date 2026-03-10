@@ -184,7 +184,7 @@ const RemoteEntrepreneurship = () => {
               className="text-xs font-medium px-4 py-2 rounded-full border transition-colors hover:border-accent/30"
               style={{
                 borderColor: "hsl(var(--primary-foreground) / 0.08)",
-                color: "hsl(var(--primary-foreground) / 0.5)",
+                color: "hsl(var(--primary-foreground) / 0.65)",
               }}
             >
               {link.label}
