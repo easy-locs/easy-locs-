@@ -139,9 +139,10 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     }));
   };
 
+  const needsDoc = !!service?.requires_id_document;
   const isValid = form.booker_name && form.booker_email && !dateOverlap &&
-    (isRange ? (form.date_from && form.date_to) : !!form.service_date);
-
+    (isRange ? (form.date_from && form.date_to) : !!form.service_date) &&
+    (!needsDoc || !!idDocUrl);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col">
