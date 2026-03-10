@@ -269,12 +269,12 @@ const Settings = () => {
                 )}
                 <div>
                   <div className="font-medium text-sm text-foreground">
-                    {showcaseEnabled ? "Showcase Enabled" : "Showcase Disabled"}
+                    {showcaseEnabled ? (t("page.settings.showcase_on") || "Showcase Enabled") : (t("page.settings.showcase_off") || "Showcase Disabled")}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {showcaseEnabled && landlordSlug
-                      ? `Visible at /agency/${landlordSlug}`
-                      : "Your showcase page is not publicly accessible"}
+                      ? `${t("page.settings.visible_at") || "Visible at"} /agency/${landlordSlug}`
+                      : (t("page.settings.showcase_hidden") || "Your showcase page is not publicly accessible")}
                   </div>
                 </div>
               </div>
