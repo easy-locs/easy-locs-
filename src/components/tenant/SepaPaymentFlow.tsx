@@ -65,10 +65,10 @@ export default function SepaPaymentFlow({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
-                {t("sepa.direct_debit") || "Prélèvement SEPA automatique"}
+                {t("sepa.direct_debit") || "Automatic SEPA Direct Debit"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("sepa.direct_debit_desc") || "Entrez votre IBAN — paiement sécurisé via Stripe"}
+                {t("sepa.direct_debit_desc") || "Enter your IBAN — secure payment via Stripe"}
               </p>
             </div>
             <Shield className="h-4 w-4 text-accent shrink-0" />
@@ -85,10 +85,10 @@ export default function SepaPaymentFlow({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
-                {t("sepa.manual_transfer") || "Virement bancaire manuel"}
+                {t("sepa.manual_transfer") || "Manual bank transfer"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("sepa.manual_transfer_desc") || "Effectuez un virement depuis votre banque"}
+                {t("sepa.manual_transfer_desc") || "Make a transfer from your bank"}
               </p>
             </div>
           </button>
@@ -98,7 +98,7 @@ export default function SepaPaymentFlow({
           <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
             <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             <p className="text-sm text-muted-foreground">
-              {t("sepa.not_configured") || "Le paiement SEPA n'est pas encore configuré par votre bailleur. Contactez-le pour plus d'informations."}
+              {t("sepa.not_configured") || "SEPA payment has not been configured by your landlord yet. Contact them for more information."}
             </p>
           </div>
         )}
@@ -110,24 +110,24 @@ export default function SepaPaymentFlow({
     return (
       <div className="space-y-4">
         <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-foreground">
-          ← {t("common.back") || "Retour"}
+          ← {t("common.back") || "Back"}
         </button>
 
         <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-4 w-4 text-accent" />
             <h3 className="text-sm font-semibold text-foreground">
-              {t("sepa.stripe_title") || "Prélèvement SEPA sécurisé"}
+              {t("sepa.stripe_title") || "Secure SEPA Direct Debit"}
             </h3>
           </div>
 
           <p className="text-xs text-muted-foreground mb-4">
-            {t("sepa.stripe_desc") || "Vous serez redirigé vers notre page de paiement sécurisé Stripe pour saisir votre IBAN et autoriser le prélèvement. Le mandat SEPA sera enregistré pour les paiements futurs."}
+            {t("sepa.stripe_desc") || "You will be redirected to our secure Stripe payment page to enter your IBAN and authorize the direct debit."}
           </p>
 
           <div className="bg-background rounded-lg p-3 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t("page.tenant_pay.rent_line") || "Loyer"}</span>
+              <span className="text-muted-foreground">{t("page.tenant_pay.rent_line") || "Rent"}</span>
               <span className="text-foreground font-medium">{fmt(rentCall.rent_amount)}</span>
             </div>
             <div className="flex justify-between text-sm mt-1">
@@ -150,13 +150,13 @@ export default function SepaPaymentFlow({
             ) : (
               <>
                 <ExternalLink className="h-4 w-4" />
-                {t("sepa.pay_now") || "Payer maintenant"}
+                {t("sepa.pay_now") || "Pay Now"}
               </>
             )}
           </button>
 
           <p className="text-[10px] text-muted-foreground text-center mt-2">
-            {t("sepa.mandate_notice") || "En procédant, vous acceptez le mandat de prélèvement SEPA Direct Debit."}
+            {t("sepa.mandate_notice") || "By proceeding, you accept the SEPA Direct Debit mandate."}
           </p>
         </div>
       </div>
@@ -167,19 +167,19 @@ export default function SepaPaymentFlow({
   return (
     <div className="space-y-4">
       <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("common.back") || "Retour"}
+        ← {t("common.back") || "Back"}
       </button>
 
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="text-sm font-semibold text-foreground mb-4">
-          {t("sepa.transfer_details") || "Informations de virement"}
+          {t("sepa.transfer_details") || "Transfer Details"}
         </h3>
 
         <div className="space-y-3">
           {/* Beneficiary */}
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.beneficiary") || "Bénéficiaire"}
+              {t("sepa.beneficiary") || "Beneficiary"}
             </p>
             <p className="text-sm font-medium text-foreground">{ownerBank?.full_name || "—"}</p>
           </div>
@@ -192,7 +192,7 @@ export default function SepaPaymentFlow({
                 {ownerBank?.bank_iban || "—"}
               </code>
               {ownerBank?.bank_iban && (
-                <CopyBtn value={ownerBank.bank_iban} field="iban" label={t("sepa.copy_iban") || "Copier IBAN"} />
+                <CopyBtn value={ownerBank.bank_iban} field="iban" label={t("sepa.copy_iban") || "Copy IBAN"} />
               )}
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function SepaPaymentFlow({
                 <code className="text-sm font-mono text-foreground bg-muted px-2 py-1 rounded">
                   {ownerBank.bank_bic}
                 </code>
-                <CopyBtn value={ownerBank.bank_bic} field="bic" label={t("sepa.copy_bic") || "Copier BIC"} />
+                <CopyBtn value={ownerBank.bank_bic} field="bic" label={t("sepa.copy_bic") || "Copy BIC"} />
               </div>
             </div>
           )}
@@ -214,7 +214,7 @@ export default function SepaPaymentFlow({
           {ownerBank?.bank_name && (
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                {t("sepa.bank") || "Banque"}
+                {t("sepa.bank") || "Bank"}
               </p>
               <p className="text-sm text-foreground">{ownerBank.bank_name}</p>
             </div>
@@ -223,7 +223,7 @@ export default function SepaPaymentFlow({
           {/* Amount */}
           <div className="border-t border-border pt-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.exact_amount") || "Montant exact à virer"}
+              {t("sepa.exact_amount") || "Exact amount to transfer"}
             </p>
             <p className="text-xl font-bold text-foreground">{fmt(rentCall.total_amount)}</p>
           </div>
@@ -231,20 +231,20 @@ export default function SepaPaymentFlow({
           {/* Reference */}
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.reference") || "Référence de paiement (obligatoire)"}
+              {t("sepa.reference") || "Payment reference (required)"}
             </p>
             <div className="flex items-center gap-2">
               <code className="text-sm font-mono text-foreground bg-accent/10 border border-accent/20 px-3 py-1.5 rounded font-bold flex-1">
                 {paymentReference}
               </code>
-              <CopyBtn value={paymentReference} field="ref" label={t("sepa.copy_ref") || "Copier réf."} />
+              <CopyBtn value={paymentReference} field="ref" label={t("sepa.copy_ref") || "Copy ref."} />
             </div>
           </div>
         </div>
 
         <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border">
           <p className="text-xs text-muted-foreground">
-            ⚠️ {t("sepa.manual_notice") || "Indiquez impérativement la référence ci-dessus dans le libellé de votre virement. Votre bailleur sera notifié automatiquement dès réception du paiement."}
+            ⚠️ {t("sepa.manual_notice") || "Please include the reference above in your transfer description. Your landlord will be notified automatically upon receipt."}
           </p>
         </div>
       </div>

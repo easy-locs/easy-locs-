@@ -209,11 +209,11 @@ const Accounting = () => {
             </div>
             <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "Nouvelle écriture"}</Button></DialogTrigger>
+              <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "New Entry"}</Button></DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>{t("page.accounting.new_entry") || "Nouvelle écriture comptable"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{t("page.accounting.new_entry") || "New Accounting Entry"}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <Input placeholder={t("page.accounting.label") || "Libellé"} value={newEntry.label} onChange={e => setNewEntry(p => ({ ...p, label: e.target.value }))} />
+                  <Input placeholder={t("page.accounting.label") || "Label"} value={newEntry.label} onChange={e => setNewEntry(p => ({ ...p, label: e.target.value }))} />
                   <Select value={newEntry.category} onValueChange={v => setNewEntry(p => ({ ...p, category: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
@@ -224,9 +224,9 @@ const Accounting = () => {
                   </div>
                   <Input type="date" value={newEntry.transaction_date} onChange={e => setNewEntry(p => ({ ...p, transaction_date: e.target.value }))} />
                   <Select value={newEntry.property_id || "none"} onValueChange={v => setNewEntry(p => ({ ...p, property_id: v === "none" ? "" : v }))}>
-                    <SelectTrigger><SelectValue placeholder={t("page.accounting.property_optional") || "Bien (optionnel)"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("page.accounting.property_optional") || "Property (optional)"} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">— {t("common.none") || "Aucun"} —</SelectItem>
+                      <SelectItem value="none">— {t("common.none") || "None"} —</SelectItem>
                       {countryFilteredProperties.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
@@ -235,14 +235,14 @@ const Accounting = () => {
                   <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
                     <p className="font-medium text-foreground text-sm">{t("page.accounting.fiscal_info") || "Infos fiscales"} — {activeRules.country}</p>
                     {activeRules.rentalIncomeTax.type === "flat" && <p>📊 {t("page.accounting.flat_tax") || "Taux forfaitaire"}: {activeRules.rentalIncomeTax.rate}%{activeRules.rentalIncomeTax.bracket ? ` (${activeRules.rentalIncomeTax.bracket})` : ""}</p>}
-                    {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Imposition progressive"}</p>}
-                    {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exonéré d'impôt sur les revenus locatifs"}</p>}
-                    {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Prélèvements sociaux"}: {activeRules.socialCharges}%</p>}
-                    {activeRules.depositCap && <p>🏦 {t("page.accounting.deposit_cap") || "Plafond dépôt"}: {activeRules.depositCap}</p>}
+                    {activeRules.rentalIncomeTax.type === "progressive" && <p>📊 {t("page.accounting.progressive_tax") || "Progressive taxation"}</p>}
+                    {activeRules.rentalIncomeTax.type === "exempt" && <p>✅ {t("page.accounting.tax_exempt") || "Exempt from rental income tax"}</p>}
+                    {activeRules.socialCharges && <p>💰 {t("page.accounting.social_charges") || "Social charges"}: {activeRules.socialCharges}%</p>}
+                    {activeRules.depositCap && <p>🏦 {t("page.accounting.deposit_cap") || "Deposit cap"}: {activeRules.depositCap}</p>}
                     {activeRules.vatApplicable && <p>📋 TVA/VAT: {activeRules.vatRates.standard}%</p>}
                   </div>
                   <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newEntry.label || addMut.isPending}>
-                    {addMut.isPending ? "..." : t("common.save") || "Enregistrer"}
+                    {addMut.isPending ? "..." : t("common.save") || "Save"}
                   </Button>
                 </div>
               </DialogContent>

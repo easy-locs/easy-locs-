@@ -364,11 +364,11 @@ const ChannelManager = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "confirmed": case "paid": return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">✅ Confirmé</Badge>;
-      case "approved": return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">📧 Approuvé</Badge>;
-      case "pending": return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">🔔 En attente</Badge>;
-      case "payment_pending": return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">⏳ Paiement</Badge>;
-      case "cancelled": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">🚫 Annulé</Badge>;
+      case "confirmed": case "paid": return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">✅ {t("page.common.confirmed") || "Confirmed"}</Badge>;
+      case "approved": return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">📧 {t("page.common.approved") || "Approved"}</Badge>;
+      case "pending": return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">🔔 {t("page.common.pending") || "Pending"}</Badge>;
+      case "payment_pending": return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">⏳ {t("page.common.payment") || "Payment"}</Badge>;
+      case "cancelled": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">🚫 {t("page.common.cancelled") || "Cancelled"}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
   };

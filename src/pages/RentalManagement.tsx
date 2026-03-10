@@ -487,7 +487,7 @@ const RentalManagement = () => {
       if (emailError || (emailData && emailData.success === false)) {
         toast({
           title: t("page.rental.msg_sent"),
-          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "erreur inconnue"}`,
+          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "unknown error"}`,
           variant: "destructive",
         });
       }
@@ -572,9 +572,9 @@ const RentalManagement = () => {
     } catch (err: any) {
       const msg = err.message || String(err);
       const userMsg = msg.includes("Stripe Connect")
-        ? (t("page.rental.stripe_not_configured") || "Veuillez d'abord configurer votre compte Stripe dans Finances → Paiement en ligne.")
+        ? (t("page.rental.stripe_not_configured") || "Please configure your Stripe account first in Finances → Online Payment.")
         : msg;
-      toast({ title: t("page.rental.payment_error") || "Erreur de paiement", description: userMsg, variant: "destructive" });
+      toast({ title: t("page.rental.payment_error") || "Payment error", description: userMsg, variant: "destructive" });
     } finally { setPayingRentId(null); }
   };
 

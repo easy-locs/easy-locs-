@@ -38,8 +38,8 @@ const TenantPay = () => {
 
   const ALL_METHODS = [
     { id: "card" as const, label: t("page.tenant_pay.card_label") || L.payRent, icon: CreditCard, description: "Visa, Mastercard, Apple Pay, Google Pay" },
-    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "Prélèvement ou virement SEPA" },
-    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Virement", icon: Building, description: t("page.tenant_pay.transfer_desc") || "Virement bancaire classique" },
+    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "SEPA direct debit or transfer" },
+    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Transfer", icon: Building, description: t("page.tenant_pay.transfer_desc") || "Standard bank transfer" },
   ];
 
   const availableMethodIds = useMemo(() => getAvailablePaymentMethods(propertyCountry), [propertyCountry]);
@@ -119,9 +119,9 @@ const TenantPay = () => {
     } catch (err: any) {
       const msg = err.message || String(err);
       const userMsg = msg.includes("Stripe Connect")
-        ? (t("page.tenant.stripe_not_ready") || "Le bailleur n'a pas encore activé le paiement en ligne. Contactez-le ou payez par virement.")
+        ? (t("page.tenant.stripe_not_ready") || "The landlord has not yet enabled online payment. Contact them or pay by bank transfer.")
         : msg;
-      toast({ title: t("page.common.error") || "Erreur", description: userMsg, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: userMsg, variant: "destructive" });
     } finally {
       setPayingId(null);
     }
@@ -140,8 +140,8 @@ const TenantPay = () => {
     // Card payment — check if Stripe Connect is available first
     if (!hasStripeConnect) {
       toast({
-        title: t("page.tenant.stripe_not_ready") || "Paiement en ligne indisponible",
-        description: t("page.tenant.stripe_not_ready_desc") || "Le bailleur n'a pas encore activé le paiement en ligne. Utilisez le virement bancaire ou contactez votre bailleur.",
+        title: t("page.tenant.stripe_not_ready") || "Online payment unavailable",
+        description: t("page.tenant.stripe_not_ready_desc") || "The landlord has not yet enabled online payment. Use bank transfer or contact your landlord.",
         variant: "destructive",
       });
       return;
@@ -247,10 +247,10 @@ const TenantPay = () => {
                           call.payment_status === "failed" ? "bg-destructive/10 text-destructive" :
                           "bg-accent/10 text-accent"
                         }`}>
-                          {call.payment_status === "processing" ? (t("status.processing") || "En cours") :
-                           call.payment_status === "pending" ? (t("status.pending") || "En attente") :
-                           call.payment_status === "failed" ? (t("status.failed") || "Échoué") :
-                           call.payment_status}
+                           {call.payment_status === "processing" ? (t("status.processing") || "Processing") :
+                            call.payment_status === "pending" ? (t("status.pending") || "Pending") :
+                            call.payment_status === "failed" ? (t("status.failed") || "Failed") :
+                            call.payment_status}
                         </span>
                       )}
                     </div>
@@ -269,9 +269,9 @@ const TenantPay = () => {
                       ) : (
                         <ExternalLink className="h-4 w-4" />
                       )}
-                      {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
-                       method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
-                       (t("page.tenant_pay.pay_btn") || "Payer")}
+                       {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
+                        method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Transfer") :
+                        (t("page.tenant_pay.pay_btn") || "Pay")}
                     </button>
                   </div>
                 </div>

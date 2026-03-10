@@ -94,7 +94,7 @@ const AddProperty = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {t("page.rental.add_property") || "Ajouter un bien"}
+              {t("page.rental.add_property") || "Add a Property"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {t("page.add_property.subtitle") || "Enregistrez un nouveau bien avec son pays de rattachement"}
@@ -227,7 +227,7 @@ const AddProperty = () => {
 
           {/* Submit */}
           <button onClick={handleSave} disabled={saving} className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-8 py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 w-full sm:w-auto">
-            {saving ? "..." : (t("page.rental.add_property") || "Ajouter le bien")}
+            {saving ? "..." : (t("page.rental.add_property") || "Add Property")}
           </button>
         </div>
       </div>

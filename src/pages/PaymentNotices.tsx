@@ -415,10 +415,10 @@ const PaymentNotices = () => {
                 <div className="flex gap-3">
                   <button onClick={handlePartialPayment} className="btn-primary flex-1">
                     <CreditCard className="h-4 w-4" />
-                    {t("page.notices.record_payment") || "Enregistrer"}
+                    {t("page.notices.record_payment") || "Record Payment"}
                   </button>
                   <button onClick={() => setPartialDialog(null)} className="btn-secondary">
-                    {t("page.common.cancel") || "Annuler"}
+                    {t("page.common.cancel") || "Cancel"}
                   </button>
                 </div>
               </div>
