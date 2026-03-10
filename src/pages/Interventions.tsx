@@ -64,7 +64,7 @@ const Interventions = () => {
   const { toast } = useToast();
 
   const [interventions, setInterventions] = useState<Intervention[]>([]);
-  const [properties, setProperties] = useState<{ id: string; label: string }[]>([]);
+  const [properties, setProperties] = useState<{ id: string; label: string; country?: string }[]>([]);
   const [tenants, setTenants] = useState<{ id: string; name: string; property_id: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
