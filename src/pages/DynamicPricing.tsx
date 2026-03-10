@@ -171,7 +171,7 @@ const DynamicPricing = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>Add a pricing rule</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <Input placeholder="Nom de la règle" value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} />
+                <Input placeholder="Rule name" value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} />
                 <Select value={newRule.rule_type} onValueChange={v => setNewRule(p => ({ ...p, rule_type: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{RULE_TYPES.map(r => <SelectItem key={r.value} value={r.value}>{r.icon} {r.label}</SelectItem>)}</SelectContent>
