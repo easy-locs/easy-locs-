@@ -225,13 +225,13 @@ const TenantPay = () => {
               <div key={call.id} className="bg-card rounded-xl shadow-card border border-border/50 overflow-hidden">
                 {/* Rent call header */}
                 <div className="p-4 sm:p-5">
-                  <div className="card-row">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                       <CreditCard className="h-5 w-5 text-destructive" />
                     </div>
 
-                    <div className="min-w-0">
-                      <p className="font-semibold text-foreground whitespace-nowrap">{call.month}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground">{call.month}</p>
                       <p className="text-sm text-muted-foreground mt-0.5 flex flex-wrap items-center gap-2">
                         <span>{t("page.tenant_pay.rent_line")}</span>
                         <span className="currency-value whitespace-nowrap">{fmt(call.rent_amount)}</span>
@@ -258,7 +258,7 @@ const TenantPay = () => {
                     <button
                       onClick={() => handlePay(call.id)}
                       disabled={payingId === call.id}
-                      className="inline-flex items-center gap-2 h-10 bg-gradient-gold text-accent-foreground font-semibold px-4 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
                     >
                       {payingId === call.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -269,14 +269,9 @@ const TenantPay = () => {
                       ) : (
                         <ExternalLink className="h-4 w-4" />
                       )}
-                      <span className="hidden sm:inline">
-                        {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
-                         method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
-                         (t("page.tenant_pay.pay_btn") || "Payer")}
-                      </span>
-                      <span className="sm:hidden">
-                        {t("page.tenant_pay.pay_btn") || "Payer"}
-                      </span>
+                      {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
+                       method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
+                       (t("page.tenant_pay.pay_btn") || "Payer")}
                     </button>
                   </div>
                 </div>
