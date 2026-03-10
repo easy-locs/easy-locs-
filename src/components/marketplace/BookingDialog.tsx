@@ -72,7 +72,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     return_time: "",
   });
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
-
+  const [idDocUrl, setIdDocUrl] = useState<string | null>(null);
+  const [idDocUploading, setIdDocUploading] = useState(false);
   const [bookedDates, setBookedDates] = useState<{ from: string; to: string }[]>([]);
 
   useEffect(() => {
