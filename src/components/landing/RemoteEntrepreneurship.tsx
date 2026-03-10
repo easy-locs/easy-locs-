@@ -134,9 +134,9 @@ const RemoteEntrepreneurship = () => {
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-5"
         >
           {[
-            { step: "01", icon: Laptop, title: "Create Your Services", desc: "Set up cleaning, transport, activities or any service in the cities you want to operate." },
-            { step: "02", icon: Globe, title: "Manage Remotely", desc: "Handle bookings, payments, and client communication from anywhere with internet." },
-            { step: "03", icon: MapPin, title: "Scale to New Cities", desc: "Expand your business to new locations without physical presence. Add cities in minutes." },
+            { step: "01", icon: Laptop, title: t("landing.remote.step1") || "Create Your Services", desc: t("landing.remote.step1_desc") || "Set up cleaning, transport, activities or any service in the cities you want to operate." },
+            { step: "02", icon: Globe, title: t("landing.remote.step2") || "Manage Remotely", desc: t("landing.remote.step2_desc") || "Handle bookings, payments, and client communication from anywhere with internet." },
+            { step: "03", icon: MapPin, title: t("landing.remote.step3") || "Scale to New Cities", desc: t("landing.remote.step3_desc") || "Expand your business to new locations without physical presence. Add cities in minutes." },
           ].map((s, i) => (
             <div
               key={s.step}
