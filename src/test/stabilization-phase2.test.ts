@@ -34,9 +34,11 @@ describe("Mobile & Responsive Patterns", () => {
 
   describe("CSS utility classes defined", () => {
     it("index.css contains required mobile patterns", async () => {
-      const fs = await import("fs");
-      const path = await import("path");
-      const css = fs.readFileSync(path.resolve(__dirname, "../index.css"), "utf-8");
+      // @ts-ignore - fs available in vitest node context
+      const fs = await import(/* @vite-ignore */ "node:fs");
+      // @ts-ignore
+      const path = await import(/* @vite-ignore */ "node:path");
+      const css = fs.readFileSync(path.resolve(process.cwd(), "src/index.css"), "utf-8");
       expect(css).toContain("mobile-safe");
       expect(css).toContain("safe-bottom");
       expect(css).toContain("sidebar-overlay");
