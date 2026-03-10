@@ -1,19 +1,45 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Locale } from "@/lib/i18n";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import AppLogo from "@/components/AppLogo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe, ChevronDown } from "lucide-react";
+
+const LANG_FLAGS: Record<string, string> = {
+  fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹",
+  nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷",
+  zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾",
+  sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿",
+  hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦",
+};
+
+const POPULAR_LOCALES: Locale[] = ["en", "fr", "es", "de", "it", "pt", "nl", "ar", "ja", "ko", "zh", "tr"];
 
 const Navbar = () => {
-  const { t } = useI18n();
+  const { t, locale, setLocale, availableLocales } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
+  }, [langOpen]);
 
   const navLinks = [
-    { to: "/explore", label: "Explore", isRoute: true },
+    { to: "/explore", label: t("landing.nav.explore") || "Explore", isRoute: true },
     { to: "#features", label: t("landing.nav.features"), isRoute: false },
     { to: "#pricing", label: t("landing.nav.pricing"), isRoute: false },
+  ];
+
+  const sortedLocales = [
+    ...POPULAR_LOCALES.filter(l => availableLocales.some(a => a.value === l)),
+    ...availableLocales.filter(a => !POPULAR_LOCALES.includes(a.value as Locale)).map(a => a.value as Locale),
   ];
 
   return (
@@ -51,7 +77,49 @@ const Navbar = () => {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Language switcher */}
+          <div className="relative" ref={langRef}>
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10"
+              style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>{LANG_FLAGS[locale] || "🌐"} {locale.toUpperCase()}</span>
+              <ChevronDown className={`h-3 w-3 transition-transform ${langOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {langOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1 w-52 max-h-72 overflow-y-auto bg-card rounded-xl shadow-2xl border border-border z-50 py-1"
+                >
+                  {sortedLocales.map((l) => {
+                    const labelObj = availableLocales.find(a => a.value === l);
+                    return (
+                      <button
+                        key={l}
+                        onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
+                          l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
+                        <span>{labelObj?.label || l.toUpperCase()}</span>
+                        {l === locale && <span className="ml-auto text-accent">✓</span>}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <ThemeSwitcher />
           <Link
             to="/login"
@@ -109,27 +177,38 @@ const Navbar = () => {
                 const style = { color: "hsl(var(--primary-foreground) / 0.8)" };
 
                 return link.isRoute ? (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={className}
-                    style={style}
-                    onClick={() => setMobileOpen(false)}
-                  >
+                  <Link key={link.to} to={link.to} className={className} style={style} onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </Link>
                 ) : (
-                  <a
-                    key={link.to}
-                    href={link.to}
-                    className={className}
-                    style={style}
-                    onClick={() => setMobileOpen(false)}
-                  >
+                  <a key={link.to} href={link.to} className={className} style={style} onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </a>
                 );
               })}
+
+              {/* Mobile language grid */}
+              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}>
+                <p className="px-4 text-[10px] uppercase tracking-widest font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+                  {t("landing.nav.language") || "Language"}
+                </p>
+                <div className="flex flex-wrap gap-1.5 px-4">
+                  {POPULAR_LOCALES.map(l => (
+                    <button
+                      key={l}
+                      onClick={() => { setLocale(l as Locale); }}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        l === locale
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                      }`}
+                      style={l !== locale ? { color: "hsl(var(--primary-foreground) / 0.6)" } : undefined}
+                    >
+                      {LANG_FLAGS[l]} {l.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}>
                 <Link

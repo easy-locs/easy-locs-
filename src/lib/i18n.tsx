@@ -5199,7 +5199,16 @@ const availableLocales: { value: Locale; label: string }[] = [
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(() => {
     const saved = localStorage.getItem("app_locale") as Locale;
-    return saved && translations[saved] ? saved : "fr";
+    if (saved && translations[saved]) return saved;
+    // Auto-detect from browser locale
+    const browserLang = (navigator.language || "").split("-")[0]?.toLowerCase() as Locale;
+    if (browserLang && translations[browserLang]) return browserLang;
+    // Try country part of locale (e.g. "en-FR" → FR → "fr")
+    const browserCountry = (navigator.language || "").split("-")[1]?.toUpperCase();
+    if (browserCountry && COUNTRY_LOCALE_MAP[browserCountry] && translations[COUNTRY_LOCALE_MAP[browserCountry]]) {
+      return COUNTRY_LOCALE_MAP[browserCountry];
+    }
+    return "en";
   });
 
   /* Sync locale from profile on login */
