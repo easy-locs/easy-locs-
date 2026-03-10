@@ -1048,7 +1048,7 @@ const CommunicationCenter = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          {thread.type === "booking" && getBookingTypeBadge(thread.bookingType)}
+                          {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
                           {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
                           {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
                         </div>
