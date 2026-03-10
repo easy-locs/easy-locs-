@@ -579,7 +579,7 @@ const ChannelManager = () => {
                       <span className="text-2xl">🅱️</span>
                       <div>
                         <p className="font-semibold text-foreground">Booking.com</p>
-                        <p className="text-[11px] text-muted-foreground">Synchronisation via iCal</p>
+                        <p className="text-[11px] text-muted-foreground">iCal sync</p>
                       </div>
                     </div>
                     <div className="bg-card/80 rounded-lg p-3 text-xs text-muted-foreground space-y-1.5">
