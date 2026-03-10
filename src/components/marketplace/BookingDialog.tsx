@@ -195,6 +195,37 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               </div>
             </div>
 
+            {/* ID Document upload */}
+            {needsDoc && (
+              <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <Upload className="h-3 w-3" /> 🪪 ID Document Required *
+                </Label>
+                <p className="text-[11px] text-muted-foreground">This service requires a copy of your identity document (passport, ID card, or driver's license).</p>
+                <Input
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="h-9 text-sm cursor-pointer"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) { toast.error("File too large (max 10MB)"); return; }
+                    setIdDocUploading(true);
+                    try {
+                      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+                      const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
+                      const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
+                      if (error) { toast.error("Upload failed: " + error.message); return; }
+                      setIdDocUrl(path);
+                      toast.success("ID document uploaded");
+                    } finally { setIdDocUploading(false); }
+                  }}
+                />
+                {idDocUploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
+                {idDocUrl && !idDocUploading && <p className="text-xs text-accent">✓ Document uploaded</p>}
+              </div>
+            )}
+
             {/* Passengers */}
             {config.showPassengers && (
               <div>
