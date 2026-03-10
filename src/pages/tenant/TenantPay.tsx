@@ -140,8 +140,8 @@ const TenantPay = () => {
     // Card payment — check if Stripe Connect is available first
     if (!hasStripeConnect) {
       toast({
-        title: t("page.tenant.stripe_not_ready") || "Paiement en ligne indisponible",
-        description: t("page.tenant.stripe_not_ready_desc") || "Le bailleur n'a pas encore activé le paiement en ligne. Utilisez le virement bancaire ou contactez votre bailleur.",
+        title: t("page.tenant.stripe_not_ready") || "Online payment unavailable",
+        description: t("page.tenant.stripe_not_ready_desc") || "The landlord has not yet enabled online payment. Use bank transfer or contact your landlord.",
         variant: "destructive",
       });
       return;
