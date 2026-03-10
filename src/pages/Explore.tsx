@@ -318,7 +318,7 @@ export default function Explore() {
             {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {filteredSeasonal.map(l => (
-                  <Link key={l.id} to={`/listing/${l.slug}`} className="group">
+                  <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group">
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300">
                       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                         <img
