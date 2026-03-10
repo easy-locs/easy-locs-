@@ -502,7 +502,7 @@ const ActivitiesMarketplace = () => {
             </Card>
             <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setActiveTab("bookings")}>
               <CardContent className="pt-4 pb-3">
-                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">Pending</span></div>
+                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-warning" /><span className="text-xs text-muted-foreground uppercase">En attente</span></div>
                 <p className="text-2xl font-bold text-foreground mt-1 tabular-nums">{pendingBookings}</p>
                 <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">En attente →</p>
               </CardContent>
