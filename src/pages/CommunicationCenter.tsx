@@ -1059,17 +1059,6 @@ const CommunicationCenter = () => {
                   </SelectContent>
                 </Select>
               )}
-                    key={f.value}
-                    size="sm"
-                    variant={filterType === f.value ? "default" : "ghost"}
-                    onClick={() => setFilterType(f.value)}
-                    className={`text-xs h-7 px-2 gap-1 ${filterType === f.value ? "" : "text-muted-foreground"}`}
-                  >
-                    {f.label}
-                    {f.count > 0 && <span className="text-[9px] opacity-60">{f.count}</span>}
-                  </Button>
-                ))}
-              </div>
             </div>
 
             <ScrollArea className="flex-1">
