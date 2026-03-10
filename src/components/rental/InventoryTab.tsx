@@ -180,17 +180,17 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                     {propReports.map(r => {
                       const reportTenant = tenants.find(tn => tn.id === r.tenant_id);
                       return (
-                        <div key={r.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className={`badge-status text-[10px] ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
+                        <div key={r.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-muted/30 rounded-lg px-3 py-2.5">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
                               {r.report_type === "entry" ? t("comp.inventory.entry") : t("comp.inventory.exit")}
                             </span>
-                            <span className="text-xs text-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" /> {r.report_date}
+                            <span className="text-xs text-foreground flex items-center gap-1 whitespace-nowrap">
+                              <Calendar className="h-3 w-3 text-muted-foreground shrink-0" /> {r.report_date}
                             </span>
                             {reportTenant && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Users className="h-3 w-3" /> {reportTenant.name}
+                              <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                                <Users className="h-3 w-3 shrink-0" /> {reportTenant.name}
                               </span>
                             )}
                           </div>
