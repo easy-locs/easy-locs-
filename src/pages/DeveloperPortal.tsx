@@ -197,7 +197,7 @@ const DeveloperPortal = () => {
                     </div>
                   </div>
                   <Button className="w-full" onClick={() => createWebhookMut.mutate()} disabled={createWebhookMut.isPending || !webhookUrl}>
-                    {createWebhookMut.isPending ? "Création..." : "Créer le webhook"}
+                    {createWebhookMut.isPending ? "Creating..." : "Create webhook"}
                   </Button>
                 </div>
               </DialogContent>
