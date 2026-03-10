@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { reportUIRegression } from "@/lib/ai-audit/triggers";
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,11 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("[ErrorBoundary] Error:", error.message, error.stack);
     console.error("[ErrorBoundary] Component Stack:", info.componentStack);
+    // Report to AI audit trigger system
+    reportUIRegression(
+      info.componentStack?.split("\n")[1]?.trim() || "Unknown component",
+      error.message
+    );
   }
 
   handleReset = () => {

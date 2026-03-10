@@ -16,7 +16,7 @@ import {
   RefreshCw, Zap, AlertTriangle, CheckCircle2, XCircle, Info, Clock,
   ChevronRight, Sparkles, ArrowUpRight, ArrowDownRight, Minus,
 } from "lucide-react";
-import { runFullAudit, runLightAudit, CATEGORY_LABELS } from "@/lib/ai-audit";
+import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit } from "@/lib/ai-audit";
 import type { AuditReport, AuditIssue, ModuleScore, AuditCategory } from "@/lib/ai-audit";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -71,12 +71,25 @@ const AIQualityDashboard = () => {
   const [copilotInput, setCopilotInput] = useState("");
   const [copilotReply, setCopilotReply] = useState("");
   const [copilotLoading, setCopilotLoading] = useState(false);
+  const [triggerIssueCount, setTriggerIssueCount] = useState(0);
+
+  // Subscribe to trigger-based issues
+  useEffect(() => {
+    const update = () => setTriggerIssueCount(getTriggerIssues().length);
+    update();
+    return subscribeTriggerAudit(update);
+  }, []);
 
   const runScan = useCallback(async (type: "full" | "light") => {
     setScanning(true);
     toast.info(type === "full" ? "Running full platform audit..." : "Running quick scan...");
     try {
       const result = type === "full" ? await runFullAudit() : await runLightAudit();
+      // Merge trigger-based issues into the report
+      const triggerIssuesArr = getTriggerIssues();
+      result.issues = [...result.issues, ...triggerIssuesArr];
+      result.totalIssues = result.issues.length;
+      result.criticalIssues = result.issues.filter(i => i.severity === "critical").length;
       setReport(result);
       toast.success(`Scan complete — Score: ${result.globalScore}/100 — ${result.totalIssues} issue(s) found`);
     } catch (err) {

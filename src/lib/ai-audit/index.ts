@@ -19,6 +19,15 @@ import {
 export type { AuditReport, AuditIssue, ModuleScore, AuditCategory };
 export { CATEGORY_LABELS, SEVERITY_WEIGHTS };
 
+// Re-export trigger system
+export {
+  dispatchTriggerAudit, triggerPageAudit, auditSyncResult,
+  reportUIRegression, reportRouteError,
+  auditPaymentResult, auditBookingResult, auditNotificationResult,
+  auditListingPublish, auditListingUpdate,
+  getTriggerIssues, subscribeTriggerAudit,
+} from "./triggers";
+
 type ScanType = AuditReport["scanType"];
 
 function computeModuleScore(category: AuditCategory, issues: AuditIssue[]): ModuleScore {
