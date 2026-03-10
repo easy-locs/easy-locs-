@@ -167,9 +167,9 @@ const DynamicPricing = () => {
             <p className="text-muted-foreground text-sm ml-10">Optimize your prices based on demand and seasonality</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nouvelle règle</Button></DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />New rule</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Ajouter une règle de prix</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Add a pricing rule</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <Input placeholder="Nom de la règle" value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} />
                 <Select value={newRule.rule_type} onValueChange={v => setNewRule(p => ({ ...p, rule_type: v }))}>
