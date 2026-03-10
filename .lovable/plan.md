@@ -16,10 +16,11 @@
 ## PHASE 2 — Centre de communication centralisé
 | Tâche | Statut |
 |-------|--------|
-| Messages liés à landlord/tenant/property/lease/booking/payment/document | 🔲 À faire |
+| Messages liés à landlord/tenant/property/lease/booking/payment/document | ✅ Terminé |
 | Statuts sent/delivered/read | ✅ Terminé (colonnes en place) |
-| Historique d'activité | 🔲 À faire |
+| Historique d'activité par entité (timeline agrégée) | ✅ Terminé |
 | Notifications liées | ✅ Terminé |
+| Filtre par propriété dans le centre de communication | ✅ Terminé |
 
 ## PHASE 3 — Conciergerie / Activités & Services
 | Tâche | Statut |
