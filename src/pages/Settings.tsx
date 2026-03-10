@@ -342,18 +342,18 @@ const Settings = () => {
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">White-label / Branding</h2>
+            <h2 className="font-semibold text-foreground">{t("page.settings.branding_title") || "White-label / Branding"}</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">Personnalisez l'apparence de vos documents et du portail locataire avec votre marque.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t("page.settings.branding_desc") || "Customize the look of your documents and tenant portal with your brand."}</p>
           <div className="space-y-4">
             <div>
-              <label className="form-label">Nom de marque</label>
-              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder="Ex: Mon Agence Immo"
+              <label className="form-label">{t("page.settings.brand_name") || "Brand Name"}</label>
+              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder={t("page.settings.brand_name_placeholder") || "e.g. My Agency"}
                 className="form-input" />
             </div>
             <div className="form-grid">
               <div>
-                <label className="form-label">Couleur principale</label>
+                <label className="form-label">{t("page.settings.primary_color") || "Primary Color"}</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))}
                     className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
