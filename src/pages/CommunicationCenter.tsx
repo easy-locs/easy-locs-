@@ -1053,7 +1053,7 @@ const CommunicationCenter = () => {
                           {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
+                          {thread.listingTitle || thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
                         </p>
                         {thread.lastMessage && (
                           <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
