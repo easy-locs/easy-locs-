@@ -72,6 +72,7 @@ const PropertyCalendar = lazy(() => import("./pages/PropertyCalendar"));
 const RealEstateListings = lazy(() => import("./pages/RealEstateListings"));
 const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListing"));
 const PropertiesShowcase = lazy(() => import("./pages/PropertiesShowcase"));
+const AccountShowcase = lazy(() => import("./pages/AccountShowcase"));
 
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
