@@ -77,7 +77,7 @@ const generateICalFeed = (bookings: Booking[], properties: Property[]) => {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Easy-Locs//Saisonnier//FR",
+    "PRODID:-//Easy-Locs//Seasonal//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "X-WR-CALNAME:Easy-Locs Saisonnier",
