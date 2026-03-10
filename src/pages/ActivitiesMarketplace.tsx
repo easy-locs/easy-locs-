@@ -458,9 +458,9 @@ const ActivitiesMarketplace = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Compass className="h-6 w-6 text-accent" /> Services Marketplace
+              <Compass className="h-6 w-6 text-accent" /> Marketplace
             </h1>
-            <p className="text-muted-foreground text-sm">Global dynamic marketplace for activities & services</p>
+            <p className="text-muted-foreground text-sm">Activités, services & prestataires à l'international</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             {!myProvider ? (
