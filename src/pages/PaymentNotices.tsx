@@ -395,9 +395,9 @@ const PaymentNotices = () => {
                   {tenantName(partialDialog.tenant_id)} — {partialDialog.month}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {t("page.notices.total_due") || "Total dû"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
+                  {t("page.notices.total_due") || "Total due"}: <span className="font-semibold text-foreground">{fmt(partialDialog.total_amount)}</span>
                   {(partialDialog.paid_amount || 0) > 0 && (
-                    <> · {t("page.notices.already_paid") || "Déjà payé"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
+                    <> · {t("page.notices.already_paid") || "Already paid"}: <span className="font-semibold text-success">{fmt(partialDialog.paid_amount || 0)}</span></>
                   )}
                 </p>
                 <div className="form-group mb-4">

@@ -97,7 +97,7 @@ const AddProperty = () => {
               {t("page.rental.add_property") || "Add a Property"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {t("page.add_property.subtitle") || "Enregistrez un nouveau bien avec son pays de rattachement"}
+              {t("page.add_property.subtitle") || "Register a new property with its associated country"}
             </p>
           </div>
         </div>
