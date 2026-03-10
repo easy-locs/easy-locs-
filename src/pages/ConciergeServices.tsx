@@ -329,9 +329,9 @@ const ConciergeServices = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent" /> Concierge Pro
+              <Sparkles className="h-6 w-6 text-accent" /> {t?.("page.concierge.title") || "Concierge Pro"}
             </h1>
-            <p className="text-sm text-muted-foreground">Manage services, bookings, payments & commissions</p>
+            <p className="text-sm text-muted-foreground">{t?.("page.concierge.subtitle") || "Manage services, bookings, payments & commissions"}</p>
           </div>
           <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
             {showcaseUrl && (
