@@ -133,12 +133,19 @@ const TenantPay = () => {
       return;
     }
     if (method === "bank_transfer") {
-      // Show transfer info via toast + expand SEPA manual
-      setMethod("sepa");
-      setExpandedSepaId(rentCallId);
+      // Just show the bank info section — no action needed
+      setExpandedSepaId(null);
       return;
     }
-    // Card payment
+    // Card payment — check if Stripe Connect is available first
+    if (!hasStripeConnect) {
+      toast({
+        title: t("page.tenant.stripe_not_ready") || "Paiement en ligne indisponible",
+        description: t("page.tenant.stripe_not_ready_desc") || "Le bailleur n'a pas encore activé le paiement en ligne. Utilisez le virement bancaire ou contactez votre bailleur.",
+        variant: "destructive",
+      });
+      return;
+    }
     await handlePayStripe(rentCallId);
   };
 
