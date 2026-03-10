@@ -28,7 +28,7 @@ export const generateCoreSitemap = (): SitemapEntry[] => {
     ["/concierge-services", "0.9"], ["/activities", "0.9"],
     ["/rental-management", "0.8"], ["/property-owner-software", "0.8"],
     ["/property-management-platform", "0.8"], ["/rental-management-software", "0.8"],
-    ["/rentals", "0.8"], ["/services", "0.9"], ["/marketplace", "0.9"],
+    ["/rentals", "0.8"], ["/services", "0.9"], ["/marketplace", "0.9"], ["/explore", "0.9"],
     ["/login", "0.4"], ["/signup", "0.5"], ["/install", "0.4"],
     ["/guest", "0.5"], ["/vision", "0.5"],
     ["/terms", "0.3"], ["/privacy", "0.3"], ["/cookies", "0.3"],
