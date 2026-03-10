@@ -598,7 +598,7 @@ const ChannelManager = () => {
               {/* Existing connections */}
               {connections.length === 0 && (
                 <Card><CardContent className="py-6 text-center text-muted-foreground text-sm">
-                  Aucune connexion active. Utilisez les guides ci-dessus pour synchroniser vos calendriers Airbnb et Booking.com.
+                  No active connections. Use the guides above to sync your Airbnb and Booking.com calendars.
                 </CardContent></Card>
               )}
               {connections.map(conn => {
