@@ -361,11 +361,10 @@ const PublicServiceBooking = () => {
     }
   };
 
-  const PAYMENT_LABELS: Record<string, string> = {
-    stripe: "💳 Card (Stripe)",
-    paypal: "🅿️ PayPal",
-    bank_transfer: "🏦 Bank Transfer",
-  };
+  // Map legacy payment method names to PaymentMethodSelector format
+  const hasStripe = availablePayments.includes("stripe");
+  const hasPaypal = availablePayments.includes("paypal");
+  const hasBankDetails = availablePayments.includes("bank_transfer") || Object.keys(bankDetails).length > 0;
 
   return (
     <>
