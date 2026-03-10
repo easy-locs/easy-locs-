@@ -13,6 +13,7 @@ import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import ShareButtons from "@/components/public/ShareButtons";
+import ListingContactButtons from "@/components/public/ListingContactButtons";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
