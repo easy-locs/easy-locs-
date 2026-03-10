@@ -61,6 +61,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // NAVIGATION: Unified clean structure
   // ═══════════════════════════════════════════════════════
 
+  // Sections accessible on free tier (no subscription needed)
+  const FREE_NAV_SECTIONS = new Set(["dashboard", "sales", "marketplace", "communication"]);
+
   const navSections: NavSection[] = [
     // 1. Dashboard — global overview
     {
