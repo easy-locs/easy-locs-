@@ -31,7 +31,6 @@ interface Listing {
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; seoLabel: string }> = {
   sale:            { label: "For Sale",         color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-500/10",  border: "border-emerald-500/30", seoLabel: "for Sale" },
   long_term_rent:  { label: "Long-term Rent",   color: "text-sky-700 dark:text-sky-300",        bg: "bg-sky-500/10",      border: "border-sky-500/30",     seoLabel: "for Long-term Rent" },
-  seasonal_rent:   { label: "Seasonal Rental",   color: "text-amber-700 dark:text-amber-300",    bg: "bg-amber-500/10",    border: "border-amber-500/30",   seoLabel: "Seasonal Rental" },
 };
 
 const PROPERTY_TYPES: Record<string, string> = {
@@ -47,7 +46,6 @@ const ENERGY_COLORS: Record<string, string> = {
 const PRICE_LABEL: Record<string, string> = {
   sale: "",
   long_term_rent: "/month",
-  seasonal_rent: "/night",
 };
 
 export default function PublicRealEstateListing() {

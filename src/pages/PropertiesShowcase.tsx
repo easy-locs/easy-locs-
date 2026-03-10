@@ -27,7 +27,6 @@ interface PublicListing {
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string; border: string }> = {
   sale:            { label: "For Sale",        color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-500/10",  icon: "🏷️", border: "border-emerald-500/30" },
   long_term_rent:  { label: "Long-term Rent",  color: "text-sky-700 dark:text-sky-300",        bg: "bg-sky-500/10",      icon: "🏠", border: "border-sky-500/30" },
-  seasonal_rent:   { label: "Seasonal Rental",  color: "text-amber-700 dark:text-amber-300",    bg: "bg-amber-500/10",    icon: "🏖️", border: "border-amber-500/30" },
 };
 
 const PROPERTY_TYPES = [
@@ -43,7 +42,6 @@ const PROPERTY_TYPES = [
 const PRICE_LABEL: Record<string, string> = {
   sale: "",
   long_term_rent: "/mo",
-  seasonal_rent: "/night",
 };
 
 export default function PropertiesShowcase() {
@@ -70,7 +68,7 @@ export default function PropertiesShowcase() {
       if (maxPrice) params.p_max_price = Number(maxPrice);
 
       const { data } = await supabase.rpc("get_public_real_estate_listings", params);
-      setListings((data || []) as PublicListing[]);
+      setListings(((data || []) as PublicListing[]).filter(l => l.listing_type !== "seasonal_rent"));
       setLoading(false);
     };
     load();
@@ -92,7 +90,6 @@ export default function PropertiesShowcase() {
     all: listings.length,
     sale: listings.filter(l => l.listing_type === "sale").length,
     long_term_rent: listings.filter(l => l.listing_type === "long_term_rent").length,
-    seasonal_rent: listings.filter(l => l.listing_type === "seasonal_rent").length,
   }), [listings]);
 
   const seoJsonLd = {
