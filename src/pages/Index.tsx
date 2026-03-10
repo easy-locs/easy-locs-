@@ -152,6 +152,7 @@ const Index = () => {
         <TrustSection />
       </Suspense>
       <Pricing />
+      <LandingFAQ />
       <Newsletter />
       <Footer />
     </div>
