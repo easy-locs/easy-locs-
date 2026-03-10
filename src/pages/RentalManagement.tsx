@@ -1775,7 +1775,7 @@ const RentalManagement = () => {
                                 {paid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">
@@ -1783,7 +1783,7 @@ const RentalManagement = () => {
                                           {p.payment_method === "online" ? ` · ${L.online}` : p.payment_method === "bank_transfer" ? ` · ${L.transfer}` : p.payment_method === "cash" ? ` · ${L.cash}` : ""}
                                         </p>
                                       </div>
-                                      <div className="flex items-center gap-2 shrink-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         <span className="inline-flex items-center h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">✓ {L.paid}</span>
                                         <button onClick={() => togglePayment(p.id)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.unpaid")}>
                                           <X className="h-3.5 w-3.5" />
