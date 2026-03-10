@@ -1,18 +1,10 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
-
-interface SubscriptionState {
-  subscribed: boolean;
-  plan: string;
-  subscriptionEnd: string | null;
-  loading: boolean;
-  isTrial: boolean;
-  trialDaysLeft: number | null;
-}
 
 interface AuthContextType {
   user: User | null;
