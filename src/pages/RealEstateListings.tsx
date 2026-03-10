@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
+import { getSocialShareUrl, getCleanShareUrl } from "@/lib/social-share";
 import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
@@ -314,15 +315,15 @@ export default function RealEstateListings() {
                         {/* Share buttons */}
                         <div className="flex items-center gap-1.5">
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + url)}`, "_blank"); }}>
+                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + socialUrl)}`, "_blank"); }}>
                             <MessageCircle className="h-3 w-3 shrink-0" /> WhatsApp
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
+                            onClick={() => { const socialUrl = getSocialShareUrl("real-estate", listing.slug); window.open(`https://t.me/share/url?url=${encodeURIComponent(socialUrl)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
                             <Send className="h-3 w-3 shrink-0" /> Telegram
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.location.href = `mailto:?subject=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(listing.title + "\n" + url)}`; }}>
+                            onClick={() => { const cleanUrl = getCleanShareUrl("real-estate", listing.slug); window.location.href = `mailto:?subject=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(listing.title + "\n" + cleanUrl)}`; }}>
                             <Mail className="h-3 w-3 shrink-0" /> Email
                           </Button>
                         </div>
