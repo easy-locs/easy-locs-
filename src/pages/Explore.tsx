@@ -430,7 +430,8 @@ export default function Explore() {
           {/* ═══ Services Tab ═══ */}
           <TabsContent value="services" className="mt-0">
             {loading ? <GridSkeleton /> : filteredServices.length === 0 ? <EmptyState label="services" /> : (
-              <CountryGroupedGrid items={filteredServices} groupByCategory={(l: any) => (SERVICE_CATEGORIES[l.category] || l.category)} renderCard={(l: any) => {
+              <>
+              <CountryGroupedGrid items={filteredServices.slice(0, visibleCount)} groupByCategory={(l: any) => (SERVICE_CATEGORIES[l.category] || l.category)} renderCard={(l: any) => {
                 const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                 const catLabel = SERVICE_CATEGORIES[l.category] || l.category;
                 return (
@@ -453,6 +454,8 @@ export default function Explore() {
                   </Link>
                 );
               }} />
+              <LoadMoreButton total={filteredServices.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
         </Tabs>
