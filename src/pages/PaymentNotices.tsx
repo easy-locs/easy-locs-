@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/country-config";
 interface Tenant { id: string; name: string; property_id: string | null; rent_amount: number; charges_amount: number; }
 interface Property { id: string; label: string; address: string; city: string; country: string; }
 interface Notice { id: string; tenant_id: string; property_id: string | null; month: string; rent_amount: number; charges_amount: number; total_amount: number; due_date: string; sent: boolean; }
-interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; }
+interface RentCall { id: string; tenant_id: string; month: string; total_amount: number; paid: boolean; paid_amount?: number; }
 
 const PaymentNotices = () => {
   const { user, orgId, userCountry } = useAuth();
