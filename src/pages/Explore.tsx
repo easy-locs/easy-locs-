@@ -64,12 +64,14 @@ const PLACEHOLDER_IMG = "/placeholder.svg";
 
 /* ─────────── Component ─────────── */
 export default function Explore() {
+  const ITEMS_PER_PAGE = 12;
   const [tab, setTab] = useState("seasonal");
   const [search, setSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
