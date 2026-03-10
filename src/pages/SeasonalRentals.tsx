@@ -590,7 +590,7 @@ const SeasonalRentals = () => {
           />
         )}
 
-        {showIcalPanel && (
+        {viewMode === "bookings" && showIcalPanel && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> {t("page.seasonal.ical_sync_title")}</h3>
