@@ -705,7 +705,7 @@ const ChannelManager = () => {
       <Dialog open={!!editModalRes} onOpenChange={(open) => { if (!open) setEditModalRes(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Modifier la réservation</DialogTitle>
+            <DialogTitle>Edit reservation</DialogTitle>
           </DialogHeader>
           {editModalRes && (
             <div className="space-y-4">
