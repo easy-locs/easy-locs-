@@ -26,11 +26,17 @@ interface NavItem {
   path: string;
 }
 
+interface NavSubGroup {
+  label: string;
+  items: NavItem[];
+}
+
 interface NavSection {
   key: string;
   title: string;
   icon: React.ElementType;
   items: NavItem[];
+  subGroups?: NavSubGroup[];
 }
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -66,24 +72,37 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 2. Real Estate — all property business
+    // 2. Real Estate — organized with clear sub-groups
     {
       key: "real_estate",
       title: t("section.real_estate") || "Real Estate",
       icon: Home,
-      items: [
-        // Long-term rental (full sub-system)
-        { icon: Home, label: t("nav.long_term") || "Long-term Rental", path: cPath("/dashboard/rental") },
-        { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
-        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
-        { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
-        { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
-        // Seasonal
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rental", path: "/dashboard/seasonal" },
-        // Sales & leads
-        { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
-        { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
-        { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
+      items: [], // items are in subGroups
+      subGroups: [
+        {
+          label: t("section.long_term") || "Long-term Rental",
+          items: [
+            { icon: Home, label: t("nav.long_term") || "Properties", path: cPath("/dashboard/rental") },
+            { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
+            { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+            { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
+            { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
+          ],
+        },
+        {
+          label: t("nav.seasonal") || "Seasonal",
+          items: [
+            { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rental", path: "/dashboard/seasonal" },
+            { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
+          ],
+        },
+        {
+          label: t("nav.real_estate_listings") || "Sales / Listings",
+          items: [
+            { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
+            { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
+          ],
+        },
       ],
     },
 
@@ -156,6 +175,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return false;
   };
 
+  // Helper to get all items including subGroups
+  const getAllSectionItems = (section: NavSection): NavItem[] => {
+    const items = [...section.items];
+    if (section.subGroups) {
+      for (const sg of section.subGroups) {
+        items.push(...sg.items);
+      }
+    }
+    return items;
+  };
+
   const getDefaultOpen = () => {
     const open: Record<string, boolean> = {};
     for (const section of navSections) {
@@ -163,11 +193,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         open[section.key] = true;
         continue;
       }
-      open[section.key] = section.items.some(isItemActive);
+      open[section.key] = getAllSectionItems(section).some(isItemActive);
     }
     if (!Object.values(open).some(Boolean)) {
       open["dashboard"] = true;
-      if (activeCountry) open["property"] = true;
+      if (activeCountry) open["real_estate"] = true;
     }
     return open;
   };
@@ -331,11 +361,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin">
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
-            const hasActiveItem = section.items.some(isItemActive);
-            const isSingleItem = section.items.length === 1;
+            const allItems = getAllSectionItems(section);
+            const hasActiveItem = allItems.some(isItemActive);
+            const isSingleItem = allItems.length === 1 && !section.subGroups;
 
             if (isSingleItem) {
-              const item = section.items[0];
+              const item = allItems[0];
               const active = isItemActive(item);
               return (
                 <div key={section.key} className="mb-1">
@@ -354,6 +385,26 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
               );
             }
+
+            // Render nav item link
+            const renderNavItem = (item: NavItem) => {
+              const active = isItemActive(item);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            };
 
             return (
               <div key={section.key} className="mb-1">
@@ -376,28 +427,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
                 <div
                   className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                    isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+                    isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="pl-2 space-y-0.5 pb-1">
-                    {section.items.map((item) => {
-                      const active = isItemActive(item);
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            active
-                              ? "bg-sidebar-accent text-sidebar-primary"
-                              : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
+                    {/* Flat items (no subGroups) */}
+                    {section.items.map(renderNavItem)}
+
+                    {/* Sub-grouped items */}
+                    {section.subGroups?.map((sg, sgIdx) => (
+                      <div key={sgIdx} className="mt-1.5">
+                        <p className="px-3 py-1 text-[10px] font-semibold tracking-wider uppercase text-sidebar-foreground/30">
+                          {sg.label}
+                        </p>
+                        {sg.items.map(renderNavItem)}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
