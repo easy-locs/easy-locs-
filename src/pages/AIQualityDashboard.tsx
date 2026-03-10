@@ -181,13 +181,17 @@ const AIQualityDashboard = () => {
               15-engine audit system • Continuous quality monitoring
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => runScan("light")} disabled={scanning}>
               <Zap className="h-4 w-4 mr-1.5" /> Quick Scan
             </Button>
             <Button size="sm" onClick={() => runScan("full")} disabled={scanning}>
               <RefreshCw className={`h-4 w-4 mr-1.5 ${scanning ? "animate-spin" : ""}`} />
               Full Audit
+            </Button>
+            <Button variant="secondary" size="sm" onClick={runScheduledScan} disabled={scanning}>
+              <Database className="h-4 w-4 mr-1.5" />
+              Backend Audit
             </Button>
           </div>
         </div>
