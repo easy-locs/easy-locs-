@@ -300,7 +300,7 @@ const Dashboard = () => {
                     <Plus className="h-5 w-5 text-accent" />
                   </div>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">
-                    {t("page.rental.add_property") || "Ajouter un bien"}
+                    {t("page.rental.add_property") || "Add a Property"}
                   </span>
                 </Link>
               </motion.div>
