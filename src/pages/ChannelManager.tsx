@@ -455,7 +455,7 @@ const ChannelManager = () => {
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => navigate("/dashboard/pricing")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Règles prix</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Price rules</p>
               <p className="text-xl sm:text-2xl font-bold text-accent tabular-nums mt-1">{pricingRules.length}</p>
               <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Dynamic Pricing →</p>
             </CardContent>
