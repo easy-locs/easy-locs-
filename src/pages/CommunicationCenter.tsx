@@ -4,8 +4,9 @@ import {
   MessageCircle, Send, ArrowLeft, User, Filter, Search, Paperclip,
   Globe, Clock, CheckCheck, Check, FileText, CreditCard, Wrench,
   Loader2, X, Upload, Link2, CalendarCheck, Ban, Edit3, ExternalLink,
-  Building, Phone, Mail, MapPin, Receipt, ChevronRight, Hash,
+  Building, Phone, Mail, MapPin, Receipt, ChevronRight, Hash, History,
 } from "lucide-react";
+import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
