@@ -82,11 +82,12 @@ const ActivityCitySEOPage = () => {
     >
       <section className="py-20 md:py-28 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto px-4 max-w-5xl text-center">
-          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <MapPin className="h-4 w-4" />
-            <Link to={`/property-management-${country.slug}`} className="hover:text-foreground">{country.flag} {country.name}</Link>
+          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap justify-center">
+            <Link to="/activities" className="hover:text-foreground">Activities</Link>
             <span>/</span>
-            <Link to={`/property-management-${city.slug}`} className="hover:text-foreground">{city.name}</Link>
+            <Link to={`/country/${country.slug}`} className="hover:text-foreground">{country.flag} {country.name}</Link>
+            <span>/</span>
+            <Link to={`/city/${city.slug}/activities`} className="hover:text-foreground">{city.name}</Link>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-6">
             {activity.icon} {activity.label} in {city.name}
