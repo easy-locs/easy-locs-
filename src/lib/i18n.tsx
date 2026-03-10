@@ -3110,8 +3110,7 @@ const pageEn: Record<string, string> = {
   "pagination.results": "results",
   "pagination.page": "Page",
 
-  // Legal Notice page
-  "legal.notice.title": "Legal Notice",
+  // Legal Notice page (extended)
   "legal.notice.publisher": "Website Publisher",
   "legal.notice.company_type": "Simplified joint stock company",
   "legal.notice.website": "Website",
