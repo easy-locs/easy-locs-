@@ -615,9 +615,9 @@ const ActivitiesMarketplace = () => {
               {myServices.length === 0 ? (
                 <Card><CardContent className="py-12 text-center">
                   <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <p className="text-muted-foreground">No services yet</p>
+                  <p className="text-muted-foreground">Aucun service encore</p>
                   <Button className="mt-4" onClick={() => setServiceFormOpen(true)}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Your First Service
+                    <Plus className="h-4 w-4 mr-1" /> Ajouter votre premier service
                   </Button>
                 </CardContent></Card>
               ) : (
