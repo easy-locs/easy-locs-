@@ -187,6 +187,20 @@ const Hero = () => {
                 {t("landing.hero.cta_explore") || "Explore Listings"}
               </Link>
             </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/dashboard/seasonal"
+                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
+                style={{
+                  borderColor: "hsl(var(--accent) / 0.25)",
+                  color: "hsl(var(--accent))",
+                  background: "hsl(var(--accent) / 0.08)",
+                }}
+              >
+                <Building2 className="h-4 w-4 opacity-70" />
+                {t("landing.hero.cta_publish") || "Publish a Listing"}
+              </Link>
+            </motion.div>
           </motion.div>
 
           {/* ─── Trust stats ─── */}
