@@ -16,26 +16,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 const API_ENDPOINTS = [
-  { method: "GET", path: "/properties", desc: "Lister les biens immobiliers" },
-  { method: "GET", path: "/tenants", desc: "Lister les locataires" },
-  { method: "GET", path: "/leases", desc: "Lister les baux" },
-  { method: "GET", path: "/rent-calls", desc: "Lister les appels de loyer" },
-  { method: "GET", path: "/documents", desc: "Lister les documents" },
-  { method: "POST", path: "/properties", desc: "Créer un bien" },
-  { method: "POST", path: "/tenants", desc: "Créer un locataire" },
-  { method: "POST", path: "/documents/generate", desc: "Générer un document PDF" },
-  { method: "GET", path: "/accounting/journal", desc: "Journal comptable" },
-  { method: "GET", path: "/reservations", desc: "Lister les réservations saisonnières" },
+  { method: "GET", path: "/properties", desc: "List properties" },
+  { method: "GET", path: "/tenants", desc: "List tenants" },
+  { method: "GET", path: "/leases", desc: "List leases" },
+  { method: "GET", path: "/rent-calls", desc: "List rent calls" },
+  { method: "GET", path: "/documents", desc: "List documents" },
+  { method: "POST", path: "/properties", desc: "Create a property" },
+  { method: "POST", path: "/tenants", desc: "Create a tenant" },
+  { method: "POST", path: "/documents/generate", desc: "Generate a PDF document" },
+  { method: "GET", path: "/accounting/journal", desc: "Accounting journal" },
+  { method: "GET", path: "/reservations", desc: "List seasonal reservations" },
 ];
 
 const WEBHOOK_EVENTS = [
-  { value: "payment.received", label: "Paiement reçu" },
-  { value: "lease.created", label: "Bail créé" },
-  { value: "tenant.created", label: "Locataire créé" },
-  { value: "intervention.created", label: "Intervention créée" },
-  { value: "booking.created", label: "Réservation créée" },
-  { value: "document.generated", label: "Document généré" },
-  { value: "inventory.completed", label: "État des lieux finalisé" },
+  { value: "payment.received", label: "Payment received" },
+  { value: "lease.created", label: "Lease created" },
+  { value: "tenant.created", label: "Tenant created" },
+  { value: "intervention.created", label: "Intervention created" },
+  { value: "booking.created", label: "Booking created" },
+  { value: "document.generated", label: "Document generated" },
+  { value: "inventory.completed", label: "Inventory completed" },
 ];
 
 const DeveloperPortal = () => {
