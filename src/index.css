@@ -957,8 +957,8 @@ html {
     --page-padding-x: 0.5rem;
     --card-padding: 0.75rem;
   }
-  h1 { font-size: 1.125rem !important; }
-  h2 { font-size: 1rem !important; }
+  .app-main h1 { font-size: 1.125rem !important; }
+  .app-main h2 { font-size: 1rem !important; }
   .stats-grid {
     grid-template-columns: 1fr !important;
   }
