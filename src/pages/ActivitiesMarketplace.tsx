@@ -200,7 +200,7 @@ const ActivitiesMarketplace = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Service updated!");
+      toast.success("Service mis à jour !");
       qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
       qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
       setServiceFormOpen(false);
