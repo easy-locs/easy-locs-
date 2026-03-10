@@ -682,7 +682,7 @@ const ChannelManager = () => {
                                     </Button>
                                     <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive hover:text-destructive"
                                       disabled={cancellingId === r.id}
-                                      onClick={() => { if (confirm(`Annuler la réservation de ${r.guest_name} ?`)) cancelReservation(r); }}>
+                                      onClick={() => { if (confirm(`Cancel the reservation for ${r.guest_name}?`)) cancelReservation(r); }}>
                                       <XCircle className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
