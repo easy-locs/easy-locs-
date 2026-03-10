@@ -13,17 +13,16 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 
 const FREE_FEATURES = new Set([
-  // Listings & publishing
+  // Listings & publishing (unlimited)
   "real_estate",
   "marketplace",
   "concierge",
   "seasonal_listings",
   "activities",
-  "ota_sync",
-  // Communication
+  // Communication (receive messages, emails, WhatsApp, Telegram)
   "messages",
   "communication",
-  // Storefront
+  // Storefront & catalog
   "storefront",
   "catalog",
 ]);
