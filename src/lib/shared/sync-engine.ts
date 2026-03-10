@@ -209,9 +209,33 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   booking_request:      { targetType: "booking_request",     module: "seasonal",     notifType: "request" },
   service_booking:      { targetType: "marketplace_booking", module: "marketplace",  notifType: "info" },
   document_shared:      { targetType: "document",            module: "long_term",    notifType: "document" },
-  payment_request_sent: { targetType: "payment",            module: "marketplace",  notifType: "payment" },
+  payment_request_sent: { targetType: "payment",            module: "long_term",    notifType: "payment" },
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
 };
+
+// Context-aware config resolution — certain events adapt based on context IDs
+function resolveEffectiveConfig(
+  event: SyncEvent,
+  baseConfig: { targetType: TargetType; module: AppModule; notifType: string }
+): { targetType: TargetType; module: AppModule; notifType: string } {
+  // payment_request_sent adapts to the module of its parent context
+  if (event.type === "payment_request_sent") {
+    const ctx = event.context;
+    // Marketplace context: has bookingId but no lease/tenant context
+    if (ctx.bookingId && !ctx.leaseId && !ctx.tenantId) {
+      return { targetType: "marketplace_booking", module: "marketplace", notifType: "payment" };
+    }
+    // Seasonal context: has bookingId + propertyId (from seasonal booking)
+    if (ctx.bookingId && ctx.propertyId && !ctx.leaseId) {
+      return { targetType: "booking_request", module: "seasonal", notifType: "payment" };
+    }
+  }
+  // document_shared adapts to marketplace when bookingId is present without lease context
+  if (event.type === "document_shared" && event.context.bookingId && !event.context.leaseId) {
+    return { targetType: "marketplace_booking", module: "marketplace", notifType: "document" };
+  }
+  return baseConfig;
+}
 
 // ═══════════════════════════════════════════════════════
 // Main Dispatch — single entry point for all sync events
