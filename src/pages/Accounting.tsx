@@ -315,8 +315,8 @@ const Accounting = () => {
                     <XAxis dataKey="month" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                    <Bar dataKey="revenus" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name={t("page.accounting.revenue") || "Revenus"} />
-                    <Bar dataKey="depenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name={t("page.accounting.expenses") || "Dépenses"} />
+                    <Bar dataKey="revenus" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name={t("page.accounting.revenue") || "Revenue"} />
+                    <Bar dataKey="depenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} name={t("page.accounting.expenses") || "Expenses"} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="mt-6">
