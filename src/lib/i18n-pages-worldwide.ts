@@ -410,6 +410,7 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "landing.hero.title": "A primeira plataforma mundial", "landing.hero.title_highlight": "de gestão locativa",
     "landing.hero.subtitle": "Documentos legais automatizados adaptados a cada país.",
     "landing.hero.cta": "Começar grátis", "landing.hero.pricing": "Ver preços",
+    "landing.hero.vp_properties": "Gestão imobiliária", "landing.hero.vp_bookings": "Reservas diretas", "landing.hero.vp_marketplace": "Marketplace de serviços", "landing.hero.vp_analytics": "Análise de receitas",
     "landing.nav.features": "Funcionalidades", "landing.nav.pricing": "Preços",
     "landing.nav.login": "Entrar", "landing.nav.signup": "Registar",
     "landing.footer.desc": "O seu assistente inteligente de gestão locativa.",
