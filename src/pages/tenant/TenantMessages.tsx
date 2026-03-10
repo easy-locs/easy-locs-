@@ -103,7 +103,7 @@ const TenantMessages = () => {
         .single();
 
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
-      toast({ title: T.sendDocument || "Fichier envoyé" });
+      toast({ title: T.sendDocument || "File sent" });
     } catch (e: any) {
       toast({ title: T.error, description: e.message, variant: "destructive" });
     }

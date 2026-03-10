@@ -269,9 +269,9 @@ const TenantPay = () => {
                       ) : (
                         <ExternalLink className="h-4 w-4" />
                       )}
-                      {method === "sepa" ? (t("sepa.pay_sepa") || "Payer SEPA") :
-                       method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Virement") :
-                       (t("page.tenant_pay.pay_btn") || "Payer")}
+                       {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
+                        method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Transfer") :
+                        (t("page.tenant_pay.pay_btn") || "Pay")}
                     </button>
                   </div>
                 </div>
