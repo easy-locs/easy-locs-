@@ -42,7 +42,6 @@ const PROPERTY_TYPES = [
 const PRICE_LABEL: Record<string, string> = {
   sale: "",
   long_term_rent: "/mo",
-  seasonal_rent: "/night",
 };
 
 export default function PropertiesShowcase() {
