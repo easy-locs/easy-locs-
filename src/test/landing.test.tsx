@@ -30,9 +30,10 @@ vi.mock("framer-motion", () => {
   const handler = {
     get(_: any, tag: string) {
       if (tag === '__esModule') return false;
-      return ({ children, ...props }: any) => {
-        const safe = Object.fromEntries(Object.entries(props).filter(([k]) => !['initial','animate','exit','whileInView','whileHover','whileTap','transition','variants','viewport'].includes(k)));
+      return (props: any) => {
+        const { children, initial, animate, exit, whileInView, whileHover, whileTap, transition, variants, viewport, ...safe } = props || {};
         const El = typeof tag === 'string' && /^[a-z]/.test(tag) ? tag : 'div';
+        // @ts-ignore
         return <El {...safe}>{children}</El>;
       };
     },
