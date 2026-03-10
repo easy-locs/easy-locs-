@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type UserType = "landlord" | "tenant";
-type ActiveRole = "landlord" | "tenant";
+type UserType = "landlord" | "tenant" | "client";
+type ActiveRole = "landlord" | "tenant" | "client";
 
 interface SubscriptionState {
   subscribed: boolean;
