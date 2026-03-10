@@ -357,48 +357,28 @@ export default function Explore() {
           {/* ═══ Seasonal Tab ═══ */}
           <TabsContent value="seasonal" className="mt-0">
             {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {filteredSeasonal.map(l => (
-                  <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group h-full">
-                    <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
-                        <img
-                          src={l.cover_url || PLACEHOLDER_IMG}
-                          alt={l.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <Badge className="bg-accent text-accent-foreground text-[10px] font-bold shadow-lg">
-                            🏖️ Seasonal
-                          </Badge>
-                        </div>
-                        <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                          {l.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/night</span>
-                        </div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-1 min-h-[140px]">
-                        <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
-                          {l.title}
-                        </h3>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
-                          <MapPin className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
-                          <span className="flex items-center gap-1"><Users className="h-3 w-3" />{l.max_guests || "—"}</span>
-                          <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {l.min_nights || 1}n</span>
-                        </div>
-                        <div className="pt-2 mt-auto border-t border-border">
-                          <span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
-                            View & Book <ArrowRight className="h-3 w-3" />
-                          </span>
-                        </div>
+              <CountryGroupedGrid items={filteredSeasonal} renderCard={(l) => (
+                <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group h-full">
+                  <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
+                      <img src={l.cover_url || PLACEHOLDER_IMG} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <div className="absolute top-3 left-3"><Badge className="bg-accent text-accent-foreground text-[10px] font-bold shadow-lg">🏖️ Seasonal</Badge></div>
+                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
+                        {l.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/night</span>
                       </div>
                     </div>
-                  </Link>
-                ))}
-              </div>
+                    <div className="p-4 flex flex-col flex-1 min-h-[140px]">
+                      <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">{l.title}</h3>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2"><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span></div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
+                        <span className="flex items-center gap-1"><Users className="h-3 w-3" />{l.max_guests || "—"}</span>
+                        <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {l.min_nights || 1}n</span>
+                      </div>
+                      <div className="pt-2 mt-auto border-t border-border"><span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">View & Book <ArrowRight className="h-3 w-3" /></span></div>
+                    </div>
+                  </div>
+                </Link>
+              )} />
             )}
           </TabsContent>
 
