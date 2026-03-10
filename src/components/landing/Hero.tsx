@@ -138,7 +138,7 @@ const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 sm:gap-10 pt-6"
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-10 pt-6"
           >
             {[
               { icon: Globe, value: "110+", label: "Countries" },
