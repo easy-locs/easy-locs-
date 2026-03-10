@@ -23,10 +23,11 @@ import {
   Plus, Building2, MapPin, Ruler, BedDouble, Bath, Euro,
   Eye, Edit, Trash2, Link2, Copy, Check, Users, Clock,
   Home, Tag, ArrowUpRight, Mail, Phone, MessageCircle,
-  ExternalLink, PhoneCall, Send,
+  ExternalLink, PhoneCall, Send, Upload, X as XIcon, Camera,
 } from "lucide-react";
 import { format } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
+import RealEstatePhotoUploader from "@/components/public/RealEstatePhotoUploader";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
@@ -41,7 +42,6 @@ const PROPERTY_TYPES = [
 const LISTING_TYPES = [
   { value: "sale", label: "For Sale", emoji: "🏷️" },
   { value: "long_term_rent", label: "Long-term Rent", emoji: "🏠" },
-  { value: "seasonal_rent", label: "Seasonal Rent", emoji: "🏖️" },
 ];
 
 const STATUS_MAP: Record<string, string> = {
@@ -279,7 +279,7 @@ export default function RealEstateListings() {
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <span className="font-bold text-accent text-lg">{Number(listing.price).toLocaleString()} {listing.currency}</span>
-                          {listing.listing_type !== "sale" && <span className="text-xs text-muted-foreground">/month</span>}
+                          {listing.listing_type !== "sale" && <span className="text-xs text-muted-foreground">{listing.listing_type === "seasonal_rent" ? "/night" : "/month"}</span>}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           {listing.surface_sqm > 0 && <span className="flex items-center gap-1"><Ruler className="h-3 w-3" />{listing.surface_sqm}m²</span>}
@@ -502,6 +502,19 @@ export default function RealEstateListings() {
                 <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))} /></div>
                 <div><Label>Phone</Label><Input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} /></div>
               </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Camera className="h-4 w-4" /> Photos</h4>
+              <RealEstatePhotoUploader
+                listingId={editId}
+                orgId={orgId!}
+                photos={(editId ? listings.find(l => l.id === editId)?.photo_urls : null) || []}
+                onPhotosChange={(urls) => {
+                  if (editId) {
+                    setListings(prev => prev.map(l => l.id === editId ? { ...l, photo_urls: urls } : l));
+                  }
+                }}
+              />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>

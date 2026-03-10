@@ -80,11 +80,11 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
 
   const totalPrice = nights * (listing?.price_per_night || 0) + (nights > 0 ? cleaningFee : 0);
 
+  const formReady = !!listing && !!property?.id && !!form.guest_name && !!form.guest_email && !!form.check_in && !!form.check_out && !availabilityError && !minNightsError && nights > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!listing || !property || submitting) return;
-    if (!form.guest_name || !form.guest_email || !form.check_in || !form.check_out) return;
-    if (availabilityError || minNightsError) return;
+    if (!formReady || submitting) return;
 
     setSubmitting(true);
     const { data: insertedRequest, error } = await supabase.from("booking_requests").insert({
@@ -154,6 +154,14 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
         <h3 className="text-lg font-semibold text-foreground mb-1">{t("page.listing.request_sent")}</h3>
         <p className="text-sm text-muted-foreground mb-4">{t("page.listing.request_sent_desc")}</p>
         <p className="text-xs text-muted-foreground">{t("page.listing.awaiting_approval")}</p>
+      </div>
+    );
+  }
+
+  if (!property?.id) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-sm text-muted-foreground">{t("page.listing.loading") || "Loading property details…"}</p>
       </div>
     );
   }
@@ -249,7 +257,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
           </div>
         )}
 
-        <button type="submit" disabled={submitting || !!availabilityError || !!minNightsError}
+        <button type="submit" disabled={submitting || !formReady}
           className="w-full bg-accent text-accent-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           {t("page.listing.send_request")}
