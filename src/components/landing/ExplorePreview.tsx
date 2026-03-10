@@ -151,7 +151,7 @@ export default function ExplorePreview() {
                     </div>
                     {tab === "seasonal" && item.price_per_night && (
                       <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {item.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/night</span>
+                        {item.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/{t("landing.explore.per_night") || "night"}</span>
                       </div>
                     )}
                     {tab === "real-estate" && item.price && (
