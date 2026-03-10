@@ -8,7 +8,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { sendCommunicationEvent } from "./communication-pipeline";
-import { createDeepLinkMeta } from "./deep-link";
+import { createDeepLinkMeta } from "./notification-engine";
 
 export interface PaymentRequestParams {
   orgId: string;
