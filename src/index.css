@@ -722,55 +722,223 @@
 }
 
 /* ══════════════════════════════════════════════════
-   MOBILE-SPECIFIC LAYOUT FIXES
+   MOBILE-FIRST STRICT SYSTEM
    ══════════════════════════════════════════════════ */
 
+/* ── 1. Global overflow kill — nothing escapes viewport ── */
+html, body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+/* Every block-level child must respect container width */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ── 2. Mobile token overrides ── */
 @media (max-width: 640px) {
   :root {
-    --card-padding: 1rem;
-    --field-gap: 0.875rem;
-    --section-gap: 1.25rem;
+    --card-padding: 0.875rem;
+    --field-gap: 0.75rem;
+    --section-gap: 1rem;
     --page-padding-x: 0.75rem;
+    --card-radius: 0.625rem;
+    --btn-radius: 0.625rem;
+    --input-radius: 0.625rem;
   }
 
-  /* Consistent main content padding on mobile */
+  /* ── 3. Main content area — strict containment ── */
   .app-main {
     padding-left: var(--page-padding-x) !important;
     padding-right: var(--page-padding-x) !important;
-    padding-bottom: 5rem !important; /* FAB safe zone */
+    padding-top: 0.75rem !important;
+    padding-bottom: 5rem !important;
+    overflow-x: hidden !important;
   }
-
   .app-main > * {
     width: 100%;
+    max-width: 100%;
     min-width: 0;
   }
 
-  /* Mobile typography calibration */
-  h1 { font-size: 1.25rem; line-height: 1.3; }
-  h2 { font-size: 1.0625rem; line-height: 1.35; }
-  h3 { font-size: 0.95rem; line-height: 1.4; }
+  /* ── 4. Typography — clean mobile hierarchy ── */
+  h1 { font-size: 1.25rem !important; line-height: 1.3 !important; }
+  h2 { font-size: 1.0625rem !important; line-height: 1.35 !important; }
+  h3 { font-size: 0.9375rem !important; line-height: 1.4 !important; }
+  h4 { font-size: 0.875rem !important; line-height: 1.4 !important; }
+  p, li, td, th, span, label, a {
+    font-size: inherit;
+    line-height: inherit;
+  }
 
-  .detail-header-actions .detail-action-btn {
+  /* ── 5. Buttons — strict uniform sizing ── */
+  .btn, .btn-primary, .btn-secondary, .btn-destructive, .btn-ghost, .btn-success,
+  button[class*="bg-"], button[class*="border-"],
+  a[class*="btn"] {
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+  .btn-sm {
+    min-height: 36px;
+    font-size: 0.75rem;
+  }
+  /* Buttons in action rows: full width on very small screens */
+  .btn-group-stretch > * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .detail-header-actions {
+    width: 100%;
+  }
+  .detail-header-actions > * {
     flex: 1 1 auto;
     min-width: 0;
   }
 
-  /* Ensure modals/dialogs don't overflow */
-  [role="dialog"] {
-    max-width: calc(100vw - 2rem) !important;
-    max-height: calc(100dvh - 2rem) !important;
-    overflow-y: auto;
+  /* ── 6. Cards — uniform mobile structure ── */
+  .ui-card, [class*="bg-card"][class*="border"],
+  .stat-card, .action-card {
+    padding: var(--card-padding);
+    border-radius: var(--card-radius);
+    max-width: 100%;
   }
 
-  /* Charts should not overflow */
-  .recharts-wrapper {
+  /* ── 7. Forms — all inputs same height, full width ── */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+  select,
+  .form-input, .form-select,
+  [role="combobox"],
+  [data-radix-select-trigger] {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    border-radius: var(--input-radius) !important;
+    width: 100%;
+  }
+  textarea {
+    font-size: 16px !important;
+    border-radius: var(--input-radius) !important;
+    width: 100%;
+  }
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── 8. Dialogs / Sheets — no overflow ── */
+  [role="dialog"] {
+    max-width: calc(100vw - 1.5rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    overflow-y: auto;
+    margin: 0.75rem !important;
+  }
+  [role="dialog"] [class*="gap-4"] {
+    gap: 0.75rem;
+  }
+
+  /* ── 9. Tables — horizontal scroll, no crop ── */
+  .table-container, table {
+    max-width: 100%;
+  }
+  .table-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+  .table-head-cell, .table-cell, .table-cell-muted, .table-cell-amount, .table-cell-actions {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  /* ── 10. Media — strict containment ── */
+  img, video, svg, canvas, iframe {
+    max-width: 100% !important;
+    height: auto;
+  }
+
+  /* ── 11. Charts ── */
+  .recharts-wrapper, .recharts-surface {
     max-width: 100% !important;
   }
 
-  /* Prevent any element from exceeding viewport */
-  img, video, svg, canvas {
-    max-width: 100%;
-    height: auto;
+  /* ── 12. Grids — single column on small phones ── */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.625rem !important;
+  }
+  .action-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.625rem !important;
+  }
+
+  /* ── 13. Badge rows — wrap properly ── */
+  .badge-row {
+    gap: 0.375rem;
+  }
+  .badge-row > * {
+    font-size: 0.6875rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  /* ── 14. Scrollable tabs — swipe-friendly ── */
+  .detail-tab-row {
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+  [role="tablist"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  [role="tablist"]::-webkit-scrollbar {
+    display: none;
+  }
+  [role="tab"] {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.75rem !important;
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+  }
+
+  /* ── 15. Page header spacing ── */
+  .page-header {
+    margin-bottom: var(--section-gap);
+  }
+  .page-header h1 {
+    font-size: 1.25rem !important;
+  }
+
+  /* ── 16. Select/Dropdown popover — no overflow ── */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 1.5rem) !important;
+  }
+
+  /* ── 17. SmartActionCard mobile polish ── */
+  .action-card-grid a,
+  .action-card-grid > * {
+    min-height: 3.25rem;
+  }
+
+  /* ── 18. Sidebar width clamp on very small screens ── */
+  aside[class*="w-[280px]"] {
+    width: min(280px, 85vw) !important;
+  }
+}
+
+/* ══════ iPhone SE / very small screens (< 375px) ══════ */
+@media (max-width: 374px) {
+  :root {
+    --page-padding-x: 0.5rem;
+    --card-padding: 0.75rem;
+  }
+  h1 { font-size: 1.125rem !important; }
+  h2 { font-size: 1rem !important; }
+  .stats-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
@@ -779,16 +947,18 @@
    ══════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
-  /* Push FAB above the safe area on mobile to avoid covering fields */
   .floating-ai-btn {
     bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
-    right: 1rem !important;
-    width: 3rem !important;
-    height: 3rem !important;
+    right: 0.75rem !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
   }
 }
 
-/* Scrollbar thin for all scroll areas */
+/* ══════════════════════════════════════════════════
+   SCROLLBAR & UTILITIES
+   ══════════════════════════════════════════════════ */
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
