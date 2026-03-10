@@ -33,6 +33,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Tenants = lazy(() => import("./pages/Tenants"));
 const RentalManagement = lazy(() => import("./pages/RentalManagement"));
 const Finances = lazy(() => import("./pages/Finances"));
+const Interventions = lazy(() => import("./pages/Interventions"));
 
 const Tasks = lazy(() => import("./pages/Tasks"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -279,6 +280,7 @@ const App = () => (
               <Route path="/dashboard/finances" element={<ProtectedRoute><CountryGuard><Finances /></CountryGuard></ProtectedRoute>} />
               
               <Route path="/dashboard/tasks" element={<ProtectedRoute><CountryGuard><Tasks /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/interventions" element={<ProtectedRoute><CountryGuard><Interventions /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
               <Route path="/dashboard/communication" element={<ProtectedRoute><CommunicationCenter /></ProtectedRoute>} />
               <Route path="/dashboard/charges" element={<ProtectedRoute><CountryGuard><ChargesRegularization /></CountryGuard></ProtectedRoute>} />

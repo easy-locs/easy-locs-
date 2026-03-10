@@ -12,7 +12,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { getCountryEntry, getCountryLabelsMap } from "@/lib/global-country-registry";
-import CountrySelect from "@/components/ui/CountrySelect";
+
 const categoryIcons: Record<string, typeof FileText> = {
   rental: Home, administrative: FileText, company: Building2, legal: Scale,
 };
@@ -44,61 +44,26 @@ const Documents = () => {
   const { orgId } = useAuth();
   const { t } = useI18n();
 
-  // Detect user country from profile + property countries
-  const [userCountry, setUserCountry] = useState<string>(countryFilter || "FR");
-  const [propertyCountries, setPropertyCountries] = useState<string[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>(countryFilter || "");
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user?.id) {
-        supabase.from("profiles").select("country").eq("id", data.user.id).single()
-          .then(({ data: p }) => {
-            if (p?.country) {
-              setUserCountry(p.country);
-              setSelectedCountry(p.country);
-            }
-          });
-      }
-    });
-  }, []);
-
-  // Load unique countries from user's properties
-  useEffect(() => {
-    if (!orgId) return;
-    supabase.from("properties").select("country").eq("org_id", orgId).then(({ data: props }) => {
-      if (props) {
-        const countries = [...new Set(props.map((p) => p.country))].filter(Boolean);
-        setPropertyCountries(countries);
-        // If user has properties, default to first property country
-        if (countries.length > 0 && !selectedCountry) {
-          setSelectedCountry(countries[0]);
-        }
-      }
-    });
-  }, [orgId]);
-
-  const activeCountry = selectedCountry || userCountry;
+  // Country is enforced by CountryGuard — always available
+  const activeCountry = countryFilter || "FR";
   const activeLocale = getCountryEntry(activeCountry)?.locale || "en-GB";
   const activeTemplates = getActiveTemplates(activeCountry as any);
   const allTemplates = getAllTemplates();
-  const europeTemplates = allTemplates.filter((t) => t.country !== activeCountry);
+  const europeTemplates = allTemplates.filter((tpl) => tpl.country !== activeCountry);
 
   const fetchDocs = async () => {
     if (!orgId) return;
-    let query = supabase
+    const { data } = await supabase
       .from("documents")
       .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country")
       .eq("org_id", orgId)
+      .eq("country", activeCountry)
       .order("created_at", { ascending: false });
-    if (countryFilter) query = query.eq("country", countryFilter);
-    const { data } = await query;
     setDocs((data as DocRow[]) ?? []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchDocs(); }, [orgId]);
-
+  useEffect(() => { fetchDocs(); }, [orgId, activeCountry]);
   const byCategory = activeTemplates.reduce((acc, t) => {
     if (!acc[t.category]) acc[t.category] = [];
     acc[t.category].push(t);
@@ -136,18 +101,9 @@ const Documents = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
         <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="text-lg">{getCountryFlag(activeCountry)}</span>
-            <span>{t("page.documents.country") !== "page.documents.country" ? t("page.documents.country") : "Pays du document"}</span>
-          </div>
-          <div className="w-full sm:w-[360px]">
-            <CountrySelect
-              value={activeCountry}
-              onChange={(code) => setSelectedCountry(code || userCountry)}
-              placeholder={t("page.documents.select_country") !== "page.documents.select_country" ? t("page.documents.select_country") : "Choisir un pays"}
-            />
-          </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <span className="text-lg">{getCountryFlag(activeCountry)}</span>
+          <span className="font-medium text-foreground">{countryLabels[activeCountry] || activeCountry}</span>
         </div>
 
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">

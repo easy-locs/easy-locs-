@@ -29,7 +29,8 @@ const Accounting = () => {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
-  const [selectedCountry, setSelectedCountry] = useState(countryFilter || "all");
+  // Country is enforced by CountryGuard — no internal selector needed
+  const selectedCountry = countryFilter || "FR";
   const [newEntry, setNewEntry] = useState({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
 
   const { data: org } = useQuery({
@@ -54,17 +55,10 @@ const Accounting = () => {
     enabled: !!org,
   });
 
-  // Get unique countries from properties
-  const propertyCountries = useMemo(() => {
-    const countries = [...new Set(properties.map((p: any) => p.country || "FR"))];
-    return countries.sort();
-  }, [properties]);
-
-  // Active accounting rules — STRICTLY from selected country profile
+  // Active accounting rules — STRICTLY from country context
   const activeCountryProfile = useMemo(() => {
-    const code = selectedCountry !== "all" ? selectedCountry : (org?.country || "FR");
-    return getCountryProfile(code);
-  }, [selectedCountry, org]);
+    return getCountryProfile(selectedCountry);
+  }, [selectedCountry]);
 
   const activeRules: CountryAccountingRules = activeCountryProfile.accounting;
 
@@ -103,9 +97,8 @@ const Accounting = () => {
     enabled: !!org,
   });
 
-  // Filter by country (match property_id → country)
+  // Filter properties by country context
   const countryFilteredProperties = useMemo(() => {
-    if (selectedCountry === "all") return properties;
     return properties.filter((p: any) => (p.country || "FR") === selectedCountry);
   }, [properties, selectedCountry]);
 
@@ -128,12 +121,8 @@ const Accounting = () => {
       property_id: e.property_id,
     }));
     let all = [...manual, ...rents, ...exps];
-    // STRICT COUNTRY ISOLATION: when a country is selected, only show
-    // transactions from properties in that country. Unlinked transactions
-    // are excluded to prevent cross-country contamination.
-    if (selectedCountry !== "all") {
-      all = all.filter(tx => tx.property_id && countryPropertyIds.has(tx.property_id));
-    }
+    // STRICT COUNTRY ISOLATION: only show transactions from properties in this country
+    all = all.filter(tx => tx.property_id && countryPropertyIds.has(tx.property_id));
     all.sort((a, b) => b.date.localeCompare(a.date));
     return filterCat === "all" ? all : all.filter(t => t.category === filterCat);
   }, [journal, rentCalls, expenses, filterCat, selectedCountry, countryPropertyIds, activeRules]);
@@ -165,9 +154,8 @@ const Accounting = () => {
 
   const addMut = useMutation({
     mutationFn: async () => {
-      // STRICT: When a country filter is active, require a property to ensure
-      // the entry is properly isolated to a country ledger
-      if (selectedCountry !== "all" && !newEntry.property_id) {
+      // STRICT: Require a property to ensure correct country ledger isolation
+      if (!newEntry.property_id) {
         throw new Error("A property must be selected to ensure correct country ledger isolation.");
       }
       // Determine currency from the linked property
@@ -200,7 +188,7 @@ const Accounting = () => {
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `comptabilite-${selectedCountry !== "all" ? selectedCountry + "-" : ""}${format(now, "yyyy-MM")}.csv`; a.click();
+    a.href = url; a.download = `comptabilite-${selectedCountry}-${format(now, "yyyy-MM")}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -214,22 +202,11 @@ const Accounting = () => {
             <h1 className="text-2xl font-bold text-foreground">{t("page.accounting.title") || "Comptabilité"}</h1>
             <p className="text-muted-foreground text-sm">{t("page.accounting.subtitle") || "Journal, cashflow et rapports financiers"}</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            {/* Country filter */}
-            {propertyCountries.length > 1 && (
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-[160px]">
-                  <span className="mr-1">{selectedCountry === "all" ? "🌍" : getCountryFlag(selectedCountry)}</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">🌍 {t("common.all_countries") || "Tous les pays"}</SelectItem>
-                  {propertyCountries.map(c => (
-                    <SelectItem key={c} value={c}>{getCountryFlag(c)} {c} — {COUNTRY_CURRENCY_MAP[c] || "EUR"}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+          <div className="flex gap-2 flex-wrap items-center">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mr-2">
+              <span className="text-lg">{getCountryFlag(selectedCountry)}</span>
+              <span className="font-medium text-foreground">{selectedCountry} — {COUNTRY_CURRENCY_MAP[selectedCountry] || "EUR"}</span>
+            </div>
             <Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t("page.accounting.new_entry") || "Nouvelle écriture"}</Button></DialogTrigger>
