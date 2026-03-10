@@ -10,6 +10,25 @@
   hyphens: manual;
 }
 
+/* ══════ Multilingual text rendering — CJK, Arabic, Thai, Devanagari ══════ */
+:lang(ar), :lang(he), [dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+:lang(ja), :lang(ko), :lang(zh) {
+  word-break: keep-all;
+  line-break: strict;
+  font-feature-settings: "palt";
+}
+:lang(th) {
+  word-break: keep-all;
+  line-break: normal;
+}
+:lang(hi), :lang(bn), :lang(ta) {
+  word-break: normal;
+  line-break: normal;
+}
+
 /* Profile/detail header — responsive pattern */
 .profile-header {
   @apply flex flex-col sm:flex-row sm:items-center gap-4;
@@ -181,6 +200,9 @@
     transition: color-scheme 0.3s ease;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
@@ -1020,5 +1042,48 @@ body::-webkit-scrollbar-thumb:hover {
   a:focus-visible {
     outline: 2px solid hsl(var(--accent));
     outline-offset: 2px;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   GLOBAL TRANSITION FLUIDITY
+   ══════════════════════════════════════════════════ */
+
+/* Smooth transitions for all interactive elements */
+@layer base {
+  a, button, [role="button"], input, select, textarea,
+  .ui-card, .stat-card, .action-card {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* GPU-accelerated animations */
+@layer utilities {
+  .will-change-transform {
+    will-change: transform;
+  }
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ══════ Notification panel — full-width mobile sheet ══════ */
+@media (max-width: 640px) {
+  .notification-sheet {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
   }
 }

@@ -5274,6 +5274,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return "en";
   });
 
+  // Set HTML lang attribute on initial render
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
+  }, [locale]);
+
   /* Sync locale from profile on login */
   useEffect(() => {
     const syncLocale = async () => {
@@ -5295,6 +5301,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback(async (l: Locale) => {
     setLocaleState(l);
     localStorage.setItem("app_locale", l);
+    // Update HTML lang attribute for proper multilingual rendering
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);
