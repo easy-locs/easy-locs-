@@ -72,9 +72,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.real_estate") || "Real Estate",
       icon: Home,
       items: [
+        // Long-term rental (full sub-system)
         { icon: Home, label: t("nav.long_term") || "Long-term Rental", path: cPath("/dashboard/rental") },
         { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
+        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+        { icon: Receipt, label: t("nav.rent_calls") || "Rent Calls", path: cPath("/dashboard/reminders") },
+        { icon: FileCheck, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
+        // Seasonal
         { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rental", path: "/dashboard/seasonal" },
+        // Sales & leads
         { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
         { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
         { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
