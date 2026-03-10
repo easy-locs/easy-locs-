@@ -18,7 +18,7 @@ const Features = () => {
   const { t } = useI18n();
 
   return (
-    <section id="features" className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+    <section id="features" aria-label="Features" className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
       {/* Grid pattern */}
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: `linear-gradient(hsl(var(--accent) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.3) 1px, transparent 1px)`,
