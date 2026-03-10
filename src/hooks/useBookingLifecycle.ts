@@ -243,5 +243,6 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
       if (!booking) { toast.error("Booking not found"); return false; }
       return confirmPayment(booking);
     },
+    modifyBooking,
   };
 }
