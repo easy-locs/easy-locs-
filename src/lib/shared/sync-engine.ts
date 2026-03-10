@@ -213,6 +213,30 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
 };
 
+// Context-aware config resolution — certain events adapt based on context IDs
+function resolveEffectiveConfig(
+  event: SyncEvent,
+  baseConfig: { targetType: TargetType; module: AppModule; notifType: string }
+): { targetType: TargetType; module: AppModule; notifType: string } {
+  // payment_request_sent adapts to the module of its parent context
+  if (event.type === "payment_request_sent") {
+    const ctx = event.context;
+    // Marketplace context: has bookingId but no lease/tenant context
+    if (ctx.bookingId && !ctx.leaseId && !ctx.tenantId) {
+      return { targetType: "marketplace_booking", module: "marketplace", notifType: "payment" };
+    }
+    // Seasonal context: has bookingId + propertyId (from seasonal booking)
+    if (ctx.bookingId && ctx.propertyId && !ctx.leaseId) {
+      return { targetType: "booking_request", module: "seasonal", notifType: "payment" };
+    }
+  }
+  // document_shared adapts to marketplace when bookingId is present without lease context
+  if (event.type === "document_shared" && event.context.bookingId && !event.context.leaseId) {
+    return { targetType: "marketplace_booking", module: "marketplace", notifType: "document" };
+  }
+  return baseConfig;
+}
+
 // ═══════════════════════════════════════════════════════
 // Main Dispatch — single entry point for all sync events
 // ═══════════════════════════════════════════════════════
@@ -274,10 +298,14 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
   const { subject, message } = buildEventContent(event);
   const targetId = resolveTargetId(event);
 
+  // Resolve effective config — payment_request_sent is context-aware:
+  // If context has bookingId but no leaseId/tenantId → marketplace context
+  const effectiveConfig = resolveEffectiveConfig(event, config);
+
   const meta = createDeepLinkMeta({
-    targetType: config.targetType,
+    targetType: effectiveConfig.targetType,
     targetId,
-    module: config.module,
+    module: effectiveConfig.module,
     countryCode: event.context.countryCode,
     bookingId: event.context.bookingId,
     orgId: event.context.orgId,
@@ -293,12 +321,12 @@ export async function dispatchSyncEvent(event: SyncEvent): Promise<boolean> {
     recipientEmail: event.targetEmail,
     subject,
     message,
-    category: config.notifType,
+    category: effectiveConfig.notifType,
     emailLocale: event.locale || "en",
     meta,
   });
 
-  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${config.targetType}:${targetId}`);
+  console.log(`[sync-engine] ✓ dispatched: ${event.type} → ${effectiveConfig.targetType}:${targetId}`);
   return true;
 }
 
