@@ -1103,7 +1103,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        {showForm && (
+        {viewMode === "bookings" && showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground">{editingId ? t("page.seasonal.edit_booking") : t("page.seasonal.new_booking")}</h3>
