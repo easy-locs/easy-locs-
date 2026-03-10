@@ -142,6 +142,11 @@ export function useRentalData(countryFilter?: string | null) {
     setLoading(false);
   }, [orgId, countryFilter]);
 
+  // Aliases for backward compat — all reload the full dataset to stay consistent
+  const loadProperties = loadAll;
+  const loadTenants = loadAll;
+  const loadRentCalls = loadAll;
+
   useEffect(() => { loadAll(); }, [loadAll]);
 
   /* ─── Property CRUD ─── */
