@@ -86,6 +86,7 @@ interface Listing {
   energy_class: string;
   views_count: number;
   created_at: string;
+  updated_at?: string;
 }
 
 interface Lead {
