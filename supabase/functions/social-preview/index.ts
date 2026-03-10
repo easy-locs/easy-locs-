@@ -6,8 +6,8 @@ const corsHeaders = {
 };
 
 const BRAND_NAME = "EASY-LOCS®";
-const APP_URL = (Deno.env.get("APP_URL") || "https://easy-locs.lovable.app").replace(/\/+$/, "");
-const DEFAULT_OG_IMAGE = `${APP_URL}/pwa-512x512.png`;
+const APP_URL = (Deno.env.get("APP_URL") || "https://www.easy-locs.com").replace(/\/+$/, "");
+const DEFAULT_OG_IMAGE = `${APP_URL}/og-default.jpg`;
 const BOT_UA_PATTERN = /(facebookexternalhit|facebot|meta-externalagent|whatsapp|telegrambot|twitterbot|linkedinbot|slackbot|discordbot|skypeuripreview|pinterest|vkshare|googlebot|bingbot|applebot|crawler|spider|bot)/i;
 
 function shouldServePreviewHtml(req: Request): boolean {
