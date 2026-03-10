@@ -48,7 +48,7 @@ const RemoteEntrepreneurship = () => {
               <br />
               From Anywhere
             </h2>
-            <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}>
+            <p className="text-base sm:text-lg leading-relaxed max-w-lg" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
               Run cleaning services in Paris, rent cars in Phuket, organize activities in Dubai, and coordinate concierge services in Marrakech — all from your laptop. Easy-Locs gives you the tools to operate service and property businesses remotely in any city worldwide.
             </p>
 
@@ -109,7 +109,7 @@ const RemoteEntrepreneurship = () => {
                     <div className="font-bold text-sm mb-0.5" style={{ color: "hsl(var(--primary-foreground))" }}>
                       {c.city}
                     </div>
-                    <div className="text-[10px] leading-snug" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+                    <div className="text-[10px] leading-snug" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
                       {c.service}
                     </div>
                   </div>
@@ -157,7 +157,7 @@ const RemoteEntrepreneurship = () => {
               <h4 className="font-bold text-sm mb-1.5" style={{ color: "hsl(var(--primary-foreground))" }}>
                 {s.title}
               </h4>
-              <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+              <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
                 {s.desc}
               </p>
             </div>
@@ -184,7 +184,7 @@ const RemoteEntrepreneurship = () => {
               className="text-xs font-medium px-4 py-2 rounded-full border transition-colors hover:border-accent/30"
               style={{
                 borderColor: "hsl(var(--primary-foreground) / 0.08)",
-                color: "hsl(var(--primary-foreground) / 0.5)",
+                color: "hsl(var(--primary-foreground) / 0.65)",
               }}
             >
               {link.label}

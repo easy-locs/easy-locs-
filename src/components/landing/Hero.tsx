@@ -91,7 +91,7 @@ const Hero = () => {
             </h1>
             <p
               className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
-              style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}
+              style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}
             >
               One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely.
             </p>
@@ -138,7 +138,7 @@ const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 sm:gap-10 pt-6"
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-10 pt-6"
           >
             {[
               { icon: Globe, value: "110+", label: "Countries" },
@@ -156,7 +156,7 @@ const Hero = () => {
                   <div className="text-sm font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
                     {s.value}
                   </div>
-                  <div className="text-[10px]" style={{ color: "hsl(var(--primary-foreground) / 0.35)" }}>
+                  <div className="text-[10px]" style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}>
                     {s.label}
                   </div>
                 </div>

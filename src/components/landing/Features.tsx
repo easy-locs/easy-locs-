@@ -43,7 +43,7 @@ const Features = () => {
             {t("landing.features.title") || "Everything You Need to"}{" "}
             <span className="text-gradient-gold">{t("landing.features.title_highlight") || "Scale Globally"}</span>
           </h2>
-          <p className="text-base sm:text-lg max-w-2xl mx-auto" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>
+          <p className="text-base sm:text-lg max-w-2xl mx-auto" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
             {t("landing.features.subtitle") || "A complete suite of tools for property owners, managers, and service professionals worldwide."}
           </p>
         </motion.div>
@@ -80,7 +80,7 @@ const Features = () => {
                 <h3 className="font-bold text-foreground text-base mb-2" style={{ color: "hsl(var(--primary-foreground))" }}>
                   {t(`landing.features.${f.key}.title`) || f.fallback}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.45)" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
                   {t(`landing.features.${f.key}.desc`) || f.fallbackDesc}
                 </p>
               </div>
