@@ -1,7 +1,7 @@
 import { useState, useEffect, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import {
-  Globe, Building, Users, MapPin, Plus, TrendingUp, ArrowRight,
+  Globe, Building, Users, MapPin, Plus, TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -136,26 +136,35 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-8"
+        >
           <div className="flex items-center gap-3 mb-1">
-            <Globe className="h-6 w-6 text-accent shrink-0" />
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
-            </h1>
+            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <Globe className="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+                {t("page.dashboard.world_map") || "Mon portefeuille mondial"}
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
+              </p>
+            </div>
           </div>
-          <p className="text-muted-foreground text-sm ml-9">
-            {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
-          </p>
         </motion.div>
 
-        {/* Global KPIs — using StatCard for uniform rendering */}
-        <div className="stats-grid mb-8">
+        {/* Global KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {kpis.map((kpi, i) => (
             <motion.div
               key={kpi.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 + i * 0.03 }}
+              transition={{ delay: 0.1 + i * 0.05, type: "spring", stiffness: 200 }}
               className="h-full"
             >
               <StatCard
@@ -171,10 +180,16 @@ const Dashboard = () => {
 
         {/* 3D Globe */}
         {!loading && stats.propertiesByCountry.length > 0 && WorldMapComponent && !mapLoadFailed && (
-          <WorldMapComponent
-            propertiesByCountry={stats.propertiesByCountry}
-            userCountry={userCountry || "FR"}
-          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <WorldMapComponent
+              propertiesByCountry={stats.propertiesByCountry}
+              userCountry={userCountry || "FR"}
+            />
+          </motion.div>
         )}
 
         {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
@@ -186,7 +201,11 @@ const Dashboard = () => {
         )}
 
         {/* Country Cards */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
             {t("page.dashboard.select_country") || "Sélectionnez un pays pour gérer"}
           </h2>
@@ -198,18 +217,29 @@ const Dashboard = () => {
               ))}
             </div>
           ) : stats.propertiesByCountry.length === 0 ? (
-            <div className="empty-state bg-card rounded-xl border border-border/50">
-              <Globe className="empty-state-icon" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-16 bg-card rounded-2xl border border-border/50"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Globe className="h-8 w-8 text-accent" />
+              </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 {t("page.dashboard.no_properties") || "Aucun bien ou service enregistré"}
               </h3>
-              <p className="empty-state-text mb-6">
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
                 Ajoutez votre premier bien ou créez un service pour commencer
               </p>
-              <Link to="/dashboard/add-property" className="btn-primary">
+              <Link
+                to="/dashboard/add-property"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
+                style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
+              >
+                <Plus className="h-4 w-4" />
                 {t("page.rental.add_property") || "Ajouter un bien"}
               </Link>
-            </div>
+            </motion.div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -218,12 +248,14 @@ const Dashboard = () => {
                     key={c.code}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + i * 0.04 }}
+                    transition={{ delay: 0.25 + i * 0.04, type: "spring", stiffness: 200 }}
                   >
                     <Link
                       to={`/dashboard/country/${c.code.toLowerCase()}`}
-                      className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/40 transition-all"
+                      className="group block bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all duration-300 relative overflow-hidden"
                     >
+                      {/* Hover accent */}
+                      <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="flex items-center gap-4">
                         <span className="text-4xl shrink-0">{c.flag}</span>
                         <div className="flex-1 min-w-0">
@@ -255,14 +287,14 @@ const Dashboard = () => {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + stats.propertiesByCountry.length * 0.04 }}
+                transition={{ delay: 0.25 + stats.propertiesByCountry.length * 0.04 }}
                 className="mt-4"
               >
                 <Link
                   to="/dashboard/add-property"
-                  className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all min-h-[4rem]"
+                  className="group flex items-center justify-center gap-3 bg-card rounded-xl p-5 border-2 border-dashed border-border hover:border-accent/50 hover:bg-accent/5 transition-all duration-300 min-h-[4rem]"
                 >
-                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300 shrink-0">
                     <Plus className="h-5 w-5 text-accent" />
                   </div>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-accent transition-colors">

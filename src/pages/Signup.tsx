@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -42,12 +43,19 @@ const Signup = () => {
     }
   };
 
+  const inputClass = "w-full bg-background border border-border rounded-xl pl-10 pr-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
+
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
       <SEOHead title="Sign Up — Easy-Locs" description="Create your free Easy-Locs account." noindex />
       <AuthBrand />
 
-      <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+        className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full border border-border/50"
+      >
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("auth.signup.title")}</h1>
         <p className="text-muted-foreground text-sm mb-8">{t("auth.signup.subtitle")}</p>
 
@@ -57,7 +65,7 @@ const Signup = () => {
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className={inputClass}
                 placeholder={t("auth.signup.placeholder_name")} />
             </div>
           </div>
@@ -66,7 +74,7 @@ const Signup = () => {
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className={inputClass}
                 placeholder={t("auth.login.placeholder_email")} />
             </div>
           </div>
@@ -75,27 +83,34 @@ const Signup = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className={`${inputClass} pr-10`}
                 placeholder={t("auth.signup.password_hint")} />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
-          <button type="submit" disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-gold text-accent-foreground font-semibold py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50">
+          <motion.button
+            type="submit"
+            disabled={loading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm relative overflow-hidden"
+            style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
+          >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.signup.submit")}
-          </button>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+          </motion.button>
         </form>
 
         <SocialLoginButtons />
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("auth.signup.has_account")}{" "}
-          <Link to="/login" className="text-foreground font-medium hover:underline">{t("auth.signup.login")}</Link>
+          <Link to="/login" className="text-foreground font-medium hover:text-accent transition-colors">{t("auth.signup.login")}</Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };

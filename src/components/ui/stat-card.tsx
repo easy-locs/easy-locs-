@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
@@ -31,18 +32,21 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 transition-all",
-        path && "hover:shadow-card-hover group cursor-pointer",
+        "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 transition-all duration-300 relative overflow-hidden",
+        path && "hover:shadow-card-hover hover:border-accent/30 group cursor-pointer",
         className,
       )}
     >
+      {/* Hover accent line */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
       {/* Row 1: Icon + optional arrow */}
       <div className="flex items-center justify-between mb-3">
-        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-          <Icon className={cn("h-4 w-4", iconClassName)} />
+        <div className="w-10 h-10 rounded-xl bg-accent/8 flex items-center justify-center shrink-0 group-hover:bg-accent/15 transition-colors duration-300">
+          <Icon className={cn("h-4.5 w-4.5", iconClassName)} />
         </div>
         {path && (
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
         )}
       </div>
       {/* Row 2: Label — single line */}
@@ -50,7 +54,6 @@ const StatCard = ({
       {/* Row 3: Value — prominent, pushed to bottom */}
       <div className={cn(
         "font-bold text-foreground mt-auto truncate",
-        // Numeric/currency values stay large; text values use smaller font to avoid overflow
         /^[\d\s.,€$£¥₹%—–-]+$/.test(value)
           ? "text-xl sm:text-2xl whitespace-nowrap tabular-nums"
           : "text-sm sm:text-base",
@@ -66,7 +69,7 @@ const StatCard = ({
   );
 
   if (path) {
-    return <Link to={path} className="h-full">{content}</Link>;
+    return <Link to={path} className="h-full block">{content}</Link>;
   }
   return content;
 };
