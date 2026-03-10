@@ -128,10 +128,13 @@ export function buildTargetUrl(targetType: TargetType, ids: {
   const routeInfo = TARGET_ROUTES[targetType];
   if (!routeInfo) return "/dashboard";
 
-  const basePath = ids.role === "tenant" && routeInfo.tenant
+  const rawPath = ids.role === "tenant" && routeInfo.tenant
     ? routeInfo.tenant
     : routeInfo.landlord;
-  const params = new URLSearchParams();
+
+  // Split existing query string from base path (e.g. "/dashboard/real-estate?tab=leads")
+  const [basePath, existingQs] = rawPath.split("?");
+  const params = new URLSearchParams(existingQs || "");
   if (ids.countryCode) params.set("country", ids.countryCode);
   if (ids.bookingId) params.set("booking", ids.bookingId);
   else if (ids.targetId) params.set("record", ids.targetId);
