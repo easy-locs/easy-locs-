@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getCountryConfig } from "@/lib/country-config";
@@ -384,16 +385,19 @@ export function useRentalData(countryFilter?: string | null) {
             toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated") });
           }
 
-          if (tenant.tenant_user_id) {
-            await supabase.from("notifications").insert({
-              user_id: tenant.tenant_user_id,
-              org_id: orgId,
-              type: "receipt",
-              title: t("hook.rental.receipt_available"),
-              message: t("hook.rental.receipt_available_msg").replace("{month}", call.month),
-              link: "/tenant/receipts",
-            });
-          }
+          // Sync engine: receipt_generated (replaces legacy manual notification)
+          dispatchSyncEvent({
+            type: "receipt_generated",
+            context: { orgId, propertyId: call.property_id || tenant.property_id, tenantId: call.tenant_id, countryCode: propCountryCode },
+            actorUserId: user.id,
+            targetUserId: tenant.tenant_user_id || undefined,
+            targetEmail: tenant.email || undefined,
+            month: call.month,
+            totalAmount: call.total_amount,
+            currency: getCountryConfig(propCountryCode).currency || "EUR",
+            tenantName: tenant.name,
+            receiptId: call.id,
+          }).catch(() => {});
         }
       } catch (receiptErr) {
         console.error("Auto-receipt generation error:", receiptErr);

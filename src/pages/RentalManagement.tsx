@@ -23,6 +23,7 @@ import { getAllTemplates } from "@/lib/templates/registry";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import {
@@ -377,7 +378,7 @@ const RentalManagement = () => {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     try {
-      await supabase.from("rent_calls").insert({
+      const { data: inserted } = await supabase.from("rent_calls").insert({
         org_id: orgId,
         tenant_id: tenantId,
         property_id: form.property_id,
@@ -386,8 +387,24 @@ const RentalManagement = () => {
         charges_amount: form.charges_amount || 0,
         total_amount: (form.rent_amount || 0) + (form.charges_amount || 0),
         paid: false,
-      });
+      }).select("id").single();
       toast({ title: L.monthCalls, description: `${month} — ${fmt((form.rent_amount || 0) + (form.charges_amount || 0))}` });
+
+      // Sync engine: rent_call_created
+      if (inserted?.id) {
+        const prop = properties.find(p => p.id === form.property_id);
+        dispatchSyncEvent({
+          type: "rent_call_created",
+          context: { orgId, propertyId: form.property_id, tenantId, countryCode: prop?.country || "" },
+          actorUserId: user.id,
+          month,
+          totalAmount: (form.rent_amount || 0) + (form.charges_amount || 0),
+          currency: "EUR",
+          tenantName: form.name,
+          propertyLabel: prop?.label || "",
+          rentCallId: inserted.id,
+        }).catch(() => {});
+      }
     } catch { /* ignore duplicate */ }
   };
 
