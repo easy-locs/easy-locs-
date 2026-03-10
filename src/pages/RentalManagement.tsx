@@ -23,6 +23,7 @@ import { getAllTemplates } from "@/lib/templates/registry";
 import { generateFromTemplate, downloadPDF, pdfToDataUri } from "@/lib/pdf-generator";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { supabase } from "@/integrations/supabase/client";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import {

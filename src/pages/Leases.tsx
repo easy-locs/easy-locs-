@@ -13,6 +13,7 @@ import type { DocumentTemplate } from "@/lib/templates/types";
 import { useRentalData, type Tenant, type Property } from "@/hooks/useRentalData";
 import { useAutoFill } from "@/hooks/useAutoFill";
 import { supabase } from "@/integrations/supabase/client";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
