@@ -6,7 +6,7 @@
 import { motion } from "framer-motion";
 import { Globe, MapPin, ArrowRight, Wifi, Laptop } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import { useI18n } from "@/lib/i18n";
 const cities = [
   { flag: "🇫🇷", city: "Paris", service: "Cleaning services", link: "/city/paris" },
   { flag: "🇹🇭", city: "Phuket", service: "Car rental", link: "/city/phuket" },
