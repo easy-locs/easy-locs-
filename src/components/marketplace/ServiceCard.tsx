@@ -68,12 +68,13 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               <button onClick={nextPhoto} className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-9 h-9 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity">
                 <ChevronRight className="h-4 w-4" />
               </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {photos.map((_, i) => (
                   <button
                     key={i}
                     onClick={(e) => { e.stopPropagation(); setPhotoIdx(i); }}
-                    className={`w-1.5 h-1.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
+                    className={`w-2.5 h-2.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
+                    aria-label={`Photo ${i + 1}`}
                   />
                 ))}
               </div>
