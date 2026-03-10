@@ -207,7 +207,7 @@ const DynamicPricing = () => {
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Règles actives</span></div>
+            <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active rules</span></div>
             <p className="text-2xl font-bold text-foreground">{rules.filter(r => r.active).length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
