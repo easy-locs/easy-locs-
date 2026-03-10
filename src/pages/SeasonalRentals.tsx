@@ -8,10 +8,11 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays, Camera } from "lucide-react";
+import { Plus, Trash2, ChevronLeft, ChevronRight, Download, Upload, Link2, Copy, Check, X, Edit, CalendarDays, Camera, LayoutGrid, List } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import PropertyPhotos from "@/components/seasonal/PropertyPhotos";
 import ListingManager from "@/components/seasonal/ListingManager";
+import SeasonalShowcase from "@/components/seasonal/SeasonalShowcase";
 import { useI18n } from "@/lib/i18n";
 import { buildAppUrl } from "@/lib/app-domain";
 
@@ -110,6 +111,9 @@ const SeasonalRentals = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useState<"showcase" | "bookings">(() => {
+    return searchParams.get("booking") || searchParams.get("focusRequest") ? "bookings" : "showcase";
+  });
   
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -540,16 +544,53 @@ const SeasonalRentals = () => {
             <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* View toggle */}
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("showcase")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "showcase" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> {t("page.seasonal.showcase") || "Properties"}
+              </button>
+              <button
+                onClick={() => setViewMode("bookings")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "bookings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" /> {t("page.seasonal.bookings_view") || "Bookings"}
+              </button>
+            </div>
             <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
               <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
             </button>
-            <button onClick={() => setShowForm(true)} className="btn-primary">
+            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
         </div>
 
-        {showIcalPanel && (
+        {/* Showcase view */}
+        {viewMode === "showcase" && (
+          <SeasonalShowcase
+            onEditListing={(propertyId) => {
+              setSearchParams({ propertyId, tab: "listing" });
+              setViewMode("bookings");
+            }}
+            onViewCalendar={(propertyId) => {
+              setSearchParams({ propertyId });
+              setViewMode("bookings");
+            }}
+            onViewBookings={(propertyId) => {
+              setSearchParams({ propertyId });
+              setViewMode("bookings");
+            }}
+          />
+        )}
+
+        {viewMode === "bookings" && showIcalPanel && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent" /> {t("page.seasonal.ical_sync_title")}</h3>
@@ -603,7 +644,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        {focusedRequest && (
+        {viewMode === "bookings" && focusedRequest && (
           <div className="bg-accent/10 border border-accent/30 rounded-xl p-5 mb-6 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -710,7 +751,7 @@ const SeasonalRentals = () => {
         )}
 
         {/* All Booking Requests panel — always visible */}
-        {allRequests.length > 0 && (
+        {viewMode === "bookings" && allRequests.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               📩 {t("page.seasonal.all_requests") !== "page.seasonal.all_requests" ? t("page.seasonal.all_requests") : "Demandes de réservation"}
@@ -964,7 +1005,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
+        {viewMode === "bookings" && <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1))} className="p-2 hover:bg-muted rounded-lg"><ChevronLeft className="h-4 w-4" /></button>
             <h3 className="font-semibold text-foreground capitalize">{monthLabel}</h3>
@@ -1022,9 +1063,9 @@ const SeasonalRentals = () => {
               );
             })}
           </div>
-        </div>
+        </div>}
 
-        {properties.length > 0 && (
+        {viewMode === "bookings" && properties.length > 0 && (
           <div className="bg-card rounded-xl border border-border/50 p-5 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -1062,7 +1103,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        {showForm && (
+        {viewMode === "bookings" && showForm && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-foreground">{editingId ? t("page.seasonal.edit_booking") : t("page.seasonal.new_booking")}</h3>
@@ -1095,7 +1136,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        <div className="space-y-3">
+        {viewMode === "bookings" && <div className="space-y-3">
           {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
@@ -1115,7 +1156,7 @@ const SeasonalRentals = () => {
                   </div>
                 </div>
               ))}
-        </div>
+        </div>}
         {/* Edit dates modal */}
         {showEditRequestModal && focusedRequest && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowEditRequestModal(false)}>
