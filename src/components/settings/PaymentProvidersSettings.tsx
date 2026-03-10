@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle } from "lucide-react";
+import { CreditCard, Loader2, CheckCircle, ExternalLink, AlertCircle, Building2, Link as LinkIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,12 +20,19 @@ const PaymentProvidersSettings = () => {
   const [orgCountry, setOrgCountry] = useState(userCountry || "FR");
   const sepaEligible = useMemo(() => isSepaCountry(orgCountry), [orgCountry]);
 
+  // Bank transfer fields
+  const [bankHolder, setBankHolder] = useState("");
+  const [bankIban, setBankIban] = useState("");
+  const [bankBic, setBankBic] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState("");
+
   useEffect(() => {
     if (!orgId) return;
     const fetchData = async () => {
       const { data: org } = await supabase
         .from("orgs")
-        .select("paypal_email, default_payment_provider, stripe_account_id, stripe_onboarding_complete, country")
+        .select("paypal_email, default_payment_provider, stripe_account_id, stripe_onboarding_complete, country, bank_holder_name, bank_iban, bank_bic, bank_name, payment_link_url")
         .eq("id", orgId)
         .single();
 
@@ -33,9 +40,13 @@ const PaymentProvidersSettings = () => {
         setPaypalEmail((org as any).paypal_email || "");
         setDefaultProvider((org as any).default_payment_provider || "stripe");
         if ((org as any).country) setOrgCountry((org as any).country);
+        setBankHolder((org as any).bank_holder_name || "");
+        setBankIban((org as any).bank_iban || "");
+        setBankBic((org as any).bank_bic || "");
+        setBankName((org as any).bank_name || "");
+        setPaymentLinkUrl((org as any).payment_link_url || "");
       }
 
-      // Check Stripe Connect status
       try {
         const { data } = await supabase.functions.invoke("check-connect-status");
         setConnectStatus(data);
@@ -82,6 +93,11 @@ const PaymentProvidersSettings = () => {
     await supabase.from("orgs").update({
       paypal_email: paypalEmail || null,
       default_payment_provider: defaultProvider,
+      bank_holder_name: bankHolder || null,
+      bank_iban: bankIban || null,
+      bank_bic: bankBic || null,
+      bank_name: bankName || null,
+      payment_link_url: paymentLinkUrl || null,
     } as any).eq("id", orgId);
     toast({ title: t("page.settings.org_updated") });
     setSaving(false);
@@ -96,6 +112,8 @@ const PaymentProvidersSettings = () => {
       </div>
     );
   }
+
+  const inputClass = "w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
@@ -152,8 +170,8 @@ const PaymentProvidersSettings = () => {
           </div>
         </div>
 
-        {/* SEPA Direct Debit — only for SEPA zone */}
-        {sepaEligible && (
+        {/* SEPA Direct Debit */}
+        {sepaEligible ? (
           <div className="border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -171,9 +189,7 @@ const PaymentProvidersSettings = () => {
             </div>
             <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_via_stripe") || "Activé via Stripe Connect. Les locataires pourront payer par prélèvement SEPA."}</p>
           </div>
-        )}
-
-        {!sepaEligible && (
+        ) : (
           <div className="border border-border/50 rounded-xl p-4 bg-muted/30">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
@@ -186,6 +202,61 @@ const PaymentProvidersSettings = () => {
             </div>
           </div>
         )}
+
+        {/* Bank Transfer Details */}
+        <div className="border border-border rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">{t("page.settings.bank_transfer") || "Bank Transfer"}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {t("page.settings.bank_transfer_desc") || "Clients can pay directly via wire transfer to your bank account"}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">{t("page.settings.bank_holder") || "Account Holder"}</label>
+              <input type="text" value={bankHolder} onChange={(e) => setBankHolder(e.target.value)} placeholder="Company Name / Full Name" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">{t("page.settings.bank_name_label") || "Bank Name"}</label>
+              <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="BNP Paribas, HSBC, etc." className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">IBAN</label>
+              <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">BIC / SWIFT</label>
+              <input type="text" value={bankBic} onChange={(e) => setBankBic(e.target.value)} placeholder="BNPAFRPP" className={inputClass} />
+            </div>
+          </div>
+        </div>
+
+        {/* Custom Payment Link */}
+        <div className="border border-border rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+              <LinkIcon className="h-4 w-4 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">{t("page.settings.payment_link") || "Payment Link"}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {t("page.settings.payment_link_desc") || "Add a custom payment link (Stripe, PayPal.me, Wise, etc.)"}
+              </p>
+            </div>
+          </div>
+          <input
+            type="url"
+            value={paymentLinkUrl}
+            onChange={(e) => setPaymentLinkUrl(e.target.value)}
+            placeholder="https://pay.stripe.com/... or https://paypal.me/..."
+            className={inputClass}
+          />
+        </div>
 
         {/* PayPal */}
         <div className="border border-border rounded-xl p-4">
@@ -203,22 +274,19 @@ const PaymentProvidersSettings = () => {
             placeholder="votre@email-paypal.com"
             value={paypalEmail}
             onChange={(e) => setPaypalEmail(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className={inputClass}
           />
         </div>
 
         {/* Default provider */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.default_provider")}</label>
-          <select
-            value={defaultProvider}
-            onChange={(e) => setDefaultProvider(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+          <select value={defaultProvider} onChange={(e) => setDefaultProvider(e.target.value)} className={inputClass}>
             <option value="stripe">Stripe (Card)</option>
             {sepaEligible && <option value="sepa">SEPA Direct Debit</option>}
+            <option value="bank_transfer">{t("page.settings.bank_transfer") || "Bank Transfer"}</option>
+            <option value="payment_link">{t("page.settings.payment_link") || "Payment Link"}</option>
             <option value="paypal">PayPal</option>
-            <option value="bank_transfer">{t("page.settings.bank_transfer")}</option>
           </select>
         </div>
 
