@@ -41,7 +41,7 @@ const Navbar = () => {
           <Link
             to="/login"
             className="hidden sm:inline-flex text-sm font-medium transition-colors hover:text-accent"
-            style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}
+            style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}
           >
             {t("landing.nav.login")}
           </Link>

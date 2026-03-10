@@ -156,7 +156,7 @@ const Hero = () => {
                   <div className="text-sm font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
                     {s.value}
                   </div>
-                  <div className="text-[10px]" style={{ color: "hsl(var(--primary-foreground) / 0.35)" }}>
+                  <div className="text-[10px]" style={{ color: "hsl(var(--primary-foreground) / 0.55)" }}>
                     {s.label}
                   </div>
                 </div>
