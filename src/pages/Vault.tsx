@@ -8,6 +8,7 @@ import {
   FolderLock, Upload, Trash2, Download, FileText, Image,
   File, Loader2, Search, X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface VaultFile {
   id: string;
@@ -141,12 +142,12 @@ const Vault = () => {
         {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("page.vault.search")}
-            className="w-full bg-muted/50 border border-border/50 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            className="pl-9"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
