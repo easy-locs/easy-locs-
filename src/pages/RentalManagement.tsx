@@ -487,7 +487,7 @@ const RentalManagement = () => {
       if (emailError || (emailData && emailData.success === false)) {
         toast({
           title: t("page.rental.msg_sent"),
-          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "erreur inconnue"}`,
+          description: `${t("page.rental.email_not_sent")} : ${(emailError as any)?.message || emailData?.error || "unknown error"}`,
           variant: "destructive",
         });
       }
