@@ -289,6 +289,22 @@ export function useRentalData(countryFilter?: string | null) {
         const tenant = tenants.find(tn => tn.id === call.tenant_id);
         const prop = properties.find(p => p.id === (call.property_id || tenant?.property_id));
         if (tenant) {
+          const propCountryCode = prop?.country || "FR";
+          const currency = getCountryConfig(propCountryCode).currency || "EUR";
+
+          // 1. Sync engine: payment_received (owner/manager — finance/audit)
+          await dispatchSyncEvent({
+            type: "payment_received",
+            context: { orgId, propertyId: call.property_id || tenant.property_id, tenantId: call.tenant_id, countryCode: propCountryCode },
+            actorUserId: user.id,
+            month: call.month,
+            totalAmount: call.total_amount,
+            currency,
+            tenantName: tenant.name,
+            paymentId: call.id,
+          }).catch(() => {});
+
+          // 2. Generate receipt PDF
           let landlordName = "";
           let landlordAddress = "";
           let landlordSignature = "";
@@ -332,7 +348,6 @@ export function useRentalData(countryFilter?: string | null) {
             paymentMethod: paymentMethodLabel,
           };
 
-          const propCountryCode = prop?.country || "FR";
           const allTpls = getAllTemplates();
           const receiptTemplate = allTpls.find(tpl => tpl.country === propCountryCode && tpl.docType === "rent-receipt" && tpl.active) || frRentReceipt;
           const signatures = landlordSignature ? { landlord: landlordSignature } : undefined;
@@ -350,6 +365,7 @@ export function useRentalData(countryFilter?: string | null) {
             status: "final",
           });
 
+          // 3. Email receipt to tenant
           const tenantEmail = tenant.email?.trim().toLowerCase();
           if (tenantEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(tenantEmail)) {
             try {
@@ -385,7 +401,7 @@ export function useRentalData(countryFilter?: string | null) {
             toast({ title: t("hook.rental.payment_registered"), description: t("hook.rental.receipt_generated") });
           }
 
-          // Sync engine: receipt_generated (replaces legacy manual notification)
+          // 4. Sync engine: receipt_generated (tenant — legal proof/document)
           dispatchSyncEvent({
             type: "receipt_generated",
             context: { orgId, propertyId: call.property_id || tenant.property_id, tenantId: call.tenant_id, countryCode: propCountryCode },
@@ -394,7 +410,7 @@ export function useRentalData(countryFilter?: string | null) {
             targetEmail: tenant.email || undefined,
             month: call.month,
             totalAmount: call.total_amount,
-            currency: getCountryConfig(propCountryCode).currency || "EUR",
+            currency,
             tenantName: tenant.name,
             receiptId: call.id,
           }).catch(() => {});
