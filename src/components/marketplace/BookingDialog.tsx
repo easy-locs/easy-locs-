@@ -70,6 +70,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     passengers: 1,
     return_time: "",
   });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
 
   const [bookedDates, setBookedDates] = useState<{ from: string; to: string }[]>([]);
 
