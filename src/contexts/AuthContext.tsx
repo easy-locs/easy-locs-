@@ -271,7 +271,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCountry("FR");
     setUserCurrency("EUR");
     setOnboardingCompleted(false);
-    setSubscription({ ...defaultSubscription, loading: false });
+    resetSubscription();
     setActiveRole("landlord");
     setHasDualRole(false);
   };
