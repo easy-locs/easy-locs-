@@ -117,6 +117,7 @@ const CommunicationCenter = () => {
   const [sending, setSending] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [filterType, setFilterType] = useState("all");
+  const [filterProperty, setFilterProperty] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
