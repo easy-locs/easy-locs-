@@ -114,7 +114,7 @@ const DeveloperPortal = () => {
       const { error } = await supabase.from("api_keys" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Clé supprimée"); qc.invalidateQueries({ queryKey: ["api_keys"] }); },
+    onSuccess: () => { toast.success("Key deleted"); qc.invalidateQueries({ queryKey: ["api_keys"] }); },
   });
 
   const createWebhookMut = useMutation({
