@@ -105,14 +105,15 @@ function htmlPage(meta: {
 </html>`;
 }
 
-function buildHeaders() {
-  return {
-    ...corsHeaders,
-    "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "no-store, max-age=0, must-revalidate",
-    Pragma: "no-cache",
-    Expires: "0",
-  };
+function buildHeaders(): Headers {
+  const h = new Headers();
+  h.set("Access-Control-Allow-Origin", "*");
+  h.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version");
+  h.set("Content-Type", "text/html; charset=utf-8");
+  h.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+  h.set("Pragma", "no-cache");
+  h.set("Expires", "0");
+  return h;
 }
 
 function buildSocialResponse(req: Request, html: string, redirectUrl: string): Response {
@@ -120,16 +121,15 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
     return new Response(html, { status: 200, headers: buildHeaders() });
   }
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      ...corsHeaders,
-      Location: redirectUrl,
-      "Cache-Control": "no-store, max-age=0, must-revalidate",
-      Pragma: "no-cache",
-      Expires: "0",
-    },
-  });
+  const redirectHeaders = new Headers();
+  redirectHeaders.set("Access-Control-Allow-Origin", "*");
+  redirectHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+  redirectHeaders.set("Location", redirectUrl);
+  redirectHeaders.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+  redirectHeaders.set("Pragma", "no-cache");
+  redirectHeaders.set("Expires", "0");
+
+  return new Response(null, { status: 302, headers: redirectHeaders });
 }
 
 
