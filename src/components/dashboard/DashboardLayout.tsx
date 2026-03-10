@@ -321,7 +321,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
             const hasActiveItem = section.items.some(isItemActive);
-            const isSingleItem = section.key === "dashboard";
+            const isSingleItem = section.items.length === 1;
 
             if (isSingleItem) {
               const item = section.items[0];
