@@ -254,7 +254,7 @@ const DeveloperPortal = () => {
 
         <Tabs defaultValue="keys">
           <TabsList className="flex-wrap">
-            <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" />Clés API</TabsTrigger>
+            <TabsTrigger value="keys"><Key className="h-4 w-4 mr-1" />API Keys</TabsTrigger>
             <TabsTrigger value="webhooks"><Webhook className="h-4 w-4 mr-1" />Webhooks</TabsTrigger>
             <TabsTrigger value="docs"><BookOpen className="h-4 w-4 mr-1" />Documentation</TabsTrigger>
             <TabsTrigger value="examples"><Code className="h-4 w-4 mr-1" />Exemples</TabsTrigger>
