@@ -72,6 +72,7 @@ const AIQualityDashboard = () => {
   const [copilotReply, setCopilotReply] = useState("");
   const [copilotLoading, setCopilotLoading] = useState(false);
   const [triggerIssueCount, setTriggerIssueCount] = useState(0);
+  const [history, setHistory] = useState<Array<{ created_at: string; global_score: number; total_issues: number; scan_type: string }>>([]);
 
   // Subscribe to trigger-based issues
   useEffect(() => {
@@ -79,6 +80,19 @@ const AIQualityDashboard = () => {
     update();
     return subscribeTriggerAudit(update);
   }, []);
+
+  // Load audit history
+  useEffect(() => {
+    const loadHistory = async () => {
+      const { data } = await supabase
+        .from("audit_reports")
+        .select("created_at, global_score, total_issues, scan_type")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (data) setHistory(data);
+    };
+    loadHistory();
+  }, [report]);
 
   const runScan = useCallback(async (type: "full" | "light") => {
     setScanning(true);
@@ -94,6 +108,28 @@ const AIQualityDashboard = () => {
       toast.success(`Scan complete — Score: ${result.globalScore}/100 — ${result.totalIssues} issue(s) found`);
     } catch (err) {
       toast.error("Scan failed");
+      console.error(err);
+    } finally {
+      setScanning(false);
+    }
+  }, []);
+
+  const runScheduledScan = useCallback(async () => {
+    setScanning(true);
+    toast.info("Running backend scheduled audit...");
+    try {
+      const { data, error } = await supabase.functions.invoke("run-scheduled-audit", { body: {} });
+      if (error) throw error;
+      toast.success(`Backend audit complete — Score: ${data.globalScore}/100 — ${data.totalIssues} issue(s)`);
+      // Reload history
+      const { data: hist } = await supabase
+        .from("audit_reports")
+        .select("created_at, global_score, total_issues, scan_type")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (hist) setHistory(hist);
+    } catch (err) {
+      toast.error("Backend audit failed");
       console.error(err);
     } finally {
       setScanning(false);
