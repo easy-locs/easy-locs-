@@ -119,17 +119,15 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
 
           return (
             <div key={p.id} className="bg-card rounded-xl shadow-card border border-border/50 flex flex-col" style={{ borderRadius: "var(--card-radius)" }}>
-              <div className="flex items-center justify-between p-4 sm:p-5 pb-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="icon-box shrink-0">
-                    <Home className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{p.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{p.address}, {p.city}</p>
-                  </div>
+              <div className="flex items-start gap-3 p-4 sm:p-5 pb-3">
+                <div className="icon-box shrink-0 mt-0.5">
+                  <Home className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <span className="badge-neutral shrink-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{p.label}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{p.address}, {p.city}</p>
+                </div>
+                <span className="badge-neutral shrink-0 whitespace-nowrap">
                   {propReports.length} {t("comp.inventory.inventory_reports")}
                 </span>
               </div>
