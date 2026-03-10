@@ -232,6 +232,11 @@ export default function BookingDetailDrawer({
                     <Button size="sm" onClick={() => onUpdateStatus(booking.id, "confirmed")} className="w-full">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Validate
                     </Button>
+                    {onSendQuote && (
+                      <Button size="sm" variant="outline" onClick={() => setQuoteOpen(true)} className="w-full">
+                        <DollarSign className="h-3 w-3 mr-1" /> Send Quote
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" onClick={() => onUpdateStatus(booking.id, "awaiting_payment")} className="w-full">
                       <CreditCard className="h-3 w-3 mr-1" /> Await Payment
                     </Button>
