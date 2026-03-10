@@ -262,6 +262,8 @@ const PublicListing = () => {
                 whatsappNumber={property?.whatsapp_number}
                 telegramUsername={property?.telegram_username}
                 listingTitle={listingTitle}
+                listingId={listing?.id}
+                orgId={listing?.org_id}
               />
             </div>
           </div>
