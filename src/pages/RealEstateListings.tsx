@@ -245,6 +245,11 @@ export default function RealEstateListings() {
                         <Badge variant="outline" className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-xs">
                           {LISTING_TYPES.find(t => t.value === listing.listing_type)?.emoji} {LISTING_TYPES.find(t => t.value === listing.listing_type)?.label}
                         </Badge>
+                        {(listing as any).visibility && (listing as any).visibility !== "public" && (
+                          <Badge variant="outline" className={`absolute bottom-2 left-2 text-[10px] backdrop-blur-sm ${(listing as any).visibility === "unlisted" ? "bg-amber-500/20 text-amber-700 border-amber-500/30" : "bg-muted text-muted-foreground"}`}>
+                            {(listing as any).visibility === "unlisted" ? "🔗 Unlisted" : "🔒 Private"}
+                          </Badge>
+                        )}
                       </div>
                       <CardContent className="p-4 space-y-2">
                         <h3 className="font-semibold text-foreground truncate">{listing.title}</h3>
