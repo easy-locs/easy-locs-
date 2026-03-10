@@ -267,10 +267,10 @@ const DynamicPricing = () => {
 
         {/* Rules list */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">Règles de tarification</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">Pricing rules</CardTitle></CardHeader>
           <CardContent>
             {rules.length === 0 ? (
-              <p className="text-center text-muted-foreground py-6">Aucune règle configurée</p>
+              <p className="text-center text-muted-foreground py-6">No rules configured</p>
             ) : (
               <div className="space-y-2">
                 {rules.map(rule => {
