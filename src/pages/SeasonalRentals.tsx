@@ -1005,7 +1005,7 @@ const SeasonalRentals = () => {
           </div>
         )}
 
-        <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
+        {viewMode === "bookings" && <div className="bg-card rounded-xl border border-border/50 p-4 mb-6">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1))} className="p-2 hover:bg-muted rounded-lg"><ChevronLeft className="h-4 w-4" /></button>
             <h3 className="font-semibold text-foreground capitalize">{monthLabel}</h3>
