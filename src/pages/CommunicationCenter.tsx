@@ -1479,13 +1479,29 @@ const CommunicationCenter = () => {
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center max-w-sm">
-                  <MessageCircle className="h-16 w-16 text-muted-foreground/15 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Communication Center</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Select a conversation to start. All messages, bookings, and documents are unified here.
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md px-4">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-5">
+                    <MessageCircle className="h-8 w-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Communication Center</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    All your conversations unified — tenants, guests, clients, and leads in one place.
                   </p>
-                </div>
+                  <div className="grid grid-cols-2 gap-3 text-left">
+                    {[
+                      { emoji: "🏠", label: "Long-term", desc: "Landlord ↔ Tenant" },
+                      { emoji: "🏖️", label: "Seasonal", desc: "Host ↔ Guest" },
+                      { emoji: "🛍️", label: "Marketplace", desc: "Provider ↔ Client" },
+                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Lead" },
+                    ].map(p => (
+                      <div key={p.label} className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
+                        <span className="text-sm">{p.emoji}</span>
+                        <p className="text-xs font-semibold text-foreground mt-1">{p.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               </div>
             )}
           </div>
