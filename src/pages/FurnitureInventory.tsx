@@ -60,6 +60,7 @@ const FurnitureInventory = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const countryFilter = useCountryFilter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<FurnitureItem[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
