@@ -1152,21 +1152,22 @@ const CommunicationCenter = () => {
                         </p>
                       </div>
                     </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Select value={convStatus} onValueChange={updateConversationStatus}>
-                      <SelectTrigger className="h-8 w-auto text-xs gap-1">
-                        <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
-                        <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONV_STATUSES.map(s => (
-                          <SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowContext(!showContext)}>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} />
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Select value={convStatus} onValueChange={updateConversationStatus}>
+                        <SelectTrigger className="h-8 w-auto text-xs gap-1">
+                          <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
+                          <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONV_STATUSES.map(s => (
+                            <SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowContext(!showContext)}>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
