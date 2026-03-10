@@ -177,6 +177,7 @@ export default function RealEstateListings() {
       bathrooms: listing.bathrooms, contact_email: listing.contact_email, contact_phone: listing.contact_phone,
       parking: listing.parking, garden: listing.garden, terrace: listing.terrace,
       elevator: listing.elevator, furnished: listing.furnished, energy_class: listing.energy_class,
+      visibility: (listing as any).visibility || "public",
     });
     setEditId(listing.id);
     setCreateOpen(true);
