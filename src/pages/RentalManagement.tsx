@@ -1312,9 +1312,9 @@ const RentalManagement = () => {
         {/* ─── Properties Tab ─── */}
         {activeTab === "properties" && (
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <h2 className="font-semibold text-foreground">{properties.length} {L.properties.toLowerCase()}</h2>
-              <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
+              <button onClick={() => setShowPropertyForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px] w-full sm:w-auto justify-center sm:justify-start">
                 <Plus className="h-4 w-4" />{L.addProperty}
               </button>
             </div>
@@ -1450,25 +1450,25 @@ const RentalManagement = () => {
         {/* ─── Tenants Tab ─── */}
         {activeTab === "tenants" && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex items-center justify-between">
                  <h2 className="font-semibold text-foreground">{filteredTenants.length} {L.tenants.toLowerCase()}</h2>
-                 <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
+                 <button onClick={() => setShowTenantForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px]">
+                   <Plus className="h-4 w-4" />{L.addTenant}
+                 </button>
+              </div>
+              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5 overflow-x-auto">
                    {([
                      { key: "active" as const, label: L.active, count: activeCount },
                      { key: "terminated" as const, label: L.terminated, count: terminatedCount },
                      { key: "all" as const, label: L.all, count: tenants.length },
                    ]).map(f => (
                      <button key={f.key} onClick={() => setLeaseFilter(f.key)}
-                       className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${leaseFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                       className={`text-xs px-3 py-2 rounded-md font-medium transition-colors shrink-0 min-h-[36px] ${leaseFilter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                        {f.label} ({f.count})
                      </button>
                    ))}
-                </div>
               </div>
-               <button onClick={() => setShowTenantForm(true)} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
-                 <Plus className="h-4 w-4" />{L.addTenant}
-              </button>
             </div>
 
             {showTenantForm && (
@@ -1601,11 +1601,11 @@ const RentalManagement = () => {
         {/* ─── Payments Tab ─── */}
         {activeTab === "payments" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                <h2 className="font-semibold text-foreground">{L.rentTracking}</h2>
-               <button onClick={generateMonthlyRentCalls} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity">
+               <button onClick={generateMonthlyRentCalls} className="flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-2.5 rounded-lg shadow-gold hover:opacity-90 transition-opacity min-h-[44px] w-full sm:w-auto justify-center sm:justify-start">
                  <Plus className="h-4 w-4" />{L.monthCalls}
-              </button>
+               </button>
             </div>
 
             {/* KPI summary */}
@@ -1715,7 +1715,7 @@ const RentalManagement = () => {
                                 {unpaid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">{p.month} · {fmt(p.total_amount)}</p>
@@ -1775,7 +1775,7 @@ const RentalManagement = () => {
                                 {paid.map(p => {
                                   const tenant = tenants.find(t => t.id === p.tenant_id);
                                   return (
-                                    <div key={p.id} id={`payment-${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
+                                    <div key={p.id} id={`payment-${p.id}`} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 hover:bg-muted/20 transition-all">
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground">{tenant?.name || "—"}</p>
                                         <p className="text-xs text-muted-foreground">
@@ -1783,7 +1783,7 @@ const RentalManagement = () => {
                                           {p.payment_method === "online" ? ` · ${L.online}` : p.payment_method === "bank_transfer" ? ` · ${L.transfer}` : p.payment_method === "cash" ? ` · ${L.cash}` : ""}
                                         </p>
                                       </div>
-                                      <div className="flex items-center gap-2 shrink-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         <span className="inline-flex items-center h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">✓ {L.paid}</span>
                                         <button onClick={() => togglePayment(p.id)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.unpaid")}>
                                           <X className="h-3.5 w-3.5" />

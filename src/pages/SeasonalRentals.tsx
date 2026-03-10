@@ -538,35 +538,35 @@ const SeasonalRentals = () => {
     <DashboardLayout>
       <FeatureGate feature="ota_sync" featureLabel={t("page.seasonal.feature_label")}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6">
           <div className="page-header mb-0">
             <h1>{t("page.seasonal.title_page")}</h1>
             <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             {/* View toggle */}
             <div className="flex items-center bg-muted rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode("showcase")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
                   viewMode === "showcase" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <LayoutGrid className="h-3.5 w-3.5" /> {t("page.seasonal.showcase") || "Properties"}
+                <LayoutGrid className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("page.seasonal.showcase") || "Properties"}</span>
               </button>
               <button
                 onClick={() => setViewMode("bookings")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors min-h-[36px] ${
                   viewMode === "bookings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <List className="h-3.5 w-3.5" /> {t("page.seasonal.bookings_view") || "Bookings"}
+                <List className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t("page.seasonal.bookings_view") || "Bookings"}</span>
               </button>
             </div>
-            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
-              <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
+            <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm min-h-[36px]">
+              <Link2 className="h-4 w-4" /> <span className="hidden sm:inline">{t("page.seasonal.sync_ical")}</span>
             </button>
-            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary">
+            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary min-h-[36px]">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
@@ -762,11 +762,11 @@ const SeasonalRentals = () => {
                 const nights = Math.max(1, Math.ceil((new Date(req.check_out).getTime() - new Date(req.check_in).getTime()) / 86400000));
                 const isActive = ["pending", "approved", "paid", "payment_pending"].includes(req.status);
                 return (
-                  <div key={req.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                  <div key={req.id} className="py-3 flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-xs text-muted-foreground block">{t("page.seasonal.guest")}</span>
-                        <span className="font-medium text-foreground">{req.guest_name}</span>
+                        <span className="font-medium text-foreground truncate block">{req.guest_name}</span>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>
@@ -780,27 +780,27 @@ const SeasonalRentals = () => {
                         <span className="text-xs text-muted-foreground block">{t("page.seasonal.departure")}</span>
                         <span className="text-foreground">{req.check_out}</span>
                       </div>
-                      <div>
-                        <span className={`badge-status ${
-                          req.status === "paid" ? "badge-success" :
-                          req.status === "approved" ? "badge-info" :
-                          req.status === "rejected" ? "badge-danger" :
-                          req.status === "cancelled" ? "badge-danger" :
-                          req.status === "payment_pending" ? "badge-warning" :
-                          req.status === "pending" ? "badge-warning" :
-                          "badge-neutral"
-                        }`}>
-                          {req.status === "paid" ? "✅ " + t("page.seasonal.status_paid") :
-                           req.status === "approved" ? "📧 " + t("page.seasonal.status_approved") :
-                           req.status === "rejected" ? "❌ " + t("page.seasonal.status_rejected") :
-                           req.status === "cancelled" ? "🚫 " + t("page.seasonal.status_cancelled_label") :
-                           req.status === "payment_pending" ? "⏳ " + t("page.seasonal.status_payment_pending") :
-                           req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
-                           req.status}
-                        </span>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`badge-status ${
+                        req.status === "paid" ? "badge-success" :
+                        req.status === "approved" ? "badge-info" :
+                        req.status === "rejected" ? "badge-danger" :
+                        req.status === "cancelled" ? "badge-danger" :
+                        req.status === "payment_pending" ? "badge-warning" :
+                        req.status === "pending" ? "badge-warning" :
+                        "badge-neutral"
+                      }`}>
+                        {req.status === "paid" ? "✅ " + t("page.seasonal.status_paid") :
+                         req.status === "approved" ? "📧 " + t("page.seasonal.status_approved") :
+                         req.status === "rejected" ? "❌ " + t("page.seasonal.status_rejected") :
+                         req.status === "cancelled" ? "🚫 " + t("page.seasonal.status_cancelled_label") :
+                         req.status === "payment_pending" ? "⏳ " + t("page.seasonal.status_payment_pending") :
+                         req.status === "pending" ? "🔔 " + t("page.seasonal.status_pending_label") :
+                         req.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                       {req.status === "pending" && (
                         <>
                           <button
@@ -1025,7 +1025,7 @@ const SeasonalRentals = () => {
                 "bg-orange-500/15 text-orange-700 border-l-2 border-orange-400/40",
               ];
               return (
-                <div key={i} className={`min-h-[68px] p-1 rounded-lg border text-xs relative overflow-hidden ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
+                <div key={i} className={`min-h-[52px] sm:min-h-[68px] p-0.5 sm:p-1 rounded-lg border text-xs relative overflow-hidden ${dayBookings.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/30"}`}>
                   <span className="text-foreground font-medium block mb-0.5">{day}</span>
                   <div className="space-y-0.5">
                     {visible.map((b, idx) => (
