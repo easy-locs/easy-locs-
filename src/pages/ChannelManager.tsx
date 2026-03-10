@@ -617,7 +617,7 @@ const ChannelManager = () => {
                           </p>
                         </div>
                         <Badge variant={conn.status === "active" ? "default" : "secondary"}>
-                          {conn.status === "active" ? <><CheckCircle2 className="h-3 w-3 mr-1" />Actif</> : conn.status}
+                          {conn.status === "active" ? <><CheckCircle2 className="h-3 w-3 mr-1" />Active</> : conn.status}
                         </Badge>
                       </div>
                       <div className="flex gap-2">
