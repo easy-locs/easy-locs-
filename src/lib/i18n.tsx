@@ -1621,8 +1621,7 @@ const pageFr: Record<string, string> = {
   "page.charges.balanced": "Équilibré",
   "page.charges.legal_notice": "La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).",
 
-  // Legal Notice page
-  "legal.notice.title": "Mentions légales",
+  // Legal Notice page (extended)
   "legal.notice.publisher": "Éditeur du site",
   "legal.notice.company_type": "Société par actions simplifiée",
   "legal.notice.website": "Site web",
