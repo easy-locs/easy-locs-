@@ -150,7 +150,7 @@ export default function SepaPaymentFlow({
             ) : (
               <>
                 <ExternalLink className="h-4 w-4" />
-                {t("sepa.pay_now") || "Payer maintenant"}
+                {t("sepa.pay_now") || "Pay Now"}
               </>
             )}
           </button>
