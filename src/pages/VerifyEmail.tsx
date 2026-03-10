@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, RefreshCw, Loader2 } from "lucide-react";
+import { Mail, RefreshCw, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { useI18n } from "@/lib/i18n";
+import SEOHead from "@/components/SEOHead";
 
 const VerifyEmail = () => {
   const [resending, setResending] = useState(false);
@@ -48,30 +50,59 @@ const VerifyEmail = () => {
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+      <SEOHead title="Verify Email — Easy-Locs" description="Please verify your email address." noindex />
       <AuthBrand />
 
-      <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full text-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-gold flex items-center justify-center mx-auto mb-6">
-          <Mail className="h-8 w-8 text-accent-foreground" />
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+        className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full text-center border border-border/50"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+          className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6"
+        >
+          <Mail className="h-8 w-8 text-accent" />
+        </motion.div>
+
         <h1 className="text-2xl font-bold text-foreground mb-2">{t("auth.verify.title")}</h1>
         <p className="text-muted-foreground text-sm mb-6">
           {t("auth.verify.desc")} <strong className="text-foreground">{email || t("auth.verify.your_address")}</strong>.
           {" "}{t("auth.verify.desc2")}
         </p>
 
-        <button onClick={handleResend} disabled={resending}
-          className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:underline disabled:opacity-50">
+        {/* Animated pulse ring */}
+        <motion.div
+          className="w-12 h-12 rounded-full border-2 border-accent/20 mx-auto mb-6 flex items-center justify-center"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.2, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="w-3 h-3 rounded-full bg-accent/40" />
+        </motion.div>
+
+        <p className="text-xs text-muted-foreground mb-4">Waiting for confirmation...</p>
+
+        <motion.button
+          onClick={handleResend}
+          disabled={resending}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-xl border border-border bg-background text-foreground hover:bg-muted transition-all disabled:opacity-50"
+        >
           {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           {t("auth.verify.resend")}
-        </button>
+        </motion.button>
 
         <div className="mt-8 pt-6 border-t border-border">
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
+          <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" />
             {t("auth.verify.back")}
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
