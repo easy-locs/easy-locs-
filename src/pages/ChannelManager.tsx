@@ -427,9 +427,9 @@ const ChannelManager = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("connections")}>
             <CardContent className="pt-4 pb-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connexions</p>
+               <p className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">Connections</p>
               <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-1">{activeConns}</p>
-              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Voir les connexions →</p>
+              <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">View connections →</p>
             </CardContent>
           </Card>
           <Card className="cursor-pointer hover:shadow-card-hover hover:border-accent/40 transition-all group" onClick={() => setSelectedTab("reservations")}>
