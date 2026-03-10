@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send } from "lucide-react";
+import { Link2, Copy, Check, ExternalLink, Eye, EyeOff, Mail, Loader2, Send, Phone, MessageCircle } from "lucide-react";
 import { buildAppUrl } from "@/lib/app-domain";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 
