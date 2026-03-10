@@ -215,7 +215,7 @@ const DynamicPricing = () => {
             <p className="text-2xl font-bold text-foreground">{avgOccupancy}%</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
-            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">Biens saisonniers</span></div>
+            <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-foreground" /><span className="text-xs text-muted-foreground uppercase">Seasonal properties</span></div>
             <p className="text-2xl font-bold text-foreground">{properties.length}</p>
           </CardContent></Card>
           <Card><CardContent className="pt-4">
