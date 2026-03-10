@@ -15,6 +15,7 @@ import {
   Receipt, UserSearch, Calendar,
   Layers, BookOpen, Zap, Store, ChevronDown,
   FileCheck, CalendarRange, MapPin, ArrowLeft, Globe, Clock,
+  Shield, Palette, UsersRound, Banknote,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
@@ -55,7 +56,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // ═══════════════════════════════════════════════════════
 
   const navSections: NavSection[] = [
-    // 1. Dashboard — always visible, single item
+    // 1. Dashboard — global overview only
     {
       key: "dashboard",
       title: "Dashboard",
@@ -71,17 +72,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("section.real_estate") || "Real Estate",
       icon: Home,
       items: [
-        // Long-term rental
-        { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
+        { icon: Home, label: t("nav.long_term") || "Long-term Rental", path: cPath("/dashboard/rental") },
         { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
-        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
-        // Seasonal rental
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
-        { icon: CalendarRange, label: t("nav.channel_manager") || "Channel Manager", path: "/dashboard/channel-manager" },
-        { icon: Zap, label: t("nav.pricing") || "Dynamic Pricing", path: "/dashboard/pricing" },
-        // Sales
-        { icon: Building, label: t("nav.real_estate_listings") || "Sales Listings", path: "/dashboard/real-estate" },
-        // Calendar & Leads
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rental", path: "/dashboard/seasonal" },
+        { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
         { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
         { icon: UserSearch, label: t("nav.candidates") || "Leads", path: cPath("/dashboard/candidates") },
       ],
@@ -98,13 +92,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 4. Messages
+    // 4. Communication
     {
-      key: "messages",
-      title: t("nav.messages") || "Messages",
+      key: "communication",
+      title: t("section.communication") || "Communication",
       icon: MessageCircle,
       items: [
         { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
+        { icon: Bell, label: t("nav.notifications") || "Notifications", path: cPath("/dashboard/notices") },
       ],
     },
 
@@ -114,23 +109,37 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("nav.documents") || "Documents",
       icon: FileText,
       items: [
-        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
-        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
+        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+        { icon: Receipt, label: t("nav.receipts") || "Receipts", path: cPath("/dashboard/receipts") },
+        { icon: FileCheck, label: t("nav.rent_notices") || "Rent Notices", path: cPath("/dashboard/reminders") },
+        { icon: FileText, label: t("nav.all_documents") || "All Documents", path: cPath("/dashboard/documents") },
       ],
     },
 
-    // 6. Accounting
+    // 6. Finance
     {
-      key: "accounting",
-      title: t("nav.accounting") || "Accounting",
+      key: "finance",
+      title: t("section.finance") || "Finance",
       icon: Wallet,
       items: [
-        { icon: Wallet, label: t("nav.finances") || "Finances", path: cPath("/dashboard/finances") },
-        { icon: Receipt, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: Bell, label: t("nav.notices") || "Payment Notices", path: cPath("/dashboard/notices") },
+        { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
+        { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
         { icon: BookOpen, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/accounting") },
-        { icon: FileCheck, label: t("nav.fiscal") || "Fiscal Report", path: cPath("/dashboard/fiscal") },
+        { icon: CreditCard, label: t("nav.subscription") || "Subscription / Plan", path: "/dashboard/billing" },
+      ],
+    },
+
+    // 7. Settings
+    {
+      key: "settings",
+      title: t("nav.settings") || "Settings",
+      icon: Settings,
+      items: [
+        { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
+        { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
+        { icon: Shield, label: t("settings.payment_providers") || "Payment Providers", path: "/dashboard/settings?tab=payments" },
+        { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
   ];
@@ -402,28 +411,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
           >
             <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "AI Assistant"}
-          </Link>
-          <Link
-            to="/dashboard/billing"
-            onClick={() => setSidebarOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              location.pathname === "/dashboard/billing"
-                ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-            }`}
-          >
-            <CreditCard className="h-4 w-4 shrink-0" /> {t("nav.billing") || "Subscription"}
-          </Link>
-          <Link
-            to="/dashboard/settings"
-            onClick={() => setSidebarOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              location.pathname === "/dashboard/settings"
-                ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-            }`}
-          >
-            <Settings className="h-4 w-4 shrink-0" /> {t("nav.settings")}
           </Link>
           <button
             onClick={handleLogout}
