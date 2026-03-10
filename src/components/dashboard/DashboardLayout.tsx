@@ -370,19 +370,23 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             if (isSingleItem) {
               const item = allItems[0];
               const active = isItemActive(item);
+              const locked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
               return (
                 <div key={section.key} className="mb-1">
                   <Link
-                    to={item.path}
+                    to={locked ? "/dashboard/billing" : item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active
+                      locked
+                        ? "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
+                        : active
                         ? "bg-sidebar-accent text-sidebar-primary"
                         : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {locked && <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />}
                   </Link>
                 </div>
               );
