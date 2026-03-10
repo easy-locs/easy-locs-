@@ -175,7 +175,11 @@ const ConciergeServices = () => {
   }, [orgId, load]);
 
   const save = async () => {
-    if (!orgId || !user || !form.title) return;
+    const resolvedOrgId = orgId || await ensureOrg();
+    if (!resolvedOrgId || !user || !form.title) {
+      if (!resolvedOrgId) toast.error("Impossible de créer votre espace. Veuillez vous reconnecter.");
+      return;
+    }
     const slug = form.booking_slug || generateSlug(form.title);
     const record: any = {
       ...form, org_id: orgId, user_id: user.id, booking_slug: slug,
