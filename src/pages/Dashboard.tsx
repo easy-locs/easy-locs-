@@ -119,7 +119,7 @@ const Dashboard = () => {
     },
     {
       icon: MapPin,
-      label: t("page.dashboard.countries") || "Pays actifs",
+      label: t("page.dashboard.countries") || "Active Countries",
       value: loading ? "…" : String(stats.totalCountries),
       sub: t("page.dashboard.select_country_hint") || "Sélectionnez ci-dessous",
     },
