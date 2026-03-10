@@ -788,7 +788,7 @@ const ActivitiesMarketplace = () => {
               {/* Transactions */}
               {paidBookings.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">Paid Transactions ({paidBookings.length})</p>
+                  <p className="text-sm font-medium text-foreground">Transactions payées ({paidBookings.length})</p>
                   {paidBookings.map((b: any) => {
                     const svc = myServices.find((s: any) => s.id === b.service_id);
                     return (
