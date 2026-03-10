@@ -10,6 +10,25 @@
   hyphens: manual;
 }
 
+/* ══════ Multilingual text rendering — CJK, Arabic, Thai, Devanagari ══════ */
+:lang(ar), :lang(he), [dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+:lang(ja), :lang(ko), :lang(zh) {
+  word-break: keep-all;
+  line-break: strict;
+  font-feature-settings: "palt";
+}
+:lang(th) {
+  word-break: keep-all;
+  line-break: normal;
+}
+:lang(hi), :lang(bn), :lang(ta) {
+  word-break: normal;
+  line-break: normal;
+}
+
 /* Profile/detail header — responsive pattern */
 .profile-header {
   @apply flex flex-col sm:flex-row sm:items-center gap-4;
