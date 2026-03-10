@@ -415,7 +415,7 @@ const ChannelManager = () => {
                   </Select>
                   <Input placeholder="URL iCal (https://...)" value={newConn.ical_url} onChange={e => setNewConn(p => ({ ...p, ical_url: e.target.value }))} />
                   <Button className="w-full" onClick={() => addMut.mutate()} disabled={!newConn.ical_url || !newConn.property_id || addMut.isPending}>
-                    {addMut.isPending ? "Ajout..." : "Ajouter"}
+                    {addMut.isPending ? "Adding..." : "Add"}
                   </Button>
                 </div>
               </DialogContent>
