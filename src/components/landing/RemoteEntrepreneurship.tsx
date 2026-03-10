@@ -64,8 +64,8 @@ const RemoteEntrepreneurship = () => {
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Create Your Business
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                   {t("landing.remote.cta_create") || "Create Your Business"}
+                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </Link>
