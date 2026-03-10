@@ -76,14 +76,25 @@ const NotificationBell = () => {
 
   useEffect(() => {
     if (!open) return;
+    // Calculate panel position from bell button
+    if (bellRef.current && !isMobile) {
+      const rect = bellRef.current.getBoundingClientRect();
+      setPanelPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      if (containerRef.current && containerRef.current.contains(target)) return;
+      // Also check if click is inside the portal panel
+      const panel = document.getElementById("notification-panel");
+      if (panel && panel.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener("pointerdown", handler);
     return () => document.removeEventListener("pointerdown", handler);
-  }, [open]);
+  }, [open, isMobile]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
