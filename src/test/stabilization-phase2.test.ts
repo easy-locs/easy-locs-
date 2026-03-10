@@ -32,11 +32,11 @@ describe("Mobile & Responsive Patterns", () => {
     });
   });
 
-  describe("CSS utility classes exist", () => {
-    it("index.css contains mobile-safe class", async () => {
-      // Verify CSS patterns are defined (string-based check)
-      const cssModule = await import("@/index.css?raw");
-      const css = typeof cssModule === "string" ? cssModule : (cssModule as any).default || "";
+  describe("CSS utility classes defined", () => {
+    it("index.css contains required mobile patterns", async () => {
+      const fs = await import("fs");
+      const path = await import("path");
+      const css = fs.readFileSync(path.resolve(__dirname, "../index.css"), "utf-8");
       expect(css).toContain("mobile-safe");
       expect(css).toContain("safe-bottom");
       expect(css).toContain("sidebar-overlay");
