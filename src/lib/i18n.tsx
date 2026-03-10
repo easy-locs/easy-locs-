@@ -1621,6 +1621,20 @@ const pageFr: Record<string, string> = {
   "page.charges.balanced": "Équilibré",
   "page.charges.legal_notice": "La régularisation des charges doit être effectuée une fois par an. Le locataire doit recevoir un décompte détaillé un mois avant la régularisation (article 23 de la loi du 6 juillet 1989).",
 
+  // Legal Notice page
+  "legal.notice.title": "Mentions légales",
+  "legal.notice.publisher": "Éditeur du site",
+  "legal.notice.company_type": "Société par actions simplifiée",
+  "legal.notice.website": "Site web",
+  "legal.notice.director": "Directeur de la publication",
+  "legal.notice.director_desc": "Le directeur de la publication est le représentant légal d'Easy-Locs SAS.",
+  "legal.notice.hosting": "Hébergement",
+  "legal.notice.hosting_desc": "Le site est hébergé au sein de l'Union Européenne conformément aux exigences du RGPD.",
+  "legal.notice.ip": "Propriété intellectuelle",
+  "legal.notice.ip_desc": "L'ensemble du contenu du site (textes, graphismes, logos, icônes, images, logiciels) est la propriété exclusive d'Easy-Locs SAS et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle.",
+  "legal.notice.liability": "Limitation de responsabilité",
+  "legal.notice.liability_desc": "Easy-Locs® s'efforce de fournir des informations exactes et à jour. Toutefois, Easy-Locs SAS ne saurait garantir l'exactitude, la complétude ou l'actualité des informations diffusées sur le site.",
+
   // Newsletter
   "newsletter.badge": "Newsletter",
   "newsletter.title": "Restez informé des nouveautés",
