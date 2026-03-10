@@ -329,7 +329,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors mb-1.5"
             >
               <ArrowLeft className="h-3 w-3" />
-              {t("page.dashboard.world_map") || "Portefeuille mondial"}
+              {t("page.dashboard.world_map") || "World Portfolio"}
             </Link>
             <div className="flex items-center gap-2.5">
               <span className="text-2xl leading-none">{countryEntry.flag}</span>
