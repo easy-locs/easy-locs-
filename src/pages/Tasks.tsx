@@ -161,33 +161,29 @@ const Tasks = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.tasks.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("page.tasks.subtitle")}</p>
           </div>
           <Button onClick={openNewForm} className="gap-2"><Plus className="h-4 w-4" />{t("page.tasks.new")}</Button>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><Clock className="h-5 w-5 text-primary" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{pendingTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.in_progress")}</p></div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-destructive/10"><AlertTriangle className="h-5 w-5 text-destructive" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{overdueTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.overdue")}</p></div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10"><CheckSquare className="h-5 w-5 text-green-600" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{completedTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.completed")}</p></div>
-            </div>
-          </div>
+          {[
+            { icon: Clock, value: pendingTasks.length, label: t("page.tasks.in_progress"), bg: "bg-primary/10", iconColor: "text-primary" },
+            { icon: AlertTriangle, value: overdueTasks.length, label: t("page.tasks.overdue"), bg: "bg-destructive/10", iconColor: "text-destructive" },
+            { icon: CheckSquare, value: completedTasks.length, label: t("page.tasks.completed"), bg: "bg-success/10", iconColor: "text-success" },
+          ].map((stat, i) => (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 + i * 0.05 }}
+              className="bg-card rounded-xl p-4 border border-border/50 shadow-card relative overflow-hidden group hover:shadow-card-hover hover:border-accent/30 transition-all">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${stat.bg}`}><stat.icon className={`h-5 w-5 ${stat.iconColor}`} /></div>
+                <div><p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p><p className="text-xs text-muted-foreground">{stat.label}</p></div>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {overdueTasks.length > 0 && (
