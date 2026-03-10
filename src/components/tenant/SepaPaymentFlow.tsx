@@ -205,7 +205,7 @@ export default function SepaPaymentFlow({
                 <code className="text-sm font-mono text-foreground bg-muted px-2 py-1 rounded">
                   {ownerBank.bank_bic}
                 </code>
-                <CopyBtn value={ownerBank.bank_bic} field="bic" label={t("sepa.copy_bic") || "Copier BIC"} />
+                <CopyBtn value={ownerBank.bank_bic} field="bic" label={t("sepa.copy_bic") || "Copy BIC"} />
               </div>
             </div>
           )}
