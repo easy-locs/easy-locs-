@@ -119,9 +119,9 @@ const TenantPay = () => {
     } catch (err: any) {
       const msg = err.message || String(err);
       const userMsg = msg.includes("Stripe Connect")
-        ? (t("page.tenant.stripe_not_ready") || "Le bailleur n'a pas encore activé le paiement en ligne. Contactez-le ou payez par virement.")
+        ? (t("page.tenant.stripe_not_ready") || "The landlord has not yet enabled online payment. Contact them or pay by bank transfer.")
         : msg;
-      toast({ title: t("page.common.error") || "Erreur", description: userMsg, variant: "destructive" });
+      toast({ title: t("page.common.error") || "Error", description: userMsg, variant: "destructive" });
     } finally {
       setPayingId(null);
     }

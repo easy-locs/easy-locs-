@@ -227,7 +227,7 @@ const AddProperty = () => {
 
           {/* Submit */}
           <button onClick={handleSave} disabled={saving} className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-8 py-3 rounded-lg shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 w-full sm:w-auto">
-            {saving ? "..." : (t("page.rental.add_property") || "Ajouter le bien")}
+            {saving ? "..." : (t("page.rental.add_property") || "Add Property")}
           </button>
         </div>
       </div>

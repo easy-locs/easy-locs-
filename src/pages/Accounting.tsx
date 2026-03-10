@@ -224,9 +224,9 @@ const Accounting = () => {
                   </div>
                   <Input type="date" value={newEntry.transaction_date} onChange={e => setNewEntry(p => ({ ...p, transaction_date: e.target.value }))} />
                   <Select value={newEntry.property_id || "none"} onValueChange={v => setNewEntry(p => ({ ...p, property_id: v === "none" ? "" : v }))}>
-                    <SelectTrigger><SelectValue placeholder={t("page.accounting.property_optional") || "Bien (optionnel)"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("page.accounting.property_optional") || "Property (optional)"} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">— {t("common.none") || "Aucun"} —</SelectItem>
+                      <SelectItem value="none">— {t("common.none") || "None"} —</SelectItem>
                       {countryFilteredProperties.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
