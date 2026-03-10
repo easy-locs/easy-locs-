@@ -117,7 +117,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Store,
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services Marketplace", path: "/dashboard/activities" },
-        { icon: Sparkles, label: t("nav.concierge") || "Concierge", path: "/dashboard/concierge" },
+        { icon: Zap, label: t("nav.concierge") || "Concierge", path: "/dashboard/concierge" },
       ],
     },
 
