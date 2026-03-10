@@ -144,7 +144,7 @@ const DynamicPricing = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Règle supprimée");
+      toast.success("Rule deleted");
       qc.invalidateQueries({ queryKey: ["pricing_rules"] });
     },
   });
