@@ -354,9 +354,9 @@ const PaymentNotices = () => {
                                         <div className="flex items-center gap-1.5 justify-end flex-wrap">
                                           {!isPaid && (
                                             <>
-                                              <button onClick={() => regularize(matchingRentCall!)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors whitespace-nowrap" title={t("page.notices.regularize") || "Régulariser"}>
+                                              <button onClick={() => regularize(matchingRentCall!)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors whitespace-nowrap" title={t("page.notices.regularize") || "Regularize"}>
                                                 <CheckCircle className="h-3.5 w-3.5 shrink-0" />
-                                                {t("page.notices.regularize") || "Régulariser"}
+                                                {t("page.notices.regularize") || "Regularize"}
                                               </button>
                                               <button onClick={() => { setPartialDialog(matchingRentCall!); setPartialAmount(remaining); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors whitespace-nowrap" title={t("page.notices.partial") || "Partiel"}>
                                                 <Banknote className="h-3.5 w-3.5 shrink-0" />
