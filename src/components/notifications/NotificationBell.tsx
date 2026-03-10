@@ -213,6 +213,7 @@ const NotificationBell = () => {
     <div className="relative" ref={containerRef}>
       {/* Bell trigger */}
       <button
+        ref={bellRef}
         onClick={() => setOpen(!open)}
         className="relative p-2 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95"
       >
