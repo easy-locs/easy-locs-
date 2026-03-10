@@ -16,7 +16,7 @@ import {
   RefreshCw, Zap, AlertTriangle, CheckCircle2, XCircle, Info, Clock,
   ChevronRight, Sparkles, ArrowUpRight, ArrowDownRight, Minus,
 } from "lucide-react";
-import { runFullAudit, runLightAudit, CATEGORY_LABELS } from "@/lib/ai-audit";
+import { runFullAudit, runLightAudit, CATEGORY_LABELS, getTriggerIssues, subscribeTriggerAudit } from "@/lib/ai-audit";
 import type { AuditReport, AuditIssue, ModuleScore, AuditCategory } from "@/lib/ai-audit";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
