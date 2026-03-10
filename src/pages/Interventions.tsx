@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
@@ -182,7 +183,7 @@ const Interventions = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.interventions.title")}>
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="page-header mb-0">
               <h1>{t("page.interventions.title")}</h1>
               <p>{t("page.interventions.subtitle")}</p>
@@ -190,7 +191,7 @@ const Interventions = () => {
             <Button onClick={openNew} className="btn-primary shrink-0">
               <Plus className="h-4 w-4 mr-2" />{t("page.interventions.new")}
             </Button>
-          </div>
+          </motion.div>
 
           <div className="flex gap-2 flex-wrap">
             <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>{t("page.interventions.all")}</Button>
@@ -210,12 +211,14 @@ const Interventions = () => {
             </div>
           ) : (
             <div className="grid gap-4">
-              {filtered.map(i => {
+              {filtered.map((i, idx) => {
                 const pri = getPriorityBadge(i.priority);
                 const sti = getStatusInfo(i.status);
                 const StatusIcon = sti.icon;
                 return (
-                  <div key={i.id} className="bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-md transition-shadow">
+                  <motion.div key={i.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}
+                    className="bg-card rounded-xl p-5 border border-border/50 shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -242,12 +245,12 @@ const Interventions = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-1 shrink-0">
+                      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(i)}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => remove(i.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

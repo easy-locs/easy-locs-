@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -167,12 +168,12 @@ const DunningLetters = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.dunning.title")}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="page-header mb-0">
             <h1>{t("page.dunning.title")}</h1>
             <p>{t("page.dunning.subtitle")}</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Unpaid summary — each month shown individually */}
         {sortedUnpaid.length > 0 && (

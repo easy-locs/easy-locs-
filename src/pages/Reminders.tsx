@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Bell, Check, AlertTriangle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,24 +49,26 @@ const Reminders = () => {
   return (
     <DashboardLayout>
       <div className="page-content-sm">
-        <div className="page-header">
-          <h1>{t("page.reminders.title")}</h1>
-          <p>{t("page.reminders.subtitle")}</p>
-        </div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <div className="page-header">
+            <h1>{t("page.reminders.title")}</h1>
+            <p>{t("page.reminders.subtitle")}</p>
+          </div>
+        </motion.div>
 
         {loading ? (
           <div className="empty-state"><p className="empty-state-text">{t("page.common.loading")}</p></div>
         ) : reminders.length === 0 ? (
-          <div className="empty-state ui-card">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="empty-state ui-card">
             <Bell className="empty-state-icon" />
             <p className="empty-state-text">{t("page.reminders.empty")}</p>
-          </div>
+          </motion.div>
         ) : (
           <div className="space-y-3">
-            {reminders.map((r) => {
+            {reminders.map((r, idx) => {
               const style = typeStyles[r.type] || typeStyles.tax;
               return (
-                <div key={r.id} className="ui-card flex items-center gap-4">
+                <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="ui-card flex items-center gap-4 group hover:shadow-card-hover hover:border-accent/30 transition-all">
                   <div className={`icon-box ${style.bg}`}>
                     <style.icon className={`h-4 w-4 ${style.text}`} />
                   </div>
@@ -78,10 +81,10 @@ const Reminders = () => {
                   <span className={`badge-status ${style.bg} ${style.text}`}>
                     {t(style.badgeKey)}
                   </span>
-                  <button onClick={() => handleDismiss(r.id)} className="text-muted-foreground hover:text-success transition-colors p-1" title={t("page.reminders.mark_done")}>
+                  <button onClick={() => handleDismiss(r.id)} className="text-muted-foreground hover:text-success transition-colors p-1 opacity-0 group-hover:opacity-100" title={t("page.reminders.mark_done")}>
                     <Check className="h-4 w-4" />
                   </button>
-                </div>
+                </motion.div>
               );
             })}
           </div>

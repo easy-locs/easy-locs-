@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { CheckSquare, Plus, Calendar, AlertTriangle, Clock, Trash2, Edit, X, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -160,33 +161,29 @@ const Tasks = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.tasks.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("page.tasks.subtitle")}</p>
           </div>
           <Button onClick={openNewForm} className="gap-2"><Plus className="h-4 w-4" />{t("page.tasks.new")}</Button>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><Clock className="h-5 w-5 text-primary" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{pendingTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.in_progress")}</p></div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-destructive/10"><AlertTriangle className="h-5 w-5 text-destructive" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{overdueTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.overdue")}</p></div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10"><CheckSquare className="h-5 w-5 text-green-600" /></div>
-              <div><p className="text-2xl font-bold text-foreground">{completedTasks.length}</p><p className="text-xs text-muted-foreground">{t("page.tasks.completed")}</p></div>
-            </div>
-          </div>
+          {[
+            { icon: Clock, value: pendingTasks.length, label: t("page.tasks.in_progress"), bg: "bg-primary/10", iconColor: "text-primary" },
+            { icon: AlertTriangle, value: overdueTasks.length, label: t("page.tasks.overdue"), bg: "bg-destructive/10", iconColor: "text-destructive" },
+            { icon: CheckSquare, value: completedTasks.length, label: t("page.tasks.completed"), bg: "bg-success/10", iconColor: "text-success" },
+          ].map((stat, i) => (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 + i * 0.05 }}
+              className="bg-card rounded-xl p-4 border border-border/50 shadow-card relative overflow-hidden group hover:shadow-card-hover hover:border-accent/30 transition-all">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${stat.bg}`}><stat.icon className={`h-5 w-5 ${stat.iconColor}`} /></div>
+                <div><p className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</p><p className="text-xs text-muted-foreground">{stat.label}</p></div>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {overdueTasks.length > 0 && (
@@ -211,10 +208,11 @@ const Tasks = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.map((task) => {
+            {tasks.map((task, idx) => {
               const propLabel = properties.find(p => p.id === task.property_id)?.label;
               return (
-                <div key={task.id} className={`bg-card rounded-xl p-4 border shadow-card flex items-start gap-4 group transition-colors ${isOverdue(task) ? "border-destructive/50 bg-destructive/5" : "border-border/50"}`}>
+                <motion.div key={task.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
+                  className={`bg-card rounded-xl p-4 border shadow-card flex items-start gap-4 group transition-all hover:shadow-card-hover ${isOverdue(task) ? "border-destructive/50 bg-destructive/5" : "border-border/50 hover:border-accent/30"}`}>
                   <button onClick={() => toggleStatus(task)} className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${task.status === "done" ? "bg-green-500 border-green-500 text-white" : task.status === "in_progress" ? "border-blue-500 bg-blue-50" : "border-muted-foreground/40"}`}>
                     {task.status === "done" && <CheckSquare className="h-3 w-3" />}
                   </button>
@@ -236,7 +234,7 @@ const Tasks = () => {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditForm(task)}><Edit className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTaskId(task.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -103,7 +104,7 @@ const Expenses = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="page-content">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div>
             <h1>{t("page.expenses.title")}</h1>
             <p>{t("page.expenses.subtitle")}</p>
@@ -116,7 +117,7 @@ const Expenses = () => {
               <Plus className="h-4 w-4" /> {t("page.expenses.add")}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Filters */}
         <div className="flex gap-3 mb-4">
@@ -131,11 +132,12 @@ const Expenses = () => {
         </div>
 
         {/* Summary */}
-        <div className="ui-card mb-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="ui-card mb-6 relative overflow-hidden group hover:shadow-card-hover transition-all">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
           <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
           <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
           <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
-        </div>
+        </motion.div>
 
         {/* Add form */}
         {showForm && (
