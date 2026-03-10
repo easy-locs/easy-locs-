@@ -3015,7 +3015,7 @@ const pageEn: Record<string, string> = {
   "landing.nav.tenant_access": "Tenant portal",
   "landing.nav.pro_signup": "Create my pro account",
 
-  "landing.hero.badge": "Long-term • Airbnb • Booking • Multi-country",
+  "landing.hero.badge": "Long-term | Airbnb | Booking | Multi-country",
   "landing.hero.title": "The first worldwide platform",
   "landing.hero.title_highlight": "for rental management",
   "landing.hero.subtitle": "Professional-quality automated legal documents, adapted to each country. Manage your long-term, Airbnb and Booking rentals from a single platform.",
