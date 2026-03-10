@@ -237,7 +237,7 @@ const Dashboard = () => {
                 style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
               >
                 <Plus className="h-4 w-4" />
-                {t("page.rental.add_property") || "Ajouter un bien"}
+                {t("page.rental.add_property") || "Add a Property"}
               </Link>
             </motion.div>
           ) : (
