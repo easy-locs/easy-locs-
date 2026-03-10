@@ -141,6 +141,7 @@ const Index = () => {
       />
       <Navbar />
       <Hero />
+      <SocialProofStrip />
       <RoleCards />
       <HowItWorks />
       <RemoteEntrepreneurship />
