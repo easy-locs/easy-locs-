@@ -315,26 +315,29 @@ const ActivitiesMarketplace = () => {
       await resolveNotificationsForTarget("marketplace_booking", id, user?.id);
     } catch (e) { console.error("[resolve-notif]", e); }
 
-    // Sync status change with deep-link metadata
+    // Sync status change via shared pipeline (operational follow-up, not a new sync event type)
     if (booking) {
       const svc = myServices.find((s: any) => s.id === booking.service_id);
       const statusLabels: Record<string, string> = { confirmed: "✅ Confirmed", cancelled: "❌ Cancelled", completed: "✅ Completed" };
-      await syncToCommunicationCenter({
+      const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
+      const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
+      const meta = createDeepLinkMeta({
+        targetType: "marketplace_booking",
+        targetId: booking.id,
+        module: "marketplace",
+        countryCode: svc?.country || "",
+        bookingId: booking.id,
         orgId: booking.org_id || orgId!,
-        userId: myProvider?.user_id,
-        email: booking.booker_email,
+        propertyId: booking.property_id,
+      });
+      await sendCommunicationEvent({
+        orgId: booking.org_id || orgId!,
+        senderId: myProvider?.user_id,
+        recipientEmail: booking.booker_email,
         subject: `Booking ${statusLabels[status] || status}: ${svc?.title || "Service"}`,
         message: `Hello ${booking.booker_name},\n\nYour booking for "${svc?.title || "Service"}" on ${booking.service_date || booking.date_from || "—"} has been ${status}.\nAmount: ${booking.total_price} ${booking.currency}\n\nThank you!`,
-        category: status === "cancelled" ? "general" : "payment",
-        meta: {
-          event_type: `booking_${status}`,
-          booking_id: booking.id,
-          property_id: booking.property_id,
-          country_code: svc?.country || "",
-          workspace_id: booking.org_id || orgId!,
-          target_type: "marketplace_booking",
-          service_title: svc?.title,
-        },
+        category: status === "cancelled" ? "info" : "payment",
+        meta,
       });
     }
   };
