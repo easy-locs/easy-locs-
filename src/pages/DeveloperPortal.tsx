@@ -307,9 +307,9 @@ const DeveloperPortal = () => {
                             <code className="text-sm font-mono text-foreground truncate">{w.url}</code>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            <Badge variant={w.active ? "default" : "secondary"}>{w.active ? "Actif" : "Inactif"}</Badge>
+                            <Badge variant={w.active ? "default" : "secondary"}>{w.active ? "Active" : "Inactive"}</Badge>
                             <Button size="sm" variant="ghost" onClick={() => toggleWebhookMut.mutate({ id: w.id, active: !w.active })}>
-                              {w.active ? "Désactiver" : "Activer"}
+                              {w.active ? "Disable" : "Enable"}
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => copyKey(w.secret)} title="Copier le secret">
                               <Copy className="h-4 w-4" />
