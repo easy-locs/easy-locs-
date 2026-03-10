@@ -265,14 +265,17 @@ const Leases = () => {
                 { label: t("page.leases.terminated_leases"), value: terminatedCount, path: "/dashboard/rental?tab=tenants" },
                 { label: t("page.leases.active_revenue"), value: fmt(tenants.filter(t => t.property_id && isActive(t)).reduce((s, t) => s + t.rent_amount + t.charges_amount, 0)), path: "/dashboard/finances" },
                 { label: t("page.leases.rented_props"), value: `${new Set(tenants.filter(t => t.property_id && isActive(t)).map(t => t.property_id)).size} / ${properties.length}`, path: "/dashboard/rental?tab=properties" },
-              ].map(kpi => (
-                <Link key={kpi.label} to={kpi.path} className="bg-card rounded-xl p-4 border border-border/50 hover:shadow-card-hover transition-all group">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                    <ArrowRight className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
-                </Link>
+              ].map((kpi, i) => (
+                <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
+                  <Link to={kpi.path} className="block bg-card rounded-xl p-4 border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                      <ArrowRight className="h-3 w-3 text-transparent group-hover:text-accent transition-colors" />
+                    </div>
+                    <p className="text-2xl font-bold text-foreground tabular-nums">{kpi.value}</p>
+                  </Link>
+                </motion.div>
               ))}
             </div>
 

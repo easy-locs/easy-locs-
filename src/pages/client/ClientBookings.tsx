@@ -71,7 +71,9 @@ const ClientBookings = () => {
       <div className="space-y-3">
         {items.map((b, i) => (
           <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-            className="bg-card rounded-lg p-4 border border-border/50 flex items-center justify-between gap-3"
+            className="bg-card rounded-lg p-4 border border-border/50 flex items-center justify-between gap-3 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden group"
+          >
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
           >
             <div className="flex items-center gap-3 min-w-0">
               <CalendarCheck className="h-5 w-5 text-muted-foreground shrink-0" />
