@@ -240,7 +240,36 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       checkedAt: now,
     });
 
-    // 5. Check messaging system
+    // 5. Marketplace booking sync (L2.7)
+    const { data: staleBookings } = await supabase
+      .from("marketplace_bookings")
+      .select("id")
+      .eq("status", "awaiting_payment")
+      .limit(50);
+
+    results.push({
+      name: "Marketplace Booking Sync",
+      status: (staleBookings?.length || 0) > 10 ? "warning" : "ok",
+      message: `${staleBookings?.length || 0} bookings awaiting payment`,
+      checkedAt: now,
+    });
+
+    // 6. Refund tracking (L2.8)
+    const { data: refundedBookings } = await supabase
+      .from("marketplace_bookings")
+      .select("id")
+      .eq("status", "refunded")
+      .is("refunded_at", null)
+      .limit(50);
+
+    results.push({
+      name: "Refund Tracking",
+      status: (refundedBookings?.length || 0) > 0 ? "warning" : "ok",
+      message: `${refundedBookings?.length || 0} refunds missing timestamp`,
+      checkedAt: now,
+    });
+
+    // 7. Check messaging system
     const { count: msgCount } = await supabase
       .from("messages")
       .select("id", { count: "exact", head: true });
@@ -252,7 +281,7 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
       checkedAt: now,
     });
 
-    // 6. Edge function health
+    // 8. Edge function health
     try {
       const { error } = await supabase.functions.invoke("check-subscription", {
         body: {},

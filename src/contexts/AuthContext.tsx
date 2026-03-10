@@ -1,18 +1,10 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
-
-interface SubscriptionState {
-  subscribed: boolean;
-  plan: string;
-  subscriptionEnd: string | null;
-  loading: boolean;
-  isTrial: boolean;
-  trialDaysLeft: number | null;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -35,14 +27,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const defaultSubscription: SubscriptionState = {
-  subscribed: false,
-  plan: "free",
-  subscriptionEnd: null,
-  loading: true,
-  isTrial: false,
-  trialDaysLeft: null,
-};
+// defaultSubscription imported from useSubscription
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -76,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userCountry, setUserCountry] = useState("FR");
   const [userCurrency, setUserCurrency] = useState("EUR");
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  const [subscription, setSubscription] = useState<SubscriptionState>(defaultSubscription);
+  // Subscription state managed by extracted hook (L2.6)
   const [activeRole, setActiveRole] = useState<ActiveRole>("landlord");
   const [hasDualRole, setHasDualRole] = useState(false);
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
@@ -219,31 +204,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
   }, [user]);
 
-  const refreshSubscription = useCallback(async () => {
-    if (!session?.access_token) return;
-    setSubscription((prev) => ({ ...prev, loading: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      if (data) {
-        const isTrial = data.plan === "trial";
-        const trialDaysLeft = isTrial && data.subscription_end
-          ? Math.max(0, Math.ceil((new Date(data.subscription_end).getTime() - Date.now()) / 86400000))
-          : null;
-        setSubscription({
-          subscribed: !!data.subscribed,
-          plan: data.plan || "free",
-          subscriptionEnd: data.subscription_end || null,
-          loading: false,
-          isTrial,
-          trialDaysLeft,
-        });
-      }
-    } catch (err) {
-      console.error("[AuthContext] check-subscription error:", err);
-      setSubscription((prev) => ({ ...prev, loading: false, subscribed: false, plan: "free" }));
-    }
-  }, [session?.access_token]);
+  const { subscription, refreshSubscription, resetSubscription, setSubscription } = useSubscriptionLoader(session, user?.id);
 
   useEffect(() => {
     let mounted = true;
@@ -272,7 +233,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserCountry("FR");
         setUserCurrency("EUR");
         setOnboardingCompleted(false);
-        setSubscription({ ...defaultSubscription, loading: false });
+        resetSubscription();
         setActiveRole("landlord");
         setHasDualRole(false);
         setAllOrgs([]);
@@ -297,11 +258,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchOrgId, fetchUserType, refreshSubscription]);
 
-  useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(refreshSubscription, 60_000);
-    return () => clearInterval(interval);
-  }, [user, refreshSubscription]);
+  // Auto-refresh interval now handled by useSubscriptionLoader
 
   const emailVerified = !!user?.email_confirmed_at;
 
@@ -314,7 +271,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCountry("FR");
     setUserCurrency("EUR");
     setOnboardingCompleted(false);
-    setSubscription({ ...defaultSubscription, loading: false });
+    resetSubscription();
     setActiveRole("landlord");
     setHasDualRole(false);
   };
