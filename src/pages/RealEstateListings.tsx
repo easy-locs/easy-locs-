@@ -184,6 +184,8 @@ export default function RealEstateListings() {
       parking: listing.parking, garden: listing.garden, terrace: listing.terrace,
       elevator: listing.elevator, furnished: listing.furnished, energy_class: listing.energy_class,
       visibility: (listing as any).visibility || "public",
+      latitude: (listing as any).latitude || 0,
+      longitude: (listing as any).longitude || 0,
     });
     setEditId(listing.id);
     setCreateOpen(true);
