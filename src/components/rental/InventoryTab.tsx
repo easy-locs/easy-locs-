@@ -135,11 +135,11 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
               </div>
 
               {propTenants.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs text-muted-foreground mb-1">{t("comp.inventory.tenants_label")}</p>
-                  <div className="flex flex-wrap gap-1">
+                <div className="px-4 sm:px-5 mb-3">
+                  <p className="text-xs text-muted-foreground mb-1.5">{t("comp.inventory.tenants_label")}</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {propTenants.map(tn => (
-                      <span key={tn.id} className={`text-xs px-2 py-0.5 rounded-full ${isLeaseActive(tn) ? "bg-green-500/10 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                      <span key={tn.id} className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${isLeaseActive(tn) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {tn.name} {!isLeaseActive(tn) && t("comp.inventory.terminated")}
                       </span>
                     ))}
