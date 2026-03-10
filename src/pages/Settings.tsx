@@ -255,10 +255,10 @@ const Settings = () => {
           <div className="ui-card">
             <div className="flex items-center gap-3 mb-5">
               <Globe className="h-5 w-5 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">Public Showcase</h2>
+              <h2 className="font-semibold text-foreground">{t("page.settings.showcase_title") || "Public Showcase"}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Control whether your agency showcase page is publicly visible. Individual listing visibility settings remain independent.
+              {t("page.settings.showcase_desc") || "Control whether your agency showcase page is publicly visible. Individual listing visibility settings remain independent."}
             </p>
             <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
               <div className="flex items-center gap-3">
