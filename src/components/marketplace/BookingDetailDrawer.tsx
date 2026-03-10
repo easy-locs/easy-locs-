@@ -301,6 +301,20 @@ export default function BookingDetailDrawer({
             <BookingActivityLog bookingId={booking.id} orgId={orgId} />
           </TabsContent>
         </Tabs>
+
+        {/* Modification Dialog */}
+        {onModifyBooking && (
+          <BookingModifyDialog
+            open={modifyOpen}
+            onOpenChange={setModifyOpen}
+            booking={booking}
+            service={service}
+            onSubmit={async (changes) => {
+              const ok = await onModifyBooking(booking, changes);
+              if (ok) setModifyOpen(false);
+            }}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );
