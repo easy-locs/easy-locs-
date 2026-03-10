@@ -613,7 +613,7 @@ const ChannelManager = () => {
                         <div>
                           <p className="font-semibold text-foreground">{plat.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Dernière sync : {conn.last_sync_at ? format(parseISO(conn.last_sync_at), "dd/MM/yyyy HH:mm") : "Jamais"}
+                            Last sync: {conn.last_sync_at ? format(parseISO(conn.last_sync_at), "dd/MM/yyyy HH:mm") : "Never"}
                           </p>
                         </div>
                         <Badge variant={conn.status === "active" ? "default" : "secondary"}>
