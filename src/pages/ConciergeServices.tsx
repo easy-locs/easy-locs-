@@ -228,7 +228,7 @@ const ConciergeServices = () => {
     if (status === "cancelled") updates.cancelled_at = new Date().toISOString();
     if (status === "refunded") updates.refunded_at = new Date().toISOString();
     await supabase.from("concierge_orders").update(updates).eq("id", orderId);
-    toast.success(`Order ${status}`);
+    toast.success(t("page.concierge.order_status_updated") || `Order ${status}`);
 
     // Resolve related notifications — real action completed
     try {
