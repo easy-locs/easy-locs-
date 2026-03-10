@@ -17,6 +17,7 @@ import {
   MapPin, Ruler, BedDouble, Bath, Home, Car, TreePine, Sun,
   Building, Armchair, ChevronLeft, ChevronRight, Send,
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
+  MessageCircle,
 } from "lucide-react";
 
 interface Listing {
@@ -563,11 +564,25 @@ function ContactCard({
       </Card>
 
       <Card className="rounded-2xl">
-        <CardContent className="p-3 sm:p-4 flex items-center justify-between">
-          <span className="text-xs sm:text-sm text-muted-foreground font-medium">Share this listing</span>
-          <Button variant="outline" size="sm" onClick={handleShare} className="gap-1.5 rounded-lg min-h-[40px]">
-            <Share2 className="h-3.5 w-3.5" /> Share
-          </Button>
+        <CardContent className="p-4 sm:p-5 space-y-3">
+          <span className="text-xs sm:text-sm text-muted-foreground font-semibold uppercase tracking-wider">Share this listing</span>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
+              onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + window.location.href)}`, "_blank")}>
+              <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
+            </Button>
+            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
+              onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(listing.title)}`, "_blank")}>
+              <Send className="h-4 w-4 shrink-0" /> Telegram
+            </Button>
+            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
+              onClick={() => { window.location.href = `mailto:?subject=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(listing.title + "\n" + window.location.href)}`; }}>
+              <Mail className="h-4 w-4 shrink-0" /> Email
+            </Button>
+            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium" onClick={handleShare}>
+              <Share2 className="h-3.5 w-3.5 shrink-0" /> Copy link
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

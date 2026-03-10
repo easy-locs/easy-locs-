@@ -180,21 +180,21 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                     {propReports.map(r => {
                       const reportTenant = tenants.find(tn => tn.id === r.tenant_id);
                       return (
-                        <div key={r.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className={`badge-status text-[10px] ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
+                        <div key={r.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-muted/30 rounded-lg px-3 py-2.5">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full ${r.report_type === "entry" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}>
                               {r.report_type === "entry" ? t("comp.inventory.entry") : t("comp.inventory.exit")}
                             </span>
-                            <span className="text-xs text-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" /> {r.report_date}
+                            <span className="text-xs text-foreground flex items-center gap-1 whitespace-nowrap">
+                              <Calendar className="h-3 w-3 text-muted-foreground shrink-0" /> {r.report_date}
                             </span>
                             {reportTenant && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Users className="h-3 w-3" /> {reportTenant.name}
+                              <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                                <Users className="h-3 w-3 shrink-0" /> {reportTenant.name}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-end">
                             <button
                               onClick={() => setInventoryMode({
                                 propertyId: p.id,
@@ -203,20 +203,20 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                                 propertyLabel: p.label,
                                 existingReportId: r.id,
                               })}
-                              className="text-[10px] flex items-center gap-1 text-accent hover:underline"
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline px-2 py-1 rounded"
                             >
-                              <Eye className="h-3 w-3" /> {t("comp.inventory.open")}
+                              <Eye className="h-3 w-3 shrink-0" /> {t("comp.inventory.open")}
                             </button>
                             {r.status === "completed" && reportTenant && (
                               <button
                                 onClick={() => handleResendEmail(r, p, reportTenant)}
                                 disabled={resendingId === r.id}
-                                className="text-[10px] flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline disabled:opacity-50 px-2 py-1 rounded"
                               >
-                                {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />} Email
+                                {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 shrink-0" />} Email
                               </button>
                             )}
-                            <span className={`badge-status text-[10px] ${r.status === "completed" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"}`}>
+                            <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"}`}>
                               {r.status === "completed" ? t("comp.inventory.finalized") : t("comp.inventory.draft")}
                             </span>
                           </div>
