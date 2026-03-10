@@ -18,6 +18,15 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
       ],
     },
     {
+      title: t("landing.footer.services") || "Services",
+      links: [
+        { label: t("landing.footer.long_term") || "Long-Term Rentals", to: "/long-term-rentals" },
+        { label: t("landing.footer.seasonal") || "Seasonal Rentals", to: "/seasonal-rentals" },
+        { label: t("landing.footer.marketplace") || "Marketplace", to: "/marketplace-services" },
+        { label: t("landing.footer.concierge") || "Concierge", to: "/concierge-services" },
+      ],
+    },
+    {
       title: t("landing.footer.about") || "About",
       links: [
         { label: t("landing.footer.about") || "About", to: "/about" },
@@ -34,12 +43,21 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
         { label: t("landing.footer.cookies") || "Cookies", to: "/cookies" },
       ],
     },
-    {
-      title: "Contact",
-      links: [
-        { label: "contact@easy-locs.com", to: "mailto:contact@easy-locs.com", external: true },
-      ],
-    },
+  ];
+
+  const topCities = [
+    { name: "Paris", slug: "paris" },
+    { name: "Dubai", slug: "dubai" },
+    { name: "Barcelona", slug: "barcelona" },
+    { name: "London", slug: "london" },
+    { name: "Marrakech", slug: "marrakech" },
+    { name: "Lisbon", slug: "lisbon" },
+    { name: "Bangkok", slug: "bangkok" },
+    { name: "Tokyo", slug: "tokyo" },
+    { name: "Istanbul", slug: "istanbul" },
+    { name: "Bali", slug: "bali" },
+    { name: "Miami", slug: "miami" },
+    { name: "Rome", slug: "rome" },
   ];
 
   return (
