@@ -9,6 +9,15 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
 
   const columns = [
     {
+      title: t("landing.footer.product") || "Product",
+      links: [
+        { label: "Explore", to: "/explore" },
+        { label: t("landing.nav.features") || "Features", to: "/#features" },
+        { label: t("landing.nav.pricing") || "Pricing", to: "/#pricing" },
+        { label: t("landing.footer.api") || "API", to: "/developer" },
+      ],
+    },
+    {
       title: t("landing.footer.about") || "About",
       links: [
         { label: t("landing.footer.about") || "About", to: "/about" },
@@ -23,14 +32,6 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
         { label: t("landing.footer.privacy") || "Privacy", to: "/privacy" },
         { label: t("landing.footer.legal_notice") || "Legal Notice", to: "/legal-notice" },
         { label: t("landing.footer.cookies") || "Cookies", to: "/cookies" },
-      ],
-    },
-    {
-      title: t("landing.footer.product") || "Product",
-      links: [
-        { label: t("landing.nav.features") || "Features", to: "/#features" },
-        { label: t("landing.nav.pricing") || "Pricing", to: "/#pricing" },
-        { label: t("landing.footer.api") || "API", to: "/developer" },
       ],
     },
     {
@@ -58,7 +59,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <AppLogo variant="footer" linkTo="/" className="mb-4" />
-            <p className="text-sm leading-relaxed">{t("landing.footer.desc") || "Global property management platform for landlords, tenants and service professionals."}</p>
+            <p className="text-sm leading-relaxed">{t("landing.footer.desc") || "Global property & service business platform for entrepreneurs worldwide."}</p>
           </div>
 
           {columns.map((col) => (
@@ -88,17 +89,30 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="border-t pt-5 mb-5 text-xs text-center"
+          className="border-t pt-5 mb-5 text-xs text-center leading-relaxed"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
           🇫🇷 🇪🇸 🇩🇪 🇮🇹 🇵🇹 🇬🇧 🇳🇱 🇧🇪 🇨🇭 🇦🇹 🇲🇦 🇦🇪 🇸🇦 🇯🇵 🇰🇷 🇨🇳 🇮🇳 🇧🇷 🇺🇸 🇨🇦 🇦🇺 🇹🇷 🇵🇱 🇷🇴 🇬🇷 🇨🇿 🇭🇺 🇭🇷 🇧🇬 🇸🇰 🇺🇦 🇮🇱
         </motion.div>
 
         <div
-          className="border-t pt-6 text-sm text-center"
+          className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm"
           style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)" }}
         >
-          © {new Date().getFullYear()} <span className="font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}>Easy-Locs®</span>. {t("landing.footer.rights") || "All rights reserved."}
+          <span>
+            © {new Date().getFullYear()}{" "}
+            <span className="font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}>
+              Easy-Locs<sup className="text-[8px]">®</sup>
+            </span>
+            . {t("landing.footer.rights") || "All rights reserved."}
+          </span>
+          <div className="flex items-center gap-4 text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+            <span>SaaS Platform</span>
+            <span>·</span>
+            <span>110+ Countries</span>
+            <span>·</span>
+            <span>31 Languages</span>
+          </div>
         </div>
       </div>
     </footer>
