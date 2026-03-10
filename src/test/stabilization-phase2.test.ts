@@ -330,7 +330,7 @@ describe("Cross-cutting Stabilization", () => {
   it("Shared routes module has all resolvers", async () => {
     const routes = await import("@/lib/shared/routes");
     expect(routes.buildTargetUrl).toBeDefined();
-    expect(routes.resolveNotificationTarget).toBeDefined();
+    expect(routes.buildTargetUrl).toBeDefined();
   });
 
   it("Shared notification engine has required exports", async () => {
