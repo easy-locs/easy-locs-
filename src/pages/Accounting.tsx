@@ -271,7 +271,7 @@ const Accounting = () => {
                 <Select value={filterCat} onValueChange={setFilterCat}>
                   <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("page.accounting.all_categories") || "Toutes catégories"}</SelectItem>
+                    <SelectItem value="all">{t("page.accounting.all_categories") || "All categories"}</SelectItem>
                     {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
