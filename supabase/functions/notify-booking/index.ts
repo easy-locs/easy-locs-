@@ -353,26 +353,37 @@ serve(async (req) => {
             subject: tpl(t.ownerSubject, { guest: br.guest_name }),
             content: [{
               type: "text/html",
-              value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-                <div style="text-align:center;margin-bottom:24px;">
-                  <h1 style="color:#1a1a1a;font-size:22px;">${t.ownerTitle}</h1>
+              value: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:28px 24px;border-radius:12px 12px 0 0;text-align:center;">
+                  <h1 style="color:#ffffff;font-size:22px;margin:0;">${t.ownerTitle}</h1>
                 </div>
-                ${photoBlock}
-                <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">
-                  <tr><td style="padding:10px 12px;color:#888;">${t.traveler}</td><td style="padding:10px 12px;font-weight:600;">${safeGuestName}</td></tr>
-                  <tr><td style="padding:10px 12px;color:#888;">${t.email}</td><td style="padding:10px 12px;">${safeGuestEmail}</td></tr>
-                  ${br.guest_phone ? `<tr><td style="padding:10px 12px;color:#888;">${t.phone}</td><td style="padding:10px 12px;">${safeGuestPhone}</td></tr>` : ""}
-                  <tr><td style="padding:10px 12px;color:#888;">${t.property}</td><td style="padding:10px 12px;">${safePropertyLabel}</td></tr>
-                  <tr><td style="padding:10px 12px;color:#888;">${t.arrival}</td><td style="padding:10px 12px;font-weight:600;">${br.check_in}</td></tr>
-                  <tr><td style="padding:10px 12px;color:#888;">${t.departure}</td><td style="padding:10px 12px;font-weight:600;">${br.check_out}</td></tr>
-                  <tr><td style="padding:10px 12px;color:#888;">${t.duration}</td><td style="padding:10px 12px;">${nights} ${nightsWord}</td></tr>
-                  ${totalPrice > 0 ? `<tr><td style="padding:10px 12px;color:#888;">${t.total}</td><td style="padding:10px 12px;font-weight:700;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>` : ""}
-                  ${br.message ? `<tr><td style="padding:10px 12px;color:#888;">${t.message}</td><td style="padding:10px 12px;">${safeMessage}</td></tr>` : ""}
-                </table>
-                <div style="text-align:center;margin:24px 0;">
-                  <a href="${ownerManageUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">${t.manageBtn}</a>
+                <div style="padding:24px;">
+                  ${photoBlock}
+                  <!-- Booking ticket card -->
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:16px 0;">
+                    <div style="background:linear-gradient(135deg,#d4a853,#c49a42);padding:10px 16px;">
+                      <span style="color:#fff;font-weight:700;font-size:13px;">🎫 NEW BOOKING REQUEST</span>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;">
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">${t.traveler}</td><td style="padding:12px 16px;font-weight:700;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${safeGuestName}</td></tr>
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">${t.email}</td><td style="padding:12px 16px;font-size:13px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${safeGuestEmail}</td></tr>
+                      ${br.guest_phone ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">${t.phone}</td><td style="padding:12px 16px;font-size:13px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${safeGuestPhone}</td></tr>` : ""}
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">${t.property}</td><td style="padding:12px 16px;font-size:13px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${safePropertyLabel}</td></tr>
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">📅 ${t.arrival}</td><td style="padding:12px 16px;font-weight:600;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${br.check_in}</td></tr>
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">📅 ${t.departure}</td><td style="padding:12px 16px;font-weight:600;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${br.check_out}</td></tr>
+                      <tr><td style="padding:12px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">🌙 ${t.duration}</td><td style="padding:12px 16px;font-size:13px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${nights} ${nightsWord}</td></tr>
+                      ${totalPrice > 0 ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;">${t.total}</td><td style="padding:12px 16px;font-weight:800;font-size:18px;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>` : ""}
+                      ${br.message ? `<tr><td style="padding:12px 16px;color:#64748b;font-size:13px;">${t.message}</td><td style="padding:12px 16px;font-size:13px;color:#1e293b;">${safeMessage}</td></tr>` : ""}
+                    </table>
+                  </div>
+                  <div style="text-align:center;margin:24px 0;">
+                    <a href="${ownerManageUrl}" style="display:inline-block;background:linear-gradient(135deg,#d4a853,#c49a42);color:#1a1a1a;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(212,168,83,0.3);">${t.manageBtn}</a>
+                  </div>
                 </div>
-                <p style="text-align:center;color:#aaa;font-size:11px;margin-top:32px;">${t.footer}</p>
+                <div style="background:#f8fafc;padding:16px 24px;border-radius:0 0 12px 12px;border-top:1px solid #e2e8f0;text-align:center;">
+                  <p style="color:#94a3b8;font-size:11px;margin:0;">${t.footer}</p>
+                </div>
               </div>`,
             }],
           }),
@@ -420,11 +431,14 @@ serve(async (req) => {
 
     if (br.guest_email && SENDGRID_API_KEY) {
       const paymentSection = paymentUrl
-        ? `<div style="text-align:center;margin:24px 0;">
-            <a href="${paymentUrl}" style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">${tpl(t.payBtn, { amount: totalPrice, currency: locale.currency })}</a>
-            <p style="color:#888;font-size:12px;margin-top:8px;">${t.payNote}</p>
+        ? `<div style="text-align:center;margin:28px 0;">
+            <a href="${paymentUrl}" style="display:inline-block;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(22,163,74,0.3);">${tpl(t.payBtn, { amount: totalPrice, currency: locale.currency })}</a>
+            <p style="color:#888;font-size:12px;margin-top:10px;">${t.payNote}</p>
           </div>`
         : "";
+
+      // Build guest reply link for bidirectional messaging
+      const guestReplyUrl = `${appBaseUrl}/guest/booking/${br.id}/reply`;
 
       await fetch("https://api.sendgrid.com/v3/mail/send", {
         method: "POST",
@@ -436,23 +450,68 @@ serve(async (req) => {
           subject: tpl(t.guestSubject, { property: safePropertyLabel }),
           content: [{
             type: "text/html",
-            value: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;">
-              <div style="text-align:center;margin-bottom:24px;">
-                <h1 style="color:#1a1a1a;font-size:22px;">${t.guestTitle}</h1>
+            value: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+              <!-- Header banner -->
+              <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:32px 24px;border-radius:12px 12px 0 0;text-align:center;">
+                <h1 style="color:#ffffff;font-size:24px;margin:0 0 8px;">${t.guestTitle}</h1>
+                <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:0;">${tpl(t.guestGreeting, { name: safeGuestName })}</p>
               </div>
-              ${photoBlock}
-              ${listingBlock}
-              <p style="color:#555;font-size:15px;">${tpl(t.guestGreeting, { name: safeGuestName })}</p>
-              <p style="color:#555;font-size:15px;">${tpl(t.guestBody, { property: safePropertyLabel })}</p>
-              <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;">
-                <tr><td style="padding:10px 12px;color:#888;">${t.arrival}</td><td style="padding:10px 12px;font-weight:600;">${br.check_in}</td></tr>
-                <tr><td style="padding:10px 12px;color:#888;">${t.departure}</td><td style="padding:10px 12px;font-weight:600;">${br.check_out}</td></tr>
-                <tr><td style="padding:10px 12px;color:#888;">${t.duration}</td><td style="padding:10px 12px;">${nights} ${nightsWord}</td></tr>
-                ${totalPrice > 0 ? `<tr><td style="padding:10px 12px;color:#888;">${t.total}</td><td style="padding:10px 12px;font-weight:700;color:#16a34a;">${totalPrice} ${locale.currency}</td></tr>` : ""}
-              </table>
-              ${paymentSection}
-              <p style="color:#888;font-size:13px;text-align:center;">${t.ownerWillReply}</p>
-              <p style="text-align:center;color:#aaa;font-size:11px;margin-top:32px;">${t.footer}</p>
+
+              <div style="padding:24px;">
+                ${photoBlock ? `<div style="margin:-48px 0 20px;text-align:center;position:relative;z-index:1;">
+                  <img src="${mainPhoto}" alt="${safePropertyLabel}" style="max-width:100%;height:auto;border-radius:12px;max-height:250px;object-fit:cover;border:4px solid #fff;box-shadow:0 8px 32px rgba(0,0,0,0.12);" />
+                </div>` : ''}
+
+                <p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:20px;">${tpl(t.guestBody, { property: safePropertyLabel })}</p>
+
+                ${listingBlock}
+
+                <!-- Booking ticket card -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:20px 0;">
+                  <div style="background:linear-gradient(135deg,#d4a853,#c49a42);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="color:#fff;font-weight:700;font-size:14px;">🎫 ${t.property}: ${safePropertyLabel}</span>
+                  </div>
+                  <table style="width:100%;border-collapse:collapse;">
+                    <tr>
+                      <td style="padding:14px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;width:40%;">📅 ${t.arrival}</td>
+                      <td style="padding:14px 16px;font-weight:700;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${br.check_in}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">📅 ${t.departure}</td>
+                      <td style="padding:14px 16px;font-weight:700;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${br.check_out}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 16px;color:#64748b;font-size:13px;border-bottom:1px solid #f0f0f0;">🌙 ${t.duration}</td>
+                      <td style="padding:14px 16px;font-size:14px;color:#1e293b;border-bottom:1px solid #f0f0f0;">${nights} ${nightsWord}</td>
+                    </tr>
+                    ${totalPrice > 0 ? `<tr>
+                      <td style="padding:14px 16px;color:#64748b;font-size:13px;">💰 ${t.total}</td>
+                      <td style="padding:14px 16px;font-weight:800;font-size:18px;color:#16a34a;">${totalPrice} ${locale.currency}</td>
+                    </tr>` : ""}
+                  </table>
+                </div>
+
+                <!-- Booking reference -->
+                <div style="text-align:center;margin:16px 0;">
+                  <span style="display:inline-block;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 20px;font-family:monospace;font-size:12px;color:#64748b;letter-spacing:1px;">
+                    REF: ${br.id.slice(0, 8).toUpperCase()}
+                  </span>
+                </div>
+
+                ${paymentSection}
+
+                <p style="color:#94a3b8;font-size:13px;text-align:center;margin:20px 0;">${t.ownerWillReply}</p>
+
+                <!-- Reply button -->
+                <div style="text-align:center;margin:24px 0;">
+                  <a href="${guestReplyUrl}" style="display:inline-block;background:linear-gradient(135deg,#d4a853,#c49a42);color:#1a1a1a;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(212,168,83,0.3);">💬 Reply to your host</a>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div style="background:#f8fafc;padding:20px 24px;border-radius:0 0 12px 12px;border-top:1px solid #e2e8f0;text-align:center;">
+                <p style="color:#94a3b8;font-size:11px;margin:0;">${t.footer}</p>
+              </div>
             </div>`,
           }],
         }),

@@ -1044,72 +1044,96 @@ const CommunicationCenter = () => {
                   <p className="text-xs text-muted-foreground mt-1">Messages will appear here when clients interact.</p>
                 </div>
               ) : (
-                filteredThreads.map((thread, i) => {
-                  const pillar = getPillarColor(thread);
-                  return (
-                    <motion.button
-                      key={thread.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: Math.min(i * 0.015, 0.3) }}
-                      onClick={() => setSelectedThread(thread)}
-                      className={`w-full text-left p-3 hover:bg-muted/50 transition-all border-b border-border/10 ${
-                        selectedThread?.id === thread.id ? "bg-accent/5 border-l-2 border-l-accent" : "border-l-2 border-l-transparent"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="relative">
-                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${pillar.bg} transition-colors`}>
-                            {thread.type === "booking" ? (
-                              <Hash className={`h-4 w-4 ${pillar.text}`} />
-                            ) : thread.type === "lead" ? (
-                              <Building className={`h-4 w-4 ${pillar.text}`} />
-                            ) : (
-                              <User className={`h-4 w-4 ${pillar.text}`} />
-                            )}
+                <div className="p-2 space-y-2">
+                  {filteredThreads.map((thread, i) => {
+                    const pillar = getPillarColor(thread);
+                    const isActive = selectedThread?.id === thread.id;
+                    const hasBooking = thread.type === "booking";
+                    const ref = thread.bookingId?.slice(0, 8) || thread.leadId?.slice(0, 8) || "";
+
+                    return (
+                      <motion.button
+                        key={thread.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i * 0.02, 0.3) }}
+                        onClick={() => setSelectedThread(thread)}
+                        className={`w-full text-left rounded-xl border transition-all min-h-[88px] ${
+                          isActive
+                            ? `${pillar.border} ${pillar.bg} border-2 shadow-md`
+                            : "border-border/30 hover:border-border/60 hover:bg-muted/30"
+                        }`}
+                      >
+                        {/* Ticket header strip */}
+                        <div className={`flex items-center justify-between px-3 py-1.5 rounded-t-xl border-b ${
+                          isActive ? `${pillar.bg} ${pillar.border}` : "bg-muted/20 border-border/10"
+                        }`}>
+                          <div className="flex items-center gap-1.5">
+                            {getBookingTypeBadge(thread)}
+                            {thread.propertyCountry && <span className="text-[11px]">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
                           </div>
-                          {thread.unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
-                              {thread.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
-                              {thread.name}
-                            </p>
-                            {thread.lastMessageTime && (
-                              <span className="text-[10px] text-muted-foreground shrink-0 ml-2 tabular-nums">
-                                {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                          <div className="flex items-center gap-1.5">
+                            {ref && <span className="text-[9px] font-mono text-muted-foreground opacity-60">#{ref}</span>}
+                            {thread.unreadCount > 0 && (
+                              <span className="bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 shadow-sm">
+                                {thread.unreadCount}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
-                            {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
-                            {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                        </div>
+
+                        {/* Ticket body */}
+                        <div className="px-3 py-2.5">
+                          <div className="flex items-start gap-2.5">
+                            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${pillar.bg}`}>
+                              {thread.type === "booking" ? (
+                                <Hash className={`h-3.5 w-3.5 ${pillar.text}`} />
+                              ) : thread.type === "lead" ? (
+                                <Building className={`h-3.5 w-3.5 ${pillar.text}`} />
+                              ) : (
+                                <User className={`h-3.5 w-3.5 ${pillar.text}`} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
+                                  {thread.name}
+                                </p>
+                                {thread.lastMessageTime && (
+                                  <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                                    {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                                {thread.serviceTitle || thread.listingTitle || thread.propertyLabel || thread.email || "—"}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between mt-0.5">
-                            <p className="text-xs text-muted-foreground truncate flex-1">
-                              {thread.serviceTitle || thread.listingTitle || thread.propertyLabel || thread.email || "—"}
-                            </p>
+
+                          {/* Ticket footer — status + price */}
+                          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/10">
+                            <div className="flex items-center gap-1.5">
+                              {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
+                            </div>
                             {thread.totalPrice != null && thread.totalPrice > 0 && (
-                              <span className="text-[10px] font-bold text-foreground ml-2 shrink-0 tabular-nums">
+                              <span className="text-xs font-bold text-foreground tabular-nums">
                                 {thread.totalPrice.toFixed(0)} {(thread.currency || "€").toUpperCase()}
                               </span>
                             )}
                           </div>
+
+                          {/* Last message preview */}
                           {thread.lastMessage && (
-                            <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground/70"}`}>
-                              {thread.lastMessage.slice(0, 50)}
+                            <p className={`text-[11px] truncate mt-1 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground/60"}`}>
+                              {thread.lastMessage.slice(0, 60)}
                             </p>
                           )}
                         </div>
-                      </div>
-                    </motion.button>
-                  );
-                })
+                      </motion.button>
+                    );
+                  })}
+                </div>
               )}
             </ScrollArea>
           </div>
