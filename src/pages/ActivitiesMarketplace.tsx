@@ -756,7 +756,7 @@ const ActivitiesMarketplace = () => {
 
               {/* Total */}
               <div className="p-4 rounded-lg bg-accent/10 border border-accent/20 text-center">
-                <p className="text-xs text-muted-foreground uppercase">Total Revenue</p>
+                <p className="text-xs text-muted-foreground uppercase">Revenu Total</p>
                 <p className="text-3xl font-bold text-foreground tabular-nums">{formatAmount(totalRevenueConverted, displayCurrency)}</p>
               </div>
 
