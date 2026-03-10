@@ -299,15 +299,31 @@ export default function RealEstateListings() {
                           <Eye className="h-3 w-3" /> {listing.views_count || 0} views
                         </div>
                         <Separator />
+                        {/* Action buttons */}
                         <div className="flex items-center gap-1.5">
-                          <Button size="sm" variant="ghost" className="h-7 text-xs flex-1" onClick={() => handleEdit(listing)}>
+                          <Button size="sm" variant="ghost" className="h-8 text-xs flex-1" onClick={() => handleEdit(listing)}>
                             <Edit className="h-3 w-3 mr-1" /> Edit
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => copyLink(listing.slug)}>
+                          <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => copyLink(listing.slug)}>
                             {copiedSlug === listing.slug ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
+                          <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
                             <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {/* Share buttons */}
+                        <div className="flex items-center gap-1.5">
+                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(listing.title + " " + url)}`, "_blank"); }}>
+                            <MessageCircle className="h-3 w-3 shrink-0" /> WhatsApp
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(listing.title)}`, "_blank"); }}>
+                            <Send className="h-3 w-3 shrink-0" /> Telegram
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+                            onClick={() => { const url = buildAppUrl(`/properties/${listing.slug}`); window.location.href = `mailto:?subject=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(listing.title + "\n" + url)}`; }}>
+                            <Mail className="h-3 w-3 shrink-0" /> Email
                           </Button>
                         </div>
                       </CardContent>

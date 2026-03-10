@@ -194,7 +194,7 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-end">
                             <button
                               onClick={() => setInventoryMode({
                                 propertyId: p.id,
@@ -203,20 +203,20 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                                 propertyLabel: p.label,
                                 existingReportId: r.id,
                               })}
-                              className="text-[10px] flex items-center gap-1 text-accent hover:underline"
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline px-2 py-1 rounded"
                             >
-                              <Eye className="h-3 w-3" /> {t("comp.inventory.open")}
+                              <Eye className="h-3 w-3 shrink-0" /> {t("comp.inventory.open")}
                             </button>
                             {r.status === "completed" && reportTenant && (
                               <button
                                 onClick={() => handleResendEmail(r, p, reportTenant)}
                                 disabled={resendingId === r.id}
-                                className="text-[10px] flex items-center gap-1 text-primary hover:underline disabled:opacity-50"
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline disabled:opacity-50 px-2 py-1 rounded"
                               >
-                                {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />} Email
+                                {resendingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3 shrink-0" />} Email
                               </button>
                             )}
-                            <span className={`badge-status text-[10px] ${r.status === "completed" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"}`}>
+                            <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full ${r.status === "completed" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"}`}>
                               {r.status === "completed" ? t("comp.inventory.finalized") : t("comp.inventory.draft")}
                             </span>
                           </div>

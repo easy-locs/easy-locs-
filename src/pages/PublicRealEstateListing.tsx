@@ -17,6 +17,7 @@ import {
   MapPin, Ruler, BedDouble, Bath, Home, Car, TreePine, Sun,
   Building, Armchair, ChevronLeft, ChevronRight, Send,
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
+  MessageCircle,
 } from "lucide-react";
 
 interface Listing {
