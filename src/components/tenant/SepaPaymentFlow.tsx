@@ -85,10 +85,10 @@ export default function SepaPaymentFlow({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
-                {t("sepa.manual_transfer") || "Virement bancaire manuel"}
+                {t("sepa.manual_transfer") || "Manual bank transfer"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("sepa.manual_transfer_desc") || "Effectuez un virement depuis votre banque"}
+                {t("sepa.manual_transfer_desc") || "Make a transfer from your bank"}
               </p>
             </div>
           </button>
