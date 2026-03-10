@@ -1118,28 +1118,40 @@ const CommunicationCenter = () => {
           <div className={`flex-1 flex flex-col ${!selectedThread ? "hidden md:flex" : "flex"}`}>
             {selectedThread ? (
               <>
-                {/* Chat header */}
-                <div className="p-3 border-b border-border/50 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedThread(null)} className="md:hidden shrink-0">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${
-                      selectedThread.type === "booking" ? "bg-accent/10" : "bg-primary/10"
-                    }`}>
-                      {selectedThread.type === "booking" ? <Hash className="h-4 w-4 text-accent" /> : <User className="h-4 w-4 text-primary" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{selectedThread.name}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
-                        {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
-                        {selectedThread.listingTitle && <span className="truncate">{selectedThread.listingTitle}</span>}
-                        {selectedThread.serviceTitle && <span className="truncate">{selectedThread.serviceTitle}</span>}
-                        {selectedThread.propertyLabel && <span className="truncate">{selectedThread.propertyLabel}</span>}
+                {/* Chat header — dynamic booking context */}
+                <div className="p-3 border-b border-border/50">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedThread(null)} className="md:hidden shrink-0 h-9 w-9">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      {(() => {
+                        const p = getPillarColor(selectedThread);
+                        return (
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${p.bg}`}>
+                            {selectedThread.type === "booking" ? <Hash className={`h-4 w-4 ${p.text}`} /> : selectedThread.type === "lead" ? <Building className={`h-4 w-4 ${p.text}`} /> : <User className={`h-4 w-4 ${p.text}`} />}
+                          </div>
+                        );
+                      })()}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-foreground truncate">{selectedThread.name}</p>
+                          {selectedThread.propertyCountry && <span className="text-sm shrink-0">{getCountryEntryOrDefault(selectedThread.propertyCountry).flag}</span>}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
+                          {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
+                          {selectedThread.totalPrice != null && selectedThread.totalPrice > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-bold tabular-nums">
+                              {selectedThread.totalPrice.toFixed(2)} {(selectedThread.currency || "EUR").toUpperCase()}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                          {selectedThread.serviceTitle || selectedThread.listingTitle || selectedThread.propertyLabel || selectedThread.email || ""}
+                        </p>
                       </div>
                     </div>
-                  </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Select value={convStatus} onValueChange={updateConversationStatus}>
                       <SelectTrigger className="h-8 w-auto text-xs gap-1">
