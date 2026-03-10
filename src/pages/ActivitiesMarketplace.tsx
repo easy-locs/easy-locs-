@@ -215,7 +215,7 @@ const ActivitiesMarketplace = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Service deleted");
+      toast.success("Service supprimé");
       qc.invalidateQueries({ queryKey: ["my_marketplace_services"] });
       qc.invalidateQueries({ queryKey: ["browse_marketplace_services"] });
     },
