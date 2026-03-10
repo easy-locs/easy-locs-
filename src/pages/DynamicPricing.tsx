@@ -260,7 +260,7 @@ const DynamicPricing = () => {
                   </div>
                 </div>
               ))}
-              {occupancyData.length === 0 && <p className="text-center text-muted-foreground py-4">Ajoutez des biens saisonniers pour voir les recommandations</p>}
+              {occupancyData.length === 0 && <p className="text-center text-muted-foreground py-4">Add seasonal properties to see recommendations</p>}
             </div>
           </CardContent>
         </Card>
