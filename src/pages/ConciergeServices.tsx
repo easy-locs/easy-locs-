@@ -270,7 +270,7 @@ const ConciergeServices = () => {
 
   const markPaid = async (orderId: string) => {
     await supabase.from("concierge_orders").update({ payment_status: "paid" } as any).eq("id", orderId);
-    toast.success("Payment confirmed");
+    toast.success(t("page.concierge.payment_confirmed") || "Payment confirmed");
 
     // Resolve payment notifications — action completed
     try {
