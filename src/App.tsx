@@ -272,6 +272,12 @@ const App = () => (
               <Route path="/activities" element={<ActivitiesPage />} />
               <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
 
+              {/* ══════ BOOKING.COM-STYLE CLEAN URL ROUTES ══════ */}
+              {/* /:slug — resolves to country or city hub (e.g. /dubai, /france) */}
+              <Route path="/:slug" element={<SlugResolver />} />
+              {/* /:slug/:category — city + category (e.g. /dubai/services, /dubai/car-rental) */}
+              <Route path="/:slug/:category" element={<SlugCategoryResolver />} />
+
               {/* Legacy SEO routes — backward compatible */}
               <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
               {/* /services/:serviceCity handled by legacy route for hyphenated slugs */}
