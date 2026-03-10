@@ -28,6 +28,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [submittedBookingId, setSubmittedBookingId] = useState<string | null>(null);
   const [bookedDates, setBookedDates] = useState<{ check_in: string; check_out: string }[]>([]);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
