@@ -291,17 +291,62 @@ const CommunicationCenter = () => {
       }
     }
 
-    // 5. Load message metadata (unread counts + last messages)
+    // 5. Load real estate leads as conversation threads
+    const { data: reLeads } = await supabase
+      .from("real_estate_leads")
+      .select("id, name, email, phone, status, message, listing_id, created_at")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (reLeads?.length) {
+      const listingIds = [...new Set(reLeads.map(l => l.listing_id).filter(Boolean))];
+      let listingMap: Record<string, { title: string; listing_type: string; country: string }> = {};
+      if (listingIds.length > 0) {
+        const { data: listings } = await supabase
+          .from("real_estate_listings")
+          .select("id, title, listing_type, country")
+          .in("id", listingIds);
+        if (listings) listingMap = Object.fromEntries(listings.map(l => [l.id, { title: l.title, listing_type: l.listing_type, country: l.country || "" }]));
+      }
+      for (const lead of reLeads) {
+        const listing = lead.listing_id ? listingMap[lead.listing_id] : null;
+        threadMap.set(`lead-${lead.id}`, {
+          id: `lead-${lead.id}`,
+          type: "lead",
+          contextType: "real_estate_lead",
+          contextId: lead.id,
+          name: lead.name || "Visitor",
+          email: lead.email || null,
+          phone: lead.phone,
+          leadId: lead.id,
+          listingTitle: listing?.title,
+          listingType: listing?.listing_type,
+          propertyCountry: listing?.country,
+          bookingStatus: lead.status,
+          unreadCount: 0,
+          lastMessage: lead.message || undefined,
+          lastMessageTime: lead.created_at,
+        });
+      }
+    }
+
+    // 6. Load message metadata (unread counts + last messages)
     const { data: allMsgs } = await supabase
       .from("messages")
-      .select("tenant_id, booking_id, content, created_at, read, sender_id")
+      .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(1000);
 
     if (allMsgs) {
       for (const m of allMsgs) {
-        const key = m.booking_id ? `booking-${m.booking_id}` : m.tenant_id ? `tenant-${m.tenant_id}` : null;
+        // Try context-based key first, then legacy
+        const ctxKey = (m as any).context_type && (m as any).context_id
+          ? `${(m as any).context_type === "real_estate_lead" ? "lead" : (m as any).context_type === "tenant" ? "tenant" : "booking"}-${(m as any).context_id}`
+          : null;
+        const legacyKey = m.booking_id ? `booking-${m.booking_id}` : m.tenant_id ? `tenant-${m.tenant_id}` : null;
+        const key = ctxKey || legacyKey;
         if (!key) continue;
         const thread = threadMap.get(key);
         if (!thread) continue;
