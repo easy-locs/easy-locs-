@@ -7,6 +7,7 @@ import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
+import ShareButtons from "@/components/public/ShareButtons";
 
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-react";
