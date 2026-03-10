@@ -59,14 +59,15 @@ const Leases = () => {
   const [savedLeases, setSavedLeases] = useState<any[]>([]);
   const loadSavedLeases = useCallback(async () => {
     if (!orgId) return;
-    const { data } = await supabase
+    let query = supabase
       .from("documents")
       .select("*")
       .eq("org_id", orgId)
-      .in("doc_type", ["lease-empty", "lease-furnished", "lease-commercial"])
-      .order("created_at", { ascending: false });
+      .in("doc_type", ["lease-empty", "lease-furnished", "lease-commercial"]);
+    if (countryFilter) query = query.eq("country", countryFilter);
+    const { data } = await query.order("created_at", { ascending: false });
     setSavedLeases(data || []);
-  }, [orgId]);
+  }, [orgId, countryFilter]);
 
   useEffect(() => { loadSavedLeases(); }, [loadSavedLeases]);
 
