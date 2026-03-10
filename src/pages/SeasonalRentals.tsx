@@ -544,14 +544,51 @@ const SeasonalRentals = () => {
             <p>{t("page.seasonal.subtitle_page")}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* View toggle */}
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("showcase")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "showcase" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> {t("page.seasonal.showcase") || "Properties"}
+              </button>
+              <button
+                onClick={() => setViewMode("bookings")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "bookings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" /> {t("page.seasonal.bookings_view") || "Bookings"}
+              </button>
+            </div>
             <button onClick={() => setShowIcalPanel(!showIcalPanel)} className="btn-secondary btn-sm">
               <Link2 className="h-4 w-4" /> {t("page.seasonal.sync_ical")}
             </button>
-            <button onClick={() => setShowForm(true)} className="btn-primary">
+            <button onClick={() => { setViewMode("bookings"); setShowForm(true); }} className="btn-primary">
               <Plus className="h-4 w-4" /> {t("page.seasonal.reservation")}
             </button>
           </div>
         </div>
+
+        {/* Showcase view */}
+        {viewMode === "showcase" && (
+          <SeasonalShowcase
+            onEditListing={(propertyId) => {
+              setSearchParams({ propertyId, tab: "listing" });
+              setViewMode("bookings");
+            }}
+            onViewCalendar={(propertyId) => {
+              setSearchParams({ propertyId });
+              setViewMode("bookings");
+            }}
+            onViewBookings={(propertyId) => {
+              setSearchParams({ propertyId });
+              setViewMode("bookings");
+            }}
+          />
+        )}
 
         {showIcalPanel && (
           <div className="bg-card rounded-xl border border-border/50 p-6 mb-6 space-y-4">
