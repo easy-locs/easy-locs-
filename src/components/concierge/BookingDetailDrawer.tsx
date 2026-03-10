@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import BookingCommunicationThread from "@/components/marketplace/BookingCommunicationThread";
 import { generateConciergeInvoice } from "./ConciergeInvoiceAdapter";
+import BookingDocumentsPanel from "@/components/booking/BookingDocumentsPanel";
 
 /** Format price using Intl based on currency code */
 const fmtPrice = (amount: number, currency: string = "EUR") => {
