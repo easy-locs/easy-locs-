@@ -95,7 +95,7 @@ const RemoteEntrepreneurship = () => {
               >
                 <Link
                   to={c.link}
-                  className="group flex flex-col items-center text-center rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden"
+                  className="group flex flex-col items-center text-center rounded-2xl p-3 sm:p-5 border transition-all duration-300 relative overflow-hidden"
                   style={{
                     borderColor: "hsl(var(--primary-foreground) / 0.06)",
                     background: "hsl(var(--primary-foreground) / 0.03)",
