@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,16 +11,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Mail, Phone,
   CreditCard, FileText, MessageCircle, MapPin, Clock, DollarSign,
-  CheckCircle2, XCircle, AlertCircle, Ban, Eye,
+  CheckCircle2, XCircle, AlertCircle, Ban, Eye, ExternalLink,
+  Home, ArrowRight, Hash, Globe,
 } from "lucide-react";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
@@ -53,25 +52,54 @@ interface PropertyOption {
   country: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  confirmed: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
-  completed: "bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30",
-  pending: "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30",
-  cancelled: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30",
-  blocked: "bg-muted text-muted-foreground border-border",
-  active: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
-  awaiting_payment: "bg-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/30",
+/* ─── Source color system (left bar + badge) ─── */
+const SOURCE_STYLES: Record<string, { bar: string; bg: string; text: string; border: string }> = {
+  seasonal:    { bar: "bg-sky-500",     bg: "bg-sky-500/10",     text: "text-sky-700 dark:text-sky-400",     border: "border-sky-500/20" },
+  long_term:   { bar: "bg-violet-500",  bg: "bg-violet-500/10",  text: "text-violet-700 dark:text-violet-400", border: "border-violet-500/20" },
+  marketplace: { bar: "bg-amber-500",   bg: "bg-amber-500/10",   text: "text-amber-700 dark:text-amber-400", border: "border-amber-500/20" },
+  concierge:   { bar: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-400", border: "border-emerald-500/20" },
+  blocked:     { bar: "bg-muted-foreground/50", bg: "bg-muted/50", text: "text-muted-foreground", border: "border-border" },
+};
+
+const STATUS_BADGES: Record<string, { className: string; icon: any; label: string }> = {
+  confirmed:        { className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25", icon: CheckCircle2, label: "Confirmed" },
+  active:           { className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25", icon: CheckCircle2, label: "Active" },
+  completed:        { className: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25", icon: CheckCircle2, label: "Completed" },
+  pending:          { className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25", icon: AlertCircle, label: "Pending" },
+  cancelled:        { className: "bg-destructive/15 text-destructive border-destructive/25", icon: XCircle, label: "Cancelled" },
+  blocked:          { className: "bg-muted text-muted-foreground border-border", icon: Ban, label: "Blocked" },
+  awaiting_payment: { className: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/25", icon: Clock, label: "Awaiting Payment" },
+  paid:             { className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25", icon: CheckCircle2, label: "Paid" },
 };
 
 const SOURCE_LABELS: Record<string, { label: string; emoji: string }> = {
-  seasonal: { label: "Seasonal", emoji: "🏖️" },
+  seasonal:    { label: "Seasonal",    emoji: "🏖️" },
   marketplace: { label: "Marketplace", emoji: "🎯" },
-  concierge: { label: "Concierge", emoji: "🛎️" },
-  long_term: { label: "Long-term", emoji: "🏠" },
-  blocked: { label: "Blocked", emoji: "🚫" },
+  concierge:   { label: "Concierge",   emoji: "🛎️" },
+  long_term:   { label: "Long-term",   emoji: "🏠" },
+  blocked:     { label: "Blocked",     emoji: "🚫" },
 };
 
 type ViewMode = "month" | "week" | "day";
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_BADGES[status] || STATUS_BADGES.pending;
+  const Icon = cfg.icon;
+  return (
+    <Badge variant="outline" className={`${cfg.className} gap-1 text-xs border`}>
+      <Icon className="h-3 w-3" /> {cfg.label}
+    </Badge>
+  );
+}
+
+function SourceBadge({ source }: { source: string }) {
+  const s = SOURCE_STYLES[source] || SOURCE_STYLES.blocked;
+  return (
+    <Badge variant="outline" className={`${s.bg} ${s.text} ${s.border} gap-1 text-xs border`}>
+      {SOURCE_LABELS[source]?.emoji} {SOURCE_LABELS[source]?.label}
+    </Badge>
+  );
+}
 
 export default function PropertyCalendar() {
   const { orgId } = useAuth();
@@ -154,7 +182,7 @@ export default function PropertyCalendar() {
         });
       }
 
-      // 3. Marketplace bookings (that have property_id)
+      // 3. Marketplace bookings
       if (selectedSource === "all" || selectedSource === "marketplace") {
         const { data: mkp } = await supabase
           .from("marketplace_bookings")
@@ -177,7 +205,7 @@ export default function PropertyCalendar() {
         });
       }
 
-      // 4. Concierge orders (that have property_id)
+      // 4. Concierge orders
       if (selectedSource === "all" || selectedSource === "concierge") {
         const { data: con } = await supabase
           .from("concierge_orders")
@@ -224,7 +252,7 @@ export default function PropertyCalendar() {
     fetchEvents();
   }, [orgId, properties, selectedProperty, selectedSource]);
 
-  // Deep-link: auto-open booking
+  // Deep-link
   useEffect(() => {
     const bookingId = searchParams.get("booking");
     if (bookingId && events.length > 0) {
@@ -235,14 +263,12 @@ export default function PropertyCalendar() {
     }
   }, [events, searchParams]);
 
-  /* ─── Navigation ─── */
   const navigate = (dir: number) => {
     if (viewMode === "month") setCurrentDate(dir > 0 ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
     else if (viewMode === "week") setCurrentDate(dir > 0 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
     else setCurrentDate(addDays(currentDate, dir));
   };
 
-  /* ─── Calendar grid data ─── */
   const calendarDays = useMemo(() => {
     if (viewMode === "month") {
       const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
@@ -267,7 +293,6 @@ export default function PropertyCalendar() {
     });
   }, [events]);
 
-  /* ─── Block dates ─── */
   const handleBlockDates = async () => {
     if (!blockForm.propertyId || !blockForm.dateFrom || !blockForm.dateTo) return;
     const { error } = await supabase.from("property_blocked_dates").insert({
@@ -279,7 +304,6 @@ export default function PropertyCalendar() {
     toast({ title: "Dates blocked" });
     setBlockDialogOpen(false);
     setBlockForm({ propertyId: "", dateFrom: "", dateTo: "", reason: "" });
-    // Refresh
     window.location.reload();
   };
 
@@ -290,12 +314,33 @@ export default function PropertyCalendar() {
     toast({ title: "Dates unblocked" });
   };
 
-  /* ─── Header label ─── */
   const headerLabel = viewMode === "month"
     ? format(currentDate, "MMMM yyyy")
     : viewMode === "week"
     ? `${format(calendarDays[0], "MMM d")} — ${format(calendarDays[6] || calendarDays[0], "MMM d, yyyy")}`
     : format(currentDate, "EEEE, MMMM d, yyyy");
+
+  /* ─── Communication Center link builder ─── */
+  const getCommunicationLink = (ev: CalendarEvent) => {
+    if (ev.source === "blocked") return null;
+    return `/dashboard/communication?search=${encodeURIComponent(ev.guestName || ev.guestEmail)}`;
+  };
+
+  /* ─── Event pill for month/week view ─── */
+  const EventPill = ({ ev, compact = false }: { ev: CalendarEvent; compact?: boolean }) => {
+    const s = SOURCE_STYLES[ev.source] || SOURCE_STYLES.blocked;
+    return (
+      <button
+        className={`w-full text-left flex items-center gap-1 rounded-md border transition-all hover:shadow-sm ${s.bg} ${s.border} ${compact ? "px-1 py-0.5" : "px-1.5 py-1"}`}
+        onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setDrawerOpen(true); }}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.bar}`} />
+        <span className={`${s.text} truncate ${compact ? "text-[10px]" : "text-xs font-medium"}`}>
+          {ev.title || ev.guestName || "Blocked"}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -305,7 +350,7 @@ export default function PropertyCalendar() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <CalendarIcon className="h-6 w-6 text-accent" /> Property Calendar
+                <CalendarIcon className="h-6 w-6 text-primary" /> Property Calendar
               </h1>
               <p className="text-sm text-muted-foreground">Unified view of all bookings and availability</p>
             </div>
@@ -317,26 +362,32 @@ export default function PropertyCalendar() {
           {/* Filters */}
           <div className="flex flex-wrap gap-3 items-center">
             <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="All properties" /></SelectTrigger>
+              <SelectTrigger className="w-[200px] h-9"><SelectValue placeholder="All properties" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All properties</SelectItem>
-                {properties.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
-                ))}
+                {properties.map(p => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
               </SelectContent>
             </Select>
 
             <Select value={selectedSource} onValueChange={setSelectedSource}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="All sources" /></SelectTrigger>
+              <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="All sources" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All sources</SelectItem>
-                <SelectItem value="seasonal">🏖️ Seasonal</SelectItem>
-                <SelectItem value="long_term">🏠 Long-term</SelectItem>
-                <SelectItem value="marketplace">🎯 Marketplace</SelectItem>
-                <SelectItem value="concierge">🛎️ Concierge</SelectItem>
-                <SelectItem value="blocked">🚫 Blocked</SelectItem>
+                {Object.entries(SOURCE_LABELS).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v.emoji} {v.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
+
+            {/* Source legend */}
+            <div className="hidden lg:flex items-center gap-3 ml-2">
+              {Object.entries(SOURCE_STYLES).filter(([k]) => k !== "blocked").map(([k, s]) => (
+                <div key={k} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className={`w-2.5 h-2.5 rounded-full ${s.bar}`} />
+                  {SOURCE_LABELS[k]?.label}
+                </div>
+              ))}
+            </div>
 
             {/* View mode */}
             <div className="flex bg-muted rounded-lg p-0.5 ml-auto">
@@ -351,15 +402,11 @@ export default function PropertyCalendar() {
 
           {/* Navigation */}
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
             <h2 className="text-lg font-semibold text-foreground">{headerLabel}</h2>
             <div className="flex gap-1">
               <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())}>Today</Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate(1)}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate(1)}><ChevronRight className="h-4 w-4" /></Button>
             </div>
           </div>
 
@@ -367,14 +414,12 @@ export default function PropertyCalendar() {
           {loading ? (
             <div className="flex items-center justify-center h-64 text-muted-foreground">Loading…</div>
           ) : viewMode === "month" ? (
-            <div className="border border-border rounded-xl overflow-hidden">
-              {/* Day headers */}
+            <div className="border border-border rounded-xl overflow-hidden bg-card">
               <div className="grid grid-cols-7 bg-muted/50">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                  <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2 border-b border-border">{d}</div>
+                  <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2.5 border-b border-border">{d}</div>
                 ))}
               </div>
-              {/* Days */}
               <div className="grid grid-cols-7">
                 {calendarDays.map((day, i) => {
                   const dayEvents = getEventsForDay(day);
@@ -382,27 +427,20 @@ export default function PropertyCalendar() {
                   const isCurrentMonth = isSameMonth(day, currentDate);
                   return (
                     <div key={i}
-                      className={`min-h-[90px] sm:min-h-[110px] border-b border-r border-border p-1 cursor-pointer transition-colors hover:bg-muted/30 ${
-                        !isCurrentMonth ? "opacity-40" : ""
+                      className={`min-h-[80px] sm:min-h-[100px] border-b border-r border-border p-1 cursor-pointer transition-colors hover:bg-muted/20 ${
+                        !isCurrentMonth ? "opacity-30" : ""
                       }`}
                       onClick={() => { setCurrentDate(day); setViewMode("day"); }}
                     >
-                      <div className={`text-xs font-medium mb-0.5 w-6 h-6 flex items-center justify-center rounded-full ${
-                        isToday ? "bg-accent text-accent-foreground" : "text-foreground"
+                      <div className={`text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
+                        isToday ? "bg-primary text-primary-foreground" : "text-foreground"
                       }`}>
                         {format(day, "d")}
                       </div>
                       <div className="space-y-0.5 overflow-hidden">
-                        {dayEvents.slice(0, 3).map(ev => (
-                          <button key={ev.id}
-                            className={`w-full text-left text-[10px] sm:text-xs px-1.5 py-0.5 rounded border truncate ${STATUS_COLORS[ev.status] || STATUS_COLORS.pending}`}
-                            onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setDrawerOpen(true); }}
-                          >
-                            {SOURCE_LABELS[ev.source]?.emoji} {ev.title || ev.guestName}
-                          </button>
-                        ))}
+                        {dayEvents.slice(0, 3).map(ev => <EventPill key={ev.id} ev={ev} compact />)}
                         {dayEvents.length > 3 && (
-                          <div className="text-[10px] text-muted-foreground pl-1">+{dayEvents.length - 3} more</div>
+                          <div className="text-[10px] text-muted-foreground pl-1 font-medium">+{dayEvents.length - 3} more</div>
                         )}
                       </div>
                     </div>
@@ -411,27 +449,19 @@ export default function PropertyCalendar() {
               </div>
             </div>
           ) : viewMode === "week" ? (
-            <div className="border border-border rounded-xl overflow-hidden">
+            <div className="border border-border rounded-xl overflow-hidden bg-card">
               <div className="grid grid-cols-7">
                 {calendarDays.map((day, i) => {
                   const dayEvents = getEventsForDay(day);
                   const isToday = isSameDay(day, new Date());
                   return (
                     <div key={i} className="border-r border-border last:border-r-0">
-                      <div className={`text-center py-2 border-b border-border ${isToday ? "bg-accent/10" : "bg-muted/30"}`}>
-                        <div className="text-xs text-muted-foreground">{format(day, "EEE")}</div>
-                        <div className={`text-sm font-semibold ${isToday ? "text-accent" : "text-foreground"}`}>{format(day, "d")}</div>
+                      <div className={`text-center py-2.5 border-b border-border ${isToday ? "bg-primary/5" : "bg-muted/30"}`}>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{format(day, "EEE")}</div>
+                        <div className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>{format(day, "d")}</div>
                       </div>
-                      <div className="min-h-[300px] p-1 space-y-1">
-                        {dayEvents.map(ev => (
-                          <button key={ev.id}
-                            className={`w-full text-left text-xs px-1.5 py-1 rounded border ${STATUS_COLORS[ev.status] || STATUS_COLORS.pending}`}
-                            onClick={() => { setSelectedEvent(ev); setDrawerOpen(true); }}
-                          >
-                            <div className="font-medium truncate">{SOURCE_LABELS[ev.source]?.emoji} {ev.title}</div>
-                            {ev.source !== "blocked" && <div className="text-[10px] opacity-75">{ev.price} {ev.currency}</div>}
-                          </button>
-                        ))}
+                      <div className="min-h-[280px] p-1 space-y-1">
+                        {dayEvents.map(ev => <EventPill key={ev.id} ev={ev} />)}
                       </div>
                     </div>
                   );
@@ -442,27 +472,44 @@ export default function PropertyCalendar() {
             /* Day view */
             <div className="space-y-2">
               {getEventsForDay(currentDate).length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground">No events on this day</CardContent></Card>
+                <Card><CardContent className="py-16 text-center text-muted-foreground">
+                  <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                  <p>No events on this day</p>
+                </CardContent></Card>
               ) : (
-                getEventsForDay(currentDate).map(ev => (
-                  <Card key={ev.id} className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => { setSelectedEvent(ev); setDrawerOpen(true); }}>
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className={`w-1.5 h-12 rounded-full ${ev.status === "confirmed" || ev.status === "active" ? "bg-emerald-500" : ev.status === "cancelled" ? "bg-red-500" : ev.status === "blocked" ? "bg-muted-foreground" : "bg-amber-500"}`} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-foreground truncate">{ev.title || ev.guestName || "Blocked"}</span>
-                          <Badge variant="outline" className="text-[10px]">{SOURCE_LABELS[ev.source]?.label}</Badge>
+                getEventsForDay(currentDate).map(ev => {
+                  const s = SOURCE_STYLES[ev.source] || SOURCE_STYLES.blocked;
+                  const dur = Math.max(1, differenceInDays(ev.dateTo, ev.dateFrom));
+                  return (
+                    <Card key={ev.id} className="cursor-pointer hover:shadow-md transition-all group"
+                      onClick={() => { setSelectedEvent(ev); setDrawerOpen(true); }}>
+                      <CardContent className="p-4 flex items-stretch gap-3">
+                        <div className={`w-1 rounded-full shrink-0 ${s.bar}`} />
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-foreground truncate">{ev.title || ev.guestName || "Blocked"}</span>
+                            <SourceBadge source={ev.source} />
+                            <StatusBadge status={ev.status} />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Home className="h-3 w-3" /> {ev.propertyLabel}</span>
+                            <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" /> {format(ev.dateFrom, "MMM d")} → {format(ev.dateTo, "MMM d")}</span>
+                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {dur} {dur === 1 ? "day" : "days"}</span>
+                            {ev.source !== "blocked" && ev.price > 0 && (
+                              <span className="flex items-center gap-1 font-semibold text-foreground"><DollarSign className="h-3 w-3" /> {ev.price.toLocaleString()} {ev.currency}</span>
+                            )}
+                          </div>
+                          {ev.guestEmail && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Mail className="h-3 w-3" /> {ev.guestEmail}
+                            </div>
+                          )}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {ev.propertyLabel} · {format(ev.dateFrom, "MMM d")} → {format(ev.dateTo, "MMM d")}
-                          {ev.source !== "blocked" && ` · ${ev.price} ${ev.currency}`}
-                        </div>
-                      </div>
-                      <Badge className={`text-xs ${STATUS_COLORS[ev.status] || ""}`}>{ev.status}</Badge>
-                    </CardContent>
-                  </Card>
-                ))
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors self-center shrink-0" />
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </div>
           )}
@@ -470,91 +517,180 @@ export default function PropertyCalendar() {
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Total Bookings", value: events.filter(e => e.source !== "blocked").length, color: "text-accent" },
-              { label: "Confirmed", value: events.filter(e => e.status === "confirmed" || e.status === "active").length, color: "text-emerald-600" },
-              { label: "Pending", value: events.filter(e => e.status === "pending").length, color: "text-amber-600" },
+              { label: "Total Bookings", value: events.filter(e => e.source !== "blocked").length, color: "text-primary" },
+              { label: "Confirmed", value: events.filter(e => e.status === "confirmed" || e.status === "active").length, color: "text-emerald-600 dark:text-emerald-400" },
+              { label: "Pending", value: events.filter(e => e.status === "pending").length, color: "text-amber-600 dark:text-amber-400" },
               { label: "Blocked Days", value: events.filter(e => e.source === "blocked").reduce((sum, e) => sum + Math.max(1, differenceInDays(e.dateTo, e.dateFrom)), 0), color: "text-muted-foreground" },
             ].map(s => (
-              <Card key={s.label}>
+              <Card key={s.label} className="bg-muted/30">
                 <CardContent className="p-3 text-center">
-                  <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-                  <div className="text-xs text-muted-foreground">{s.label}</div>
+                  <div className={`text-2xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
+                  <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{s.label}</div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
 
-        {/* ─── Event Detail Drawer ─── */}
+        {/* ─── Full Booking Detail Drawer ─── */}
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-            {selectedEvent && (
-              <>
-                <SheetHeader className="pb-4">
-                  <SheetTitle className="flex items-center gap-2 flex-wrap">
-                    {SOURCE_LABELS[selectedEvent.source]?.emoji} {selectedEvent.source === "blocked" ? "Blocked Period" : "Booking Detail"}
-                  </SheetTitle>
-                  <div className="flex gap-2 flex-wrap">
-                    <Badge className={STATUS_COLORS[selectedEvent.status] || ""}>{selectedEvent.status}</Badge>
-                    <Badge variant="outline">{SOURCE_LABELS[selectedEvent.source]?.label}</Badge>
-                  </div>
-                </SheetHeader>
+            {selectedEvent && (() => {
+              const ev = selectedEvent;
+              const dur = Math.max(1, differenceInDays(ev.dateTo, ev.dateFrom));
+              const commLink = getCommunicationLink(ev);
+              return (
+                <>
+                  <SheetHeader className="pb-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <SourceBadge source={ev.source} />
+                      <StatusBadge status={ev.status} />
+                    </div>
+                    <SheetTitle className="text-xl mt-1">
+                      {ev.source === "blocked" ? "Blocked Period" : "Booking Detail"}
+                    </SheetTitle>
+                  </SheetHeader>
 
-                <div className="space-y-4">
-                  {/* Ref */}
-                  <div className="text-xs text-muted-foreground">Ref: #{selectedEvent.id.slice(0, 8)}</div>
+                  <div className="space-y-5 mt-2">
+                    {/* Booking reference */}
+                    <div className="flex items-center gap-2 text-sm">
+                      <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">Reference:</span>
+                      <code className="bg-muted px-2 py-0.5 rounded text-xs font-mono text-foreground">{ev.id.slice(0, 8).toUpperCase()}</code>
+                    </div>
 
-                  {/* Guest info */}
-                  {selectedEvent.source !== "blocked" && (
+                    {/* Guest/Tenant Info */}
+                    {ev.source !== "blocked" && (
+                      <Card className="border-l-4" style={{ borderLeftColor: `var(--${ev.source === "seasonal" ? "sky" : ev.source === "long_term" ? "violet" : ev.source === "marketplace" ? "amber" : "emerald"}-500, hsl(var(--primary)))` }}>
+                        <CardContent className="p-4 space-y-3">
+                          <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                            <User className="h-4 w-4 text-primary" />
+                            {ev.source === "long_term" ? "Tenant Information" : "Guest Information"}
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                {(ev.guestName || "?")[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-foreground">{ev.guestName || "—"}</p>
+                                <p className="text-xs text-muted-foreground">{SOURCE_LABELS[ev.source]?.label} booking</p>
+                              </div>
+                            </div>
+                            <Separator />
+                            <div className="grid grid-cols-1 gap-2 text-sm">
+                              {ev.guestEmail && (
+                                <a href={`mailto:${ev.guestEmail}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                  <Mail className="h-3.5 w-3.5" /> {ev.guestEmail}
+                                </a>
+                              )}
+                              {ev.guestPhone && (
+                                <a href={`tel:${ev.guestPhone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                  <Phone className="h-3.5 w-3.5" /> {ev.guestPhone}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Dates & Property */}
                     <Card>
-                      <CardContent className="pt-4 space-y-2">
-                        <h3 className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4 text-accent" /> Guest / Tenant</h3>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div><p className="text-xs text-muted-foreground">Name</p><p className="font-medium">{selectedEvent.guestName}</p></div>
-                          <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium break-all">{selectedEvent.guestEmail}</p></div>
-                          {selectedEvent.guestPhone && <div><p className="text-xs text-muted-foreground">Phone</p><p className="font-medium">{selectedEvent.guestPhone}</p></div>}
+                      <CardContent className="p-4 space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                          <CalendarIcon className="h-4 w-4 text-primary" /> Dates & Property
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-muted/50 rounded-lg p-3">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Check-in</p>
+                            <p className="font-semibold text-foreground text-sm mt-0.5">{format(ev.dateFrom, "PPP")}</p>
+                          </div>
+                          <div className="bg-muted/50 rounded-lg p-3">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Check-out</p>
+                            <p className="font-semibold text-foreground text-sm mt-0.5">{format(ev.dateTo, "PPP")}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-1.5 text-muted-foreground"><Clock className="h-3.5 w-3.5" /> Duration</span>
+                          <span className="font-semibold text-foreground">{dur} {dur === 1 ? "day" : "days"}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-1.5 text-muted-foreground"><Home className="h-3.5 w-3.5" /> Property</span>
+                          <span className="font-semibold text-foreground">{ev.propertyLabel}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-1.5 text-muted-foreground"><Globe className="h-3.5 w-3.5" /> Source</span>
+                          <SourceBadge source={ev.source} />
                         </div>
                       </CardContent>
                     </Card>
-                  )}
 
-                  {/* Dates & Property */}
-                  <Card>
-                    <CardContent className="pt-4 space-y-2">
-                      <h3 className="text-sm font-semibold flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-accent" /> Dates & Property</h3>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div><p className="text-xs text-muted-foreground">Check-in</p><p className="font-medium">{format(selectedEvent.dateFrom, "PPP")}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Check-out</p><p className="font-medium">{format(selectedEvent.dateTo, "PPP")}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Duration</p><p className="font-medium">{Math.max(1, differenceInDays(selectedEvent.dateTo, selectedEvent.dateFrom))} days</p></div>
-                        <div><p className="text-xs text-muted-foreground">Property</p><p className="font-medium">{selectedEvent.propertyLabel}</p></div>
+                    {/* Payment */}
+                    {ev.source !== "blocked" && (
+                      <Card>
+                        <CardContent className="p-4 space-y-3">
+                          <h3 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                            <DollarSign className="h-4 w-4 text-primary" /> Payment
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-2xl font-bold tabular-nums text-foreground">{Number(ev.price).toLocaleString()}</span>
+                              <span className="text-sm text-muted-foreground ml-1">{ev.currency}</span>
+                              {ev.source === "long_term" && <span className="text-xs text-muted-foreground ml-1">/month</span>}
+                            </div>
+                            <StatusBadge status={ev.paymentStatus} />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Quick Actions */}
+                    {ev.source !== "blocked" && (
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {commLink && (
+                            <Link to={commLink}>
+                              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+                                <MessageCircle className="h-3.5 w-3.5" /> Messages
+                              </Button>
+                            </Link>
+                          )}
+                          <Link to="/dashboard/documents">
+                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+                              <FileText className="h-3.5 w-3.5" /> Documents
+                            </Button>
+                          </Link>
+                          {ev.guestEmail && (
+                            <a href={`mailto:${ev.guestEmail}`}>
+                              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+                                <Mail className="h-3.5 w-3.5" /> Email
+                              </Button>
+                            </a>
+                          )}
+                          {ev.guestPhone && (
+                            <a href={`tel:${ev.guestPhone}`}>
+                              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+                                <Phone className="h-3.5 w-3.5" /> Call
+                              </Button>
+                            </a>
+                          )}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    )}
 
-                  {/* Payment */}
-                  {selectedEvent.source !== "blocked" && (
-                    <Card>
-                      <CardContent className="pt-4 space-y-2">
-                        <h3 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4 text-accent" /> Payment</h3>
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold tabular-nums">{Number(selectedEvent.price).toLocaleString()} {selectedEvent.currency}</span>
-                          <Badge variant={selectedEvent.paymentStatus === "paid" ? "default" : "outline"}>
-                            {selectedEvent.paymentStatus === "paid" ? <><CheckCircle2 className="h-3 w-3 mr-1" /> Paid</> : selectedEvent.paymentStatus}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Actions */}
-                  {selectedEvent.source === "blocked" && (
-                    <Button variant="destructive" size="sm" className="w-full" onClick={() => handleUnblock(selectedEvent.id)}>
-                      Unblock these dates
-                    </Button>
-                  )}
-                </div>
-              </>
-            )}
+                    {/* Unblock */}
+                    {ev.source === "blocked" && (
+                      <Button variant="destructive" size="sm" className="w-full" onClick={() => handleUnblock(ev.id)}>
+                        Unblock these dates
+                      </Button>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </SheetContent>
         </Sheet>
 
