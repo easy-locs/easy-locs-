@@ -235,8 +235,8 @@ const DynamicPricing = () => {
                   <XAxis dataKey="property" className="text-xs" />
                   <YAxis className="text-xs" />
                   <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                  <Bar dataKey="occupancy" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name="Occupation (%)" />
-                  <Bar dataKey="suggestedPrice" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Prix suggéré (€)" />
+                  <Bar dataKey="occupancy" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} name="Occupancy (%)" />
+                  <Bar dataKey="suggestedPrice" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Suggested price (€)" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
