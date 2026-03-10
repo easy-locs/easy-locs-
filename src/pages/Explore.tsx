@@ -187,18 +187,59 @@ export default function Explore() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5" />
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium">
-              <Sparkles className="h-3 w-3" /> Live worldwide listings
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">
-              Explore the world of <span className="text-accent">Easy-Locs</span>
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-transparent to-primary/5" />
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: `linear-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.4) 1px, transparent 1px)`,
+          backgroundSize: "60px 60px",
+        }} />
+        <div className="max-w-7xl mx-auto px-4 py-14 md:py-20 relative">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center max-w-3xl mx-auto space-y-5">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm"
+              style={{
+                background: "hsl(var(--accent) / 0.08)",
+                borderColor: "hsl(var(--accent) / 0.2)",
+                color: "hsl(var(--accent))",
+              }}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              Live worldwide listings
+            </motion.div>
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
+              Explore the world of{" "}
+              <span className="text-gradient-gold">Easy-Locs</span>
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
               Properties, vacation rentals, and services — all published live by verified hosts and professionals.
             </p>
+
+            {/* Trust pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap items-center justify-center gap-2 pt-2"
+            >
+              {[
+                { icon: Globe, text: "110+ Countries" },
+                { icon: Building2, text: "Verified Hosts" },
+                { icon: Sparkles, text: "Direct Booking" },
+              ].map((pill) => (
+                <div
+                  key={pill.text}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-xs text-muted-foreground"
+                >
+                  <pill.icon className="h-3 w-3 text-accent" />
+                  {pill.text}
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
 
           {/* Search bar */}

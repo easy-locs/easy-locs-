@@ -80,7 +80,7 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 transition-all duration-300 relative overflow-hidden",
+        "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 transition-all duration-300 relative overflow-hidden min-h-[120px] sm:min-h-[140px]",
         path && "hover:shadow-card-hover hover:border-accent/30 group cursor-pointer",
         className,
       )}
