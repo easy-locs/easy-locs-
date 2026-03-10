@@ -112,7 +112,7 @@ const Dashboard = () => {
   const kpis = [
     {
       icon: Building,
-      label: t("page.dashboard.properties") || "Biens",
+      label: t("page.dashboard.properties") || "Properties",
       value: loading ? "…" : String(stats.totalProperties),
       path: "/dashboard/properties",
       sub: t("page.dashboard.view_all") || "Voir les biens →",
