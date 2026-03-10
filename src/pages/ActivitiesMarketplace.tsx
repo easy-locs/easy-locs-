@@ -249,31 +249,44 @@ const ActivitiesMarketplace = () => {
       }).select().single();
       if (error) throw error;
 
-      await syncToCommunicationCenter({
-        orgId: provOrgId,
-        userId: prov?.user_id || svc.user_id,
-        email: prov?.email,
-        subject: `📦 New booking: ${svc.title}`,
-        message: `${formData.booker_name} booked ${svc.title} for ${formData.service_date || formData.date_from || "—"}.\nAmount: ${totalPrice} ${svc.currency}\nContact: ${formData.booker_email}${formData.booker_phone ? " • " + formData.booker_phone : ""}\nNotes: ${formData.notes || "—"}`,
-        category: "general",
-        meta: {
-          event_type: "booking_created",
-          booking_id: booking?.id,
-          property_id: booking?.property_id,
-          country_code: svc.country || "",
-          workspace_id: provOrgId,
-          target_type: "marketplace_booking",
-          service_title: svc.title,
+      // Sync engine: provider notification + email + thread
+      await dispatchSyncEvent({
+        type: "service_booking",
+        context: {
+          orgId: provOrgId,
+          bookingId: booking?.id,
+          propertyId: booking?.property_id || undefined,
+          countryCode: svc.country || "",
         },
+        actorUserId: user?.id || "",
+        targetUserId: prov?.user_id || svc.user_id,
+        targetEmail: prov?.email,
+        clientName: formData.booker_name,
+        serviceTitle: svc.title,
+        serviceDate: formData.service_date || formData.date_from || "—",
+        totalPrice,
+        currency: svc.currency,
       });
 
-      // Also notify the booker
+      // Also notify the booker via sync engine (document_shared reused as confirmation)
       if (formData.booker_email) {
-        await syncToCommunicationCenter({
+        const { sendCommunicationEvent } = await import("@/lib/shared/communication-pipeline");
+        const { createDeepLinkMeta } = await import("@/lib/shared/notification-engine");
+        const meta = createDeepLinkMeta({
+          targetType: "marketplace_booking",
+          targetId: booking?.id || "",
+          module: "marketplace",
+          countryCode: svc.country || "",
+          bookingId: booking?.id,
           orgId: provOrgId,
-          email: formData.booker_email,
+        });
+        await sendCommunicationEvent({
+          orgId: provOrgId,
+          recipientEmail: formData.booker_email,
           subject: `✅ Booking request sent: ${svc.title}`,
           message: `Hello ${formData.booker_name},\n\nYour booking for "${svc.title}" has been submitted.\nDate: ${formData.service_date || formData.date_from || "—"}\nAmount: ${totalPrice} ${svc.currency}\n\nYou will be notified when the provider confirms.\n\nThank you!`,
+          category: "info",
+          meta,
         });
       }
     },
