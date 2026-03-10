@@ -174,10 +174,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
 
           {/* ─── DETAILS TAB ─── */}
           <TabsContent value="details" className="space-y-5 mt-4">
-              {booking.payment_status === "paid" ? "💰 Paid" : "⏳ " + booking.payment_status}
-            </Badge>
-          </div>
-
           {/* Client Info */}
           <section className="space-y-2">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client</h3>
@@ -199,7 +195,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                   <span className="text-foreground">{booking.guest_phone}</span>
                 </div>
               )}
-              {/* Contact buttons */}
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => window.open(`mailto:${booking.guest_email}?subject=Booking ${service?.title || ""}`, "_blank")}>
                   <Mail className="h-3 w-3 mr-1" /> Email
@@ -272,7 +267,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                 </Button>
               )}
 
-              {/* Bank details for bank transfer */}
               {booking.payment_method === "bank_transfer" && bankDetails.iban && (
                 <div className="bg-background rounded-lg p-2 space-y-1 text-xs mt-2">
                   <p className="font-semibold text-foreground">Bank Details</p>
@@ -289,7 +283,6 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                 </div>
               )}
 
-              {/* Quick payment actions */}
               <div className="flex flex-wrap gap-2 pt-1">
                 {booking.payment_status !== "paid" && booking.status !== "cancelled" && (
                   <Button size="sm" className="flex-1 min-w-[9rem] text-xs" onClick={markPaid}>
@@ -393,7 +386,41 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             {booking.completed_at && <p>Completed: {format(new Date(booking.completed_at), "PPp")}</p>}
             {booking.cancelled_at && <p>Cancelled: {format(new Date(booking.cancelled_at), "PPp")}</p>}
           </div>
-        </div>
+          </TabsContent>
+
+          {/* ─── MESSAGES TAB ─── */}
+          <TabsContent value="messages" className="mt-4">
+            <BookingCommunicationThread
+              bookingId={booking.id}
+              orgId={orgId}
+              customerName={booking.guest_name || "Guest"}
+              customerEmail={booking.guest_email}
+            />
+          </TabsContent>
+
+          {/* ─── INVOICE TAB ─── */}
+          <TabsContent value="invoice" className="mt-4 space-y-4">
+            <div className="bg-muted/30 rounded-[var(--card-radius)] p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-accent" />
+                <h3 className="font-medium text-foreground">Generate Invoice</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Generate a professional PDF invoice for this booking. Requires a provider profile with invoicing enabled.
+              </p>
+              <div className="bg-background rounded-lg p-3 space-y-1 text-xs">
+                <div className="flex justify-between"><span className="text-muted-foreground">Service</span><span className="text-foreground font-medium">{service?.title || "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Client</span><span className="text-foreground">{booking.guest_name}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-foreground font-bold">{fmtPrice(booking.total_price, booking.currency)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Payment</span><span className={booking.payment_status === "paid" ? "text-emerald-600 font-medium" : "text-amber-600"}>{booking.payment_status === "paid" ? "✓ Paid" : "Pending"}</span></div>
+              </div>
+              <Button onClick={handleGenerateInvoice} disabled={generatingInvoice} className="w-full text-xs">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                {generatingInvoice ? "Generating..." : "Download Invoice PDF"}
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
