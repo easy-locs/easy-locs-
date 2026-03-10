@@ -258,11 +258,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchOrgId, fetchUserType, refreshSubscription]);
 
-  useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(refreshSubscription, 60_000);
-    return () => clearInterval(interval);
-  }, [user, refreshSubscription]);
+  // Auto-refresh interval now handled by useSubscriptionLoader
 
   const emailVerified = !!user?.email_confirmed_at;
 
