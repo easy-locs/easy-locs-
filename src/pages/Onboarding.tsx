@@ -119,6 +119,17 @@ const Onboarding = () => {
       navigate("/tenant");
       return;
     }
+
+    // For landlord type: ensure org exists (client accounts don't have one yet)
+    const { data: existingOrg } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (!existingOrg) {
+      const newOrgId = crypto.randomUUID();
+      await supabase.from("orgs").insert({ id: newOrgId, owner_user_id: user.id, name: "Mon organisation" });
+      await supabase.from("org_members").insert({ org_id: newOrgId, user_id: user.id, role: "owner" });
+      // Create trial subscription
+      await supabase.from("subscriptions").insert({ user_id: user.id, plan: "trial", status: "trialing", trial_ends_at: new Date(Date.now() + 3 * 86400000).toISOString() });
+    }
+
     setSaving(false);
     setStep(1);
     saveStep(1);

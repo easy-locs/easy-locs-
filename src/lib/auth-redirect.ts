@@ -15,7 +15,9 @@ export const getPostLoginRoute = async (userId: string): Promise<string> => {
 
     if (hasTenant && hasOrg) return "/dashboard";
     if (hasTenant && !hasOrg) return "/tenant";
-    return "/dashboard";
+    if (hasOrg) return "/dashboard";
+    // No org, no tenant link → client account
+    return "/client";
   } catch (err) {
     console.warn("[auth-redirect] getPostLoginRoute failed:", err);
     return "/dashboard";

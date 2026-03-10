@@ -74,6 +74,12 @@ const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListi
 const PropertiesShowcase = lazy(() => import("./pages/PropertiesShowcase"));
 const AccountShowcase = lazy(() => import("./pages/AccountShowcase"));
 const Explore = lazy(() => import("./pages/Explore"));
+const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
+const ClientBookings = lazy(() => import("./pages/client/ClientBookings"));
+const ClientMessages = lazy(() => import("./pages/client/ClientMessages"));
+const ClientDocuments = lazy(() => import("./pages/client/ClientDocuments"));
+const ClientPayments = lazy(() => import("./pages/client/ClientPayments"));
+const ClientSettings = lazy(() => import("./pages/client/ClientSettings"));
 
 const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
@@ -310,6 +316,14 @@ const App = () => (
               <Route path="/tenant/settings" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
               <Route path="/tenant/reviews" element={<ProtectedRoute><TenantReviews /></ProtectedRoute>} />
               <Route path="/tenant/requests" element={<ProtectedRoute><TenantRequests /></ProtectedRoute>} />
+
+              {/* Protected — Client portal */}
+              <Route path="/client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+              <Route path="/client/bookings" element={<ProtectedRoute><ClientBookings /></ProtectedRoute>} />
+              <Route path="/client/messages" element={<ProtectedRoute><ClientMessages /></ProtectedRoute>} />
+              <Route path="/client/documents" element={<ProtectedRoute><ClientDocuments /></ProtectedRoute>} />
+              <Route path="/client/payments" element={<ProtectedRoute><ClientPayments /></ProtectedRoute>} />
+              <Route path="/client/settings" element={<ProtectedRoute><ClientSettings /></ProtectedRoute>} />
 
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />

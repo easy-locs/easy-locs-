@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type UserType = "landlord" | "tenant";
-type ActiveRole = "landlord" | "tenant";
+type UserType = "landlord" | "tenant" | "client";
+type ActiveRole = "landlord" | "tenant" | "client";
 
 interface SubscriptionState {
   subscribed: boolean;
@@ -161,25 +161,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.warn("[AuthContext] dual-role check failed:", err);
       }
 
-      const dual = !!tenantLink && !!orgLink;
+      const hasOrg = !!orgLink;
+      const hasTenant = !!tenantLink;
+      const dual = hasTenant && hasOrg;
       setHasDualRole(dual);
 
       // Auto-complete onboarding for existing accounts that already have org data or tenant link
       let onboardingDone = data?.onboarding_completed ?? false;
-      if (!onboardingDone && (!!orgLink || !!tenantLink)) {
+      if (!onboardingDone && (hasOrg || hasTenant)) {
         onboardingDone = true;
         supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
       }
       setOnboardingCompleted(onboardingDone);
 
-      // Restore saved role preference, default to landlord for dual-role
+      // Determine active role
       const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
       if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
         setActiveRole(savedRole);
       } else if (dual) {
         setActiveRole("landlord");
+      } else if (hasOrg) {
+        setActiveRole("landlord");
+      } else if (hasTenant) {
+        setActiveRole("tenant");
       } else {
-        setActiveRole(ut === "tenant" ? "tenant" : "landlord");
+        // No org, no tenant link → client account
+        setActiveRole("client");
       }
     } catch (err) {
       console.error("[AuthContext] fetchUserType failed:", err);
