@@ -763,7 +763,7 @@ const ActivitiesMarketplace = () => {
               {/* Breakdown by currency */}
               {Object.keys(revenueByCurrency).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-foreground">By Original Currency</p>
+                  <p className="text-sm font-medium text-foreground">Par devise d'origine</p>
                   {Object.entries(revenueByCurrency).map(([cur, amount]) => (
                     <div key={cur} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
                       <div>
