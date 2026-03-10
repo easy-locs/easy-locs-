@@ -44,10 +44,13 @@ const ClientBookings = () => {
         supabase.from("marketplace_bookings").select("id, booker_name, service_date, status, total_price, currency, created_at").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
       ]);
 
+      const lblSeasonal = t("client.type_seasonal") || "Seasonal";
+      const lblConcierge = t("client.type_concierge") || "Concierge";
+      const lblService = t("client.type_service") || "Service";
       const items: BookingItem[] = [
-        ...(seasonal || []).map(b => ({ id: b.id, type: "seasonal" as const, title: `Seasonal: ${b.check_in} → ${b.check_out}`, date: b.created_at, status: b.status })),
-        ...(concierge || []).map(b => ({ id: b.id, type: "concierge" as const, title: `Concierge: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
-        ...(marketplace || []).map(b => ({ id: b.id, type: "marketplace" as const, title: `Service: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
+        ...(seasonal || []).map(b => ({ id: b.id, type: "seasonal" as const, title: `${lblSeasonal}: ${b.check_in} → ${b.check_out}`, date: b.created_at, status: b.status })),
+        ...(concierge || []).map(b => ({ id: b.id, type: "concierge" as const, title: `${lblConcierge}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
+        ...(marketplace || []).map(b => ({ id: b.id, type: "marketplace" as const, title: `${lblService}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
       ];
       items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setBookings(items);
