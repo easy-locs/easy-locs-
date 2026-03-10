@@ -96,7 +96,7 @@ interface Lead {
 
 const VISIBILITY_OPTIONS = [
   { value: "public", label: "🌍 Public", desc: "Visible in global catalogue & search engines" },
-  { value: "unlisted", label: "🔗 Unlisted", desc: "Only accessible via direct link" },
+  { value: "unlisted", label: "🔗 Private Link", desc: "Only accessible via direct link" },
   { value: "private", label: "🔒 Private", desc: "Only visible in your dashboard" },
 ];
 
