@@ -38,8 +38,8 @@ const TenantPay = () => {
 
   const ALL_METHODS = [
     { id: "card" as const, label: t("page.tenant_pay.card_label") || L.payRent, icon: CreditCard, description: "Visa, Mastercard, Apple Pay, Google Pay" },
-    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "Prélèvement ou virement SEPA" },
-    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Virement", icon: Building, description: t("page.tenant_pay.transfer_desc") || "Virement bancaire classique" },
+    { id: "sepa" as const, label: t("page.tenant_pay.sepa_label") || "SEPA", icon: Banknote, description: t("page.tenant_pay.sepa_desc") || "SEPA direct debit or transfer" },
+    { id: "bank_transfer" as const, label: t("page.tenant_pay.transfer_label") || L.transfer || "Transfer", icon: Building, description: t("page.tenant_pay.transfer_desc") || "Standard bank transfer" },
   ];
 
   const availableMethodIds = useMemo(() => getAvailablePaymentMethods(propertyCountry), [propertyCountry]);
