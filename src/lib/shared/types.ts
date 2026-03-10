@@ -33,6 +33,9 @@ export interface DeepLinkMeta {
   org_id?: string;
   property_id?: string;
   lease_id?: string;
+  tenant_id?: string;
+  document_id?: string;
+  lead_id?: string;
 }
 
 /** Standard URL search params consumed by all modules */
