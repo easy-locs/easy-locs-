@@ -247,10 +247,10 @@ const TenantPay = () => {
                           call.payment_status === "failed" ? "bg-destructive/10 text-destructive" :
                           "bg-accent/10 text-accent"
                         }`}>
-                          {call.payment_status === "processing" ? (t("status.processing") || "En cours") :
-                           call.payment_status === "pending" ? (t("status.pending") || "En attente") :
-                           call.payment_status === "failed" ? (t("status.failed") || "Échoué") :
-                           call.payment_status}
+                           {call.payment_status === "processing" ? (t("status.processing") || "Processing") :
+                            call.payment_status === "pending" ? (t("status.pending") || "Pending") :
+                            call.payment_status === "failed" ? (t("status.failed") || "Failed") :
+                            call.payment_status}
                         </span>
                       )}
                     </div>
