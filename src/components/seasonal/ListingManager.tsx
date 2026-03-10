@@ -61,6 +61,10 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
         max_guests: data.max_guests || 4,
         cleaning_fee: typeof cleaningFee === 'object' && cleaningFee ? (cleaningFee as any).amount || 0 : 0,
         options: amenities.filter((a: any) => typeof a === 'string') as string[],
+        contact_email: (data as any).contact_email || "",
+        contact_phone: (data as any).contact_phone || "",
+        whatsapp_number: (data as any).whatsapp_number || "",
+        telegram_username: (data as any).telegram_username || "",
       });
     }
     setLoading(false);
