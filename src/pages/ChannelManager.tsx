@@ -537,7 +537,7 @@ const ChannelManager = () => {
                   <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-destructive">Double-bookings détectés</span>
+                      <span className="text-sm font-semibold text-destructive">Double-bookings detected</span>
                     </div>
                     {conflicts.map((c, i) => (
                       <p key={i} className="text-xs text-destructive/80">{c}</p>
