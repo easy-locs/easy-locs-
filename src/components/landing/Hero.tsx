@@ -36,7 +36,6 @@ const Hero = () => {
           animate={{ scale: [1, 1.2, 1], opacity: [0.06, 0.12, 0.06] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 3 }}
         />
-        {/* Animated particles */}
         {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
@@ -93,7 +92,7 @@ const Hero = () => {
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Run Your Business From Anywhere — 110+ Countries
+              {t("landing.hero.badge") || "Run Your Business From Anywhere — 110+ Countries"}
             </motion.span>
           </motion.div>
 
@@ -108,22 +107,22 @@ const Hero = () => {
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.06]"
               style={{ color: "hsl(var(--primary-foreground))" }}
             >
-              Build Your Property &
+              {t("landing.hero.title_1") || "Build Your Property &"}
               <br />
-              Service Business{" "}
+              {t("landing.hero.title_2") || "Service Business"}{" "}
               <motion.span
                 className="text-gradient-gold inline-block"
                 animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
               >
-                Globally.
+                {t("landing.hero.title_highlight") || "Globally."}
               </motion.span>
             </h1>
             <p
               className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
               style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}
             >
-              One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely.
+              {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
             </p>
           </motion.div>
 
@@ -145,7 +144,7 @@ const Hero = () => {
                 }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Free
+                  {t("landing.hero.cta_start") || "Start Free"}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -153,7 +152,7 @@ const Hero = () => {
             </motion.div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
-                to="/login"
+                to="/explore"
                 className="group inline-flex items-center justify-center gap-2.5 h-13 sm:h-14 px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-sm"
                 style={{
                   borderColor: "hsl(var(--primary-foreground) / 0.15)",
@@ -161,8 +160,8 @@ const Hero = () => {
                   background: "hsl(var(--primary-foreground) / 0.06)",
                 }}
               >
-                <LogIn className="h-4 w-4" />
-                {t("landing.nav.login") || "Login"}
+                <Globe className="h-4 w-4" />
+                {t("landing.hero.cta_explore") || "Explore Listings"}
               </Link>
             </motion.div>
           </motion.div>
@@ -175,9 +174,9 @@ const Hero = () => {
             className="flex flex-wrap items-center justify-center gap-5 sm:gap-10 pt-6"
           >
             {[
-              { icon: Globe, value: "110+", label: "Countries" },
-              { icon: Rocket, value: "Remote", label: "Management" },
-              { icon: MapPin, value: "Multi-City", label: "Operations" },
+              { icon: Globe, value: "110+", label: t("landing.hero.stat_countries") || "Countries" },
+              { icon: Rocket, value: t("landing.hero.stat_remote_val") || "Remote", label: t("landing.hero.stat_remote") || "Management" },
+              { icon: MapPin, value: t("landing.hero.stat_multi_val") || "Multi-City", label: t("landing.hero.stat_multi") || "Operations" },
             ].map((s, i) => (
               <motion.div
                 key={s.value}
