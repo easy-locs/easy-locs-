@@ -59,7 +59,7 @@ const BookingLinkShare = ({ serviceSlug, serviceTitle, photoUrl, shareVersion }:
 
       {photoUrl && (
         <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
-          <img src={photoUrl} alt="" className="h-10 w-10 rounded object-cover" />
+          <img src={photoUrl} alt="" className="h-10 w-10 rounded object-cover" loading="lazy" />
           <span className="text-xs text-muted-foreground truncate">{serviceTitle}</span>
         </div>
       )}

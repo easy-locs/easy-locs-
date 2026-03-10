@@ -83,7 +83,7 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyP
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {photos.map((url, i) => (
             <div key={i} className="relative group rounded-lg overflow-hidden aspect-[4/3] bg-muted">
-              <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+              <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
               <button
                 onClick={() => removePhoto(url)}
                 className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"

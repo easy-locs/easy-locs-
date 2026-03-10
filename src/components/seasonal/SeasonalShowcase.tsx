@@ -286,7 +286,7 @@ function ListingCard({
       {/* Photo */}
       <div className="relative h-40 bg-muted overflow-hidden">
         {photo ? (
-          <img src={photo} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={photo} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageIcon className="h-10 w-10 text-muted-foreground/30" />

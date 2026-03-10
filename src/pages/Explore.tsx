@@ -64,12 +64,14 @@ const PLACEHOLDER_IMG = "/placeholder.svg";
 
 /* ─────────── Component ─────────── */
 export default function Explore() {
+  const ITEMS_PER_PAGE = 12;
   const [tab, setTab] = useState("seasonal");
   const [search, setSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
@@ -156,8 +158,11 @@ export default function Explore() {
   };
 
   const clearFilters = () => {
-    setSearch(""); setCountryFilter("all"); setCityFilter(""); setTypeFilter("all");
+    setSearch(""); setCountryFilter("all"); setCityFilter(""); setTypeFilter("all"); setVisibleCount(ITEMS_PER_PAGE);
   };
+
+  // Reset pagination on tab or filter change
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [tab, search, countryFilter, cityFilter, typeFilter]);
 
   const hasActiveFilters = search || countryFilter !== "all" || cityFilter || typeFilter !== "all";
 
@@ -267,21 +272,21 @@ export default function Explore() {
         <Tabs value={tab} onValueChange={setTab}>
           {/* Tab triggers */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <TabsList className="bg-muted/50 p-1 rounded-xl h-auto flex-wrap">
-              <TabsTrigger value="seasonal" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Sun className="h-4 w-4" />
-                <span>Seasonal</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.seasonal}</Badge>
+            <TabsList className="bg-muted/50 p-1 rounded-xl h-auto w-full sm:w-auto grid grid-cols-3 sm:flex">
+              <TabsTrigger value="seasonal" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Sun className="h-4 w-4 shrink-0" />
+                <span className="truncate">Seasonal</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.seasonal}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="real-estate" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Home className="h-4 w-4" />
-                <span>Real Estate</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.realEstate}</Badge>
+              <TabsTrigger value="real-estate" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Home className="h-4 w-4 shrink-0" />
+                <span className="truncate">Property</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.realEstate}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="services" className="rounded-lg px-4 py-2 text-sm gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                <Briefcase className="h-4 w-4" />
-                <span>Services</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] h-5">{counts.services}</Badge>
+              <TabsTrigger value="services" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
+                <Briefcase className="h-4 w-4 shrink-0" />
+                <span className="truncate">Services</span>
+                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.services}</Badge>
               </TabsTrigger>
             </TabsList>
 
@@ -357,7 +362,8 @@ export default function Explore() {
           {/* ═══ Seasonal Tab ═══ */}
           <TabsContent value="seasonal" className="mt-0">
             {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
-              <CountryGroupedGrid items={filteredSeasonal} renderCard={(l) => (
+              <>
+              <CountryGroupedGrid items={filteredSeasonal.slice(0, visibleCount)} renderCard={(l) => (
                 <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group h-full">
                   <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
@@ -379,13 +385,16 @@ export default function Explore() {
                   </div>
                 </Link>
               )} />
+              <LoadMoreButton total={filteredSeasonal.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
 
           {/* ═══ Real Estate Tab ═══ */}
           <TabsContent value="real-estate" className="mt-0">
             {loading ? <GridSkeleton /> : filteredRE.length === 0 ? <EmptyState label="real estate listings" /> : (
-              <CountryGroupedGrid items={filteredRE} groupByCategory={(l: any) => (RE_TYPE_LABELS[l.listing_type]?.label || l.listing_type)} renderCard={(l: any) => {
+              <>
+              <CountryGroupedGrid items={filteredRE.slice(0, visibleCount)} groupByCategory={(l: any) => (RE_TYPE_LABELS[l.listing_type]?.label || l.listing_type)} renderCard={(l: any) => {
                 const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                 const cfg = RE_TYPE_LABELS[l.listing_type] || { label: l.listing_type, icon: "🏠" };
                 return (
@@ -413,13 +422,16 @@ export default function Explore() {
                   </Link>
                 );
               }} />
+              <LoadMoreButton total={filteredRE.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
 
           {/* ═══ Services Tab ═══ */}
           <TabsContent value="services" className="mt-0">
             {loading ? <GridSkeleton /> : filteredServices.length === 0 ? <EmptyState label="services" /> : (
-              <CountryGroupedGrid items={filteredServices} groupByCategory={(l: any) => (SERVICE_CATEGORIES[l.category] || l.category)} renderCard={(l: any) => {
+              <>
+              <CountryGroupedGrid items={filteredServices.slice(0, visibleCount)} groupByCategory={(l: any) => (SERVICE_CATEGORIES[l.category] || l.category)} renderCard={(l: any) => {
                 const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
                 const catLabel = SERVICE_CATEGORIES[l.category] || l.category;
                 return (
@@ -442,6 +454,8 @@ export default function Explore() {
                   </Link>
                 );
               }} />
+              <LoadMoreButton total={filteredServices.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
+              </>
             )}
           </TabsContent>
         </Tabs>
@@ -556,6 +570,18 @@ function EmptyState({ label }: { label: string }) {
       <p className="text-sm text-muted-foreground max-w-sm mx-auto">
         Try adjusting your filters or search terms. New listings are published every day!
       </p>
+    </div>
+  );
+}
+
+function LoadMoreButton({ total, visible, onLoadMore }: { total: number; visible: number; onLoadMore: () => void }) {
+  if (visible >= total) return null;
+  return (
+    <div className="flex justify-center pt-8">
+      <Button variant="outline" size="lg" onClick={onLoadMore} className="rounded-xl gap-2 min-h-[44px]">
+        Show more ({visible} of {total})
+        <ArrowRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
