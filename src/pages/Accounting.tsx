@@ -173,7 +173,7 @@ const Accounting = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(t("page.accounting.entry_added") || "Écriture ajoutée");
+      toast.success(t("page.accounting.entry_added") || "Entry added");
       qc.invalidateQueries({ queryKey: ["journal"] });
       setAddOpen(false);
       setNewEntry({ label: "", category: "other", debit: "", credit: "", transaction_date: format(new Date(), "yyyy-MM-dd"), notes: "", property_id: "" });
