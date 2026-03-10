@@ -3,10 +3,11 @@ import { ArrowRight, LogIn, Globe, Rocket, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import AppLogo from "@/components/AppLogo";
+import type { Transition } from "framer-motion";
 
-const floatAnim = (delay: number) => ({
+const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
   y: [0, -8, 0],
-  transition: { duration: 4, repeat: Infinity, ease: "easeInOut", delay },
+  transition: { duration: 4, repeat: Infinity, ease: "easeInOut" as const, delay },
 });
 
 const Hero = () => {
