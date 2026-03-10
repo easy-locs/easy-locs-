@@ -5295,6 +5295,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback(async (l: Locale) => {
     setLocaleState(l);
     localStorage.setItem("app_locale", l);
+    // Update HTML lang attribute for proper multilingual rendering
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);
