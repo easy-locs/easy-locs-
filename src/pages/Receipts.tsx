@@ -7,6 +7,7 @@ import { frRentReceipt } from "@/lib/templates/fr/rent-receipt";
 import { generateFromTemplate, downloadPDF } from "@/lib/pdf-generator";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/country-config";
 import type { Json } from "@/integrations/supabase/types";
