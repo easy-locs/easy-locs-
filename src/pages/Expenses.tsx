@@ -117,7 +117,7 @@ const Expenses = () => {
               <Plus className="h-4 w-4" /> {t("page.expenses.add")}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Filters */}
         <div className="flex gap-3 mb-4">
