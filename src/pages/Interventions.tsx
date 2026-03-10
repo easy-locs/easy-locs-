@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
