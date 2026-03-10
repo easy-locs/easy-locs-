@@ -132,7 +132,7 @@ const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" role="main" id="main-content">
       <SEOHead
         title="Easy-Locs — Build & Manage Property & Service Businesses Globally | Remote Platform"
         description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 110+ countries."

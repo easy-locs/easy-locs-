@@ -95,6 +95,7 @@
       // Fixes Safari "FetchEvent.respondWith TypeError: Load failed"
       (function(){try{if('caches' in window){caches.keys().then(function(names){names.forEach(function(name){caches.delete(name)})})}if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(reg){reg.update()})})}}catch(e){}})();
     </script>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[99999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-semibold">Skip to main content</a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
