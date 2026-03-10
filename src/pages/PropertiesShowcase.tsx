@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import {
   MapPin, Ruler, BedDouble, Bath, Home, Search, SlidersHorizontal,
-  Building2, Tag, X,
+  Building2, X, Car, TreePine, Sun, Armchair, Tag,
 } from "lucide-react";
 
 interface PublicListing {
@@ -24,14 +24,10 @@ interface PublicListing {
   views_count: number; created_at: string;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  sale: "For Sale", long_term_rent: "For Rent", seasonal_rent: "Seasonal",
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  sale: "bg-primary/15 text-primary",
-  long_term_rent: "bg-accent/15 text-accent-foreground",
-  seasonal_rent: "bg-secondary text-secondary-foreground",
+const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+  sale:            { label: "For Sale",        color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-500/15 border-emerald-500/25", icon: "🏷️" },
+  long_term_rent:  { label: "For Rent",        color: "text-sky-700 dark:text-sky-400",        bg: "bg-sky-500/15 border-sky-500/25", icon: "🏠" },
+  seasonal_rent:   { label: "Seasonal",         color: "text-amber-700 dark:text-amber-400",    bg: "bg-amber-500/15 border-amber-500/25", icon: "🏖️" },
 };
 
 const PROPERTY_TYPES = [
@@ -49,7 +45,6 @@ export default function PropertiesShowcase() {
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Filters
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
@@ -75,7 +70,6 @@ export default function PropertiesShowcase() {
     load();
   }, [typeFilter, propertyTypeFilter, countryFilter, cityFilter, minPrice, maxPrice]);
 
-  // Extract unique countries for filter
   const countries = useMemo(() => {
     const set = new Set(listings.map(l => l.country).filter(Boolean));
     return Array.from(set).sort();
@@ -88,6 +82,14 @@ export default function PropertiesShowcase() {
     setCityFilter(""); setMinPrice(""); setMaxPrice("");
   };
 
+  // Count by type
+  const counts = useMemo(() => ({
+    all: listings.length,
+    sale: listings.filter(l => l.listing_type === "sale").length,
+    long_term_rent: listings.filter(l => l.listing_type === "long_term_rent").length,
+    seasonal_rent: listings.filter(l => l.listing_type === "seasonal_rent").length,
+  }), [listings]);
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -96,52 +98,56 @@ export default function PropertiesShowcase() {
       />
 
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
+      <header className="border-b border-border bg-card/90 backdrop-blur-lg sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2.5">
           <AppLogo variant="header" linkTo="/" />
           <div className="flex gap-3 items-center">
-            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">Login</Link>
-            <Link to="/signup" className="bg-gradient-gold text-accent-foreground text-sm font-semibold px-4 py-1.5 rounded-lg">Sign up</Link>
+            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 hidden sm:block">Login</Link>
+            <Link to="/signup" className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-1.5 rounded-lg hover:opacity-90 transition-opacity">Sign up</Link>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-muted/50 to-background py-12 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            <Building2 className="inline h-8 w-8 mr-2 text-primary" />
-            Real Estate Properties
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-muted/30 to-background py-14 px-4">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
+            Find Your Perfect Property
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Browse properties for sale, long-term rent, and seasonal rental worldwide.
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
+            Professional listings for sale, long-term rent, and seasonal rental worldwide.
           </p>
+
+          {/* Type cards */}
+          <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto">
+            {[
+              { key: "all", label: "All Properties", icon: "🏢" },
+              ...Object.entries(TYPE_CONFIG).map(([k, v]) => ({ key: k, label: v.label, icon: v.icon })),
+            ].map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTypeFilter(t.key)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                  typeFilter === t.key
+                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+                    : "bg-card text-foreground border-border hover:border-primary/50 hover:shadow-sm"
+                }`}
+              >
+                <span className="mr-1.5">{t.icon}</span> {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Filters bar */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          {/* Type tabs */}
-          <div className="flex gap-1 bg-muted rounded-lg p-1">
-            {[{ value: "all", label: "All" }, ...Object.entries(TYPE_LABELS).map(([v, l]) => ({ value: v, label: l }))].map(t => (
-              <button
-                key={t.value}
-                onClick={() => setTypeFilter(t.value)}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  typeFilter === t.value ? "bg-background text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5">
             <SlidersHorizontal className="h-4 w-4" />
             Filters
             {activeFilters > 0 && (
-              <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground">
+              <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
                 {activeFilters}
               </Badge>
             )}
@@ -149,20 +155,20 @@ export default function PropertiesShowcase() {
 
           {activeFilters > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground gap-1">
-              <X className="h-3 w-3" /> Clear
+              <X className="h-3 w-3" /> Clear all
             </Button>
           )}
 
-          <span className="ml-auto text-sm text-muted-foreground">{listings.length} properties</span>
+          <span className="ml-auto text-sm text-muted-foreground font-medium">{listings.length} {listings.length === 1 ? "property" : "properties"}</span>
         </div>
 
         {/* Expanded filters */}
         {filtersOpen && (
-          <Card className="mb-6">
+          <Card className="mb-6 border-primary/10">
             <CardContent className="p-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Property type</label>
+                  <label className="text-[10px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Property type</label>
                   <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -172,7 +178,7 @@ export default function PropertiesShowcase() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Country</label>
+                  <label className="text-[10px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Country</label>
                   <Select value={countryFilter} onValueChange={setCountryFilter}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -182,7 +188,7 @@ export default function PropertiesShowcase() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">City</label>
+                  <label className="text-[10px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">City</label>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <Input className="h-9 pl-8" placeholder="Any city" value={cityFilter} onChange={e => setCityFilter(e.target.value)} />
@@ -190,11 +196,11 @@ export default function PropertiesShowcase() {
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Min price</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Min price</label>
                     <Input className="h-9" type="number" placeholder="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Max price</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Max price</label>
                     <Input className="h-9" type="number" placeholder="∞" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
                   </div>
                 </div>
@@ -208,42 +214,47 @@ export default function PropertiesShowcase() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <Card key={i} className="overflow-hidden animate-pulse">
-                <div className="h-48 bg-muted" />
+                <div className="h-52 bg-muted" />
                 <CardContent className="p-4 space-y-3">
-                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-5 bg-muted rounded w-3/4" />
                   <div className="h-3 bg-muted rounded w-1/2" />
-                  <div className="h-5 bg-muted rounded w-1/3" />
+                  <div className="h-6 bg-muted rounded w-1/3" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-20">
-            <Home className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
+          <div className="text-center py-24">
+            <Building2 className="h-16 w-16 text-muted-foreground/15 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">No properties found</h2>
-            <p className="text-muted-foreground">Try adjusting your filters or check back later.</p>
+            <p className="text-muted-foreground mb-4">Try adjusting your filters or check back later.</p>
+            {activeFilters > 0 && (
+              <Button variant="outline" onClick={clearFilters}>Clear all filters</Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {listings.map(listing => {
               const photos = listing.photo_urls || [];
+              const tc = TYPE_CONFIG[listing.listing_type] || TYPE_CONFIG.sale;
               return (
                 <Link to={`/properties/${listing.slug}`} key={listing.id} className="group">
-                  <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1 h-full">
+                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1 h-full border-border/50 hover:border-primary/20">
                     {/* Photo */}
                     <div className="h-52 bg-muted relative overflow-hidden">
                       {photos[0] ? (
-                        <img src={photos[0] as string} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <img src={photos[0] as string} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted/50">
-                          <Home className="h-14 w-14 text-muted-foreground/20" />
+                          <Home className="h-14 w-14 text-muted-foreground/15" />
                         </div>
                       )}
-                      <Badge className={`absolute top-3 left-3 ${TYPE_COLORS[listing.listing_type] || "bg-muted text-muted-foreground"} backdrop-blur-sm border-0`}>
-                        {TYPE_LABELS[listing.listing_type] || listing.listing_type}
+                      {/* Type badge */}
+                      <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border text-xs backdrop-blur-sm`}>
+                        {tc.icon} {tc.label}
                       </Badge>
                       {photos.length > 1 && (
-                        <span className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm text-foreground text-xs px-2 py-0.5 rounded-full">
+                        <span className="absolute bottom-3 right-3 bg-foreground/60 backdrop-blur-sm text-background text-[10px] px-2 py-0.5 rounded-full font-medium">
                           {photos.length} photos
                         </span>
                       )}
@@ -255,12 +266,12 @@ export default function PropertiesShowcase() {
                       </h3>
 
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                         <span className="truncate">{listing.city}{listing.country ? `, ${listing.country}` : ""}</span>
                       </div>
 
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-primary">
+                        <span className="text-2xl font-bold text-primary tabular-nums">
                           {listing.price.toLocaleString()}
                         </span>
                         <span className="text-sm text-muted-foreground">{listing.currency}</span>
@@ -269,28 +280,27 @@ export default function PropertiesShowcase() {
 
                       <Separator />
 
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         {listing.surface_sqm > 0 && (
                           <span className="flex items-center gap-1"><Ruler className="h-3.5 w-3.5" />{listing.surface_sqm} m²</span>
                         )}
                         {listing.bedrooms > 0 && (
-                          <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" />{listing.bedrooms}</span>
+                          <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" />{listing.bedrooms} bed</span>
                         )}
                         {listing.bathrooms > 0 && (
-                          <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{listing.bathrooms}</span>
-                        )}
-                        {listing.rooms > 0 && (
-                          <span className="flex items-center gap-1"><Home className="h-3.5 w-3.5" />{listing.rooms} rm</span>
+                          <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{listing.bathrooms} bath</span>
                         )}
                       </div>
 
-                      {/* Amenities tags */}
-                      <div className="flex flex-wrap gap-1">
-                        {listing.parking && <Badge variant="outline" className="text-[10px] py-0 h-5">Parking</Badge>}
-                        {listing.garden && <Badge variant="outline" className="text-[10px] py-0 h-5">Garden</Badge>}
-                        {listing.terrace && <Badge variant="outline" className="text-[10px] py-0 h-5">Terrace</Badge>}
-                        {listing.furnished && <Badge variant="outline" className="text-[10px] py-0 h-5">Furnished</Badge>}
-                      </div>
+                      {/* Amenity chips */}
+                      {(listing.parking || listing.garden || listing.terrace || listing.furnished) && (
+                        <div className="flex flex-wrap gap-1">
+                          {listing.parking && <Badge variant="outline" className="text-[10px] py-0 h-5 gap-0.5"><Car className="h-2.5 w-2.5" /> Parking</Badge>}
+                          {listing.garden && <Badge variant="outline" className="text-[10px] py-0 h-5 gap-0.5"><TreePine className="h-2.5 w-2.5" /> Garden</Badge>}
+                          {listing.terrace && <Badge variant="outline" className="text-[10px] py-0 h-5 gap-0.5"><Sun className="h-2.5 w-2.5" /> Terrace</Badge>}
+                          {listing.furnished && <Badge variant="outline" className="text-[10px] py-0 h-5 gap-0.5"><Armchair className="h-2.5 w-2.5" /> Furnished</Badge>}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>
