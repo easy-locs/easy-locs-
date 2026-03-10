@@ -15,7 +15,7 @@ import {
   Receipt, UserSearch, Calendar,
   Layers, BookOpen, Zap, Store, ChevronDown,
   FileCheck, CalendarRange, MapPin, ArrowLeft, Globe, Clock,
-  Shield, Palette, UsersRound, Banknote,
+  Shield, Palette, UsersRound, Banknote, Lock,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
@@ -48,7 +48,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole, orgId, allOrgs, switchOrg } = useAuth();
   const { locale, setLocale, t, availableLocales } = useI18n();
-  const { currentTier } = useSubscriptionGating();
+  const { currentTier, isSubscribed } = useSubscriptionGating();
   const activeCountry = useCountryContext();
 
   // Get country info for display
@@ -60,6 +60,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // ═══════════════════════════════════════════════════════
   // NAVIGATION: Unified clean structure
   // ═══════════════════════════════════════════════════════
+
+  // Sections accessible on free tier (no subscription needed)
+  const FREE_NAV_SECTIONS = new Set(["dashboard", "sales", "marketplace", "communication"]);
 
   const navSections: NavSection[] = [
     // 1. Dashboard — global overview
@@ -367,27 +370,47 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             if (isSingleItem) {
               const item = allItems[0];
               const active = isItemActive(item);
+              const locked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
               return (
                 <div key={section.key} className="mb-1">
                   <Link
-                    to={item.path}
+                    to={locked ? "/dashboard/billing" : item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active
+                      locked
+                        ? "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
+                        : active
                         ? "bg-sidebar-accent text-sidebar-primary"
                         : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {locked && <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />}
                   </Link>
                 </div>
               );
             }
 
+            const sectionLocked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
+
             // Render nav item link
             const renderNavItem = (item: NavItem) => {
               const active = isItemActive(item);
+              if (sectionLocked) {
+                return (
+                  <Link
+                    key={item.path}
+                    to="/dashboard/billing"
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="whitespace-normal leading-tight flex-1">{item.label}</span>
+                    <Lock className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                  </Link>
+                );
+              }
               return (
                 <Link
                   key={item.path}
@@ -408,22 +431,29 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             return (
               <div key={section.key} className="mb-1">
                 <button
-                  onClick={() => toggleSection(section.key)}
+                  onClick={() => sectionLocked ? navigate("/dashboard/billing") : toggleSection(section.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors ${
-                    hasActiveItem
+                    sectionLocked
+                      ? "text-sidebar-foreground/30 hover:text-sidebar-foreground/50"
+                      : hasActiveItem
                       ? "text-sidebar-primary"
                       : "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
                   }`}
                 >
                   <section.icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="flex-1 text-left">{section.title}</span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
-                      isOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                  {sectionLocked ? (
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                  ) : (
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  )}
                 </button>
 
+                {!sectionLocked && (
                 <div
                   className={`overflow-hidden transition-all duration-200 ease-in-out ${
                     isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
@@ -444,6 +474,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     ))}
                   </div>
                 </div>
+                )}
               </div>
             );
           })}
