@@ -176,7 +176,7 @@ const PageLoader = () => (
 const seoPublicPrefixes = [
   "/book/", "/listing/", "/host/", "/provider/", "/showcase/", "/store/", "/shop/",
   "/services/", "/activities/", "/locations", "/country/", "/city/", "/marketplace",
-  "/explore",
+  "/explore", "/properties",
 ];
 
 const RouteAwareAssistant = () => {
