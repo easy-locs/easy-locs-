@@ -335,7 +335,7 @@ const ConciergeOperations = () => {
                         <p className="text-xs text-muted-foreground">{svc?.title || "Service"} — {propName(o.property_id)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-accent">{o.total_price}€</p>
+                        <p className="text-sm font-bold text-accent">{fmtPrice(o.total_price)}</p>
                         <Badge variant="outline" className="text-[10px]">{o.payment_status}</Badge>
                       </div>
                     </div>
