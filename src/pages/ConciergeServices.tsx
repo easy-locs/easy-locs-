@@ -183,7 +183,7 @@ const ConciergeServices = () => {
     };
     if (editingId) {
       await supabase.from("concierge_services").update(record).eq("id", editingId);
-      toast.success("Service updated");
+      toast.success(t("page.concierge.service_updated") || "Service updated");
     } else {
       await supabase.from("concierge_services").insert(record);
       toast.success("Service created");
