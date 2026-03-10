@@ -923,13 +923,14 @@ const CommunicationCenter = () => {
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
   const getBookingTypeBadge = (thread: ConversationThread) => {
-    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏡 Real Estate</Badge>;
-    switch (thread.bookingType) {
-      case "marketplace": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🛍️ Marketplace</Badge>;
-      case "concierge": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🎯 Concierge</Badge>;
-      case "seasonal": return <Badge variant="outline" className="text-[10px] px-1.5 py-0">🏖️ Seasonal</Badge>;
-      default: return null;
-    }
+    const cfg: Record<string, { emoji: string; label: string; cls: string }> = {
+      marketplace: { emoji: "🛍️", label: "Marketplace", cls: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
+      concierge: { emoji: "🎯", label: "Concierge", cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+      seasonal: { emoji: "🏖️", label: "Seasonal", cls: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
+    };
+    if (thread.type === "lead") return <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">🏡 Real Estate</Badge>;
+    const c = cfg[thread.bookingType || ""];
+    return c ? <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${c.cls}`}>{c.emoji} {c.label}</Badge> : null;
   };
 
   const getStatusBadge = (status?: string) => {
@@ -938,39 +939,66 @@ const CommunicationCenter = () => {
       confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
       completed: "bg-blue-500/10 text-blue-600 border-blue-500/20",
       cancelled: "bg-destructive/10 text-destructive border-destructive/20",
-      awaiting_payment: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      awaiting_payment: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+      paid: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      new: "bg-primary/10 text-primary border-primary/20",
+    };
+    const labels: Record<string, string> = {
+      pending: "⏳ Pending", confirmed: "✅ Confirmed", completed: "🏁 Completed",
+      cancelled: "❌ Cancelled", awaiting_payment: "💰 Awaiting Payment", paid: "💚 Paid", new: "🆕 New",
     };
     return status ? (
-      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${colors[status] || ""}`}>
-        {status}
+      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${colors[status] || "bg-muted text-muted-foreground"}`}>
+        {labels[status] || status}
       </Badge>
     ) : null;
+  };
+
+  const getPillarColor = (thread: ConversationThread) => {
+    if (thread.type === "tenant") return { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" };
+    if (thread.type === "lead") return { bg: "bg-emerald-500/10", text: "text-emerald-600", border: "border-emerald-500/20" };
+    switch (thread.bookingType) {
+      case "marketplace": return { bg: "bg-violet-500/10", text: "text-violet-600", border: "border-violet-500/20" };
+      case "concierge": return { bg: "bg-amber-500/10", text: "text-amber-600", border: "border-amber-500/20" };
+      case "seasonal": return { bg: "bg-sky-500/10", text: "text-sky-600", border: "border-sky-500/20" };
+      default: return { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
+    }
   };
 
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-        {/* Stats bar — compact on mobile */}
-        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
+        {/* ═══ Header bar — dynamic KPIs ═══ */}
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Communication Center</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">Unified inbox — Tenants, Bookings, Services</p>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-accent shrink-0" />
+              Communication Center
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Unified inbox — Long-term · Seasonal · Marketplace · Real Estate
+            </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
-              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-primary" },
-              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500" },
-              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive" },
-              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500" },
+              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8" },
+              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8" },
+              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8" },
+              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8" },
             ].map(s => (
-              <div key={s.label} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-card rounded-lg border border-border/50 text-xs">
-                <s.icon className={`h-3 sm:h-3.5 w-3 sm:w-3.5 ${s.color}`} />
-                <span className="font-semibold text-foreground">{s.value}</span>
-                <span className="text-muted-foreground hidden sm:inline">{s.label}</span>
-              </div>
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105`}
+              >
+                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
+                <span className="font-bold text-foreground tabular-nums">{s.value}</span>
+                <span className="text-muted-foreground hidden sm:inline text-[11px]">{s.label}</span>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
           {/* ────── Thread list ────── */}
@@ -982,21 +1010,22 @@ const CommunicationCenter = () => {
               </div>
               <div className="flex gap-1 flex-wrap">
                 {[
-                  { value: "all", label: "All" },
-                  { value: "tenant", label: "🏠 Tenants" },
-                  { value: "lead", label: "🏡 Leads" },
-                  { value: "marketplace", label: "🛍️ Market" },
-                  { value: "concierge", label: "🎯 Concierge" },
-                  { value: "seasonal", label: "🏖️ Seasonal" },
+                  { value: "all", label: "All", count: threads.length },
+                  { value: "tenant", label: "🏠 Long-term", count: threads.filter(t => t.type === "tenant").length },
+                  { value: "lead", label: "🏡 Leads", count: threads.filter(t => t.type === "lead").length },
+                  { value: "seasonal", label: "🏖️ Seasonal", count: threads.filter(t => t.bookingType === "seasonal").length },
+                  { value: "marketplace", label: "🛍️ Market", count: threads.filter(t => t.bookingType === "marketplace").length },
+                  { value: "concierge", label: "🎯 Concierge", count: threads.filter(t => t.bookingType === "concierge").length },
                 ].map(f => (
                   <Button
                     key={f.value}
                     size="sm"
                     variant={filterType === f.value ? "default" : "ghost"}
                     onClick={() => setFilterType(f.value)}
-                    className="text-xs h-7 px-2"
+                    className={`text-xs h-7 px-2 gap-1 ${filterType === f.value ? "" : "text-muted-foreground"}`}
                   >
                     {f.label}
+                    {f.count > 0 && <span className="text-[9px] opacity-60">{f.count}</span>}
                   </Button>
                 ))}
               </div>
@@ -1004,68 +1033,83 @@ const CommunicationCenter = () => {
 
             <ScrollArea className="flex-1">
               {loading ? (
-                <div className="p-4 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
+                <div className="p-8 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-accent" />
+                  <p className="text-xs text-muted-foreground mt-2">Loading conversations…</p>
+                </div>
               ) : filteredThreads.length === 0 ? (
-                <div className="p-6 text-center">
-                  <MessageCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-muted-foreground text-sm">No conversations found</p>
+                <div className="p-8 text-center">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-foreground">No conversations</p>
+                  <p className="text-xs text-muted-foreground mt-1">Messages will appear here when clients interact.</p>
                 </div>
               ) : (
-                filteredThreads.map(thread => (
-                  <button
-                    key={thread.id}
-                    onClick={() => setSelectedThread(thread)}
-                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b border-border/20 ${
-                      selectedThread?.id === thread.id ? "bg-muted/70" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                          thread.type === "booking" ? "bg-accent/10" : thread.type === "lead" ? "bg-emerald-500/10" : "bg-primary/10"
-                        }`}>
-                          {thread.type === "booking" ? (
-                            <Hash className="h-4 w-4 text-accent" />
-                          ) : thread.type === "lead" ? (
-                            <Building className="h-4 w-4 text-emerald-600" />
-                          ) : (
-                            <User className="h-4 w-4 text-primary" />
-                          )}
-                        </div>
-                        {thread.unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                            {thread.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
-                            {thread.name}
-                          </p>
-                          {thread.lastMessageTime && (
-                            <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                              {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                filteredThreads.map((thread, i) => {
+                  const pillar = getPillarColor(thread);
+                  return (
+                    <motion.button
+                      key={thread.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: Math.min(i * 0.015, 0.3) }}
+                      onClick={() => setSelectedThread(thread)}
+                      className={`w-full text-left p-3 hover:bg-muted/50 transition-all border-b border-border/10 ${
+                        selectedThread?.id === thread.id ? "bg-accent/5 border-l-2 border-l-accent" : "border-l-2 border-l-transparent"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${pillar.bg} transition-colors`}>
+                            {thread.type === "booking" ? (
+                              <Hash className={`h-4 w-4 ${pillar.text}`} />
+                            ) : thread.type === "lead" ? (
+                              <Building className={`h-4 w-4 ${pillar.text}`} />
+                            ) : (
+                              <User className={`h-4 w-4 ${pillar.text}`} />
+                            )}
+                          </div>
+                          {thread.unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                              {thread.unreadCount}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
-                          {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
-                          {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className={`text-sm truncate ${thread.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
+                              {thread.name}
+                            </p>
+                            {thread.lastMessageTime && (
+                              <span className="text-[10px] text-muted-foreground shrink-0 ml-2 tabular-nums">
+                                {formatDistanceToNow(new Date(thread.lastMessageTime), { addSuffix: false, locale: fr })}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {(thread.type === "booking" || thread.type === "lead") && getBookingTypeBadge(thread)}
+                            {thread.bookingStatus && getStatusBadge(thread.bookingStatus)}
+                            {thread.propertyCountry && <span className="text-xs">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                          </div>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="text-xs text-muted-foreground truncate flex-1">
+                              {thread.serviceTitle || thread.listingTitle || thread.propertyLabel || thread.email || "—"}
+                            </p>
+                            {thread.totalPrice != null && thread.totalPrice > 0 && (
+                              <span className="text-[10px] font-bold text-foreground ml-2 shrink-0 tabular-nums">
+                                {thread.totalPrice.toFixed(0)} {(thread.currency || "€").toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          {thread.lastMessage && (
+                            <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground/70"}`}>
+                              {thread.lastMessage.slice(0, 50)}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {thread.listingTitle || thread.serviceTitle || thread.propertyLabel || thread.email || "—"}
-                        </p>
-                        {thread.lastMessage && (
-                          <p className={`text-xs truncate mt-0.5 ${thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                            {thread.lastMessage.slice(0, 60)}
-                          </p>
-                        )}
                       </div>
-                    </div>
-                  </button>
-                ))
+                    </motion.button>
+                  );
+                })
               )}
             </ScrollArea>
           </div>
@@ -1074,43 +1118,56 @@ const CommunicationCenter = () => {
           <div className={`flex-1 flex flex-col ${!selectedThread ? "hidden md:flex" : "flex"}`}>
             {selectedThread ? (
               <>
-                {/* Chat header */}
-                <div className="p-3 border-b border-border/50 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedThread(null)} className="md:hidden shrink-0">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${
-                      selectedThread.type === "booking" ? "bg-accent/10" : "bg-primary/10"
-                    }`}>
-                      {selectedThread.type === "booking" ? <Hash className="h-4 w-4 text-accent" /> : <User className="h-4 w-4 text-primary" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{selectedThread.name}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
-                        {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
-                        {selectedThread.listingTitle && <span className="truncate">{selectedThread.listingTitle}</span>}
-                        {selectedThread.serviceTitle && <span className="truncate">{selectedThread.serviceTitle}</span>}
-                        {selectedThread.propertyLabel && <span className="truncate">{selectedThread.propertyLabel}</span>}
+                {/* Chat header — dynamic booking context */}
+                <div className="p-3 border-b border-border/50">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedThread(null)} className="md:hidden shrink-0 h-9 w-9">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      {(() => {
+                        const p = getPillarColor(selectedThread);
+                        return (
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${p.bg}`}>
+                            {selectedThread.type === "booking" ? <Hash className={`h-4 w-4 ${p.text}`} /> : selectedThread.type === "lead" ? <Building className={`h-4 w-4 ${p.text}`} /> : <User className={`h-4 w-4 ${p.text}`} />}
+                          </div>
+                        );
+                      })()}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-foreground truncate">{selectedThread.name}</p>
+                          {selectedThread.propertyCountry && <span className="text-sm shrink-0">{getCountryEntryOrDefault(selectedThread.propertyCountry).flag}</span>}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          {(selectedThread.type === "booking" || selectedThread.type === "lead") && getBookingTypeBadge(selectedThread)}
+                          {selectedThread.bookingStatus && getStatusBadge(selectedThread.bookingStatus)}
+                          {selectedThread.totalPrice != null && selectedThread.totalPrice > 0 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-bold tabular-nums">
+                              {selectedThread.totalPrice.toFixed(2)} {(selectedThread.currency || "EUR").toUpperCase()}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                          {selectedThread.serviceTitle || selectedThread.listingTitle || selectedThread.propertyLabel || selectedThread.email || ""}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Select value={convStatus} onValueChange={updateConversationStatus}>
-                      <SelectTrigger className="h-8 w-auto text-xs gap-1">
-                        <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
-                        <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONV_STATUSES.map(s => (
-                          <SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowContext(!showContext)}>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} />
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Select value={convStatus} onValueChange={updateConversationStatus}>
+                        <SelectTrigger className="h-8 w-auto text-xs gap-1">
+                          <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
+                          <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONV_STATUSES.map(s => (
+                            <SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowContext(!showContext)}>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -1256,28 +1313,40 @@ const CommunicationCenter = () => {
                       )}
                     </div>
 
-                    {/* Quick action bar for bookings */}
-                    {selectedThread.type === "booking" && (
-                      <div className="px-3 py-2 border-t border-border/30 flex items-center gap-2 flex-wrap bg-muted/30">
-                        <span className="text-xs text-muted-foreground mr-1">Actions:</span>
-                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1" onClick={() => setPaymentLinkDialog(true)}>
-                          <CreditCard className="h-3 w-3" /> Payment Link
-                        </Button>
-                        {selectedThread.bookingStatus === "pending" && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-emerald-600" onClick={() => handleBookingAction("confirm")}>
-                            <CalendarCheck className="h-3 w-3" /> Confirm
+                    {/* ═══ Quick action bar — booking lifecycle ═══ */}
+                    {(selectedThread.type === "booking" || selectedThread.type === "lead") && (
+                      <div className="px-3 py-2.5 border-t border-border/30 bg-muted/20">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Actions</span>
+                          <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg" onClick={() => setPaymentLinkDialog(true)}>
+                            <CreditCard className="h-3.5 w-3.5" /> Payment Link
                           </Button>
-                        )}
-                        {selectedThread.bookingStatus === "confirmed" && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-blue-600" onClick={() => handleBookingAction("complete")}>
-                            <CalendarCheck className="h-3 w-3" /> Complete
-                          </Button>
-                        )}
-                        {!["cancelled", "completed"].includes(selectedThread.bookingStatus || "") && (
-                          <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-destructive" onClick={() => handleBookingAction("cancel")}>
-                            <Ban className="h-3 w-3" /> Cancel
-                          </Button>
-                        )}
+                          {selectedThread.bookingStatus === "pending" && (
+                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleBookingAction("confirm")}>
+                              <CalendarCheck className="h-3.5 w-3.5" /> Confirm
+                            </Button>
+                          )}
+                          {selectedThread.bookingStatus === "confirmed" && (
+                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50" onClick={() => handleBookingAction("complete")}>
+                              <CalendarCheck className="h-3.5 w-3.5" /> Complete
+                            </Button>
+                          )}
+                          {!["cancelled", "completed"].includes(selectedThread.bookingStatus || "") && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => handleBookingAction("cancel")}>
+                              <Ban className="h-3.5 w-3.5" /> Cancel
+                            </Button>
+                          )}
+                          {selectedThread.email && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg ml-auto" asChild>
+                              <a href={`mailto:${selectedThread.email}`}><Mail className="h-3.5 w-3.5" /> Email</a>
+                            </Button>
+                          )}
+                          {selectedThread.phone && (
+                            <Button size="sm" variant="ghost" className="text-xs h-8 gap-1.5 rounded-lg" asChild>
+                              <a href={`tel:${selectedThread.phone}`}><Phone className="h-3.5 w-3.5" /> Call</a>
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -1410,13 +1479,29 @@ const CommunicationCenter = () => {
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center max-w-sm">
-                  <MessageCircle className="h-16 w-16 text-muted-foreground/15 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Communication Center</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Select a conversation to start. All messages, bookings, and documents are unified here.
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md px-4">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-5">
+                    <MessageCircle className="h-8 w-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Communication Center</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    All your conversations unified — tenants, guests, clients, and leads in one place.
                   </p>
-                </div>
+                  <div className="grid grid-cols-2 gap-3 text-left">
+                    {[
+                      { emoji: "🏠", label: "Long-term", desc: "Landlord ↔ Tenant" },
+                      { emoji: "🏖️", label: "Seasonal", desc: "Host ↔ Guest" },
+                      { emoji: "🛍️", label: "Marketplace", desc: "Provider ↔ Client" },
+                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Lead" },
+                    ].map(p => (
+                      <div key={p.label} className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
+                        <span className="text-sm">{p.emoji}</span>
+                        <p className="text-xs font-semibold text-foreground mt-1">{p.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
               </div>
             )}
           </div>
