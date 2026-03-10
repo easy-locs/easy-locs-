@@ -873,7 +873,7 @@ const SeasonalRentals = () => {
                                   }
 
                                   // Sync engine: payment_request_sent (booking thread + notification)
-                                  const prop = properties.find((p: any) => p.id === req.property_id);
+                                  const prop = properties.find((p: any) => p.id === req.property_id) as any;
                                   dispatchSyncEvent({
                                     type: "payment_request_sent",
                                     context: {
