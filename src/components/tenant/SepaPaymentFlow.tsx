@@ -223,7 +223,7 @@ export default function SepaPaymentFlow({
           {/* Amount */}
           <div className="border-t border-border pt-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-              {t("sepa.exact_amount") || "Montant exact à virer"}
+              {t("sepa.exact_amount") || "Exact amount to transfer"}
             </p>
             <p className="text-xl font-bold text-foreground">{fmt(rentCall.total_amount)}</p>
           </div>
