@@ -151,7 +151,7 @@ const Dashboard = () => {
                 {t("page.dashboard.world_map") || "My World Portfolio"}
               </h1>
               <p className="text-muted-foreground text-sm">
-                {t("page.dashboard.global_overview") || "Vue d'ensemble globale — immobilier, services et réservations"}
+                {t("page.dashboard.global_overview") || "Global overview — real estate, services & bookings"}
               </p>
             </div>
           </div>
