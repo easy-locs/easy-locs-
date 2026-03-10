@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,7 +38,7 @@ const PublicServiceBooking = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedRange, setSelectedRange] = useState<{ from: Date; to: Date } | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("card");
   const [quantity, setQuantity] = useState(1);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
   const [idDocUploading, setIdDocUploading] = useState(false);
@@ -247,7 +248,7 @@ const PublicServiceBooking = () => {
           service_date: dateFrom,
           end_time: dateTo,
           service_time: selectedTime || null,
-          payment_method: paymentMethod,
+          payment_method: paymentMethod === "card" ? "stripe" : paymentMethod || "cash",
           status: "pending",
           payment_status: paymentMethod === "bank_transfer" ? "awaiting_transfer" : "unpaid",
           commission_type: service.commission_type || "percentage",
@@ -285,7 +286,7 @@ const PublicServiceBooking = () => {
           });
         } catch (e) { console.error("Notification email error:", e); }
 
-        if (paymentMethod === "stripe") {
+        if (paymentMethod === "card") {
           const { data: checkout, error: checkoutError } = await supabase.functions.invoke("create-concierge-payment", {
             body: {
               order_id: order.id,
@@ -321,7 +322,7 @@ const PublicServiceBooking = () => {
           notes: form.notes,
           date_from: isRangeMode ? dateFrom : null,
           date_to: dateTo,
-          payment_method: paymentMethod,
+          payment_method: paymentMethod === "card" ? "stripe" : paymentMethod || "cash",
           status: "pending",
         };
 
@@ -360,11 +361,10 @@ const PublicServiceBooking = () => {
     }
   };
 
-  const PAYMENT_LABELS: Record<string, string> = {
-    stripe: "💳 Card (Stripe)",
-    paypal: "🅿️ PayPal",
-    bank_transfer: "🏦 Bank Transfer",
-  };
+  // Map legacy payment method names to PaymentMethodSelector format
+  const hasStripe = availablePayments.includes("stripe");
+  const hasPaypal = availablePayments.includes("paypal");
+  const hasBankDetails = availablePayments.includes("bank_transfer") || Object.keys(bankDetails).length > 0;
 
   return (
     <>
@@ -625,17 +625,14 @@ const PublicServiceBooking = () => {
 
               {step === 3 && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground">Payment Method</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {availablePayments.map(pm => (
-                      <button key={pm} onClick={() => setPaymentMethod(pm)}
-                        className={`p-4 rounded-xl border-2 text-left transition-colors ${
-                          paymentMethod === pm ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
-                        }`}>
-                        <span className="text-sm font-medium text-foreground">{PAYMENT_LABELS[pm] || pm}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <PaymentMethodSelector
+                    selectedMethod={paymentMethod}
+                    onSelect={setPaymentMethod}
+                    hasStripe={hasStripe}
+                    hasPaypal={hasPaypal}
+                    hasBankDetails={hasBankDetails}
+                    showOffline
+                  />
 
                   {paymentMethod === "bank_transfer" && Object.keys(bankDetails).length > 0 && (
                     <div className="bg-muted/30 rounded-xl p-4 space-y-2">
@@ -648,11 +645,17 @@ const PublicServiceBooking = () => {
                     </div>
                   )}
 
+                  {paymentMethod === "cash" && (
+                    <div className="bg-muted/30 rounded-xl p-3 text-xs text-muted-foreground">
+                      💵 Cash payment on arrival. The provider will confirm your booking.
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
-                    <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
+                    <Button onClick={handleSubmit} disabled={submitting || !paymentMethod} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "stripe" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
+                      {paymentMethod === "card" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
                     </Button>
                   </div>
                 </div>
