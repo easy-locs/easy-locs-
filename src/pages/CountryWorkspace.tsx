@@ -1,11 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Home, Users, KeyRound, FileText, Wallet, ClipboardList,
-  MessageCircle, Wrench, ArrowLeft, Building, Receipt,
+  Home, Users, KeyRound, FileText, Wallet,
+  Wrench, ArrowLeft, Building, Receipt,
   AlertTriangle, CalendarRange, BookOpen, FileCheck,
   Calendar, Sofa, Zap, CheckSquare, UserSearch,
-  Bell, Layers, Clock,
+  Bell, Layers,
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
