@@ -406,7 +406,7 @@ const ChannelManager = () => {
                     </SelectContent>
                   </Select>
                   <Select value={newConn.property_id} onValueChange={v => setNewConn(p => ({ ...p, property_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionner un bien" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select a property" /></SelectTrigger>
                     <SelectContent>
                       {properties.map(p => (
                         <SelectItem key={p.id} value={p.id}>{p.label} — {p.city}</SelectItem>
