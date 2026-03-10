@@ -747,6 +747,20 @@ const SeasonalRentals = () => {
                 </button>
               </div>
             )}
+
+            {/* Documents Panel */}
+            {orgId && (
+              <div className="pt-3 border-t border-border/50">
+                <BookingDocumentsPanel
+                  bookingId={focusedRequest.id}
+                  orgId={orgId}
+                  tableName="booking_requests"
+                  documentUrls={Array.isArray(focusedRequest.document_urls) ? focusedRequest.document_urls : []}
+                  onUpdate={load}
+                  compact
+                />
+              </div>
+            )}
           </div>
         )}
 
