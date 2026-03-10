@@ -469,9 +469,9 @@ const ActivitiesMarketplace = () => {
               </Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setProviderFormOpen(true)}>Edit Profile</Button>
+                <Button variant="outline" onClick={() => setProviderFormOpen(true)}>Modifier le profil</Button>
                 <Button onClick={() => setServiceFormOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" /> Add Service
+                  <Plus className="h-4 w-4 mr-1" /> Ajouter un service
                 </Button>
                 {storefrontUrl && (
                   <Button variant="outline" size="sm" onClick={shareStorefront}>
