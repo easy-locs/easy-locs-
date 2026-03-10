@@ -30,6 +30,7 @@ export default function BookingRequestCenter({
   onModifyBooking, onSendQuote,
   focusBookingId,
 }: Props) {
+  const { can } = useOrgRole();
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
