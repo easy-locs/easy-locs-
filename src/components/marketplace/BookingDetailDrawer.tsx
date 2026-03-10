@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BookingStatusBadge from "./BookingStatusBadge";
 import BookingCommunicationThread from "./BookingCommunicationThread";
 import BookingActivityLog from "./BookingActivityLog";
+import BookingModifyDialog from "./BookingModifyDialog";
 
 function IdDocumentCard({ booking }: { booking: any }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
