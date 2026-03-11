@@ -150,6 +150,9 @@ const Index = () => {
       <Features />
       <ExplorePreview />
       <Suspense fallback={<SectionLoader />}>
+        <WorldMapSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
       <Pricing />
