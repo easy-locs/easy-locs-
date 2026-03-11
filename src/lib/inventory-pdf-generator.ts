@@ -195,13 +195,18 @@ export async function generateInventoryPDF(
   for (const room of data.rooms) {
     y = checkPageBreak(doc, y, 25);
 
-    // Room title
+    // Room title with background strip
+    doc.setFillColor(245, 247, 250);
+    doc.rect(MARGIN, y - 5, CONTENT_WIDTH, 9, "F");
     setFont(doc, "bold", 12, COLOR_PRIMARY);
-    doc.text(sanitize(room.room_name), MARGIN, y);
+    doc.text(sanitize(room.room_name), MARGIN + 2, y);
     doc.setDrawColor(...COLOR_GOLD);
-    doc.setLineWidth(0.3);
-    doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
-    y += 9;
+    doc.setLineWidth(0.4);
+    doc.line(MARGIN, y + 4, MARGIN + 45, y + 4);
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.15);
+    doc.line(MARGIN + 46, y + 4, PAGE_WIDTH - MARGIN, y + 4);
+    y += 11;
 
     for (const item of room.items) {
       y = checkPageBreak(doc, y, 20);
