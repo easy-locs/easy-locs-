@@ -25,7 +25,7 @@ const Newsletter = () => {
       setSubmitted(true);
       setEmail("");
     } catch {
-      toast.error(t("newsletter.error"));
+      toast.error(t("newsletter.error") || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
