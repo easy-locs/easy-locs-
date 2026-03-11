@@ -636,11 +636,11 @@ const PublicServiceBooking = () => {
                   {!isRangeMode && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-muted-foreground">Notes</label>
+                        <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
                         <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground">Quantity</label>
+                        <label className="text-xs text-muted-foreground">{t("mp.quantity") || "Quantity"}</label>
                         <Input type="number" min={1} value={quantity || ""} onChange={e => setQuantity(e.target.value === "" ? 1 : Math.max(1, Number(e.target.value)))} placeholder="1" />
                         {quantity > 1 && (
                           <p className="text-xs text-muted-foreground mt-1">
