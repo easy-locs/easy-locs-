@@ -251,13 +251,16 @@ const Finances = () => {
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.finances.title")}>
       <div className="max-w-5xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="page-header mb-0">
-            <h1>{t("page.finances.title")}</h1>
-            <p>{t("page.finances.subtitle")}</p>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-accent/10"><Wallet className="h-5 w-5 text-accent" /></div>
+              {t("page.finances.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.finances.subtitle")}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
-              className="form-select w-auto">
+              className="form-select w-auto text-sm">
               <option value="">{t("page.finances.all_properties")}</option>
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
