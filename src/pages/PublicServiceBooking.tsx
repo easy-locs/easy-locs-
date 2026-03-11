@@ -722,7 +722,7 @@ const PublicServiceBooking = () => {
                     {isRangeMode && selectedRange ? (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">From</span>
+                          <span className="text-muted-foreground">{t("mp.from") || "From"}</span>
                           <span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span>
                         </div>
                         <div className="flex justify-between">
