@@ -197,6 +197,9 @@ const RentalManagement = () => {
   const [propertyExpenses, setPropertyExpenses] = useState<any[]>([]);
   const [propertyFurniture, setPropertyFurniture] = useState<any[]>([]);
   const [propertyInventories, setPropertyInventories] = useState<any[]>([]);
+  // Mode badges data — which properties have seasonal listings or sale listings
+  const [seasonalPropertyIds, setSeasonalPropertyIds] = useState<Set<string>>(new Set());
+  const [salePropertyIds, setSalePropertyIds] = useState<Set<string>>(new Set());
 
   // Templates (strictement liés au pays du bien du locataire sélectionné)
   const selectedTenantCountry = selectedTenant ? (properties.find((p) => p.id === selectedTenant.property_id)?.country || userCountry) : userCountry;
