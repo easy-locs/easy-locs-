@@ -259,7 +259,7 @@ export default function Explore() {
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by city, country, or keyword..."
+                placeholder="Search services worldwide..."
                 className="pl-12 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm focus-visible:ring-accent"
               />
               {search && (
