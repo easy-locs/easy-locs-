@@ -54,7 +54,7 @@ const Signup = () => {
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-        className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full border border-border/50"
+        className="bg-card rounded-2xl shadow-card-hover p-6 sm:p-10 max-w-md w-full border border-border/50"
       >
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("auth.signup.title")}</h1>
         <p className="text-muted-foreground text-sm mb-8">{t("auth.signup.subtitle")}</p>
