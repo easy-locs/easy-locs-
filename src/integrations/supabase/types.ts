@@ -4973,6 +4973,7 @@ export type Database = {
           response: string
           reviewer_name: string
           service_title: string
+          verified: boolean
         }[]
       }
       get_public_listing_properties: {
