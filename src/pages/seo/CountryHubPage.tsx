@@ -162,6 +162,15 @@ const CountryHubPage = () => {
 
       {/* Nearby Countries */}
       {nearbyCountries.length > 0 && <InternalLinksGrid title="Explore Nearby Countries" links={nearbyCountries} />}
+
+      {/* Cross-link to Explore */}
+      <section className="py-8 bg-muted/10">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <Link to={`/explore?location=${country.name}`} className="text-sm text-primary font-semibold hover:underline flex items-center justify-center gap-2">
+            <MapPin className="h-4 w-4" /> Browse all listings in {country.name} <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
     </SEOPageShell>
   );
 };
