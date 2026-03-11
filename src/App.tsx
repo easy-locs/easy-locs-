@@ -10,6 +10,7 @@ import { Suspense, lazy } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
+import Explore from "./pages/Explore";
 const FloatingAIAssistant = lazy(() => import("@/components/ai/FloatingAIAssistant"));
 import { Loader2 } from "lucide-react";
 
@@ -75,7 +76,7 @@ const RealEstateListings = lazy(() => import("./pages/RealEstateListings"));
 const PublicRealEstateListing = lazy(() => import("./pages/PublicRealEstateListing"));
 const PropertiesShowcase = lazy(() => import("./pages/PropertiesShowcase"));
 const AccountShowcase = lazy(() => import("./pages/AccountShowcase"));
-const Explore = lazy(() => import("./pages/Explore"));
+
 const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
 const ClientBookings = lazy(() => import("./pages/client/ClientBookings"));
 const ClientMessages = lazy(() => import("./pages/client/ClientMessages"));
