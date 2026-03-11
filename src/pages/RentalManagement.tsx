@@ -241,6 +241,21 @@ const RentalManagement = () => {
     setPropertyInventories(inventories || []);
   }, [orgId]);
 
+  // Load mode badges (seasonal + sale) for all properties
+  useEffect(() => {
+    if (!orgId) return;
+    (async () => {
+      const [{ data: seasonal }, { data: realEstate }] = await Promise.all([
+        supabase.from("public_listings").select("property_id").eq("org_id", orgId).eq("active", true),
+        supabase.from("real_estate_listings").select("property_id, listing_type").eq("org_id", orgId).eq("status", "active"),
+      ]);
+      setSeasonalPropertyIds(new Set((seasonal || []).map((s: any) => s.property_id).filter(Boolean)));
+      setSalePropertyIds(new Set(
+        (realEstate || []).filter((r: any) => r.listing_type === "sale").map((r: any) => r.property_id).filter(Boolean)
+      ));
+    })();
+  }, [orgId, properties.length]);
+
   /* ─── Postal code lookup ─── */
   const handlePostalCodeChange = async (value: string) => {
     setPropertyForm(prev => ({ ...prev, postal_code: value }));
