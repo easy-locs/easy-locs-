@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, MapPin, Globe, Home, Sun, Briefcase, ArrowRight, Eye,
   Users, Moon, SlidersHorizontal, X, Building2, Waves, Car, Sparkles,
+  Heart, Star, ChevronDown, Filter, Loader2, CalendarDays,
+  Wrench, Utensils, Dumbbell, Scale, Laptop, PartyPopper, Palmtree,
+  Plane, Scissors, ShoppingBag,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -28,7 +30,6 @@ interface SeasonalListing {
   id: string; title: string; slug: string; price_per_night: number;
   max_guests: number; min_nights: number; active: boolean; description: string;
   property_id: string; org_id: string;
-  // Enriched from property
   city?: string; country?: string; cover_url?: string | null;
 }
 
@@ -38,45 +39,47 @@ interface ServiceListing {
   booking_slug: string; active: boolean;
 }
 
-/* ─────────── Constants ─────────── */
-const RE_TYPE_LABELS: Record<string, { label: string; icon: string }> = {
-  sale: { label: "For Sale", icon: "🏷️" },
-  long_term_rent: { label: "Long-term Rent", icon: "🏠" },
-};
+/* ─────────── Category config ─────────── */
+const CATEGORY_ICONS: { key: string; label: string; icon: React.ElementType; emoji: string }[] = [
+  { key: "all", label: "All", icon: Globe, emoji: "🌍" },
+  { key: "seasonal", label: "Vacation Rentals", icon: Sun, emoji: "🏖️" },
+  { key: "real-estate", label: "Properties", icon: Home, emoji: "🏠" },
+  { key: "cleaning", label: "Cleaning", icon: Sparkles, emoji: "🧹" },
+  { key: "transport", label: "Transport", icon: Car, emoji: "🚗" },
+  { key: "airport_transfer", label: "Transfers", icon: Plane, emoji: "✈️" },
+  { key: "tours", label: "Tours", icon: Palmtree, emoji: "🗺️" },
+  { key: "water_sport", label: "Water Sports", icon: Waves, emoji: "🏄" },
+  { key: "sports_coach", label: "Fitness", icon: Dumbbell, emoji: "🏋️" },
+  { key: "restaurant", label: "Food & Dining", icon: Utensils, emoji: "🍽️" },
+  { key: "coworking", label: "Coworking", icon: Laptop, emoji: "💻" },
+  { key: "construction", label: "Renovation", icon: Wrench, emoji: "🏗️" },
+  { key: "legal", label: "Legal", icon: Scale, emoji: "⚖️" },
+  { key: "spa", label: "Wellness", icon: Heart, emoji: "🧖" },
+  { key: "event", label: "Events", icon: PartyPopper, emoji: "🎫" },
+  { key: "personal", label: "Personal", icon: Scissors, emoji: "💆" },
+  { key: "business_services", label: "Business", icon: Briefcase, emoji: "💼" },
+];
 
-const SERVICE_CATEGORIES: Record<string, string> = {
-  cleaning: "🧹 Cleaning",
-  maintenance: "🔧 Maintenance",
-  construction: "🏗️ Construction / Renovation",
-  transport: "🚗 Transport",
-  car_rental: "🚙 Car Rental",
-  airport_transfer: "✈️ Airport Transfer",
-  tours: "🗺️ Tours & Activities",
-  water_sport: "🏄 Water Sport",
-  spa: "🧖 Wellness / Spa",
-  sports_coach: "🏋️ Sports Coach",
-  restaurant: "🍽️ Restaurant",
-  coworking: "💻 Coworking",
-  legal: "⚖️ Legal / Advocate",
-  business_services: "💼 Business Services",
-  consulting: "📊 Professional Consulting",
-  personal: "💆 Personal Services",
-  event: "🎫 Events / Tickets",
-  other: "📦 Other",
-};
+const SERVICE_CATEGORY_KEYS = [
+  "cleaning", "maintenance", "construction", "transport", "car_rental",
+  "airport_transfer", "tours", "water_sport", "spa", "sports_coach",
+  "restaurant", "coworking", "legal", "business_services", "consulting",
+  "personal", "event", "other",
+];
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
 /* ─────────── Component ─────────── */
 export default function Explore() {
-  const ITEMS_PER_PAGE = 12;
-  const [tab, setTab] = useState("seasonal");
-  const [search, setSearch] = useState("");
-  const [countryFilter, setCountryFilter] = useState("all");
-  const [cityFilter, setCityFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ITEMS_PER_PAGE = 24;
+
+  // State
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [locationQuery, setLocationQuery] = useState(searchParams.get("location") || "");
+  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
@@ -88,41 +91,63 @@ export default function Explore() {
     const load = async () => {
       setLoading(true);
       const [reRes, seaRes, svcRes] = await Promise.all([
-        supabase.rpc("get_public_real_estate_listings", { p_limit: 50 }),
-        supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(50),
+        supabase.rpc("get_public_real_estate_listings", { p_limit: 100 }),
+        supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(100),
         supabase.rpc("get_public_marketplace_services", {}),
       ]);
       setRealEstate((reRes.data || []) as RealEstateListing[]);
       setServices((svcRes.data || []) as ServiceListing[]);
 
-      // Enrich seasonal listings with property data via secure RPC
       const rawListings = (seaRes.data || []) as any[];
       const propertyIds = [...new Set(rawListings.map(l => l.property_id))];
       let propMap: Record<string, any> = {};
       if (propertyIds.length > 0) {
-        const { data: props } = await supabase.rpc("get_public_listing_properties", {
-          p_property_ids: propertyIds,
-        });
-        if (props) {
-          for (const p of props as any[]) propMap[p.id] = p;
-        }
+        const { data: props } = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
+        if (props) for (const p of props as any[]) propMap[p.id] = p;
       }
       setSeasonal(rawListings.map(l => {
         const prop = propMap[l.property_id];
         const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
-        return {
-          ...l,
-          city: prop?.city || "",
-          country: prop?.country || "",
-          cover_url: photos[0] || null,
-        };
+        return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
       }));
       setLoading(false);
     };
     load();
   }, []);
 
-  // Aggregate countries / cities for filters
+  // Filtering
+  const matchText = useCallback((item: any) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (item.title || "").toLowerCase().includes(q) ||
+      (item.description || "").toLowerCase().includes(q) ||
+      (item.category || "").toLowerCase().includes(q);
+  }, [searchQuery]);
+
+  const matchLocation = useCallback((item: any) => {
+    if (!locationQuery) return true;
+    const q = locationQuery.toLowerCase();
+    return (item.city || "").toLowerCase().includes(q) ||
+      (item.country || "").toLowerCase().includes(q);
+  }, [locationQuery]);
+
+  const allItems = useMemo(() => {
+    const items: Array<any & { _type: string }> = [];
+
+    if (activeCategory === "all" || activeCategory === "seasonal") {
+      seasonal.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "seasonal" }));
+    }
+    if (activeCategory === "all" || activeCategory === "real-estate") {
+      realEstate.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "real-estate" }));
+    }
+    if (activeCategory === "all" || SERVICE_CATEGORY_KEYS.includes(activeCategory)) {
+      services.filter(l => matchText(l) && matchLocation(l) && (activeCategory === "all" || l.category === activeCategory)).forEach(l => items.push({ ...l, _type: "service" }));
+    }
+
+    return items;
+  }, [seasonal, realEstate, services, activeCategory, matchText, matchLocation]);
+
+  // Aggregate unique locations for autocomplete hints
   const allCountries = useMemo(() => {
     const set = new Set<string>();
     realEstate.forEach(l => l.country && set.add(l.country));
@@ -131,45 +156,37 @@ export default function Explore() {
     return Array.from(set).sort();
   }, [realEstate, seasonal, services]);
 
-  // Filtered data
-  const matchText = (item: any) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (item.title || "").toLowerCase().includes(q) ||
-      (item.city || "").toLowerCase().includes(q) ||
-      (item.country || "").toLowerCase().includes(q);
-  };
-  const matchCountry = (item: any) => countryFilter === "all" || item.country === countryFilter;
-  const matchCity = (item: any) => !cityFilter || (item.city || "").toLowerCase().includes(cityFilter.toLowerCase());
+  const allCities = useMemo(() => {
+    const set = new Set<string>();
+    realEstate.forEach(l => l.city && set.add(l.city));
+    seasonal.forEach(l => l.city && set.add(l.city));
+    services.forEach(l => l.city && set.add(l.city));
+    return Array.from(set).sort();
+  }, [realEstate, seasonal, services]);
 
-  const filteredRE = useMemo(() => realEstate.filter(l =>
-    matchText(l) && matchCountry(l) && matchCity(l) &&
-    (typeFilter === "all" || l.listing_type === typeFilter)
-  ), [realEstate, search, countryFilter, cityFilter, typeFilter]);
-
-  const filteredSeasonal = useMemo(() => seasonal.filter(l =>
-    matchText(l) && matchCountry(l) && matchCity(l)
-  ), [seasonal, search, countryFilter, cityFilter]);
-
-  const filteredServices = useMemo(() => services.filter(l =>
-    matchText(l) && matchCountry(l) && matchCity(l) &&
-    (typeFilter === "all" || l.category === typeFilter)
-  ), [services, search, countryFilter, cityFilter, typeFilter]);
-
-  const counts = {
-    realEstate: filteredRE.length,
-    seasonal: filteredSeasonal.length,
-    services: filteredServices.length,
+  const totalCounts = {
+    all: seasonal.length + realEstate.length + services.length,
+    seasonal: seasonal.length,
+    "real-estate": realEstate.length,
   };
 
-  const clearFilters = () => {
-    setSearch(""); setCountryFilter("all"); setCityFilter(""); setTypeFilter("all"); setVisibleCount(ITEMS_PER_PAGE);
+  // Reset pagination on filter changes
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [activeCategory, searchQuery, locationQuery]);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (locationQuery) params.set("location", locationQuery);
+    if (activeCategory !== "all") params.set("category", activeCategory);
+    setSearchParams(params);
   };
 
-  // Reset pagination on tab or filter change
-  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [tab, search, countryFilter, cityFilter, typeFilter]);
+  const clearAll = () => {
+    setSearchQuery(""); setLocationQuery(""); setActiveCategory("all"); setVisibleCount(ITEMS_PER_PAGE);
+    setSearchParams({});
+  };
 
-  const hasActiveFilters = search || countryFilter !== "all" || cityFilter || typeFilter !== "all";
+  const hasFilters = searchQuery || locationQuery || activeCategory !== "all";
 
   return (
     <div className="min-h-screen bg-background">
@@ -179,296 +196,210 @@ export default function Explore() {
         canonical="https://www.easy-locs.com/explore"
       />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <AppLogo variant="header" linkTo="/" />
-          <div className="flex items-center gap-3">
-            <ThemeSwitcher />
-            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">
-              Log in
-            </Link>
-            <Link to="/signup" className="text-sm font-semibold px-4 py-1.5 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-opacity">
-              Get Started
-            </Link>
+      {/* ═══════ STICKY HEADER ═══════ */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
+        <div className="max-w-[1400px] mx-auto px-4">
+          {/* Top bar */}
+          <div className="h-16 flex items-center justify-between gap-4">
+            <AppLogo variant="header" linkTo="/" />
+
+            {/* Desktop search bar — Airbnb style */}
+            <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
+              <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex-1 px-5 py-2 border-r border-border">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What</label>
+                  <Input
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSearch()}
+                    placeholder="Service, property..."
+                    className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  />
+                </div>
+                <div className="flex-1 px-5 py-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Where</label>
+                  <Input
+                    value={locationQuery}
+                    onChange={e => setLocationQuery(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSearch()}
+                    placeholder="City, country..."
+                    className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  />
+                </div>
+                <button
+                  onClick={handleSearch}
+                  className="shrink-0 w-10 h-10 mr-1.5 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile search trigger */}
+            <button
+              onClick={() => setShowMobileSearch(v => !v)}
+              className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground"
+            >
+              <Search className="h-4 w-4" />
+              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || "Search..."}</span>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">
+                Log in
+              </Link>
+              <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity">
+                Sign up
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile search panel */}
+          <AnimatePresence>
+            {showMobileSearch && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="md:hidden overflow-hidden pb-4"
+              >
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="What are you looking for?"
+                      className="pl-10 rounded-xl"
+                    />
+                  </div>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={locationQuery}
+                      onChange={e => setLocationQuery(e.target.value)}
+                      placeholder="City or country"
+                      className="pl-10 rounded-xl"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={() => { handleSearch(); setShowMobileSearch(false); }} className="flex-1 rounded-xl gap-2">
+                      <Search className="h-4 w-4" /> Search
+                    </Button>
+                    {hasFilters && (
+                      <Button variant="outline" onClick={clearAll} className="rounded-xl">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ═══════ CATEGORY BAR — Airbnb style icon strip ═══════ */}
+        <div className="border-t border-border/50">
+          <div className="max-w-[1400px] mx-auto px-4">
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-3 -mx-1">
+              {CATEGORY_ICONS.map(cat => {
+                const isActive = activeCategory === cat.key;
+                const count = cat.key === "all" ? totalCounts.all
+                  : cat.key === "seasonal" ? totalCounts.seasonal
+                  : cat.key === "real-estate" ? totalCounts["real-estate"]
+                  : undefined;
+                return (
+                  <button
+                    key={cat.key}
+                    onClick={() => setActiveCategory(cat.key)}
+                    className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs transition-all min-w-[64px] min-h-[56px] ${
+                      isActive
+                        ? "text-foreground border-b-2 border-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <cat.icon className={`h-5 w-5 ${isActive ? "text-foreground" : "text-muted-foreground"}`} />
+                    <span className="truncate max-w-[72px] leading-none">{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-transparent to-primary/5" />
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: `linear-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.4) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }} />
-        <div className="max-w-7xl mx-auto px-4 py-14 md:py-20 relative">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center max-w-3xl mx-auto space-y-5">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm"
-              style={{
-                background: "hsl(var(--accent) / 0.08)",
-                borderColor: "hsl(var(--accent) / 0.2)",
-                color: "hsl(var(--accent))",
-              }}
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-success" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-              </span>
-              Live worldwide listings
-            </motion.div>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
-              Explore the world of{" "}
-              <span className="text-gradient-gold">Easy-Locs</span>
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-              Properties, vacation rentals, and services — all published live by verified hosts and professionals.
-            </p>
-
-            {/* Trust pills */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-2 pt-2"
-            >
-              {[
-                { icon: Globe, text: "110+ Countries" },
-                { icon: Building2, text: "Verified Hosts" },
-                { icon: Sparkles, text: "Direct Booking" },
-              ].map((pill) => (
-                <div
-                  key={pill.text}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-xs text-muted-foreground"
-                >
-                  <pill.icon className="h-3 w-3 text-accent" />
-                  {pill.text}
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Search bar */}
-          <div className="mt-8 max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
-              <Input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search services worldwide..."
-                className="pl-12 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm focus-visible:ring-accent"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
-                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                </button>
-              )}
-            </div>
+      {/* ═══════ RESULTS ═══════ */}
+      <main className="max-w-[1400px] mx-auto px-4 py-6">
+        {/* Results header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-foreground">
+              {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
+            </h2>
+            {hasFilters && (
+              <button onClick={clearAll} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-3 w-3" /> Clear filters
+              </button>
+            )}
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+            <Globe className="h-3.5 w-3.5" />
+            {allCountries.length} countries | {allCities.length} cities
           </div>
         </div>
-      </section>
 
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs value={tab} onValueChange={setTab}>
-          {/* Tab triggers */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <TabsList className="bg-muted/50 p-1 rounded-xl h-auto w-full sm:w-auto grid grid-cols-3 sm:flex">
-              <TabsTrigger value="seasonal" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
-                <Sun className="h-4 w-4 shrink-0" />
-                <span className="truncate">Seasonal</span>
-                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.seasonal}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="real-estate" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
-                <Home className="h-4 w-4 shrink-0" />
-                <span className="truncate">Property</span>
-                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.realEstate}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="services" className="rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm gap-1.5 sm:gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm min-h-[44px]">
-                <Briefcase className="h-4 w-4 shrink-0" />
-                <span className="truncate">Services</span>
-                <Badge variant="secondary" className="ml-0.5 text-[10px] h-5 hidden sm:inline-flex">{counts.services}</Badge>
-              </TabsTrigger>
-            </TabsList>
-
-            <Button
-              variant="outline" size="sm"
-              onClick={() => setFiltersVisible(v => !v)}
-              className="rounded-xl gap-2 self-start"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filters
-              {hasActiveFilters && <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px] rounded-full">!</Badge>}
-            </Button>
+        {/* Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-border bg-card">
+                <Skeleton className="aspect-[4/3] w-full" />
+                <div className="p-4 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className="h-5 w-1/3 mt-2" />
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* Filters bar */}
-          {filtersVisible && (
-            <div className="flex flex-wrap gap-3 mb-6 p-4 bg-muted/30 rounded-xl border border-border animate-in fade-in slide-in-from-top-2 duration-200">
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger className="w-40 rounded-xl h-9 text-sm">
-                  <Globe className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All countries</SelectItem>
-                  {allCountries.map(c => (
-                    <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Input
-                value={cityFilter}
-                onChange={e => setCityFilter(e.target.value)}
-                placeholder="City..."
-                className="w-36 rounded-xl h-9 text-sm"
-              />
-
-              {tab === "real-estate" && (
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-44 rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    <SelectItem value="sale">For Sale</SelectItem>
-                    <SelectItem value="long_term_rent">Long-term Rent</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              {tab === "services" && (
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-48 rounded-xl h-9 text-sm">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All categories</SelectItem>
-                    {Object.entries(SERVICE_CATEGORIES).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs gap-1 h-9">
-                  <X className="h-3 w-3" /> Clear
-                </Button>
-              )}
+        ) : allItems.length === 0 ? (
+          <EmptyDiscovery onClear={clearAll} hasFilters={hasFilters} />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {allItems.slice(0, visibleCount).map((item, i) => (
+                <motion.div
+                  key={`${item._type}-${item.id}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                >
+                  <ListingCard item={item} />
+                </motion.div>
+              ))}
             </div>
-          )}
 
-          {/* ═══ Seasonal Tab ═══ */}
-          <TabsContent value="seasonal" className="mt-0">
-            {loading ? <GridSkeleton /> : filteredSeasonal.length === 0 ? <EmptyState label="seasonal rentals" /> : (
-              <>
-              <CountryGroupedGrid items={filteredSeasonal.slice(0, visibleCount)} renderCard={(l) => (
-                <Link key={l.id} to={l.slug ? `/listing/${l.slug}` : "#"} className="group h-full">
-                  <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
-                      <img src={l.cover_url || PLACEHOLDER_IMG} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                      <div className="absolute top-3 left-3"><Badge className="bg-accent text-accent-foreground text-[10px] font-bold shadow-lg">🏖️ Seasonal</Badge></div>
-                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {l.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/night</span>
-                      </div>
-                    </div>
-                    <div className="p-4 flex flex-col flex-1 min-h-[140px]">
-                      <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">{l.title}</h3>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2"><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span></div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
-                        <span className="flex items-center gap-1"><Users className="h-3 w-3" />{l.max_guests || "—"}</span>
-                        <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {l.min_nights || 1}n</span>
-                      </div>
-                      <div className="pt-2 mt-auto border-t border-border"><span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">View & Book <ArrowRight className="h-3 w-3" /></span></div>
-                    </div>
-                  </div>
-                </Link>
-              )} />
-              <LoadMoreButton total={filteredSeasonal.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
-              </>
+            {visibleCount < allItems.length && (
+              <div className="flex justify-center pt-10">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)}
+                  className="rounded-full gap-2 px-8 min-h-[48px] shadow-sm hover:shadow-md transition-shadow"
+                >
+                  Show more ({visibleCount} of {allItems.length})
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </div>
             )}
-          </TabsContent>
-
-          {/* ═══ Real Estate Tab ═══ */}
-          <TabsContent value="real-estate" className="mt-0">
-            {loading ? <GridSkeleton /> : filteredRE.length === 0 ? <EmptyState label="real estate listings" /> : (
-              <>
-              <CountryGroupedGrid items={filteredRE.slice(0, visibleCount)} groupByCategory={(l: any) => (RE_TYPE_LABELS[l.listing_type]?.label || l.listing_type)} renderCard={(l: any) => {
-                const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
-                const cfg = RE_TYPE_LABELS[l.listing_type] || { label: l.listing_type, icon: "🏠" };
-                return (
-                  <Link key={l.id} to={`/properties/${l.slug}`} className="group h-full">
-                    <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
-                        <img src={photos[0] || PLACEHOLDER_IMG} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        <div className="absolute top-3 left-3"><Badge className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-sm border border-border">{cfg.icon} {cfg.label}</Badge></div>
-                        {l.views_count > 0 && <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> {l.views_count}</div>}
-                      </div>
-                      <div className="p-4 flex flex-col flex-1 min-h-[140px]">
-                        <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">{l.title}</h3>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2"><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span></div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5">
-                          {l.surface_sqm > 0 && <span>{l.surface_sqm} m²</span>}
-                          {l.rooms > 0 && <span>{l.rooms} rooms</span>}
-                          {l.bedrooms > 0 && <span>{l.bedrooms} bed</span>}
-                        </div>
-                        <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
-                          <span className="text-sm font-bold text-foreground">{l.price.toLocaleString()} {l.currency || "€"}{l.listing_type === "long_term_rent" && <span className="text-xs font-normal text-muted-foreground">/mo</span>}</span>
-                          <ArrowRight className="h-4 w-4 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              }} />
-              <LoadMoreButton total={filteredRE.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
-              </>
-            )}
-          </TabsContent>
-
-          {/* ═══ Services Tab ═══ */}
-          <TabsContent value="services" className="mt-0">
-            {loading ? <GridSkeleton /> : filteredServices.length === 0 ? <EmptyState label="services" /> : (
-              <>
-              <CountryGroupedGrid items={filteredServices.slice(0, visibleCount)} groupByCategory={(l: any) => (SERVICE_CATEGORIES[l.category] || l.category)} renderCard={(l: any) => {
-                const photos = Array.isArray(l.photo_urls) ? l.photo_urls : [];
-                const catLabel = SERVICE_CATEGORIES[l.category] || l.category;
-                return (
-                  <Link key={l.id} to={l.booking_slug ? `/book/${l.booking_slug}` : "#"} className="group h-full">
-                    <div className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:border-accent/30 transition-all duration-300 h-full flex flex-col">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-muted shrink-0">
-                        <img src={photos[0] || PLACEHOLDER_IMG} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        <div className="absolute top-3 left-3"><Badge className="bg-accent/90 text-accent-foreground text-[10px] font-bold shadow-lg backdrop-blur-sm">{catLabel}</Badge></div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-1 min-h-[140px]">
-                        <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">{l.title}</h3>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2"><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{l.city}{l.country ? `, ${l.country.toUpperCase()}` : ""}</span></div>
-                        {l.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-1.5">{l.description}</p>}
-                        <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
-                          <span className="text-sm font-bold text-foreground">{l.price > 0 ? `${l.price} ${l.currency || "€"}` : "Free"}</span>
-                          <span className="text-xs font-medium text-accent flex items-center gap-1 group-hover:gap-2 transition-all">Book <ArrowRight className="h-3 w-3" /></span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              }} />
-              <LoadMoreButton total={filteredServices.length} visible={visibleCount} onLoadMore={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} />
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+          </>
+        )}
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground mt-auto">
+        <div className="max-w-[1400px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} <span className="font-semibold">EASY-LOCS®</span> — All rights reserved</span>
           <div className="flex items-center gap-4">
             <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
@@ -482,111 +413,131 @@ export default function Explore() {
   );
 }
 
-/* ─── Country-grouped grid ─── */
-function CountryGroupedGrid({ items, renderCard, groupByCategory }: {
-  items: any[];
-  renderCard: (item: any) => React.ReactNode;
-  groupByCategory?: (item: any) => string;
-}) {
-  // Group by country
-  const byCountry: Record<string, any[]> = {};
-  for (const item of items) {
-    const country = (item.country || "Other").toUpperCase();
-    if (!byCountry[country]) byCountry[country] = [];
-    byCountry[country].push(item);
-  }
-  const sortedCountries = Object.keys(byCountry).sort();
+/* ═══════════════════════════════════════════
+   LISTING CARD — Premium unified card
+   ═══════════════════════════════════════════ */
+function ListingCard({ item }: { item: any }) {
+  const type = item._type as string;
+
+  const href = type === "seasonal"
+    ? (item.slug ? `/listing/${item.slug}` : "/explore")
+    : type === "real-estate"
+    ? (item.slug ? `/properties/${item.slug}` : "/explore")
+    : (item.booking_slug ? `/book/${item.booking_slug}` : "/explore");
+
+  const imgSrc = type === "seasonal"
+    ? (item.cover_url || PLACEHOLDER_IMG)
+    : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG);
+
+  const priceLabel = type === "seasonal"
+    ? `${item.price_per_night}€ / night`
+    : type === "real-estate"
+    ? `${Number(item.price || 0).toLocaleString()} ${item.currency || "€"}${item.listing_type === "long_term_rent" ? "/mo" : ""}`
+    : item.price > 0
+    ? `${item.price} ${item.currency || "€"}`
+    : "Free";
+
+  const typeBadge = type === "seasonal"
+    ? { label: "Vacation Rental", color: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20" }
+    : type === "real-estate"
+    ? { label: item.listing_type === "sale" ? "For Sale" : "Long-term Rent", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" }
+    : { label: item.category?.replace(/_/g, " ") || "Service", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" };
 
   return (
-    <div className="space-y-10">
-      {sortedCountries.map(country => {
-        const countryItems = byCountry[country];
-        if (groupByCategory) {
-          // Sub-group by category within the country
-          const byCat: Record<string, any[]> = {};
-          for (const item of countryItems) {
-            const cat = groupByCategory(item);
-            if (!byCat[cat]) byCat[cat] = [];
-            byCat[cat].push(item);
-          }
-          const sortedCats = Object.keys(byCat).sort();
-          return (
-            <div key={country}>
-              <div className="flex items-center gap-2 mb-5">
-                <Globe className="h-5 w-5 text-accent" />
-                <h2 className="text-lg font-bold text-foreground">{country}</h2>
-                <Badge variant="secondary" className="text-[10px]">{countryItems.length}</Badge>
-              </div>
-              <div className="space-y-6 pl-2 border-l-2 border-border ml-2">
-                {sortedCats.map(cat => (
-                  <div key={cat} className="pl-4">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">{cat}</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                      {byCat[cat].map(renderCard)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        }
-        return (
-          <div key={country}>
-            <div className="flex items-center gap-2 mb-5">
-              <Globe className="h-5 w-5 text-accent" />
-              <h2 className="text-lg font-bold text-foreground">{country}</h2>
-              <Badge variant="secondary" className="text-[10px]">{countryItems.length}</Badge>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {countryItems.map(renderCard)}
-            </div>
+    <Link to={href} className="group block h-full">
+      <div className="h-full rounded-2xl overflow-hidden bg-card border border-border hover:shadow-xl hover:border-accent/30 transition-all duration-300">
+        {/* Image */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          <img
+            src={imgSrc}
+            alt={item.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+          />
+          {/* Type badge */}
+          <div className="absolute top-3 left-3">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-sm ${typeBadge.color}`}>
+              {typeBadge.label}
+            </span>
           </div>
-        );
-      })}
-    </div>
-  );
-}
+          {/* Price pill */}
+          <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-lg">
+            <span className="text-sm font-bold text-foreground">{priceLabel}</span>
+          </div>
+          {/* Views for real estate */}
+          {type === "real-estate" && item.views_count > 0 && (
+            <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground flex items-center gap-1">
+              <Eye className="h-3 w-3" /> {item.views_count}
+            </div>
+          )}
+        </div>
 
-/* ─── Helpers ─── */
-function GridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden">
-          <Skeleton className="aspect-[4/3] w-full" />
-          <div className="p-4 space-y-2">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-3 w-1/2" />
-            <Skeleton className="h-3 w-1/3" />
+        {/* Content */}
+        <div className="p-4 flex flex-col gap-2 min-h-[120px]">
+          <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
+            {item.title}
+          </h3>
+
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
+            <span className="truncate">
+              {item.city}{item.country ? `, ${item.country.toUpperCase()}` : ""}
+            </span>
+          </div>
+
+          {/* Type-specific meta */}
+          {type === "seasonal" && (
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {item.max_guests && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests} guests</span>}
+              {item.min_nights && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}n</span>}
+            </div>
+          )}
+          {type === "real-estate" && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+              {item.surface_sqm > 0 && <span>{item.surface_sqm} m²</span>}
+              {item.rooms > 0 && <span>• {item.rooms} rooms</span>}
+              {item.bedrooms > 0 && <span>• {item.bedrooms} bed</span>}
+            </div>
+          )}
+          {type === "service" && item.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+          )}
+
+          {/* CTA */}
+          <div className="pt-2 mt-auto">
+            <span className="text-xs font-semibold text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
+              {type === "service" ? "Book now" : "View details"} <ArrowRight className="h-3 w-3" />
+            </span>
           </div>
         </div>
-      ))}
-    </div>
-  );
-}
-
-function EmptyState({ label }: { label: string }) {
-  return (
-    <div className="text-center py-16 space-y-3">
-      <div className="w-16 h-16 mx-auto rounded-2xl bg-muted/50 flex items-center justify-center">
-        <Search className="h-7 w-7 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground">No {label} found</h3>
-      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-        Try adjusting your filters or search terms. New listings are published every day!
-      </p>
-    </div>
+    </Link>
   );
 }
 
-function LoadMoreButton({ total, visible, onLoadMore }: { total: number; visible: number; onLoadMore: () => void }) {
-  if (visible >= total) return null;
+/* ═══════ Empty state ═══════ */
+function EmptyDiscovery({ onClear, hasFilters }: { onClear: () => void; hasFilters: boolean }) {
   return (
-    <div className="flex justify-center pt-8">
-      <Button variant="outline" size="lg" onClick={onLoadMore} className="rounded-xl gap-2 min-h-[44px]">
-        Show more ({visible} of {total})
-        <ArrowRight className="h-4 w-4" />
-      </Button>
+    <div className="text-center py-20 space-y-4">
+      <div className="w-20 h-20 mx-auto rounded-3xl bg-muted/50 flex items-center justify-center">
+        <Search className="h-8 w-8 text-muted-foreground/40" />
+      </div>
+      <h3 className="text-xl font-bold text-foreground">No listings found</h3>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        Try adjusting your search or explore different categories. New listings are published every day from around the world!
+      </p>
+      {hasFilters && (
+        <Button variant="outline" onClick={onClear} className="rounded-full gap-2 mt-2">
+          <X className="h-4 w-4" /> Clear all filters
+        </Button>
+      )}
+      <div className="pt-6">
+        <Link to="/signup">
+          <Button className="rounded-full gap-2 px-8">
+            <Sparkles className="h-4 w-4" /> List your service or property
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
