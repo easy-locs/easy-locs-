@@ -166,12 +166,17 @@ const seoPublicPrefixes = [
 const RouteAwareAssistant = () => {
   const { pathname } = useLocation();
   const hideAssistant =
+    pathname === "/" ||
     pathname === "/guest" ||
     pathname.startsWith("/r/") ||
     seoPublicPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (hideAssistant) return null;
-  return <FloatingAIAssistant />;
+  return (
+    <Suspense fallback={null}>
+      <FloatingAIAssistant />
+    </Suspense>
+  );
 };
 
 const App = () => (
