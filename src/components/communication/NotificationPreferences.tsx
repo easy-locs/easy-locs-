@@ -262,12 +262,12 @@ export default function NotificationPreferences() {
               <div>
                 <span className="text-sm text-foreground">{t("notif.browser_notifications") || "Browser notifications"}</span>
                 <p className="text-xs text-muted-foreground">
-                  {browserPermission === "granted"
+                   {browserPermission === "granted"
                     ? t("notif.browser_enabled") || "Enabled — you'll see desktop alerts"
                     : browserPermission === "denied"
                     ? t("notif.browser_blocked") || "Blocked in browser settings"
                     : browserPermission === "unsupported"
-                    ? "Not supported in this browser"
+                    ? t("notif.browser_unsupported") || "Not supported in this browser"
                     : t("notif.browser_not_enabled") || "Not yet enabled"}
                 </p>
               </div>
