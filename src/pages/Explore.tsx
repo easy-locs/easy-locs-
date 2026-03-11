@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -10,6 +10,8 @@ import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { haversineKm } from "@/lib/geo-distance";
+import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 
 // Extracted components
 import { ExploreDesktopSearchBar, ExploreMobileSearch } from "@/components/explore/ExploreSearchBar";
