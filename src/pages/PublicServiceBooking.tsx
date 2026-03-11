@@ -536,9 +536,9 @@ const PublicServiceBooking = () => {
                 ))}
               </div>
               <p className="text-center text-sm text-muted-foreground">
-                {step === 1 && (isRangeMode ? "Select your dates" : "Choose date & time")}
-                {step === 2 && "Your information"}
-                {step === 3 && "Payment & confirmation"}
+                {step === 1 && (isRangeMode ? (t("mp.select_dates") || "Select your dates") : (t("mp.choose_date_time") || "Choose date & time"))}
+                {step === 2 && (t("mp.your_information") || "Your information")}
+                {step === 3 && (t("mp.payment_confirmation") || "Payment & confirmation")}
               </p>
 
               {step === 1 && (
