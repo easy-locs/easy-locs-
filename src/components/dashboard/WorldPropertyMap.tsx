@@ -1,29 +1,22 @@
 import { useRef, useMemo, useState, Suspense, useCallback, Component, type ReactNode } from "react";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
-import * as THREE from "three";
-import { TextureLoader } from "three";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
 /* Error boundary for 3D content */
-class GlobeErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
+class GlobeErrorBoundary extends Component<{ children: ReactNode; onError?: () => void }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
-}
-
-// Convert lat/lng to 3D sphere position
-function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
-  return new THREE.Vector3(
-    -(radius * Math.sin(phi) * Math.cos(theta)),
-    radius * Math.cos(phi),
-    radius * Math.sin(phi) * Math.sin(theta)
-  );
+  componentDidCatch() { this.props.onError?.(); }
+  render() {
+    if (this.state.hasError) return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/10">
+        <Globe className="h-16 w-16 text-accent/20 animate-pulse" />
+      </div>
+    );
+    return this.props.children;
+  }
 }
 
 const COUNTRY_LATLNG: Record<string, { lat: number; lng: number }> = {
@@ -58,115 +51,99 @@ interface CountryData {
   name: string;
 }
 
-// --- Property marker on globe ---
-function PropertyMarker({
-  country,
-  radius,
-  onHover,
-  onSelect,
-  isHovered,
-}: {
-  country: CountryData & { lat: number; lng: number };
-  radius: number;
-  onHover: (code: string | null) => void;
-  onSelect: (code: string) => void;
-  isHovered: boolean;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const pos = useMemo(() => latLngToVector3(country.lat, country.lng, radius), [country.lat, country.lng, radius]);
-  const markerSize = Math.min(0.02 + country.count * 0.008, 0.06);
-
-  useFrame((_, delta) => {
-    if (meshRef.current) {
-      const scale = isHovered ? 1.6 : 1;
-      meshRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), delta * 8);
-    }
-  });
-
-  return (
-    <group position={pos}>
-      {/* Glow ring */}
-      <mesh>
-        <ringGeometry args={[markerSize * 1.3, markerSize * 1.8, 32]} />
-        <meshBasicMaterial color="#60a5fa" transparent opacity={isHovered ? 0.5 : 0.2} side={THREE.DoubleSide} />
-      </mesh>
-      {/* Main dot */}
-      <mesh
-        ref={meshRef}
-        onPointerEnter={() => onHover(country.code)}
-        onPointerLeave={() => onHover(null)}
-        onClick={(e) => { e.stopPropagation(); onSelect(country.code); }}
-      >
-        <sphereGeometry args={[markerSize, 16, 16]} />
-        <meshStandardMaterial
-          color={isHovered ? "#f59e0b" : "#3b82f6"}
-          emissive={isHovered ? "#f59e0b" : "#3b82f6"}
-          emissiveIntensity={isHovered ? 0.8 : 0.4}
-        />
-      </mesh>
-      {/* HTML label */}
-      {isHovered && (
-        <Html distanceFactor={3} center style={{ pointerEvents: "none" }}>
-          <div className="bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-xl rounded-xl px-3 py-2 border border-border/80 whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <span className="text-base">{country.flag}</span>
-              <div>
-                <div className="font-semibold text-sm">{country.name}</div>
-                <div className="text-xs text-muted-foreground">{country.count} {country.count > 1 ? "biens" : "bien"}</div>
-              </div>
-            </div>
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-}
-
-// --- Globe sphere ---
-// --- Scene (globe + markers rotate together) ---
-function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
+/**
+ * Inner 3D globe component — loaded dynamically.
+ * All Three.js imports are inside this component to isolate crashes.
+ */
+function Globe3DScene({ countries, hoveredCountry, onHover, onSelect }: {
   countries: (CountryData & { lat: number; lng: number })[];
   hoveredCountry: string | null;
   onHover: (code: string | null) => void;
   onSelect: (code: string) => void;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
+  // Dynamic imports at render time — if any fail, error boundary catches
+  const { Canvas, useFrame: useF, useLoader: useL } = require("@react-three/fiber");
+  const { OrbitControls, Html } = require("@react-three/drei");
+  const THREE = require("three");
 
-  useFrame((_, delta) => {
+  const groupRef = useRef<any>(null);
+  const texture = useL(THREE.TextureLoader, "/textures/earth-map.jpg");
+
+  useF((_: any, delta: number) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.05;
     }
   });
 
+  function latLngToVector3(lat: number, lng: number, radius: number) {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+    return new THREE.Vector3(
+      -(radius * Math.sin(phi) * Math.cos(theta)),
+      radius * Math.cos(phi),
+      radius * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
   return (
-    <>
+    <Canvas
+      camera={{ position: [0, 0, 2.6], fov: 42 }}
+      style={{ background: "transparent" }}
+      dpr={[1, 1.5]}
+      gl={{ antialias: true, alpha: true, powerPreference: "low-power", failIfMajorPerformanceCaveat: true }}
+      onCreated={({ gl }: any) => { gl.setClearColor(0x000000, 0); }}
+    >
       <ambientLight intensity={1.0} />
       <directionalLight position={[5, 3, 5]} intensity={1.2} />
       <directionalLight position={[-3, 2, -4]} intensity={0.5} color="#93c5fd" />
       <pointLight position={[-5, -3, -5]} intensity={0.5} color="#60a5fa" />
 
       <group ref={groupRef}>
-        {/* Earth sphere */}
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
           <meshStandardMaterial map={texture} roughness={0.45} metalness={0.15} />
         </mesh>
 
-        {/* Property markers — inside the same rotating group */}
-        {countries.map(c => (
-          <PropertyMarker
-            key={c.code}
-            country={c}
-            radius={1.04}
-            onHover={onHover}
-            onSelect={onSelect}
-            isHovered={hoveredCountry === c.code}
-          />
-        ))}
+        {countries.map(c => {
+          const pos = latLngToVector3(c.lat, c.lng, 1.04);
+          const markerSize = Math.min(0.02 + c.count * 0.008, 0.06);
+          const isHovered = hoveredCountry === c.code;
+          return (
+            <group key={c.code} position={pos}>
+              <mesh>
+                <ringGeometry args={[markerSize * 1.3, markerSize * 1.8, 32]} />
+                <meshBasicMaterial color="#60a5fa" transparent opacity={isHovered ? 0.5 : 0.2} side={THREE.DoubleSide} />
+              </mesh>
+              <mesh
+                onPointerEnter={() => onHover(c.code)}
+                onPointerLeave={() => onHover(null)}
+                onClick={(e: any) => { e.stopPropagation(); onSelect(c.code); }}
+              >
+                <sphereGeometry args={[markerSize, 16, 16]} />
+                <meshStandardMaterial
+                  color={isHovered ? "#f59e0b" : "#3b82f6"}
+                  emissive={isHovered ? "#f59e0b" : "#3b82f6"}
+                  emissiveIntensity={isHovered ? 0.8 : 0.4}
+                />
+              </mesh>
+              {isHovered && Html && (
+                <Html distanceFactor={3} center style={{ pointerEvents: "none" }}>
+                  <div className="bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-xl rounded-xl px-3 py-2 border border-border/80 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{c.flag}</span>
+                      <div>
+                        <div className="font-semibold text-sm">{c.name}</div>
+                        <div className="text-xs text-muted-foreground">{c.count} {c.count > 1 ? "biens" : "bien"}</div>
+                      </div>
+                    </div>
+                  </div>
+                </Html>
+              )}
+            </group>
+          );
+        })}
       </group>
 
-      {/* Atmosphere glow (static, outside rotation) */}
       <mesh scale={1.06}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshBasicMaterial color="#60a5fa" transparent opacity={0.06} side={THREE.BackSide} />
@@ -176,16 +153,18 @@ function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
         <meshBasicMaterial color="#3b82f6" transparent opacity={0.03} side={THREE.BackSide} />
       </mesh>
 
-      <OrbitControls
-        enableZoom={true}
-        enablePan={false}
-        minDistance={1.8}
-        maxDistance={4}
-        autoRotate
-        autoRotateSpeed={0.5}
-        rotateSpeed={0.5}
-      />
-    </>
+      {OrbitControls && (
+        <OrbitControls
+          enableZoom={true}
+          enablePan={false}
+          minDistance={1.8}
+          maxDistance={4}
+          autoRotate
+          autoRotateSpeed={0.5}
+          rotateSpeed={0.5}
+        />
+      )}
+    </Canvas>
   );
 }
 
@@ -201,10 +180,9 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [renderError, setRenderError] = useState(false);
 
-  // Check if Three.js components are available
-  const canRender3D = useMemo(() => {
+  // Check WebGL support
+  const hasWebGL = useMemo(() => {
     try {
-      if (!Canvas || !OrbitControls || !Html) return false;
       const c = document.createElement("canvas");
       return !!(c.getContext("webgl2") || c.getContext("webgl"));
     } catch { return false; }
@@ -232,6 +210,12 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   const mapTitle = t("page.dashboard.world_map");
   const titleText = (!mapTitle || mapTitle === "page.dashboard.world_map") ? "Mon portefeuille mondial" : mapTitle;
 
+  const globeFallback = (
+    <div className="w-full h-full flex items-center justify-center bg-muted/10">
+      <Globe className="h-16 w-16 text-accent/20 animate-pulse" />
+    </div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -258,43 +242,26 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
         {/* 3D Globe or fallback */}
         <div className="relative w-full" style={{ height: 320 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
-          {canRender3D && !renderError ? (
-            <GlobeErrorBoundary fallback={
-              <div className="w-full h-full flex items-center justify-center bg-muted/10">
-                <Globe className="h-16 w-16 text-accent/20" />
-              </div>
-            }>
+          {hasWebGL && !renderError ? (
+            <GlobeErrorBoundary onError={() => setRenderError(true)}>
               <Suspense fallback={
                 <div className="w-full h-full flex items-center justify-center bg-muted/10">
                   <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
                 </div>
               }>
-                <Canvas
-                  camera={{ position: [0, 0, 2.6], fov: 42 }}
-                  style={{ background: "transparent" }}
-                  dpr={[1, 1.5]}
-                  gl={{ antialias: true, alpha: true, powerPreference: "low-power", failIfMajorPerformanceCaveat: true }}
-                  onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); }}
-                >
-                  <GlobeScene
-                    countries={countriesWithCoords}
-                    hoveredCountry={hoveredCountry}
-                    onHover={handleHover}
-                    onSelect={handleSelect}
-                  />
-                </Canvas>
+                <Globe3DScene
+                  countries={countriesWithCoords}
+                  hoveredCountry={hoveredCountry}
+                  onHover={handleHover}
+                  onSelect={handleSelect}
+                />
               </Suspense>
             </GlobeErrorBoundary>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted/10">
-              <Globe className="h-16 w-16 text-accent/20 animate-pulse" />
-            </div>
-          )}
+          ) : globeFallback}
         </div>
 
         {/* Country chips — horizontal scroll */}
         <div className="border-t border-border/40 bg-muted/10 px-2 sm:px-4 py-3 relative group/scroll">
-          {/* Left arrow (desktop) */}
           {propertiesByCountry.length > 4 && (
             <button
               onClick={() => {
@@ -333,7 +300,6 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
             ))}
           </div>
 
-          {/* Right arrow (desktop) */}
           {propertiesByCountry.length > 4 && (
             <button
               onClick={() => {
