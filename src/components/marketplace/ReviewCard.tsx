@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Reply } from "lucide-react";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -9,6 +9,7 @@ interface ReviewCardProps {
     reviewer_avatar?: string;
     rating: number;
     comment: string;
+    response?: string | null;
     service_title?: string;
     created_at: string;
   };
@@ -51,6 +52,18 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </div>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">{review.comment}</p>
+
+      {/* Provider reply */}
+      {review.response && (
+        <div className="ml-4 pl-3 border-l-2 border-accent/30 space-y-1">
+          <div className="flex items-center gap-1.5">
+            <Reply className="h-3 w-3 text-accent" />
+            <span className="text-xs font-semibold text-accent">Provider reply</span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{review.response}</p>
+        </div>
+      )}
+
       {review.service_title && (
         <span className="inline-block text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
           📌 {review.service_title}
