@@ -377,10 +377,28 @@ export default function Explore() {
                     <Input
                       value={locationQuery}
                       onChange={e => setLocationQuery(e.target.value)}
-                      placeholder="City or country"
-                      className="pl-10 rounded-xl"
+                      placeholder={geo.detection?.city ? `${geo.detection.city}, ${geo.country.toUpperCase()}` : "City or country"}
+                      className="pl-10 pr-10 rounded-xl"
                     />
+                    {geo.detection?.city && !locationQuery && (
+                      <button
+                        onClick={handleNearMe}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
+                        title="Use my location"
+                      >
+                        <LocateFixed className="h-4 w-4 text-accent" />
+                      </button>
+                    )}
                   </div>
+                  {geo.detection?.city && !locationQuery && (
+                    <button
+                      onClick={() => { handleNearMe(); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent font-medium hover:bg-accent/15 transition-colors"
+                    >
+                      <LocateFixed className="h-4 w-4" />
+                      Near me — {geo.detection.city}, {geo.country.toUpperCase()}
+                    </button>
+                  )}
                   <div className="flex gap-2">
                     <Button onClick={() => { handleSearch(); setShowMobileSearch(false); }} className="flex-1 rounded-xl gap-2">
                       <Search className="h-4 w-4" /> Search
