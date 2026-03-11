@@ -66,7 +66,7 @@ const Newsletter = () => {
               className="flex items-center justify-center gap-2 text-success font-medium"
             >
               <CheckCircle className="h-5 w-5" />
-              {t("newsletter.success")}
+              {t("newsletter.success") || "You're subscribed! 🎉"}
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
