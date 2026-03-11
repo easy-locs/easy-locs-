@@ -24,8 +24,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-card/98 backdrop-blur-lg" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="flex items-stretch justify-around h-[3.25rem]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-card/98 backdrop-blur-lg safe-bottom" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="flex items-stretch justify-around h-14">
         {items.map((item) => {
           if (item.path === "__menu__") {
             return (
