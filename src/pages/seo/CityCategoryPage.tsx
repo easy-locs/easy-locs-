@@ -54,45 +54,36 @@ export default function CityCategoryPage() {
     const cityName = result.city.name;
     setLoading(true);
 
-    const promises: Promise<any>[] = [];
+    const run = async () => {
+      if (config.serviceKey) {
+        const r = await supabase.rpc("get_public_marketplace_services", { _category: config.serviceKey, _city: cityName });
+        setServices((r.data || []).slice(0, 20));
+      }
 
-    if (config.serviceKey) {
-      promises.push(
-        supabase.rpc("get_public_marketplace_services", { _category: config.serviceKey, _city: cityName })
-          .then(r => setServices((r.data || []).slice(0, 20)))
-      );
-    }
+      if (config.listingType === "real-estate") {
+        const r = await supabase.rpc("get_public_real_estate_listings", { p_city: cityName, p_limit: 20 });
+        setListings((r.data || []).map((l: any) => ({ ...l, _type: "real-estate" })));
+      }
 
-    if (config.listingType === "real-estate") {
-      promises.push(
-        supabase.rpc("get_public_real_estate_listings", { p_city: cityName, p_limit: 20 })
-          .then(r => setListings((r.data || []).map((l: any) => ({ ...l, _type: "real-estate" }))))
-      );
-    }
+      if (config.listingType === "seasonal" || config.listingType === "long-term") {
+        const r = await supabase.from("public_listings").select("*").eq("active", true).limit(20);
+        setListings((r.data || []).map((l: any) => ({ ...l, _type: "seasonal" })));
+      }
 
-    if (config.listingType === "seasonal" || config.listingType === "long-term") {
-      promises.push(
-        supabase.from("public_listings").select("*").eq("active", true).limit(20)
-          .then(r => setListings((r.data || []).map((l: any) => ({ ...l, _type: "seasonal" }))))
-      );
-    }
+      if (config.serviceKey) {
+        const r = await supabase.from("concierge_services")
+          .select("id,title,description,category,city,country,price,currency,photo_urls,booking_slug,active")
+          .eq("active", true).eq("city", cityName).eq("category", config.serviceKey).limit(10);
+        const conciergeItems = (r.data || []).map((s: any) => ({ ...s, _type: "service" }));
+        setServices(prev => {
+          const ids = new Set(prev.map(p => p.id));
+          return [...prev, ...conciergeItems.filter((c: any) => !ids.has(c.id))];
+        });
+      }
 
-    // If pure service, also try concierge_services for additional results
-    if (config.serviceKey) {
-      promises.push(
-        supabase.from("concierge_services").select("id,title,description,category,city,country,price,currency,photo_urls,booking_slug,active,badges:category")
-          .eq("active", true).eq("city", cityName).eq("category", config.serviceKey).limit(10)
-          .then(r => {
-            const conciergeItems = (r.data || []).map((s: any) => ({ ...s, _type: "service" }));
-            setServices(prev => {
-              const ids = new Set(prev.map(p => p.id));
-              return [...prev, ...conciergeItems.filter((c: any) => !ids.has(c.id))];
-            });
-          })
-      );
-    }
-
-    Promise.all(promises).then(() => setLoading(false));
+      setLoading(false);
+    };
+    run();
   }, [result, config]);
 
   // Fallback: city or category not found
