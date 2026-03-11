@@ -345,7 +345,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               onClick={() => onSubmit(form)}
               disabled={!isValid || isPending}
             >
-              {isPending ? "Booking..." : "Request Booking"}
+              {isPending ? (t("mp.booking_in_progress") || "Booking...") : (t("mp.booking_request") || "Request Booking")}
             </Button>
           </div>
         )}
