@@ -206,16 +206,37 @@ function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, 
 }
 
 function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
-  if (y + needed > FOOTER_SAFE_Y) { doc.addPage(); return HEADER_HEIGHT - 17; }
+  if (y + needed > FOOTER_SAFE_Y) {
+    doc.addPage();
+    addPageHeader(doc);
+    return HEADER_HEIGHT - 12;
+  }
   return y;
+}
+
+/** Lightweight header for continuation pages */
+function addPageHeader(doc: jsPDF) {
+  doc.setFillColor(...COLOR_GOLD);
+  doc.rect(0, 0, PAGE_WIDTH, 3, "F");
+  setFont(doc, "bold", 8, COLOR_PRIMARY);
+  doc.text("EASY-LOCS", MARGIN, 12);
+  setFont(doc, "normal", 4, COLOR_PRIMARY);
+  doc.text("\u00AE", MARGIN + doc.getTextWidth("EASY-LOCS") + 0.5, 9.5);
+  doc.setDrawColor(...COLOR_GOLD);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN, 15, PAGE_WIDTH - MARGIN, 15);
 }
 
 function addHeader(doc: jsPDF, title: string, country: string, docType: string): number {
   const countryEntry = getCountryEntry(country);
 
-  // Gold top bar
+  // Gold top bar — slightly taller for premium feel
   doc.setFillColor(...COLOR_GOLD);
   doc.rect(0, 0, PAGE_WIDTH, 7, "F");
+
+  // Thin accent line below gold
+  doc.setFillColor(...COLOR_PRIMARY);
+  doc.rect(0, 7, PAGE_WIDTH, 1.5, "F");
 
   // Brand name — left aligned, consistent position
   setFont(doc, "bold", FONT_TITLE, COLOR_PRIMARY);
@@ -238,18 +259,25 @@ function addHeader(doc: jsPDF, title: string, country: string, docType: string):
     );
   }
 
-  // Document title — below brand
-  setFont(doc, "normal", FONT_BODY, COLOR_MUTED);
+  // Document title — below brand with subtle background
+  doc.setFillColor(245, 247, 250);
+  doc.rect(MARGIN, 26, CONTENT_WIDTH, 10, "F");
+  setFont(doc, "bold", 11, COLOR_PRIMARY);
   const titleClean = sanitize(title);
-  const titleLines = doc.splitTextToSize(titleClean, CONTENT_WIDTH);
-  doc.text(titleLines[0] || "", MARGIN, 28);
+  const titleLines = doc.splitTextToSize(titleClean, CONTENT_WIDTH - 6);
+  doc.text(titleLines[0] || "", MARGIN + 3, 32);
 
   // Separator line
   doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, 32, PAGE_WIDTH - MARGIN, 32);
+  doc.line(MARGIN, 37, PAGE_WIDTH - MARGIN, 37);
 
-  return HEADER_HEIGHT - 2; /* 40 — safe start Y for content */
+  // Date generated — right aligned below separator
+  setFont(doc, "normal", 7, COLOR_MUTED);
+  const today = new Date().toLocaleDateString(COUNTRY_LOCALE[country] || "en-GB", { day: "numeric", month: "long", year: "numeric" });
+  doc.text(sanitize(today), PAGE_WIDTH - MARGIN, 42, { align: "right" });
+
+  return HEADER_HEIGHT + 4; /* 46 — safe start Y for content */
 }
 
 function addFooter(doc: jsPDF, country?: string) {
@@ -258,9 +286,14 @@ function addFooter(doc: jsPDF, country?: string) {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
+    // Subtle separator
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, 274, PAGE_WIDTH - MARGIN, 274);
+
     // Disclaimer line
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text(sanitize(labels.disclaimer), MARGIN, 278);
+    doc.text(sanitize(labels.disclaimer), MARGIN, 279);
 
     // Brand centered
     setFont(doc, "bold", 8, COLOR_PRIMARY);
@@ -275,20 +308,30 @@ function addFooter(doc: jsPDF, country?: string) {
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
 
-    // Bottom bar
+    // Bottom bar — dual color
+    doc.setFillColor(...COLOR_GOLD);
+    doc.rect(0, 287, PAGE_WIDTH, 2, "F");
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 289, PAGE_WIDTH, 4, "F");
   }
 }
 
 function addSection(doc: jsPDF, title: string, y: number): number {
-  y = checkPageBreak(doc, y, 20);
+  y = checkPageBreak(doc, y, 22);
+  // Section background strip
+  doc.setFillColor(245, 247, 250);
+  doc.rect(MARGIN, y - 5, CONTENT_WIDTH, 9, "F");
   setFont(doc, "bold", FONT_SECTION, COLOR_PRIMARY);
-  doc.text(sanitize(title), MARGIN, y);
+  doc.text(sanitize(title), MARGIN + 2, y);
+  // Gold accent line under section title
   doc.setDrawColor(...COLOR_GOLD);
-  doc.setLineWidth(0.3);
-  doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
-  return y + 9;
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN, y + 4, MARGIN + 45, y + 4);
+  // Thin full-width line
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.15);
+  doc.line(MARGIN + 46, y + 4, PAGE_WIDTH - MARGIN, y + 4);
+  return y + 11;
 }
 
 function addField(doc: jsPDF, label: string, value: string, y: number): number {

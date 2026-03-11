@@ -74,8 +74,26 @@ function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, 
   doc.setTextColor(color[0], color[1], color[2]);
 }
 
+function addContinuationHeader(doc: jsPDF) {
+  doc.setFillColor(...COLOR_GOLD);
+  doc.rect(0, 0, PAGE_WIDTH, 3, "F");
+  doc.setFillColor(...COLOR_PRIMARY);
+  doc.rect(0, 3, PAGE_WIDTH, 1.5, "F");
+  setFont(doc, "bold", 8, COLOR_PRIMARY);
+  doc.text("EASY-LOCS", MARGIN, 12);
+  setFont(doc, "normal", 4, COLOR_PRIMARY);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 9.5);
+  doc.setDrawColor(...COLOR_GOLD);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN, 15, PAGE_WIDTH - MARGIN, 15);
+}
+
 function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
-  if (y + needed > 268) { doc.addPage(); return 25; }
+  if (y + needed > 268) {
+    doc.addPage();
+    addContinuationHeader(doc);
+    return 22;
+  }
   return y;
 }
 
@@ -103,19 +121,27 @@ export async function generateInventoryPDF(
   const doc = new jsPDF();
   const typeLabel = data.reportType === "entry" ? "Etat des lieux d'entree" : "Etat des lieux de sortie";
 
-  // Header
+  // Header — premium styling
   doc.setFillColor(...COLOR_GOLD);
-  doc.rect(0, 0, PAGE_WIDTH, 8, "F");
+  doc.rect(0, 0, PAGE_WIDTH, 7, "F");
+  doc.setFillColor(...COLOR_PRIMARY);
+  doc.rect(0, 7, PAGE_WIDTH, 1.5, "F");
+
   setFont(doc, "bold", 16, COLOR_PRIMARY);
-  doc.text("EASY-LOCS", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 20);
   setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
-  setFont(doc, "normal", 10, COLOR_MUTED);
-  doc.text(sanitize(typeLabel.toUpperCase()), MARGIN, 30);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
+
+  // Title with background
+  doc.setFillColor(245, 247, 250);
+  doc.rect(MARGIN, 25, CONTENT_WIDTH, 10, "F");
+  setFont(doc, "bold", 11, COLOR_PRIMARY);
+  doc.text(sanitize(typeLabel.toUpperCase()), MARGIN + 3, 31);
+
   doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, 34, PAGE_WIDTH - MARGIN, 34);
-  let y = 42;
+  doc.line(MARGIN, 36, PAGE_WIDTH - MARGIN, 36);
+  let y = 44;
 
   // Property info
   setFont(doc, "bold", 12, COLOR_PRIMARY);
@@ -169,13 +195,18 @@ export async function generateInventoryPDF(
   for (const room of data.rooms) {
     y = checkPageBreak(doc, y, 25);
 
-    // Room title
+    // Room title with background strip
+    doc.setFillColor(245, 247, 250);
+    doc.rect(MARGIN, y - 5, CONTENT_WIDTH, 9, "F");
     setFont(doc, "bold", 12, COLOR_PRIMARY);
-    doc.text(sanitize(room.room_name), MARGIN, y);
+    doc.text(sanitize(room.room_name), MARGIN + 2, y);
     doc.setDrawColor(...COLOR_GOLD);
-    doc.setLineWidth(0.3);
-    doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
-    y += 9;
+    doc.setLineWidth(0.4);
+    doc.line(MARGIN, y + 4, MARGIN + 45, y + 4);
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.15);
+    doc.line(MARGIN + 46, y + 4, PAGE_WIDTH - MARGIN, y + 4);
+    y += 11;
 
     for (const item of room.items) {
       y = checkPageBreak(doc, y, 20);
@@ -274,8 +305,14 @@ export async function generateInventoryPDF(
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+    // Separator
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, 274, PAGE_WIDTH - MARGIN, 274);
+    // Disclaimer
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 278);
+    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 279);
+    // Brand
     setFont(doc, "bold", 8, COLOR_PRIMARY);
     const brandText = "EASY-LOCS";
     const brandWidth = doc.getTextWidth(brandText);
@@ -283,10 +320,14 @@ export async function generateInventoryPDF(
     doc.text(brandText, brandX, 284);
     setFont(doc, "normal", 5, COLOR_PRIMARY);
     doc.text("(R)", brandX + brandWidth + 1, 281.5);
+    // Page number
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
+    // Bottom bars
+    doc.setFillColor(...COLOR_GOLD);
+    doc.rect(0, 287, PAGE_WIDTH, 2, "F");
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 289, PAGE_WIDTH, 4, "F");
   }
 
   return doc;
