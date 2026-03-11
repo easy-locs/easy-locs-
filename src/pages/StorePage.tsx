@@ -81,10 +81,37 @@ export default function StorePage() {
   return (
     <>
       <SEOHead
-        title={`${name} — Store | Easy-Locs`}
-        description={profile.bio || `Browse services by ${name}`}
+        title={`${name} — Services & Listings | Easy-Locs`}
+        description={`${profile.bio || `Browse services and listings by ${name}`}${profile.city ? ` in ${profile.city}` : ""}${profile.country ? `, ${profile.country}` : ""}. Book directly on Easy-Locs.`.slice(0, 160)}
         ogImage={profile.avatar_url || profile.cover_photo_url}
         canonical={buildAppUrl(`/store/${storeSlug}`)}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name,
+          description: profile.bio || `Services by ${name}`,
+          url: buildAppUrl(`/store/${storeSlug}`),
+          image: profile.avatar_url || profile.cover_photo_url || undefined,
+          ...(profile.city ? {
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: profile.city,
+              addressCountry: profile.country || "",
+            },
+          } : {}),
+          ...(profile.phone ? { telephone: profile.phone } : {}),
+          ...(profile.email ? { email: profile.email } : {}),
+          ...(showcase.services.length > 0 ? {
+            makesOffer: showcase.services.slice(0, 10).map((s: any) => ({
+              "@type": "Offer",
+              itemOffered: {
+                "@type": "Service",
+                name: s.title,
+                ...(s.price > 0 ? { offers: { "@type": "Offer", price: s.price, priceCurrency: s.currency || "EUR" } } : {}),
+              },
+            })),
+          } : {}),
+        }}
       />
       <div className="min-h-screen bg-background">
         <div className="bg-gradient-to-br from-accent/10 to-background border-b border-border">
