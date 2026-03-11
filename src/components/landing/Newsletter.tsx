@@ -18,7 +18,7 @@ const Newsletter = () => {
     try {
       const { error } = await supabase.from("newsletter_subscribers" as any).insert({ email } as any);
       if (error && error.code === "23505") {
-        toast.info(t("newsletter.already_subscribed"));
+        toast.info(t("newsletter.already_subscribed") || "You're already subscribed!");
       } else if (error) {
         throw error;
       }
