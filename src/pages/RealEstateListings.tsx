@@ -34,6 +34,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import CountrySelect from "@/components/ui/CountrySelect";
 import MapPreview from "@/components/ui/MapPreview";
 import { getCountryConfig } from "@/lib/country-config";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
