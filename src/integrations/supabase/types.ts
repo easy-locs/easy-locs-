@@ -1834,6 +1834,7 @@ export type Database = {
           categories: string[]
           city: string
           company_name: string | null
+          completed_jobs: number
           country: string
           cover_photo_url: string | null
           created_at: string
@@ -1854,6 +1855,8 @@ export type Database = {
           phone: string | null
           provider_type: string
           rating: number | null
+          response_rate: number
+          response_time: string | null
           reviews_count: number | null
           slug: string
           tax_label: string | null
@@ -1861,6 +1864,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verified: boolean | null
+          verified_at: string | null
           website_url: string | null
           whatsapp: string | null
         }
@@ -1876,6 +1880,7 @@ export type Database = {
           categories?: string[]
           city?: string
           company_name?: string | null
+          completed_jobs?: number
           country?: string
           cover_photo_url?: string | null
           created_at?: string
@@ -1896,6 +1901,8 @@ export type Database = {
           phone?: string | null
           provider_type?: string
           rating?: number | null
+          response_rate?: number
+          response_time?: string | null
           reviews_count?: number | null
           slug: string
           tax_label?: string | null
@@ -1903,6 +1910,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verified?: boolean | null
+          verified_at?: string | null
           website_url?: string | null
           whatsapp?: string | null
         }
@@ -1918,6 +1926,7 @@ export type Database = {
           categories?: string[]
           city?: string
           company_name?: string | null
+          completed_jobs?: number
           country?: string
           cover_photo_url?: string | null
           created_at?: string
@@ -1938,6 +1947,8 @@ export type Database = {
           phone?: string | null
           provider_type?: string
           rating?: number | null
+          response_rate?: number
+          response_time?: string | null
           reviews_count?: number | null
           slug?: string
           tax_label?: string | null
@@ -1945,6 +1956,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verified?: boolean | null
+          verified_at?: string | null
           website_url?: string | null
           whatsapp?: string | null
         }
