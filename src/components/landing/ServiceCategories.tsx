@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Home, Sparkles, Wrench, ConciergeBell, Car, Truck } from "lucide-react";
+import { Building2, Home, Sparkles, Wrench, KeyRound, Car, Truck } from "lucide-react";
 
 const CATEGORIES = [
   { label: "Real Estate Services", icon: Building2, slug: "real-estate" },
