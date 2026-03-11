@@ -577,6 +577,7 @@ export default function RealEstateListings() {
                     setListings(prev => prev.map(l => l.id === editId ? { ...l, photo_urls: urls } : l));
                   }
                 }}
+                allowVideo={subscription.subscribed}
               />
             </div>
             <DialogFooter>
