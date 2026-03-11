@@ -48,6 +48,19 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
 
     setSubmitting(true);
 
+    // Check booking is still in completed status (guard against status revert)
+    const { data: bookingCheck } = await supabase
+      .from("marketplace_bookings")
+      .select("status")
+      .eq("id", booking.id)
+      .maybeSingle();
+
+    if (!bookingCheck || bookingCheck.status !== "completed") {
+      toast.error(t("mp.review_booking_not_eligible") || "This booking is no longer eligible for review");
+      setSubmitting(false);
+      return;
+    }
+
     const { data: existing } = await supabase
       .from("marketplace_reviews")
       .select("id")

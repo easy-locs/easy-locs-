@@ -1,12 +1,14 @@
-import { Star, Briefcase, MessageSquare, Clock, CalendarDays, CheckCircle2, Shield } from "lucide-react";
+import { Star, Briefcase, MessageSquare, Clock, CalendarDays, CheckCircle2, ShieldCheck, Reply } from "lucide-react";
 import { format } from "date-fns";
 
 interface TrustMetricsProps {
   rating?: number;
   reviewsCount?: number;
+  verifiedReviewsCount?: number;
   completedJobs?: number;
   responseRate?: number;
   responseTime?: string;
+  replyRate?: number;
   memberSince?: string;
   verifiedSince?: string;
   verified?: boolean;
@@ -16,9 +18,11 @@ interface TrustMetricsProps {
 export default function TrustMetrics({
   rating = 0,
   reviewsCount = 0,
+  verifiedReviewsCount,
   completedJobs = 0,
   responseRate = 0,
   responseTime,
+  replyRate,
   memberSince,
   verifiedSince,
   verified,
@@ -35,6 +39,14 @@ export default function TrustMetrics({
     });
   }
 
+  if (verifiedReviewsCount != null && verifiedReviewsCount > 0) {
+    items.push({
+      icon: <ShieldCheck className="h-4 w-4 text-success" />,
+      label: "Verified reviews",
+      value: `${verifiedReviewsCount}`,
+    });
+  }
+
   if (completedJobs > 0) {
     items.push({
       icon: <Briefcase className="h-4 w-4 text-accent/70" />,
@@ -48,6 +60,14 @@ export default function TrustMetrics({
       icon: <MessageSquare className="h-4 w-4 text-accent/70" />,
       label: "Response",
       value: `${responseRate}%`,
+    });
+  }
+
+  if (replyRate != null && replyRate > 0) {
+    items.push({
+      icon: <Reply className="h-4 w-4 text-accent/70" />,
+      label: "Reply rate",
+      value: `${replyRate}%`,
     });
   }
 
