@@ -95,7 +95,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 };
 
 const ConciergeServices = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, subscription } = useAuth();
   const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -663,6 +663,7 @@ const ConciergeServices = () => {
                   photos={form.photo_urls}
                   onChange={(urls) => setForm(f => ({ ...f, photo_urls: urls }))}
                   orgId={orgId}
+                  allowVideo={subscription.subscribed}
                 />
               )}
 

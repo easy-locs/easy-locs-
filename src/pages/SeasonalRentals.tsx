@@ -108,7 +108,7 @@ const parseICalEvents = (ical: string): { summary: string; start: string; end: s
 };
 
 const SeasonalRentals = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, subscription } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1108,6 +1108,7 @@ const SeasonalRentals = () => {
                     onPhotosChange={(urls) => {
                       setProperties(prev => prev.map(p => p.id === propId ? { ...p, photo_urls: urls } : p));
                     }}
+                    allowVideo={subscription.subscribed}
                   />
                   <div className="border-t border-border/50 pt-4">
                     <ListingManager propertyId={propId} propertyLabel={prop.label} />

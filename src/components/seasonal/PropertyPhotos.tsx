@@ -2,16 +2,19 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Camera, X, Upload, Loader2 } from "lucide-react";
+import { Camera, X, Upload, Loader2, Video } from "lucide-react";
+import { isVideoUrl, isVideoFile, validateMediaFile, MEDIA_ACCEPT, IMAGE_ONLY_ACCEPT } from "@/lib/media-utils";
 
 interface PropertyPhotosProps {
   propertyId: string;
   orgId: string;
   photos: string[];
   onPhotosChange: (urls: string[]) => void;
+  /** Allow video uploads (enterprise only) */
+  allowVideo?: boolean;
 }
 
-const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyPhotosProps) => {
+const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange, allowVideo = false }: PropertyPhotosProps) => {
   const { toast } = useToast();
   const { t } = useI18n();
   const [uploading, setUploading] = useState(false);
@@ -24,6 +27,15 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyP
 
     const newUrls: string[] = [];
     for (const file of Array.from(files)) {
+      const validationError = validateMediaFile(file);
+      if (validationError) {
+        toast({ title: validationError, variant: "destructive" });
+        continue;
+      }
+      if (isVideoFile(file) && !allowVideo) {
+        toast({ title: "Video upload requires a paid plan", variant: "destructive" });
+        continue;
+      }
       const ext = file.name.split(".").pop();
       const path = `${orgId}/${propertyId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("property-photos").upload(path, file);
@@ -54,6 +66,36 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyP
     toast({ title: t("page.photos.deleted") });
   };
 
+  const renderMediaThumb = (url: string, i: number) => {
+    if (isVideoUrl(url)) {
+      return (
+        <div key={i} className="relative group rounded-lg overflow-hidden aspect-[4/3] bg-muted">
+          <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <Video className="h-6 w-6 text-white drop-shadow-lg" />
+          </div>
+          <button
+            onClick={() => removePhoto(url)}
+            className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div key={i} className="relative group rounded-lg overflow-hidden aspect-[4/3] bg-muted">
+        <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+        <button
+          onClick={() => removePhoto(url)}
+          className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -68,7 +110,7 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyP
           {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
           {t("page.photos.add")}
         </button>
-        <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
+        <input ref={fileRef} type="file" accept={allowVideo ? MEDIA_ACCEPT : IMAGE_ONLY_ACCEPT} multiple onChange={handleUpload} className="hidden" />
       </div>
 
       {photos.length === 0 ? (
@@ -78,20 +120,11 @@ const PropertyPhotos = ({ propertyId, orgId, photos, onPhotosChange }: PropertyP
         >
           <Camera className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">{t("page.photos.click_add")}</p>
+          {allowVideo && <p className="text-xs text-muted-foreground mt-1">Photos & vidéos acceptées</p>}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {photos.map((url, i) => (
-            <div key={i} className="relative group rounded-lg overflow-hidden aspect-[4/3] bg-muted">
-              <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
-              <button
-                onClick={() => removePhoto(url)}
-                className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
+          {photos.map((url, i) => renderMediaThumb(url, i))}
           <div
             onClick={() => fileRef.current?.click()}
             className="border-2 border-dashed border-border rounded-lg aspect-[4/3] flex items-center justify-center cursor-pointer hover:border-accent/50 transition-colors"

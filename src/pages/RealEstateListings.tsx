@@ -116,7 +116,7 @@ const emptyForm = {
 };
 
 export default function RealEstateListings() {
-  const { orgId, user } = useAuth();
+  const { orgId, user, subscription } = useAuth();
   const { ensureOrg } = useEnsureOrg();
   const activeCountry = useCountryFilter();
   const { toast } = useToast();
@@ -577,6 +577,7 @@ export default function RealEstateListings() {
                     setListings(prev => prev.map(l => l.id === editId ? { ...l, photo_urls: urls } : l));
                   }
                 }}
+                allowVideo={subscription.subscribed}
               />
             </div>
             <DialogFooter>
