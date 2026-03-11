@@ -192,6 +192,16 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   const { t } = useI18n();
   const navigate = useNavigate();
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [renderError, setRenderError] = useState(false);
+
+  // Check if Three.js components are available
+  const canRender3D = useMemo(() => {
+    try {
+      if (!Canvas || !OrbitControls || !Html) return false;
+      const c = document.createElement("canvas");
+      return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    } catch { return false; }
+  }, []);
 
   const totalProperties = useMemo(
     () => propertiesByCountry.reduce((s, c) => s + c.count, 0),
