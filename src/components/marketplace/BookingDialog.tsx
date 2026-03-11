@@ -290,7 +290,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             </div>
 
             {dateOverlap && (
-              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">⚠️ These dates are already booked</p>
+              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">⚠️ {t("mp.dates_booked") || "These dates are already booked"}</p>
             )}
 
             {/* Price summary */}
