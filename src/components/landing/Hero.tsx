@@ -255,7 +255,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 max-w-xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
