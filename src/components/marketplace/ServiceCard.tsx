@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "./MarketplaceCategories";
-import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
@@ -49,6 +49,13 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const nextPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i + 1) % photos.length); };
   const prevPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i - 1 + photos.length) % photos.length); };
 
+  // Trust metrics
+  const rating = Number(provider?.rating || service.rating || 0);
+  const reviewsCount = Number(provider?.reviews_count || service.reviews_count || 0);
+  const completedJobs = Number(provider?.completed_jobs || service.completed_jobs || 0);
+  const verified = provider?.verified || service.verified;
+  const responseRate = Number(provider?.response_rate || 0);
+
   return (
     <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[280px]">
       {/* Photo gallery */}
@@ -60,12 +67,18 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
             loading="lazy"
           />
-          {/* Gradient overlay for text readability */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-          {/* Category badge on photo */}
-          <Badge variant="secondary" className="absolute top-2.5 left-2.5 text-[10px] backdrop-blur-sm bg-background/80 border-0 shadow-sm">
-            {cat.icon} {cat.label}
-          </Badge>
+          {/* Category + verified */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+            <Badge variant="secondary" className="text-[10px] backdrop-blur-sm bg-background/80 border-0 shadow-sm">
+              {cat.icon} {cat.label}
+            </Badge>
+            {verified && (
+              <span className="flex items-center gap-0.5 bg-accent/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full backdrop-blur-sm shadow-sm">
+                <CheckCircle2 className="h-3 w-3" /> Verified
+              </span>
+            )}
+          </div>
           {photos.length > 1 && (
             <>
               <button onClick={prevPhoto} className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
@@ -91,21 +104,19 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       ) : (
-        <div className="h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2">
+        <div className="h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">
           <span className="text-4xl">{cat.icon}</span>
           <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
+          {verified && (
+            <span className="absolute top-2.5 left-2.5 flex items-center gap-0.5 bg-accent/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+              <CheckCircle2 className="h-3 w-3" /> Verified
+            </span>
+          )}
         </div>
       )}
       <CardContent className="pt-3.5 pb-4 space-y-2.5 flex-1 flex flex-col">
-        {/* Badges row — only when photo present (category already shown on photo) */}
-        {photos.length === 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {(service.badges || []).map((b: string) => (
-              <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
-            ))}
-          </div>
-        )}
-        {photos.length > 0 && (service.badges || []).length > 0 && (
+        {/* Badges row */}
+        {(service.badges || []).length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {(service.badges || []).map((b: string) => (
               <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
@@ -116,6 +127,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         <h3 className="font-semibold text-foreground line-clamp-1 text-[15px]">{service.title}</h3>
         {service.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{service.description}</p>}
 
+        {/* Location + duration + capacity */}
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           {service.city && (
             <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-accent/70" /> {service.city}, {service.country}</span>
@@ -128,6 +140,30 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
 
+        {/* Trust metrics strip */}
+        {(rating > 0 || completedJobs > 0 || responseRate > 0) && (
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground py-1.5 px-2.5 bg-muted/30 rounded-md border border-border/30">
+            {rating > 0 && (
+              <span className="flex items-center gap-1 font-medium text-foreground">
+                <Star className="h-3.5 w-3.5 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />
+                {rating.toFixed(1)}
+                {reviewsCount > 0 && <span className="text-muted-foreground font-normal">({reviewsCount})</span>}
+              </span>
+            )}
+            {completedJobs > 0 && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="h-3 w-3 text-accent/70" /> {completedJobs} jobs
+              </span>
+            )}
+            {responseRate > 0 && (
+              <span className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3 text-accent/70" /> {responseRate}%
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Provider mini-card */}
         {provider && (
           <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/40">
             {provider.avatar_url ? (
@@ -139,15 +175,20 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             )}
             <div className="min-w-0 flex-1">
               <span className="font-medium text-foreground text-[12px]">{provider.display_name}</span>
-              {provider.verified && <Badge variant="secondary" className="text-[9px] ml-1 px-1">✓</Badge>}
+              {provider.verified && (
+                <CheckCircle2 className="inline h-3 w-3 text-accent ml-1" />
+              )}
               {Number(provider.rating) > 0 && (
-                <span className="flex items-center gap-0.5 text-[11px]"><Star className="h-3 w-3 text-[hsl(var(--chart-4))]" />{Number(provider.rating).toFixed(1)}</span>
+                <span className="flex items-center gap-0.5 text-[11px]">
+                  <Star className="h-3 w-3 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />
+                  {Number(provider.rating).toFixed(1)}
+                </span>
               )}
             </div>
           </div>
         )}
 
-        {/* Source / Provider Contact — only visible in dashboard (showActions mode) */}
+        {/* Source / Provider Contact — dashboard only */}
         {showActions && service.source_contact_name && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground p-2.5 bg-accent/5 rounded-lg border border-accent/10">
             <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
