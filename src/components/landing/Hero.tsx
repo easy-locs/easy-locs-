@@ -29,7 +29,7 @@ const Hero = () => {
   return (
     <section
       aria-label="Hero"
-      className="relative min-h-[92vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-16"
+      className="relative min-h-[88vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-16"
       style={{ background: "linear-gradient(145deg, hsl(222 50% 6%) 0%, hsl(220 45% 12%) 35%, hsl(222 42% 16%) 65%, hsl(220 38% 10%) 100%)" }}
     >
       {/* ─── Background FX ─── */}
@@ -81,8 +81,8 @@ const Hero = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 py-20 sm:py-28">
-        <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
+      <div className="container relative z-10 py-12 sm:py-28">
+        <div className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-10">
 
           {/* ─── Badge ─── */}
           <motion.div
@@ -116,7 +116,7 @@ const Hero = () => {
             className="space-y-5"
           >
             <h1
-              className="text-2xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
+              className="text-[1.6rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
@@ -141,7 +141,7 @@ const Hero = () => {
               </span>
             </h1>
             <p
-              className="text-xs sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
+              className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
               style={{ color: "hsl(220 15% 75%)" }}
             >
               {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
@@ -255,7 +255,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 max-w-xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}

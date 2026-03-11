@@ -66,7 +66,7 @@ const Navbar = () => {
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
       }}
     >
-      <div className="container flex items-center justify-between h-16 px-4">
+      <div className="container flex items-center justify-between h-14 sm:h-16 px-4">
         <AppLogo variant="landing" linkTo="/" />
 
         {/* Center links — desktop */}

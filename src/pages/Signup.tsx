@@ -46,7 +46,7 @@ const Signup = () => {
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
+    <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-16 sm:pt-4">
       <SEOHead title="Sign Up — Easy-Locs" description="Create your free Easy-Locs account." noindex />
       <AuthBrand />
 
@@ -54,7 +54,7 @@ const Signup = () => {
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-        className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full border border-border/50"
+        className="bg-card rounded-2xl shadow-card-hover p-6 sm:p-10 max-w-md w-full border border-border/50"
       >
         <h1 className="text-2xl font-bold text-foreground mb-1">{t("auth.signup.title")}</h1>
         <p className="text-muted-foreground text-sm mb-8">{t("auth.signup.subtitle")}</p>

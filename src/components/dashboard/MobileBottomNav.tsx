@@ -24,8 +24,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-card/95 backdrop-blur-md safe-bottom">
-      <div className="flex items-stretch justify-around h-14">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-card/98 backdrop-blur-lg" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="flex items-stretch justify-around h-[3.25rem]">
         {items.map((item) => {
           if (item.path === "__menu__") {
             return (
@@ -34,8 +34,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
                 onClick={onMenuOpen}
                 className="flex flex-col items-center justify-center flex-1 gap-0.5 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px]"
               >
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                <item.icon className="h-[1.125rem] w-[1.125rem]" />
+                <span className="text-[9px] font-medium leading-none">{item.label}</span>
               </button>
             );
           }
@@ -49,8 +49,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
-              <item.icon className={`h-5 w-5 ${active ? "text-accent" : ""}`} />
-              <span className={`text-[10px] font-medium leading-none ${active ? "text-accent" : ""}`}>
+              <item.icon className={`h-[1.125rem] w-[1.125rem] ${active ? "text-accent" : ""}`} />
+              <span className={`text-[9px] font-medium leading-none ${active ? "text-accent" : ""}`}>
                 {item.label}
               </span>
             </Link>

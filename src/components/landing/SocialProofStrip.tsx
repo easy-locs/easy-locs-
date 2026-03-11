@@ -53,12 +53,12 @@ const SocialProofStrip = () => {
   const { t } = useI18n();
 
   return (
-    <section className="py-12 sm:py-16 bg-background relative overflow-hidden border-b border-border/30">
+    <section className="py-8 sm:py-16 bg-background relative overflow-hidden border-b border-border/30">
       {/* Subtle top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] rounded-full bg-accent/[0.02] blur-[100px] pointer-events-none" />
 
       <div className="container max-w-5xl relative z-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6">
           {stats.map((s, i) => (
             <motion.div
               key={s.labelKey}
@@ -74,7 +74,7 @@ const SocialProofStrip = () => {
               >
                 <s.icon className="h-4.5 w-4.5" style={{ color: `hsl(var(--${s.color}))` }} />
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-foreground leading-none">
+              <div className="text-lg sm:text-2xl font-extrabold text-foreground leading-none">
                 <AnimatedCounter from={s.valueFrom} to={s.valueTo} suffix={s.suffix} />
               </div>
               <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
