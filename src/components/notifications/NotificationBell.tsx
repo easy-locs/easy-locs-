@@ -125,12 +125,8 @@ const NotificationBell = () => {
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  // Request notification permission on mount
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
+  // Do NOT request notification permission on mount — wait for meaningful user action
+  // Permission is requested via requestNotificationPermission() exported below
 
   useEffect(() => {
     if (!user) return;
