@@ -130,7 +130,7 @@ const Navbar = () => {
                   {sortedLocales.length > POPULAR_LOCALES.length && (
                     <>
                       <div className="my-1 border-t border-border" />
-                      <p className="px-3 pt-1 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">More</p>
+                      <p className="px-3 pt-1 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("landing.nav.more_languages") || "More"}</p>
                       {sortedLocales.slice(POPULAR_LOCALES.length).map((l) => {
                         const nativeName = LANG_NATIVE[l] || l.toUpperCase();
                         return (

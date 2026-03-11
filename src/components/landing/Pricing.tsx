@@ -206,7 +206,7 @@ const Pricing = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
           {TIERS.map((tier, idx) => {
             const price = interval === "monthly" ? tier.monthly : tier.annual;
-            const intLabel = interval === "monthly" ? "mo" : "yr";
+            const intLabel = interval === "monthly" ? (t("pricing.per_mo") || "mo") : (t("pricing.per_yr") || "yr");
             const isHighlight = tier.highlight;
             const isFree = tier.monthly === 0;
 
