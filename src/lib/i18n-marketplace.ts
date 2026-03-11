@@ -234,6 +234,18 @@ const MP_KEYS_EN: Record<string, string> = {
   // Nav extras
   "nav.marketplace": "Marketplace",
   "nav.more": "More",
+  // Payment methods
+  "payment.method": "Payment Method",
+  "payment.card": "Credit Card",
+  "payment.card_desc": "Pay securely with Stripe",
+  "payment.cash": "Cash",
+  "payment.cash_desc": "Pay in person on arrival",
+  "payment.bank_transfer": "Bank Transfer",
+  "payment.bank_transfer_desc": "Pay via wire transfer / IBAN",
+  "payment.paypal_desc": "Pay with PayPal",
+  // Booking form extras (complete)
+  "mp.booking_summary_service": "Service",
+  "mp.review_window_note": "Reviews can be submitted within 30 days of completion",
 };
 
 export const marketplaceI18n: Record<string, Record<string, string>> = {
@@ -384,6 +396,16 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "pricing.zero_commission_desc": "Vos réservations, vos paiements, vos revenus. Nous ne prenons jamais de commission.",
     "pricing.audience": "Conçu pour les propriétaires, entrepreneurs, freelances, prestataires, agences et entreprises dans 190+ pays.",
     "nav.marketplace": "Marketplace", "nav.more": "Plus",
+    // Payment methods
+    "payment.method": "Mode de paiement",
+    "payment.card": "Carte bancaire",
+    "payment.card_desc": "Paiement sécurisé via Stripe",
+    "payment.cash": "Espèces",
+    "payment.cash_desc": "Paiement en personne à l'arrivée",
+    "payment.bank_transfer": "Virement bancaire",
+    "payment.bank_transfer_desc": "Paiement par virement / IBAN",
+    "payment.paypal_desc": "Payer avec PayPal",
+    "mp.review_window_note": "Les avis peuvent être soumis dans les 30 jours suivant la complétion",
   },
   en: { ...MP_KEYS_EN },
   es: {
@@ -462,6 +484,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Tienda no encontrada", "mp.provider_not_found": "Proveedor no encontrado", "mp.review_single": "reseña",
     "mp.status_new": "Nueva solicitud", "mp.status_pending": "Pendiente", "mp.status_awaiting_payment": "Pendiente de pago",
     "mp.status_confirmed": "Confirmado", "mp.status_modified": "Modificado", "mp.status_cancelled": "Cancelado", "mp.status_completed": "Completado", "mp.status_refunded": "Reembolsado",
+    "payment.method": "Método de pago", "payment.card": "Tarjeta", "payment.card_desc": "Pago seguro con Stripe",
+    "payment.cash": "Efectivo", "payment.cash_desc": "Pago en persona", "payment.bank_transfer": "Transferencia bancaria", "payment.bank_transfer_desc": "Pago por transferencia / IBAN",
   },
   de: {
     "mp.title": "Marktplatz",
@@ -538,6 +562,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Shop nicht gefunden", "mp.provider_not_found": "Anbieter nicht gefunden", "mp.review_single": "Bewertung",
     "mp.status_new": "Neue Anfrage", "mp.status_pending": "Ausstehend", "mp.status_awaiting_payment": "Zahlung ausstehend",
     "mp.status_confirmed": "Bestätigt", "mp.status_modified": "Geändert", "mp.status_cancelled": "Storniert", "mp.status_completed": "Abgeschlossen", "mp.status_refunded": "Erstattet",
+    "payment.method": "Zahlungsmethode", "payment.card": "Kreditkarte", "payment.card_desc": "Sicher mit Stripe bezahlen",
+    "payment.cash": "Bargeld", "payment.cash_desc": "Bezahlung vor Ort", "payment.bank_transfer": "Überweisung", "payment.bank_transfer_desc": "Per Banküberweisung / IBAN",
   },
   it: {
     "mp.title": "Marketplace",
@@ -614,6 +640,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Negozio non trovato", "mp.provider_not_found": "Fornitore non trovato", "mp.review_single": "recensione",
     "mp.status_new": "Nuova richiesta", "mp.status_pending": "In attesa", "mp.status_awaiting_payment": "In attesa di pagamento",
     "mp.status_confirmed": "Confermato", "mp.status_modified": "Modificato", "mp.status_cancelled": "Annullato", "mp.status_completed": "Completato", "mp.status_refunded": "Rimborsato",
+    "payment.method": "Metodo di pagamento", "payment.card": "Carta di credito", "payment.card_desc": "Pagamento sicuro con Stripe",
+    "payment.cash": "Contanti", "payment.cash_desc": "Pagamento in loco", "payment.bank_transfer": "Bonifico bancario", "payment.bank_transfer_desc": "Pagamento tramite bonifico / IBAN",
   },
   pt: {
     "mp.title": "Marketplace",
@@ -690,6 +718,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Loja não encontrada", "mp.provider_not_found": "Prestador não encontrado", "mp.review_single": "avaliação",
     "mp.status_new": "Nova solicitação", "mp.status_pending": "Pendente", "mp.status_awaiting_payment": "Aguardando pagamento",
     "mp.status_confirmed": "Confirmado", "mp.status_modified": "Modificado", "mp.status_cancelled": "Cancelado", "mp.status_completed": "Concluído", "mp.status_refunded": "Reembolsado",
+    "payment.method": "Método de pagamento", "payment.card": "Cartão de crédito", "payment.card_desc": "Pagamento seguro com Stripe",
+    "payment.cash": "Dinheiro", "payment.cash_desc": "Pagamento presencial", "payment.bank_transfer": "Transferência bancária", "payment.bank_transfer_desc": "Pagamento via transferência / IBAN",
   },
   nl: {
     "mp.title": "Marktplaats", "mp.browse": "Bladeren", "mp.my_services": "Mijn diensten", "mp.my_bookings": "Mijn boekingen",
@@ -763,6 +793,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "المتجر غير موجود", "mp.provider_not_found": "المزود غير موجود", "mp.review_single": "تقييم",
     "mp.status_new": "طلب جديد", "mp.status_pending": "قيد الانتظار", "mp.status_awaiting_payment": "بانتظار الدفع",
     "mp.status_confirmed": "مؤكد", "mp.status_modified": "معدّل", "mp.status_cancelled": "ملغى", "mp.status_completed": "مكتمل", "mp.status_refunded": "مسترد",
+    "payment.method": "طريقة الدفع", "payment.card": "بطاقة ائتمان", "payment.card_desc": "دفع آمن عبر Stripe",
+    "payment.cash": "نقداً", "payment.cash_desc": "الدفع عند الوصول", "payment.bank_transfer": "تحويل بنكي", "payment.bank_transfer_desc": "الدفع عبر تحويل / IBAN",
   },
   tr: {
     "mp.title": "Pazar Yeri", "mp.browse": "Göz At", "mp.my_services": "Hizmetlerim", "mp.my_bookings": "Rezervasyonlarım",

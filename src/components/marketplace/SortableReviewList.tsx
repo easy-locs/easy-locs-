@@ -95,7 +95,7 @@ export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }
             : (t("mp.no_reviews") || "No reviews yet")}
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {paginated.map((review) => (
             <ReviewCard key={review.id} review={review as any} />
           ))}

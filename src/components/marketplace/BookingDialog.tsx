@@ -146,13 +146,13 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     (!needsDoc || !!idDocUrl);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="px-4 pt-4 pb-2 shrink-0 border-b border-border">
-          <DialogTitle className="text-base truncate">{t("mp.book") || "Book"}: {service?.title}</DialogTitle>
+      <DialogContent className="max-w-md w-[calc(100vw-1.5rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col rounded-2xl">
+        <DialogHeader className="px-4 pt-4 pb-2.5 shrink-0 border-b border-border/50">
+          <DialogTitle className="text-base font-semibold truncate">{t("mp.book") || "Book"}: {service?.title}</DialogTitle>
         </DialogHeader>
 
         {service && (
-          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 overscroll-contain">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3.5 overscroll-contain">
             {/* Service info */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
@@ -342,7 +342,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
         {/* Sticky footer */}
         {service && (
-          <div className="shrink-0 flex items-center justify-between px-4 py-3 border-t border-border bg-card">
+          <div className="shrink-0 flex items-center justify-between px-4 py-3 border-t border-border/50 bg-card safe-bottom">
             <span className="text-base font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
             <Button
               size="sm"

@@ -395,7 +395,7 @@ const PublicServiceBooking = () => {
         }}
       />
       <div className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
           {/* Photo Gallery */}
           {photos.length > 0 && (
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-6 bg-muted">
@@ -443,12 +443,12 @@ const PublicServiceBooking = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Service Info */}
             <div className="lg:col-span-2 space-y-6">
               <div>
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-foreground">{service.title}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{service.title}</h1>
                   {slug && <ShareButtons type="service" slug={slug} title={service.title} />}
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
@@ -518,13 +518,13 @@ const PublicServiceBooking = () => {
               <Separator />
 
               {/* Step Indicators */}
-              <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-2 justify-center booking-steps">
                 {[1, 2, 3].map(s => (
-                  <div key={s} className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                  <div key={s} className="flex items-center gap-1.5 sm:gap-2">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-colors ${
                       step >= s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
                     }`}>{s}</div>
-                    {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-accent" : "bg-muted"}`} />}
+                    {s < 3 && <div className={`w-8 sm:w-12 h-0.5 ${step > s ? "bg-accent" : "bg-muted"}`} />}
                   </div>
                 ))}
               </div>

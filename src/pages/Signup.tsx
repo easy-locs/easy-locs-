@@ -43,7 +43,7 @@ const Signup = () => {
     }
   };
 
-  const inputClass = "w-full bg-background border border-border rounded-xl pl-10 pr-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
+  const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
     <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
@@ -63,7 +63,7 @@ const Signup = () => {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.signup.name")}</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <User className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
                 className={inputClass}
                 placeholder={t("auth.signup.placeholder_name")} />
@@ -72,7 +72,7 @@ const Signup = () => {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.signup.email")}</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
                 placeholder={t("auth.login.placeholder_email")} />
@@ -81,11 +81,11 @@ const Signup = () => {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.signup.password")}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                className={`${inputClass} pr-10`}
+                className={`${inputClass} pe-10`}
                 placeholder={t("auth.signup.password_hint")} />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>

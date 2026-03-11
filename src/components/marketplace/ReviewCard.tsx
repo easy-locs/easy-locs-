@@ -23,9 +23,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(review.rating));
 
   return (
-    <div className="p-4 bg-muted/20 rounded-xl border border-border/40 space-y-3">
+    <div className="p-3 sm:p-4 bg-muted/20 rounded-xl border border-border/40 space-y-2.5 sm:space-y-3">
       <div className="flex items-start gap-3">
-        <Avatar className="h-9 w-9 shrink-0">
+        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 shrink-0">
           {review.reviewer_avatar ? (
             <img src={review.reviewer_avatar} alt={review.reviewer_name} className="h-full w-full object-cover" />
           ) : (

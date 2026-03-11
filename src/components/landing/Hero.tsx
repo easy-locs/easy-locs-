@@ -116,7 +116,7 @@ const Hero = () => {
             className="space-y-5"
           >
             <h1
-              className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
+              className="text-2xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
@@ -141,7 +141,7 @@ const Hero = () => {
               </span>
             </h1>
             <p
-              className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
+              className="text-xs sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
               style={{ color: "hsl(220 15% 75%)" }}
             >
               {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
@@ -255,7 +255,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
@@ -265,7 +265,7 @@ const Hero = () => {
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105 w-full"
+                    className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",

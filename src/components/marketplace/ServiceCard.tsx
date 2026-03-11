@@ -60,10 +60,10 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const responseRate = Number(provider?.response_rate || 0);
 
   return (
-    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[280px]">
+    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[260px] sm:min-h-[280px]">
       {/* Photo gallery */}
       {photos.length > 0 ? (
-        <div className="relative h-48 shrink-0 bg-muted overflow-hidden">
+        <div className="relative h-40 sm:h-48 shrink-0 bg-muted overflow-hidden">
           <img
             src={photos[photoIdx]}
             alt={service.title}
@@ -107,7 +107,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       ) : (
-        <div className="h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">
+        <div className="h-40 sm:h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">
           <span className="text-4xl">{cat.icon}</span>
           <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
           {verified && (
