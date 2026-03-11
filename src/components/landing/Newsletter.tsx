@@ -18,14 +18,14 @@ const Newsletter = () => {
     try {
       const { error } = await supabase.from("newsletter_subscribers" as any).insert({ email } as any);
       if (error && error.code === "23505") {
-        toast.info(t("newsletter.already_subscribed"));
+        toast.info(t("newsletter.already_subscribed") || "You're already subscribed!");
       } else if (error) {
         throw error;
       }
       setSubmitted(true);
       setEmail("");
     } catch {
-      toast.error(t("newsletter.error"));
+      toast.error(t("newsletter.error") || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -49,14 +49,14 @@ const Newsletter = () => {
             whileHover={{ scale: 1.05 }}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {t("newsletter.badge")}
+            {t("newsletter.badge") || "Stay Updated"}
           </motion.span>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
-            {t("newsletter.title")}
+            {t("newsletter.title") || "Get the Latest Updates"}
           </h2>
           <p className="text-sm sm:text-base" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
-            {t("newsletter.subtitle")}
+            {t("newsletter.subtitle") || "Join thousands of entrepreneurs. Tips, features & industry insights delivered weekly."}
           </p>
 
           {submitted ? (
@@ -66,7 +66,7 @@ const Newsletter = () => {
               className="flex items-center justify-center gap-2 text-success font-medium"
             >
               <CheckCircle className="h-5 w-5" />
-              {t("newsletter.success")}
+              {t("newsletter.success") || "You're subscribed! 🎉"}
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
@@ -77,7 +77,7 @@ const Newsletter = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("newsletter.placeholder")}
+                  placeholder={t("newsletter.placeholder") || "your@email.com"}
                   className="w-full pl-10 pr-4 h-12 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                   style={{
                     background: "hsl(var(--primary-foreground) / 0.06)",
@@ -95,7 +95,7 @@ const Newsletter = () => {
                 style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 16px hsl(var(--accent) / 0.2)" }}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  {t("newsletter.cta")}
+                  {t("newsletter.cta") || "Subscribe"}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
