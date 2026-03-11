@@ -161,7 +161,7 @@ const TenantReviews = () => {
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
-                        className={`h-4 w-4 ${s <= r.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`}
+                        className={`h-4 w-4 ${s <= r.rating ? "fill-warning text-warning" : "text-muted-foreground/20"}`}
                       />
                     ))}
                   </div>
