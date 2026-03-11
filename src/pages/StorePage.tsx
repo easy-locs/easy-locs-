@@ -159,9 +159,11 @@ export default function StorePage() {
               <TrustMetrics
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedReviewsCount={verifiedReviewsCount}
                 completedJobs={completedJobs}
                 responseRate={responseRate}
                 responseTime={responseTime}
+                replyRate={replyRate}
                 memberSince={memberSince}
                 verifiedSince={verifiedSince}
                 verified={profile.verified}

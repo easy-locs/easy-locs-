@@ -211,9 +211,11 @@ export default function ProviderStorefront() {
               <TrustMetrics
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedReviewsCount={verifiedReviewsCount}
                 completedJobs={completedJobs}
                 responseRate={responseRate}
                 responseTime={responseTime}
+                replyRate={replyRate}
                 memberSince={memberSince}
                 verifiedSince={verifiedSince}
                 verified={provider.verified}
