@@ -1,15 +1,19 @@
 /**
  * /city/:city — City hub page: services, activities, marketplace, concierge.
  * Also handles /city/:city/services, /city/:city/activities, /city/:city/concierge
+ * Now with live listings from the database for organic discovery.
  */
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye } from "lucide-react";
 
 type CitySubPage = "overview" | "services" | "activities" | "concierge";
 
