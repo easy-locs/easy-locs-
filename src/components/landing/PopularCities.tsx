@@ -14,7 +14,7 @@ const CITIES = [
 ];
 
 const PopularCities = () => (
-  <section className="py-16 sm:py-20 px-4 bg-muted/30">
+  <section id="cities" className="py-16 sm:py-20 px-4 bg-muted/30">
     <div className="container mx-auto max-w-6xl">
       <div className="text-center mb-10">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Popular Cities</h2>
@@ -46,6 +46,11 @@ const PopularCities = () => (
             </Link>
           </motion.div>
         ))}
+      </div>
+      <div className="text-center mt-6">
+        <Link to="/explore" className="text-sm font-medium text-accent hover:underline">
+          Explore all cities →
+        </Link>
       </div>
     </div>
   </section>

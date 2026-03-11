@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Globe } from "lucide-react";
 
 const COUNTRIES = [
   { name: "UAE", slug: "uae", flag: "🇦🇪", code: "AE" },
@@ -15,9 +16,18 @@ const COUNTRIES = [
 ];
 
 const BrowseByCountry = () => (
-  <section className="py-16 sm:py-20 px-4 bg-background">
+  <section id="countries" className="py-16 sm:py-20 px-4 bg-background">
     <div className="container mx-auto max-w-6xl">
       <div className="text-center mb-10">
+        <motion.span
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-accent px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-4"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <Globe className="h-3.5 w-3.5" />
+          110+ Countries
+        </motion.span>
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Browse by Country</h2>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-xl mx-auto">
           Discover properties and services in countries where Easy-Locs operates
@@ -41,6 +51,11 @@ const BrowseByCountry = () => (
             </Link>
           </motion.div>
         ))}
+      </div>
+      <div className="text-center mt-6">
+        <Link to="/locations" className="text-sm font-medium text-accent hover:underline">
+          View all countries →
+        </Link>
       </div>
     </div>
   </section>
