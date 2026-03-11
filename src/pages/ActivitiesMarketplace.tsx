@@ -583,6 +583,13 @@ const ActivitiesMarketplace = () => {
               />
             </TabsContent>
           )}
+
+          {/* Reviews Tab */}
+          {myProvider && (
+            <TabsContent value="reviews" className="mt-4">
+              <ReviewsManagerPanel providerId={myProvider.id} />
+            </TabsContent>
+          )}
         </Tabs>
 
         {/* Provider Form */}
