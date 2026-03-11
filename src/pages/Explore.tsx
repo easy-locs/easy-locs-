@@ -355,7 +355,37 @@ export default function Explore() {
       </header>
 
       {/* ═══════ RESULTS ═══════ */}
-      <main className="max-w-[1400px] mx-auto px-4 py-6">
+      <main className="max-w-[1400px] mx-auto px-4 py-6 flex gap-6">
+        {/* Radius search sidebar */}
+        <AnimatePresence>
+          {showRadiusSearch && (
+            <div className="hidden sm:block shrink-0">
+              <ExploreRadiusSearch
+                locationQuery={locationQuery}
+                radiusKm={radiusKm}
+                resultCount={allItems.length}
+                geoCity={geo.detection?.city}
+                geoCountry={geo.country}
+                onLocationChange={setLocationQuery}
+                onRadiusChange={(km) => {
+                  setRadiusKm(km);
+                  if (km === 0) setRadius("worldwide");
+                  else if (km <= 5) setRadius("5");
+                  else if (km <= 10) setRadius("10");
+                  else if (km <= 25) setRadius("25");
+                  else if (km <= 50) setRadius("50");
+                  else setRadius("country");
+                }}
+                onApply={handleSearch}
+                onReset={() => { clearAll(); setRadiusKm(0); }}
+                onNearMe={handleNearMe}
+                onClose={() => setShowRadiusSearch(false)}
+              />
+            </div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex-1 min-w-0">
         {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
