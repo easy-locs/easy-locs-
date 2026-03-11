@@ -461,7 +461,7 @@ export default function Explore() {
             {visibleCount < allItems.length && (
               <div className="flex justify-center pt-10">
                 <Button variant="outline" size="lg" onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} className="rounded-full gap-2 px-8 min-h-[48px] shadow-sm hover:shadow-md transition-shadow">
-                  Show more ({visibleCount} of {allItems.length})
+                  Show more
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>
