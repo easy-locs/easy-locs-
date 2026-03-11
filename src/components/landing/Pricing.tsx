@@ -274,7 +274,7 @@ const Pricing = () => {
                       </p>
                     )}
                     {isFree && (
-                      <p className="text-[11px] text-muted-foreground mt-1">No credit card required</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">{t("pricing.no_card") || "No credit card required"}</p>
                     )}
                   </div>
 
