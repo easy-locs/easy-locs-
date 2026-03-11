@@ -4,57 +4,60 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
-/* ── Feature lists ── */
-const FREE_FEATURES = [
-  "Unlimited listings & services",
-  "Photo uploads & gallery",
-  "Share via WhatsApp, Telegram, Email",
-  "Copy link & phone contact",
-  "Communication center",
-  "Public visibility worldwide",
-  "0% commission on your revenue",
-];
+const usePricingFeatures = (t: (key: string) => string) => {
+  const FREE_FEATURES = [
+    t("pricing.f.free.1") || "Unlimited listings & services",
+    t("pricing.f.free.2") || "Photo uploads & gallery",
+    t("pricing.f.free.3") || "Share via WhatsApp, Telegram, Email",
+    t("pricing.f.free.4") || "Copy link & phone contact",
+    t("pricing.f.free.5") || "Communication center",
+    t("pricing.f.free.6") || "Public visibility worldwide",
+    t("pricing.f.free.7") || "0% commission on your revenue",
+  ];
 
-const SOLO_FEATURES = [
-  "Everything in Free",
-  "Unlimited properties & services",
-  "1 business profile / digital storefront",
-  "0% commission — keep 100% of earnings",
-  "Long-term, seasonal & sales listings",
-  "Legal documents & lease contracts",
-  "Inventories & rent receipts",
-  "Electronic signature",
-  "PDF export & invoicing tools",
-  "Payment links & online payments",
-  "Client & booking management",
-  "Airbnb / Booking / OTA sync",
-  "Worldwide service visibility",
-  "Secure document archive",
-];
+  const SOLO_FEATURES = [
+    t("pricing.f.solo.0") || "Everything in Free",
+    t("pricing.f.solo.1") || "Unlimited properties & services",
+    t("pricing.f.solo.2") || "1 business profile / digital storefront",
+    t("pricing.f.solo.3") || "0% commission — keep 100% of earnings",
+    t("pricing.f.solo.4") || "Long-term, seasonal & sales listings",
+    t("pricing.f.solo.5") || "Legal documents & lease contracts",
+    t("pricing.f.solo.6") || "Inventories & rent receipts",
+    t("pricing.f.solo.7") || "Electronic signature",
+    t("pricing.f.solo.8") || "PDF export & invoicing tools",
+    t("pricing.f.solo.9") || "Payment links & online payments",
+    t("pricing.f.solo.10") || "Client & booking management",
+    t("pricing.f.solo.11") || "Airbnb / Booking / OTA sync",
+    t("pricing.f.solo.12") || "Worldwide service visibility",
+    t("pricing.f.solo.13") || "Secure document archive",
+  ];
 
-const TEAM_FEATURES = [
-  "Everything in Solo",
-  "Up to 10 employees",
-  "Team access & collaboration",
-  "Shared business management",
-  "Shared calendar & bookings",
-  "Multi-service & multi-property",
-  "Shared communication center",
-  "Priority support",
-  "Cross-city & cross-country organization",
-];
+  const TEAM_FEATURES = [
+    t("pricing.f.team.0") || "Everything in Solo",
+    t("pricing.f.team.1") || "Up to 10 employees",
+    t("pricing.f.team.2") || "Team access & collaboration",
+    t("pricing.f.team.3") || "Shared business management",
+    t("pricing.f.team.4") || "Shared calendar & bookings",
+    t("pricing.f.team.5") || "Multi-service & multi-property",
+    t("pricing.f.team.6") || "Shared communication center",
+    t("pricing.f.team.7") || "Priority support",
+    t("pricing.f.team.8") || "Cross-city & cross-country organization",
+  ];
 
-const COMPANY_FEATURES = [
-  "Everything in Team",
-  "Up to 50 employees",
-  "Multi-country business management",
-  "Advanced team structure",
-  "Multi-location operations",
-  "High-volume listings & services",
-  "Scalable business workflows",
-  "Stronger company management tools",
-  "Dedicated priority support",
-];
+  const COMPANY_FEATURES = [
+    t("pricing.f.company.0") || "Everything in Team",
+    t("pricing.f.company.1") || "Up to 50 employees",
+    t("pricing.f.company.2") || "Multi-country business management",
+    t("pricing.f.company.3") || "Advanced team structure",
+    t("pricing.f.company.4") || "Multi-location operations",
+    t("pricing.f.company.5") || "High-volume listings & services",
+    t("pricing.f.company.6") || "Scalable business workflows",
+    t("pricing.f.company.7") || "Stronger company management tools",
+    t("pricing.f.company.8") || "Dedicated priority support",
+  ];
+
+  return { FREE_FEATURES, SOLO_FEATURES, TEAM_FEATURES, COMPANY_FEATURES };
+};
 
 interface TierData {
   name: string;
