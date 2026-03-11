@@ -110,11 +110,11 @@ const TIERS: TierData[] = [
   },
 ];
 
-const TRUST_SIGNALS = [
-  { icon: <BadgePercent className="h-5 w-5" />, label: "0% commission", sub: "Keep 100% of your revenue" },
-  { icon: <Globe className="h-5 w-5" />, label: "190+ countries", sub: "Worldwide coverage" },
-  { icon: <ShieldCheck className="h-5 w-5" />, label: "Secure payments", sub: "Stripe-powered billing" },
-  { icon: <Star className="h-5 w-5" />, label: "Cancel anytime", sub: "No lock-in contract" },
+const TRUST_SIGNALS_KEYS = [
+  { icon: <BadgePercent className="h-5 w-5" />, labelKey: "pricing.trust.commission", labelFb: "0% commission", subKey: "pricing.trust.commission_sub", subFb: "Keep 100% of your revenue" },
+  { icon: <Globe className="h-5 w-5" />, labelKey: "pricing.trust.countries", labelFb: "190+ countries", subKey: "pricing.trust.countries_sub", subFb: "Worldwide coverage" },
+  { icon: <ShieldCheck className="h-5 w-5" />, labelKey: "pricing.trust.payments", labelFb: "Secure payments", subKey: "pricing.trust.payments_sub", subFb: "Stripe-powered billing" },
+  { icon: <Star className="h-5 w-5" />, labelKey: "pricing.trust.cancel", labelFb: "Cancel anytime", subKey: "pricing.trust.cancel_sub", subFb: "No lock-in contract" },
 ];
 
 const Pricing = () => {
