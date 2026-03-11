@@ -77,8 +77,8 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               {cat.icon} {cat.label}
             </Badge>
             {verified && (
-              <span className="flex items-center gap-0.5 bg-accent/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full backdrop-blur-sm shadow-sm">
-                <CheckCircle2 className="h-3 w-3" /> Verified
+            <span className="flex items-center gap-0.5 bg-accent/90 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full backdrop-blur-sm shadow-sm">
+                <CheckCircle2 className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
           </div>
