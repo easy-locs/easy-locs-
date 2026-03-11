@@ -13,6 +13,7 @@ import ReviewRatingBreakdown from "@/components/marketplace/ReviewRatingBreakdow
 import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
   try {
