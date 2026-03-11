@@ -294,7 +294,7 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.review_select_rating": "Selecciona una puntuación", "mp.review_write_comment": "Escribe un comentario", "mp.review_enter_name": "Ingresa tu nombre",
     "mp.review_tap_to_rate": "Toca para puntuar", "mp.review_poor": "Malo", "mp.review_fair": "Regular", "mp.review_good": "Bueno", "mp.review_very_good": "Muy bueno", "mp.review_excellent": "Excelente",
     "mp.sort_latest": "Más recientes", "mp.sort_highest": "Mejor valorados", "mp.sort_lowest": "Peor valorados", "mp.sort_replied": "Con respuesta",
-    "mp.reviews_of": "de", "mp.view_all_reviews": "Ver todas las reseñas", "mp.provider_reply": "Respuesta del proveedor",
+    "mp.reviews_of": "de", "mp.view_all_reviews": "Ver todas las reseñas", "mp.verified_only": "Solo verificados", "mp.no_verified_reviews": "Sin reseñas verificadas", "mp.no_reviews": "Sin reseñas", "mp.load_more_reviews": "Mostrar más reseñas", "mp.remaining": "restantes", "mp.review_booking_not_eligible": "Esta reserva ya no es elegible para reseña", "mp.provider_reply": "Respuesta del proveedor",
     "mp.status_new": "Nueva solicitud", "mp.status_pending": "Pendiente", "mp.status_awaiting_payment": "Pendiente de pago",
     "mp.status_confirmed": "Confirmado", "mp.status_modified": "Modificado", "mp.status_cancelled": "Cancelado", "mp.status_completed": "Completado", "mp.status_refunded": "Reembolsado",
   },
