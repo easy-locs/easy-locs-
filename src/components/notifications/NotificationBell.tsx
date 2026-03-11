@@ -375,8 +375,8 @@ const NotificationBell = () => {
                 <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: isMobile ? "60vh" : "420px", WebkitOverflowScrolling: "touch" }}>
                   {notifications.length === 0 ? (
                     <div className="py-12 px-6 text-center">
-                      <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-muted/40 flex items-center justify-center">
-                        <Bell className="h-6 w-6 text-muted-foreground/30" />
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center ring-1 ring-border/30">
+                        <Bell className="h-7 w-7 text-muted-foreground/25" />
                       </div>
                       <p className="text-sm font-medium text-muted-foreground/70">{t("notif.empty") || "All caught up"}</p>
                       <p className="text-[11px] text-muted-foreground/40 mt-1">{t("notif.empty_hint") || "Notifications will appear here"}</p>
