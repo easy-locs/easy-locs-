@@ -1033,12 +1033,12 @@ const CommunicationCenter = () => {
               </div>
               <div className="flex gap-1 flex-wrap">
                 {[
-                  { value: "all", label: "All", count: threads.length },
-                  { value: "tenant", label: "🏠 Long-term", count: threads.filter(t => t.type === "tenant").length },
-                  { value: "lead", label: "🏡 Leads", count: threads.filter(t => t.type === "lead").length },
-                  { value: "seasonal", label: "🏖️ Seasonal", count: threads.filter(t => t.bookingType === "seasonal").length },
-                  { value: "marketplace", label: "🛍️ Market", count: threads.filter(t => t.bookingType === "marketplace").length },
-                  { value: "concierge", label: "🎯 Concierge", count: threads.filter(t => t.bookingType === "concierge").length },
+                  { value: "all", label: t("page.communication.filter_all") || "All", count: threads.length },
+                  { value: "tenant", label: "🏠 " + (t("page.communication.filter_longterm") || "Long-term"), count: threads.filter(t => t.type === "tenant").length },
+                  { value: "lead", label: "🏡 " + (t("page.communication.filter_leads") || "Leads"), count: threads.filter(t => t.type === "lead").length },
+                  { value: "seasonal", label: "🏖️ " + (t("page.communication.filter_seasonal") || "Seasonal"), count: threads.filter(t => t.bookingType === "seasonal").length },
+                  { value: "marketplace", label: "🛍️ " + (t("page.communication.filter_market") || "Market"), count: threads.filter(t => t.bookingType === "marketplace").length },
+                  { value: "concierge", label: "🎯 " + (t("page.communication.filter_concierge") || "Concierge"), count: threads.filter(t => t.bookingType === "concierge").length },
                 ].map(f => (
                   <Button
                     key={f.value}
