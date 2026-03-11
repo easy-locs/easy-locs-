@@ -49,7 +49,7 @@ const Newsletter = () => {
             whileHover={{ scale: 1.05 }}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {t("newsletter.badge")}
+            {t("newsletter.badge") || "Stay Updated"}
           </motion.span>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
