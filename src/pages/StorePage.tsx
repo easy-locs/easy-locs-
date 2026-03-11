@@ -209,7 +209,7 @@ export default function StorePage() {
                       </div>
                       {slug && (
                         <Button size="sm" className="w-full mt-2" asChild>
-                          <Link to={`/book/${slug}`}><ExternalLink className="h-3 w-3 mr-1" /> Book</Link>
+                          <Link to={`/book/${slug}`}><ExternalLink className="h-3 w-3 mr-1" /> {t("mp.book") || "Book"}</Link>
                         </Button>
                       )}
                     </CardContent>
