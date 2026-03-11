@@ -108,7 +108,7 @@ export default function ProviderStorefront() {
         <Navbar />
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Store className="h-12 w-12 text-muted-foreground/30" />
-          <p className="text-muted-foreground font-medium">Provider not found</p>
+          <p className="text-muted-foreground font-medium">{t("mp.provider_not_found") || "Provider not found"}</p>
         </div>
         <Footer />
       </div>
