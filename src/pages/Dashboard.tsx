@@ -157,8 +157,8 @@ const Dashboard = () => {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-              <Globe className="h-5 w-5 text-accent" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">
