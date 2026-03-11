@@ -20,11 +20,10 @@ const SURFACE_UNITS = [
   { value: "sqft", label: "ft²" },
 ];
 const ENERGY_CLASSES = ["A", "B", "C", "D", "E", "F", "G"];
-const LISTING_PURPOSES = [
+const LISTING_MODES = [
   { value: "long_term", label: "Location longue durée", icon: "🏠" },
   { value: "seasonal", label: "Location saisonnière", icon: "🌴" },
   { value: "sale", label: "Vente", icon: "💰" },
-  { value: "mixed", label: "Mixte", icon: "🔄" },
 ];
 
 const defaultForm = {
