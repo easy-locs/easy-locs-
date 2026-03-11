@@ -428,14 +428,9 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
-            {locationQuery && <span className="text-muted-foreground font-normal"> in {locationQuery}</span>}
+            {loading ? "Loading..." : locationQuery ? `Results in ${locationQuery}` : "Explore listings"}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-            <Globe className="h-3.5 w-3.5" />
-            {allCountries.length} countries | {allCities.length} cities
-          </div>
         </div>
 
         {/* Grid */}
