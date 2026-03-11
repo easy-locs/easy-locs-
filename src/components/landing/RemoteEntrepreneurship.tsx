@@ -111,7 +111,7 @@ const RemoteEntrepreneurship = () => {
                       {c.city}
                     </div>
                     <div className="text-[10px] leading-snug" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
-                      {c.service}
+                      {t(c.serviceKey) || c.serviceFb}
                     </div>
                   </div>
 
