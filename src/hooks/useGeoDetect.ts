@@ -200,7 +200,11 @@ export function useGeoDetect() {
 
   /** Force re-detection (clears cache) */
   const redetect = useCallback(async () => {
-    localStorage.removeItem(CACHE_KEY);
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch {
+      // ignore storage errors
+    }
     setDetection(null);
     setLoading(true);
   }, []);
