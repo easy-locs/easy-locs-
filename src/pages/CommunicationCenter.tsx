@@ -988,25 +988,27 @@ const CommunicationCenter = () => {
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
             <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-accent shrink-0" />
-              Communication Center
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
+                <MessageCircle className="h-4 w-4 text-accent-foreground" />
+              </div>
+              Communication
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Unified inbox — Long-term · Seasonal · Marketplace · Real Estate
+            <p className="text-[11px] text-muted-foreground mt-0.5 ml-10">
+              Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
-              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8" },
-              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8" },
-              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8" },
-              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8" },
+              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8", ringColor: "ring-accent/20" },
+              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8", ringColor: "ring-blue-500/20" },
+              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8", ringColor: "ring-destructive/20" },
+              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8", ringColor: "ring-amber-500/20" },
             ].map(s => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105`}
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105 ring-1 ${s.ringColor}`}
               >
                 <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                 <span className="font-bold text-foreground tabular-nums">{s.value}</span>
@@ -1228,12 +1230,15 @@ const CommunicationCenter = () => {
                 <div className="flex-1 flex min-h-0">
                   {/* Messages */}
                   <div className="flex-1 flex flex-col min-h-0">
-                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-muted/5 to-transparent">
                       {messages.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                           <div className="text-center">
-                            <MessageCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="text-muted-foreground text-sm">No messages yet — start the conversation</p>
+                            <div className="w-14 h-14 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-3">
+                              <MessageCircle className="h-6 w-6 text-muted-foreground/30" />
+                            </div>
+                            <p className="text-muted-foreground text-sm font-medium">Aucun message</p>
+                            <p className="text-muted-foreground/60 text-xs mt-1">Commencez la conversation ci-dessous</p>
                           </div>
                         </div>
                       ) : (
@@ -1369,19 +1374,19 @@ const CommunicationCenter = () => {
 
                     {/* ═══ Quick action bar — booking lifecycle ═══ */}
                     {(selectedThread.type === "booking" || selectedThread.type === "lead") && (
-                      <div className="px-3 py-2.5 border-t border-border/30 bg-muted/20">
+                      <div className="px-3 py-2.5 border-t border-border/30 bg-gradient-to-r from-muted/30 to-transparent">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Actions</span>
                           <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg" onClick={() => setPaymentLinkDialog(true)}>
                             <CreditCard className="h-3.5 w-3.5" /> Payment Link
                           </Button>
                           {selectedThread.bookingStatus === "pending" && (
-                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleBookingAction("confirm")}>
+                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm" onClick={() => handleBookingAction("confirm")}>
                               <CalendarCheck className="h-3.5 w-3.5" /> Confirm
                             </Button>
                           )}
                           {selectedThread.bookingStatus === "confirmed" && (
-                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50" onClick={() => handleBookingAction("complete")}>
+                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30" onClick={() => handleBookingAction("complete")}>
                               <CalendarCheck className="h-3.5 w-3.5" /> Complete
                             </Button>
                           )}
@@ -1435,9 +1440,11 @@ const CommunicationCenter = () => {
 
                   {/* ────── Context panel with Activity Log ────── */}
                   {showContext && (
-                    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden hidden lg:flex">
+                    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden hidden lg:flex bg-muted/5">
                       <div className="p-4 space-y-4 overflow-y-auto flex-shrink-0">
-                        <h3 className="text-sm font-semibold text-foreground">Details</h3>
+                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <User className="h-3.5 w-3.5 text-accent" /> Détails
+                        </h3>
 
                         {/* Contact info */}
                         <div className="space-y-2">
@@ -1562,24 +1569,24 @@ const CommunicationCenter = () => {
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md px-4">
-                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-5">
-                    <MessageCircle className="h-8 w-8 text-accent" />
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-accent/20 via-accent/10 to-transparent flex items-center justify-center mx-auto mb-6 ring-1 ring-accent/10">
+                    <MessageCircle className="h-9 w-9 text-accent" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Communication Center</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    All your conversations unified — tenants, guests, clients, and leads in one place.
+                  <h3 className="text-xl font-bold text-foreground mb-2">Sélectionnez une conversation</h3>
+                  <p className="text-sm text-muted-foreground mb-8">
+                    Toutes vos conversations centralisées — locataires, voyageurs, clients et prospects.
                   </p>
                   <div className="grid grid-cols-2 gap-3 text-left">
                     {[
-                      { emoji: "🏠", label: "Long-term", desc: "Landlord ↔ Tenant" },
-                      { emoji: "🏖️", label: "Seasonal", desc: "Host ↔ Guest" },
-                      { emoji: "🛍️", label: "Marketplace", desc: "Provider ↔ Client" },
-                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Lead" },
+                      { emoji: "🏠", label: "Long-term", desc: "Bailleur ↔ Locataire", color: "from-primary/10 to-primary/5 border-primary/15" },
+                      { emoji: "🏖️", label: "Seasonal", desc: "Hôte ↔ Voyageur", color: "from-sky-500/10 to-sky-500/5 border-sky-500/15" },
+                      { emoji: "🛍️", label: "Marketplace", desc: "Prestataire ↔ Client", color: "from-violet-500/10 to-violet-500/5 border-violet-500/15" },
+                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Prospect", color: "from-emerald-500/10 to-emerald-500/5 border-emerald-500/15" },
                     ].map(p => (
-                      <div key={p.label} className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
-                        <span className="text-sm">{p.emoji}</span>
-                        <p className="text-xs font-semibold text-foreground mt-1">{p.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{p.desc}</p>
+                      <div key={p.label} className={`px-3.5 py-3 rounded-xl bg-gradient-to-br ${p.color} border`}>
+                        <span className="text-lg">{p.emoji}</span>
+                        <p className="text-xs font-bold text-foreground mt-1.5">{p.label}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{p.desc}</p>
                       </div>
                     ))}
                   </div>
