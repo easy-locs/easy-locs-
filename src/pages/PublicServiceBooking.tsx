@@ -559,7 +559,7 @@ const PublicServiceBooking = () => {
                   {isRangeMode && rangeDays > 0 && (
                     <div className="mt-3 p-3 bg-accent/5 rounded-xl text-center">
                       <p className="text-sm text-foreground font-medium">
-                        {rangeDays} {rangeDays === 1 ? "day" : "days"} × {fmtPrice(service.price, service.currency)} = <strong className="text-accent">{fmtPrice(totalPrice, service.currency)}</strong>
+                        {rangeDays} {rangeDays === 1 ? (t("mp.day") || "day") : (t("mp.days") || "days")} × {fmtPrice(service.price, service.currency)} = <strong className="text-accent">{fmtPrice(totalPrice, service.currency)}</strong>
                       </p>
                     </div>
                   )}
