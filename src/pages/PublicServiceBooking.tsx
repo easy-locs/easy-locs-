@@ -715,7 +715,7 @@ const PublicServiceBooking = () => {
                   <Separator />
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Service</span>
+                      <span className="text-muted-foreground">{t("mp.service") || "Service"}</span>
                       <span className="text-foreground font-medium truncate ml-2">{service.title}</span>
                     </div>
 
