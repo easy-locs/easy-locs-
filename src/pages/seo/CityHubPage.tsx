@@ -13,7 +13,7 @@ import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableC
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye } from "lucide-react";
+import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye, Search } from "lucide-react";
 
 type CitySubPage = "overview" | "services" | "activities" | "concierge";
 
