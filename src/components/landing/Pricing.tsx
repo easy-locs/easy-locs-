@@ -266,7 +266,7 @@ const Pricing = () => {
                       >
                         {price === 0 ? "0" : price}€
                       </motion.span>
-                      <span className="text-muted-foreground text-sm">/{isFree ? "forever" : intLabel}</span>
+                      <span className="text-muted-foreground text-sm">/{isFree ? (t("pricing.forever") || "forever") : intLabel}</span>
                     </div>
                     {interval === "annual" && tier.monthly > 0 && (
                       <p className="text-[11px] text-success font-semibold mt-1 flex items-center gap-1">
