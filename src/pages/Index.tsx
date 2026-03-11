@@ -1,27 +1,28 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, memo } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import SocialProofStrip from "@/components/landing/SocialProofStrip";
-import BrowseByCountry from "@/components/landing/BrowseByCountry";
-import PopularCities from "@/components/landing/PopularCities";
-import ServiceCategories from "@/components/landing/ServiceCategories";
-import HowItWorks from "@/components/landing/HowItWorks";
-import Pricing from "@/components/landing/Pricing";
-import LandingFAQ from "@/components/landing/LandingFAQ";
-import Newsletter from "@/components/landing/Newsletter";
-import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
-import ExplorePreview from "@/components/landing/ExplorePreview";
 import { Loader2 } from "lucide-react";
 
+// Lazy load all below-the-fold sections
+const SocialProofStrip = lazy(() => import("@/components/landing/SocialProofStrip"));
+const ExplorePreview = lazy(() => import("@/components/landing/ExplorePreview"));
+const BrowseByCountry = lazy(() => import("@/components/landing/BrowseByCountry"));
+const PopularCities = lazy(() => import("@/components/landing/PopularCities"));
+const ServiceCategories = lazy(() => import("@/components/landing/ServiceCategories"));
+const HowItWorks = lazy(() => import("@/components/landing/HowItWorks"));
+const Pricing = lazy(() => import("@/components/landing/Pricing"));
+const LandingFAQ = lazy(() => import("@/components/landing/LandingFAQ"));
+const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
+const Footer = lazy(() => import("@/components/landing/Footer"));
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
 const ValueProposition = lazy(() => import("@/components/landing/ValueProposition"));
 
-const SectionLoader = () => (
+const SectionLoader = memo(() => (
   <div className="flex items-center justify-center py-16">
     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
   </div>
-);
+));
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -141,34 +142,50 @@ const Index = () => {
       />
       <Navbar />
       <Hero />
-      <SocialProofStrip />
 
-      {/* Live inventory preview — first impression */}
-      <ExplorePreview />
+      {/* Below-the-fold — all lazy loaded */}
+      <Suspense fallback={null}>
+        <SocialProofStrip />
+      </Suspense>
 
-      {/* Discovery sections */}
-      <BrowseByCountry />
-      <PopularCities />
-      <ServiceCategories />
+      <Suspense fallback={<SectionLoader />}>
+        <ExplorePreview />
+      </Suspense>
 
-      {/* How it works */}
-      <HowItWorks />
+      <Suspense fallback={<SectionLoader />}>
+        <BrowseByCountry />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <PopularCities />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <ServiceCategories />
+      </Suspense>
 
-      {/* Trust */}
+      <Suspense fallback={<SectionLoader />}>
+        <HowItWorks />
+      </Suspense>
+
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
 
-      {/* Value proposition — replaces empty bottom area */}
       <Suspense fallback={<SectionLoader />}>
         <ValueProposition />
       </Suspense>
 
-      {/* Pricing & FAQ */}
-      <Pricing />
-      <LandingFAQ />
-      <Newsletter />
-      <Footer />
+      <Suspense fallback={<SectionLoader />}>
+        <Pricing />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <LandingFAQ />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <Newsletter />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };

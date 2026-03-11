@@ -1,11 +1,13 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, ArrowRight, Eye, Users, Moon, CheckCircle, Bed, Bath, Maximize } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 import { useI18n } from "@/lib/i18n";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
-export function ExploreListingCard({ item }: { item: any }) {
+export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
   const { t } = useI18n();
   const type = item._type as string;
 
@@ -48,7 +50,7 @@ export function ExploreListingCard({ item }: { item: any }) {
       <div className="h-full rounded-2xl overflow-hidden bg-card border border-border hover:shadow-xl hover:border-accent/30 transition-all duration-300">
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <img src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+          <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" width={400} />
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
@@ -134,4 +136,4 @@ export function ExploreListingCard({ item }: { item: any }) {
       </div>
     </Link>
   );
-}
+});
