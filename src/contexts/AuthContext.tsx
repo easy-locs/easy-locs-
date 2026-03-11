@@ -207,12 +207,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const switchRole = useCallback((role: ActiveRole) => {
     setActiveRole(role);
-    if (user) localStorage.setItem(`easylocs_active_role_${user.id}`, role);
+    if (user) {
+      try {
+        localStorage.setItem(`easylocs_active_role_${user.id}`, role);
+      } catch {
+        // ignore storage errors
+      }
+    }
   }, [user]);
 
   const switchOrg = useCallback((newOrgId: string) => {
     setOrgId(newOrgId);
-    if (user) localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
+    if (user) {
+      try {
+        localStorage.setItem(`easylocs_active_org_${user.id}`, newOrgId);
+      } catch {
+        // ignore storage errors
+      }
+    }
   }, [user]);
 
   const { subscription, refreshSubscription, resetSubscription, setSubscription } = useSubscriptionLoader(session, user?.id);

@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
 
 const CHUNK_RELOAD_KEY = "easylocs_chunk_reload_once";
@@ -15,6 +14,67 @@ const safeReloadOnce = () => {
     sessionStorage.removeItem(CHUNK_RELOAD_KEY);
   } catch {
     window.location.reload();
+  }
+};
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+const root = createRoot(rootElement);
+
+const BootScreen = ({
+  title,
+  description,
+  showRetry = false,
+}: {
+  title: string;
+  description?: string;
+  showRetry?: boolean;
+}) => (
+  <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
+    <div className="w-full max-w-md text-center space-y-4">
+      <div className="mx-auto h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+      <div className="space-y-2">
+        <h1 className="text-lg font-semibold">{title}</h1>
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+      </div>
+      {showRetry ? (
+        <button
+          type="button"
+          onClick={safeReloadOnce}
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Reload app
+        </button>
+      ) : null}
+    </div>
+  </div>
+);
+
+const bootApp = async () => {
+  root.render(<BootScreen title="Loading Easy-Locs…" description="Starting the application safely." />);
+
+  try {
+    const { default: App } = await import("./App.tsx");
+    root.render(<App />);
+  } catch (error) {
+    console.error("[boot] App failed to start:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "A startup error prevented the application from rendering.";
+
+    root.render(
+      <BootScreen
+        title="Easy-Locs failed to start"
+        description={message}
+        showRetry
+      />,
+    );
   }
 };
 
@@ -41,7 +101,7 @@ if (typeof window !== "undefined") {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+void bootApp();
 
 const runDeferredInit = () => {
   import("./lib/analytics").then(({ initAnalytics }) => initAnalytics());
@@ -54,4 +114,5 @@ if (typeof window !== "undefined" && typeof window.requestIdleCallback === "func
 } else {
   setTimeout(runDeferredInit, 2000);
 }
+
 
