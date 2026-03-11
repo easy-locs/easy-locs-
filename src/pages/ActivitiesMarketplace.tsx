@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,6 +104,15 @@ const ActivitiesMarketplace = () => {
         .order("created_at", { ascending: false });
       return (data || []);
     },
+    enabled: !!orgId,
+  });
+
+  // Realtime: live updates for marketplace bookings
+  useRealtimeSubscription({
+    table: "marketplace_bookings",
+    channelName: `marketplace-bookings-rt-${orgId}`,
+    filter: orgId ? `org_id=eq.${orgId}` : undefined,
+    queryKeys: [["my_marketplace_bookings", orgId]],
     enabled: !!orgId,
   });
 
