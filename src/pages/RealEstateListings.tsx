@@ -116,7 +116,7 @@ const emptyForm = {
 };
 
 export default function RealEstateListings() {
-  const { orgId, user } = useAuth();
+  const { orgId, user, subscription } = useAuth();
   const { ensureOrg } = useEnsureOrg();
   const activeCountry = useCountryFilter();
   const { toast } = useToast();
