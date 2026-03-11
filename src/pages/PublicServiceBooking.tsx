@@ -678,7 +678,7 @@ const PublicServiceBooking = () => {
 
                   {paymentMethod === "bank_transfer" && Object.keys(bankDetails).length > 0 && (
                     <div className="bg-muted/30 rounded-xl p-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-foreground">Bank Details</h4>
+                      <h4 className="text-sm font-semibold text-foreground">{t("mp.bank_details") || "Bank Details"}</h4>
                       {bankDetails.bank_name && <p className="text-sm text-muted-foreground">Bank: {bankDetails.bank_name}</p>}
                       {bankDetails.iban && <p className="text-sm text-muted-foreground font-mono">IBAN: {bankDetails.iban}</p>}
                       {bankDetails.swift && <p className="text-sm text-muted-foreground font-mono">SWIFT: {bankDetails.swift}</p>}
