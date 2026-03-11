@@ -84,9 +84,11 @@ const Candidates = () => {
             <h1>{t("page.candidates.title")}</h1>
             <p>{t("page.candidates.subtitle")}</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="btn-primary shrink-0">
-            <Plus className="h-4 w-4" /> {t("page.candidates.add")}
-          </button>
+          <PermissionGate permission="leads:write">
+            <button onClick={() => setShowForm(true)} className="btn-primary shrink-0">
+              <Plus className="h-4 w-4" /> {t("page.candidates.add")}
+            </button>
+          </PermissionGate>
         </div>
 
         {/* Stats */}
