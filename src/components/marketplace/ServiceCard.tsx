@@ -21,13 +21,14 @@ interface Props {
 }
 
 export default function ServiceCard({ service, provider, onBook, onEdit, showActions, showCalendar }: Props) {
+  const { t } = useI18n();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
   const cat = getCategoryInfo(service.category);
   const photos = (service.photo_urls || []) as string[];
   const priceLabel = service.price_type === "quote"
-    ? "On quote"
-    : `${Number(service.price).toLocaleString()} ${service.currency}${service.price_type === "hourly" ? "/h" : service.price_type === "daily" ? "/day" : ""}`;
+    ? t("mp.on_quote") || "On quote"
+    : `${Number(service.price).toLocaleString()} ${service.currency}${service.price_type === "hourly" ? "/h" : service.price_type === "daily" ? `/${t("mp.day") || "day"}` : ""}`;
 
   const slug = service.booking_slug;
   const links = slug ? getShareLinks("service", slug, service.title, service.updated_at) : null;
