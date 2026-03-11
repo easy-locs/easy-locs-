@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -14,9 +14,10 @@ import {
   Users, Moon, SlidersHorizontal, X, Building2, Waves, Car, Sparkles,
   Heart, Star, ChevronDown, Filter, Loader2, CalendarDays,
   Wrench, Utensils, Dumbbell, Scale, Laptop, PartyPopper, Palmtree,
-  Plane, Scissors, ShoppingBag,
+  Plane, Scissors, ShoppingBag, Navigation, LocateFixed,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -73,6 +74,7 @@ const PLACEHOLDER_IMG = "/placeholder.svg";
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const ITEMS_PER_PAGE = 24;
+  const geo = useGeoDetect();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -80,6 +82,8 @@ export default function Explore() {
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const locationRef = useRef<HTMLDivElement>(null);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
