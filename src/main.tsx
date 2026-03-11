@@ -43,12 +43,15 @@ if (typeof window !== "undefined") {
 
 createRoot(document.getElementById("root")!).render(<App />);
 
+const runDeferredInit = () => {
+  import("./lib/analytics").then(({ initAnalytics }) => initAnalytics());
+  import("./lib/monitoring").then(({ initMonitoring }) => initMonitoring());
+};
+
 // Defer non-critical init to after first paint
-requestIdleCallback?.(() => {
-  import("./lib/analytics").then(({ initAnalytics }) => initAnalytics());
-  import("./lib/monitoring").then(({ initMonitoring }) => initMonitoring());
-}) ?? setTimeout(() => {
-  import("./lib/analytics").then(({ initAnalytics }) => initAnalytics());
-  import("./lib/monitoring").then(({ initMonitoring }) => initMonitoring());
-}, 2000);
+if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+  window.requestIdleCallback(runDeferredInit);
+} else {
+  setTimeout(runDeferredInit, 2000);
+}
 
