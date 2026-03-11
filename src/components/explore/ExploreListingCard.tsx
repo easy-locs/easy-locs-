@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, ArrowRight, Eye, Users, Moon, CheckCircle } from "lucide-react";
+import { MapPin, ArrowRight, Eye, Users, Moon, CheckCircle, Bed, Bath, Maximize } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
@@ -26,10 +26,10 @@ export function ExploreListingCard({ item }: { item: any }) {
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
   const typeBadge = type === "seasonal"
-    ? { label: "Vacation Rental", color: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20" }
+    ? { label: "Vacation Rental", color: "bg-warning/10 text-warning border-warning/20" }
     : type === "real-estate"
-    ? { label: item.listing_type === "sale" ? "For Sale" : "Long-term Rent", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" }
-    : { label: subInfo?.label || item.category?.replace(/_/g, " ") || "Service", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" };
+    ? { label: item.listing_type === "sale" ? "For Sale" : "Long-term Rent", color: "bg-info/10 text-info border-info/20" }
+    : { label: subInfo?.label || item.category?.replace(/_/g, " ") || "Service", color: "bg-success/10 text-success border-success/20" };
 
   const isVerified = type === "service" && Array.isArray(item.badges) && item.badges.includes("verified");
   const ctaLabel = type === "service" ? "Book now" : type === "real-estate" ? "View property" : "View & book";
@@ -40,6 +40,10 @@ export function ExploreListingCard({ item }: { item: any }) {
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <img src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+          
+          {/* Gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
           <div className="absolute top-3 left-3 flex items-center gap-1.5">
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-sm ${typeBadge.color}`}>
               {subInfo?.emoji && <span>{subInfo.emoji}</span>}
@@ -57,6 +61,13 @@ export function ExploreListingCard({ item }: { item: any }) {
           {type === "real-estate" && item.views_count > 0 && (
             <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground flex items-center gap-1">
               <Eye className="h-3 w-3" /> {item.views_count}
+            </div>
+          )}
+
+          {/* Photo count indicator */}
+          {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
+            <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground font-medium">
+              1/{item.photo_urls.length}
             </div>
           )}
         </div>
@@ -83,10 +94,19 @@ export function ExploreListingCard({ item }: { item: any }) {
             </div>
           )}
           {type === "real-estate" && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-              {item.surface_sqm > 0 && <span>{item.surface_sqm} m²</span>}
-              {item.rooms > 0 && <span>• {item.rooms} rooms</span>}
-              {item.bedrooms > 0 && <span>• {item.bedrooms} bed</span>}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+              {item.surface_sqm > 0 && (
+                <span className="flex items-center gap-1"><Maximize className="h-3 w-3" /> {item.surface_sqm} m²</span>
+              )}
+              {item.rooms > 0 && (
+                <span>{item.rooms} rooms</span>
+              )}
+              {item.bedrooms > 0 && (
+                <span className="flex items-center gap-1"><Bed className="h-3 w-3" /> {item.bedrooms}</span>
+              )}
+              {item.bathrooms > 0 && (
+                <span className="flex items-center gap-1"><Bath className="h-3 w-3" /> {item.bathrooms}</span>
+              )}
             </div>
           )}
           <div className="pt-2 mt-auto">
