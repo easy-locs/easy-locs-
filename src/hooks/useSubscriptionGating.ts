@@ -8,21 +8,18 @@ import { useAuth } from "@/contexts/AuthContext";
  * - Receiving messages & communication (messages, communication)
  * - Marketplace storefront & catalog
  *
- * PRO features (subscription required):
+ * PRO features (any paid plan: solo/team/company):
  * - Rental management, finances, documents, leases, interventions, calendar, etc.
  */
 
 const FREE_FEATURES = new Set([
-  // Listings & publishing (unlimited)
   "real_estate",
   "marketplace",
   "concierge",
   "seasonal_listings",
   "activities",
-  // Communication (receive messages, emails, WhatsApp, Telegram)
   "messages",
   "communication",
-  // Storefront & catalog
   "storefront",
   "catalog",
 ]);
@@ -32,6 +29,7 @@ export function useSubscriptionGating() {
 
   const isSubscribed = subscription.subscribed;
   const isLoading = subscription.loading;
+  const currentTier = subscription.plan || "free";
 
   const canAccess = (feature: string): boolean => {
     if (isLoading) return true;
@@ -39,14 +37,12 @@ export function useSubscriptionGating() {
     return isSubscribed;
   };
 
-  const requiresUpgrade = (feature: string): "unlimited" | null => {
+  const requiresUpgrade = (feature: string): string | null => {
     if (isLoading) return null;
     if (FREE_FEATURES.has(feature)) return null;
     if (isSubscribed) return null;
-    return "unlimited";
+    return "solo";
   };
-
-  const currentTier = isSubscribed ? "global" : "free" as string;
 
   return {
     currentTier,
