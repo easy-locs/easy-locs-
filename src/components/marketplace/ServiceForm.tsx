@@ -125,6 +125,7 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
               photos={form.photo_urls || []}
               onChange={(urls) => update("photo_urls", urls)}
               orgId={orgId}
+              allowVideo={allowVideo}
             />
           )}
 
