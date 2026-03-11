@@ -36,6 +36,20 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
     if (!reviewerName.trim()) { toast.error("Please enter your name"); return; }
 
     setSubmitting(true);
+
+    // Check if already reviewed (client-side guard + DB unique constraint)
+    const { data: existing } = await supabase
+      .from("marketplace_reviews")
+      .select("id")
+      .eq("booking_id", booking.id)
+      .maybeSingle();
+
+    if (existing) {
+      toast.error("You have already reviewed this booking");
+      setSubmitting(false);
+      return;
+    }
+
     const { error } = await supabase.from("marketplace_reviews").insert({
       provider_id: booking.provider_id,
       service_id: booking.service_id,
@@ -46,10 +60,15 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
       rating,
       comment: comment.trim(),
       status: "published",
+      verified: true, // linked to a real completed booking
     });
 
     if (error) {
-      toast.error(error.message);
+      if (error.code === "23505") {
+        toast.error("You have already reviewed this booking");
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success("Thank you for your review!");
       onOpenChange(false);
