@@ -55,12 +55,16 @@ const Dashboard = () => {
   useEffect(() => {
     if (!orgId) { setLoading(false); return; }
 
+    // Timeout to prevent infinite loading
+    const timeout = setTimeout(() => setLoading(false), 8000);
+
     Promise.all([
       supabase.from("properties").select("id, country").eq("org_id", orgId),
       supabase.from("tenants").select("id, property_id, lease_end").eq("org_id", orgId),
       supabase.from("rent_calls").select("month, paid, total_amount").eq("org_id", orgId),
     ])
       .then(([props, tenantsRes, rc]) => {
+        clearTimeout(timeout);
         const propData = (props.data || []) as { id: string; country: string }[];
         const tenantsList = (tenantsRes.data || []) as { id: string; property_id: string | null; lease_end: string | null }[];
 
@@ -107,9 +111,12 @@ const Dashboard = () => {
         setLoading(false);
       })
       .catch((err) => {
+        clearTimeout(timeout);
         console.error("[Dashboard] data fetch error:", err);
         setLoading(false);
       });
+
+    return () => clearTimeout(timeout);
   }, [orgId]);
 
   const kpis = [
