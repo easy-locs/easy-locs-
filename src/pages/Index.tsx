@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import ExplorePreview from "@/components/landing/ExplorePreview";
 
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
+const WorldMapSection = lazy(() => import("@/components/landing/WorldMapSection"));
 
 const SectionLoader = () => (
   <div className="flex items-center justify-center py-16">
@@ -148,6 +149,9 @@ const Index = () => {
       <RemoteEntrepreneurship />
       <Features />
       <ExplorePreview />
+      <Suspense fallback={<SectionLoader />}>
+        <WorldMapSection />
+      </Suspense>
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
