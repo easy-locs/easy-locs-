@@ -107,6 +107,15 @@ const ActivitiesMarketplace = () => {
     enabled: !!orgId,
   });
 
+  // Realtime: live updates for marketplace bookings
+  useRealtimeSubscription({
+    table: "marketplace_bookings",
+    channelName: `marketplace-bookings-rt-${orgId}`,
+    filter: orgId ? `org_id=eq.${orgId}` : undefined,
+    queryKeys: [["my_marketplace_bookings", orgId]],
+    enabled: !!orgId,
+  });
+
   // --- Centralized Booking Lifecycle ---
   const lifecycle = useBookingLifecycle({
     provider: myProvider,
