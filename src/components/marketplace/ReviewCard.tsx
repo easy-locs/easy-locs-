@@ -67,7 +67,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
 
       {/* Provider reply */}
       {review.response && (
-        <div className="ml-4 pl-3 border-l-2 border-accent/30 space-y-1">
+        <div className="ms-4 ps-3 border-s-2 border-accent/30 space-y-1">
           <div className="flex items-center gap-1.5">
             <Reply className="h-3 w-3 text-accent" />
             <span className="text-xs font-semibold text-accent">{t("mp.provider_reply") || "Provider reply"}</span>

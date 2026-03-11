@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Mail, MapPin, Users, Clock, Upload } from "lucide-react";
 import PaymentMethodSelector, { type PaymentMethod } from "./PaymentMethodSelector";
+import MarketplaceDisclaimer from "./MarketplaceDisclaimer";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -122,7 +123,6 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
   const timeSlots = Array.isArray(service?.time_slots) ? service.time_slots : [];
   const blockedDates2 = Array.isArray(service?.blocked_dates) ? service.blocked_dates : [];
 
-  // ── Range selection handler (Airbnb-style) ──
   const handleRangeSelect = (from: Date, to: Date) => {
     setForm(f => ({
       ...f,
@@ -132,7 +132,6 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     }));
   };
 
-  // ── Single date selection handler ──
   const handleSingleSelect = (dateVal: Date, time: string) => {
     setForm(f => ({
       ...f,
@@ -149,7 +148,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[85vh] p-0 overflow-hidden flex flex-col">
         <DialogHeader className="px-4 pt-4 pb-2 shrink-0 border-b border-border">
-          <DialogTitle className="text-base truncate">Book: {service?.title}</DialogTitle>
+          <DialogTitle className="text-base truncate">{t("mp.book") || "Book"}: {service?.title}</DialogTitle>
         </DialogHeader>
 
         {service && (
@@ -166,7 +165,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 </span>
                 {config.priceUnit && <span className="text-xs text-muted-foreground">{config.priceUnit}</span>}
                 {service.duration_minutes && config.showDuration && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-0.5 ml-auto">
+                  <span className="text-xs text-muted-foreground flex items-center gap-0.5 ms-auto">
                     <Clock className="h-3 w-3" /> {service.duration_minutes} min
                   </span>
                 )}
@@ -176,21 +175,21 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             {/* Contact info */}
             <div className="space-y-2">
               <div>
-                <Label className="text-xs">Your Name *</Label>
+                <Label className="text-xs">{t("mp.full_name") || "Full Name"} *</Label>
                 <Input className="h-9 text-sm" value={form.booker_name} onChange={(e) => update("booker_name", e.target.value)} />
               </div>
               <div>
-                <Label className="text-xs">Email *</Label>
+                <Label className="text-xs">{t("mp.your_email") || "Email"} *</Label>
                 <Input className="h-9 text-sm" type="email" value={form.booker_email} onChange={(e) => update("booker_email", e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs">Phone</Label>
+                  <Label className="text-xs">{t("mp.your_phone") || "Phone"}</Label>
                   <Input className="h-9 text-sm" value={form.booker_phone} onChange={(e) => update("booker_phone", e.target.value)} />
                 </div>
                 {config.showQuantity && (
                   <div>
-                    <Label className="text-xs">{config.quantityLabel}</Label>
+                    <Label className="text-xs">{t("mp.quantity") || config.quantityLabel || "Quantity"}</Label>
                     <Input className="h-9 text-sm" type="number" min={1} value={form.quantity || ""} onChange={(e) => update("quantity", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
                   </div>
                 )}
@@ -201,9 +200,9 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             {needsDoc && (
               <div className="bg-muted/30 rounded-lg p-3 space-y-2">
                 <Label className="text-xs font-medium flex items-center gap-1.5">
-                  <Upload className="h-3 w-3" /> 🪪 ID Document Required *
+                  <Upload className="h-3 w-3" /> 🪪 {t("mp.id_document_required") || "ID Document Required"} *
                 </Label>
-                <p className="text-[11px] text-muted-foreground">This service requires a copy of your identity document (passport, ID card, or driver's license).</p>
+                <p className="text-[11px] text-muted-foreground">{t("mp.id_document_desc") || "This service requires a copy of your identity document (passport, ID card, or driver's license)."}</p>
                 <Input
                   type="file"
                   accept="image/*,.pdf"
@@ -211,7 +210,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    if (file.size > 10 * 1024 * 1024) { toast.error("File too large (max 10MB)"); return; }
+                    if (file.size > 10 * 1024 * 1024) { toast.error(t("mp.file_too_large") || "File too large (max 10MB)"); return; }
                     setIdDocUploading(true);
                     try {
                       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
@@ -219,19 +218,19 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                       const { error } = await supabase.storage.from("booking-documents").upload(path, file, { upsert: true });
                       if (error) { toast.error("Upload failed: " + error.message); return; }
                       setIdDocUrl(path);
-                      toast.success("ID document uploaded");
+                      toast.success(t("mp.document_uploaded") || "ID document uploaded");
                     } finally { setIdDocUploading(false); }
                   }}
                 />
-                {idDocUploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
-                {idDocUrl && !idDocUploading && <p className="text-xs text-accent">✓ Document uploaded</p>}
+                {idDocUploading && <p className="text-xs text-muted-foreground">{t("mp.uploading") || "Uploading..."}</p>}
+                {idDocUrl && !idDocUploading && <p className="text-xs text-accent">✓ {t("mp.document_uploaded") || "Document uploaded"}</p>}
               </div>
             )}
 
             {/* Passengers */}
             {config.showPassengers && (
               <div>
-                <Label className="text-xs flex items-center gap-1"><Users className="h-3 w-3" /> Passengers</Label>
+                <Label className="text-xs flex items-center gap-1"><Users className="h-3 w-3" /> {t("mp.passengers") || "Passengers"}</Label>
                 <Input className="h-9 text-sm" type="number" min={1} value={form.passengers || ""} onChange={(e) => update("passengers", e.target.value === "" ? 0 : Number(e.target.value))} placeholder="1" />
               </div>
             )}
@@ -240,33 +239,33 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             {config.showLocations && (
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Pickup Location</Label>
-                  <Input className="h-9 text-sm" value={form.pickup_location} onChange={(e) => update("pickup_location", e.target.value)} placeholder="Airport, hotel..." />
+                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> {t("mp.pickup_location") || "Pickup Location"}</Label>
+                  <Input className="h-9 text-sm" value={form.pickup_location} onChange={(e) => update("pickup_location", e.target.value)} placeholder={t("mp.pickup_placeholder") || "Airport, hotel..."} />
                 </div>
                 <div>
-                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Drop-off Location</Label>
-                  <Input className="h-9 text-sm" value={form.dropoff_location} onChange={(e) => update("dropoff_location", e.target.value)} placeholder="Destination..." />
+                  <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> {t("mp.dropoff_location") || "Drop-off Location"}</Label>
+                  <Input className="h-9 text-sm" value={form.dropoff_location} onChange={(e) => update("dropoff_location", e.target.value)} placeholder={t("mp.dropoff_placeholder") || "Destination..."} />
                 </div>
               </div>
             )}
 
-            {/* Time pickers (for range categories that need time, e.g. car rental) */}
+            {/* Time pickers */}
             {isRange && config.showTime && (
               <div className={`grid gap-2 ${config.showReturnTime ? "grid-cols-1 sm:grid-cols-2" : ""}`}>
                 <div>
-                  <Label className="text-xs">Pickup Time</Label>
+                  <Label className="text-xs">{t("mp.pickup_time") || "Pickup Time"}</Label>
                   <Input className="h-9 text-sm" type="time" value={form.service_time} onChange={(e) => update("service_time", e.target.value)} />
                 </div>
                 {config.showReturnTime && (
                   <div>
-                    <Label className="text-xs">Return Time</Label>
+                    <Label className="text-xs">{t("mp.return_time") || "Return Time"}</Label>
                     <Input className="h-9 text-sm" type="time" value={form.return_time} onChange={(e) => update("return_time", e.target.value)} />
                   </div>
                 )}
               </div>
             )}
 
-            {/* Calendar — adapts to category */}
+            {/* Calendar */}
             <div className="border border-border rounded-lg p-2 overflow-hidden">
               <div className="flex justify-center [&_.rdp]:text-xs [&_.rdp-day]:h-8 [&_.rdp-day]:w-8 [&_.rdp-head_cell]:text-xs [&_.rdp-caption]:text-sm [&_.rdp-table]:w-full [&_.rdp]:max-w-full">
                 <ServiceBookingCalendar
@@ -301,7 +300,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
                     {isRange
-                      ? `${days} ${config.priceUnit === "/night" ? "night" : "day"}${days > 1 ? "s" : ""} × ${Number(service.price).toLocaleString()} ${service.currency}`
+                      ? `${days} ${config.priceUnit === "/night" ? (t("mp.nights") || "night(s)") : (t("mp.days") || "day(s)")} × ${Number(service.price).toLocaleString()} ${service.currency}`
                       : `${form.quantity || 1} × ${Number(service.price).toLocaleString()} ${service.currency}`
                     }
                   </span>
@@ -335,6 +334,9 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 💵 {t("mp.cash_note") || "Payment in cash upon arrival or at the time of service."}
               </p>
             )}
+
+            {/* Legal disclaimer */}
+            <MarketplaceDisclaimer compact />
           </div>
         )}
 
