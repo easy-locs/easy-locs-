@@ -161,8 +161,8 @@ const ClientBookings = () => {
                   )}
                   {b.type === "marketplace" && reviewedBookingIds.has(b.id) && (
                     <Badge variant="secondary" className="text-[10px] h-5 gap-1 bg-success/10 text-success border-success/20">
-                      <Star className="h-2.5 w-2.5 fill-current" /> Reviewed
-                    </Badge>
+                       <Star className="h-2.5 w-2.5 fill-current" /> {t("mp.reviewed") || "Reviewed"}
+                     </Badge>
                   )}
                 </div>
               )}
