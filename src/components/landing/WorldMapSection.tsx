@@ -89,7 +89,7 @@ const WorldMapSection = () => {
                   </div>
                 }
               >
-                <GlobeCanvas onError={() => setGlobeFailed(true)} />
+                <GlobeCanvas />
               </Suspense>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
