@@ -65,7 +65,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const FREE_NAV_SECTIONS = new Set(["dashboard", "sales", "marketplace", "seasonal", "communication", "settings"]);
 
   const navSections: NavSection[] = [
-    // 1. Dashboard — global overview
+    // 1. Dashboard — single entry point
     {
       key: "dashboard",
       title: "Dashboard",
@@ -75,10 +75,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 2. Long-term — country-scoped
+    // 2. Properties — all property management (long-term)
     {
-      key: "long_term",
-      title: t("section.long_term") || "Long-term",
+      key: "properties",
+      title: t("nav.properties") || "Properties",
       icon: Home,
       items: [
         { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
@@ -90,48 +90,39 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 3. Seasonal Rentals
+    // 3. Listings — seasonal + sales
     {
-      key: "seasonal",
-      title: t("nav.seasonal") || "Seasonal Rentals",
-      icon: Calendar,
-      items: [
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
-      ],
-    },
-
-    // 4. Sales / Listings
-    {
-      key: "sales",
-      title: t("nav.real_estate_listings") || "Sales / Listings",
+      key: "listings",
+      title: t("nav.listings") || "Listings",
       icon: Building,
       items: [
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
         { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
       ],
     },
 
-    // 5. Marketplace — services & concierge
+    // 4. Marketplace — services & concierge
     {
       key: "marketplace",
       title: "Marketplace",
       icon: Store,
       items: [
-        { icon: Store, label: t("nav.marketplace") || "Services Marketplace", path: "/dashboard/activities" },
+        { icon: Store, label: t("nav.marketplace") || "Services", path: "/dashboard/activities" },
         { icon: Zap, label: t("nav.concierge") || "Concierge", path: "/dashboard/concierge" },
       ],
     },
 
-    // 6. Communication — messages only, no payment notices
+    // 5. Messages — single entry
     {
       key: "communication",
-      title: t("section.communication") || "Communication",
+      title: t("nav.messages") || "Messages",
       icon: MessageCircle,
       items: [
         { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
       ],
     },
 
-    // 7. Documents
+    // 6. Documents
     {
       key: "documents",
       title: t("nav.documents") || "Documents",
@@ -142,10 +133,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 8. Finance — country-scoped
+    // 7. Accounting — all finance
     {
-      key: "finance",
-      title: t("section.finance") || "Finance",
+      key: "accounting",
+      title: t("nav.accounting") || "Accounting",
       icon: Wallet,
       items: [
         { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
@@ -155,7 +146,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 9. Settings
+    // 8. Settings
     {
       key: "settings",
       title: t("nav.settings") || "Settings",
