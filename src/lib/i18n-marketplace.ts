@@ -191,7 +191,6 @@ const MP_KEYS_EN: Record<string, string> = {
   "mp.has_been_received": "has been received.",
   "mp.bank_transfer_confirmation": "Please complete the bank transfer using the details provided. Your booking will be confirmed upon receipt.",
   "mp.provider_will_confirm": "The provider will confirm your booking shortly. You'll receive an email notification.",
-  "mp.review_window_expired": "Review period expired",
   // Booking statuses
   "mp.status_new": "New Request",
   "mp.status_pending": "Pending",
