@@ -141,7 +141,7 @@ const Pricing = () => {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-semibold mb-2"
           >
             <Crown className="h-4 w-4" />
-            Zero Commission Platform
+            {t("pricing.badge") || "Zero Commission Platform"}
           </motion.div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
