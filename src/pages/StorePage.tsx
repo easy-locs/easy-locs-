@@ -94,11 +94,15 @@ export default function StorePage() {
     queryKey: ["store-reviews", providerId],
     queryFn: async () => {
       const { data } = await supabase
-        .rpc("get_provider_reviews", { p_provider_id: providerId!, p_limit: 6 });
+        .rpc("get_provider_reviews", { p_provider_id: providerId!, p_limit: 100 });
       return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; verified: boolean; created_at: string }[];
     },
     enabled: !!providerId,
   });
+
+  const verifiedReviewsCount = reviews.filter(r => r.verified).length;
+  const repliedCount = reviews.filter(r => r.response).length;
+  const replyRate = reviewsCount > 0 ? Math.round((repliedCount / reviewsCount) * 100) : 0;
 
   const serviceCities = [...new Set(showcase.services.map((s: any) => s.city).filter(Boolean))] as string[];
 
@@ -159,9 +163,11 @@ export default function StorePage() {
               <TrustMetrics
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedReviewsCount={verifiedReviewsCount}
                 completedJobs={completedJobs}
                 responseRate={responseRate}
                 responseTime={responseTime}
+                replyRate={replyRate}
                 memberSince={memberSince}
                 verifiedSince={verifiedSince}
                 verified={profile.verified}

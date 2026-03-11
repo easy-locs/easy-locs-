@@ -54,16 +54,20 @@ export default function ProviderStorefront() {
   const providerAny = provider as Record<string, any> | null;
   const reviewsCount = Number(providerAny?.reviews_count || 0);
 
-  // Fetch real reviews from DB
+  // Fetch ALL reviews from DB for client-side pagination
   const { data: reviews = [] } = useQuery({
     queryKey: ["provider_reviews", provider?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .rpc("get_provider_reviews", { p_provider_id: provider!.id, p_limit: 6 });
+        .rpc("get_provider_reviews", { p_provider_id: provider!.id, p_limit: 100 });
       return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; verified: boolean; created_at: string }[];
     },
     enabled: !!provider?.id,
   });
+
+  const verifiedReviewsCount = reviews.filter(r => r.verified).length;
+  const repliedCount = reviews.filter(r => r.response).length;
+  const replyRate = reviewsCount > 0 ? Math.round((repliedCount / reviewsCount) * 100) : 0;
 
   const handleBookingSubmit = async (formData: any) => {
     const { error } = await supabase.from("marketplace_bookings").insert({
@@ -207,9 +211,11 @@ export default function ProviderStorefront() {
               <TrustMetrics
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedReviewsCount={verifiedReviewsCount}
                 completedJobs={completedJobs}
                 responseRate={responseRate}
                 responseTime={responseTime}
+                replyRate={replyRate}
                 memberSince={memberSince}
                 verifiedSince={verifiedSince}
                 verified={provider.verified}

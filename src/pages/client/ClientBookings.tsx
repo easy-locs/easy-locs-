@@ -93,7 +93,9 @@ const ClientBookings = () => {
   const filterByType = (type?: string) => type ? bookings.filter(b => b.type === type) : bookings;
 
   const canReview = (b: BookingItem) => {
-    if (b.type !== "marketplace" || b.status !== "completed" || !b.service_id || !b.provider_id) return false;
+    // Only completed marketplace bookings are eligible — cancelled/refunded are not
+    if (b.type !== "marketplace" || !b.service_id || !b.provider_id) return false;
+    if (b.status !== "completed") return false;
     if (reviewedBookingIds.has(b.id)) return false;
     // 30-day window check
     if (b.completed_at) {

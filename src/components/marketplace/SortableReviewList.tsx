@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, ShieldCheck, ChevronDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ReviewCard from "./ReviewCard";
 
 type SortMode = "latest" | "highest" | "lowest" | "replied";
+type FilterMode = "all" | "verified";
 
 interface Review {
   id: string;
@@ -20,14 +22,18 @@ interface Review {
 interface Props {
   reviews: Review[];
   totalCount: number;
-  onLoadMore?: () => void;
+  pageSize?: number;
 }
 
-export default function SortableReviewList({ reviews, totalCount, onLoadMore }: Props) {
+export default function SortableReviewList({ reviews, totalCount, pageSize = 6 }: Props) {
   const { t } = useI18n();
   const [sort, setSort] = useState<SortMode>("latest");
+  const [filter, setFilter] = useState<FilterMode>("all");
+  const [visibleCount, setVisibleCount] = useState(pageSize);
 
-  const sorted = [...reviews].sort((a, b) => {
+  const filtered = filter === "verified" ? reviews.filter((r) => r.verified) : reviews;
+
+  const sorted = [...filtered].sort((a, b) => {
     switch (sort) {
       case "highest":
         return b.rating - a.rating || new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -43,13 +49,30 @@ export default function SortableReviewList({ reviews, totalCount, onLoadMore }: 
     }
   });
 
+  const paginated = sorted.slice(0, visibleCount);
+  const hasMore = visibleCount < sorted.length;
+  const verifiedCount = reviews.filter((r) => r.verified).length;
+
   return (
     <div className="space-y-4">
-      {/* Sort control */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
-          {reviews.length} {t("mp.reviews_of") || "of"} {totalCount} {t("mp.reviews") || "reviews"}
-        </span>
+      {/* Controls */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {filtered.length} {t("mp.reviews_of") || "of"} {totalCount} {t("mp.reviews") || "reviews"}
+          </span>
+          {verifiedCount > 0 && (
+            <Button
+              size="sm"
+              variant={filter === "verified" ? "default" : "outline"}
+              className="h-7 text-xs gap-1"
+              onClick={() => setFilter(filter === "verified" ? "all" : "verified")}
+            >
+              <ShieldCheck className="h-3 w-3" />
+              {t("mp.verified_only") || "Verified only"} ({verifiedCount})
+            </Button>
+          )}
+        </div>
         <Select value={sort} onValueChange={(v) => setSort(v as SortMode)}>
           <SelectTrigger className="w-40 h-8 text-xs">
             <ArrowUpDown className="h-3 w-3 mr-1" />
@@ -65,21 +88,32 @@ export default function SortableReviewList({ reviews, totalCount, onLoadMore }: 
       </div>
 
       {/* Review cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {sorted.map((review) => (
-          <ReviewCard key={review.id} review={review as any} />
-        ))}
-      </div>
+      {paginated.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-6">
+          {filter === "verified"
+            ? (t("mp.no_verified_reviews") || "No verified reviews yet")
+            : (t("mp.no_reviews") || "No reviews yet")}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {paginated.map((review) => (
+            <ReviewCard key={review.id} review={review as any} />
+          ))}
+        </div>
+      )}
 
       {/* Load more */}
-      {totalCount > reviews.length && onLoadMore && (
+      {hasMore && (
         <div className="text-center pt-2">
-          <button
-            onClick={onLoadMore}
-            className="text-xs text-accent hover:underline font-medium"
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs"
+            onClick={() => setVisibleCount((c) => c + pageSize)}
           >
-            {t("mp.view_all_reviews") || "View all"} {totalCount} {t("mp.reviews") || "reviews"}
-          </button>
+            <ChevronDown className="h-3 w-3" />
+            {t("mp.load_more_reviews") || "Show more reviews"} ({sorted.length - visibleCount} {t("mp.remaining") || "remaining"})
+          </Button>
         </div>
       )}
     </div>
