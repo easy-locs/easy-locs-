@@ -322,6 +322,7 @@ export default function Explore() {
               searchQuery={searchQuery}
               locationQuery={locationQuery}
               radiusKm={radiusKm}
+              activeGroup={activeGroup}
               geoCity={geo.detection?.city}
               geoCountry={geo.country}
               geoLat={geo.detection?.lat}
@@ -331,6 +332,7 @@ export default function Explore() {
               onSearchQueryChange={setSearchQuery}
               onLocationQueryChange={setLocationQuery}
               onRadiusKmChange={setRadiusKm}
+              onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
               onSelectLocation={handleSelectLocation}
               onNearMe={handleNearMe}
               onSearch={handleSearch}
