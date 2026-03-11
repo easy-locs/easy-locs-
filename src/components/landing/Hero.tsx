@@ -29,7 +29,7 @@ const Hero = () => {
   return (
     <section
       aria-label="Hero"
-      className="relative min-h-[88vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-16"
+      className="relative min-h-[85vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-14 sm:pt-16"
       style={{ background: "linear-gradient(145deg, hsl(222 50% 6%) 0%, hsl(220 45% 12%) 35%, hsl(222 42% 16%) 65%, hsl(220 38% 10%) 100%)" }}
     >
       {/* ─── Background FX ─── */}
@@ -81,8 +81,8 @@ const Hero = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 py-12 sm:py-28">
-        <div className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-10">
+      <div className="container relative z-10 py-8 sm:py-28 px-4">
+        <div className="max-w-5xl mx-auto text-center space-y-5 sm:space-y-10">
 
           {/* ─── Badge ─── */}
           <motion.div
@@ -116,7 +116,7 @@ const Hero = () => {
             className="space-y-5"
           >
             <h1
-              className="text-[1.6rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
+              className="text-[1.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.15]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
@@ -153,12 +153,12 @@ const Hero = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 px-2 sm:px-0"
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/signup"
-                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-8 sm:px-10 rounded-2xl text-sm font-bold transition-all relative overflow-hidden"
+                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-8 sm:px-10 rounded-2xl text-sm font-bold transition-all relative overflow-hidden w-full sm:w-auto"
                 style={{
                   background: "var(--gradient-gold)",
                   color: "hsl(var(--accent-foreground))",
@@ -176,7 +176,7 @@ const Hero = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/explore"
-                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
+                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md w-full sm:w-auto"
                 style={{
                   borderColor: "hsl(220 15% 75% / 0.15)",
                   color: "hsl(220 15% 85%)",
@@ -255,7 +255,7 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 sm:gap-2 max-w-xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
@@ -265,7 +265,7 @@ const Hero = () => {
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full"
+                    className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full min-h-[44px]"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",
