@@ -509,10 +509,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
           <Link
             to="/dashboard/assistant"
-            className="hidden sm:flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-3 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
+            className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="AI Assistant"
           >
             <BrainCircuit className="h-4 w-4" />
-            <span>{t("dashboard.ai_question")}</span>
           </Link>
         </header>
 
