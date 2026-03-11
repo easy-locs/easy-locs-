@@ -769,7 +769,7 @@ const PublicServiceBooking = () => {
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-foreground">Total</span>
+                    <span className="font-semibold text-foreground">{t("mp.total") || "Total"}</span>
                     <span className="text-2xl font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span>
                   </div>
                 </CardContent>
