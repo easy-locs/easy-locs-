@@ -263,10 +263,10 @@ export default function Explore() {
               <span className="truncate max-w-[140px]">{searchQuery || locationQuery || "Search..."}</span>
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <ThemeSwitcher />
-              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline whitespace-nowrap">Log in</Link>
-              <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0">Sign up</Link>
+              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">Log in</Link>
+              <Link to="/signup" className="text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">Sign up</Link>
             </div>
           </div>
 

@@ -28,17 +28,20 @@ export function ExploreListingCard({ item }: { item: any }) {
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
   const typeBadge = type === "seasonal"
-    ? { label: t("explore.vacation_rental") || "Vacation Rental", color: "bg-warning/10 text-warning border-warning/20" }
+    ? { label: t("explore.vacation_rental") || "Vacation Rental", color: "bg-warning/15 text-warning border-warning/25" }
     : type === "real-estate"
-    ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.long_term") || "Long-term Rent"), color: "bg-info/10 text-info border-info/20" }
-    : { label: subInfo?.label || item.category?.replace(/_/g, " ") || (t("explore.service") || "Service"), color: "bg-success/10 text-success border-success/20" };
+    ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.long_term") || "Long-term"), color: "bg-info/15 text-info border-info/25" }
+    : { label: subInfo?.label || item.category?.replace(/_/g, " ") || (t("explore.service") || "Service"), color: "bg-success/15 text-success border-success/25" };
 
   const isVerified = type === "service" && Array.isArray(item.badges) && item.badges.includes("verified");
   const ctaLabel = type === "service"
     ? (t("explore.book_now") || "Book now")
     : type === "real-estate"
-    ? (t("explore.view_property") || "View property")
+    ? (t("explore.view_property") || "View")
     : (t("explore.view_and_book") || "View & book");
+
+  // Format location — full country name, no truncation
+  const locationText = [item.city, item.country].filter(Boolean).join(", ");
 
   return (
     <Link to={href} className="group block h-full">
@@ -49,75 +52,81 @@ export function ExploreListingCard({ item }: { item: any }) {
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
-          <div className="absolute top-3 start-3 flex items-center gap-1.5 flex-wrap max-w-[calc(100%-24px)]">
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-sm whitespace-nowrap ${typeBadge.color}`}>
-              {subInfo?.emoji && <span>{subInfo.emoji}</span>}
-              {typeBadge.label}
+          {/* Top badges — properly sized, no overflow */}
+          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start gap-1.5 flex-wrap">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
+              {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
+              <span className="truncate max-w-[120px]">{typeBadge.label}</span>
             </span>
             {isVerified && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-accent/90 text-accent-foreground backdrop-blur-sm whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
                 <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
           </div>
-          <div className="absolute bottom-3 end-3 bg-background/90 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-lg">
+
+          {/* Price badge — bottom right */}
+          <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-md">
             <span className="text-sm font-bold text-foreground whitespace-nowrap">{priceLabel}</span>
           </div>
+
+          {/* Views count */}
           {type === "real-estate" && item.views_count > 0 && (
-            <div className="absolute top-3 end-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground flex items-center gap-1">
+            <div className="absolute top-2.5 right-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground flex items-center gap-1">
               <Eye className="h-3 w-3" /> {item.views_count}
             </div>
           )}
 
+          {/* Photo count */}
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
-            <div className="absolute bottom-3 start-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground font-medium">
+            <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
               1/{item.photo_urls.length}
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-3.5 sm:p-4 flex flex-col gap-1.5 min-h-[120px]">
-          <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
+        <div className="p-3 sm:p-3.5 flex flex-col gap-1.5">
+          <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors">
             {item.title}
           </h3>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+
+          {/* Location — full text, no truncation of country */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
-            <span className="truncate">
-              {item.city}
-              {item.country ? `, ${item.country.toUpperCase().slice(0, 3)}` : ""}
-            </span>
+            <span className="line-clamp-1">{locationText || "—"}</span>
           </div>
+
+          {/* Type-specific details */}
           {type === "service" && subInfo && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
               <span>{subInfo.emoji}</span>
-              <span className="font-medium truncate">{subInfo.label}</span>
+              <span className="font-medium line-clamp-1">{subInfo.label}</span>
             </div>
           )}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {item.max_guests && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
-              {item.min_nights && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}{t("explore.n") || "n"}</span>}
+              {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
+              {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}n</span>}
             </div>
           )}
           {type === "real-estate" && (
-            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
               {item.surface_sqm > 0 && (
-                <span className="flex items-center gap-1 whitespace-nowrap"><Maximize className="h-3 w-3" /> {item.surface_sqm} m²</span>
-              )}
-              {item.rooms > 0 && (
-                <span className="whitespace-nowrap">{item.rooms} {t("explore.rooms") || "rooms"}</span>
+                <span className="flex items-center gap-0.5 whitespace-nowrap"><Maximize className="h-3 w-3" /> {item.surface_sqm}m²</span>
               )}
               {item.bedrooms > 0 && (
-                <span className="flex items-center gap-1"><Bed className="h-3 w-3" /> {item.bedrooms}</span>
+                <span className="flex items-center gap-0.5 whitespace-nowrap"><Bed className="h-3 w-3" /> {item.bedrooms}</span>
               )}
               {item.bathrooms > 0 && (
-                <span className="flex items-center gap-1"><Bath className="h-3 w-3" /> {item.bathrooms}</span>
+                <span className="flex items-center gap-0.5 whitespace-nowrap"><Bath className="h-3 w-3" /> {item.bathrooms}</span>
               )}
             </div>
           )}
-          <div className="pt-2 mt-auto">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2.5 transition-all px-3 py-1.5 rounded-lg bg-accent/10 group-hover:bg-accent/15 whitespace-nowrap">
+
+          {/* CTA */}
+          <div className="pt-1.5 mt-auto">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2 transition-all px-2.5 py-1.5 rounded-lg bg-accent/8 group-hover:bg-accent/15 whitespace-nowrap">
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
           </div>
