@@ -255,7 +255,7 @@ export default function Explore() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by city, country, or keyword..."
-                className="pl-14 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm"
+                className="pl-12 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm focus-visible:ring-accent"
               />
               {search && (
                 <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
