@@ -11,7 +11,14 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 const Explore = lazy(() => import("./pages/Explore"));
-const FloatingAIAssistant = lazy(() => import("@/components/ai/FloatingAIAssistant"));
+const FloatingAIAssistant = lazy(async () => {
+  try {
+    return await import("@/components/ai/FloatingAIAssistant");
+  } catch (error) {
+    console.warn("[App] FloatingAIAssistant load failed:", error);
+    return { default: () => null };
+  }
+});
 import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
