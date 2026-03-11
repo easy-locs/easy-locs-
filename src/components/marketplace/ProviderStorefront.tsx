@@ -308,10 +308,10 @@ export default function ProviderStorefront() {
 
       {/* Services */}
       <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-          <Store className="h-5 w-5 text-accent" />
-          Services ({services.length})
-        </h2>
+         <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+           <Store className="h-5 w-5 text-accent" />
+           {t("mp.my_services") || "Services"} ({services.length})
+         </h2>
         {services.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-16 text-center">
