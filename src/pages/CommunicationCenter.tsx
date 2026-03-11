@@ -1564,24 +1564,24 @@ const CommunicationCenter = () => {
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md px-4">
-                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-5">
-                    <MessageCircle className="h-8 w-8 text-accent" />
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-accent/20 via-accent/10 to-transparent flex items-center justify-center mx-auto mb-6 ring-1 ring-accent/10">
+                    <MessageCircle className="h-9 w-9 text-accent" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Communication Center</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    All your conversations unified — tenants, guests, clients, and leads in one place.
+                  <h3 className="text-xl font-bold text-foreground mb-2">Sélectionnez une conversation</h3>
+                  <p className="text-sm text-muted-foreground mb-8">
+                    Toutes vos conversations centralisées — locataires, voyageurs, clients et prospects.
                   </p>
                   <div className="grid grid-cols-2 gap-3 text-left">
                     {[
-                      { emoji: "🏠", label: "Long-term", desc: "Landlord ↔ Tenant" },
-                      { emoji: "🏖️", label: "Seasonal", desc: "Host ↔ Guest" },
-                      { emoji: "🛍️", label: "Marketplace", desc: "Provider ↔ Client" },
-                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Lead" },
+                      { emoji: "🏠", label: "Long-term", desc: "Bailleur ↔ Locataire", color: "from-primary/10 to-primary/5 border-primary/15" },
+                      { emoji: "🏖️", label: "Seasonal", desc: "Hôte ↔ Voyageur", color: "from-sky-500/10 to-sky-500/5 border-sky-500/15" },
+                      { emoji: "🛍️", label: "Marketplace", desc: "Prestataire ↔ Client", color: "from-violet-500/10 to-violet-500/5 border-violet-500/15" },
+                      { emoji: "🏡", label: "Real Estate", desc: "Agent ↔ Prospect", color: "from-emerald-500/10 to-emerald-500/5 border-emerald-500/15" },
                     ].map(p => (
-                      <div key={p.label} className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
-                        <span className="text-sm">{p.emoji}</span>
-                        <p className="text-xs font-semibold text-foreground mt-1">{p.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{p.desc}</p>
+                      <div key={p.label} className={`px-3.5 py-3 rounded-xl bg-gradient-to-br ${p.color} border`}>
+                        <span className="text-lg">{p.emoji}</span>
+                        <p className="text-xs font-bold text-foreground mt-1.5">{p.label}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{p.desc}</p>
                       </div>
                     ))}
                   </div>
