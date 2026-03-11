@@ -109,7 +109,7 @@ const ClientBookings = () => {
     if (!b.completed_at) return null;
     const daysLeft = REVIEW_WINDOW_DAYS - differenceInDays(new Date(), new Date(b.completed_at));
     if (daysLeft <= 0) return null;
-    if (daysLeft <= 7) return `${daysLeft}d left`;
+    if (daysLeft <= 7) return `${daysLeft} ${t("mp.review_days_left") || "days left to review"}`;
     return null;
   };
 
@@ -143,7 +143,7 @@ const ClientBookings = () => {
                   {b.total != null && (
                     <span className="text-sm font-semibold text-foreground">{b.total} {b.currency}</span>
                   )}
-                  <Badge variant="outline" className={statusColor[b.status] || ""}>{b.status}</Badge>
+                  <Badge variant="outline" className={statusColor[b.status] || ""}>{t(`mp.status_${b.status}`) || t(`mp.${b.status}`) || b.status}</Badge>
                 </div>
               </div>
               {/* Review action row */}

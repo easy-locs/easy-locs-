@@ -57,7 +57,6 @@ const PublicServiceBooking = () => {
       if (!slug) { if (mounted) setLoading(false); return; }
       const normalizedSlug = decodeURIComponent(slug).trim();
 
-      // 1. Try concierge_services_public first (safe view excludes sensitive fields)
       const { data: exactMatch } = await supabase
         .from("concierge_services_public" as any)
         .select("*")
@@ -66,7 +65,6 @@ const PublicServiceBooking = () => {
         .limit(1)
         .maybeSingle();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resolvedService: any = exactMatch ? { ...(exactMatch as any), _source: "concierge" } : null;
 
       if (!resolvedService) {
@@ -80,7 +78,6 @@ const PublicServiceBooking = () => {
         if (fallbackMatch) resolvedService = { ...(fallbackMatch as any), _source: "concierge" };
       }
 
-      // 2. If not found in concierge, try marketplace_services
       if (!resolvedService) {
         const { data: mpExact } = await supabase
           .from("marketplace_services_public" as any)
@@ -116,10 +113,8 @@ const PublicServiceBooking = () => {
 
   const canonicalUrl = buildAppUrl(slug ? `/book/${encodeURIComponent(slug)}` : "/book");
 
-  // Determine if this is a range-based rental
   const isRangeMode = service ? RANGE_CATEGORIES.has(service.category) : false;
 
-  // Calculate days and total for range mode
   const rangeDays = selectedRange
     ? differenceInCalendarDays(selectedRange.to, selectedRange.from)
     : 0;
@@ -145,11 +140,11 @@ const PublicServiceBooking = () => {
 
   if (!service) return (
     <>
-      <SEOHead title="Service not found | Easy-Locs" description="This booking link is invalid or expired." canonical={canonicalUrl} />
+      <SEOHead title={`${t("mp.service_not_found") || "Service not found"} | Easy-Locs`} description={t("mp.service_not_found_desc") || "This booking link is invalid or expired."} canonical={canonicalUrl} />
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Service not found</h1>
-          <p className="text-muted-foreground">This booking link may be expired or invalid.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("mp.service_not_found") || "Service not found"}</h1>
+          <p className="text-muted-foreground">{t("mp.service_not_found_desc") || "This booking link may be expired or invalid."}</p>
         </div>
       </div>
     </>
@@ -158,8 +153,8 @@ const PublicServiceBooking = () => {
   if (success) return (
     <>
       <SEOHead
-        title={`${service.title} booking confirmed | Easy-Locs`}
-        description={`Your booking for ${service.title} has been confirmed.`}
+        title={`${service.title} ${t("mp.booking_confirmed_title") || "booking confirmed"} | Easy-Locs`}
+        description={`${t("mp.booking_confirmed_desc") || "Your booking for"} ${service.title} ${t("mp.has_been_confirmed") || "has been confirmed"}.`}
         canonical={canonicalUrl}
         ogImage={ogImage}
       />
@@ -168,31 +163,32 @@ const PublicServiceBooking = () => {
           <CardContent className="pt-8 pb-8 space-y-5">
             <div className="text-center space-y-3">
               <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
-              <h1 className="text-2xl font-bold text-foreground">Booking Confirmed!</h1>
-              <p className="text-muted-foreground">Your booking for <strong>{service.title}</strong> has been received.</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("mp.booking_confirmed") || "Booking Confirmed!"}</h1>
+              <p className="text-muted-foreground">{t("mp.booking_received_for") || "Your booking for"} <strong>{service.title}</strong> {t("mp.has_been_received") || "has been received."}</p>
             </div>
             <Separator />
             <div className="space-y-2 text-sm">
               {isRangeMode && selectedRange ? (
                 <>
-                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">To</span><span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="text-foreground">{rangeDays} days</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.from") || "From"}</span><span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.to") || "To"}</span><span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.duration") || "Duration"}</span><span className="text-foreground">{rangeDays} {t("mp.days") || "days"}</span></div>
                 </>
               ) : (
                 <>
-                  {selectedDate && <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span></div>}
-                  {selectedTime && <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="text-foreground">{selectedTime}</span></div>}
+                  {selectedDate && <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.date") || "Date"}</span><span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span></div>}
+                  {selectedTime && <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.time") || "Time"}</span><span className="text-foreground">{selectedTime}</span></div>}
                 </>
               )}
-              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="text-foreground font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("mp.total") || "Total"}</span><span className="text-foreground font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span></div>
             </div>
             <Separator />
             <p className="text-xs text-muted-foreground text-center">
               {paymentMethod === "bank_transfer"
-                ? "Please complete the bank transfer using the details provided. Your booking will be confirmed upon receipt."
-                : "The provider will confirm your booking shortly. You'll receive an email notification."}
+                ? (t("mp.bank_transfer_confirmation") || "Please complete the bank transfer using the details provided. Your booking will be confirmed upon receipt.")
+                : (t("mp.provider_will_confirm") || "The provider will confirm your booking shortly. You'll receive an email notification.")}
             </p>
+            <MarketplaceDisclaimer compact />
           </CardContent>
         </Card>
       </div>
@@ -213,7 +209,6 @@ const PublicServiceBooking = () => {
 
     setSubmitting(true);
     try {
-      // Check availability before booking
       const dateFrom = isRangeMode ? format(selectedRange!.from, "yyyy-MM-dd") : format(selectedDate!, "yyyy-MM-dd");
       const dateTo = isRangeMode ? format(selectedRange!.to, "yyyy-MM-dd") : null;
 
@@ -234,7 +229,6 @@ const PublicServiceBooking = () => {
       const isConcierge = service._source === "concierge" || !service._source;
 
       if (isConcierge) {
-        // Insert into concierge_orders
         const orderData: any = {
           org_id: service.org_id,
           service_id: service.id,
@@ -271,7 +265,6 @@ const PublicServiceBooking = () => {
           .single();
         if (orderError) throw orderError;
 
-        // Send notification
         try {
           await supabase.functions.invoke("send-notification-email", {
             body: {
@@ -309,7 +302,6 @@ const PublicServiceBooking = () => {
           if (checkout?.url) { window.location.href = checkout.url; return; }
         }
       } else {
-        // Insert into marketplace_bookings
         const bookingData: any = {
           service_id: service.id,
           provider_id: service.provider_id,
@@ -336,7 +328,6 @@ const PublicServiceBooking = () => {
           .insert(bookingData);
         if (bookingError) throw bookingError;
 
-        // Send notification
         try {
           await supabase.functions.invoke("send-notification-email", {
             body: {
@@ -366,7 +357,6 @@ const PublicServiceBooking = () => {
     }
   };
 
-  // Map legacy payment method names to PaymentMethodSelector format
   const hasStripe = availablePayments.includes("stripe");
   const hasPaypal = availablePayments.includes("paypal");
   const hasBankDetails = availablePayments.includes("bank_transfer") || Object.keys(bankDetails).length > 0;
@@ -374,8 +364,8 @@ const PublicServiceBooking = () => {
   return (
     <>
       <SEOHead
-        title={`${service.title} — Book Now | Easy-Locs`}
-        description={`${service.title} in ${service.city || ""}${service.country ? `, ${service.country.toUpperCase()}` : ""}. ${service.description?.slice(0, 120) || "Book trusted services online with Easy-Locs."} From ${fmtPrice(service.price, service.currency)}.`.slice(0, 160)}
+        title={`${service.title} — ${t("mp.book_now") || "Book Now"} | Easy-Locs`}
+        description={`${service.title} in ${service.city || ""}${service.country ? `, ${service.country.toUpperCase()}` : ""}. ${service.description?.slice(0, 120) || "Book trusted services online with Easy-Locs."} ${t("mp.from") || "From"} ${fmtPrice(service.price, service.currency)}.`.slice(0, 160)}
         ogImage={ogImage}
         canonical={canonicalUrl}
         jsonLd={{
@@ -424,11 +414,11 @@ const PublicServiceBooking = () => {
               {photos.length > 1 && (
                 <>
                   <button onClick={() => setPhotoIndex((photoIndex - 1 + photos.length) % photos.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors">
+                    className="absolute start-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors">
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button onClick={() => setPhotoIndex((photoIndex + 1) % photos.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors">
+                    className="absolute end-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors">
                     <ChevronRight className="h-5 w-5" />
                   </button>
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
@@ -464,17 +454,17 @@ const PublicServiceBooking = () => {
                 <div className="flex items-center gap-3 flex-wrap">
                   {service.city && (
                     <Badge variant="outline" className="text-xs">
-                      <MapPin className="h-3 w-3 mr-1" /> {service.city}{service.country ? `, ${service.country}` : ""}
+                      <MapPin className="h-3 w-3 me-1" /> {service.city}{service.country ? `, ${service.country}` : ""}
                     </Badge>
                   )}
                   {service.duration_minutes && (
                     <Badge variant="outline" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" /> {service.duration_minutes} min
+                      <Clock className="h-3 w-3 me-1" /> {service.duration_minutes} min
                     </Badge>
                   )}
                   {isRangeMode && (
                     <Badge variant="secondary" className="text-xs">
-                      {fmtPrice(service.price, service.currency)} / day
+                      {fmtPrice(service.price, service.currency)} / {t("mp.day") || "day"}
                     </Badge>
                   )}
                 </div>
@@ -500,7 +490,6 @@ const PublicServiceBooking = () => {
                 </div>
               )}
 
-              {/* Direct contact buttons for free/basic listings */}
               <ListingContactButtons
                 contactEmail={service.provider_email || null}
                 contactPhone={service.provider_phone || null}
@@ -522,6 +511,9 @@ const PublicServiceBooking = () => {
                   <MapPin className="h-4 w-4" /> {service.location}
                 </div>
               )}
+
+              {/* Disclaimer on service page */}
+              <MarketplaceDisclaimer />
 
               <Separator />
 
@@ -591,8 +583,8 @@ const PublicServiceBooking = () => {
 
                   {service.requires_id_document && (
                     <div>
-                      <label className="text-xs text-muted-foreground font-medium">🪪 ID Document *</label>
-                      <p className="text-[11px] text-muted-foreground mb-2">This service requires a copy of your identity document.</p>
+                      <label className="text-xs text-muted-foreground font-medium">🪪 {t("mp.id_document_required") || "ID Document"} *</label>
+                      <p className="text-[11px] text-muted-foreground mb-2">{t("mp.id_document_desc") || "This service requires a copy of your identity document."}</p>
                       <Input
                         type="file"
                         accept="image/*,.pdf"
@@ -600,7 +592,7 @@ const PublicServiceBooking = () => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           if (file.size > 10 * 1024 * 1024) {
-                            toast.error("File too large (max 10MB)");
+                            toast.error(t("mp.file_too_large") || "File too large (max 10MB)");
                             return;
                           }
 
@@ -616,9 +608,8 @@ const PublicServiceBooking = () => {
                               return;
                             }
 
-                            // Store path only — bucket is private, managers use signed URLs
                             setForm((f) => ({ ...f, id_document_url: path }));
-                            toast.success("ID document uploaded");
+                            toast.success(t("mp.document_uploaded") || "ID document uploaded");
                           } finally {
                             setIdDocUploading(false);
                           }
@@ -626,10 +617,10 @@ const PublicServiceBooking = () => {
                         className="cursor-pointer"
                       />
                       {idDocUploading && (
-                        <p className="text-xs text-muted-foreground mt-1">Upload en cours...</p>
+                        <p className="text-xs text-muted-foreground mt-1">{t("mp.uploading") || "Uploading..."}</p>
                       )}
                       {(form as any).id_document_url && !idDocUploading && (
-                        <p className="text-xs text-accent mt-1">✓ Document uploaded</p>
+                        <p className="text-xs text-accent mt-1">✓ {t("mp.document_uploaded") || "Document uploaded"}</p>
                       )}
                     </div>
                   )}
@@ -638,7 +629,7 @@ const PublicServiceBooking = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
-                        <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
+                        <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} placeholder={t("mp.special_requests") || "Special requests..."} />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">{t("mp.quantity") || "Quantity"}</label>
@@ -655,7 +646,7 @@ const PublicServiceBooking = () => {
                   {isRangeMode && (
                     <div>
                       <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
-                      <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
+                      <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} placeholder={t("mp.special_requests") || "Special requests..."} />
                     </div>
                   )}
 
@@ -680,10 +671,10 @@ const PublicServiceBooking = () => {
                   {paymentMethod === "bank_transfer" && Object.keys(bankDetails).length > 0 && (
                     <div className="bg-muted/30 rounded-xl p-4 space-y-2">
                       <h4 className="text-sm font-semibold text-foreground">{t("mp.bank_details") || "Bank Details"}</h4>
-                      {bankDetails.bank_name && <p className="text-sm text-muted-foreground">Bank: {bankDetails.bank_name}</p>}
+                      {bankDetails.bank_name && <p className="text-sm text-muted-foreground">{t("mp.bank_name") || "Bank"}: {bankDetails.bank_name}</p>}
                       {bankDetails.iban && <p className="text-sm text-muted-foreground font-mono">IBAN: {bankDetails.iban}</p>}
                       {bankDetails.swift && <p className="text-sm text-muted-foreground font-mono">SWIFT: {bankDetails.swift}</p>}
-                      {bankDetails.account_holder && <p className="text-sm text-muted-foreground">Holder: {bankDetails.account_holder}</p>}
+                      {bankDetails.account_holder && <p className="text-sm text-muted-foreground">{t("mp.bank_holder") || "Holder"}: {bankDetails.account_holder}</p>}
                       {bankDetails.instructions && <p className="text-sm text-muted-foreground italic">{bankDetails.instructions}</p>}
                     </div>
                   )}
@@ -700,7 +691,7 @@ const PublicServiceBooking = () => {
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(2)} className="flex-1">{t("mp.back") || "Back"}</Button>
                     <Button onClick={handleSubmit} disabled={submitting || !paymentMethod} className="flex-1">
-                      {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CreditCard className="h-4 w-4 me-2" />}
                       {paymentMethod === "card" ? `${t("mp.send_payment") || "Pay"} ${fmtPrice(totalPrice, service.currency)}` : (t("mp.confirm_booking") || "Confirm Booking")}
                     </Button>
                   </div>
@@ -717,7 +708,7 @@ const PublicServiceBooking = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t("mp.service") || "Service"}</span>
-                      <span className="text-foreground font-medium truncate ml-2">{service.title}</span>
+                      <span className="text-foreground font-medium truncate ms-2">{service.title}</span>
                     </div>
 
                     {isRangeMode && selectedRange ? (
