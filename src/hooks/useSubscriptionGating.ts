@@ -46,8 +46,10 @@ export function useSubscriptionGating() {
     return "unlimited";
   };
 
+  const currentTier = isSubscribed ? "global" : "free" as string;
+
   return {
-    currentTier: isSubscribed ? "unlimited" : "free",
+    currentTier,
     canAccess,
     requiresUpgrade,
     isSubscribed,

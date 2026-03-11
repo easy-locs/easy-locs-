@@ -8,7 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 /* Lazy-load Three.js - wrapped in error-safe dynamic import */
 const GlobeCanvas = lazy(() =>
   import("./LandingGlobe").catch(() => ({
-    default: () => null,
+    default: ((_props: any) => null) as any,
   }))
 );
 
@@ -89,7 +89,7 @@ const WorldMapSection = () => {
                   </div>
                 }
               >
-                <GlobeCanvas onError={() => setGlobeFailed(true)} />
+                <GlobeCanvas />
               </Suspense>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
