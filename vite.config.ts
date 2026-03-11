@@ -31,7 +31,10 @@ export default defineConfig(({ mode }) => ({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             // Keep react + react-dom together to avoid initialization issues
-            if (id.includes("react-dom") || id.includes("/react/")) return "vendor-react";
+            // IMPORTANT: match react-dom but NOT react-router-dom (which depends on react-router in a separate module)
+            if (id.includes("/react-dom/") || id.includes("/react/")) return "vendor-react";
+            // Group react-router and react-router-dom together to avoid TDZ issues
+            if (id.includes("react-router")) return "vendor-router";
             if (id.includes("framer-motion")) return "vendor-motion";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
