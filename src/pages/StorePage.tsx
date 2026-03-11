@@ -150,7 +150,7 @@ export default function StorePage() {
               <h1 className="text-3xl font-bold text-foreground">{name}</h1>
               {profile.verified && (
                 <span className="flex items-center gap-0.5 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Verified
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
                 </span>
               )}
             </div>
