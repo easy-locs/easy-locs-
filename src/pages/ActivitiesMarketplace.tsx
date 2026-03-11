@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft } from "lucide-react";
+import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft, MessageSquare } from "lucide-react";
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
