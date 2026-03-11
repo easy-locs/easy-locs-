@@ -115,6 +115,30 @@ export default function Explore() {
     return () => { cancelled = true; };
   }, []);
 
+  // Batch geocode unique listing cities for distance filtering
+  useEffect(() => {
+    if (loading || geocodingRef.current) return;
+    geocodingRef.current = true;
+    const uniqueCities: Array<{ city: string; country?: string }> = [];
+    const seen = new Set<string>();
+    for (const list of [realEstate, seasonal, services]) {
+      for (const item of list) {
+        const c = (item as any).city;
+        const co = (item as any).country;
+        if (!c) continue;
+        const k = cityKey(c, co);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        uniqueCities.push({ city: c, country: co });
+      }
+    }
+    if (uniqueCities.length > 0) {
+      batchGeocideCities(uniqueCities, 15).then(map => {
+        setCityCoordsMap(map);
+      });
+    }
+  }, [loading, realEstate, seasonal, services]);
+
   // Aggregate locations
   const allCountries = useMemo(() => {
     const set = new Set<string>();
@@ -155,12 +179,30 @@ export default function Explore() {
     if (radiusKm === 0 && !locationQuery) return true;
     const itemCity = (item.city || "").toLowerCase();
     const itemCountry = (item.country || "").toLowerCase();
+
+    // If we have a search center and radius, use real distance filtering
+    if (searchCenter && radiusKm > 0) {
+      const key = cityKey(item.city || "", item.country || "");
+      const coords = cityCoordsMap.get(key);
+      if (coords) {
+        const dist = haversineKm(searchCenter.lat, searchCenter.lng, coords.lat, coords.lng);
+        return dist <= radiusKm;
+      }
+      // Fallback to string match if coords not yet geocoded
+      if (locationQuery) {
+        const q = locationQuery.toLowerCase();
+        return itemCity.includes(q) || itemCountry.includes(q);
+      }
+      return true;
+    }
+
+    // String-based fallback when no coordinates
     if (locationQuery) {
       const q = locationQuery.toLowerCase();
       return itemCity.includes(q) || itemCountry.includes(q);
     }
     return true;
-  }, [locationQuery, radiusKm]);
+  }, [locationQuery, radiusKm, searchCenter, cityCoordsMap]);
 
   const matchCategory = useCallback((item: any) => {
     if (activeGroup === "all" && activeSubcategory === "all") return true;
