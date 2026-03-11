@@ -158,9 +158,13 @@ const NotificationBell = () => {
         const THROTTLE_MS = 5000;
         const prefs = alertPrefsRef.current;
 
+        // Check per-type alert setting
+        const notifCategory = resolveNotifCategory(n);
+        const typeEnabled = prefs.typeAlerts?.[notifCategory] ?? true;
+
         const targetUrl = n.metadata_json?.target_url || n.link || "";
         const isViewingRelated = targetUrl && location.pathname && targetUrl.startsWith(location.pathname);
-        const shouldAlert = !isViewingRelated && !open && (now - lastSoundRef.current > THROTTLE_MS);
+        const shouldAlert = typeEnabled && !isViewingRelated && !open && (now - lastSoundRef.current > THROTTLE_MS);
 
         try {
           if (shouldAlert) {
