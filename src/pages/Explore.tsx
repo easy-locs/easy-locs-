@@ -186,7 +186,7 @@ export default function Explore() {
     setSearchParams({});
   };
 
-  const hasFilters = searchQuery || locationQuery || activeCategory !== "all";
+  const hasFilters = !!(searchQuery || locationQuery || activeCategory !== "all");
 
   return (
     <div className="min-h-screen bg-background">
