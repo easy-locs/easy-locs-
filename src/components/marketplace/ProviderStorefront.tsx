@@ -333,7 +333,7 @@ export default function ProviderStorefront() {
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
-            Reviews ({reviewsCount})
+            {t("mp.reviews") || "Reviews"} ({reviewsCount})
           </h2>
 
           {/* Rating breakdown */}
