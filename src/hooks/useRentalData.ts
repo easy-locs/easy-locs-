@@ -30,6 +30,7 @@ export interface Property {
   lot_number?: string | null;
   building_id?: string | null;
   country: string;
+  photo_urls?: any;
 }
 
 export interface Tenant {
@@ -98,6 +99,7 @@ export function useRentalData(countryFilter?: string | null) {
       monthly_charges: Number(p.monthly_charges) || 0, deposit_amount: Number(p.deposit_amount) || 0,
       notes: p.notes || "", building_name: (p as any).building_name || null, lot_number: (p as any).lot_number || null,
       building_id: (p as any).building_id || null, country: p.country || "FR",
+      photo_urls: p.photo_urls || null,
     }));
     setProperties(mappedProps);
 
