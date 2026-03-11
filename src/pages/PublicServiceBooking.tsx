@@ -575,11 +575,11 @@ const PublicServiceBooking = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-muted-foreground">Full Name *</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.full_name") || "Full Name"} *</label>
                       <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Email *</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.your_email") || "Email"} *</label>
                       <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                     </div>
                   </div>
