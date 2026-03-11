@@ -133,12 +133,12 @@ const Expenses = () => {
         </motion.div>
 
         {/* Filters */}
-        <div className="flex gap-3 mb-4">
-          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-full sm:w-auto text-sm">
             <option value="">{t("page.expenses.all_properties")}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-auto">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-full sm:w-auto text-sm">
             <option value="">{t("page.expenses.all_categories")}</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
