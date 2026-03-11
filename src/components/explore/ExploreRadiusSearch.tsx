@@ -26,7 +26,7 @@ const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
 export function ExploreRadiusSearch({
   locationQuery, radiusKm, resultCount,
   geoCity, geoCountry,
-  onLocationChange, onRadiusChange,
+  onLocationChange, onRadiusChange, onCenterChange,
   onApply, onReset, onNearMe, onClose,
 }: ExploreRadiusSearchProps) {
   const mapRef = useRef<HTMLDivElement>(null);
