@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 const STATUSES = [
   { value: "new", labelKey: "page.candidates.status_new", icon: Clock, color: "text-blue-500" },
@@ -83,9 +84,11 @@ const Candidates = () => {
             <h1>{t("page.candidates.title")}</h1>
             <p>{t("page.candidates.subtitle")}</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="btn-primary shrink-0">
-            <Plus className="h-4 w-4" /> {t("page.candidates.add")}
-          </button>
+          <PermissionGate permission="leads:write">
+            <button onClick={() => setShowForm(true)} className="btn-primary shrink-0">
+              <Plus className="h-4 w-4" /> {t("page.candidates.add")}
+            </button>
+          </PermissionGate>
         </div>
 
         {/* Stats */}

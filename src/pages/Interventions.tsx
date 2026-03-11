@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 interface Intervention {
   id: string;
@@ -188,9 +189,11 @@ const Interventions = () => {
               <h1>{t("page.interventions.title")}</h1>
               <p>{t("page.interventions.subtitle")}</p>
             </div>
-            <Button onClick={openNew} className="btn-primary shrink-0">
-              <Plus className="h-4 w-4 mr-2" />{t("page.interventions.new")}
-            </Button>
+            <PermissionGate permission="interventions:write">
+              <Button onClick={openNew} className="btn-primary shrink-0">
+                <Plus className="h-4 w-4 mr-2" />{t("page.interventions.new")}
+              </Button>
+            </PermissionGate>
           </motion.div>
 
           <div className="flex gap-2 flex-wrap">

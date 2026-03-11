@@ -34,6 +34,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import CountrySelect from "@/components/ui/CountrySelect";
 import MapPreview from "@/components/ui/MapPreview";
 import { getCountryConfig } from "@/lib/country-config";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 const PROPERTY_TYPES = [
   { value: "apartment", label: "Apartment" },
@@ -244,9 +245,11 @@ export default function RealEstateListings() {
               </h1>
               <p className="text-sm text-muted-foreground">Manage property listings for sale and rent</p>
             </div>
-            <Button onClick={() => { setForm(emptyForm); setEditId(null); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> New Listing
-            </Button>
+            <PermissionGate permission="properties:write">
+              <Button onClick={() => { setForm(emptyForm); setEditId(null); setCreateOpen(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> New Listing
+              </Button>
+            </PermissionGate>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -313,9 +316,11 @@ export default function RealEstateListings() {
                           <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => copyLink(listing.slug)}>
                             {copiedSlug === listing.slug ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <PermissionGate permission="properties:delete">
+                            <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
                         </div>
                         {/* Share buttons */}
                         <div className="flex items-center gap-1.5">

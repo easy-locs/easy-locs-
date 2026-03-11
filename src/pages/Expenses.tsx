@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { Plus, Trash2, Download, Filter } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 interface Expense {
   id: string;
@@ -113,9 +114,11 @@ const Expenses = () => {
             <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
               <Download className="h-4 w-4" /> {t("page.expenses.export")}
             </button>
-            <button onClick={() => setShowForm(true)} className="btn-primary btn-sm">
-              <Plus className="h-4 w-4" /> {t("page.expenses.add")}
-            </button>
+            <PermissionGate permission="expenses:write">
+              <button onClick={() => setShowForm(true)} className="btn-primary btn-sm">
+                <Plus className="h-4 w-4" /> {t("page.expenses.add")}
+              </button>
+            </PermissionGate>
           </div>
         </motion.div>
 
