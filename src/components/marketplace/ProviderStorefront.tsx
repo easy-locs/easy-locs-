@@ -26,6 +26,7 @@ export default function ProviderStorefront() {
   const [bookingService, setBookingService] = useState<any>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const servicesRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const { data: provider, isLoading } = useQuery({
     queryKey: ["marketplace_provider_public", providerSlug],
