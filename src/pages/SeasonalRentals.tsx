@@ -197,6 +197,16 @@ const SeasonalRentals = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  // Realtime: live updates for booking requests
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel("seasonal-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, load]);
+
   useEffect(() => {
     if (!deepLinkRequestId || !orgId) return;
     const loadRequest = async () => {

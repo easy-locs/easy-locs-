@@ -111,6 +111,16 @@ const Interventions = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  // Realtime: live updates for interventions
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel("interventions-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, load]);
+
   const openNew = () => { setEditId(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (i: Intervention) => {
     setEditId(i.id);
