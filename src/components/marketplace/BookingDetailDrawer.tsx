@@ -101,12 +101,17 @@ export default function BookingDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader className="pb-4">
-          <SheetTitle className="flex items-center gap-2 flex-wrap">
-            <ClipboardList className="h-5 w-5 text-accent" />
-            Booking #{booking.id?.slice(0, 8)}
-          </SheetTitle>
-          <BookingStatusBadge status={status} />
+        <SheetHeader className="pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+              <ClipboardList className="h-5 w-5 text-accent" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="text-base">Booking #{booking.id?.slice(0, 8)}</SheetTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{booking.booker_name} • {service?.title || "Service"}</p>
+            </div>
+            <BookingStatusBadge status={status} />
+          </div>
         </SheetHeader>
 
         <Tabs defaultValue="summary" className="mt-2">

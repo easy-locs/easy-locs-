@@ -1,10 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail } from "lucide-react";
+import { CheckCircle2, Clock, X, Send, CreditCard, FileText, MessageCircle, Mail, ShoppingCart } from "lucide-react";
 import { generateInvoicePdf } from "./InvoicePdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { sendCommunicationEvent, createDeepLinkMeta, type CommunicationEvent, type DeepLinkMeta } from "@/lib/shared";
+import BookingStatusBadge from "./BookingStatusBadge";
 
 interface Props {
   bookings: any[];
@@ -49,12 +50,7 @@ function buildBookingDeepLink(meta: NotificationMeta): string {
 }
 
 /**
- * Log an action to communication center + notification + email
- * Now accepts rich metadata for deep-linking notifications to exact bookings
- */
-/**
  * Legacy-compatible sync function — now delegates to the shared communication pipeline.
- * All callers continue to work unchanged.
  */
 async function syncToCommunicationCenter(opts: {
   orgId: string;
@@ -217,10 +213,13 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
 
   if (bookings.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Clock className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground">No bookings yet</p>
+      <Card className="border-dashed border-border/60">
+        <CardContent className="py-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+            <ShoppingCart className="h-7 w-7 text-muted-foreground/40" />
+          </div>
+          <p className="text-muted-foreground font-medium">No bookings yet</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Bookings will appear here when customers reserve your services</p>
         </CardContent>
       </Card>
     );
@@ -230,36 +229,35 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
     <div className="space-y-3">
       {bookings.map((b) => {
         const svc = getService(b.service_id);
-        const sc = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
-        const StatusIcon = sc.icon;
 
         return (
-          <Card key={b.id}>
-            <CardContent className="pt-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0 space-y-1">
+          <Card key={b.id} className="border-border/60 hover:border-accent/30 transition-colors">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-foreground">{b.booker_name}</p>
-                    <Badge variant={sc.variant}>
-                      <StatusIcon className="h-3 w-3 mr-1" />
-                      {sc.label}
-                    </Badge>
-                    {b.payment_confirmed && <Badge variant="default">💰 Paid</Badge>}
+                    <BookingStatusBadge status={b.status || "pending"} />
+                    {b.payment_confirmed && (
+                      <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 border">
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Paid
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {svc?.title || "Service"} — {b.service_date} {b.service_time && `at ${b.service_time}`}
                     {b.date_from && b.date_to && ` (${b.date_from} → ${b.date_to})`}
                   </p>
                   <p className="text-xs text-muted-foreground">{b.booker_email} {b.booker_phone && `• ${b.booker_phone}`}</p>
-                  {b.notes && <p className="text-xs text-muted-foreground italic">"{b.notes}"</p>}
+                  {b.notes && <p className="text-xs text-muted-foreground/80 italic border-l-2 border-accent/20 pl-2">"{b.notes}"</p>}
                 </div>
 
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="text-lg font-bold text-foreground">{Number(b.total_price).toLocaleString()} {b.currency}</span>
-                  <div className="flex flex-wrap gap-1">
+                <div className="flex flex-col items-end gap-2.5 shrink-0">
+                  <span className="text-lg font-bold text-foreground tabular-nums">{Number(b.total_price).toLocaleString()} {b.currency}</span>
+                  <div className="flex flex-wrap gap-1.5">
                     {b.status === "pending" && (
                       <>
-                        <Button size="sm" onClick={() => onUpdateStatus(b.id, "confirmed")}>
+                        <Button size="sm" onClick={() => onUpdateStatus(b.id, "confirmed")} className="shadow-sm">
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Confirm
                         </Button>
                         <Button size="sm" variant="destructive" onClick={() => onUpdateStatus(b.id, "cancelled")}>
@@ -277,7 +275,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                             <CreditCard className="h-3 w-3 mr-1" /> Confirm Pay
                           </Button>
                         )}
-                        <Button size="sm" onClick={() => onUpdateStatus(b.id, "completed")}>
+                        <Button size="sm" onClick={() => onUpdateStatus(b.id, "completed")} className="shadow-sm">
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Complete
                         </Button>
                       </>
