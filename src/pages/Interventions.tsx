@@ -280,7 +280,7 @@ const Interventions = () => {
                 <label className="text-sm font-medium">{t("page.interventions.title_label")} *</label>
                 <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t("page.interventions.title_placeholder")} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.property")}</label>
                   <Select value={form.property_id} onValueChange={v => setForm(f => ({ ...f, property_id: v }))}>
