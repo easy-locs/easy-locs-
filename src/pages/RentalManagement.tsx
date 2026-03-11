@@ -282,8 +282,7 @@ const RentalManagement = () => {
   };
 
   const openPropertyDetail = (p: Property) => {
-    setSelectedProperty(p);
-    loadPropertyDetail(p.id);
+    navigate(`/dashboard/property/${p.id}`);
   };
 
   /* ─── Tenant handlers ─── */
