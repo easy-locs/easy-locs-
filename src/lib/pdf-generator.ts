@@ -317,13 +317,21 @@ function addFooter(doc: jsPDF, country?: string) {
 }
 
 function addSection(doc: jsPDF, title: string, y: number): number {
-  y = checkPageBreak(doc, y, 20);
+  y = checkPageBreak(doc, y, 22);
+  // Section background strip
+  doc.setFillColor(245, 247, 250);
+  doc.rect(MARGIN, y - 5, CONTENT_WIDTH, 9, "F");
   setFont(doc, "bold", FONT_SECTION, COLOR_PRIMARY);
-  doc.text(sanitize(title), MARGIN, y);
+  doc.text(sanitize(title), MARGIN + 2, y);
+  // Gold accent line under section title
   doc.setDrawColor(...COLOR_GOLD);
-  doc.setLineWidth(0.3);
-  doc.line(MARGIN, y + 2, MARGIN + 40, y + 2);
-  return y + 9;
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN, y + 4, MARGIN + 45, y + 4);
+  // Thin full-width line
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.15);
+  doc.line(MARGIN + 46, y + 4, PAGE_WIDTH - MARGIN, y + 4);
+  return y + 11;
 }
 
 function addField(doc: jsPDF, label: string, value: string, y: number): number {
