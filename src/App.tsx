@@ -88,6 +88,7 @@ const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
+const PropertyDetailHub = lazy(() => import("./pages/PropertyDetailHub"));
 const CreateListing = lazy(() => import("./pages/CreateListing"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
@@ -298,6 +299,7 @@ const App = () => (
               <Route path="/dashboard/tenants" element={<ProtectedRoute><CountryGuard><Tenants /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/properties" element={<ProtectedRoute><RentalManagement /></ProtectedRoute>} />
               <Route path="/dashboard/rental" element={<ProtectedRoute><CountryGuard><RentalManagement /></CountryGuard></ProtectedRoute>} />
+              <Route path="/dashboard/property/:propertyId" element={<ProtectedRoute><PropertyDetailHub /></ProtectedRoute>} />
               <Route path="/dashboard/finances" element={<ProtectedRoute><CountryGuard><Finances /></CountryGuard></ProtectedRoute>} />
               
               <Route path="/dashboard/tasks" element={<ProtectedRoute><CountryGuard><Tasks /></CountryGuard></ProtectedRoute>} />

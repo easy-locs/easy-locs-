@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useI18n } from "@/lib/i18n";
@@ -80,6 +80,7 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 const RentalManagement = () => {
   const { user, orgId, userCountry } = useAuth();
   const { t } = useI18n();
+  const navigate = useNavigate();
   const cc = useMemo(() => getCountryConfig(userCountry), [userCountry]);
   const fmt = useCallback((n: number) => formatCurrency(n, userCountry), [userCountry]);
   const propertyTypes = cc.propertyTypes;
@@ -282,8 +283,7 @@ const RentalManagement = () => {
   };
 
   const openPropertyDetail = (p: Property) => {
-    setSelectedProperty(p);
-    loadPropertyDetail(p.id);
+    navigate(`/dashboard/property/${p.id}`);
   };
 
   /* ─── Tenant handlers ─── */
