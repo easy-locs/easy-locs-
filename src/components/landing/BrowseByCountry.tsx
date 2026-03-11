@@ -52,6 +52,11 @@ const BrowseByCountry = () => (
           </motion.div>
         ))}
       </div>
+      <div className="text-center mt-6">
+        <Link to="/locations" className="text-sm font-medium text-accent hover:underline">
+          View all countries →
+        </Link>
+      </div>
     </div>
   </section>
 );
