@@ -33,7 +33,7 @@ import {
   UserPlus, MessageSquare, Upload, Edit, Search, ArrowLeft,
   CheckCircle, Key, Thermometer, Droplets, Zap, ArrowRight,
   ClipboardCheck, Link2, CalendarClock, CreditCard, Loader2,
-  Sofa, Wallet, Filter
+  Sofa, Wallet, Filter, CalendarRange, Tag
 } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
