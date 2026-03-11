@@ -1,27 +1,28 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, memo } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import SocialProofStrip from "@/components/landing/SocialProofStrip";
-import BrowseByCountry from "@/components/landing/BrowseByCountry";
-import PopularCities from "@/components/landing/PopularCities";
-import ServiceCategories from "@/components/landing/ServiceCategories";
-import HowItWorks from "@/components/landing/HowItWorks";
-import Pricing from "@/components/landing/Pricing";
-import LandingFAQ from "@/components/landing/LandingFAQ";
-import Newsletter from "@/components/landing/Newsletter";
-import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
-import ExplorePreview from "@/components/landing/ExplorePreview";
 import { Loader2 } from "lucide-react";
 
+// Lazy load all below-the-fold sections
+const SocialProofStrip = lazy(() => import("@/components/landing/SocialProofStrip"));
+const ExplorePreview = lazy(() => import("@/components/landing/ExplorePreview"));
+const BrowseByCountry = lazy(() => import("@/components/landing/BrowseByCountry"));
+const PopularCities = lazy(() => import("@/components/landing/PopularCities"));
+const ServiceCategories = lazy(() => import("@/components/landing/ServiceCategories"));
+const HowItWorks = lazy(() => import("@/components/landing/HowItWorks"));
+const Pricing = lazy(() => import("@/components/landing/Pricing"));
+const LandingFAQ = lazy(() => import("@/components/landing/LandingFAQ"));
+const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
+const Footer = lazy(() => import("@/components/landing/Footer"));
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
 const ValueProposition = lazy(() => import("@/components/landing/ValueProposition"));
 
-const SectionLoader = () => (
+const SectionLoader = memo(() => (
   <div className="flex items-center justify-center py-16">
     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
   </div>
-);
+));
 
 const jsonLd = {
   "@context": "https://schema.org",
