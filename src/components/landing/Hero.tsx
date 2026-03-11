@@ -34,30 +34,20 @@ const Hero = () => {
     >
       {/* ─── Background FX ─── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Primary accent glow */}
         <div
           className="absolute top-[20%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full"
           style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12) 0%, transparent 55%)" }}
         />
-        {/* Secondary deep glow */}
         <div
           className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] rounded-full"
           style={{ background: "radial-gradient(circle, hsl(210 60% 40% / 0.08) 0%, transparent 60%)" }}
         />
-        {/* Animated orbs */}
         <motion.div
           className="absolute top-[8%] right-[12%] w-72 h-72 rounded-full blur-[140px]"
           style={{ background: "hsl(var(--accent) / 0.1)" }}
           animate={{ scale: [1, 1.3, 1], opacity: [0.06, 0.14, 0.06] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div
-          className="absolute bottom-[20%] left-[5%] w-56 h-56 rounded-full blur-[120px]"
-          style={{ background: "hsl(152 60% 42% / 0.08)" }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.04, 0.1, 0.04] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-        />
-        {/* Subtle grid */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -65,20 +55,6 @@ const Hero = () => {
             backgroundSize: "60px 60px",
           }}
         />
-        {/* Floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full"
-            style={{
-              background: `hsl(var(--accent) / ${0.3 + i * 0.05})`,
-              top: `${10 + i * 10}%`,
-              left: `${5 + i * 12}%`,
-            }}
-            animate={{ y: [0, -20, 0], opacity: [0.1, 0.45, 0.1] }}
-            transition={{ duration: 4 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
-          />
-        ))}
       </div>
 
       <div className="container relative z-10 py-8 sm:py-28 px-4">
@@ -187,20 +163,6 @@ const Hero = () => {
                 {t("landing.hero.cta_explore") || "Explore Listings"}
               </Link>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="hidden sm:block">
-              <Link
-                to="/dashboard/seasonal"
-                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
-                style={{
-                  borderColor: "hsl(var(--accent) / 0.25)",
-                  color: "hsl(var(--accent))",
-                  background: "hsl(var(--accent) / 0.08)",
-                }}
-              >
-                <Building2 className="h-4 w-4 opacity-70" />
-                {t("landing.hero.cta_publish") || "Publish a Listing"}
-              </Link>
-            </motion.div>
           </motion.div>
 
           {/* ─── Trust stats ─── */}
@@ -245,7 +207,7 @@ const Hero = () => {
             </div>
           </motion.div>
 
-          {/* ─── SEO: Top Destinations — Programmatic Internal Links ─── */}
+          {/* ─── SEO: Top Destinations ─── */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -255,17 +217,17 @@ const Hero = () => {
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
               {t("landing.hero.top_destinations") || "Top Destinations"}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 max-w-xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
               {TOP_DESTINATIONS.map((dest, i) => (
                 <motion.div
                   key={dest.slug}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.1 + i * 0.06, duration: 0.3 }}
+                  transition={{ delay: 1.1 + i * 0.04, duration: 0.3 }}
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full min-h-[44px]"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 min-h-[40px] whitespace-nowrap"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",
@@ -273,7 +235,7 @@ const Hero = () => {
                     }}
                   >
                     <span>{dest.flag}</span>
-                    <span className="truncate">{dest.name}</span>
+                    <span>{dest.name}</span>
                   </Link>
                 </motion.div>
               ))}
@@ -287,16 +249,16 @@ const Hero = () => {
             transition={{ delay: 1.4, duration: 0.6 }}
             className="pt-2"
           >
-            <div className="grid grid-cols-2 sm:grid-cols-4 items-center justify-center gap-2 sm:gap-4 text-[11px] font-medium max-w-xl mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-[11px] font-medium max-w-xl mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
               {[
                 { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management", to: "/property-management" },
                 { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings", to: "/explore" },
                 { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace", to: "/marketplace-services" },
                 { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics", to: "/signup" },
               ].map((vp) => (
-                <Link key={vp.text} to={vp.to} className="inline-flex items-center gap-1.5 justify-center hover:text-accent transition-colors">
+                <Link key={vp.text} to={vp.to} className="inline-flex items-center gap-1.5 hover:text-accent transition-colors whitespace-nowrap">
                   <vp.icon className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-                  <span className="truncate">{vp.text}</span>
+                  <span>{vp.text}</span>
                 </Link>
               ))}
             </div>

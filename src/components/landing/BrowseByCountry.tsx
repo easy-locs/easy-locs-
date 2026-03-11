@@ -2,17 +2,39 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Globe } from "lucide-react";
 
-const COUNTRIES = [
-  { name: "UAE", slug: "uae", flag: "🇦🇪", code: "AE" },
-  { name: "France", slug: "france", flag: "🇫🇷", code: "FR" },
-  { name: "Morocco", slug: "morocco", flag: "🇲🇦", code: "MA" },
-  { name: "Thailand", slug: "thailand", flag: "🇹🇭", code: "TH" },
-  { name: "Spain", slug: "spain", flag: "🇪🇸", code: "ES" },
-  { name: "Portugal", slug: "portugal", flag: "🇵🇹", code: "PT" },
-  { name: "Italy", slug: "italy", flag: "🇮🇹", code: "IT" },
-  { name: "Germany", slug: "germany", flag: "🇩🇪", code: "DE" },
-  { name: "UK", slug: "united-kingdom", flag: "🇬🇧", code: "GB" },
-  { name: "Turkey", slug: "turkey", flag: "🇹🇷", code: "TR" },
+const CONTINENTS = [
+  {
+    name: "Europe",
+    countries: [
+      { name: "France", slug: "france", flag: "🇫🇷" },
+      { name: "Spain", slug: "spain", flag: "🇪🇸" },
+      { name: "Portugal", slug: "portugal", flag: "🇵🇹" },
+      { name: "Italy", slug: "italy", flag: "🇮🇹" },
+      { name: "Germany", slug: "germany", flag: "🇩🇪" },
+      { name: "UK", slug: "united-kingdom", flag: "🇬🇧" },
+    ],
+  },
+  {
+    name: "Middle East",
+    countries: [
+      { name: "UAE", slug: "uae", flag: "🇦🇪" },
+      { name: "Turkey", slug: "turkey", flag: "🇹🇷" },
+    ],
+  },
+  {
+    name: "Africa",
+    countries: [
+      { name: "Morocco", slug: "morocco", flag: "🇲🇦" },
+    ],
+  },
+  {
+    name: "Asia",
+    countries: [
+      { name: "Thailand", slug: "thailand", flag: "🇹🇭" },
+      { name: "Japan", slug: "japan", flag: "🇯🇵" },
+      { name: "Indonesia", slug: "indonesia", flag: "🇮🇩" },
+    ],
+  },
 ];
 
 const BrowseByCountry = () => (
@@ -30,29 +52,40 @@ const BrowseByCountry = () => (
         </motion.span>
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Browse by Country</h2>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-xl mx-auto">
-          Discover properties and services in countries where Easy-Locs operates
+          Discover properties and services across every continent
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-        {COUNTRIES.map((c, i) => (
-          <motion.div
-            key={c.slug}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.04 }}
-          >
-            <Link
-              to={`/country/${c.slug}`}
-              className="flex flex-col items-center gap-2 rounded-xl border border-border/60 bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-md transition-all group"
-            >
-              <span className="text-4xl sm:text-5xl group-hover:scale-110 transition-transform">{c.flag}</span>
-              <span className="text-sm font-semibold text-foreground">{c.name}</span>
-            </Link>
-          </motion.div>
+
+      <div className="space-y-8">
+        {CONTINENTS.map((continent) => (
+          <div key={continent.name}>
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-3 px-1">
+              {continent.name}
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {continent.countries.map((c, i) => (
+                <motion.div
+                  key={c.slug}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.03 }}
+                >
+                  <Link
+                    to={`/country/${c.slug}`}
+                    className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card p-3.5 hover:border-primary/40 hover:shadow-md transition-all group"
+                  >
+                    <span className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform shrink-0">{c.flag}</span>
+                    <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
-      <div className="text-center mt-6">
+
+      <div className="text-center mt-8">
         <Link to="/locations" className="text-sm font-medium text-accent hover:underline">
           View all countries →
         </Link>
