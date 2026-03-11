@@ -80,6 +80,7 @@ const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 const RentalManagement = () => {
   const { user, orgId, userCountry } = useAuth();
   const { t } = useI18n();
+  const navigate = useNavigate();
   const cc = useMemo(() => getCountryConfig(userCountry), [userCountry]);
   const fmt = useCallback((n: number) => formatCurrency(n, userCountry), [userCountry]);
   const propertyTypes = cc.propertyTypes;
