@@ -1054,12 +1054,12 @@ const CommunicationCenter = () => {
               </div>
               {propertyOptions.length > 1 && (
                 <Select value={filterProperty} onValueChange={setFilterProperty}>
-                  <SelectTrigger className="h-7 text-xs">
-                    <MapPin className="h-3 w-3 mr-1 text-muted-foreground" />
-                    <span className="truncate">{filterProperty === "all" ? "All properties" : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
+                  <SelectTrigger className="h-8 text-xs">
+                    <MapPin className="h-3 w-3 me-1 text-muted-foreground" />
+                    <span className="truncate">{filterProperty === "all" ? (t("page.communication.all_properties") || "All properties") : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All properties</SelectItem>
+                    <SelectItem value="all">{t("page.communication.all_properties") || "All properties"}</SelectItem>
                     {propertyOptions.map(p => (
                       <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
                     ))}
