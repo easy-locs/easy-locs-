@@ -36,6 +36,7 @@ const regions = [
 const WorldMapSection = () => {
   const { t } = useI18n();
   const [globeFailed, setGlobeFailed] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
