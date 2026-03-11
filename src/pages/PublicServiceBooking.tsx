@@ -711,7 +711,7 @@ const PublicServiceBooking = () => {
             <div className="lg:col-span-1">
               <Card className="sticky top-8">
                 <CardContent className="pt-6 space-y-4">
-                  <h3 className="font-semibold text-foreground">Booking Summary</h3>
+                  <h3 className="font-semibold text-foreground">{t("mp.booking_summary") || "Booking Summary"}</h3>
                   <Separator />
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
