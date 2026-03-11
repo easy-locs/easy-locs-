@@ -244,7 +244,7 @@ export default function StorePage() {
         {/* SEO internal links */}
         {serviceCities.length > 0 && (
           <div className="max-w-5xl mx-auto px-4 pb-10">
-            <h2 className="text-sm font-semibold text-muted-foreground mb-3">Explore nearby</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t("mp.explore_nearby") || "Explore nearby"}</h2>
             <div className="flex flex-wrap gap-2">
               {serviceCities.map((city) => (
                 <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
