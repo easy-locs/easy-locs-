@@ -1025,11 +1025,11 @@ const CommunicationCenter = () => {
 
         <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
           {/* ────── Thread list ────── */}
-          <div className={`w-full md:w-80 lg:w-96 border-r border-border/50 flex flex-col ${selectedThread ? "hidden md:flex" : "flex"}`}>
-            <div className="p-3 border-b border-border/50 space-y-2">
+          <div className={`w-full md:w-80 lg:w-96 border-e border-border/50 flex flex-col comm-thread-list ${selectedThread ? "hidden md:flex" : "flex"}`}>
+            <div className="p-2.5 sm:p-3 border-b border-border/50 space-y-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search conversations..." className="pl-9 h-9 text-sm" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t("page.communication.search") || "Search conversations..."} className="ps-9 h-9 text-sm" />
               </div>
               <div className="flex gap-1 flex-wrap">
                 {[
