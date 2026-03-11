@@ -77,7 +77,7 @@ const Newsletter = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("newsletter.placeholder")}
+                  placeholder={t("newsletter.placeholder") || "your@email.com"}
                   className="w-full pl-10 pr-4 h-12 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                   style={{
                     background: "hsl(var(--primary-foreground) / 0.06)",
