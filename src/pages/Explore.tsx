@@ -309,6 +309,16 @@ export default function Explore() {
 
             <div className="flex items-center gap-2">
               <ThemeSwitcher />
+              {/* Radius search toggle */}
+              <button
+                onClick={() => setShowRadiusSearch(v => !v)}
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-medium transition-all ${
+                  showRadiusSearch ? "border-accent bg-accent/10 text-accent" : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                Map
+              </button>
               <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Log in</Link>
               <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity">Sign up</Link>
             </div>
