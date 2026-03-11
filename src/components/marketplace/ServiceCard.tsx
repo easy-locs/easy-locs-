@@ -34,16 +34,16 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const links = slug ? getShareLinks("service", slug, service.title, service.updated_at) : null;
 
   const handleShare = async () => {
-    if (!slug) { toast.error("No booking slug configured"); return; }
+    if (!slug) { toast.error(t("mp.no_booking_slug") || "No booking slug configured"); return; }
     const result = await sharePage({ type: "service", slug, title: service.title, version: service.updated_at });
-    if (result === "copied") toast.success("Link copied!");
-    else if (result === "shared") toast.success("Shared!");
+    if (result === "copied") toast.success(t("mp.link_copied") || "Link copied!");
+    else if (result === "shared") toast.success(t("mp.shared") || "Shared!");
   };
 
   const copyLink = () => {
     if (!links) return;
     navigator.clipboard.writeText(links.copy);
-    toast.success("Booking link copied!");
+    toast.success(t("mp.link_copied") || "Booking link copied!");
   };
 
   const timeSlots = Array.isArray(service.time_slots) ? service.time_slots : [];
