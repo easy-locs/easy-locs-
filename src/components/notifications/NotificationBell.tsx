@@ -4,6 +4,7 @@
  * Fixed for iPhone Safari: uses touchend-safe event handling.
  */
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Bell, MessageCircle, ExternalLink, ArrowRightLeft, AlertTriangle, CheckCheck, Trash2, X, CreditCard, CalendarCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,12 +126,12 @@ const NotificationBell = () => {
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  // Request notification permission on mount
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
+  // Do NOT request notification permission on mount — wait for meaningful user action
+  // Permission is requested via requestNotificationPermission() exported below
+
+  // Smart sound/vibration: throttle and suppress when viewing related page
+  const lastSoundRef = useRef(0);
+  const location = useLocation();
 
   useEffect(() => {
     if (!user) return;
@@ -138,24 +139,37 @@ const NotificationBell = () => {
       .channel("notifications-bell")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
         fetchNotifications();
-        // Sound + vibration + browser notification for new notifications
+
+        const n = payload.new as any;
+        const now = Date.now();
+        const THROTTLE_MS = 5000; // min 5s between sounds
+
+        // Suppress sound if user is currently on the related page
+        const targetUrl = n.metadata_json?.target_url || n.link || "";
+        const isViewingRelated = targetUrl && location.pathname && targetUrl.startsWith(location.pathname);
+
+        // Suppress sound if panel is open (user is already looking at notifications)
+        const shouldPlaySound = !isViewingRelated && !open && (now - lastSoundRef.current > THROTTLE_MS);
+
         try {
-          // Vibrate on mobile (if supported)
-          if ("vibrate" in navigator) {
-            navigator.vibrate([200, 100, 200]);
+          if (shouldPlaySound) {
+            lastSoundRef.current = now;
+            // Vibrate on mobile (short, respectful pattern)
+            if ("vibrate" in navigator) {
+              navigator.vibrate([150, 80, 150]);
+            }
+            // Play notification sound
+            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgipGJdFZQb5mwsI1hNTRfkJqPdFJNc5+0s5VjMy9ikJuQclBMd6O4t5tlMC1mlZ+TbkpHeqe8u6FoLylpmqOXa0RCfay/waRtLCVrnqibb0BAf7DDxKhxKh5voKueclw5gbbIyq55IRZxobGjfVg0h7zNza+CIxF0pLingl4vjcHP0LSOJw1xp7mtiVcsj8bS0rqYLAhyqr2xkFIpk8vV1MChMwNyq8C2mEwjlc/Z18awOwByq8K5n0YclNPc2s6/PwByrsW9pkIVk9fg3NbKRQBwsMnDq0EQkd3l4OLRTQBwsc3IrkMNj+Dr5erbVABusc/Os0gJi+Xx6/TlYQBqs9LTuU0Fh+j39fzsfwBltNfa");
+            audio.volume = 0.25;
+            audio.play().catch(() => {});
           }
-          // Play notification sound
-          const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgipGJdFZQb5mwsI1hNTRfkJqPdFJNc5+0s5VjMy9ikJuQclBMd6O4t5tlMC1mlZ+TbkpHeqe8u6FoLylpmqOXa0RCfay/waRtLCVrnqibb0BAf7DDxKhxKh5voKueclw5gbbIyq55IRZxobGjfVg0h7zNza+CIxF0pLingl4vjcHP0LSOJw1xp7mtiVcsj8bS0rqYLAhyqr2xkFIpk8vV1MChMwNyq8C2mEwjlc/Z18awOwByq8K5n0YclNPc2s6/PwByrsW9pkIVk9fg3NbKRQBwsMnDq0EQkd3l4OLRTQBwsc3IrkMNj+Dr5erbVABusc/Os0gJi+Xx6/TlYQBqs9LTuU0Fh+j39fzsfwBltNfa");
-          audio.volume = 0.3;
-          audio.play().catch(() => {}); // ignore autoplay restrictions
-          // Browser notification (if permission granted)
+          // Browser notification (always if permitted, regardless of throttle)
           if ("Notification" in window && Notification.permission === "granted") {
-            const n = payload.new as any;
             new Notification("Easy-Locs", {
               body: n.message || n.title || "New notification",
               icon: "/pwa-192x192.png",
               tag: n.id,
-              silent: true, // we already played our own sound
+              silent: !shouldPlaySound, // only play OS sound if we didn't play ours
             });
           }
         } catch { /* ignore notification errors */ }
@@ -163,7 +177,7 @@ const NotificationBell = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, fetchNotifications]);
+  }, [user, fetchNotifications, open, location.pathname]);
 
   const portalNotifications = useMemo(() => {
     return allNotifications
@@ -499,3 +513,13 @@ const NotificationBell = () => {
 };
 
 export default NotificationBell;
+
+/**
+ * Request browser notification permission.
+ * Call this after meaningful user actions (login, entering communication center, enabling alerts).
+ */
+export function requestNotificationPermission(): void {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
