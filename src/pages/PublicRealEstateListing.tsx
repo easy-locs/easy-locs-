@@ -262,7 +262,7 @@ export default function PublicRealEstateListing() {
 
               {/* Mobile carousel — safe touch targets */}
               <div className="md:hidden relative aspect-[4/3] overflow-hidden">
-                <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" />
+                <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />
                 {photos.length > 1 && (
                   <>
