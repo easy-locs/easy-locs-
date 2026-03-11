@@ -333,22 +333,15 @@ export default function ProviderStorefront() {
             <ReviewRatingBreakdown
               rating={rating}
               reviewsCount={reviewsCount}
+              verifiedCount={reviews.filter(r => r.verified).length}
               reviews={reviews.map((r) => ({ rating: r.rating }))}
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
-          {reviewsCount > reviews.length && (
-            <div className="mt-4 text-center">
-              <Button variant="outline" size="sm" className="text-xs">
-                View all {reviewsCount} reviews
-              </Button>
-            </div>
-          )}
+          <SortableReviewList
+            reviews={reviews}
+            totalCount={reviewsCount}
+          />
         </div>
       )}
 

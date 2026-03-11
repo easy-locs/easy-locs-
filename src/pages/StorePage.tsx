@@ -222,14 +222,14 @@ export default function StorePage() {
               <ReviewRatingBreakdown
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedCount={reviews.filter(r => r.verified).length}
                 reviews={reviews.map((r) => ({ rating: r.rating }))}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </div>
+            <SortableReviewList
+              reviews={reviews}
+              totalCount={reviewsCount}
+            />
           </div>
         )}
 
