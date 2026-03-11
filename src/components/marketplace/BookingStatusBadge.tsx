@@ -35,6 +35,14 @@ const BOOKING_STATUS_CONFIG: Record<string, { variant: "outline" | "default" | "
   refunded: { variant: "outline", icon: RefreshCw, color: "text-muted-foreground" },
 };
 
+// Backward-compatible export with label property
+export const BOOKING_STATUSES = Object.fromEntries(
+  Object.entries(BOOKING_STATUS_CONFIG).map(([key, config]) => [
+    key,
+    { ...config, label: BOOKING_STATUS_FALLBACKS[key] || key },
+  ])
+) as Record<string, { label: string; variant: "outline" | "default" | "secondary" | "destructive"; icon: any; color: string }>;
+
 export type BookingStatus = keyof typeof BOOKING_STATUS_CONFIG;
 
 export default function BookingStatusBadge({ status }: { status: string }) {
