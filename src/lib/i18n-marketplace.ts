@@ -234,6 +234,18 @@ const MP_KEYS_EN: Record<string, string> = {
   // Nav extras
   "nav.marketplace": "Marketplace",
   "nav.more": "More",
+  // Payment methods
+  "payment.method": "Payment Method",
+  "payment.card": "Credit Card",
+  "payment.card_desc": "Pay securely with Stripe",
+  "payment.cash": "Cash",
+  "payment.cash_desc": "Pay in person on arrival",
+  "payment.bank_transfer": "Bank Transfer",
+  "payment.bank_transfer_desc": "Pay via wire transfer / IBAN",
+  "payment.paypal_desc": "Pay with PayPal",
+  // Booking form extras (complete)
+  "mp.booking_summary_service": "Service",
+  "mp.review_window_note": "Reviews can be submitted within 30 days of completion",
 };
 
 export const marketplaceI18n: Record<string, Record<string, string>> = {
