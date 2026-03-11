@@ -1,4 +1,5 @@
-import { Globe } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
 
 interface ExploreCategoryBarProps {
@@ -6,71 +7,162 @@ interface ExploreCategoryBarProps {
   activeSubcategory: string;
   onGroupChange: (group: string) => void;
   onSubcategoryChange: (sub: string) => void;
+  groupCounts?: Record<string, number>;
 }
 
-export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChange, onSubcategoryChange }: ExploreCategoryBarProps) {
+export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChange, onSubcategoryChange, groupCounts }: ExploreCategoryBarProps) {
   const activeGroupData = CATEGORY_HIERARCHY.find(g => g.value === activeGroup);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const subScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", checkScroll); ro.disconnect(); };
+  }, [checkScroll]);
+
+  const scroll = (dir: "left" | "right") => {
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
+  };
 
   return (
     <>
-      {/* Group bar */}
-      <div className="border-t border-border/50">
-        <div className="max-w-[1400px] mx-auto px-4">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-3 -mx-1">
-            <button
-              onClick={() => { onGroupChange("all"); onSubcategoryChange("all"); }}
-              className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs transition-all min-w-[64px] min-h-[56px] ${
-                activeGroup === "all" ? "text-foreground border-b-2 border-foreground font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
-            >
-              <Globe className="h-5 w-5" />
-              <span>All</span>
+      {/* ── Main group bar ── */}
+      <div className="relative border-t border-border/40">
+        {/* Fade + arrow left */}
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center">
+            <div className="w-12 h-full bg-gradient-to-r from-background to-transparent pointer-events-none absolute inset-0" />
+            <button onClick={() => scroll("left")} className="relative z-10 ml-1 p-1 rounded-full bg-background border border-border shadow-sm hover:shadow-md transition-shadow">
+              <ChevronLeft className="h-4 w-4 text-foreground" />
             </button>
+          </div>
+        )}
+
+        {/* Fade + arrow right */}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center">
+            <div className="w-12 h-full bg-gradient-to-l from-background to-transparent pointer-events-none absolute inset-0" />
+            <button onClick={() => scroll("right")} className="relative z-10 mr-1 p-1 rounded-full bg-background border border-border shadow-sm hover:shadow-md transition-shadow">
+              <ChevronRight className="h-4 w-4 text-foreground" />
+            </button>
+          </div>
+        )}
+
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div ref={scrollRef} className="flex items-center gap-1 overflow-x-auto scrollbar-none py-2.5 -mx-1 scroll-smooth">
+            {/* All */}
+            <CategoryTab
+              active={activeGroup === "all"}
+              emoji={<Globe className="h-5 w-5" />}
+              label="All"
+              count={groupCounts?.all}
+              onClick={() => { onGroupChange("all"); onSubcategoryChange("all"); }}
+            />
             {CATEGORY_HIERARCHY.map(group => (
-              <button
+              <CategoryTab
                 key={group.value}
+                active={activeGroup === group.value}
+                emoji={<span className="text-lg leading-none">{group.emoji}</span>}
+                label={group.label}
+                count={groupCounts?.[group.value]}
                 onClick={() => { onGroupChange(group.value); onSubcategoryChange("all"); }}
-                className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs transition-all min-w-[64px] min-h-[56px] ${
-                  activeGroup === group.value ? "text-foreground border-b-2 border-foreground font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                <span className="text-lg">{group.emoji}</span>
-                <span className="truncate max-w-[72px] leading-none">{group.label}</span>
-              </button>
+              />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Sub-category bar */}
+      {/* ── Sub-category bar ── */}
       {activeGroup !== "all" && activeGroupData && (
         <div className="border-t border-border/30 bg-muted/20">
           <div className="max-w-[1400px] mx-auto px-4">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-2">
-              <button
+            <div ref={subScrollRef} className="flex items-center gap-2 overflow-x-auto scrollbar-none py-2">
+              <SubCategoryChip
+                active={activeSubcategory === "all"}
+                label={`All ${activeGroupData.label}`}
                 onClick={() => onSubcategoryChange("all")}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  activeSubcategory === "all" ? "bg-accent text-accent-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                All {activeGroupData.label}
-              </button>
+              />
               {activeGroupData.subcategories.map(sub => (
-                <button
+                <SubCategoryChip
                   key={sub.value}
+                  active={activeSubcategory === sub.value}
+                  emoji={sub.emoji}
+                  label={sub.label}
                   onClick={() => onSubcategoryChange(sub.value)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    activeSubcategory === sub.value ? "bg-accent text-accent-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <span>{sub.emoji}</span>
-                  {sub.label}
-                </button>
+                />
               ))}
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+/* ── Tab component (main row) ── */
+function CategoryTab({ active, emoji, label, count, onClick }: {
+  active: boolean;
+  emoji: React.ReactNode;
+  label: string;
+  count?: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs transition-all min-w-[68px] min-h-[56px] relative group ${
+        active
+          ? "text-foreground font-semibold"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+      }`}
+    >
+      <span className="transition-transform group-hover:scale-110">{emoji}</span>
+      <span className="truncate max-w-[76px] leading-none">{label}</span>
+      {count !== undefined && count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+      {/* Active indicator bar */}
+      {active && (
+        <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-foreground" />
+      )}
+    </button>
+  );
+}
+
+/* ── Chip component (sub row) ── */
+function SubCategoryChip({ active, emoji, label, onClick }: {
+  active: boolean;
+  emoji?: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+        active
+          ? "bg-foreground text-background shadow-sm"
+          : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+      }`}
+    >
+      {emoji && <span>{emoji}</span>}
+      {label}
+    </button>
   );
 }
