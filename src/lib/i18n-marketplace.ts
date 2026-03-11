@@ -793,6 +793,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "المتجر غير موجود", "mp.provider_not_found": "المزود غير موجود", "mp.review_single": "تقييم",
     "mp.status_new": "طلب جديد", "mp.status_pending": "قيد الانتظار", "mp.status_awaiting_payment": "بانتظار الدفع",
     "mp.status_confirmed": "مؤكد", "mp.status_modified": "معدّل", "mp.status_cancelled": "ملغى", "mp.status_completed": "مكتمل", "mp.status_refunded": "مسترد",
+    "payment.method": "طريقة الدفع", "payment.card": "بطاقة ائتمان", "payment.card_desc": "دفع آمن عبر Stripe",
+    "payment.cash": "نقداً", "payment.cash_desc": "الدفع عند الوصول", "payment.bank_transfer": "تحويل بنكي", "payment.bank_transfer_desc": "الدفع عبر تحويل / IBAN",
   },
   tr: {
     "mp.title": "Pazar Yeri", "mp.browse": "Göz At", "mp.my_services": "Hizmetlerim", "mp.my_bookings": "Rezervasyonlarım",
