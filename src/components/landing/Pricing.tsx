@@ -282,7 +282,7 @@ const Pricing = () => {
                       isHighlight
                         ? "bg-primary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20"
                         : tier.name === "Company"
-                        ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:opacity-90 shadow-md"
+                        ? "bg-gradient-to-r from-accent to-gold-dark text-accent-foreground hover:opacity-90 shadow-md shadow-accent/20"
                         : isFree
                         ? "bg-muted text-foreground hover:bg-muted/80 border border-border"
                         : "bg-accent text-accent-foreground hover:opacity-90"

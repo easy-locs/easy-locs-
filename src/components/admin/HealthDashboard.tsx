@@ -13,13 +13,13 @@ import {
 
 const statusIcon = (s: string) => {
   if (s === "ok") return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-  if (s === "warning") return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+  if (s === "warning") return <AlertTriangle className="h-4 w-4 text-warning" />;
   return <XCircle className="h-4 w-4 text-destructive" />;
 };
 
 const typeColor: Record<string, string> = {
   error: "bg-destructive/10 text-destructive border-destructive/20",
-  warning: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  warning: "bg-warning/10 text-warning border-warning/20",
   performance: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   sync_failure: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   ui_issue: "bg-orange-500/10 text-orange-600 border-orange-500/20",
@@ -69,8 +69,8 @@ const HealthDashboard = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-yellow-500/10">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <div className="p-2 rounded-lg bg-warning/10">
+              <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{warningCount}</p>

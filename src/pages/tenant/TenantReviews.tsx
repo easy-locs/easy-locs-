@@ -117,7 +117,7 @@ const TenantReviews = () => {
             {[1, 2, 3, 4, 5].map((s) => (
               <button key={s} onClick={() => setRating(s)} className="focus:outline-none">
                 <Star
-                  className={`h-6 w-6 transition-colors ${s <= rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/30"}`}
+                  className={`h-6 w-6 transition-colors ${s <= rating ? "fill-warning text-warning" : "text-muted-foreground/30"}`}
                 />
               </button>
             ))}
@@ -161,7 +161,7 @@ const TenantReviews = () => {
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
-                        className={`h-4 w-4 ${s <= r.rating ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/20"}`}
+                        className={`h-4 w-4 ${s <= r.rating ? "fill-warning text-warning" : "text-muted-foreground/20"}`}
                       />
                     ))}
                   </div>
