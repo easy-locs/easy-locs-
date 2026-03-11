@@ -1225,12 +1225,12 @@ const RentalManagement = () => {
                 </span>
               )}
               {isSeasonal && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-sky-500/10 text-sky-600 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-info/10 text-info px-2 py-0.5 rounded-full">
                   <CalendarRange className="h-3 w-3" /> {t("page.property.mode_seasonal") || "Seasonal"}
                 </span>
               )}
               {isForSale && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
                   <Tag className="h-3 w-3" /> {t("page.property.mode_sale") || "For sale"}
                 </span>
               )}
