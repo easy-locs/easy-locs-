@@ -58,18 +58,14 @@ export default function Explore() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [geoApplied, setGeoApplied] = useState(false);
 
-  // Auto-set location from geo-detection when no URL params exist
+  // Keep the public explore page global by default.
+  // Geo-detection is used for suggestions/placeholders only, not as an automatic filter.
   useEffect(() => {
     if (geoApplied) return;
-    if (searchParams.get("location") || searchParams.get("q")) return; // user already filtered
+    if (searchParams.get("location") || searchParams.get("q")) return;
     if (!geo.detection || geo.loading) return;
 
-    // Auto-set to detected country
-    if (geo.detection.country) {
-      setLocationQuery(geo.detection.country.toUpperCase());
-      setRadius("country");
-      setGeoApplied(true);
-    }
+    setGeoApplied(true);
   }, [geo.detection, geo.loading, geoApplied, searchParams]);
 
   // Data
