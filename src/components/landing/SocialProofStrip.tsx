@@ -74,7 +74,7 @@ const SocialProofStrip = () => {
               >
                 <s.icon className="h-4.5 w-4.5" style={{ color: `hsl(var(--${s.color}))` }} />
               </div>
-              <div className="text-xl sm:text-2xl font-extrabold text-foreground leading-none">
+              <div className="text-lg sm:text-2xl font-extrabold text-foreground leading-none">
                 <AnimatedCounter from={s.valueFrom} to={s.valueTo} suffix={s.suffix} />
               </div>
               <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">

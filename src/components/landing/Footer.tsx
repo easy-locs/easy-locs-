@@ -74,7 +74,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
       }} />
 
       <div className="container relative z-10">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <AppLogo variant="footer" linkTo="/" className="mb-4" />
