@@ -28,7 +28,7 @@ import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
 const ActivitiesMarketplace = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, subscription } = useAuth();
   const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
