@@ -1,16 +1,26 @@
 export const MARKETPLACE_CATEGORIES = [
+  // Property & Home
   { value: "cleaning", label: "Cleaning", icon: "🧹" },
   { value: "maintenance", label: "Property Maintenance", icon: "🔧" },
+  { value: "construction", label: "Construction / Renovation", icon: "🏗️" },
+  // Transport
   { value: "transport", label: "Transport", icon: "🚐" },
   { value: "car_rental", label: "Car Rental", icon: "🚗" },
-  { value: "tours", label: "Tours & Activities", icon: "🗺️" },
   { value: "airport_transfer", label: "Airport Transfer", icon: "✈️" },
-  { value: "personal", label: "Personal Services", icon: "💆" },
-  
-  { value: "spa", label: "Wellness / Spa", icon: "🧖" },
+  // Experiences
+  { value: "tours", label: "Tours & Activities", icon: "🗺️" },
   { value: "water_sport", label: "Water Sport", icon: "🚤" },
+  { value: "spa", label: "Wellness / Spa", icon: "🧖" },
+  { value: "sports_coach", label: "Sports Coach", icon: "🏋️" },
+  // Food & Workspace
   { value: "restaurant", label: "Restaurant", icon: "🍽️" },
   { value: "coworking", label: "Coworking", icon: "💻" },
+  // Professional Services
+  { value: "legal", label: "Legal / Advocate", icon: "⚖️" },
+  { value: "business_services", label: "Business Services", icon: "💼" },
+  { value: "consulting", label: "Professional Consulting", icon: "📊" },
+  { value: "personal", label: "Personal Services", icon: "💆" },
+  // Events & Other
   { value: "event", label: "Events / Tickets", icon: "🎫" },
   { value: "other", label: "Other", icon: "📦" },
 ] as const;
