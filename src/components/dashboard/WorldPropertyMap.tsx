@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 /* Error boundary for 3D content */
 class GlobeErrorBoundary extends Component<{ children: ReactNode; onError?: () => void }, { hasError: boolean }> {
@@ -19,8 +20,12 @@ class GlobeErrorBoundary extends Component<{ children: ReactNode; onError?: () =
   }
 }
 
-/* Lazy-load the 3D scene to isolate Three.js imports */
-const Globe3DScene = lazy(() => import("./WorldPropertyMap3D"));
+/* Lazy-load the 3D scene to isolate Three.js imports — with catch for Safari */
+const Globe3DScene = lazy(() =>
+  import("./WorldPropertyMap3D").catch(() => ({
+    default: ((_props: any) => null) as any,
+  }))
+);
 
 const COUNTRY_LATLNG: Record<string, { lat: number; lng: number }> = {
   FR: { lat: 46.6, lng: 2.2 }, DE: { lat: 51.1, lng: 10.4 }, ES: { lat: 40.4, lng: -3.7 },
@@ -62,15 +67,23 @@ interface Props {
 export default function WorldPropertyMap({ propertiesByCountry, userCountry }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [renderError, setRenderError] = useState(false);
 
-  const hasWebGL = useMemo(() => {
+  // Skip WebGL entirely on mobile — Three.js crashes iPhone Safari
+  const canRender3D = useMemo(() => {
+    if (isMobile) return false;
     try {
       const c = document.createElement("canvas");
-      return !!(c.getContext("webgl2") || c.getContext("webgl"));
+      const gl = c.getContext("webgl2") || c.getContext("webgl");
+      if (!gl) return false;
+      // Dispose context immediately
+      const ext = (gl as WebGLRenderingContext).getExtension("WEBGL_lose_context");
+      ext?.loseContext();
+      return true;
     } catch { return false; }
-  }, []);
+  }, [isMobile]);
 
   const totalProperties = useMemo(
     () => propertiesByCountry.reduce((s, c) => s + c.count, 0),
@@ -122,9 +135,9 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
       </div>
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
-        <div className="relative w-full" style={{ height: 320 }}>
+        <div className="relative w-full" style={{ height: canRender3D ? 320 : 160 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
-          {hasWebGL && !renderError ? (
+          {canRender3D && !renderError ? (
             <GlobeErrorBoundary onError={() => setRenderError(true)}>
               <Suspense fallback={
                 <div className="w-full h-full flex items-center justify-center bg-muted/10">
