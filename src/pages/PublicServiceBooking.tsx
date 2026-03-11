@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import MarketplaceDisclaimer from "@/components/marketplace/MarketplaceDisclaimer";
+import { useI18n } from "@/lib/i18n";
 import ShareButtons from "@/components/public/ShareButtons";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
