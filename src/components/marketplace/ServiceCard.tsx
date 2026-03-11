@@ -226,7 +226,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
                 <PopoverContent className="w-48 p-2" align="end">
                   <div className="space-y-1">
                     <button onClick={copyLink} className="flex items-center gap-2 w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-muted transition-colors">
-                      <Copy className="h-3.5 w-3.5" /> Copy link
+                      <Copy className="h-3.5 w-3.5" /> {t("mp.copy_link") || "Copy link"}
                     </button>
                     <a href={links.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 w-full text-sm px-2 py-1.5 rounded-md hover:bg-muted transition-colors">
                       📱 WhatsApp
