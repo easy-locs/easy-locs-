@@ -101,14 +101,24 @@ const Expenses = () => {
   const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
   const catName = (c: string) => CATEGORIES.find(x => x.value === c)?.label || c;
 
+  // Category totals for mini chart
+  const categoryTotals = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
+    return Object.entries(map).map(([cat, amount]) => ({ cat, label: catName(cat), amount })).sort((a, b) => b.amount - a.amount).slice(0, 5);
+  }, [filtered]);
+
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="page-content">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1>{t("page.expenses.title")}</h1>
-            <p>{t("page.expenses.subtitle")}</p>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-destructive/10"><Filter className="h-5 w-5 text-destructive" /></div>
+              {t("page.expenses.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
