@@ -365,7 +365,7 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.review_submit": "Bewertung senden", "mp.review_submitting": "Wird gesendet…",
     "mp.review_tap_to_rate": "Tippen zum Bewerten", "mp.review_poor": "Schlecht", "mp.review_fair": "Mäßig", "mp.review_good": "Gut", "mp.review_very_good": "Sehr gut", "mp.review_excellent": "Ausgezeichnet",
     "mp.sort_latest": "Neueste zuerst", "mp.sort_highest": "Beste Bewertung", "mp.sort_lowest": "Schlechteste Bewertung", "mp.sort_replied": "Mit Antwort",
-    "mp.reviews_of": "von", "mp.view_all_reviews": "Alle Bewertungen", "mp.provider_reply": "Antwort des Anbieters",
+    "mp.reviews_of": "von", "mp.view_all_reviews": "Alle Bewertungen", "mp.verified_only": "Nur verifizierte", "mp.no_verified_reviews": "Noch keine verifizierten Bewertungen", "mp.no_reviews": "Noch keine Bewertungen", "mp.load_more_reviews": "Mehr Bewertungen anzeigen", "mp.remaining": "übrig", "mp.review_booking_not_eligible": "Diese Buchung ist nicht mehr für eine Bewertung berechtigt", "mp.provider_reply": "Antwort des Anbieters",
     "mp.status_new": "Neue Anfrage", "mp.status_pending": "Ausstehend", "mp.status_awaiting_payment": "Zahlung ausstehend",
     "mp.status_confirmed": "Bestätigt", "mp.status_modified": "Geändert", "mp.status_cancelled": "Storniert", "mp.status_completed": "Abgeschlossen", "mp.status_refunded": "Erstattet",
   },
