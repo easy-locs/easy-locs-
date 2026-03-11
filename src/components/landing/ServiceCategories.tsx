@@ -7,7 +7,7 @@ const CATEGORIES = [
   { label: "Property Management", icon: Home, slug: "property-management" },
   { label: "Cleaning", icon: Sparkles, slug: "cleaning" },
   { label: "Maintenance", icon: Wrench, slug: "maintenance" },
-  { label: "Concierge", icon: ConciergeBell, slug: "concierge" },
+  { label: "Concierge", icon: KeyRound, slug: "concierge" },
   { label: "Car Rental", icon: Car, slug: "car-rental" },
   { label: "Moving Services", icon: Truck, slug: "moving" },
 ];
