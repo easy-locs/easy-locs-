@@ -436,7 +436,7 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.review_submit": "Invia recensione", "mp.review_submitting": "Invio…",
     "mp.review_tap_to_rate": "Tocca per valutare", "mp.review_poor": "Scarso", "mp.review_fair": "Discreto", "mp.review_good": "Buono", "mp.review_very_good": "Molto buono", "mp.review_excellent": "Eccellente",
     "mp.sort_latest": "Più recenti", "mp.sort_highest": "Voto più alto", "mp.sort_lowest": "Voto più basso", "mp.sort_replied": "Con risposta",
-    "mp.reviews_of": "di", "mp.view_all_reviews": "Vedi tutte le recensioni", "mp.provider_reply": "Risposta del fornitore",
+    "mp.reviews_of": "di", "mp.view_all_reviews": "Vedi tutte le recensioni", "mp.verified_only": "Solo verificate", "mp.no_verified_reviews": "Nessuna recensione verificata", "mp.no_reviews": "Nessuna recensione", "mp.load_more_reviews": "Mostra altre recensioni", "mp.remaining": "rimanenti", "mp.review_booking_not_eligible": "Questa prenotazione non è più idonea per una recensione", "mp.provider_reply": "Risposta del fornitore",
     "mp.status_new": "Nuova richiesta", "mp.status_pending": "In attesa", "mp.status_awaiting_payment": "In attesa di pagamento",
     "mp.status_confirmed": "Confermato", "mp.status_modified": "Modificato", "mp.status_cancelled": "Annullato", "mp.status_completed": "Completato", "mp.status_refunded": "Rimborsato",
   },
