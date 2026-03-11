@@ -60,7 +60,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const responseRate = Number(provider?.response_rate || 0);
 
   return (
-    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[280px]">
+    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[260px] sm:min-h-[280px]">
       {/* Photo gallery */}
       {photos.length > 0 ? (
         <div className="relative h-48 shrink-0 bg-muted overflow-hidden">
