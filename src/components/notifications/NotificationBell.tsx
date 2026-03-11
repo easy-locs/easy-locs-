@@ -125,11 +125,42 @@ const NotificationBell = () => {
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel("notifications-bell")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
+        fetchNotifications();
+        // Sound + vibration + browser notification for new notifications
+        try {
+          // Vibrate on mobile (if supported)
+          if ("vibrate" in navigator) {
+            navigator.vibrate([200, 100, 200]);
+          }
+          // Play notification sound
+          const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgipGJdFZQb5mwsI1hNTRfkJqPdFJNc5+0s5VjMy9ikJuQclBMd6O4t5tlMC1mlZ+TbkpHeqe8u6FoLylpmqOXa0RCfay/waRtLCVrnqibb0BAf7DDxKhxKh5voKueclw5gbbIyq55IRZxobGjfVg0h7zNza+CIxF0pLingl4vjcHP0LSOJw1xp7mtiVcsj8bS0rqYLAhyqr2xkFIpk8vV1MChMwNyq8C2mEwjlc/Z18awOwByq8K5n0YclNPc2s6/PwByrsW9pkIVk9fg3NbKRQBwsMnDq0EQkd3l4OLRTQBwsc3IrkMNj+Dr5erbVABusc/Os0gJi+Xx6/TlYQBqs9LTuU0Fh+j39fzsfwBltNfa");
+          audio.volume = 0.3;
+          audio.play().catch(() => {}); // ignore autoplay restrictions
+          // Browser notification (if permission granted)
+          if ("Notification" in window && Notification.permission === "granted") {
+            const n = payload.new as any;
+            new Notification("Easy-Locs", {
+              body: n.message || n.title || "New notification",
+              icon: "/pwa-192x192.png",
+              tag: n.id,
+              silent: true, // we already played our own sound
+            });
+          }
+        } catch { /* ignore notification errors */ }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchNotifications]);
