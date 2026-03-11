@@ -253,9 +253,21 @@ export default function Explore() {
     if (suggestion.type === "geo" && geo.detection?.city) {
       setLocationQuery(geo.detection.city);
       setRadiusKm(25);
+      // Use GPS/IP coordinates as search center
+      if (geo.detection.lat && geo.detection.lng) {
+        setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
+      }
     } else {
       setLocationQuery(suggestion.label);
-      if (suggestion.type === "city") setRadiusKm(25);
+      if (suggestion.type === "city") {
+        setRadiusKm(25);
+        // Geocode the selected city to get coordinates
+        import("@/lib/city-geocoder").then(({ getCityCoords }) => {
+          getCityCoords(suggestion.label).then(coords => {
+            if (coords) setSearchCenter(coords);
+          });
+        });
+      }
     }
     setGeoApplied(true);
   };
@@ -264,6 +276,9 @@ export default function Explore() {
     if (geo.detection?.city) {
       setLocationQuery(geo.detection.city);
       setRadiusKm(25);
+      if (geo.detection.lat && geo.detection.lng) {
+        setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
+      }
     } else if (geo.country) {
       setLocationQuery(geo.country);
       setRadiusKm(100);
@@ -282,7 +297,7 @@ export default function Explore() {
 
   const clearAll = () => {
     setSearchQuery(""); setLocationQuery(""); setActiveGroup("all"); setActiveSubcategory("all");
-    setRadiusKm(0); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
+    setRadiusKm(0); setSearchCenter(null); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
     setGeoApplied(false);
   };
 
