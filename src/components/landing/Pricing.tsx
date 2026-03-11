@@ -326,8 +326,8 @@ const Pricing = () => {
                 <BadgePercent className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">0% commission — always</p>
-                <p className="text-xs text-muted-foreground">Your bookings, your payments, your revenue. We never take a cut.</p>
+                <p className="font-bold text-foreground text-sm">{t("pricing.zero_commission") || "0% commission — always"}</p>
+                <p className="text-xs text-muted-foreground">{t("pricing.zero_commission_desc") || "Your bookings, your payments, your revenue. We never take a cut."}</p>
               </div>
             </div>
             <div className="hidden sm:block w-px h-10 bg-success/20" />
