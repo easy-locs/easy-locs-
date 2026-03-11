@@ -5,7 +5,6 @@ import SocialProofStrip from "@/components/landing/SocialProofStrip";
 import BrowseByCountry from "@/components/landing/BrowseByCountry";
 import PopularCities from "@/components/landing/PopularCities";
 import ServiceCategories from "@/components/landing/ServiceCategories";
-import QuickLinks from "@/components/landing/QuickLinks";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Pricing from "@/components/landing/Pricing";
 import LandingFAQ from "@/components/landing/LandingFAQ";
@@ -16,6 +15,7 @@ import ExplorePreview from "@/components/landing/ExplorePreview";
 import { Loader2 } from "lucide-react";
 
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
+const ValueProposition = lazy(() => import("@/components/landing/ValueProposition"));
 
 const SectionLoader = () => (
   <div className="flex items-center justify-center py-16">
@@ -143,14 +143,13 @@ const Index = () => {
       <Hero />
       <SocialProofStrip />
 
+      {/* Live inventory preview — first impression */}
+      <ExplorePreview />
+
       {/* Discovery sections */}
       <BrowseByCountry />
       <PopularCities />
       <ServiceCategories />
-      <QuickLinks />
-
-      {/* Live inventory preview */}
-      <ExplorePreview />
 
       {/* How it works */}
       <HowItWorks />
@@ -158,6 +157,11 @@ const Index = () => {
       {/* Trust */}
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
+      </Suspense>
+
+      {/* Value proposition — replaces empty bottom area */}
+      <Suspense fallback={<SectionLoader />}>
+        <ValueProposition />
       </Suspense>
 
       {/* Pricing & FAQ */}

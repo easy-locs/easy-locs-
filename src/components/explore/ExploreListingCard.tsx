@@ -49,19 +49,19 @@ export function ExploreListingCard({ item }: { item: any }) {
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
-          <div className="absolute top-3 start-3 flex items-center gap-1.5">
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-sm ${typeBadge.color}`}>
+          <div className="absolute top-3 start-3 flex items-center gap-1.5 flex-wrap max-w-[calc(100%-24px)]">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-sm whitespace-nowrap ${typeBadge.color}`}>
               {subInfo?.emoji && <span>{subInfo.emoji}</span>}
               {typeBadge.label}
             </span>
             {isVerified && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-accent/90 text-accent-foreground backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-accent/90 text-accent-foreground backdrop-blur-sm whitespace-nowrap">
                 <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
           </div>
           <div className="absolute bottom-3 end-3 bg-background/90 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-lg">
-            <span className="text-sm font-bold text-foreground">{priceLabel}</span>
+            <span className="text-sm font-bold text-foreground whitespace-nowrap">{priceLabel}</span>
           </div>
           {type === "real-estate" && item.views_count > 0 && (
             <div className="absolute top-3 end-3 bg-background/80 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-muted-foreground flex items-center gap-1">
@@ -81,29 +81,32 @@ export function ExploreListingCard({ item }: { item: any }) {
           <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">
             {item.title}
           </h3>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
             <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
-            <span className="truncate">{item.city}{item.country ? `, ${item.country.toUpperCase()}` : ""}</span>
+            <span className="truncate">
+              {item.city}
+              {item.country ? `, ${item.country.toUpperCase().slice(0, 3)}` : ""}
+            </span>
           </div>
           {type === "service" && subInfo && (
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <span>{subInfo.emoji}</span>
-              <span className="font-medium">{subInfo.label}</span>
+              <span className="font-medium truncate">{subInfo.label}</span>
             </div>
           )}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {item.max_guests && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests} {t("explore.guests") || "guests"}</span>}
+              {item.max_guests && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
               {item.min_nights && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}{t("explore.n") || "n"}</span>}
             </div>
           )}
           {type === "real-estate" && (
-            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
               {item.surface_sqm > 0 && (
-                <span className="flex items-center gap-1"><Maximize className="h-3 w-3" /> {item.surface_sqm} m²</span>
+                <span className="flex items-center gap-1 whitespace-nowrap"><Maximize className="h-3 w-3" /> {item.surface_sqm} m²</span>
               )}
               {item.rooms > 0 && (
-                <span>{item.rooms} {t("explore.rooms") || "rooms"}</span>
+                <span className="whitespace-nowrap">{item.rooms} {t("explore.rooms") || "rooms"}</span>
               )}
               {item.bedrooms > 0 && (
                 <span className="flex items-center gap-1"><Bed className="h-3 w-3" /> {item.bedrooms}</span>
@@ -114,7 +117,7 @@ export function ExploreListingCard({ item }: { item: any }) {
             </div>
           )}
           <div className="pt-2 mt-auto">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2.5 transition-all px-3 py-1.5 rounded-lg bg-accent/10 group-hover:bg-accent/15">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2.5 transition-all px-3 py-1.5 rounded-lg bg-accent/10 group-hover:bg-accent/15 whitespace-nowrap">
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
           </div>

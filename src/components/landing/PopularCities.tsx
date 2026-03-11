@@ -35,12 +35,12 @@ const PopularCities = () => (
               to={`/city/${city.slug}`}
               className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 sm:p-4 hover:border-primary/40 hover:shadow-md transition-all group"
             >
-              <span className="text-2xl">{city.flag}</span>
-              <div className="min-w-0">
+              <span className="text-2xl shrink-0">{city.flag}</span>
+              <div className="min-w-0 overflow-hidden">
                 <p className="text-sm font-semibold text-foreground truncate">{city.name}</p>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3 shrink-0" />
-                  {city.country}
+                  <span className="truncate">{city.country}</span>
                 </p>
               </div>
             </Link>
