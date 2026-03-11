@@ -55,9 +55,12 @@ export default function Explore() {
   const [activeGroup, setActiveGroup] = useState<string>(searchParams.get("group") || "all");
   const [activeSubcategory, setActiveSubcategory] = useState<string>(searchParams.get("sub") || "all");
   const [radiusKm, setRadiusKm] = useState(() => parseInt(searchParams.get("radius") || "0", 10) || 0);
+  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [cityCoordsMap, setCityCoordsMap] = useState<Map<string, CityCoords>>(new Map());
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [geoApplied, setGeoApplied] = useState(false);
+  const geocodingRef = useRef(false);
 
   // Geo-detection passive
   useEffect(() => {
