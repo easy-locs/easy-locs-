@@ -46,8 +46,11 @@ export function useSubscriptionGating() {
     return "unlimited";
   };
 
+  // Determine tier label for UI display
+  const currentTier: "global" | "local" | "free" = isSubscribed ? "global" : "free";
+
   return {
-    currentTier: isSubscribed ? "unlimited" : "free",
+    currentTier,
     canAccess,
     requiresUpgrade,
     isSubscribed,

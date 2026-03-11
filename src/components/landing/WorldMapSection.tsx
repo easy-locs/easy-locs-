@@ -8,7 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 /* Lazy-load Three.js - wrapped in error-safe dynamic import */
 const GlobeCanvas = lazy(() =>
   import("./LandingGlobe").catch(() => ({
-    default: () => null,
+    default: (() => null) as React.FC<any>,
   }))
 );
 

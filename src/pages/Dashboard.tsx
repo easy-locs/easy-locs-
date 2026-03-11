@@ -53,7 +53,11 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (!orgId) { setLoading(false); return; }
+    if (!orgId) {
+      // No org = free/client account, show empty state immediately
+      setLoading(false);
+      return;
+    }
 
     // Timeout to prevent infinite loading
     const timeout = setTimeout(() => setLoading(false), 8000);
