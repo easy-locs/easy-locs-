@@ -43,20 +43,33 @@ function AnimatedValue({ value, className }: { value: string; className?: string
     const hasDecimals = cleaned.includes(".") && cleaned.split(".")[1]?.length > 0;
     const decimals = hasDecimals ? Math.min(cleaned.split(".")[1].length, 2) : 0;
 
-    const motionVal = { val: 0 };
-    const controls = animate(motionVal, { val: target }, {
-      duration: 0.8,
-      ease: "easeOut",
-      onUpdate: (latest) => {
-        const formatted = latest.val.toLocaleString(undefined, {
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals,
-        });
-        setDisplayed(`${formatted}${suffix ? ` ${suffix}` : ""}`);
-      },
-    });
+    try {
+      const motionVal = { val: 0 };
+      const controls = animate(motionVal, { val: target }, {
+        duration: 0.8,
+        ease: "easeOut",
+        onUpdate: (latest) => {
+          try {
+            const v = typeof latest === "object" && latest !== null && "val" in latest
+              ? (latest as { val: number }).val
+              : typeof latest === "number" ? latest : 0;
+            const formatted = v.toLocaleString(undefined, {
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            });
+            setDisplayed(`${formatted}${suffix ? ` ${suffix}` : ""}`);
+          } catch {
+            setDisplayed(value);
+          }
+        },
+      });
 
-    return () => controls.stop();
+      return () => controls.stop();
+    } catch {
+      setDisplayed(value);
+    }
+
+    return undefined;
   }, [value, isNumeric]);
 
   return <span className={className}>{displayed}</span>;
