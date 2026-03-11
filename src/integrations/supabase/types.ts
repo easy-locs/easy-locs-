@@ -1953,18 +1953,29 @@ export type Database = {
         Row: {
           active: boolean | null
           badges: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string
+          brand: string | null
           category: string
           city: string
+          condition: string | null
+          contact_email: string | null
+          contact_whatsapp: string | null
           country: string
           created_at: string
           currency: string
+          deposit_amount: number | null
           description: string | null
           duration_minutes: number | null
+          features: Json | null
           id: string
+          listing_expires_at: string | null
+          listing_type: string | null
           location: string | null
           max_capacity: number | null
+          model: string | null
           org_id: string
           payment_bank_details: Json | null
           payment_custom_url: string | null
@@ -1974,32 +1985,48 @@ export type Database = {
           price: number
           price_type: string
           provider_id: string
+          quantity: number | null
           requires_id_document: boolean
+          rooms: number | null
           sort_order: number | null
           source_contact_email: string | null
           source_contact_name: string | null
           source_contact_notes: string | null
           source_contact_phone: string | null
+          surface_sqm: number | null
           time_slots: Json | null
           title: string
           updated_at: string
           user_id: string
+          verification_types: Json | null
+          year_built: number | null
         }
         Insert: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug: string
+          brand?: string | null
           category?: string
           city?: string
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string
           created_at?: string
           currency?: string
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
@@ -2009,32 +2036,48 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id: string
+          quantity?: number | null
           requires_id_document?: boolean
+          rooms?: number | null
           sort_order?: number | null
           source_contact_email?: string | null
           source_contact_name?: string | null
           source_contact_notes?: string | null
           source_contact_phone?: string | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title: string
           updated_at?: string
           user_id: string
+          verification_types?: Json | null
+          year_built?: number | null
         }
         Update: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string
+          brand?: string | null
           category?: string
           city?: string
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string
           created_at?: string
           currency?: string
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id?: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
@@ -2044,16 +2087,21 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id?: string
+          quantity?: number | null
           requires_id_document?: boolean
+          rooms?: number | null
           sort_order?: number | null
           source_contact_email?: string | null
           source_contact_name?: string | null
           source_contact_notes?: string | null
           source_contact_phone?: string | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
+          verification_types?: Json | null
+          year_built?: number | null
         }
         Relationships: [
           {
