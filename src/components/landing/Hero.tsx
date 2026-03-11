@@ -176,7 +176,7 @@ const Hero = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/explore"
-                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md"
+                className="group inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-7 sm:px-8 rounded-2xl text-sm font-semibold transition-all border backdrop-blur-md w-full sm:w-auto"
                 style={{
                   borderColor: "hsl(220 15% 75% / 0.15)",
                   color: "hsl(220 15% 85%)",
