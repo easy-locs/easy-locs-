@@ -53,7 +53,7 @@ const Newsletter = () => {
           </motion.span>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: "hsl(var(--primary-foreground))" }}>
-            {t("newsletter.title")}
+            {t("newsletter.title") || "Get the Latest Updates"}
           </h2>
           <p className="text-sm sm:text-base" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
             {t("newsletter.subtitle")}
