@@ -62,6 +62,7 @@ export function ExploreRadiusSearch({
     const lng = parseFloat(s.lon);
     setCenter({ lat, lng });
     onLocationChange(s.display_name.split(",")[0]);
+    onCenterChange?.(lat, lng);
     setShowSuggestions(false);
     setSuggestions([]);
   };
