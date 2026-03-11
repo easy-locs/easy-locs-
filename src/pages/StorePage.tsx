@@ -186,9 +186,9 @@ export default function StorePage() {
 
         {/* Services */}
         <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-8">
-          <h2 className="text-xl font-bold text-foreground mb-6">Services ({showcase.services.length})</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">{t("mp.my_services") || "Services"} ({showcase.services.length})</h2>
           {showcase.services.length === 0 ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground">No services listed yet</CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {showcase.services.map((s: any) => {
