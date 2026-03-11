@@ -45,6 +45,13 @@ function cacheDetection(detection: GeoDetection) {
 
 /** Extract country from browser locale (e.g. "fr-FR" → "FR") */
 function detectFromBrowser(): Partial<GeoDetection> {
+  if (typeof navigator === "undefined") {
+    return {
+      language: "en",
+      method: "default",
+    };
+  }
+
   const locale = navigator.language || (navigator as any).userLanguage || "en-US";
   const parts = locale.split("-");
   const language = parts[0]?.toLowerCase() || "en";
