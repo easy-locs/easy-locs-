@@ -693,11 +693,14 @@ const PublicServiceBooking = () => {
                     </div>
                   )}
 
+                  {/* Legal disclaimer */}
+                  <MarketplaceDisclaimer compact />
+
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
+                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">{t("mp.back") || "Back"}</Button>
                     <Button onClick={handleSubmit} disabled={submitting || !paymentMethod} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "card" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
+                      {paymentMethod === "card" ? `${t("mp.send_payment") || "Pay"} ${fmtPrice(totalPrice, service.currency)}` : (t("mp.confirm_booking") || "Confirm Booking")}
                     </Button>
                   </div>
                 </div>
