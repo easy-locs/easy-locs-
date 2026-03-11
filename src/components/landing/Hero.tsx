@@ -29,7 +29,7 @@ const Hero = () => {
   return (
     <section
       aria-label="Hero"
-      className="relative min-h-[92vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-16"
+      className="relative min-h-[88vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-16"
       style={{ background: "linear-gradient(145deg, hsl(222 50% 6%) 0%, hsl(220 45% 12%) 35%, hsl(222 42% 16%) 65%, hsl(220 38% 10%) 100%)" }}
     >
       {/* ─── Background FX ─── */}
