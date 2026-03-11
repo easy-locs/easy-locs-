@@ -158,15 +158,15 @@ const Navbar = () => {
           <ThemeSwitcher />
           <Link
             to="/login"
-            className="hidden sm:inline-flex text-sm font-medium transition-colors hover:text-accent"
-            style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}
+            className="text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5"
+            style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}
           >
-            {t("landing.nav.login")}
+            {t("landing.nav.login") || "Log in"}
           </Link>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="hidden sm:block">
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/signup"
-              className="text-sm font-bold px-5 py-2 rounded-xl transition-all relative overflow-hidden group"
+              className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-xl transition-all relative overflow-hidden group"
               style={{
                 background: "var(--gradient-gold)",
                 color: "hsl(var(--accent-foreground))",

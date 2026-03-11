@@ -421,6 +421,9 @@ const CreateListing = () => {
             {form.communication_channels.includes("whatsapp") && (
               <div><Label className="text-xs">WhatsApp number</Label><Input value={form.contact_whatsapp} onChange={e => set({ contact_whatsapp: e.target.value })} placeholder="+33 6 12 34 56 78" /></div>
             )}
+            {form.communication_channels.includes("telegram") && (
+              <div><Label className="text-xs">Telegram username</Label><Input value={form.contact_telegram} onChange={e => set({ contact_telegram: e.target.value })} placeholder="@username" /></div>
+            )}
           </Section>
 
           {/* ── Payment ── */}
