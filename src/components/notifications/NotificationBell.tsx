@@ -128,11 +128,23 @@ const NotificationBell = () => {
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
   // Do NOT request notification permission on mount — wait for meaningful user action
-  // Permission is requested via requestNotificationPermission() exported below
+  // Permission is requested via requestNotificationPermission() from notif-alert-prefs.ts
 
-  // Smart sound/vibration: throttle and suppress when viewing related page
+  // Smart sound/vibration: throttle, suppress, and respect user preferences
   const lastSoundRef = useRef(0);
+  const pendingCountRef = useRef(0);
+  const groupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const location = useLocation();
+
+  // Listen to pref changes
+  const alertPrefsRef = useRef<NotifAlertPrefs>(getNotifAlertPrefs());
+  useEffect(() => {
+    const handler = (e: Event) => {
+      alertPrefsRef.current = (e as CustomEvent).detail;
+    };
+    window.addEventListener("notif-prefs-changed", handler);
+    return () => window.removeEventListener("notif-prefs-changed", handler);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -143,35 +155,53 @@ const NotificationBell = () => {
 
         const n = payload.new as any;
         const now = Date.now();
-        const THROTTLE_MS = 5000; // min 5s between sounds
+        const THROTTLE_MS = 5000;
+        const prefs = alertPrefsRef.current;
 
-        // Suppress sound if user is currently on the related page
         const targetUrl = n.metadata_json?.target_url || n.link || "";
         const isViewingRelated = targetUrl && location.pathname && targetUrl.startsWith(location.pathname);
-
-        // Suppress sound if panel is open (user is already looking at notifications)
-        const shouldPlaySound = !isViewingRelated && !open && (now - lastSoundRef.current > THROTTLE_MS);
+        const shouldAlert = !isViewingRelated && !open && (now - lastSoundRef.current > THROTTLE_MS);
 
         try {
-          if (shouldPlaySound) {
+          if (shouldAlert) {
             lastSoundRef.current = now;
-            // Vibrate on mobile (short, respectful pattern)
-            if ("vibrate" in navigator) {
+
+            // Vibration — only if user enabled
+            if (prefs.vibration && "vibrate" in navigator) {
               navigator.vibrate([150, 80, 150]);
             }
-            // Play notification sound
-            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgipGJdFZQb5mwsI1hNTRfkJqPdFJNc5+0s5VjMy9ikJuQclBMd6O4t5tlMC1mlZ+TbkpHeqe8u6FoLylpmqOXa0RCfay/waRtLCVrnqibb0BAf7DDxKhxKh5voKueclw5gbbIyq55IRZxobGjfVg0h7zNza+CIxF0pLingl4vjcHP0LSOJw1xp7mtiVcsj8bS0rqYLAhyqr2xkFIpk8vV1MChMwNyq8C2mEwjlc/Z18awOwByq8K5n0YclNPc2s6/PwByrsW9pkIVk9fg3NbKRQBwsMnDq0EQkd3l4OLRTQBwsc3IrkMNj+Dr5erbVABusc/Os0gJi+Xx6/TlYQBqs9LTuU0Fh+j39fzsfwBltNfa");
-            audio.volume = 0.25;
-            audio.play().catch(() => {});
+
+            // Sound — only if user enabled
+            if (prefs.sound) {
+              const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgipGJdFZQb5mwsI1hNTRfkJqPdFJNc5+0s5VjMy9ikJuQclBMd6O4t5tlMC1mlZ+TbkpHeqe8u6FoLylpmqOXa0RCfay/waRtLCVrnqibb0BAf7DDxKhxKh5voKueclw5gbbIyq55IRZxobGjfVg0h7zNza+CIxF0pLingl4vjcHP0LSOJw1xp7mtiVcsj8bS0rqYLAhyqr2xkFIpk8vV1MChMwNyq8C2mEwjlc/Z18awOwByq8K5n0YclNPc2s6/PwByrsW9pkIVk9fg3NbKRQBwsMnDq0EQkd3l4OLRTQBwsc3IrkMNj+Dr5erbVABusc/Os0gJi+Xx6/TlYQBqs9LTuU0Fh+j39fzsfwBltNfa");
+              audio.volume = 0.25;
+              audio.play().catch(() => {});
+            }
           }
-          // Browser notification (always if permitted, regardless of throttle)
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("Easy-Locs", {
-              body: n.message || n.title || "New notification",
-              icon: "/pwa-192x192.png",
-              tag: n.id,
-              silent: !shouldPlaySound, // only play OS sound if we didn't play ours
-            });
+
+          // Browser notification — group multiple arriving within 2s
+          if (prefs.browserNotifications && "Notification" in window && Notification.permission === "granted") {
+            pendingCountRef.current += 1;
+            if (groupTimerRef.current) clearTimeout(groupTimerRef.current);
+            groupTimerRef.current = setTimeout(() => {
+              const count = pendingCountRef.current;
+              pendingCountRef.current = 0;
+              if (count === 1) {
+                new Notification("Easy-Locs", {
+                  body: n.message || n.title || "New notification",
+                  icon: "/pwa-192x192.png",
+                  tag: n.id,
+                  silent: !shouldAlert || !prefs.sound,
+                });
+              } else {
+                new Notification("Easy-Locs", {
+                  body: `${count} new notifications`,
+                  icon: "/pwa-192x192.png",
+                  tag: "grouped",
+                  silent: !shouldAlert || !prefs.sound,
+                });
+              }
+            }, 2000);
           }
         } catch { /* ignore notification errors */ }
       })
