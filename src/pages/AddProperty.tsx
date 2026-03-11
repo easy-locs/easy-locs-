@@ -36,7 +36,7 @@ const defaultForm = {
   energy_class: "", parking: false, garden: false, terrace: false,
   elevator: false, balcony: false, pool: false,
   year_built: undefined as number | undefined,
-  description: "", listing_purpose: "long_term",
+  description: "", listing_modes: ["long_term"] as string[],
 };
 
 const AddProperty = () => {
