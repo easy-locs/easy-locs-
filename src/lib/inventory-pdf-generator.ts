@@ -300,8 +300,14 @@ export async function generateInventoryPDF(
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+    // Separator
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, 274, PAGE_WIDTH - MARGIN, 274);
+    // Disclaimer
     setFont(doc, "italic", 7, COLOR_MUTED);
-    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 278);
+    doc.text("Document genere a titre informatif. Il ne remplace pas un conseil juridique.", MARGIN, 279);
+    // Brand
     setFont(doc, "bold", 8, COLOR_PRIMARY);
     const brandText = "EASY-LOCS";
     const brandWidth = doc.getTextWidth(brandText);
@@ -309,10 +315,14 @@ export async function generateInventoryPDF(
     doc.text(brandText, brandX, 284);
     setFont(doc, "normal", 5, COLOR_PRIMARY);
     doc.text("(R)", brandX + brandWidth + 1, 281.5);
+    // Page number
     setFont(doc, "normal", 7, COLOR_MUTED);
     doc.text(`Page ${i}/${pageCount}`, PAGE_WIDTH - MARGIN, 284, { align: "right" });
+    // Bottom bars
+    doc.setFillColor(...COLOR_GOLD);
+    doc.rect(0, 287, PAGE_WIDTH, 2, "F");
     doc.setFillColor(...COLOR_PRIMARY);
-    doc.rect(0, 287, PAGE_WIDTH, 6, "F");
+    doc.rect(0, 289, PAGE_WIDTH, 4, "F");
   }
 
   return doc;
