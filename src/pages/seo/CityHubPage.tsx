@@ -1,21 +1,41 @@
 /**
  * /city/:city — City hub page: services, activities, marketplace, concierge.
  * Also handles /city/:city/services, /city/:city/activities, /city/:city/concierge
+ * Now with live listings from the database for organic discovery.
  */
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye, Search } from "lucide-react";
 
 type CitySubPage = "overview" | "services" | "activities" | "concierge";
 
 const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
   const { city: citySlug } = useParams<{ city: string }>();
   const result = getCityBySlug(citySlug || "");
+  const [liveServices, setLiveServices] = useState<any[]>([]);
+  const [liveListings, setLiveListings] = useState<any[]>([]);
+
+  // Fetch live listings for this city
+  useEffect(() => {
+    if (!result) return;
+    const cityName = result.city.name;
+    Promise.all([
+      supabase.rpc("get_public_marketplace_services", { _city: cityName }),
+      supabase.from("public_listings").select("id,title,slug,price_per_night,max_guests,min_nights,property_id")
+        .eq("active", true).limit(12),
+    ]).then(([svcsRes, listingsRes]) => {
+      setLiveServices((svcsRes.data || []).slice(0, 8));
+      setLiveListings(listingsRes.data || []);
+    });
+  }, [result]);
 
   if (!result) {
     return (
@@ -221,6 +241,46 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
         <InternalLinksGrid title={`Activities in ${city.name}`} links={activityLinks} />
       )}
 
+      {/* Live Marketplace Listings */}
+      {liveServices.length > 0 && (
+        <section className="py-16 bg-muted/20">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              <Sparkles className="inline h-6 w-6 mr-2 text-accent" />
+              Live Services in {city.name}
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {liveServices.map((svc: any) => (
+                <Link key={svc.id} to={svc.booking_slug ? `/book/${svc.booking_slug}` : "/explore"} className="group block">
+                  <Card className="border-border hover:border-accent/30 hover:shadow-lg transition-all h-full">
+                    <CardContent className="p-4 flex flex-col gap-2">
+                      {Array.isArray(svc.photo_urls) && svc.photo_urls[0] && (
+                        <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted mb-1">
+                          <img src={svc.photo_urls[0]} alt={svc.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        </div>
+                      )}
+                      <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">{svc.title}</h3>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" /> {svc.city}{svc.country ? `, ${svc.country.toUpperCase()}` : ""}
+                      </div>
+                      <div className="flex items-center justify-between mt-auto pt-2">
+                        <span className="text-sm font-bold text-foreground">{svc.price > 0 ? `${svc.price} ${svc.currency || "€"}` : "Free"}</span>
+                        <span className="text-xs text-accent font-semibold flex items-center gap-1">Book <ArrowRight className="h-3 w-3" /></span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <Button asChild variant="outline" className="rounded-full gap-2">
+                <Link to={`/explore?location=${city.name}`}>View all listings in {city.name} <ArrowRight className="h-4 w-4" /></Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Marketplace CTA */}
       <section className="py-12">
         <div className="container mx-auto px-4 max-w-4xl text-center">
@@ -238,6 +298,15 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
       <FAQSection faqs={faqs} />
 
       {siblingCities.length > 0 && <InternalLinksGrid title={`Other Cities in ${country.name}`} links={siblingCities} />}
+
+      {/* Cross-link to Explore */}
+      <section className="py-8 bg-muted/10">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <Link to={`/explore?location=${city.name}`} className="text-sm text-accent font-semibold hover:underline flex items-center justify-center gap-2">
+            <Search className="h-4 w-4" /> Search all listings in {city.name} on Explore <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
     </SEOPageShell>
   );
 };
