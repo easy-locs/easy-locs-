@@ -11,17 +11,26 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-// All known product IDs map to "unlimited"
-const PRODUCT_MAP: Record<string, string> = {
-  "prod_U37B1NPO4TQTnD": "unlimited_monthly",
-  "prod_U37COZzTYiHqG1": "unlimited_annual",
-  // Legacy products — treat as unlimited too
-  "prod_U354fxGmmhSvn0": "unlimited_monthly",
-  "prod_U355WIZ1brDxXV": "unlimited_annual",
-  "prod_U355aIW4nePfxQ": "unlimited_monthly",
-  "prod_U355FFHHJ8rgAT": "unlimited_annual",
-  "prod_U2yLjzJN4Y7LYb": "unlimited_monthly",
-  "prod_U2zlUjPtdVVjIw": "unlimited_annual",
+// Product ID → tier mapping
+const PRODUCT_TIER_MAP: Record<string, string> = {
+  // Solo
+  "prod_U7umDIXfN7CQf2": "solo",
+  "prod_U7unnsqliODBFg": "solo",
+  // Team
+  "prod_U7uoc9MNmkojax": "team",
+  "prod_U7uotRXnfBtYj6": "team",
+  // Company
+  "prod_U7up10rqd4eQhA": "company",
+  "prod_U7uqF0RSK8MZBk": "company",
+  // Legacy — map to solo
+  "prod_U37B1NPO4TQTnD": "solo",
+  "prod_U37COZzTYiHqG1": "solo",
+  "prod_U354fxGmmhSvn0": "solo",
+  "prod_U355WIZ1brDxXV": "solo",
+  "prod_U355aIW4nePfxQ": "solo",
+  "prod_U355FFHHJ8rgAT": "solo",
+  "prod_U2yLjzJN4Y7LYb": "solo",
+  "prod_U2zlUjPtdVVjIw": "solo",
 };
 
 serve(async (req) => {
@@ -38,7 +47,7 @@ serve(async (req) => {
   try {
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key configured", { configured: !!stripeKey });
+    logStep("Stripe key configured");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
@@ -50,7 +59,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    // Check local subscriptions table first (for manually granted access)
+    // Check local subscriptions table first
     const { data: localSub } = await supabaseClient
       .from("subscriptions")
       .select("*")
@@ -71,12 +80,12 @@ serve(async (req) => {
       }
     }
 
-    // Test direct fetch to Stripe API first
+    // Direct Stripe API test
     const testRes = await fetch("https://api.stripe.com/v1/customers?limit=1", {
       headers: { "Authorization": `Bearer ${stripeKey}` },
     });
     const testBody = await testRes.text();
-    logStep("Direct Stripe test", { status: testRes.status, bodyPreview: testBody.substring(0, 200) });
+    logStep("Direct Stripe test", { status: testRes.status });
 
     if (!testRes.ok) {
       throw new Error(`Stripe API error (${testRes.status}): ${testBody.substring(0, 200)}`);
@@ -101,23 +110,23 @@ serve(async (req) => {
     if (activeSub) {
       const subscriptionEnd = new Date(activeSub.current_period_end * 1000).toISOString();
       const productId = activeSub.items.data[0].price.product as string;
-      const plan = PRODUCT_MAP[productId] || "unlimited_monthly";
+      const tier = PRODUCT_TIER_MAP[productId] || "solo";
       const isStripeTrial = activeSub.status === "trialing";
 
-      logStep("Active subscription", { plan, subscriptionEnd, status: activeSub.status });
+      logStep("Active subscription", { tier, subscriptionEnd, status: activeSub.status });
 
       await supabaseClient.from("subscriptions").upsert({
         user_id: user.id,
         stripe_customer_id: customerId,
         stripe_subscription_id: activeSub.id,
-        plan,
+        plan: tier,
         status: isStripeTrial ? "trialing" : "active",
         current_period_end: subscriptionEnd,
       }, { onConflict: "user_id" });
 
       return new Response(JSON.stringify({
         subscribed: true,
-        plan: isStripeTrial ? "trial" : plan,
+        plan: isStripeTrial ? "trial" : tier,
         product_id: productId,
         subscription_end: subscriptionEnd,
       }), {
