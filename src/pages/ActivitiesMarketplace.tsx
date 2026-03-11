@@ -637,6 +637,7 @@ const ActivitiesMarketplace = () => {
           providerCity={myProvider?.city}
           onSave={(data) => editingService ? updateService.mutate(data) : createService.mutate(data)}
           isPending={createService.isPending || updateService.isPending}
+          allowVideo={subscription.subscribed}
         />
 
         {/* Booking Dialog */}
