@@ -83,9 +83,9 @@ const Signup = () => {
             <div className="relative">
               <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                className={`${inputClass} pr-10`}
+                className={`${inputClass} pe-10`}
                 placeholder={t("auth.signup.password_hint")} />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
