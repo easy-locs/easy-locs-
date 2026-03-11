@@ -242,6 +242,7 @@ export default function Explore() {
   const clearAll = () => {
     setSearchQuery(""); setLocationQuery(""); setActiveGroup("all"); setActiveSubcategory("all");
     setRadius("worldwide"); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
+    setGeoApplied(false); // allow geo re-detection
   };
 
   const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radius !== "worldwide");
