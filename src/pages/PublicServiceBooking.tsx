@@ -726,7 +726,7 @@ const PublicServiceBooking = () => {
                           <span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">To</span>
+                          <span className="text-muted-foreground">{t("mp.to") || "To"}</span>
                           <span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span>
                         </div>
                         <div className="flex justify-between">
