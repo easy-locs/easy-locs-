@@ -142,34 +142,50 @@ const Index = () => {
       />
       <Navbar />
       <Hero />
-      <SocialProofStrip />
 
-      {/* Live inventory preview — first impression */}
-      <ExplorePreview />
+      {/* Below-the-fold — all lazy loaded */}
+      <Suspense fallback={null}>
+        <SocialProofStrip />
+      </Suspense>
 
-      {/* Discovery sections */}
-      <BrowseByCountry />
-      <PopularCities />
-      <ServiceCategories />
+      <Suspense fallback={<SectionLoader />}>
+        <ExplorePreview />
+      </Suspense>
 
-      {/* How it works */}
-      <HowItWorks />
+      <Suspense fallback={<SectionLoader />}>
+        <BrowseByCountry />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <PopularCities />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <ServiceCategories />
+      </Suspense>
 
-      {/* Trust */}
+      <Suspense fallback={<SectionLoader />}>
+        <HowItWorks />
+      </Suspense>
+
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
 
-      {/* Value proposition — replaces empty bottom area */}
       <Suspense fallback={<SectionLoader />}>
         <ValueProposition />
       </Suspense>
 
-      {/* Pricing & FAQ */}
-      <Pricing />
-      <LandingFAQ />
-      <Newsletter />
-      <Footer />
+      <Suspense fallback={<SectionLoader />}>
+        <Pricing />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <LandingFAQ />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <Newsletter />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };
