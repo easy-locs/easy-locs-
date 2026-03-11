@@ -53,6 +53,7 @@ interface Props {
   providerCountry?: string;
   providerCity?: string;
   orgId?: string;
+  allowVideo?: boolean;
 }
 
 const emptyService: ServiceFormData = {
