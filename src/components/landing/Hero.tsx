@@ -116,7 +116,7 @@ const Hero = () => {
             className="space-y-5"
           >
             <h1
-              className="text-[1.6rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.12]"
+              className="text-[1.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.15]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
