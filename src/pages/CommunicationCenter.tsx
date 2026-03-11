@@ -1230,12 +1230,15 @@ const CommunicationCenter = () => {
                 <div className="flex-1 flex min-h-0">
                   {/* Messages */}
                   <div className="flex-1 flex flex-col min-h-0">
-                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-muted/5 to-transparent">
                       {messages.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                           <div className="text-center">
-                            <MessageCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="text-muted-foreground text-sm">No messages yet — start the conversation</p>
+                            <div className="w-14 h-14 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-3">
+                              <MessageCircle className="h-6 w-6 text-muted-foreground/30" />
+                            </div>
+                            <p className="text-muted-foreground text-sm font-medium">Aucun message</p>
+                            <p className="text-muted-foreground/60 text-xs mt-1">Commencez la conversation ci-dessous</p>
                           </div>
                         </div>
                       ) : (
