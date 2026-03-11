@@ -105,7 +105,7 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, t }: {
       <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
         <span>📋 {enabledTypes}/{TYPE_ALERT_KEYS.length} {t("notif.types_enabled") || "types enabled of"} 5</span>
         {urgentOnly && (
-          <span className="flex items-center gap-1 text-amber-500">
+          <span className="flex items-center gap-1 text-warning">
             <ShieldAlert className="h-3 w-3" /> {t("notif.status_email_urgent") || "Urgent mode"}
           </span>
         )}
