@@ -152,7 +152,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
         </DialogHeader>
 
         {service && (
-          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 overscroll-contain">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3.5 overscroll-contain">
             {/* Service info */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <p className="font-medium text-foreground text-sm truncate">{service.title}</p>
