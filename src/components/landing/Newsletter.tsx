@@ -32,7 +32,7 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="py-20 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+    <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-accent/[0.04] blur-[120px] pointer-events-none" />
 

@@ -51,7 +51,7 @@ const LandingFAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-20 sm:py-28 bg-background relative overflow-hidden">
+    <section className="py-16 sm:py-24 bg-background relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full bg-accent/[0.02] blur-[100px] pointer-events-none" />
 
       <div className="container max-w-3xl relative z-10">

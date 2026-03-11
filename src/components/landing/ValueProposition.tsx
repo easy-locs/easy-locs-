@@ -55,7 +55,7 @@ export default function ValueProposition() {
   const { t } = useI18n();
 
   return (
-    <section className="py-20 sm:py-28 bg-muted/20 relative overflow-hidden">
+    <section className="py-16 sm:py-24 bg-muted/20 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent pointer-events-none" />
 
       <div className="container max-w-6xl relative z-10">

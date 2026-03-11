@@ -53,7 +53,7 @@ const SocialProofStrip = () => {
   const { t } = useI18n();
 
   return (
-    <section className="py-8 sm:py-16 bg-background relative overflow-hidden border-b border-border/30">
+    <section className="py-10 sm:py-14 bg-background relative overflow-hidden border-b border-border/30">
       {/* Subtle top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] rounded-full bg-accent/[0.02] blur-[100px] pointer-events-none" />
 

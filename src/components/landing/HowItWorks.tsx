@@ -46,7 +46,7 @@ const HowItWorks = () => {
   const { t } = useI18n();
 
   return (
-    <section className="py-20 sm:py-28 bg-background relative overflow-hidden">
+    <section className="py-16 sm:py-24 bg-background relative overflow-hidden">
       {/* Subtle radial glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-accent/[0.03] blur-[120px] pointer-events-none" />
 

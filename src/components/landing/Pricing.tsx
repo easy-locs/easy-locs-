@@ -104,7 +104,7 @@ const Pricing = () => {
   }));
 
   return (
-    <section id="pricing" className="py-24 sm:py-32 relative overflow-hidden">
+    <section id="pricing" className="py-16 sm:py-24 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 opacity-[0.015]" style={{
         backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--accent)) 1px, transparent 0)`,
