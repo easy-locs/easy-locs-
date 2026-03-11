@@ -374,7 +374,7 @@ export default function NotificationPreferences() {
         </div>
 
         <Button onClick={save} disabled={saving} className="mt-4 w-full sm:w-auto">
-          {saving ? "Saving..." : t("page.settings.save") || "Save preferences"}
+          {saving ? (t("notif.saving") || "Saving…") : t("page.settings.save") || "Save preferences"}
         </Button>
       </div>
     </div>
