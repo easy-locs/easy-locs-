@@ -32,8 +32,8 @@ const AppLogo = ({
     >
       <div className="flex items-baseline gap-0.5">
         <span
-          className={`${sizeMap[variant]} font-black tracking-tight text-foreground dark:text-white`}
-          style={{ color: "hsl(var(--navy-deep, 220 60% 15%))" }}
+          className={`${sizeMap[variant]} font-black tracking-tight`}
+          style={{ color: "var(--logo-text-color, hsl(var(--navy-deep, 220 60% 15%)))" }}
         >
           Easy
         </span>
