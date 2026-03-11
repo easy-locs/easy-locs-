@@ -231,7 +231,7 @@ export default function PublicRealEstateListing() {
               {/* Desktop grid */}
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 p-2 max-h-[520px]">
                 <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden cursor-pointer group" onClick={() => setFullscreenGallery(true)}>
-                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   {/* Desktop type badge on main photo */}
                   <Badge className={`absolute top-4 left-4 ${tc.bg} ${tc.color} border ${tc.border} text-sm px-4 py-1.5 font-semibold backdrop-blur-md`}>
@@ -262,7 +262,7 @@ export default function PublicRealEstateListing() {
 
               {/* Mobile carousel — safe touch targets */}
               <div className="md:hidden relative aspect-[4/3] overflow-hidden">
-                <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" />
+                <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />
                 {photos.length > 1 && (
                   <>
@@ -444,7 +444,7 @@ export default function PublicRealEstateListing() {
           <div className="flex-1 flex items-center justify-center px-2 sm:px-4" onClick={e => e.stopPropagation()}>
             <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronLeft className="h-6 sm:h-8 w-6 sm:w-8" /></button>
-            <img src={photos[photoIndex]} alt="" className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" />
+            <img src={photos[photoIndex]} alt="" className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
             <button onClick={() => setPhotoIndex(i => (i + 1) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronRight className="h-6 sm:h-8 w-6 sm:w-8" /></button>
           </div>
@@ -454,7 +454,7 @@ export default function PublicRealEstateListing() {
                 className={`shrink-0 w-14 sm:w-16 h-10 sm:h-12 rounded-lg overflow-hidden border-2 transition-all ${
                   i === photoIndex ? "border-background scale-105" : "border-transparent opacity-40 hover:opacity-70"
                 }`}>
-                <img src={url} alt="" className="w-full h-full object-cover" />
+                <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
               </button>
             ))}
           </div>

@@ -182,7 +182,7 @@ export default function AccountShowcase() {
             {/* Avatar */}
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-accent/10 border-2 border-accent/20 flex items-center justify-center shrink-0 overflow-hidden">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.display_name} className="w-full h-full object-cover" />
+                <img src={profile.avatar_url} alt={profile.display_name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <Building2 className="h-10 w-10 text-accent/60" />
               )}

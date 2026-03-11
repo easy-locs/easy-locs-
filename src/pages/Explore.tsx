@@ -88,8 +88,8 @@ export default function Explore() {
     const load = async () => {
       setLoading(true);
       const [reRes, seaRes, svcRes] = await Promise.all([
-        supabase.rpc("get_public_real_estate_listings", { p_limit: 100 }),
-        supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(100),
+        supabase.rpc("get_public_real_estate_listings", { p_limit: 50 }),
+        supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(50),
         supabase.rpc("get_public_marketplace_services", {}),
       ]);
       setRealEstate((reRes.data || []) as RealEstateListing[]);
