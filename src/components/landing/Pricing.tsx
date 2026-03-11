@@ -191,7 +191,7 @@ const Pricing = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {v === "monthly" ? "Monthly" : "Annual"}
+                {v === "monthly" ? (t("pricing.monthly") || "Monthly") : (t("pricing.annual") || "Annual")}
                 {v === "annual" && interval === "annual" && (
                   <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                     -17%
