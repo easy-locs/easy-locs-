@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { useAppStore } from "@/stores/useAppStore";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,7 +43,7 @@ const ActivitiesMarketplace = () => {
   const [filterCountry, setFilterCountry] = useState("");
   const [activeTab, setActiveTab] = useState("browse");
   const [revenueOpen, setRevenueOpen] = useState(false);
-  const [displayCurrency, setDisplayCurrency] = useState("EUR");
+  const { displayCurrency, setDisplayCurrency } = useAppStore();
   const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
