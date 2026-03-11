@@ -206,11 +206,11 @@ const Interventions = () => {
             </PermissionGate>
           </motion.div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>{t("page.interventions.all")}</Button>
+          <div className="flex gap-1.5 flex-wrap">
+            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")} className="text-xs h-8">{t("page.interventions.all")}</Button>
             {STATUSES.map(s => (
-              <Button key={s.value} variant={filterStatus === s.value ? "default" : "outline"} size="sm" onClick={() => setFilterStatus(s.value)}>
-                <s.icon className="h-3.5 w-3.5 mr-1" />{s.label}
+              <Button key={s.value} variant={filterStatus === s.value ? "default" : "outline"} size="sm" onClick={() => setFilterStatus(s.value)} className="text-xs h-8">
+                <s.icon className="h-3 w-3 me-1" />{s.label}
               </Button>
             ))}
           </div>
