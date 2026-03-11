@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ServiceCard from "./ServiceCard";
 import BookingDialog from "./BookingDialog";
 import TrustMetrics from "./TrustMetrics";
-import ReviewCard from "./ReviewCard";
+import SortableReviewList from "./SortableReviewList";
 import ReviewRatingBreakdown from "./ReviewRatingBreakdown";
 import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "./MarketplaceCategories";
