@@ -25,6 +25,9 @@ const AppLogo = ({
     auth: "text-3xl sm:text-4xl",
   };
 
+  // Landing/footer variants are always on dark backgrounds
+  const useLightText = isLanding || variant === "sidebar";
+
   return (
     <Link
       to={href}
@@ -32,8 +35,10 @@ const AppLogo = ({
     >
       <div className="flex items-baseline gap-0.5">
         <span
-          className={`${sizeMap[variant]} font-black tracking-tight text-foreground dark:text-white`}
-          style={{ color: "hsl(var(--navy-deep, 220 60% 15%))" }}
+          className={`${sizeMap[variant]} font-black tracking-tight ${
+            useLightText ? "text-white" : "dark:text-white"
+          }`}
+          style={useLightText ? { color: "hsl(0 0% 100%)" } : { color: "hsl(var(--navy-deep, 220 60% 15%))" }}
         >
           Easy
         </span>
