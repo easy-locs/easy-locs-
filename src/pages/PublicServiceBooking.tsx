@@ -34,6 +34,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 };
 
 const PublicServiceBooking = () => {
+  const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [service, setService] = useState<any>(null);
