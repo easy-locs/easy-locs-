@@ -218,6 +218,13 @@ export default function StorePage() {
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
               <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" /> Reviews ({reviewsCount})
             </h2>
+            <div className="mb-6 p-4 bg-muted/20 rounded-xl border border-border/40">
+              <ReviewRatingBreakdown
+                rating={rating}
+                reviewsCount={reviewsCount}
+                reviews={reviews.map((r) => ({ rating: r.rating }))}
+              />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {reviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
