@@ -80,7 +80,7 @@ const emptyService: ServiceFormData = {
   source_contact_notes: "",
 };
 
-export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId }: Props) {
+export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId, allowVideo = false }: Props) {
   const [form, setForm] = useState<ServiceFormData>({
     ...emptyService,
     country: providerCountry || "",
