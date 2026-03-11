@@ -7,7 +7,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
-export function ExploreListingCard({ item }: { item: any }) {
+export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
   const { t } = useI18n();
   const type = item._type as string;
 
