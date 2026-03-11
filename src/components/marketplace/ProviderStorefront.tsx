@@ -266,9 +266,9 @@ export default function ProviderStorefront() {
       {/* About section */}
       {provider.bio && (
         <div className="max-w-5xl mx-auto px-4 py-8 border-b border-border/40">
-          <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-            <Shield className="h-4.5 w-4.5 text-accent" /> About
-          </h2>
+           <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+             <Shield className="h-4.5 w-4.5 text-accent" /> {t("mp.about") || "About"}
+           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">{provider.bio}</p>
         </div>
       )}
