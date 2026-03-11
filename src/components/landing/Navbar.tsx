@@ -43,7 +43,8 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/explore", label: t("landing.nav.explore") || "Explore", isRoute: true },
-    { to: "#features", label: t("landing.nav.features"), isRoute: false },
+    { to: "/marketplace", label: t("landing.nav.marketplace") || "Marketplace", isRoute: true },
+    { to: "/properties", label: t("landing.nav.properties") || "Properties", isRoute: true },
     { to: "#pricing", label: t("landing.nav.pricing"), isRoute: false },
   ];
 
