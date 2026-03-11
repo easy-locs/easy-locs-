@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState, Suspense, useCallback } from "react";
+import { useRef, useMemo, useState, Suspense, useCallback, Component, type ReactNode } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -7,6 +7,13 @@ import { motion } from "framer-motion";
 import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+
+/* Error boundary for 3D content */
+class GlobeErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+}
 
 // Convert lat/lng to 3D sphere position
 function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
@@ -192,6 +199,16 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
   const { t } = useI18n();
   const navigate = useNavigate();
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [renderError, setRenderError] = useState(false);
+
+  // Check if Three.js components are available
+  const canRender3D = useMemo(() => {
+    try {
+      if (!Canvas || !OrbitControls || !Html) return false;
+      const c = document.createElement("canvas");
+      return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    } catch { return false; }
+  }, []);
 
   const totalProperties = useMemo(
     () => propertiesByCountry.reduce((s, c) => s + c.count, 0),
@@ -238,27 +255,41 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
       </div>
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
-        {/* 3D Globe */}
+        {/* 3D Globe or fallback */}
         <div className="relative w-full" style={{ height: 320 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
-          <Suspense fallback={
+          {canRender3D && !renderError ? (
+            <GlobeErrorBoundary fallback={
+              <div className="w-full h-full flex items-center justify-center bg-muted/10">
+                <Globe className="h-16 w-16 text-accent/20" />
+              </div>
+            }>
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center bg-muted/10">
+                  <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
+                </div>
+              }>
+                <Canvas
+                  camera={{ position: [0, 0, 2.6], fov: 42 }}
+                  style={{ background: "transparent" }}
+                  dpr={[1, 1.5]}
+                  gl={{ antialias: true, alpha: true, powerPreference: "low-power", failIfMajorPerformanceCaveat: true }}
+                  onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); }}
+                >
+                  <GlobeScene
+                    countries={countriesWithCoords}
+                    hoveredCountry={hoveredCountry}
+                    onHover={handleHover}
+                    onSelect={handleSelect}
+                  />
+                </Canvas>
+              </Suspense>
+            </GlobeErrorBoundary>
+          ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted/10">
-              <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
+              <Globe className="h-16 w-16 text-accent/20 animate-pulse" />
             </div>
-          }>
-            <Canvas
-              camera={{ position: [0, 0, 2.6], fov: 42 }}
-              style={{ background: "transparent" }}
-              dpr={[1, 2]}
-            >
-              <GlobeScene
-                countries={countriesWithCoords}
-                hoveredCountry={hoveredCountry}
-                onHover={handleHover}
-                onSelect={handleSelect}
-              />
-            </Canvas>
-          </Suspense>
+          )}
         </div>
 
         {/* Country chips — horizontal scroll */}
