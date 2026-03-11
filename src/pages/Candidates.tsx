@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Star, UserCheck, UserX, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 const STATUSES = [
   { value: "new", labelKey: "page.candidates.status_new", icon: Clock, color: "text-blue-500" },
