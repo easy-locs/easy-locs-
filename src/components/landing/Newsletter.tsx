@@ -56,7 +56,7 @@ const Newsletter = () => {
             {t("newsletter.title") || "Get the Latest Updates"}
           </h2>
           <p className="text-sm sm:text-base" style={{ color: "hsl(var(--primary-foreground) / 0.65)" }}>
-            {t("newsletter.subtitle")}
+            {t("newsletter.subtitle") || "Join thousands of entrepreneurs. Tips, features & industry insights delivered weekly."}
           </p>
 
           {submitted ? (

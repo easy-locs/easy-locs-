@@ -332,8 +332,8 @@ const Pricing = () => {
             </div>
             <div className="hidden sm:block w-px h-10 bg-success/20" />
             <div className="text-center sm:text-left">
-              <p className="text-xs text-success font-semibold">Unlike Airbnb (15-20%)</p>
-              <p className="text-xs text-success font-semibold">Unlike Booking (15-25%)</p>
+              <p className="text-xs text-success font-semibold">{t("pricing.vs_airbnb") || "Unlike Airbnb (15-20%)"}</p>
+              <p className="text-xs text-success font-semibold">{t("pricing.vs_booking") || "Unlike Booking (15-25%)"}</p>
             </div>
           </motion.div>
 
