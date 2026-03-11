@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   open: boolean;
