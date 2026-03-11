@@ -250,6 +250,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (_event, nextSession) => {
         if (_event === "SIGNED_IN" && nextSession?.user) {
           logAudit({ userId: nextSession.user.id, action: "user_login" });
+          // Request notification permission after login (deferred, non-blocking)
+          setTimeout(() => {
+            if ("Notification" in window && Notification.permission === "default") {
+              Notification.requestPermission();
+            }
+          }, 3000);
         }
         if (_event === "SIGNED_OUT") {
           logAudit({ action: "user_logout" });

@@ -118,6 +118,13 @@ const CommunicationCenter = () => {
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [filterType, setFilterType] = useState("all");
   const [filterProperty, setFilterProperty] = useState("all");
+
+  // Request notification permission when entering communication center
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
