@@ -1374,19 +1374,19 @@ const CommunicationCenter = () => {
 
                     {/* ═══ Quick action bar — booking lifecycle ═══ */}
                     {(selectedThread.type === "booking" || selectedThread.type === "lead") && (
-                      <div className="px-3 py-2.5 border-t border-border/30 bg-muted/20">
+                      <div className="px-3 py-2.5 border-t border-border/30 bg-gradient-to-r from-muted/30 to-transparent">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">Actions</span>
                           <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg" onClick={() => setPaymentLinkDialog(true)}>
                             <CreditCard className="h-3.5 w-3.5" /> Payment Link
                           </Button>
                           {selectedThread.bookingStatus === "pending" && (
-                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleBookingAction("confirm")}>
+                            <Button size="sm" className="text-xs h-8 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm" onClick={() => handleBookingAction("confirm")}>
                               <CalendarCheck className="h-3.5 w-3.5" /> Confirm
                             </Button>
                           )}
                           {selectedThread.bookingStatus === "confirmed" && (
-                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50" onClick={() => handleBookingAction("complete")}>
+                            <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30" onClick={() => handleBookingAction("complete")}>
                               <CalendarCheck className="h-3.5 w-3.5" /> Complete
                             </Button>
                           )}
