@@ -271,7 +271,7 @@ const Interventions = () => {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editId ? t("page.interventions.edit") : t("page.interventions.create_title")}</DialogTitle>
             </DialogHeader>
