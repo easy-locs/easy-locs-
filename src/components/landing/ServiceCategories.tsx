@@ -13,7 +13,7 @@ const CATEGORIES = [
 ];
 
 const ServiceCategories = () => (
-  <section className="py-16 sm:py-20 px-4 bg-background">
+  <section id="categories" className="py-16 sm:py-20 px-4 bg-background">
     <div className="container mx-auto max-w-6xl">
       <div className="text-center mb-10">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Service Categories</h2>
