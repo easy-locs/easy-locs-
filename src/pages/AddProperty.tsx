@@ -163,19 +163,35 @@ const AddProperty = () => {
 
           {/* Listing purpose — always visible */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-2">Catégorie d'annonce *</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {LISTING_PURPOSES.map(lp => (
-                <button key={lp.value} type="button" onClick={() => set({ listing_purpose: lp.value })}
-                  className={`p-3 rounded-lg border text-sm font-medium text-center transition-all ${
-                    form.listing_purpose === lp.value
-                      ? "border-accent bg-accent/10 text-accent shadow-sm"
-                      : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                  }`}>
-                  <span className="text-lg block mb-1">{lp.icon}</span>{lp.label}
-                </button>
-              ))}
+            <label className="block text-xs font-semibold text-foreground mb-2">Modes d'exploitation *</label>
+            <p className="text-xs text-muted-foreground mb-3">Sélectionnez un ou plusieurs modes pour ce bien</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {LISTING_MODES.map(mode => {
+                const isActive = form.listing_modes.includes(mode.value);
+                return (
+                  <button key={mode.value} type="button"
+                    onClick={() => {
+                      const modes = isActive
+                        ? form.listing_modes.filter(m => m !== mode.value)
+                        : [...form.listing_modes, mode.value];
+                      // At least one mode must be selected
+                      if (modes.length > 0) set({ listing_modes: modes });
+                    }}
+                    className={`p-3 rounded-lg border text-sm font-medium text-center transition-all ${
+                      isActive
+                        ? "border-accent bg-accent/10 text-accent shadow-sm"
+                        : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                    }`}>
+                    <span className="text-lg block mb-1">{mode.icon}</span>{mode.label}
+                  </button>
+                );
+              })}
             </div>
+            {form.listing_modes.length > 1 && (
+              <p className="text-xs text-accent mt-2 font-medium">
+                ✨ Mode multi-exploitation : {form.listing_modes.length} modes activés
+              </p>
+            )}
           </div>
 
           {/* ── Section: Identification ── */}
