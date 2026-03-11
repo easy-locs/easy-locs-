@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft } from "lucide-react";
+import { Plus, Store, ShoppingCart, Star, Users, Search, MapPin, Share2, ExternalLink, Compass, Sparkles, ArrowRightLeft, MessageSquare } from "lucide-react";
 import ProviderProfileForm from "@/components/marketplace/ProviderProfileForm";
 import ServiceForm, { type ServiceFormData } from "@/components/marketplace/ServiceForm";
 import ServiceCard from "@/components/marketplace/ServiceCard";
@@ -24,6 +24,7 @@ import { useBookingLifecycle } from "@/hooks/useBookingLifecycle";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
 import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
+import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 
@@ -456,6 +457,7 @@ const ActivitiesMarketplace = () => {
             <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Explorer</TabsTrigger>
             {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> Mes Services</TabsTrigger>}
             {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Réservations</TabsTrigger>}
+            {myProvider && <TabsTrigger value="reviews"><MessageSquare className="h-4 w-4 mr-1" /> Avis</TabsTrigger>}
           </TabsList>
 
           {/* Browse Tab */}
@@ -579,6 +581,13 @@ const ActivitiesMarketplace = () => {
                 onSendQuote={lifecycle.sendQuote}
                 focusBookingId={deepLinkedBookingId}
               />
+            </TabsContent>
+          )}
+
+          {/* Reviews Tab */}
+          {myProvider && (
+            <TabsContent value="reviews" className="mt-4">
+              <ReviewsManagerPanel providerId={myProvider.id} />
             </TabsContent>
           )}
         </Tabs>
