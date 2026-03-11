@@ -168,6 +168,57 @@ export default function Explore() {
     return Array.from(set).sort();
   }, [realEstate, seasonal, services]);
 
+  // Location suggestions filtered by current input
+  const locationSuggestions = useMemo(() => {
+    const q = locationQuery.toLowerCase().trim();
+    const suggestions: { label: string; type: "geo" | "city" | "country" }[] = [];
+
+    // "Near me" option using geolocation
+    if (geo.detection?.city && (!q || "near me".includes(q) || geo.detection.city.toLowerCase().includes(q))) {
+      suggestions.push({ label: `📍 Near me — ${geo.detection.city}, ${geo.country.toUpperCase()}`, type: "geo" });
+    }
+
+    // Cities
+    allCities.filter(c => !q || c.toLowerCase().includes(q)).slice(0, 6).forEach(c => {
+      suggestions.push({ label: c, type: "city" });
+    });
+
+    // Countries
+    allCountries.filter(c => !q || c.toLowerCase().includes(q)).slice(0, 4).forEach(c => {
+      suggestions.push({ label: c.toUpperCase(), type: "country" });
+    });
+
+    return suggestions.slice(0, 8);
+  }, [locationQuery, allCities, allCountries, geo.detection, geo.country]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+        setShowLocationSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelectLocation = (suggestion: { label: string; type: string }) => {
+    if (suggestion.type === "geo" && geo.detection?.city) {
+      setLocationQuery(geo.detection.city);
+    } else {
+      setLocationQuery(suggestion.label);
+    }
+    setShowLocationSuggestions(false);
+  };
+
+  const handleNearMe = () => {
+    if (geo.detection?.city) {
+      setLocationQuery(geo.detection.city);
+    } else if (geo.country) {
+      setLocationQuery(geo.country);
+    }
+  };
+
   const totalCounts = {
     all: seasonal.length + realEstate.length + services.length,
     seasonal: seasonal.length,
@@ -183,6 +234,7 @@ export default function Explore() {
     if (locationQuery) params.set("location", locationQuery);
     if (activeCategory !== "all") params.set("category", activeCategory);
     setSearchParams(params);
+    setShowLocationSuggestions(false);
   };
 
   const clearAll = () => {
