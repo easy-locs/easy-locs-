@@ -339,12 +339,17 @@ export default function Explore() {
         )}
 
         {/* Geo context banner */}
-        {!loading && !hasFilters && geo.detection?.city && (
+        {!loading && geo.detection?.city && locationQuery && geoApplied && !searchParams.get("location") && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15">
             <LocateFixed className="h-4 w-4 text-accent shrink-0" />
             <span className="text-sm text-muted-foreground">
-              Showing all listings worldwide. <button onClick={handleNearMe} className="text-accent font-semibold hover:underline">Show near {geo.detection.city}</button>
+              📍 Auto-located to <strong className="text-foreground">{geo.detection.country?.toUpperCase()}</strong>.
+              {geo.detection.city && (
+                <> <button onClick={handleNearMe} className="text-accent font-semibold hover:underline ml-1">Show near {geo.detection.city}</button></>
+              )}
+              {" · "}
+              <button onClick={clearAll} className="text-muted-foreground hover:text-foreground underline">Show worldwide</button>
             </span>
           </motion.div>
         )}
