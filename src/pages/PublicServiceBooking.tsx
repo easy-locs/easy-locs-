@@ -689,7 +689,7 @@ const PublicServiceBooking = () => {
 
                   {paymentMethod === "cash" && (
                     <div className="bg-muted/30 rounded-xl p-3 text-xs text-muted-foreground">
-                      💵 Cash payment on arrival. The provider will confirm your booking.
+                      💵 {t("mp.cash_on_arrival") || "Cash payment on arrival. The provider will confirm your booking."}
                     </div>
                   )}
 
