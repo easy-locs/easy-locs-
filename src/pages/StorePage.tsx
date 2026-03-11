@@ -248,7 +248,7 @@ export default function StorePage() {
             <div className="flex flex-wrap gap-2">
               {serviceCities.map((city) => (
                 <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
-                  <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>Services in {city}</Link>
+                  <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>{t("mp.services_in") || "Services in"} {city}</Link>
                 </Button>
               ))}
             </div>
