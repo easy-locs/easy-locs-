@@ -276,9 +276,9 @@ export default function ProviderStorefront() {
       {/* Service areas with country grouping */}
       {serviceAreas.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 py-6 border-b border-border/40">
-          <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-accent" /> Service Coverage
-          </h2>
+           <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+             <MapPin className="h-4 w-4 text-accent" /> {t("mp.service_coverage") || "Service Coverage"}
+           </h2>
           {serviceCountries.length > 1 ? (
             <div className="space-y-3">
               {serviceCountries.map((country) => {
