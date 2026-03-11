@@ -734,8 +734,8 @@ const PublicServiceBooking = () => {
                           <span className="text-foreground">{rangeDays} {rangeDays === 1 ? (t("mp.day") || "day") : (t("mp.days") || "days")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Rate</span>
-                          <span className="text-foreground">{fmtPrice(service.price, service.currency)} / day</span>
+                          <span className="text-muted-foreground">{t("mp.rate") || "Rate"}</span>
+                          <span className="text-foreground">{fmtPrice(service.price, service.currency)} / {t("mp.day") || "day"}</span>
                         </div>
                       </>
                     ) : (
