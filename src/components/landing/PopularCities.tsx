@@ -47,6 +47,11 @@ const PopularCities = () => (
           </motion.div>
         ))}
       </div>
+      <div className="text-center mt-6">
+        <Link to="/explore" className="text-sm font-medium text-accent hover:underline">
+          Explore all cities →
+        </Link>
+      </div>
     </div>
   </section>
 );
