@@ -1440,9 +1440,11 @@ const CommunicationCenter = () => {
 
                   {/* ────── Context panel with Activity Log ────── */}
                   {showContext && (
-                    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden hidden lg:flex">
+                    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden hidden lg:flex bg-muted/5">
                       <div className="p-4 space-y-4 overflow-y-auto flex-shrink-0">
-                        <h3 className="text-sm font-semibold text-foreground">Details</h3>
+                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <User className="h-3.5 w-3.5 text-accent" /> Détails
+                        </h3>
 
                         {/* Contact info */}
                         <div className="space-y-2">
