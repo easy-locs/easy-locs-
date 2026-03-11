@@ -1,5 +1,6 @@
 import { Star, Briefcase, MessageSquare, Clock, CalendarDays, CheckCircle2, ShieldCheck, Reply } from "lucide-react";
 import { format } from "date-fns";
+import { useI18n } from "@/lib/i18n";
 
 interface TrustMetricsProps {
   rating?: number;
@@ -28,12 +29,13 @@ export default function TrustMetrics({
   verified,
   layout = "horizontal",
 }: TrustMetricsProps) {
+  const { t } = useI18n();
   const items: { icon: React.ReactNode; label: string; value: string; accent?: boolean }[] = [];
 
   if (rating > 0) {
     items.push({
       icon: <Star className="h-4 w-4 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />,
-      label: "Rating",
+      label: t("mp.trust_rating") || "Rating",
       value: `${rating.toFixed(1)}${reviewsCount > 0 ? ` (${reviewsCount})` : ""}`,
       accent: true,
     });
@@ -42,7 +44,7 @@ export default function TrustMetrics({
   if (verifiedReviewsCount != null && verifiedReviewsCount > 0) {
     items.push({
       icon: <ShieldCheck className="h-4 w-4 text-success" />,
-      label: "Verified reviews",
+      label: t("mp.trust_verified_reviews") || "Verified reviews",
       value: `${verifiedReviewsCount}`,
     });
   }
@@ -50,7 +52,7 @@ export default function TrustMetrics({
   if (completedJobs > 0) {
     items.push({
       icon: <Briefcase className="h-4 w-4 text-accent/70" />,
-      label: "Jobs done",
+      label: t("mp.trust_jobs_done") || "Jobs done",
       value: `${completedJobs}`,
     });
   }
@@ -58,7 +60,7 @@ export default function TrustMetrics({
   if (responseRate > 0) {
     items.push({
       icon: <MessageSquare className="h-4 w-4 text-accent/70" />,
-      label: "Response",
+      label: t("mp.trust_response") || "Response",
       value: `${responseRate}%`,
     });
   }
@@ -66,7 +68,7 @@ export default function TrustMetrics({
   if (replyRate != null && replyRate > 0) {
     items.push({
       icon: <Reply className="h-4 w-4 text-accent/70" />,
-      label: "Reply rate",
+      label: t("mp.trust_reply_rate") || "Reply rate",
       value: `${replyRate}%`,
     });
   }
@@ -74,7 +76,7 @@ export default function TrustMetrics({
   if (responseTime) {
     items.push({
       icon: <Clock className="h-4 w-4 text-accent/70" />,
-      label: "Responds in",
+      label: t("mp.trust_responds_in") || "Responds in",
       value: responseTime,
     });
   }
@@ -82,7 +84,7 @@ export default function TrustMetrics({
   if (verified && verifiedSince) {
     items.push({
       icon: <CheckCircle2 className="h-4 w-4 text-accent" />,
-      label: "Verified since",
+      label: t("mp.trust_verified_since") || "Verified since",
       value: formatDate(verifiedSince),
     });
   }
@@ -90,7 +92,7 @@ export default function TrustMetrics({
   if (memberSince) {
     items.push({
       icon: <CalendarDays className="h-4 w-4 text-muted-foreground" />,
-      label: "Member since",
+      label: t("mp.trust_member_since") || "Member since",
       value: formatDate(memberSince),
     });
   }

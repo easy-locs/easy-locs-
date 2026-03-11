@@ -1,5 +1,6 @@
 import { Star, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   rating: number;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ReviewRatingBreakdown({ rating, reviewsCount, verifiedCount, reviews }: Props) {
+  const { t } = useI18n();
   if (reviewsCount === 0) return null;
 
   const counts = [5, 4, 3, 2, 1].map((star) => ({
@@ -17,6 +19,9 @@ export default function ReviewRatingBreakdown({ rating, reviewsCount, verifiedCo
   }));
 
   const maxCount = Math.max(...counts.map((c) => c.count), 1);
+  const reviewLabel = reviewsCount === 1
+    ? (t("mp.review_single") || "review")
+    : (t("mp.reviews") || "reviews");
 
   return (
     <div className="flex flex-col sm:flex-row gap-6 items-start">
@@ -35,11 +40,11 @@ export default function ReviewRatingBreakdown({ rating, reviewsCount, verifiedCo
             />
           ))}
         </div>
-        <span className="text-xs text-muted-foreground">{reviewsCount} review{reviewsCount !== 1 ? "s" : ""}</span>
+        <span className="text-xs text-muted-foreground">{reviewsCount} {reviewLabel}</span>
         {verifiedCount > 0 && (
           <Badge variant="outline" className="text-[10px] h-5 gap-0.5 bg-success/10 text-success border-success/20 mt-1">
             <ShieldCheck className="h-2.5 w-2.5" />
-            {verifiedCount} verified
+            {verifiedCount} {t("mp.verified_review") || "verified"}
           </Badge>
         )}
       </div>

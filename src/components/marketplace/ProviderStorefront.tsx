@@ -14,6 +14,7 @@ import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "./MarketplaceCategories";
 import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, Store, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import { useState, useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
@@ -25,6 +26,7 @@ export default function ProviderStorefront() {
   const [bookingService, setBookingService] = useState<any>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const servicesRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const { data: provider, isLoading } = useQuery({
     queryKey: ["marketplace_provider_public", providerSlug],
@@ -106,7 +108,7 @@ export default function ProviderStorefront() {
         <Navbar />
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Store className="h-12 w-12 text-muted-foreground/30" />
-          <p className="text-muted-foreground font-medium">Provider not found</p>
+          <p className="text-muted-foreground font-medium">{t("mp.provider_not_found") || "Provider not found"}</p>
         </div>
         <Footer />
       </div>
@@ -194,11 +196,11 @@ export default function ProviderStorefront() {
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">{provider.display_name}</h1>
                 {provider.verified && (
-                  <span className="flex items-center gap-1 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Verified
-                  </span>
+                   <span className="flex items-center gap-1 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
+                     <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
+                   </span>
                 )}
-                <Badge variant="outline" className="text-xs">{provider.provider_type === "company" ? "Company" : "Individual"}</Badge>
+                <Badge variant="outline" className="text-xs">{provider.provider_type === "company" ? (t("mp.company") || "Company") : (t("mp.individual") || "Individual")}</Badge>
               </div>
               {provider.company_name && <p className="text-sm text-muted-foreground">{provider.company_name}</p>}
 
@@ -264,9 +266,9 @@ export default function ProviderStorefront() {
       {/* About section */}
       {provider.bio && (
         <div className="max-w-5xl mx-auto px-4 py-8 border-b border-border/40">
-          <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-            <Shield className="h-4.5 w-4.5 text-accent" /> About
-          </h2>
+           <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+             <Shield className="h-4.5 w-4.5 text-accent" /> {t("mp.about") || "About"}
+           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">{provider.bio}</p>
         </div>
       )}
@@ -274,9 +276,9 @@ export default function ProviderStorefront() {
       {/* Service areas with country grouping */}
       {serviceAreas.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 py-6 border-b border-border/40">
-          <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-accent" /> Service Coverage
-          </h2>
+           <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+             <MapPin className="h-4 w-4 text-accent" /> {t("mp.service_coverage") || "Service Coverage"}
+           </h2>
           {serviceCountries.length > 1 ? (
             <div className="space-y-3">
               {serviceCountries.map((country) => {
@@ -306,15 +308,15 @@ export default function ProviderStorefront() {
 
       {/* Services */}
       <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-          <Store className="h-5 w-5 text-accent" />
-          Services ({services.length})
-        </h2>
+         <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+           <Store className="h-5 w-5 text-accent" />
+           {t("mp.my_services") || "Services"} ({services.length})
+         </h2>
         {services.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="py-16 text-center">
               <Store className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">No services listed yet</p>
+              <p className="text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</p>
             </CardContent>
           </Card>
         ) : (
@@ -331,7 +333,7 @@ export default function ProviderStorefront() {
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
-            Reviews ({reviewsCount})
+            {t("mp.reviews") || "Reviews"} ({reviewsCount})
           </h2>
 
           {/* Rating breakdown */}
@@ -354,11 +356,11 @@ export default function ProviderStorefront() {
       {/* SEO internal links */}
       {serviceAreas.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">Discover more services</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t("mp.discover_more") || "Discover more services"}</h2>
           <div className="flex flex-wrap gap-2">
             {serviceAreas.map((city) => (
               <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
-                <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>Services in {city}</Link>
+                <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>{t("mp.services_in") || "Services in"} {city}</Link>
               </Button>
             ))}
             {(provider.categories || []).slice(0, 4).map((c: string) => {

@@ -13,6 +13,7 @@ import ReviewRatingBreakdown from "@/components/marketplace/ReviewRatingBreakdow
 import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
   try {
@@ -25,6 +26,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const servicesRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const { data: showcase, isLoading } = useQuery({
     queryKey: ["store-showcase", storeSlug],
@@ -71,9 +73,9 @@ export default function StorePage() {
 
   if (!showcase) return (
     <>
-      <SEOHead title="Store not found | Easy-Locs" description="This store does not exist." />
+      <SEOHead title={`${t("mp.store_not_found") || "Store not found"} | Easy-Locs`} description="This store does not exist." />
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Store not found</p>
+        <p className="text-muted-foreground">{t("mp.store_not_found") || "Store not found"}</p>
       </div>
     </>
   );
@@ -148,7 +150,7 @@ export default function StorePage() {
               <h1 className="text-3xl font-bold text-foreground">{name}</h1>
               {profile.verified && (
                 <span className="flex items-center gap-0.5 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Verified
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
                 </span>
               )}
             </div>
@@ -184,9 +186,9 @@ export default function StorePage() {
 
         {/* Services */}
         <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-8">
-          <h2 className="text-xl font-bold text-foreground mb-6">Services ({showcase.services.length})</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">{t("mp.my_services") || "Services"} ({showcase.services.length})</h2>
           {showcase.services.length === 0 ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground">No services listed yet</CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {showcase.services.map((s: any) => {
@@ -207,7 +209,7 @@ export default function StorePage() {
                       </div>
                       {slug && (
                         <Button size="sm" className="w-full mt-2" asChild>
-                          <Link to={`/book/${slug}`}><ExternalLink className="h-3 w-3 mr-1" /> Book</Link>
+                          <Link to={`/book/${slug}`}><ExternalLink className="h-3 w-3 mr-1" /> {t("mp.book") || "Book"}</Link>
                         </Button>
                       )}
                     </CardContent>
@@ -222,7 +224,7 @@ export default function StorePage() {
         {reviews.length > 0 && (
           <div className="max-w-5xl mx-auto px-4 pb-10">
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" /> Reviews ({reviewsCount})
+              <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" /> {t("mp.reviews") || "Reviews"} ({reviewsCount})
             </h2>
             <div className="mb-6 p-4 bg-muted/20 rounded-xl border border-border/40">
               <ReviewRatingBreakdown
@@ -242,11 +244,11 @@ export default function StorePage() {
         {/* SEO internal links */}
         {serviceCities.length > 0 && (
           <div className="max-w-5xl mx-auto px-4 pb-10">
-            <h2 className="text-sm font-semibold text-muted-foreground mb-3">Explore nearby</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t("mp.explore_nearby") || "Explore nearby"}</h2>
             <div className="flex flex-wrap gap-2">
               {serviceCities.map((city) => (
                 <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
-                  <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>Services in {city}</Link>
+                  <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>{t("mp.services_in") || "Services in"} {city}</Link>
                 </Button>
               ))}
             </div>
