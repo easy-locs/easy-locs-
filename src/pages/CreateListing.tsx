@@ -66,6 +66,7 @@ const COMMUNICATION_OPTIONS = [
   { value: "internal", label: "Internal Messaging", icon: "💬" },
   { value: "email", label: "Email", icon: "📧" },
   { value: "whatsapp", label: "WhatsApp", icon: "📱" },
+  { value: "telegram", label: "Telegram", icon: "✈️" },
 ];
 
 /* ─── Types ─── */
