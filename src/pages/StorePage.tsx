@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
-import { MapPin, ExternalLink, Loader2 } from "lucide-react";
+import ShareButtons from "@/components/public/ShareButtons";
+import { MapPin, ExternalLink, Loader2, Star, CheckCircle2, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const fmtPrice = (amount: number, currency: string = "EUR") => {
@@ -23,7 +24,6 @@ export default function StorePage() {
   const { data: showcase, isLoading } = useQuery({
     queryKey: ["store-showcase", storeSlug],
     queryFn: async () => {
-      // Try landlord_profiles first, then marketplace_providers
       const { data: landlord } = await supabase
         .from("landlord_profiles")
         .select("*")
@@ -77,6 +77,9 @@ export default function StorePage() {
 
   const profile = showcase.profile as Record<string, any>;
   const name = profile.display_name || profile.company_name || storeSlug;
+  const rating = Number(profile.rating || 0);
+  const reviewsCount = Number(profile.reviews_count || 0);
+  const completedJobs = Number(profile.completed_jobs || 0);
 
   return (
     <>
@@ -119,13 +122,41 @@ export default function StorePage() {
             {profile.avatar_url && (
               <img src={profile.avatar_url} alt={name} className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-2 border-border" />
             )}
-            <h1 className="text-3xl font-bold text-foreground">{name}</h1>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h1 className="text-3xl font-bold text-foreground">{name}</h1>
+              {profile.verified && (
+                <span className="flex items-center gap-0.5 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Verified
+                </span>
+              )}
+            </div>
             {profile.city && (
               <p className="text-muted-foreground mt-1 flex items-center justify-center gap-1">
                 <MapPin className="h-4 w-4" /> {profile.city}{profile.country ? `, ${profile.country}` : ""}
               </p>
             )}
+            {/* Trust metrics */}
+            {(rating > 0 || completedJobs > 0) && (
+              <div className="flex items-center justify-center gap-4 mt-3 text-sm">
+                {rating > 0 && (
+                  <span className="flex items-center gap-1 font-medium">
+                    <Star className="h-4 w-4 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />
+                    {rating.toFixed(1)}
+                    {reviewsCount > 0 && <span className="text-muted-foreground font-normal text-xs">({reviewsCount})</span>}
+                  </span>
+                )}
+                {completedJobs > 0 && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Briefcase className="h-4 w-4" /> {completedJobs} completed
+                  </span>
+                )}
+              </div>
+            )}
             {profile.bio && <p className="text-muted-foreground mt-2 max-w-xl mx-auto">{profile.bio}</p>}
+            {/* Share */}
+            <div className="mt-4 flex justify-center">
+              <ShareButtons type="host" slug={storeSlug || ""} title={name} />
+            </div>
           </div>
         </div>
 
