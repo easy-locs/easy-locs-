@@ -141,7 +141,7 @@ const Hero = () => {
               </span>
             </h1>
             <p
-              className="text-xs sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
+              className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
               style={{ color: "hsl(220 15% 75%)" }}
             >
               {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
