@@ -87,15 +87,17 @@ export default function StorePage() {
   const memberSince = profile.created_at || null;
   const verifiedSince = profile.verified_at || null;
 
-  const placeholderReviews = reviewsCount > 0
-    ? Array.from({ length: Math.min(reviewsCount, 3) }, (_, i) => ({
-        id: `r-${i}`,
-        reviewer_name: `Client ${i + 1}`,
-        rating: 4 + Math.random(),
-        comment: "Excellent service, very professional. Would book again!",
-        created_at: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      }))
-    : [];
+  // Real reviews for provider-type stores
+  const providerId = showcase.type === "provider" ? profile.id : null;
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["store-reviews", providerId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .rpc("get_provider_reviews", { p_provider_id: providerId!, p_limit: 6 });
+      return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; created_at: string }[];
+    },
+    enabled: !!providerId,
+  });
 
   const serviceCities = [...new Set(showcase.services.map((s: any) => s.city).filter(Boolean))] as string[];
 
@@ -210,13 +212,13 @@ export default function StorePage() {
         </div>
 
         {/* Reviews */}
-        {placeholderReviews.length > 0 && (
+        {reviews.length > 0 && (
           <div className="max-w-5xl mx-auto px-4 pb-10">
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
               <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" /> Reviews ({reviewsCount})
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {placeholderReviews.map((review) => (
+              {reviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>

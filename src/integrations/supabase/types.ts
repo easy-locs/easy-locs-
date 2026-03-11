@@ -1834,6 +1834,7 @@ export type Database = {
           categories: string[]
           city: string
           company_name: string | null
+          completed_jobs: number
           country: string
           cover_photo_url: string | null
           created_at: string
@@ -1854,6 +1855,8 @@ export type Database = {
           phone: string | null
           provider_type: string
           rating: number | null
+          response_rate: number
+          response_time: string | null
           reviews_count: number | null
           slug: string
           tax_label: string | null
@@ -1861,6 +1864,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verified: boolean | null
+          verified_at: string | null
           website_url: string | null
           whatsapp: string | null
         }
@@ -1876,6 +1880,7 @@ export type Database = {
           categories?: string[]
           city?: string
           company_name?: string | null
+          completed_jobs?: number
           country?: string
           cover_photo_url?: string | null
           created_at?: string
@@ -1896,6 +1901,8 @@ export type Database = {
           phone?: string | null
           provider_type?: string
           rating?: number | null
+          response_rate?: number
+          response_time?: string | null
           reviews_count?: number | null
           slug: string
           tax_label?: string | null
@@ -1903,6 +1910,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verified?: boolean | null
+          verified_at?: string | null
           website_url?: string | null
           whatsapp?: string | null
         }
@@ -1918,6 +1926,7 @@ export type Database = {
           categories?: string[]
           city?: string
           company_name?: string | null
+          completed_jobs?: number
           country?: string
           cover_photo_url?: string | null
           created_at?: string
@@ -1938,6 +1947,8 @@ export type Database = {
           phone?: string | null
           provider_type?: string
           rating?: number | null
+          response_rate?: number
+          response_time?: string | null
           reviews_count?: number | null
           slug?: string
           tax_label?: string | null
@@ -1945,6 +1956,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verified?: boolean | null
+          verified_at?: string | null
           website_url?: string | null
           whatsapp?: string | null
         }
@@ -1954,6 +1966,86 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_reviews: {
+        Row: {
+          booking_id: string | null
+          comment: string
+          created_at: string
+          id: string
+          provider_id: string
+          rating: number
+          responded_at: string | null
+          response: string | null
+          reviewer_email: string | null
+          reviewer_name: string
+          reviewer_user_id: string | null
+          service_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          provider_id: string
+          rating?: number
+          responded_at?: string | null
+          response?: string | null
+          reviewer_email?: string | null
+          reviewer_name: string
+          reviewer_user_id?: string | null
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          provider_id?: string
+          rating?: number
+          responded_at?: string | null
+          response?: string | null
+          reviewer_email?: string | null
+          reviewer_name?: string
+          reviewer_user_id?: string | null
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4868,6 +4960,18 @@ export type Database = {
           postal_code: string
         }[]
       }
+      get_provider_reviews: {
+        Args: { p_limit?: number; p_offset?: number; p_provider_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          response: string
+          reviewer_name: string
+          service_title: string
+        }[]
+      }
       get_public_listing_properties: {
         Args: { p_property_ids: string[] }
         Returns: {
@@ -4886,17 +4990,22 @@ export type Database = {
           categories: string[]
           city: string
           company_name: string
+          completed_jobs: number
           country: string
           cover_photo_url: string
+          created_at: string
           display_name: string
           email: string
           id: string
           phone: string
           provider_type: string
           rating: number
+          response_rate: number
+          response_time: string
           reviews_count: number
           slug: string
           verified: boolean
+          verified_at: string
           website_url: string
           whatsapp: string
         }[]

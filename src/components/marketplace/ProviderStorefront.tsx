@@ -52,15 +52,17 @@ export default function ProviderStorefront() {
   // Placeholder reviews — will come from DB when reviews table exists
   const providerAny = provider as Record<string, any> | null;
   const reviewsCount = Number(providerAny?.reviews_count || 0);
-  const placeholderReviews = reviewsCount > 0
-    ? Array.from({ length: Math.min(reviewsCount, 3) }, (_, i) => ({
-        id: `r-${i}`,
-        reviewer_name: `Client ${i + 1}`,
-        rating: 4 + Math.random(),
-        comment: "Great service, very professional and responsive. Highly recommended!",
-        created_at: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      }))
-    : [];
+
+  // Fetch real reviews from DB
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["provider_reviews", provider?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .rpc("get_provider_reviews", { p_provider_id: provider!.id, p_limit: 6 });
+      return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; created_at: string }[];
+    },
+    enabled: !!provider?.id,
+  });
 
   const handleBookingSubmit = async (formData: any) => {
     const { error } = await supabase.from("marketplace_bookings").insert({
@@ -318,18 +320,18 @@ export default function ProviderStorefront() {
       </div>
 
       {/* Reviews section */}
-      {placeholderReviews.length > 0 && (
+      {reviews.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
             Reviews ({reviewsCount})
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {placeholderReviews.map((review) => (
+            {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
           </div>
-          {reviewsCount > 3 && (
+          {reviewsCount > reviews.length && (
             <div className="mt-4 text-center">
               <Button variant="outline" size="sm" className="text-xs">
                 View all {reviewsCount} reviews
