@@ -154,6 +154,23 @@ const MP_KEYS_EN: Record<string, string> = {
   "mp.verified": "Verified",
   "mp.photos": "photos",
   "mp.jobs": "jobs",
+  // Trust metrics
+  "mp.trust_rating": "Rating",
+  "mp.trust_reviews": "Reviews",
+  "mp.trust_verified_reviews": "Verified reviews",
+  "mp.trust_jobs_done": "Jobs done",
+  "mp.trust_response": "Response",
+  "mp.trust_reply_rate": "Reply rate",
+  "mp.trust_responds_in": "Responds in",
+  "mp.trust_verified_since": "Verified since",
+  "mp.trust_member_since": "Member since",
+  // Storefront
+  "mp.about": "About",
+  "mp.service_coverage": "Service Coverage",
+  "mp.explore_nearby": "Explore nearby",
+  "mp.store_not_found": "Store not found",
+  "mp.provider_not_found": "Provider not found",
+  "mp.review_single": "review",
   // Booking statuses
   "mp.status_new": "New Request",
   "mp.status_pending": "Pending",
