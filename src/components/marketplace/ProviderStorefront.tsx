@@ -200,7 +200,7 @@ export default function ProviderStorefront() {
                      <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
                    </span>
                 )}
-                <Badge variant="outline" className="text-xs">{provider.provider_type === "company" ? "Company" : "Individual"}</Badge>
+                <Badge variant="outline" className="text-xs">{provider.provider_type === "company" ? (t("mp.company") || "Company") : (t("mp.individual") || "Individual")}</Badge>
               </div>
               {provider.company_name && <p className="text-sm text-muted-foreground">{provider.company_name}</p>}
 
