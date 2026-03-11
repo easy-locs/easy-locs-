@@ -7,11 +7,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryConfig, formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import EntityActivityLog from "@/components/communication/EntityActivityLog";
+import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Home, Users, FileText, Wallet, Wrench, ClipboardList,
   Calendar, MapPin, Ruler, Thermometer, Key, Building2,
   TrendingUp, AlertTriangle, CheckCircle, Eye, Sofa,
-  CalendarRange, Store, ChevronRight, ExternalLink
+  CalendarRange, Store, ChevronRight, ExternalLink,
+  Plus, Receipt, ShieldCheck, Tag, Activity,
+  DollarSign, Megaphone
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +56,8 @@ const PropertyDetailHub = () => {
   const [interventions, setInterventions] = useState<any[]>([]);
   const [inventories, setInventories] = useState<any[]>([]);
   const [seasonalListings, setSeasonalListings] = useState<any[]>([]);
+  const [leases, setLeases] = useState<any[]>([]);
+  const [realEstateListings, setRealEstateListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const country = property?.country || userCountry || "FR";
@@ -71,29 +77,46 @@ const PropertyDetailHub = () => {
       { data: prop },
       { data: ten },
       { data: rents },
-      { data: docs },
+      { data: leasesData },
       { data: exp },
       { data: intv },
       { data: inv },
       { data: seasonal },
+      { data: realEstate },
     ] = await Promise.all([
       supabase.from("properties").select("*").eq("id", propertyId).eq("org_id", orgId).single(),
       supabase.from("tenants").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("name"),
       supabase.from("rent_calls").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("month", { ascending: false }).limit(24),
-      supabase.from("documents").select("*").eq("org_id", orgId).limit(50),
+      supabase.from("leases").select("id").eq("org_id", orgId).eq("property_id", propertyId),
       supabase.from("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }).limit(20),
       supabase.from("interventions").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("created_at", { ascending: false }).limit(20),
       supabase.from("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
       supabase.from("public_listings").select("*").eq("org_id", orgId).eq("property_id", propertyId),
+      supabase.from("real_estate_listings").select("*").eq("org_id", orgId).eq("property_id", propertyId),
     ]);
+
     setProperty(prop);
     setTenants(ten || []);
     setRentCalls(rents || []);
-    setDocuments(docs || []);
+    setLeases(leasesData || []);
     setExpenses(exp || []);
     setInterventions(intv || []);
     setInventories(inv || []);
     setSeasonalListings(seasonal || []);
+    setRealEstateListings(realEstate || []);
+
+    // Load documents filtered by property's leases
+    const leaseIds = (leasesData || []).map((l: any) => l.id);
+    if (leaseIds.length > 0) {
+      const { data: docs } = await supabase
+        .from("documents").select("*").eq("org_id", orgId)
+        .in("lease_id", leaseIds)
+        .order("created_at", { ascending: false }).limit(50);
+      setDocuments(docs || []);
+    } else {
+      setDocuments([]);
+    }
+
     setLoading(false);
   };
 
@@ -104,6 +127,11 @@ const PropertyDetailHub = () => {
   const totalRevenue = rentCalls.filter(r => r.paid).reduce((s, r) => s + (r.total_amount || 0), 0);
   const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
   const openInterventions = interventions.filter(i => i.status !== "completed" && i.status !== "cancelled");
+
+  // Modes
+  const hasLongTerm = activeTenants.length > 0 || leases.length > 0;
+  const hasSeasonal = seasonalListings.length > 0;
+  const hasForSale = realEstateListings.some((r: any) => r.listing_type === "sale" && r.status === "active");
 
   if (loading) {
     return (
@@ -174,27 +202,50 @@ const PropertyDetailHub = () => {
                   </>
                 )}
               </div>
-              {/* Quick badges */}
+              {/* Occupancy + mode badges */}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {property.furnished && <Badge variant="secondary" className="text-xs">{t("page.property.furnished") || "Furnished"}</Badge>}
-                {activeTenants.length > 0 && (
+                {activeTenants.length > 0 ? (
                   <Badge className="bg-success/10 text-success border-success/20 text-xs">
                     <CheckCircle className="h-3 w-3 mr-1" /> {t("page.property.occupied") || "Occupied"}
                   </Badge>
-                )}
-                {activeTenants.length === 0 && (
+                ) : (
                   <Badge variant="outline" className="text-xs text-muted-foreground">
                     {t("page.property.vacant") || "Vacant"}
-                  </Badge>
-                )}
-                {seasonalListings.length > 0 && (
-                  <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">
-                    <CalendarRange className="h-3 w-3 mr-1" /> {t("page.property.seasonal_active") || "Seasonal listing"}
                   </Badge>
                 )}
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── 1. Listings / Modes strip ── */}
+        <div className="bg-card rounded-xl border border-border p-4">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
+            {t("page.property.active_modes") || "Active Modes"}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <ModeChip active={hasLongTerm} icon={Key} label={t("page.property.mode_longterm") || "Long-term rental"} />
+            <ModeChip active={hasSeasonal} icon={CalendarRange} label={t("page.property.mode_seasonal") || "Seasonal rental"} />
+            <ModeChip active={hasForSale} icon={Tag} label={t("page.property.mode_sale") || "For sale"} />
+          </div>
+        </div>
+
+        {/* ── 2. Quick action buttons ── */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: t("page.property.add_tenant") || "Add tenant", icon: Users, path: `/dashboard/tenants?property=${propertyId}` },
+            { label: t("page.property.create_lease") || "Create lease", icon: FileText, path: `/dashboard/leases?property=${propertyId}` },
+            { label: t("page.property.generate_receipt") || "Generate receipt", icon: Receipt, path: `/dashboard/receipts?property=${propertyId}` },
+            { label: t("page.property.add_expense") || "Add expense", icon: DollarSign, path: `/dashboard/expenses?property=${propertyId}` },
+            { label: t("page.property.add_intervention") || "Report issue", icon: Wrench, path: `/dashboard/interventions?property=${propertyId}` },
+            { label: t("page.property.publish_seasonal") || "Publish seasonal", icon: CalendarRange, path: `/dashboard/seasonal?property=${propertyId}` },
+            { label: t("page.property.publish_sale") || "Publish for sale", icon: Megaphone, path: `/dashboard/real-estate?property=${propertyId}` },
+          ].map(a => (
+            <Button key={a.label} variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(a.path)}>
+              <a.icon className="h-3.5 w-3.5" /> {a.label}
+            </Button>
+          ))}
         </div>
 
         {/* KPI strip */}
@@ -229,6 +280,7 @@ const PropertyDetailHub = () => {
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <FileText className="h-3.5 w-3.5" /> {t("nav.documents") || "Documents"}
+              {documents.length > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{documents.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="maintenance" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <Wrench className="h-3.5 w-3.5" /> {t("nav.interventions") || "Maintenance"}
@@ -239,6 +291,9 @@ const PropertyDetailHub = () => {
             </TabsTrigger>
             <TabsTrigger value="inventory" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <ClipboardList className="h-3.5 w-3.5" /> {t("page.property.inventory") || "Inventory"}
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
+              <Activity className="h-3.5 w-3.5" /> {t("page.property.activity") || "Activity"}
             </TabsTrigger>
           </TabsList>
 
@@ -303,10 +358,10 @@ const PropertyDetailHub = () => {
             )}
           </TabsContent>
 
-          {/* Documents tab */}
+          {/* Documents tab — filtered by property leases */}
           <TabsContent value="documents" className="mt-4">
             {documents.length === 0 ? (
-              <EmptyState icon={FileText} label={t("page.property.no_documents") || "No documents yet"} action={t("page.property.create_document") || "Create document"} actionLink="/dashboard/documents" />
+              <EmptyState icon={FileText} label={t("page.property.no_documents") || "No documents for this property"} action={t("page.property.create_document") || "Create document"} actionLink="/dashboard/documents" />
             ) : (
               <div className="space-y-2">
                 {documents.slice(0, 10).map(doc => (
@@ -396,38 +451,92 @@ const PropertyDetailHub = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* ── 3. Activity timeline tab ── */}
+          <TabsContent value="activity" className="mt-4">
+            {propertyId && orgId ? (
+              <div className="bg-card rounded-xl border border-border p-4 min-h-[300px]">
+                <EntityActivityLog entityType="property" entityId={propertyId} orgId={orgId} maxItems={30} />
+              </div>
+            ) : (
+              <EmptyState icon={Activity} label="No activity" />
+            )}
+          </TabsContent>
         </Tabs>
 
         {/* Cross-module links */}
-        {seasonalListings.length > 0 && (
-          <div className="bg-card rounded-xl border border-border p-4">
-            <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-              <CalendarRange className="h-4 w-4 text-accent" />
-              {t("page.property.seasonal_listings") || "Seasonal Listings"}
-            </h3>
-            <div className="space-y-2">
-              {seasonalListings.map(listing => (
-                <Link
-                  key={listing.id}
-                  to={`/listing/${listing.slug || listing.id}`}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{listing.title || property.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {listing.active ? "🟢 Live" : "⚪ Draft"} · {listing.price_per_night ? `${fmt(listing.price_per_night)}/night` : ""}
-                    </p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              ))}
-            </div>
+        {(seasonalListings.length > 0 || realEstateListings.length > 0) && (
+          <div className="bg-card rounded-xl border border-border p-4 space-y-4">
+            {seasonalListings.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <CalendarRange className="h-4 w-4 text-accent" />
+                  {t("page.property.seasonal_listings") || "Seasonal Listings"}
+                </h3>
+                <div className="space-y-2">
+                  {seasonalListings.map(listing => (
+                    <Link
+                      key={listing.id}
+                      to={`/listing/${listing.slug || listing.id}`}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{listing.title || property.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {listing.active ? "🟢 Live" : "⚪ Draft"} · {listing.price_per_night ? `${fmt(listing.price_per_night)}/night` : ""}
+                        </p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            {realEstateListings.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-success" />
+                  {t("page.property.sale_listings") || "Sale Listings"}
+                </h3>
+                <div className="space-y-2">
+                  {realEstateListings.map((listing: any) => (
+                    <Link
+                      key={listing.id}
+                      to={`/real-estate/${listing.slug || listing.id}`}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{listing.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {listing.status === "active" ? "🟢 Active" : "⚪ " + listing.status} · {listing.price ? `${fmt(listing.price)}` : ""}
+                        </p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
     </DashboardLayout>
   );
 };
+
+/* ── Sub-components ── */
+
+const ModeChip = ({ active, icon: Icon, label }: { active: boolean; icon: React.ElementType; label: string }) => (
+  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+    active
+      ? "bg-primary/10 border-primary/30 text-primary"
+      : "bg-muted/50 border-border text-muted-foreground"
+  }`}>
+    <Icon className="h-3.5 w-3.5" />
+    {label}
+    {active && <span className="w-2 h-2 rounded-full bg-success" />}
+  </div>
+);
 
 const EmptyState = ({ icon: Icon, label, action, actionLink }: { icon: any; label: string; action?: string; actionLink?: string }) => (
   <div className="flex flex-col items-center justify-center py-12 text-center">
