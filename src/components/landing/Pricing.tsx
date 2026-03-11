@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, Sparkles, User, Users, Building2, Zap, BadgePercent, Globe, ShieldCheck, ArrowRight, Star, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Feature lists ── */
 const FREE_FEATURES = [
