@@ -257,19 +257,42 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     return true;
   };
 
-  // ─── Refund Booking (L2.8) ───
+  // ─── Refund Booking (L2.8) — Automated Stripe Refund ───
   const refundBooking = async (booking: any, reason: string = "") => {
-    const { error } = await supabase
-      .from("marketplace_bookings")
-      .update({
-        status: "refunded",
-        refunded_at: new Date().toISOString(),
-        payment_confirmed: false,
-      })
-      .eq("id", booking.id);
-    if (error) { toast.error(error.message); return false; }
+    const bookingType = booking.service_id && booking.provider_id ? "marketplace" : "concierge";
 
-    toast.success("Réservation remboursée");
+    // Attempt automated refund via Edge Function
+    try {
+      const { data: refundResult, error: fnError } = await supabase.functions.invoke("process-refund", {
+        body: { booking_id: booking.id, booking_type: bookingType, reason },
+      });
+
+      if (fnError) {
+        console.error("[refund] Edge function error:", fnError);
+        toast.error(`Refund error: ${fnError.message}`);
+        return false;
+      }
+
+      if (refundResult?.error) {
+        console.error("[refund] Server error:", refundResult.error);
+        toast.error(`Refund error: ${refundResult.error}`);
+        return false;
+      }
+
+      const status = refundResult?.refund_status;
+      if (status === "stripe_failed") {
+        toast.warning("Stripe refund failed — booking marked as refunded. Please process the refund manually in your Stripe dashboard.");
+      } else if (status === "manual") {
+        toast.success("Booking marked as refunded (non-Stripe payment — refund manually).");
+      } else {
+        toast.success("Refund processed successfully via Stripe.");
+      }
+    } catch (e) {
+      console.error("[refund] Unexpected error:", e);
+      toast.error("Refund failed. Please try again.");
+      return false;
+    }
+
     invalidate();
 
     // Resolve notifications
