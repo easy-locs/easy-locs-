@@ -2,20 +2,20 @@ import { Suspense, lazy } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SocialProofStrip from "@/components/landing/SocialProofStrip";
-import RoleCards from "@/components/landing/RoleCards";
-import Features from "@/components/landing/Features";
+import BrowseByCountry from "@/components/landing/BrowseByCountry";
+import PopularCities from "@/components/landing/PopularCities";
+import ServiceCategories from "@/components/landing/ServiceCategories";
+import QuickLinks from "@/components/landing/QuickLinks";
 import HowItWorks from "@/components/landing/HowItWorks";
-import RemoteEntrepreneurship from "@/components/landing/RemoteEntrepreneurship";
 import Pricing from "@/components/landing/Pricing";
-import Newsletter from "@/components/landing/Newsletter";
 import LandingFAQ from "@/components/landing/LandingFAQ";
+import Newsletter from "@/components/landing/Newsletter";
 import Footer from "@/components/landing/Footer";
 import SEOHead from "@/components/SEOHead";
-import { Loader2 } from "lucide-react";
 import ExplorePreview from "@/components/landing/ExplorePreview";
+import { Loader2 } from "lucide-react";
 
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
-const WorldMapSection = lazy(() => import("@/components/landing/WorldMapSection"));
 
 const SectionLoader = () => (
   <div className="flex items-center justify-center py-16">
@@ -49,9 +49,7 @@ const jsonLd = {
     name: "Easy-Locs",
     url: "https://www.easy-locs.com",
     logo: "https://www.easy-locs.com/pwa-512x512.png",
-    sameAs: [
-      "https://www.linkedin.com/company/easy-locs",
-    ],
+    sameAs: ["https://www.linkedin.com/company/easy-locs"],
     contactPoint: {
       "@type": "ContactPoint",
       email: "contact@easy-locs.com",
@@ -144,17 +142,25 @@ const Index = () => {
       <Navbar />
       <Hero />
       <SocialProofStrip />
-      <RoleCards />
-      <HowItWorks />
-      <RemoteEntrepreneurship />
-      <Features />
+
+      {/* Discovery sections */}
+      <BrowseByCountry />
+      <PopularCities />
+      <ServiceCategories />
+      <QuickLinks />
+
+      {/* Live inventory preview */}
       <ExplorePreview />
-      <Suspense fallback={<SectionLoader />}>
-        <WorldMapSection />
-      </Suspense>
+
+      {/* How it works */}
+      <HowItWorks />
+
+      {/* Trust */}
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
+
+      {/* Pricing & FAQ */}
       <Pricing />
       <LandingFAQ />
       <Newsletter />
