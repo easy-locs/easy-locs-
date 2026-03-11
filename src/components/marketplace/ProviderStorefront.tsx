@@ -360,7 +360,7 @@ export default function ProviderStorefront() {
           <div className="flex flex-wrap gap-2">
             {serviceAreas.map((city) => (
               <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
-                <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>Services in {city}</Link>
+                <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>{t("mp.services_in") || "Services in"} {city}</Link>
               </Button>
             ))}
             {(provider.categories || []).slice(0, 4).map((c: string) => {
