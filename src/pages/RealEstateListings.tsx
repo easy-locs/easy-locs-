@@ -245,9 +245,11 @@ export default function RealEstateListings() {
               </h1>
               <p className="text-sm text-muted-foreground">Manage property listings for sale and rent</p>
             </div>
-            <Button onClick={() => { setForm(emptyForm); setEditId(null); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> New Listing
-            </Button>
+            <PermissionGate permission="properties:write">
+              <Button onClick={() => { setForm(emptyForm); setEditId(null); setCreateOpen(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> New Listing
+              </Button>
+            </PermissionGate>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
