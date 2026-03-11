@@ -8,6 +8,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
