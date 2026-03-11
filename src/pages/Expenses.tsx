@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
@@ -101,14 +101,24 @@ const Expenses = () => {
   const propName = (id: string | null) => properties.find(p => p.id === id)?.label || "—";
   const catName = (c: string) => CATEGORIES.find(x => x.value === c)?.label || c;
 
+  // Category totals for mini chart
+  const categoryTotals = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
+    return Object.entries(map).map(([cat, amount]) => ({ cat, label: catName(cat), amount })).sort((a, b) => b.amount - a.amount).slice(0, 5);
+  }, [filtered]);
+
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="page-content">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1>{t("page.expenses.title")}</h1>
-            <p>{t("page.expenses.subtitle")}</p>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-destructive/10"><Filter className="h-5 w-5 text-destructive" /></div>
+              {t("page.expenses.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
@@ -134,12 +144,34 @@ const Expenses = () => {
           </select>
         </div>
 
-        {/* Summary */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="ui-card mb-6 relative overflow-hidden group hover:shadow-card-hover transition-all">
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
-          <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
+        {/* Summary Cards */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="ui-card relative overflow-hidden group hover:shadow-card-hover transition-all">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-destructive opacity-0 group-hover:opacity-100 transition-opacity" />
+            <p className="text-sm text-muted-foreground">{t("page.expenses.total_filtered")}</p>
+            <p className="text-2xl font-bold text-foreground currency-value whitespace-nowrap mt-1">{fmt(total)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{filtered.length} {t("page.finances.expense_count")}</p>
+          </div>
+          {categoryTotals.length > 0 && (
+            <div className="ui-card">
+              <p className="text-sm text-muted-foreground mb-3">{t("page.finances.expenses_category")}</p>
+              <div className="space-y-2">
+                {categoryTotals.map((ct, i) => (
+                  <div key={ct.cat} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-xs mb-0.5">
+                        <span className="text-foreground font-medium truncate">{ct.label}</span>
+                        <span className="text-muted-foreground">{fmt(ct.amount)}</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-destructive/70 rounded-full transition-all" style={{ width: `${Math.min(100, (ct.amount / total) * 100)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Add form */}
