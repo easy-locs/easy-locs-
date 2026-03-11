@@ -1986,6 +1986,7 @@ export type Database = {
           service_id: string | null
           status: string
           updated_at: string
+          verified: boolean
         }
         Insert: {
           booking_id?: string | null
@@ -2002,6 +2003,7 @@ export type Database = {
           service_id?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean
         }
         Update: {
           booking_id?: string | null
@@ -2018,12 +2020,13 @@ export type Database = {
           service_id?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean
         }
         Relationships: [
           {
             foreignKeyName: "marketplace_reviews_booking_id_fkey"
             columns: ["booking_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "marketplace_bookings"
             referencedColumns: ["id"]
           },
