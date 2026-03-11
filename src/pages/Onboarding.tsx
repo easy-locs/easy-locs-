@@ -277,17 +277,34 @@ const Onboarding = () => {
       <motion.div className="bg-card rounded-2xl shadow-card-hover p-5 sm:p-10 max-w-2xl w-full my-16"
         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}>
 
-        {/* Progress */}
+        {/* Progress + Step indicators */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground">{t("onboarding.title")}</span>
-            <span className="text-xs font-bold text-accent">{progress}%</span>
+            <span className="text-xs font-bold text-accent">{t("ob.step") || "Step"} {step + 1}/{totalSteps}</span>
           </div>
           <Progress value={progress} className="h-2" />
-          <div className="flex gap-1 mt-3">
-            {STEPS.map((s, i) => (
-              <div key={s.key} className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? "bg-gradient-gold" : "bg-border"}`} />
-            ))}
+          {/* Visual step dots with icons */}
+          <div className="flex items-center justify-between mt-4 px-1">
+            {STEPS.map((s, i) => {
+              const StepIcon = s.icon;
+              const isDone = i < step;
+              const isCurrent = i === step;
+              return (
+                <div key={s.key} className="flex flex-col items-center gap-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    isDone ? "bg-success text-success-foreground" :
+                    isCurrent ? "bg-gradient-gold text-accent-foreground shadow-gold" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
+                    {isDone ? <CheckCircle2 className="h-4 w-4" /> : <StepIcon className="h-3.5 w-3.5" />}
+                  </div>
+                  <span className={`text-[9px] font-medium hidden sm:block ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
+                    {t(`ob.step_${s.key}`) || s.key}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
