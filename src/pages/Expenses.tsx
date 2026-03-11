@@ -112,17 +112,17 @@ const Expenses = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="page-content">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-destructive/10"><Filter className="h-5 w-5 text-destructive" /></div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-destructive/10 shrink-0"><Filter className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" /></div>
               {t("page.expenses.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
-              <Download className="h-4 w-4" /> {t("page.expenses.export")}
+              <Download className="h-4 w-4" /> <span className="hidden sm:inline">{t("page.expenses.export")}</span>
             </button>
             <PermissionGate permission="expenses:write">
               <button onClick={() => setShowForm(true)} className="btn-primary btn-sm">
