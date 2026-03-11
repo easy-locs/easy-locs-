@@ -20,6 +20,22 @@ type CitySubPage = "overview" | "services" | "activities" | "concierge";
 const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
   const { city: citySlug } = useParams<{ city: string }>();
   const result = getCityBySlug(citySlug || "");
+  const [liveServices, setLiveServices] = useState<any[]>([]);
+  const [liveListings, setLiveListings] = useState<any[]>([]);
+
+  // Fetch live listings for this city
+  useEffect(() => {
+    if (!result) return;
+    const cityName = result.city.name;
+    Promise.all([
+      supabase.rpc("get_public_marketplace_services", { _city: cityName }).then(r => r.data || []),
+      supabase.from("public_listings").select("id,title,slug,price_per_night,max_guests,min_nights,property_id")
+        .eq("active", true).limit(12),
+    ]).then(([svcs, listings]) => {
+      setLiveServices(svcs.slice(0, 8));
+      setLiveListings(listings || []);
+    });
+  }, [result]);
 
   if (!result) {
     return (
