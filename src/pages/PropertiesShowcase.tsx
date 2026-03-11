@@ -47,6 +47,7 @@ const PRICE_LABEL: Record<string, string> = {
 export default function PropertiesShowcase() {
   const [listings, setListings] = useState<PublicListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -57,8 +58,11 @@ export default function PropertiesShowcase() {
   const [maxPrice, setMaxPrice] = useState<string>("");
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
+      setLoadError(null);
       const params: Record<string, any> = { p_limit: 100 };
       if (typeFilter !== "all") params.p_listing_type = typeFilter;
       if (propertyTypeFilter !== "all") params.p_property_type = propertyTypeFilter;
@@ -67,11 +71,23 @@ export default function PropertiesShowcase() {
       if (minPrice) params.p_min_price = Number(minPrice);
       if (maxPrice) params.p_max_price = Number(maxPrice);
 
-      const { data } = await supabase.rpc("get_public_real_estate_listings", params);
-      setListings(((data || []) as PublicListing[]).filter(l => l.listing_type !== "seasonal_rent"));
+      const { data, error } = await supabase.rpc("get_public_real_estate_listings", params);
+      if (cancelled) return;
+
+      if (error) {
+        console.error("[PropertiesShowcase] failed to load listings", error);
+        setListings([]);
+        setLoadError("Properties are temporarily unavailable.");
+      } else {
+        setListings(((data || []) as PublicListing[]).filter(l => l.listing_type !== "seasonal_rent"));
+      }
       setLoading(false);
     };
-    load();
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [typeFilter, propertyTypeFilter, countryFilter, cityFilter, minPrice, maxPrice]);
 
   const countries = useMemo(() => {
@@ -170,6 +186,12 @@ export default function PropertiesShowcase() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {loadError && (
+          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            {loadError}
+          </div>
+        )}
+
         {/* ─── Filters bar ─── */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
           <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5 rounded-lg h-10 min-h-[44px] text-sm">

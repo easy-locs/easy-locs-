@@ -73,33 +73,57 @@ export default function Explore() {
   const [seasonal, setSeasonal] = useState<SeasonalListing[]>([]);
   const [services, setServices] = useState<ServiceListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
-      const [reRes, seaRes, svcRes] = await Promise.all([
+      setLoadError(null);
+
+      const [reRes, seaRes, svcRes] = await Promise.allSettled([
         supabase.rpc("get_public_real_estate_listings", { p_limit: 200 }),
         supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(200),
         supabase.rpc("get_public_marketplace_services", {}),
       ]);
-      setRealEstate((reRes.data || []) as RealEstateListing[]);
-      setServices((svcRes.data || []) as ServiceListing[]);
 
-      const rawListings = (seaRes.data || []) as any[];
-      const propertyIds = [...new Set(rawListings.map(l => l.property_id))];
-      let propMap: Record<string, any> = {};
+      const reData = reRes.status === "fulfilled" ? (reRes.value.data || []) as RealEstateListing[] : [];
+      const seaData = seaRes.status === "fulfilled" ? (seaRes.value.data || []) as any[] : [];
+      const svcData = svcRes.status === "fulfilled" ? (svcRes.value.data || []) as ServiceListing[] : [];
+
+      const hadFailure = [reRes, seaRes, svcRes].some(
+        (result) => result.status === "rejected" || (result.status === "fulfilled" && result.value.error),
+      );
+
+      let seasonalListings: SeasonalListing[] = seaData as SeasonalListing[];
+      const propertyIds = [...new Set(seaData.map((l) => l.property_id).filter(Boolean))];
       if (propertyIds.length > 0) {
-        const { data: props } = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
-        if (props) for (const p of props as any[]) propMap[p.id] = p;
+        const propsRes = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
+        const propMap: Record<string, any> = {};
+        if (propsRes.data) {
+          for (const p of propsRes.data as any[]) propMap[p.id] = p;
+        }
+        seasonalListings = seaData.map((l) => {
+          const prop = propMap[l.property_id];
+          const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
+          return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
+        });
       }
-      setSeasonal(rawListings.map(l => {
-        const prop = propMap[l.property_id];
-        const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
-        return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
-      }));
+
+      if (cancelled) return;
+
+      setRealEstate(reData);
+      setServices(svcData);
+      setSeasonal(seasonalListings);
+      setLoadError(hadFailure ? "Some listings could not be loaded right now." : null);
       setLoading(false);
     };
-    load();
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Aggregate unique locations
@@ -348,6 +372,12 @@ export default function Explore() {
               <button onClick={clearAll} className="text-muted-foreground hover:text-foreground underline">Show worldwide</button>
             </span>
           </motion.div>
+        )}
+
+        {loadError && (
+          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            {loadError}
+          </div>
         )}
 
         {/* Results header */}

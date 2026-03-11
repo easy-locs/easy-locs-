@@ -32,30 +32,51 @@ export default function ExplorePreview() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      const [reRes, seaRes, svcRes] = await Promise.all([
+      const [reRes, seaRes, svcRes] = await Promise.allSettled([
         supabase.rpc("get_public_real_estate_listings", { p_limit: 6 }),
         supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(6),
         supabase.rpc("get_public_marketplace_services", {}).then(r => ({ ...r, data: (r.data || []).slice(0, 6) })),
       ]);
-      setRealEstate((reRes.data || []) as any[]);
-      setServices((svcRes.data || []) as any[]);
 
-      const rawListings = (seaRes.data || []) as any[];
-      const propertyIds = [...new Set(rawListings.map((l: any) => l.property_id))];
-      let propMap: Record<string, any> = {};
+      const realEstateData = reRes.status === "fulfilled" ? (reRes.value.data || []) as any[] : [];
+      const seasonalData = seaRes.status === "fulfilled" ? (seaRes.value.data || []) as any[] : [];
+      const servicesData = svcRes.status === "fulfilled" ? (svcRes.value.data || []) as any[] : [];
+
+      let nextSeasonal = seasonalData;
+      const propertyIds = [...new Set(seasonalData.map((l: any) => l.property_id).filter(Boolean))];
       if (propertyIds.length > 0) {
         const { data: props } = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
+        const propMap: Record<string, any> = {};
         if (props) for (const p of props as any[]) propMap[p.id] = p;
+        nextSeasonal = seasonalData.map((l: any) => {
+          const prop = propMap[l.property_id];
+          const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
+          return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
+        });
       }
-      setSeasonal(rawListings.map((l: any) => {
-        const prop = propMap[l.property_id];
-        const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
-        return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
-      }));
+
+      if (cancelled) return;
+      setRealEstate(realEstateData);
+      setServices(servicesData);
+      setSeasonal(nextSeasonal);
       setLoaded(true);
     };
-    load();
+
+    void load().catch((error) => {
+      console.error("[ExplorePreview] failed to load preview data", error);
+      if (cancelled) return;
+      setRealEstate([]);
+      setServices([]);
+      setSeasonal([]);
+      setLoaded(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const items = tab === "seasonal" ? seasonal : tab === "real-estate" ? realEstate : services;
