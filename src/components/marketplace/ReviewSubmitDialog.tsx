@@ -7,6 +7,7 @@ import { Star, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   open: boolean;
@@ -24,20 +25,29 @@ interface Props {
 
 export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubmitted }: Props) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [reviewerName, setReviewerName] = useState(booking.booker_name || "");
   const [submitting, setSubmitting] = useState(false);
 
+  const ratingLabels = [
+    t("mp.review_tap_to_rate") || "Tap to rate",
+    t("mp.review_poor") || "Poor",
+    t("mp.review_fair") || "Fair",
+    t("mp.review_good") || "Good",
+    t("mp.review_very_good") || "Very Good",
+    t("mp.review_excellent") || "Excellent",
+  ];
+
   const handleSubmit = async () => {
-    if (rating === 0) { toast.error("Please select a rating"); return; }
-    if (!comment.trim()) { toast.error("Please write a comment"); return; }
-    if (!reviewerName.trim()) { toast.error("Please enter your name"); return; }
+    if (rating === 0) { toast.error(t("mp.review_select_rating") || "Please select a rating"); return; }
+    if (!comment.trim()) { toast.error(t("mp.review_write_comment") || "Please write a comment"); return; }
+    if (!reviewerName.trim()) { toast.error(t("mp.review_enter_name") || "Please enter your name"); return; }
 
     setSubmitting(true);
 
-    // Check if already reviewed (client-side guard + DB unique constraint)
     const { data: existing } = await supabase
       .from("marketplace_reviews")
       .select("id")
@@ -45,7 +55,7 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
       .maybeSingle();
 
     if (existing) {
-      toast.error("You have already reviewed this booking");
+      toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
       setSubmitting(false);
       return;
     }
@@ -60,17 +70,17 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
       rating,
       comment: comment.trim(),
       status: "published",
-      verified: true, // linked to a real completed booking
+      verified: true,
     });
 
     if (error) {
       if (error.code === "23505") {
-        toast.error("You have already reviewed this booking");
+        toast.error(t("mp.review_already_submitted") || "You have already reviewed this booking");
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success("Thank you for your review!");
+      toast.success(t("mp.review_submitted") || "Thank you for your review!");
       onOpenChange(false);
       onSubmitted?.();
     }
@@ -85,12 +95,12 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
-            Leave a Review
+            {t("mp.leave_review") || "Leave a Review"}
           </DialogTitle>
           <DialogDescription>
             {booking.service_title
-              ? `Share your experience with "${booking.service_title}"`
-              : "Share your experience with this service"}
+              ? `${t("mp.review_placeholder")?.split("...")[0] || "Share your experience with"} "${booking.service_title}"`
+              : t("mp.review_placeholder") || "Tell others about your experience..."}
           </DialogDescription>
         </DialogHeader>
 
@@ -118,17 +128,13 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
               ))}
             </div>
             <span className="text-sm text-muted-foreground">
-              {displayRating === 0 ? "Tap to rate" :
-               displayRating === 1 ? "Poor" :
-               displayRating === 2 ? "Fair" :
-               displayRating === 3 ? "Good" :
-               displayRating === 4 ? "Very Good" : "Excellent"}
+              {ratingLabels[displayRating] || ratingLabels[0]}
             </span>
           </div>
 
           {/* Name */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Your name</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">{t("mp.review_your_name") || "Your name"}</label>
             <Input
               value={reviewerName}
               onChange={(e) => setReviewerName(e.target.value)}
@@ -138,11 +144,11 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
 
           {/* Comment */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Your review</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">{t("mp.review_your_comment") || "Your review"}</label>
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell others about your experience..."
+              placeholder={t("mp.review_placeholder") || "Tell others about your experience..."}
               rows={4}
               maxLength={1000}
             />
@@ -155,7 +161,7 @@ export default function ReviewSubmitDialog({ open, onOpenChange, booking, onSubm
             className="w-full gap-2"
           >
             <Send className="h-4 w-4" />
-            {submitting ? "Submitting..." : "Submit Review"}
+            {submitting ? (t("mp.review_submitting") || "Submitting...") : (t("mp.review_submit") || "Submit Review")}
           </Button>
         </div>
       </DialogContent>

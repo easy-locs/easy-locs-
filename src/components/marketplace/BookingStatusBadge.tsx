@@ -1,26 +1,52 @@
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, X, AlertTriangle, CreditCard, RefreshCw, Edit, Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
-export const BOOKING_STATUSES = {
-  new: { label: "New Request", variant: "outline" as const, icon: Clock, color: "text-blue-500" },
-  pending: { label: "Pending Validation", variant: "outline" as const, icon: Loader2, color: "text-amber-500" },
-  awaiting_payment: { label: "Awaiting Payment", variant: "secondary" as const, icon: CreditCard, color: "text-orange-500" },
-  confirmed: { label: "Confirmed", variant: "default" as const, icon: CheckCircle2, color: "text-emerald-500" },
-  modified: { label: "Modified", variant: "secondary" as const, icon: Edit, color: "text-violet-500" },
-  cancelled: { label: "Cancelled", variant: "destructive" as const, icon: X, color: "text-destructive" },
-  completed: { label: "Completed", variant: "default" as const, icon: CheckCircle2, color: "text-emerald-600" },
-  refunded: { label: "Refunded", variant: "outline" as const, icon: RefreshCw, color: "text-muted-foreground" },
-} as const;
+export const BOOKING_STATUS_KEYS: Record<string, string> = {
+  new: "mp.status_new",
+  pending: "mp.status_pending",
+  awaiting_payment: "mp.status_awaiting_payment",
+  confirmed: "mp.status_confirmed",
+  modified: "mp.status_modified",
+  cancelled: "mp.status_cancelled",
+  completed: "mp.status_completed",
+  refunded: "mp.status_refunded",
+};
 
-export type BookingStatus = keyof typeof BOOKING_STATUSES;
+const BOOKING_STATUS_FALLBACKS: Record<string, string> = {
+  new: "New Request",
+  pending: "Pending",
+  awaiting_payment: "Awaiting Payment",
+  confirmed: "Confirmed",
+  modified: "Modified",
+  cancelled: "Cancelled",
+  completed: "Completed",
+  refunded: "Refunded",
+};
+
+const BOOKING_STATUS_CONFIG: Record<string, { variant: "outline" | "default" | "secondary" | "destructive"; icon: any; color: string }> = {
+  new: { variant: "outline", icon: Clock, color: "text-primary" },
+  pending: { variant: "outline", icon: Loader2, color: "text-warning" },
+  awaiting_payment: { variant: "secondary", icon: CreditCard, color: "text-warning" },
+  confirmed: { variant: "default", icon: CheckCircle2, color: "text-success" },
+  modified: { variant: "secondary", icon: Edit, color: "text-accent" },
+  cancelled: { variant: "destructive", icon: X, color: "text-destructive" },
+  completed: { variant: "default", icon: CheckCircle2, color: "text-success" },
+  refunded: { variant: "outline", icon: RefreshCw, color: "text-muted-foreground" },
+};
+
+export type BookingStatus = keyof typeof BOOKING_STATUS_CONFIG;
 
 export default function BookingStatusBadge({ status }: { status: string }) {
-  const config = BOOKING_STATUSES[status as BookingStatus] || BOOKING_STATUSES.pending;
+  const { t } = useI18n();
+  const config = BOOKING_STATUS_CONFIG[status] || BOOKING_STATUS_CONFIG.pending;
   const Icon = config.icon;
+  const label = t(BOOKING_STATUS_KEYS[status] || "") || BOOKING_STATUS_FALLBACKS[status] || status;
+
   return (
     <Badge variant={config.variant} className="gap-1">
       <Icon className={`h-3 w-3 ${config.color}`} />
-      {config.label}
+      {label}
     </Badge>
   );
 }

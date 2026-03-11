@@ -2,6 +2,7 @@ import { Star, Reply, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/lib/i18n";
 
 interface ReviewCardProps {
   review: {
@@ -18,6 +19,7 @@ interface ReviewCardProps {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
+  const { t } = useI18n();
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(review.rating));
 
   return (
@@ -39,7 +41,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
               {review.verified && (
                 <Badge variant="secondary" className="text-[10px] h-4 gap-0.5 px-1.5 bg-success/10 text-success border-success/20">
                   <ShieldCheck className="h-2.5 w-2.5" />
-                  Verified
+                  {t("mp.verified_review") || "Verified"}
                 </Badge>
               )}
             </div>
@@ -68,7 +70,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         <div className="ml-4 pl-3 border-l-2 border-accent/30 space-y-1">
           <div className="flex items-center gap-1.5">
             <Reply className="h-3 w-3 text-accent" />
-            <span className="text-xs font-semibold text-accent">Provider reply</span>
+            <span className="text-xs font-semibold text-accent">{t("mp.provider_reply") || "Provider reply"}</span>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{review.response}</p>
         </div>
