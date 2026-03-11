@@ -143,7 +143,7 @@ const ClientBookings = () => {
                   {b.total != null && (
                     <span className="text-sm font-semibold text-foreground">{b.total} {b.currency}</span>
                   )}
-                  <Badge variant="outline" className={statusColor[b.status] || ""}>{b.status}</Badge>
+                  <Badge variant="outline" className={statusColor[b.status] || ""}>{t(`mp.status_${b.status}`) || t(`mp.${b.status}`) || b.status}</Badge>
                 </div>
               </div>
               {/* Review action row */}
