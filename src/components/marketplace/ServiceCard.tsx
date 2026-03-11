@@ -254,10 +254,10 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
               </Button>
             )}
 
-            {showActions && onEdit && <Button size="sm" variant="outline" onClick={onEdit}>Edit</Button>}
+            {showActions && onEdit && <Button size="sm" variant="outline" onClick={onEdit}>{t("mp.edit") || "Edit"}</Button>}
             {onBook && (
               <Button size="sm" onClick={onBook} className="shadow-sm">
-                Book
+                {t("mp.book") || "Book"}
               </Button>
             )}
           </div>
