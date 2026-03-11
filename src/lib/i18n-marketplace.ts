@@ -283,6 +283,12 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.no_services_listed": "Aucun service listé",
     "mp.discover_more": "Découvrir plus de services",
     "mp.services_in": "Services à",
+    // Trust metrics
+    "mp.trust_rating": "Note", "mp.trust_reviews": "Avis", "mp.trust_verified_reviews": "Avis vérifiés",
+    "mp.trust_jobs_done": "Missions terminées", "mp.trust_response": "Taux de réponse", "mp.trust_reply_rate": "Taux de réponse aux avis",
+    "mp.trust_responds_in": "Répond en", "mp.trust_verified_since": "Vérifié depuis", "mp.trust_member_since": "Membre depuis",
+    "mp.about": "À propos", "mp.service_coverage": "Zone de couverture", "mp.explore_nearby": "Explorer à proximité",
+    "mp.store_not_found": "Boutique introuvable", "mp.provider_not_found": "Prestataire introuvable", "mp.review_single": "avis",
     // Booking statuses
     "mp.status_new": "Nouvelle demande",
     "mp.status_pending": "En attente",
