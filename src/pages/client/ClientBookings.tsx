@@ -152,7 +152,7 @@ const ClientBookings = () => {
                   {canReview(b) && (
                     <>
                       <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => setReviewBooking(b)}>
-                        <Star className="h-3 w-3" /> Leave a review
+                        <Star className="h-3 w-3" /> {t("mp.leave_review") || "Leave a review"}
                       </Button>
                       {windowInfo && (
                         <span className="text-[10px] text-warning font-medium">{windowInfo}</span>
