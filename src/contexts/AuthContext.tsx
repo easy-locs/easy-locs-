@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAudit } from "@/lib/audit";
 import type { User, Session } from "@supabase/supabase-js";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 
@@ -247,6 +248,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
+        if (_event === "SIGNED_IN" && nextSession?.user) {
+          logAudit({ userId: nextSession.user.id, action: "user_login" });
+        }
+        if (_event === "SIGNED_OUT") {
+          logAudit({ action: "user_logout" });
+        }
         void hydrateAuthState(nextSession);
       }
     );
