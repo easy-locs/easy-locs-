@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
