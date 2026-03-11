@@ -45,7 +45,7 @@ const Navbar = () => {
     { to: "/explore", label: t("landing.nav.explore") || "Explore", isRoute: true },
     { to: "/marketplace", label: t("landing.nav.marketplace") || "Marketplace", isRoute: true },
     { to: "/properties", label: t("landing.nav.properties") || "Properties", isRoute: true },
-    { to: "#pricing", label: t("landing.nav.pricing"), isRoute: false },
+    { to: "#pricing", label: t("landing.nav.pricing") || "Pricing", isRoute: false },
   ];
 
   const sortedLocales = [
@@ -62,7 +62,7 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 border-b"
       style={{
         background: "hsl(var(--navy-deep) / 0.8)",
-        borderColor: "hsl(var(--primary-foreground) / 0.08)",
+        borderColor: "hsl(220 15% 90% / 0.08)",
         backdropFilter: "blur(20px) saturate(180%)",
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
       }}
@@ -71,10 +71,7 @@ const Navbar = () => {
         <AppLogo variant="landing" linkTo="/" />
 
         {/* Center links — desktop */}
-        <div
-          className="hidden md:flex items-center gap-8 text-sm font-medium"
-          style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}
-        >
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
           {navLinks.map((link) =>
             link.isRoute ? (
               <Link key={link.to} to={link.to} className="hover:text-accent transition-colors duration-200">
@@ -89,13 +86,12 @@ const Navbar = () => {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Language switcher */}
-          <div className="relative" ref={langRef}>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Language switcher — hidden on small mobile to save space */}
+          <div className="relative hidden sm:block" ref={langRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10"
-              style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10 text-white/75"
             >
               <Globe className="h-3.5 w-3.5" />
               <span>{LANG_FLAGS[locale] || "🌐"} {locale.toUpperCase()}</span>
@@ -156,32 +152,29 @@ const Navbar = () => {
           </div>
 
           <ThemeSwitcher />
+
+          {/* Auth buttons — always visible, never cut */}
           <Link
             to="/login"
-            className="text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5"
-            style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}
+            className="text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5 text-white/80 whitespace-nowrap"
           >
             {t("landing.nav.login") || "Log in"}
           </Link>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/signup"
-              className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-xl transition-all relative overflow-hidden group"
-              style={{
-                background: "var(--gradient-gold)",
-                color: "hsl(var(--accent-foreground))",
-                boxShadow: "0 0 16px hsl(var(--accent) / 0.2)",
-              }}
-            >
-              <span className="relative z-10">{t("landing.nav.pro_signup") || "Get Started"}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
-            </Link>
-          </motion.div>
+          <Link
+            to="/signup"
+            className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0"
+            style={{
+              background: "var(--gradient-gold)",
+              color: "hsl(var(--accent-foreground))",
+              boxShadow: "0 0 16px hsl(var(--accent) / 0.2)",
+            }}
+          >
+            <span className="relative z-10">{t("landing.nav.pro_signup") || "Sign Up"}</span>
+          </Link>
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg transition-colors"
-            style={{ color: "hsl(var(--primary-foreground) / 0.8)" }}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg transition-colors text-white/80"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -201,30 +194,27 @@ const Navbar = () => {
             className="md:hidden overflow-hidden border-t"
             style={{
               background: "hsl(var(--navy-deep) / 0.95)",
-              borderColor: "hsl(var(--primary-foreground) / 0.06)",
+              borderColor: "hsl(220 15% 90% / 0.06)",
               backdropFilter: "blur(20px)",
             }}
           >
             <div className="container px-4 py-5 space-y-1">
               {navLinks.map((link) => {
-                const className =
-                  "block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-white/5";
-                const style = { color: "hsl(var(--primary-foreground) / 0.8)" };
-
+                const cls = "block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-white/5 text-white/80";
                 return link.isRoute ? (
-                  <Link key={link.to} to={link.to} className={className} style={style} onClick={() => setMobileOpen(false)}>
+                  <Link key={link.to} to={link.to} className={cls} onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </Link>
                 ) : (
-                  <a key={link.to} href={link.to} className={className} style={style} onClick={() => setMobileOpen(false)}>
+                  <a key={link.to} href={link.to} className={cls} onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </a>
                 );
               })}
 
               {/* Mobile language grid */}
-              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}>
-                <p className="px-4 text-[10px] uppercase tracking-widest font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
+                <p className="px-4 text-[10px] uppercase tracking-widest font-bold text-white/40">
                   {t("landing.nav.language") || "Language"}
                 </p>
                 <div className="flex flex-wrap gap-1.5 px-4">
@@ -235,9 +225,8 @@ const Navbar = () => {
                       className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         l === locale
                           ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
                       }`}
-                      style={l !== locale ? { color: "hsl(var(--primary-foreground) / 0.6)" } : undefined}
                     >
                       {LANG_FLAGS[l]} {l.toUpperCase()}
                     </button>
@@ -245,17 +234,13 @@ const Navbar = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(var(--primary-foreground) / 0.06)" }}>
+              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
                 <Link
                   to="/login"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-colors"
-                  style={{
-                    borderColor: "hsl(var(--primary-foreground) / 0.12)",
-                    color: "hsl(var(--primary-foreground) / 0.8)",
-                  }}
+                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-colors text-white/80 border-white/12"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {t("landing.nav.login")}
+                  {t("landing.nav.login") || "Log in"}
                 </Link>
                 <Link
                   to="/signup"
@@ -267,7 +252,7 @@ const Navbar = () => {
                   }}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {t("landing.nav.pro_signup") || "Get Started"}
+                  {t("landing.nav.pro_signup") || "Sign Up"}
                 </Link>
               </div>
             </div>
