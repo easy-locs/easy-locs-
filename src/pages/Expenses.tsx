@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
 import { Plus, Trash2, Download, Filter } from "lucide-react";
 import { exportToCSV } from "@/lib/csv-export";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 interface Expense {
   id: string;
