@@ -6,10 +6,9 @@ import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed, MapPin } from "lucide-react";
+import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
-import { RADIUS_OPTIONS, type RadiusValue } from "@/lib/geo-distance";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
 
 // Extracted components
@@ -19,7 +18,6 @@ import { ExploreListingCard } from "@/components/explore/ExploreListingCard";
 import { ExploreFiltersStrip } from "@/components/explore/ExploreFiltersStrip";
 import { ExploreSEOFooter } from "@/components/explore/ExploreSEOFooter";
 import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
-import { ExploreRadiusSearch } from "@/components/explore/ExploreRadiusSearch";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -49,25 +47,21 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
 
-  // State — initialize from URL params, fallback to geo-detected location
+  // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [locationQuery, setLocationQuery] = useState(searchParams.get("location") || "");
   const [activeGroup, setActiveGroup] = useState<string>(searchParams.get("group") || "all");
   const [activeSubcategory, setActiveSubcategory] = useState<string>(searchParams.get("sub") || "all");
-  const [radius, setRadius] = useState<RadiusValue>((searchParams.get("radius") as RadiusValue) || "worldwide");
+  const [radiusKm, setRadiusKm] = useState(() => parseInt(searchParams.get("radius") || "0", 10) || 0);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [showRadiusSearch, setShowRadiusSearch] = useState(false);
-  const [radiusKm, setRadiusKm] = useState(0);
   const [geoApplied, setGeoApplied] = useState(false);
 
-  // Keep the public explore page global by default.
-  // Geo-detection is used for suggestions/placeholders only, not as an automatic filter.
+  // Geo-detection passive
   useEffect(() => {
     if (geoApplied) return;
     if (searchParams.get("location") || searchParams.get("q")) return;
     if (!geo.detection || geo.loading) return;
-
     setGeoApplied(true);
   }, [geo.detection, geo.loading, geoApplied, searchParams]);
 
@@ -80,56 +74,43 @@ export default function Explore() {
 
   useEffect(() => {
     let cancelled = false;
-
     const load = async () => {
       setLoading(true);
       setLoadError(null);
-
       const [reRes, seaRes, svcRes] = await Promise.allSettled([
         supabase.rpc("get_public_real_estate_listings", { p_limit: 200 }),
         supabase.from("public_listings").select("*").eq("active", true).order("created_at", { ascending: false }).limit(200),
         supabase.rpc("get_public_marketplace_services", {}),
       ]);
-
       const reData = reRes.status === "fulfilled" ? (reRes.value.data || []) as RealEstateListing[] : [];
       const seaData = seaRes.status === "fulfilled" ? (seaRes.value.data || []) as any[] : [];
       const svcData = svcRes.status === "fulfilled" ? (svcRes.value.data || []) as ServiceListing[] : [];
-
-      const hadFailure = [reRes, seaRes, svcRes].some(
-        (result) => result.status === "rejected" || (result.status === "fulfilled" && result.value.error),
-      );
+      const hadFailure = [reRes, seaRes, svcRes].some(r => r.status === "rejected" || (r.status === "fulfilled" && r.value.error));
 
       let seasonalListings: SeasonalListing[] = seaData as SeasonalListing[];
-      const propertyIds = [...new Set(seaData.map((l) => l.property_id).filter(Boolean))];
+      const propertyIds = [...new Set(seaData.map(l => l.property_id).filter(Boolean))];
       if (propertyIds.length > 0) {
         const propsRes = await supabase.rpc("get_public_listing_properties", { p_property_ids: propertyIds });
         const propMap: Record<string, any> = {};
-        if (propsRes.data) {
-          for (const p of propsRes.data as any[]) propMap[p.id] = p;
-        }
-        seasonalListings = seaData.map((l) => {
+        if (propsRes.data) for (const p of propsRes.data as any[]) propMap[p.id] = p;
+        seasonalListings = seaData.map(l => {
           const prop = propMap[l.property_id];
           const photos = Array.isArray(prop?.photo_urls) ? prop.photo_urls : [];
           return { ...l, city: prop?.city || "", country: prop?.country || "", cover_url: photos[0] || null };
         });
       }
-
       if (cancelled) return;
-
       setRealEstate(reData);
       setServices(svcData);
       setSeasonal(seasonalListings);
       setLoadError(hadFailure ? "Some listings could not be loaded right now." : null);
       setLoading(false);
     };
-
     void load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // Aggregate unique locations
+  // Aggregate locations
   const allCountries = useMemo(() => {
     const set = new Set<string>();
     realEstate.forEach(l => l.country && set.add(l.country));
@@ -162,46 +143,19 @@ export default function Explore() {
   const matchText = useCallback((item: any) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return (item.title || "").toLowerCase().includes(q) ||
-      (item.description || "").toLowerCase().includes(q) ||
-      (item.category || "").toLowerCase().includes(q);
+    return (item.title || "").toLowerCase().includes(q) || (item.description || "").toLowerCase().includes(q) || (item.category || "").toLowerCase().includes(q);
   }, [searchQuery]);
 
   const matchLocation = useCallback((item: any) => {
-    if (radius === "worldwide" && !locationQuery) return true;
+    if (radiusKm === 0 && !locationQuery) return true;
     const itemCity = (item.city || "").toLowerCase();
     const itemCountry = (item.country || "").toLowerCase();
-
-    if (radius !== "worldwide" && radius !== "city" && radius !== "country" && geo.detection?.lat && geo.detection?.lng) {
-      if (locationQuery) {
-        const q = locationQuery.toLowerCase();
-        return itemCity.includes(q) || itemCountry.includes(q);
-      }
-      if (geo.detection?.city) {
-        return itemCity === geo.detection.city.toLowerCase() || itemCountry === geo.country.toLowerCase();
-      }
-      return true;
-    }
-
-    if (radius === "city") {
-      const targetCity = locationQuery || geo.detection?.city || "";
-      if (!targetCity) return true;
-      return itemCity === targetCity.toLowerCase();
-    }
-
-    if (radius === "country") {
-      const targetCountry = locationQuery || geo.country || "";
-      if (!targetCountry) return true;
-      return itemCountry === targetCountry.toLowerCase();
-    }
-
     if (locationQuery) {
       const q = locationQuery.toLowerCase();
       return itemCity.includes(q) || itemCountry.includes(q);
     }
-
     return true;
-  }, [locationQuery, radius, geo.detection, geo.country]);
+  }, [locationQuery, radiusKm]);
 
   const matchCategory = useCallback((item: any) => {
     if (activeGroup === "all" && activeSubcategory === "all") return true;
@@ -228,27 +182,26 @@ export default function Explore() {
     return items.filter(matchCategory);
   }, [seasonal, realEstate, services, matchText, matchLocation, matchCategory]);
 
-  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [activeGroup, activeSubcategory, searchQuery, locationQuery, radius]);
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [activeGroup, activeSubcategory, searchQuery, locationQuery, radiusKm]);
 
   const handleSelectLocation = (suggestion: { label: string; type: string }) => {
     if (suggestion.type === "geo" && geo.detection?.city) {
       setLocationQuery(geo.detection.city);
-      setRadius("city");
+      setRadiusKm(25);
     } else {
       setLocationQuery(suggestion.label);
-      if (suggestion.type === "country") setRadius("country");
-      else if (suggestion.type === "city") setRadius("city");
+      if (suggestion.type === "city") setRadiusKm(25);
     }
-    setGeoApplied(true); // prevent auto-override
+    setGeoApplied(true);
   };
 
   const handleNearMe = () => {
     if (geo.detection?.city) {
       setLocationQuery(geo.detection.city);
-      setRadius("25");
+      setRadiusKm(25);
     } else if (geo.country) {
       setLocationQuery(geo.country);
-      setRadius("country");
+      setRadiusKm(100);
     }
   };
 
@@ -258,18 +211,18 @@ export default function Explore() {
     if (locationQuery) params.set("location", locationQuery);
     if (activeGroup !== "all") params.set("group", activeGroup);
     if (activeSubcategory !== "all") params.set("sub", activeSubcategory);
-    if (radius !== "worldwide") params.set("radius", radius);
+    if (radiusKm > 0) params.set("radius", String(radiusKm));
     setSearchParams(params);
   };
 
   const clearAll = () => {
     setSearchQuery(""); setLocationQuery(""); setActiveGroup("all"); setActiveSubcategory("all");
-    setRadius("worldwide"); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
-    setGeoApplied(false); // allow geo re-detection
+    setRadiusKm(0); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
+    setGeoApplied(false);
   };
 
-  const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radius !== "worldwide");
-  const radiusLabel = RADIUS_OPTIONS.find(r => r.value === radius)?.label || "Worldwide";
+  const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radiusKm > 0);
+  const radiusLabel = radiusKm === 0 ? "Worldwide" : `${radiusKm} km`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -288,17 +241,20 @@ export default function Explore() {
             <ExploreDesktopSearchBar
               searchQuery={searchQuery}
               locationQuery={locationQuery}
-              radius={radius}
-              radiusLabel={radiusLabel}
+              radiusKm={radiusKm}
               geoCity={geo.detection?.city}
               geoCountry={geo.country}
+              geoLat={geo.detection?.lat}
+              geoLng={geo.detection?.lng}
               locationSuggestions={locationSuggestions}
+              resultCount={allItems.length}
               onSearchQueryChange={setSearchQuery}
               onLocationQueryChange={setLocationQuery}
-              onRadiusChange={setRadius}
+              onRadiusKmChange={setRadiusKm}
               onSelectLocation={handleSelectLocation}
               onNearMe={handleNearMe}
               onSearch={handleSearch}
+              onReset={clearAll}
             />
 
             {/* Mobile search trigger */}
@@ -309,18 +265,8 @@ export default function Explore() {
 
             <div className="flex items-center gap-2">
               <ThemeSwitcher />
-              {/* Radius search toggle */}
-              <button
-                onClick={() => setShowRadiusSearch(v => !v)}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-medium transition-all ${
-                  showRadiusSearch ? "border-accent bg-accent/10 text-accent" : "border-border bg-card text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                Map
-              </button>
-              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Log in</Link>
-              <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity">Sign up</Link>
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline whitespace-nowrap">Log in</Link>
+              <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0">Sign up</Link>
             </div>
           </div>
 
@@ -330,13 +276,16 @@ export default function Explore() {
               <ExploreMobileSearch
                 searchQuery={searchQuery}
                 locationQuery={locationQuery}
-                radius={radius}
+                radiusKm={radiusKm}
                 geoCity={geo.detection?.city}
                 geoCountry={geo.country}
+                geoLat={geo.detection?.lat}
+                geoLng={geo.detection?.lng}
                 hasFilters={hasFilters}
+                resultCount={allItems.length}
                 onSearchQueryChange={setSearchQuery}
                 onLocationQueryChange={setLocationQuery}
-                onRadiusChange={setRadius}
+                onRadiusKmChange={setRadiusKm}
                 onNearMe={handleNearMe}
                 onSearch={handleSearch}
                 onClearAll={clearAll}
@@ -355,47 +304,17 @@ export default function Explore() {
       </header>
 
       {/* ═══════ RESULTS ═══════ */}
-      <main className="max-w-[1400px] mx-auto px-4 py-6 flex gap-6">
-        {/* Radius search sidebar */}
-        <AnimatePresence>
-          {showRadiusSearch && (
-            <div className="hidden sm:block shrink-0">
-              <ExploreRadiusSearch
-                locationQuery={locationQuery}
-                radiusKm={radiusKm}
-                resultCount={allItems.length}
-                geoCity={geo.detection?.city}
-                geoCountry={geo.country}
-                onLocationChange={setLocationQuery}
-                onRadiusChange={(km) => {
-                  setRadiusKm(km);
-                  if (km === 0) setRadius("worldwide");
-                  else if (km <= 5) setRadius("5");
-                  else if (km <= 10) setRadius("10");
-                  else if (km <= 25) setRadius("25");
-                  else if (km <= 50) setRadius("50");
-                  else setRadius("country");
-                }}
-                onApply={handleSearch}
-                onReset={() => { clearAll(); setRadiusKm(0); }}
-                onNearMe={handleNearMe}
-                onClose={() => setShowRadiusSearch(false)}
-              />
-            </div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex-1 min-w-0">
+      <main className="max-w-[1400px] mx-auto px-4 py-6">
         {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
             locationQuery={locationQuery}
-            radius={radius}
+            radius={radiusKm === 0 ? "worldwide" : String(radiusKm) as any}
             radiusLabel={radiusLabel}
             activeSubcategory={activeSubcategory}
             onClearSearch={() => setSearchQuery("")}
             onClearLocation={() => setLocationQuery("")}
-            onClearRadius={() => setRadius("worldwide")}
+            onClearRadius={() => setRadiusKm(0)}
             onClearSubcategory={() => setActiveSubcategory("all")}
             onClearAll={clearAll}
           />
@@ -418,9 +337,7 @@ export default function Explore() {
         )}
 
         {loadError && (
-          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-            {loadError}
-          </div>
+          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">{loadError}</div>
         )}
 
         {/* Results header */}
@@ -428,7 +345,7 @@ export default function Explore() {
           <h2 className="text-lg font-bold text-foreground">
             {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
             {locationQuery && <span className="text-muted-foreground font-normal"> in {locationQuery}</span>}
-            {radius !== "worldwide" && !locationQuery && <span className="text-muted-foreground font-normal"> • {radiusLabel}</span>}
+            {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
           <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
             <Globe className="h-3.5 w-3.5" />
@@ -471,12 +388,10 @@ export default function Explore() {
             )}
           </>
         )}
-        </div>{/* end flex-1 */}
       </main>
 
       <ExploreSEOFooter />
 
-      {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground mt-auto">
         <div className="max-w-[1400px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} <span className="font-semibold">EASY-LOCS®</span> — All rights reserved</span>
