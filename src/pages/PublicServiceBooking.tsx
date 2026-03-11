@@ -206,9 +206,9 @@ const PublicServiceBooking = () => {
   const canProceedStep1 = isRangeMode ? (selectedRange && rangeDays > 0) : !!selectedDate;
 
   const handleSubmit = async () => {
-    if (!form.name || !form.email) { toast.error("Please fill all required fields"); return; }
-    if (isRangeMode && !selectedRange) { toast.error("Please select dates"); return; }
-    if (!isRangeMode && !selectedDate) { toast.error("Please select a date"); return; }
+    if (!form.name || !form.email) { toast.error(t("mp.fill_required") || "Please fill all required fields"); return; }
+    if (isRangeMode && !selectedRange) { toast.error(t("mp.select_dates_error") || "Please select dates"); return; }
+    if (!isRangeMode && !selectedDate) { toast.error(t("mp.select_date_error") || "Please select a date"); return; }
 
     setSubmitting(true);
     try {
