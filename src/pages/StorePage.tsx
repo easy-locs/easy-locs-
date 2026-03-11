@@ -95,7 +95,7 @@ export default function StorePage() {
     queryFn: async () => {
       const { data } = await supabase
         .rpc("get_provider_reviews", { p_provider_id: providerId!, p_limit: 6 });
-      return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; created_at: string }[];
+      return (data || []) as { id: string; reviewer_name: string; rating: number; comment: string; response: string | null; service_title: string | null; verified: boolean; created_at: string }[];
     },
     enabled: !!providerId,
   });
