@@ -92,13 +92,8 @@ if (typeof window !== "undefined") {
     }
   });
 
-  window.addEventListener("load", () => {
-    try {
-      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-    } catch {
-      // noop
-    }
-  });
+  // Intentionally keep the reload guard for the whole tab session.
+  // This prevents protected-area lazy chunks from causing endless reload loops.
 }
 
 void bootApp();
