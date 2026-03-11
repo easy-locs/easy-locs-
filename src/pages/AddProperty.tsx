@@ -99,7 +99,7 @@ const AddProperty = () => {
         parking: form.parking, garden: form.garden, terrace: form.terrace,
         elevator: form.elevator, balcony: form.balcony, pool: form.pool,
         year_built: form.year_built ?? null,
-        description: form.description, listing_purpose: form.listing_purpose,
+        description: form.description, listing_purpose: form.listing_modes.join(","),
       } as any);
       if (error) throw error;
       toast({ title: t("page.rental.property_saved") || "Bien enregistré !" });
