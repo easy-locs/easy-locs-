@@ -69,7 +69,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     "/dashboard/onboarding",
     "/explore",
     "/messages",
-    "/add-property",
+    "/dashboard/add-property",
     "/properties-showcase",
     "/host-catalog",
     "/rental-catalog",
