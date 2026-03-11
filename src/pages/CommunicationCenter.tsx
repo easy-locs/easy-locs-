@@ -121,9 +121,7 @@ const CommunicationCenter = () => {
 
   // Request notification permission when entering communication center
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
+    import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [convStatus, setConvStatus] = useState("active");

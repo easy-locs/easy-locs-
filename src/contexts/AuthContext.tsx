@@ -252,9 +252,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           logAudit({ userId: nextSession.user.id, action: "user_login" });
           // Request notification permission after login (deferred, non-blocking)
           setTimeout(() => {
-            if ("Notification" in window && Notification.permission === "default") {
-              Notification.requestPermission();
-            }
+            import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
           }, 3000);
         }
         if (_event === "SIGNED_OUT") {
