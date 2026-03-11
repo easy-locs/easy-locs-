@@ -11,12 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, MapPin, Globe, ArrowRight, Eye,
   Users, Moon, X, ChevronDown, Sparkles,
-  LocateFixed, CheckCircle, Radar,
+  LocateFixed, CheckCircle, Radar, Briefcase, Home,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { haversineKm, RADIUS_OPTIONS, type RadiusValue } from "@/lib/geo-distance";
 import { CATEGORY_HIERARCHY, getSubcategoryInfo } from "@/lib/category-hierarchy";
+import { SEO_COUNTRIES, SEO_SERVICE_CATEGORIES, getPhase1Cities } from "@/lib/seo/seo-data";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
