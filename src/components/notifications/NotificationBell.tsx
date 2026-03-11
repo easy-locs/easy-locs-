@@ -513,3 +513,13 @@ const NotificationBell = () => {
 };
 
 export default NotificationBell;
+
+/**
+ * Request browser notification permission.
+ * Call this after meaningful user actions (login, entering communication center, enabling alerts).
+ */
+export function requestNotificationPermission(): void {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
