@@ -108,7 +108,7 @@ const parseICalEvents = (ical: string): { summary: string; start: string; end: s
 };
 
 const SeasonalRentals = () => {
-  const { user, orgId } = useAuth();
+  const { user, orgId, subscription } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
