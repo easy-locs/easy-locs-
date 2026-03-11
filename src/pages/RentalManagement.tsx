@@ -1160,47 +1160,104 @@ const RentalManagement = () => {
   const renderPropertyCard = (p: Property) => {
     const propTenants = tenants.filter(t => t.property_id === p.id);
     const propUnpaid = rentCalls.filter(r => r.property_id === p.id && !r.paid).length;
+    const propPaid = rentCalls.filter(r => r.property_id === p.id && r.paid);
+    const propRevenue = propPaid.reduce((s, r) => s + (r.total_amount || 0), 0);
+    const hasPhoto = Array.isArray(p.photo_urls) && p.photo_urls.length > 0;
+    const isSeasonal = seasonalPropertyIds.has(p.id);
+    const isForSale = salePropertyIds.has(p.id);
+    const hasLongTerm = propTenants.some(t => isLeaseActive(t));
+
     return (
-      <div key={p.id} className="bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all group">
-        <div className="flex items-start gap-4">
-          <button onClick={() => openPropertyDetail(p)} className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 hover:bg-gradient-gold transition-colors">
-            <Home className="h-5 w-5 text-muted-foreground" />
+      <div key={p.id} className="bg-card rounded-xl shadow-card border border-border/50 hover:shadow-card-hover transition-all group overflow-hidden">
+        <div className="flex">
+          {/* Photo thumbnail */}
+          <button
+            onClick={() => openPropertyDetail(p)}
+            className="w-20 sm:w-28 shrink-0 bg-muted flex items-center justify-center overflow-hidden"
+          >
+            {hasPhoto ? (
+              <img src={p.photo_urls[0]} alt={p.label} className="w-full h-full object-cover" />
+            ) : (
+              <Home className="h-6 w-6 text-muted-foreground" />
+            )}
           </button>
-          <div onClick={() => openPropertyDetail(p)} className="flex-1 min-w-0 text-left cursor-pointer">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm">{getFlag(p.country)}</span>
-              <span className="font-semibold text-foreground text-sm">{p.label}</span>
-              <div className="badge-row">
-                {p.lot_number && <span className="bg-accent/10 text-accent">Lot {p.lot_number}</span>}
-                <span className={propTenants.length > 0 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}>
-                  {propTenants.length > 0 ? L.occupied : (
-                    <span
-                      className="cursor-pointer hover:underline"
-                      onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
-                    >
-                      {L.vacantAssign}
-                    </span>
-                  )}
-                </span>
-                {p.furnished && <span className="bg-accent/10 text-accent">{L.furnished}</span>}
-                {propUnpaid > 0 && <span className="bg-destructive/15 text-destructive">{propUnpaid} {L.unpaidN}</span>}
+
+          <div className="flex-1 min-w-0 p-4">
+            {/* Title row */}
+            <div onClick={() => openPropertyDetail(p)} className="cursor-pointer">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm">{getFlag(p.country)}</span>
+                <span className="font-semibold text-foreground text-sm">{p.label}</span>
+                {p.lot_number && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">Lot {p.lot_number}</span>}
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
+                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
+                {p.surface > 0 && <span>{p.surface} {cc.surfaceUnit}</span>}
+                {p.rooms > 0 && <span>{p.rooms} {L.rooms_suffix}</span>}
               </div>
             </div>
-            <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{p.address}{p.city ? `, ${p.postal_code} ${p.city}` : ""}</span>
-              {p.surface > 0 && <span>{p.surface} {cc.surfaceUnit}</span>}
-              {p.rooms > 0 && <span>{p.rooms} {L.rooms_suffix}</span>}
-              <span>{fmt(p.monthly_rent)}{L.perMonth}</span>
+
+            {/* Status + mode badges */}
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              {/* Occupancy */}
+              {propTenants.length > 0 ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-success/10 text-success px-2 py-0.5 rounded-full">
+                  <CheckCircle className="h-3 w-3" /> {L.occupied}
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full cursor-pointer hover:bg-muted/80"
+                  onClick={(e) => { e.stopPropagation(); setAssignPropertyId(assignPropertyId === p.id ? null : p.id); setAssignSearch(""); }}
+                >
+                  {L.vacantAssign}
+                </span>
+              )}
+              {p.furnished && <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{L.furnished}</span>}
+              {propUnpaid > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">
+                  <AlertTriangle className="h-3 w-3" /> {propUnpaid} {L.unpaidN}
+                </span>
+              )}
+              {/* Mode indicators */}
+              {hasLongTerm && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  <Key className="h-3 w-3" /> {t("page.property.mode_longterm") || "Long-term"}
+                </span>
+              )}
+              {isSeasonal && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-sky-500/10 text-sky-600 px-2 py-0.5 rounded-full">
+                  <CalendarRange className="h-3 w-3" /> {t("page.property.mode_seasonal") || "Seasonal"}
+                </span>
+              )}
+              {isForSale && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full">
+                  <Tag className="h-3 w-3" /> {t("page.property.mode_sale") || "For sale"}
+                </span>
+              )}
             </div>
+
+            {/* Rent + revenue strip */}
+            <div className="flex items-center gap-4 mt-2 text-xs">
+              <span className="font-semibold text-foreground">{fmt(p.monthly_rent + p.monthly_charges)}<span className="text-muted-foreground font-normal">{L.perMonth}</span></span>
+              {propRevenue > 0 && (
+                <span className="text-success flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" /> {fmt(propRevenue)}
+                </span>
+              )}
+            </div>
+
+            {/* Tenant chips */}
             {propTenants.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {propTenants.map(t => (
-                  <span key={t.id} className={`text-xs rounded px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                  <span key={t.id} className={`text-[10px] rounded-full px-2 py-0.5 ${isLeaseActive(t) ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {t.name} {!isLeaseActive(t) && `(${L.terminated_label})`}
                   </span>
                 ))}
               </div>
             )}
+
+            {/* Assign tenant inline */}
             {assignPropertyId === p.id && (
               <div className="mt-3 bg-muted/50 border border-border rounded-lg p-3" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-2">
@@ -1241,7 +1298,9 @@ const RentalManagement = () => {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+          {/* Actions */}
+          <div className="flex flex-col items-center gap-1.5 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={() => openPropertyDetail(p)} className="text-muted-foreground hover:text-foreground" title={t("page.rental.view_details")}><Eye className="h-4 w-4" /></button>
             <button onClick={() => startEditProperty(p)} className="text-muted-foreground hover:text-foreground"><Edit className="h-4 w-4" /></button>
             <button onClick={() => deleteProperty(p.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors"><Trash2 className="h-4 w-4" /></button>
