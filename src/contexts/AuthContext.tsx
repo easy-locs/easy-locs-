@@ -206,12 +206,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { subscription, refreshSubscription, resetSubscription, setSubscription } = useSubscriptionLoader(session, user?.id);
 
+  // Store refreshSubscription in a ref to avoid re-triggering the auth effect
+  const refreshSubRef = useCallback(() => refreshSubscription(), [refreshSubscription]);
+
   useEffect(() => {
     let mounted = true;
-    let hydrated = false; // prevent double-hydration
+    let hydrated = false;
 
     const hydrateAuthState = async (nextSession: Session | null) => {
-      if (hydrated && nextSession?.user?.id === user?.id) return; // skip duplicate
+      if (hydrated && nextSession?.user?.id === user?.id) return;
       hydrated = true;
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
@@ -226,7 +229,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("[AuthContext] hydrateAuthState failed:", err);
         }
         // Defer subscription check — don't block initial render
-        setTimeout(() => { void refreshSubscription(); }, 100);
+        setTimeout(() => { void refreshSubRef(); }, 100);
       } else {
         setOrgId(null);
         setUserType("landlord");
@@ -256,7 +259,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       authSub.unsubscribe();
     };
-  }, [fetchOrgId, fetchUserType, refreshSubscription]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchOrgId, fetchUserType]);
 
   // Auto-refresh interval now handled by useSubscriptionLoader
 
