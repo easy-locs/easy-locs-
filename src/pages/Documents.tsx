@@ -99,15 +99,19 @@ const Documents = () => {
     <DashboardLayout>
       <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <h1 className="text-2xl font-bold text-foreground mb-1">{t("page.documents.title")}</h1>
-          <p className="text-muted-foreground text-sm mb-6">{t("page.documents.desc")}</p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-accent/10"><FileText className="h-5 w-5 text-accent" /></div>
+              {t("page.documents.title")}
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">{t("page.documents.desc")}</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
+            <span className="text-lg">{getCountryFlag(activeCountry)}</span>
+            <span className="font-medium text-foreground">{countryLabels[activeCountry] || activeCountry}</span>
+          </div>
         </motion.div>
-
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <span className="text-lg">{getCountryFlag(activeCountry)}</span>
-          <span className="font-medium text-foreground">{countryLabels[activeCountry] || activeCountry}</span>
-        </div>
 
         <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
           {([

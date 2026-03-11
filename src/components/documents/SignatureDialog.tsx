@@ -76,13 +76,24 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PenTool className="h-5 w-5" />
+            <div className="p-2 rounded-xl bg-accent/10">
+              <PenTool className="h-5 w-5 text-accent" />
+            </div>
             Signer le document
           </DialogTitle>
-          <DialogDescription>{documentTitle}</DialogDescription>
+          <DialogDescription className="text-sm">{documentTitle}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="py-4 space-y-4">
+          {/* Signing role badge */}
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+              signerRole === "owner" ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
+            }`}>
+              {signerRole === "owner" ? "🏠 Bailleur" : "👤 Locataire"}
+            </span>
+          </div>
+
           <SignaturePad
             label="Votre signature"
             value={signature}
@@ -90,16 +101,20 @@ const SignatureDialog = ({ open, onOpenChange, documentId, documentTitle, signer
             width={450}
             height={180}
           />
-          <p className="text-xs text-muted-foreground mt-2">
-            By signing, you accept the terms of this document. This action is logged and timestamped.
-          </p>
+
+          <div className="flex items-start gap-2 bg-muted/50 rounded-lg p-3">
+            <PenTool className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              En signant, vous acceptez les termes de ce document. Cette action est horodatée et enregistrée dans le journal d'audit.
+            </p>
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSign} disabled={!signature || saving}>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+          <Button onClick={handleSign} disabled={!signature || saving} className="bg-gradient-gold text-accent-foreground hover:opacity-90">
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <PenTool className="h-4 w-4 mr-2" />}
-            Sign
+            Signer
           </Button>
         </DialogFooter>
       </DialogContent>
