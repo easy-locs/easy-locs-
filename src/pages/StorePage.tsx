@@ -73,9 +73,9 @@ export default function StorePage() {
 
   if (!showcase) return (
     <>
-      <SEOHead title="Store not found | Easy-Locs" description="This store does not exist." />
+      <SEOHead title={`${t("mp.store_not_found") || "Store not found"} | Easy-Locs`} description="This store does not exist." />
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Store not found</p>
+        <p className="text-muted-foreground">{t("mp.store_not_found") || "Store not found"}</p>
       </div>
     </>
   );
