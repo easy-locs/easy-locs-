@@ -85,6 +85,7 @@ interface ListingForm {
   quantity: number;
   contact_email: string;
   contact_whatsapp: string;
+  contact_telegram: string;
   verification_types: string[];
   payment_methods: string[];
   communication_channels: string[];
