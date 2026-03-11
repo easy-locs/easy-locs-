@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   open: boolean;
@@ -52,6 +53,7 @@ function deriveBookingRules(service: any): ActivityBookingRules {
 }
 
 export default function BookingDialog({ open, onOpenChange, service, provider, onSubmit, isPending }: Props) {
+  const { t } = useI18n();
   const config = useMemo(() => getCategoryBookingConfig(service?.category || "other"), [service?.category]);
   const isRange = config.calendarMode === "range";
   const rules = useMemo(() => deriveBookingRules(service), [service]);
@@ -290,7 +292,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             </div>
 
             {dateOverlap && (
-              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">⚠️ These dates are already booked</p>
+              <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-lg">⚠️ {t("mp.dates_booked") || "These dates are already booked"}</p>
             )}
 
             {/* Price summary */}
@@ -310,8 +312,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
             {/* Notes */}
             <div>
-              <Label className="text-xs">Notes</Label>
-              <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder="Special requests..." />
+              <Label className="text-xs">{t("mp.notes") || "Notes"}</Label>
+              <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder={t("mp.special_requests") || "Special requests..."} />
             </div>
 
             {/* Payment method selector */}
@@ -325,12 +327,12 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             />
             {paymentMethod === "bank_transfer" && (
               <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                💳 Bank transfer details will be sent after booking confirmation.
+                💳 {t("mp.bank_transfer_note") || "Bank transfer details will be sent after booking confirmation."}
               </p>
             )}
             {paymentMethod === "cash" && (
               <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                💵 Payment in cash upon arrival or at the time of service.
+                💵 {t("mp.cash_note") || "Payment in cash upon arrival or at the time of service."}
               </p>
             )}
           </div>
@@ -345,7 +347,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               onClick={() => onSubmit(form)}
               disabled={!isValid || isPending}
             >
-              {isPending ? "Booking..." : "Request Booking"}
+              {isPending ? (t("mp.booking_in_progress") || "Booking...") : (t("mp.booking_request") || "Request Booking")}
             </Button>
           </div>
         )}

@@ -12,6 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { Clock, MapPin, CreditCard, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import MarketplaceDisclaimer from "@/components/marketplace/MarketplaceDisclaimer";
+import { useI18n } from "@/lib/i18n";
 import ShareButtons from "@/components/public/ShareButtons";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
@@ -32,6 +34,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 };
 
 const PublicServiceBooking = () => {
+  const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [service, setService] = useState<any>(null);
@@ -204,9 +207,9 @@ const PublicServiceBooking = () => {
   const canProceedStep1 = isRangeMode ? (selectedRange && rangeDays > 0) : !!selectedDate;
 
   const handleSubmit = async () => {
-    if (!form.name || !form.email) { toast.error("Please fill all required fields"); return; }
-    if (isRangeMode && !selectedRange) { toast.error("Please select dates"); return; }
-    if (!isRangeMode && !selectedDate) { toast.error("Please select a date"); return; }
+    if (!form.name || !form.email) { toast.error(t("mp.fill_required") || "Please fill all required fields"); return; }
+    if (isRangeMode && !selectedRange) { toast.error(t("mp.select_dates_error") || "Please select dates"); return; }
+    if (!isRangeMode && !selectedDate) { toast.error(t("mp.select_date_error") || "Please select a date"); return; }
 
     setSubmitting(true);
     try {
@@ -221,7 +224,7 @@ const PublicServiceBooking = () => {
       });
 
       if (available === false) {
-        toast.error("These dates are no longer available. Please select different dates.");
+        toast.error(t("mp.dates_unavailable") || "These dates are no longer available. Please select different dates.");
         setStep(1);
         setSubmitting(false);
         return;
@@ -355,9 +358,9 @@ const PublicServiceBooking = () => {
       }
 
       setSuccess(true);
-      toast.success("Booking submitted!");
+      toast.success(t("mp.booking_submitted") || "Booking submitted!");
     } catch (err: any) {
-      toast.error(err.message || "Booking failed");
+      toast.error(err.message || t("mp.booking_failed") || "Booking failed");
     } finally {
       setSubmitting(false);
     }
@@ -509,7 +512,7 @@ const PublicServiceBooking = () => {
 
               {service.conditions && (
                 <div className="bg-muted/30 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-2">Conditions</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">{t("mp.conditions") || "Conditions"}</h3>
                   <p className="text-sm text-muted-foreground">{service.conditions}</p>
                 </div>
               )}
@@ -534,9 +537,9 @@ const PublicServiceBooking = () => {
                 ))}
               </div>
               <p className="text-center text-sm text-muted-foreground">
-                {step === 1 && (isRangeMode ? "Select your dates" : "Choose date & time")}
-                {step === 2 && "Your information"}
-                {step === 3 && "Payment & confirmation"}
+                {step === 1 && (isRangeMode ? (t("mp.select_dates") || "Select your dates") : (t("mp.choose_date_time") || "Choose date & time"))}
+                {step === 2 && (t("mp.your_information") || "Your information")}
+                {step === 3 && (t("mp.payment_confirmation") || "Payment & confirmation")}
               </p>
 
               {step === 1 && (
@@ -557,14 +560,14 @@ const PublicServiceBooking = () => {
                   {isRangeMode && rangeDays > 0 && (
                     <div className="mt-3 p-3 bg-accent/5 rounded-xl text-center">
                       <p className="text-sm text-foreground font-medium">
-                        {rangeDays} {rangeDays === 1 ? "day" : "days"} × {fmtPrice(service.price, service.currency)} = <strong className="text-accent">{fmtPrice(totalPrice, service.currency)}</strong>
+                        {rangeDays} {rangeDays === 1 ? (t("mp.day") || "day") : (t("mp.days") || "days")} × {fmtPrice(service.price, service.currency)} = <strong className="text-accent">{fmtPrice(totalPrice, service.currency)}</strong>
                       </p>
                     </div>
                   )}
 
                   <Button className="w-full mt-4" disabled={!canProceedStep1}
                     onClick={() => setStep(2)}>
-                    Continue
+                    {t("mp.continue") || "Continue"}
                   </Button>
                 </div>
               )}
@@ -573,16 +576,16 @@ const PublicServiceBooking = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-muted-foreground">Full Name *</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.full_name") || "Full Name"} *</label>
                       <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Email *</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.your_email") || "Email"} *</label>
                       <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Phone</label>
+                    <label className="text-xs text-muted-foreground">{t("mp.your_phone") || "Phone"}</label>
                     <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
                   </div>
 
@@ -634,11 +637,11 @@ const PublicServiceBooking = () => {
                   {!isRangeMode && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-muted-foreground">Notes</label>
+                        <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
                         <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground">Quantity</label>
+                        <label className="text-xs text-muted-foreground">{t("mp.quantity") || "Quantity"}</label>
                         <Input type="number" min={1} value={quantity || ""} onChange={e => setQuantity(e.target.value === "" ? 1 : Math.max(1, Number(e.target.value)))} placeholder="1" />
                         {quantity > 1 && (
                           <p className="text-xs text-muted-foreground mt-1">
@@ -651,14 +654,14 @@ const PublicServiceBooking = () => {
 
                   {isRangeMode && (
                     <div>
-                      <label className="text-xs text-muted-foreground">Notes</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
                       <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                     </div>
                   )}
 
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                    <Button onClick={() => setStep(3)} disabled={idDocUploading || !form.name || !form.email || (service.requires_id_document && !(form as any).id_document_url)} className="flex-1">Continue</Button>
+                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">{t("mp.back") || "Back"}</Button>
+                    <Button onClick={() => setStep(3)} disabled={idDocUploading || !form.name || !form.email || (service.requires_id_document && !(form as any).id_document_url)} className="flex-1">{t("mp.continue") || "Continue"}</Button>
                   </div>
                 </div>
               )}
@@ -676,7 +679,7 @@ const PublicServiceBooking = () => {
 
                   {paymentMethod === "bank_transfer" && Object.keys(bankDetails).length > 0 && (
                     <div className="bg-muted/30 rounded-xl p-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-foreground">Bank Details</h4>
+                      <h4 className="text-sm font-semibold text-foreground">{t("mp.bank_details") || "Bank Details"}</h4>
                       {bankDetails.bank_name && <p className="text-sm text-muted-foreground">Bank: {bankDetails.bank_name}</p>}
                       {bankDetails.iban && <p className="text-sm text-muted-foreground font-mono">IBAN: {bankDetails.iban}</p>}
                       {bankDetails.swift && <p className="text-sm text-muted-foreground font-mono">SWIFT: {bankDetails.swift}</p>}
@@ -687,15 +690,18 @@ const PublicServiceBooking = () => {
 
                   {paymentMethod === "cash" && (
                     <div className="bg-muted/30 rounded-xl p-3 text-xs text-muted-foreground">
-                      💵 Cash payment on arrival. The provider will confirm your booking.
+                      💵 {t("mp.cash_on_arrival") || "Cash payment on arrival. The provider will confirm your booking."}
                     </div>
                   )}
 
+                  {/* Legal disclaimer */}
+                  <MarketplaceDisclaimer compact />
+
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
+                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">{t("mp.back") || "Back"}</Button>
                     <Button onClick={handleSubmit} disabled={submitting || !paymentMethod} className="flex-1">
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {paymentMethod === "card" ? `Pay ${fmtPrice(totalPrice, service.currency)}` : "Confirm Booking"}
+                      {paymentMethod === "card" ? `${t("mp.send_payment") || "Pay"} ${fmtPrice(totalPrice, service.currency)}` : (t("mp.confirm_booking") || "Confirm Booking")}
                     </Button>
                   </div>
                 </div>
@@ -706,56 +712,56 @@ const PublicServiceBooking = () => {
             <div className="lg:col-span-1">
               <Card className="sticky top-8">
                 <CardContent className="pt-6 space-y-4">
-                  <h3 className="font-semibold text-foreground">Booking Summary</h3>
+                  <h3 className="font-semibold text-foreground">{t("mp.booking_summary") || "Booking Summary"}</h3>
                   <Separator />
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Service</span>
+                      <span className="text-muted-foreground">{t("mp.service") || "Service"}</span>
                       <span className="text-foreground font-medium truncate ml-2">{service.title}</span>
                     </div>
 
                     {isRangeMode && selectedRange ? (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">From</span>
+                          <span className="text-muted-foreground">{t("mp.from") || "From"}</span>
                           <span className="text-foreground">{format(selectedRange.from, "dd/MM/yyyy")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">To</span>
+                          <span className="text-muted-foreground">{t("mp.to") || "To"}</span>
                           <span className="text-foreground">{format(selectedRange.to, "dd/MM/yyyy")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Duration</span>
-                          <span className="text-foreground">{rangeDays} {rangeDays === 1 ? "day" : "days"}</span>
+                          <span className="text-muted-foreground">{t("mp.duration") || "Duration"}</span>
+                          <span className="text-foreground">{rangeDays} {rangeDays === 1 ? (t("mp.day") || "day") : (t("mp.days") || "days")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Rate</span>
-                          <span className="text-foreground">{fmtPrice(service.price, service.currency)} / day</span>
+                          <span className="text-muted-foreground">{t("mp.rate") || "Rate"}</span>
+                          <span className="text-foreground">{fmtPrice(service.price, service.currency)} / {t("mp.day") || "day"}</span>
                         </div>
                       </>
                     ) : (
                       <>
                         {selectedDate && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Date</span>
+                             <span className="text-muted-foreground">{t("mp.date") || "Date"}</span>
                             <span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span>
                           </div>
                         )}
                         {selectedTime && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Time</span>
+                             <span className="text-muted-foreground">{t("mp.time") || "Time"}</span>
                             <span className="text-foreground">{selectedTime}</span>
                           </div>
                         )}
                         {service.duration_minutes && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Duration</span>
+                             <span className="text-muted-foreground">{t("mp.duration") || "Duration"}</span>
                             <span className="text-foreground">{service.duration_minutes} min</span>
                           </div>
                         )}
                         {quantity > 1 && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Quantity</span>
+                            <span className="text-muted-foreground">{t("mp.quantity") || "Quantity"}</span>
                             <span className="text-foreground">{quantity} × {fmtPrice(service.price, service.currency)}</span>
                           </div>
                         )}
@@ -764,7 +770,7 @@ const PublicServiceBooking = () => {
                   </div>
                   <Separator />
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-foreground">Total</span>
+                    <span className="font-semibold text-foreground">{t("mp.total") || "Total"}</span>
                     <span className="text-2xl font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span>
                   </div>
                 </CardContent>
