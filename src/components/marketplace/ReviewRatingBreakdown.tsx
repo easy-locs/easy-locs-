@@ -1,16 +1,16 @@
-import { Star } from "lucide-react";
+import { Star, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   rating: number;
   reviewsCount: number;
-  /** Array of ratings [1-5] for breakdown calculation */
+  verifiedCount: number;
   reviews: { rating: number }[];
 }
 
-export default function ReviewRatingBreakdown({ rating, reviewsCount, reviews }: Props) {
+export default function ReviewRatingBreakdown({ rating, reviewsCount, verifiedCount, reviews }: Props) {
   if (reviewsCount === 0) return null;
 
-  // Count per star level
   const counts = [5, 4, 3, 2, 1].map((star) => ({
     star,
     count: reviews.filter((r) => Math.round(r.rating) === star).length,
@@ -21,7 +21,7 @@ export default function ReviewRatingBreakdown({ rating, reviewsCount, reviews }:
   return (
     <div className="flex flex-col sm:flex-row gap-6 items-start">
       {/* Big score */}
-      <div className="flex flex-col items-center gap-1 shrink-0">
+      <div className="flex flex-col items-center gap-1.5 shrink-0">
         <span className="text-4xl font-bold text-foreground">{rating.toFixed(1)}</span>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4, 5].map((s) => (
@@ -36,6 +36,12 @@ export default function ReviewRatingBreakdown({ rating, reviewsCount, reviews }:
           ))}
         </div>
         <span className="text-xs text-muted-foreground">{reviewsCount} review{reviewsCount !== 1 ? "s" : ""}</span>
+        {verifiedCount > 0 && (
+          <Badge variant="outline" className="text-[10px] h-5 gap-0.5 bg-success/10 text-success border-success/20 mt-1">
+            <ShieldCheck className="h-2.5 w-2.5" />
+            {verifiedCount} verified
+          </Badge>
+        )}
       </div>
 
       {/* Bar breakdown */}
