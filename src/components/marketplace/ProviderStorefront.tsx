@@ -196,9 +196,9 @@ export default function ProviderStorefront() {
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">{provider.display_name}</h1>
                 {provider.verified && (
-                  <span className="flex items-center gap-1 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Verified
-                  </span>
+                   <span className="flex items-center gap-1 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
+                     <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
+                   </span>
                 )}
                 <Badge variant="outline" className="text-xs">{provider.provider_type === "company" ? "Company" : "Individual"}</Badge>
               </div>
