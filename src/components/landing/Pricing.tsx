@@ -88,6 +88,20 @@ const TRUST_SIGNALS_DATA = [
 const Pricing = () => {
   const { t } = useI18n();
   const [interval, setInterval] = useState<"monthly" | "annual">("annual");
+  const { FREE_FEATURES, SOLO_FEATURES, TEAM_FEATURES, COMPANY_FEATURES } = usePricingFeatures(t);
+
+  const TIERS: TierData[] = [
+    { name: "Free", subtitle: t("pricing.tier.free.sub") || "Publish & share for free", audience: t("pricing.tier.free.audience") || "For anyone getting started", icon: TIER_ICONS[0], monthly: 0, annual: 0, features: FREE_FEATURES },
+    { name: "Solo", subtitle: t("pricing.tier.solo.sub") || "All-in-one business starter", audience: t("pricing.tier.solo.audience") || "Entrepreneurs & freelancers", icon: TIER_ICONS[1], monthly: 9.99, annual: 99, features: SOLO_FEATURES, badge: t("pricing.badge_value") || "Best value" },
+    { name: "Team", subtitle: t("pricing.tier.team.sub") || "Grow your business together", audience: t("pricing.tier.team.audience") || "Small companies & agencies", icon: TIER_ICONS[2], monthly: 29, annual: 299, features: TEAM_FEATURES, highlight: true, badge: t("pricing.badge_popular") || "Most popular" },
+    { name: "Company", subtitle: t("pricing.tier.company.sub") || "Scale without limits", audience: t("pricing.tier.company.audience") || "Agencies & larger businesses", icon: TIER_ICONS[3], monthly: 99, annual: 999, features: COMPANY_FEATURES, badge: t("pricing.badge_enterprise") || "Enterprise" },
+  ];
+
+  const TRUST_SIGNALS = TRUST_SIGNALS_DATA.map(s => ({
+    icon: s.icon,
+    label: t(s.labelKey) || s.labelFb,
+    sub: t(s.subKey) || s.subFb,
+  }));
 
   return (
     <section id="pricing" className="py-24 sm:py-32 relative overflow-hidden">
