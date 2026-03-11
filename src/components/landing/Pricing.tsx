@@ -303,7 +303,7 @@ const Pricing = () => {
                         : "bg-accent text-accent-foreground hover:opacity-90"
                     }`}
                   >
-                    {isFree ? "Get started free" : "Start free trial"}
+                    {isFree ? (t("pricing.cta_free") || "Get started free") : (t("pricing.cta_trial") || "Start free trial")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
