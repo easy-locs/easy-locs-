@@ -293,10 +293,10 @@ Every implementation block MUST complete this checklist before merge:
 ### LAYER 3: Scale (Q3-Q4 2026)
 | # | Action | Type | UX | DB | QA | Status |
 |---|--------|------|----|----|-----|--------|
-| 3.1 | PDF generation → Edge Functions | Tech | ✅ Speed | Storage | PDF output comparison | |
+| 3.1 | PDF generation → Edge Functions | Tech | ✅ Speed | Storage | PDF output comparison | ✅ Done |
 | 3.2 | DB indexes on hot query paths | Tech | ✅ Speed | ✅ 60+ indexes | Query benchmark | ✅ Done |
 | 3.3 | Realtime subscriptions | Tech | ✅ Live updates | Enable RT | Concurrent user | ✅ Done |
-| 3.4 | State management (Zustand) | Tech | ✅ Speed | No | Full regression | |
+| 3.4 | State management (Zustand) | Tech | ✅ Speed | No | Full regression | ✅ Done |
 
 ---
 
