@@ -788,7 +788,7 @@ html {
     --card-padding: 0.875rem;
     --field-gap: 0.75rem;
     --section-gap: 1rem;
-    --page-padding-x: 0.75rem;
+    --page-padding-x: 0.875rem;
     --card-radius: 0.625rem;
     --btn-radius: 0.625rem;
     --input-radius: 0.625rem;
@@ -870,15 +870,23 @@ html {
     grid-template-columns: 1fr !important;
   }
 
-  /* ── 8. Dialogs / Sheets — no overflow ── */
+  /* ── 8. Dialogs / Sheets — premium mobile sizing ── */
   [role="dialog"] {
-    max-width: calc(100vw - 1.5rem) !important;
-    max-height: calc(100dvh - 2rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    max-height: 85dvh !important;
     overflow-y: auto;
-    margin: 0.75rem !important;
+    margin: 0.5rem !important;
+    border-radius: 1rem !important;
   }
   [role="dialog"] [class*="gap-4"] {
     gap: 0.75rem;
+  }
+  /* Sheet drawers — full width bottom */
+  [data-vaul-drawer] [role="dialog"] {
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
   }
 
   /* ── 9. Tables — horizontal scroll, no crop ── */
@@ -957,7 +965,7 @@ html {
 
   /* ── 16. Select/Dropdown popover — no overflow ── */
   [data-radix-popper-content-wrapper] {
-    max-width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1rem) !important;
   }
 
   /* ── 17. SmartActionCard mobile polish ── */
@@ -970,18 +978,56 @@ html {
   aside[class*="w-[280px]"] {
     width: min(280px, 85vw) !important;
   }
+
+  /* ── 19. Landing page mobile spacing ── */
+  section {
+    scroll-margin-top: 4rem;
+  }
+  /* Landing sections — tighter padding */
+  section[class*="py-24"] {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+  section[class*="py-20"] {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+  section[class*="py-28"],
+  section[class*="py-32"] {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+  /* Landing headings — capped mobile */
+  section:not(.app-main) h2[class*="text-3xl"],
+  section:not(.app-main) h2[class*="text-4xl"] {
+    font-size: 1.625rem !important;
+    line-height: 1.2 !important;
+  }
+  /* Tighter section margins */
+  section .mb-16 { margin-bottom: 2rem !important; }
+  section .mb-14 { margin-bottom: 1.75rem !important; }
+  section .mb-12 { margin-bottom: 1.5rem !important; }
+
+  /* ── 20. Bottom nav spacing ── */
+  .mobile-safe {
+    padding-bottom: max(4.5rem, calc(3.5rem + env(safe-area-inset-bottom, 0px)));
+  }
 }
 
 /* ══════ iPhone SE / very small screens (< 375px) ══════ */
 @media (max-width: 374px) {
   :root {
-    --page-padding-x: 0.5rem;
+    --page-padding-x: 0.625rem;
     --card-padding: 0.75rem;
   }
   .app-main h1 { font-size: 1.125rem !important; }
   .app-main h2 { font-size: 1rem !important; }
   .stats-grid {
     grid-template-columns: 1fr !important;
+  }
+  section:not(.app-main) h2[class*="text-3xl"],
+  section:not(.app-main) h2[class*="text-4xl"] {
+    font-size: 1.375rem !important;
   }
 }
 
