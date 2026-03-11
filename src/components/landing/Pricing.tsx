@@ -270,8 +270,7 @@ const Pricing = () => {
                     </div>
                     {interval === "annual" && tier.monthly > 0 && (
                       <p className="text-[11px] text-success font-semibold mt-1 flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        Save {Math.round((1 - tier.annual / (tier.monthly * 12)) * 100)}% vs monthly
+                        <Sparkles className="h-3 w-3" /> {t("pricing.save") || "Save"} {Math.round((1 - tier.annual / (tier.monthly * 12)) * 100)}% {t("pricing.vs_monthly") || "vs monthly"}
                       </p>
                     )}
                     {isFree && (
