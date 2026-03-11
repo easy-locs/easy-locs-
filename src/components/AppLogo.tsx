@@ -26,7 +26,7 @@ const AppLogo = ({
   };
 
   // Landing/footer variants are always on dark backgrounds
-  const useLightText = isLanding || variant === "footer" || variant === "sidebar";
+  const useLightText = isLanding || variant === "sidebar";
 
   return (
     <Link
