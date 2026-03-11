@@ -1,28 +1,96 @@
 import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, User, Users, Building2, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
-const featureKeys = [
-  "landing.pricing.feat_countries",
-  "landing.pricing.feat_properties",
-  "landing.pricing.feat_tenants",
-  "landing.pricing.feat_rental_modes",
-  "landing.pricing.feat_ota_sync",
-  "landing.pricing.feat_legal_docs",
-  "landing.pricing.feat_leases",
-  "landing.pricing.feat_esign",
-  "landing.pricing.feat_archive",
-  "landing.pricing.feat_pdf",
-  "landing.pricing.feat_support",
+const FREE_FEATURES = [
+  "Unlimited listings & services",
+  "Photo uploads & sharing",
+  "WhatsApp, Telegram, Email",
+  "Communication center",
+];
+
+const SOLO_FEATURES = [
+  "Everything in Free",
+  "1 business profile",
+  "Unlimited properties",
+  "Leases & contracts",
+  "Rent receipts & invoices",
+  "Calendar & OTA sync",
+  "Documents & e-signature",
+  "PDF export",
+];
+
+const TEAM_FEATURES = [
+  "Everything in Solo",
+  "Up to 10 employees",
+  "Team collaboration",
+  "Priority support",
+];
+
+const COMPANY_FEATURES = [
+  "Everything in Team",
+  "Up to 50 employees",
+  "Multi-country",
+  "API access",
+  "Dedicated support",
+];
+
+interface TierData {
+  name: string;
+  icon: React.ReactNode;
+  monthly: number;
+  annual: number;
+  features: string[];
+  highlight?: boolean;
+  color: string;
+  btnClass: string;
+}
+
+const TIERS: TierData[] = [
+  {
+    name: "Free",
+    icon: <Zap className="h-5 w-5" />,
+    monthly: 0,
+    annual: 0,
+    features: FREE_FEATURES,
+    color: "border-border",
+    btnClass: "bg-muted text-muted-foreground",
+  },
+  {
+    name: "Solo",
+    icon: <User className="h-5 w-5" />,
+    monthly: 9.99,
+    annual: 99,
+    features: SOLO_FEATURES,
+    color: "border-accent/30",
+    btnClass: "bg-accent text-accent-foreground",
+  },
+  {
+    name: "Team",
+    icon: <Users className="h-5 w-5" />,
+    monthly: 29,
+    annual: 299,
+    features: TEAM_FEATURES,
+    highlight: true,
+    color: "border-primary/40 ring-2 ring-primary/20",
+    btnClass: "bg-primary text-primary-foreground",
+  },
+  {
+    name: "Company",
+    icon: <Building2 className="h-5 w-5" />,
+    monthly: 99,
+    annual: 999,
+    features: COMPANY_FEATURES,
+    color: "border-gold/40",
+    btnClass: "bg-gradient-gold text-accent-foreground",
+  },
 ];
 
 const Pricing = () => {
-  const [interval, setInterval] = useState<"monthly" | "annual">("monthly");
+  const [interval, setInterval] = useState<"monthly" | "annual">("annual");
   const { t } = useI18n();
-  const price = interval === "monthly" ? 9.99 : 99;
-  const intLabel = interval === "monthly" ? t("landing.pricing.per_month") : t("landing.pricing.per_year");
 
   return (
     <section id="pricing" className="py-24 sm:py-32 relative overflow-hidden">
@@ -31,18 +99,17 @@ const Pricing = () => {
         backgroundSize: "60px 60px",
       }} />
 
-      <div className="container max-w-lg relative z-10">
-        {/* Header */}
+      <div className="container max-w-5xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
-          className="text-center mb-10 space-y-4"
+          className="text-center mb-10 space-y-3"
         >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground leading-tight">
-            {t("landing.pricing.title") || "One Plan,"} <span className="text-gradient-gold">{t("landing.pricing.title_highlight") || "Unlimited Everything"}</span>
+            {t("landing.pricing.title") || "Simple Pricing,"} <span className="text-gradient-gold">{t("landing.pricing.title_highlight") || "Powerful Tools"}</span>
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle") || "One platform to manage rentals and services worldwide."}</p>
+          <p className="text-muted-foreground text-base sm:text-lg">{t("landing.pricing.subtitle") || "Start free. Upgrade when your business grows."}</p>
           <p className="text-muted-foreground text-sm">{t("landing.pricing.no_commitment") || "No commitment — Cancel anytime"}</p>
         </motion.div>
 
@@ -52,87 +119,84 @@ const Pricing = () => {
             <motion.button
               key={v}
               onClick={() => setInterval(v)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all relative ${
                 interval === v ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               {t(`landing.pricing.${v}`) || (v === "monthly" ? "Monthly" : "Annual")}
+              {v === "annual" && (
+                <span className="absolute -top-2 -right-2 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">-17%</span>
+              )}
             </motion.button>
           ))}
         </div>
 
-        {/* Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-30px" }}
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 300 }}
-          className="bg-card rounded-2xl p-7 border border-accent/30 relative overflow-hidden"
-          style={{ boxShadow: "0 0 40px hsl(var(--accent) / 0.08), 0 0 80px hsl(var(--accent) / 0.03)" }}
-        >
-          {interval === "annual" && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="absolute -top-0.5 left-1/2 -translate-x-1/2 bg-gradient-gold text-accent-foreground text-xs font-bold px-4 py-1 rounded-b-lg flex items-center gap-1"
-            >
-              <Sparkles className="h-3 w-3" />
-              {t("landing.pricing.save_annual") || "Save €20/year"}
-            </motion.div>
-          )}
-
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-5 w-5 text-gold" />
-            <h3 className="text-lg font-bold text-foreground">{t("landing.pricing.plan_name") || "Easy-Locs Unlimited"}</h3>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">{t("landing.pricing.plan_desc") || "All-inclusive — Full access"}</p>
-
-          <motion.div
-            className="mb-4"
-            key={price}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <span className="text-4xl sm:text-5xl font-extrabold text-foreground">{price}€</span>
-            <span className="text-muted-foreground text-sm ml-1">/ {intLabel || "month"}</span>
-          </motion.div>
-          <p className="text-xs text-muted-foreground mb-6">{t("landing.pricing.access_desc") || "Unlimited access to all Easy-Locs features."}</p>
-
-          <ul className="space-y-2.5 mb-8">
-            {featureKeys.map((key, i) => (
-              <motion.li
-                key={key}
-                className="flex items-start gap-2 text-sm text-foreground"
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
+        {/* Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {TIERS.map((tier, idx) => {
+            const price = interval === "monthly" ? tier.monthly : tier.annual;
+            const intLabel = interval === "monthly" ? (t("landing.pricing.per_month") || "mo") : (t("landing.pricing.per_year") || "yr");
+            return (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.03 }}
+                transition={{ delay: idx * 0.08 }}
+                className={`relative bg-card rounded-2xl p-5 border ${tier.color} flex flex-col`}
               >
-                <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                <span>{t(key) || key.split(".").pop()?.replace(/_/g, " ") || key}</span>
-              </motion.li>
-            ))}
-          </ul>
+                {tier.highlight && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap">
+                    Most popular
+                  </span>
+                )}
 
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/signup"
-              className="block w-full text-center py-3.5 rounded-xl font-bold text-sm transition-all relative overflow-hidden group"
-              style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "0 0 20px hsl(var(--accent) / 0.25)" }}
-            >
-              <span className="relative z-10">{t("landing.pricing.cta") || "Free 3-day trial"}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </Link>
-          </motion.div>
-        </motion.div>
+                <div className="flex items-center gap-2 mb-1">
+                  {tier.icon}
+                  <h3 className="font-bold text-foreground text-lg">{tier.name}</h3>
+                </div>
+
+                <div className="mt-2 mb-4">
+                  <motion.span
+                    key={`${tier.name}-${price}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-3xl font-extrabold text-foreground"
+                  >
+                    {price}€
+                  </motion.span>
+                  <span className="text-muted-foreground text-sm ml-1">/{tier.monthly === 0 ? "∞" : intLabel}</span>
+                </div>
+
+                <ul className="space-y-2 mb-6 flex-1">
+                  {tier.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    to={tier.monthly === 0 ? "/signup" : "/signup"}
+                    className={`block w-full text-center py-2.5 rounded-xl font-semibold text-xs transition-all ${tier.btnClass}`}
+                  >
+                    {tier.monthly === 0 ? (t("landing.pricing.cta_free") || "Get started") : (t("landing.pricing.cta") || "Start free trial")}
+                  </Link>
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
 
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-muted-foreground">
-          <span>{t("landing.pricing.payment_card") || "💳 Credit card"}</span>
-          <span>{t("landing.pricing.payment_sepa") || "🏦 SEPA"}</span>
+          <span>💳 {t("landing.pricing.payment_card") || "Credit card"}</span>
+          <span>🏦 {t("landing.pricing.payment_sepa") || "SEPA"}</span>
+          <span> Apple Pay</span>
+          <span>🟢 Google Pay</span>
         </div>
       </div>
     </section>
