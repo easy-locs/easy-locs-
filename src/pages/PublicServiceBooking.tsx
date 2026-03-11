@@ -653,7 +653,7 @@ const PublicServiceBooking = () => {
 
                   {isRangeMode && (
                     <div>
-                      <label className="text-xs text-muted-foreground">Notes</label>
+                      <label className="text-xs text-muted-foreground">{t("mp.notes") || "Notes"}</label>
                       <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
                     </div>
                   )}
