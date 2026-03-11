@@ -1,53 +1,12 @@
 import { useRef, useMemo, useState, Suspense, useCallback, Component, type ReactNode } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { OrbitControls, Html } from "@react-three/drei";
+import * as THREE from "three";
+import { TextureLoader } from "three";
+import { motion } from "framer-motion";
 import { Globe, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-/* Safe dynamic imports for Three.js — won't crash if unavailable */
-let Canvas: any = null;
-let useFrame: any = null;
-let useLoader: any = null;
-let OrbitControls: any = null;
-let Html: any = null;
-let THREE: any = null;
-let TextureLoader: any = null;
-
-let threeLoaded = false;
-let threeLoadPromise: Promise<boolean> | null = null;
-
-function loadThree() {
-  if (threeLoaded) return Promise.resolve(true);
-  if (threeLoadPromise) return threeLoadPromise;
-  threeLoadPromise = Promise.all([
-    import("@react-three/fiber"),
-    import("@react-three/drei"),
-    import("three"),
-  ]).then(([fiber, drei, three]) => {
-    Canvas = fiber.Canvas;
-    useFrame = fiber.useFrame;
-    useLoader = fiber.useLoader;
-    OrbitControls = drei.OrbitControls;
-    Html = drei.Html;
-    THREE = three;
-    TextureLoader = three.TextureLoader;
-    threeLoaded = true;
-    return true;
-  }).catch(() => {
-    threeLoaded = false;
-    return false;
-  });
-  return threeLoadPromise;
-}
-
-/* Error boundary for 3D content */
-class GlobeErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
-}
-
-import { motion } from "framer-motion";
 
 // Convert lat/lng to 3D sphere position
 function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
