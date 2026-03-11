@@ -396,20 +396,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             // Render nav item link
             const renderNavItem = (item: NavItem) => {
               const active = isItemActive(item);
-              if (sectionLocked) {
-                return (
-                  <Link
-                    key={item.path}
-                    to="/dashboard/billing"
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    <span className="whitespace-normal leading-tight flex-1">{item.label}</span>
-                    <Lock className="h-3 w-3 shrink-0 text-muted-foreground/40" />
-                  </Link>
-                );
-              }
               return (
                 <Link
                   key={item.path}
