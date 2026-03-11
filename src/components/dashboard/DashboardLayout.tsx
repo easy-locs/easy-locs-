@@ -451,24 +451,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         {/* Bottom actions */}
-        <div className="p-2 border-t border-sidebar-border space-y-0.5 shrink-0">
-          <Link
-            to="/dashboard/assistant"
-            onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
-          >
-            <BrainCircuit className="h-4 w-4 shrink-0" /> {t("nav.assistant") || "AI Assistant"}
-          </Link>
-          <Link
-            to="/dashboard/ai-quality"
-            onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-sidebar-accent/50 text-sidebar-primary hover:bg-sidebar-accent transition-colors"
-          >
-            <Zap className="h-4 w-4 shrink-0" /> {t("nav.ai_quality") || "AI Quality Center"}
-          </Link>
+        <div className="p-2 border-t border-sidebar-border shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           >
             <LogOut className="h-4 w-4 shrink-0" /> {t("nav.logout")}
           </button>
@@ -523,10 +509,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <NotificationBell />
           <Link
             to="/dashboard/assistant"
-            className="hidden sm:flex items-center gap-2 bg-gradient-gold text-accent-foreground text-sm font-semibold px-3 py-2 rounded-lg shadow-gold hover:opacity-90 transition-opacity"
+            className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="AI Assistant"
           >
             <BrainCircuit className="h-4 w-4" />
-            <span>{t("dashboard.ai_question")}</span>
           </Link>
         </header>
 
