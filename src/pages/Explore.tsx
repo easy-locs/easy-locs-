@@ -48,7 +48,7 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
 
-  // State
+  // State — initialize from URL params, fallback to geo-detected location
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [locationQuery, setLocationQuery] = useState(searchParams.get("location") || "");
   const [activeGroup, setActiveGroup] = useState<string>(searchParams.get("group") || "all");
@@ -56,6 +56,21 @@ export default function Explore() {
   const [radius, setRadius] = useState<RadiusValue>((searchParams.get("radius") as RadiusValue) || "worldwide");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [geoApplied, setGeoApplied] = useState(false);
+
+  // Auto-set location from geo-detection when no URL params exist
+  useEffect(() => {
+    if (geoApplied) return;
+    if (searchParams.get("location") || searchParams.get("q")) return; // user already filtered
+    if (!geo.detection || geo.loading) return;
+
+    // Auto-set to detected country
+    if (geo.detection.country) {
+      setLocationQuery(geo.detection.country.toUpperCase());
+      setRadius("country");
+      setGeoApplied(true);
+    }
+  }, [geo.detection, geo.loading, geoApplied, searchParams]);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
