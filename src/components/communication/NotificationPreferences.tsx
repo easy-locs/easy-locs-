@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { Bell, Mail, Smartphone, Volume2, Vibrate, BellRing, MessageCircle, CalendarCheck, CreditCard, FileText, Wrench, SendHorizonal } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Bell, Mail, Smartphone, Volume2, Vibrate, BellRing, MessageCircle, CalendarCheck, CreditCard, FileText, Wrench, SendHorizonal, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,14 +33,82 @@ const DEFAULT_PREFS: Prefs = {
   in_app_maintenance: true,
 };
 
-const TYPE_ALERT_CONFIG: { key: keyof NotifTypeAlerts; label: string; icon: typeof MessageCircle; emoji: string }[] = [
-  { key: "messages", label: "Messages", icon: MessageCircle, emoji: "💬" },
-  { key: "bookings", label: "Bookings", icon: CalendarCheck, emoji: "📅" },
-  { key: "payments", label: "Payments", icon: CreditCard, emoji: "💰" },
-  { key: "documents", label: "Documents", icon: FileText, emoji: "📄" },
-  { key: "maintenance", label: "Maintenance", icon: Wrench, emoji: "🔧" },
-];
+const TYPE_ALERT_KEYS: (keyof NotifTypeAlerts)[] = ["messages", "bookings", "payments", "documents", "maintenance"];
+const TYPE_I18N_MAP: Record<keyof NotifTypeAlerts, string> = {
+  messages: "notif.type_messages",
+  bookings: "notif.type_bookings",
+  payments: "notif.type_payments",
+  documents: "notif.type_documents",
+  maintenance: "notif.type_maintenance",
+};
+const TYPE_EMOJI: Record<keyof NotifTypeAlerts, string> = {
+  messages: "💬",
+  bookings: "📅",
+  payments: "💰",
+  documents: "📄",
+  maintenance: "🔧",
+};
 
+/* ─── Status Summary ─── */
+function StatusSummary({ alertPrefs, browserPermission, urgentOnly, t }: {
+  alertPrefs: NotifAlertPrefs;
+  browserPermission: NotificationPermission | "unsupported";
+  urgentOnly: boolean;
+  t: (k: string) => string;
+}) {
+  const enabledTypes = TYPE_ALERT_KEYS.filter((k) => alertPrefs.typeAlerts[k]).length;
+
+  const items: { label: string; status: "on" | "off" | "blocked"; icon: typeof Bell }[] = [
+    {
+      label: t("notif.status_browser") || "Browser",
+      status: browserPermission === "granted" && alertPrefs.browserNotifications ? "on" : browserPermission === "denied" ? "blocked" : "off",
+      icon: Bell,
+    },
+    {
+      label: t("notif.status_sound") || "Sound",
+      status: alertPrefs.sound ? "on" : "off",
+      icon: Volume2,
+    },
+    {
+      label: t("notif.status_vibration") || "Vibration",
+      status: alertPrefs.vibration ? "on" : "off",
+      icon: Vibrate,
+    },
+  ];
+
+  return (
+    <div className="ui-card">
+      <div className="flex items-center gap-3 mb-4">
+        <CheckCircle2 className="h-5 w-5 text-accent" />
+        <h2 className="font-semibold text-foreground">{t("notif.status_summary") || "Status Summary"}</h2>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {items.map(({ label, status, icon: Icon }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-muted/20 border border-border/30">
+            <Icon className={`h-4 w-4 ${status === "on" ? "text-accent" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
+            <span className="text-xs font-medium text-foreground">{label}</span>
+            <Badge
+              variant={status === "on" ? "default" : status === "blocked" ? "destructive" : "secondary"}
+              className="text-[10px] h-5"
+            >
+              {status === "on" ? (t("notif.status_on") || "On") : status === "blocked" ? (t("notif.status_blocked") || "Blocked") : (t("notif.status_off") || "Off")}
+            </Badge>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+        <span>📋 {enabledTypes}/{TYPE_ALERT_KEYS.length} {t("notif.types_enabled") || "types enabled of"} 5</span>
+        {urgentOnly && (
+          <span className="flex items-center gap-1 text-amber-500">
+            <ShieldAlert className="h-3 w-3" /> {t("notif.status_email_urgent") || "Urgent mode"}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main Component ─── */
 export default function NotificationPreferences() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -114,9 +183,9 @@ export default function NotificationPreferences() {
     if (result === "granted") {
       const next = setNotifAlertPrefs({ browserNotifications: true });
       setAlertPrefsState(next);
-      toast({ title: "Browser notifications enabled" });
+      toast({ title: t("notif.browser_enabled") || "Browser notifications enabled" });
     } else if (result === "denied") {
-      toast({ title: "Notifications blocked", description: "Please enable them in your browser settings.", variant: "destructive" });
+      toast({ title: t("notif.browser_blocked") || "Notifications blocked", description: "Please enable them in your browser settings.", variant: "destructive" });
     }
   };
 
@@ -124,13 +193,12 @@ export default function NotificationPreferences() {
     if (!user) return;
     setSendingTest(true);
     try {
-      // Insert a real test notification
       await supabase.from("notifications").insert({
         user_id: user.id,
         org_id: null as any,
         type: "info",
         title: "🔔 Test notification",
-        message: "This is a test notification to verify your alert settings are working correctly.",
+        message: t("notif.test_desc") || "This is a test notification to verify your alert settings are working correctly.",
         link: "/settings",
         metadata_json: {
           target_type: "message",
@@ -167,6 +235,14 @@ export default function NotificationPreferences() {
 
   return (
     <div className="space-y-6">
+      {/* Status summary */}
+      <StatusSummary
+        alertPrefs={alertPrefs}
+        browserPermission={browserPermission}
+        urgentOnly={prefs.email_urgent_only}
+        t={t}
+      />
+
       {/* Alert preferences (local) */}
       <div className="ui-card">
         <div className="flex items-center gap-3 mb-5">
@@ -233,9 +309,9 @@ export default function NotificationPreferences() {
             {t("notif.per_type_alerts_desc") || "Disable sound, vibration, and browser alerts for specific categories."}
           </p>
           <div className="space-y-1">
-            {TYPE_ALERT_CONFIG.map(({ key, label, emoji }) => (
+            {TYPE_ALERT_KEYS.map((key) => (
               <div key={key} className="flex items-center justify-between py-2.5 border-b border-border/20 last:border-0">
-                <span className="text-sm text-foreground">{emoji} {label}</span>
+                <span className="text-sm text-foreground">{TYPE_EMOJI[key]} {t(TYPE_I18N_MAP[key]) || key.charAt(0).toUpperCase() + key.slice(1)}</span>
                 <Switch
                   checked={alertPrefs.typeAlerts[key]}
                   onCheckedChange={() => toggleTypeAlert(key)}
@@ -283,10 +359,10 @@ export default function NotificationPreferences() {
             <span className="w-16 text-center">Email</span>
             <span className="w-16 text-center">In-app</span>
           </div>
-          <Row label="💬 Messages" emailKey="email_messages" appKey="in_app_messages" />
-          <Row label="💰 Payments" emailKey="email_payments" appKey="in_app_payments" />
-          <Row label="📄 Documents" emailKey="email_documents" appKey="in_app_documents" />
-          <Row label="🔧 Maintenance" emailKey="email_maintenance" appKey="in_app_maintenance" />
+          <Row label={`💬 ${t("notif.type_messages") || "Messages"}`} emailKey="email_messages" appKey="in_app_messages" />
+          <Row label={`💰 ${t("notif.type_payments") || "Payments"}`} emailKey="email_payments" appKey="in_app_payments" />
+          <Row label={`📄 ${t("notif.type_documents") || "Documents"}`} emailKey="email_documents" appKey="in_app_documents" />
+          <Row label={`🔧 ${t("notif.type_maintenance") || "Maintenance"}`} emailKey="email_maintenance" appKey="in_app_maintenance" />
         </div>
 
         <div className="flex items-center justify-between py-3 border-t border-border/30 mt-2">
