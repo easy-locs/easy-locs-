@@ -223,15 +223,15 @@ const Leases = () => {
         </motion.div>
 
         {/* Main toggle */}
-        <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">
+        <div className="flex gap-1 mb-4 sm:mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-thin">
           {([
             { key: "leases" as const, icon: Users, label: `${t("page.leases.leases_tab")} (${tenants.filter(t => t.property_id).length})` },
             { key: "create" as const, icon: Plus, label: t("page.leases.create_tab") },
             { key: "diagnostics" as const, icon: ClipboardCheck, label: t("page.leases.diagnostics_tab") },
           ]).map(v => (
             <button key={v.key} onClick={() => setActiveView(v.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex-1 justify-center ${activeView === v.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              <v.icon className="h-4 w-4" /> {v.label}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex-1 justify-center whitespace-nowrap ${activeView === v.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <v.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {v.label}
             </button>
           ))}
         </div>
