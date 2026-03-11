@@ -85,7 +85,7 @@ export default function ExplorePreview() {
   if (!loaded || totalCount === 0) return null;
 
   return (
-    <section className="py-20 sm:py-28 relative overflow-hidden bg-background">
+    <section className="py-16 sm:py-24 relative overflow-hidden bg-background">
       <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-muted/20" />
 
       <div className="container max-w-6xl relative z-10">
