@@ -333,7 +333,7 @@ const Interventions = () => {
                 <label className="text-sm font-medium">{t("page.interventions.description")}</label>
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder={t("page.interventions.description_placeholder")} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.scheduled_date")}</label>
                   <Input type="date" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} />
