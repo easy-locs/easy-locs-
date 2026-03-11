@@ -356,8 +356,8 @@ export default function NotificationPreferences() {
 
         <div className="mb-2">
           <div className="flex justify-end gap-6 text-xs text-muted-foreground mb-1 pr-1">
-            <span className="w-16 text-center">Email</span>
-            <span className="w-16 text-center">In-app</span>
+            <span className="w-16 text-center">{t("notif.col_email") || "Email"}</span>
+            <span className="w-16 text-center">{t("notif.col_inapp") || "In-app"}</span>
           </div>
           <Row label={`💬 ${t("notif.type_messages") || "Messages"}`} emailKey="email_messages" appKey="in_app_messages" />
           <Row label={`💰 ${t("notif.type_payments") || "Payments"}`} emailKey="email_payments" appKey="in_app_payments" />
