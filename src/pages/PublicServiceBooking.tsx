@@ -223,7 +223,7 @@ const PublicServiceBooking = () => {
       });
 
       if (available === false) {
-        toast.error("These dates are no longer available. Please select different dates.");
+        toast.error(t("mp.dates_unavailable") || "These dates are no longer available. Please select different dates.");
         setStep(1);
         setSubmitting(false);
         return;
