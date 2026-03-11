@@ -318,6 +318,7 @@ export default function Explore() {
           activeSubcategory={activeSubcategory}
           onGroupChange={setActiveGroup}
           onSubcategoryChange={setActiveSubcategory}
+          groupCounts={groupCounts}
         />
       </header>
 
