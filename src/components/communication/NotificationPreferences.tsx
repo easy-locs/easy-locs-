@@ -85,13 +85,19 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, t }: {
       <div className="grid grid-cols-3 gap-3">
         {items.map(({ label, status, icon: Icon }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-muted/20 border border-border/30">
-            <Icon className={`h-4 w-4 ${status === "on" ? "text-accent" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
+            <Icon className={`h-4 w-4 ${status === "on" ? "text-success" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
             <span className="text-xs font-medium text-foreground">{label}</span>
             <Badge
-              variant={status === "on" ? "default" : status === "blocked" ? "destructive" : "secondary"}
-              className="text-[10px] h-5"
+              variant="outline"
+              className={`text-[10px] h-5 font-semibold ${
+                status === "on"
+                  ? "bg-success/10 text-success border-success/30"
+                  : status === "blocked"
+                  ? "bg-destructive/10 text-destructive border-destructive/30"
+                  : "bg-muted/40 text-muted-foreground border-border/40"
+              }`}
             >
-              {status === "on" ? (t("notif.status_on") || "On") : status === "blocked" ? (t("notif.status_blocked") || "Blocked") : (t("notif.status_off") || "Off")}
+              {status === "on" ? `✓ ${t("notif.status_on") || "On"}` : status === "blocked" ? `✕ ${t("notif.status_blocked") || "Blocked"}` : `— ${t("notif.status_off") || "Off"}`}
             </Badge>
           </div>
         ))}
@@ -99,7 +105,7 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, t }: {
       <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
         <span>📋 {enabledTypes}/{TYPE_ALERT_KEYS.length} {t("notif.types_enabled") || "types enabled of"} 5</span>
         {urgentOnly && (
-          <span className="flex items-center gap-1 text-amber-500">
+          <span className="flex items-center gap-1 text-warning">
             <ShieldAlert className="h-3 w-3" /> {t("notif.status_email_urgent") || "Urgent mode"}
           </span>
         )}
@@ -262,12 +268,12 @@ export default function NotificationPreferences() {
               <div>
                 <span className="text-sm text-foreground">{t("notif.browser_notifications") || "Browser notifications"}</span>
                 <p className="text-xs text-muted-foreground">
-                  {browserPermission === "granted"
+                   {browserPermission === "granted"
                     ? t("notif.browser_enabled") || "Enabled — you'll see desktop alerts"
                     : browserPermission === "denied"
                     ? t("notif.browser_blocked") || "Blocked in browser settings"
                     : browserPermission === "unsupported"
-                    ? "Not supported in this browser"
+                    ? t("notif.browser_unsupported") || "Not supported in this browser"
                     : t("notif.browser_not_enabled") || "Not yet enabled"}
                 </p>
               </div>
@@ -331,7 +337,7 @@ export default function NotificationPreferences() {
             className="w-full sm:w-auto gap-2"
           >
             <SendHorizonal className="h-4 w-4" />
-            {sendingTest ? "Sending..." : t("notif.send_test") || "Send test notification"}
+            {sendingTest ? (t("notif.sending") || "Sending…") : t("notif.send_test") || "Send test notification"}
           </Button>
           <p className="text-xs text-muted-foreground mt-2">
             {t("notif.test_desc") || "Sends a real notification to verify your sound, vibration, and browser alert settings."}
@@ -356,8 +362,8 @@ export default function NotificationPreferences() {
 
         <div className="mb-2">
           <div className="flex justify-end gap-6 text-xs text-muted-foreground mb-1 pr-1">
-            <span className="w-16 text-center">Email</span>
-            <span className="w-16 text-center">In-app</span>
+            <span className="w-16 text-center">{t("notif.col_email") || "Email"}</span>
+            <span className="w-16 text-center">{t("notif.col_inapp") || "In-app"}</span>
           </div>
           <Row label={`💬 ${t("notif.type_messages") || "Messages"}`} emailKey="email_messages" appKey="in_app_messages" />
           <Row label={`💰 ${t("notif.type_payments") || "Payments"}`} emailKey="email_payments" appKey="in_app_payments" />
@@ -374,7 +380,7 @@ export default function NotificationPreferences() {
         </div>
 
         <Button onClick={save} disabled={saving} className="mt-4 w-full sm:w-auto">
-          {saving ? "Saving..." : t("page.settings.save") || "Save preferences"}
+          {saving ? (t("notif.saving") || "Saving…") : t("page.settings.save") || "Save preferences"}
         </Button>
       </div>
     </div>
