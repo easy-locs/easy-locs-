@@ -146,7 +146,7 @@ const Login = () => {
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.password")}</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
                   className={`${inputClass} pr-10`} placeholder="••••••••" />
                 <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
