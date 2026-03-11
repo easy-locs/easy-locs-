@@ -90,8 +90,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }));
         setAllOrgs(orgs);
 
-        // Restore saved org preference or use first
-        const savedOrg = localStorage.getItem(`easylocs_active_org_${userId}`);
+        const savedOrg = (() => {
+          try {
+            return localStorage.getItem(`easylocs_active_org_${userId}`);
+          } catch {
+            return null;
+          }
+        })();
         const selectedOrgId = savedOrg && orgs.some(o => o.id === savedOrg) ? savedOrg : orgIds[0];
         setOrgId(selectedOrgId);
       } else {
