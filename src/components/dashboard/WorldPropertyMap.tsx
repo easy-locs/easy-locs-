@@ -21,13 +21,13 @@ class GlobeErrorBoundary extends Component<{ children: ReactNode; onError?: () =
 }
 
 /* Lazy-load the 3D scene to isolate Three.js imports — with catch for Safari */
-const Globe3DScene = lazy(() =>
-  import("./WorldPropertyMap3D").catch(() => {
-    // Return a no-op component that matches the expected Props interface
-    const NoOp = (_p: { countries: any[]; hoveredCountry: string | null; onHover: (c: string | null) => void; onSelect: (c: string) => void }) => null;
-    return { default: NoOp as any };
-  })
-);
+const Globe3DScene = lazy(async () => {
+  try {
+    return await import("./WorldPropertyMap3D");
+  } catch {
+    return { default: ((props: any) => null) as typeof import("./WorldPropertyMap3D")["default"] };
+  }
+});
 
 const COUNTRY_LATLNG: Record<string, { lat: number; lng: number }> = {
   FR: { lat: 46.6, lng: 2.2 }, DE: { lat: 51.1, lng: 10.4 }, ES: { lat: 40.4, lng: -3.7 },
