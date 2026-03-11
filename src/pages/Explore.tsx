@@ -447,11 +447,28 @@ export default function Explore() {
 
       {/* ═══════ RESULTS ═══════ */}
       <main className="max-w-[1400px] mx-auto px-4 py-6">
+        {/* Geo context banner */}
+        {!loading && !hasFilters && geo.detection?.city && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15"
+          >
+            <LocateFixed className="h-4 w-4 text-accent shrink-0" />
+            <span className="text-sm text-muted-foreground">
+              Showing all listings worldwide. <button onClick={handleNearMe} className="text-accent font-semibold hover:underline">
+                Show near {geo.detection.city}
+              </button>
+            </span>
+          </motion.div>
+        )}
+
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-foreground">
               {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
+              {locationQuery && <span className="text-muted-foreground font-normal"> in {locationQuery}</span>}
             </h2>
             {hasFilters && (
               <button onClick={clearAll} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
