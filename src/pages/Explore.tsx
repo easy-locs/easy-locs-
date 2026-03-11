@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -14,9 +14,10 @@ import {
   Users, Moon, SlidersHorizontal, X, Building2, Waves, Car, Sparkles,
   Heart, Star, ChevronDown, Filter, Loader2, CalendarDays,
   Wrench, Utensils, Dumbbell, Scale, Laptop, PartyPopper, Palmtree,
-  Plane, Scissors, ShoppingBag,
+  Plane, Scissors, ShoppingBag, Navigation, LocateFixed,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -73,6 +74,7 @@ const PLACEHOLDER_IMG = "/placeholder.svg";
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const ITEMS_PER_PAGE = 24;
+  const geo = useGeoDetect();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -80,6 +82,8 @@ export default function Explore() {
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const locationRef = useRef<HTMLDivElement>(null);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
@@ -164,6 +168,57 @@ export default function Explore() {
     return Array.from(set).sort();
   }, [realEstate, seasonal, services]);
 
+  // Location suggestions filtered by current input
+  const locationSuggestions = useMemo(() => {
+    const q = locationQuery.toLowerCase().trim();
+    const suggestions: { label: string; type: "geo" | "city" | "country" }[] = [];
+
+    // "Near me" option using geolocation
+    if (geo.detection?.city && (!q || "near me".includes(q) || geo.detection.city.toLowerCase().includes(q))) {
+      suggestions.push({ label: `📍 Near me — ${geo.detection.city}, ${geo.country.toUpperCase()}`, type: "geo" });
+    }
+
+    // Cities
+    allCities.filter(c => !q || c.toLowerCase().includes(q)).slice(0, 6).forEach(c => {
+      suggestions.push({ label: c, type: "city" });
+    });
+
+    // Countries
+    allCountries.filter(c => !q || c.toLowerCase().includes(q)).slice(0, 4).forEach(c => {
+      suggestions.push({ label: c.toUpperCase(), type: "country" });
+    });
+
+    return suggestions.slice(0, 8);
+  }, [locationQuery, allCities, allCountries, geo.detection, geo.country]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+        setShowLocationSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelectLocation = (suggestion: { label: string; type: string }) => {
+    if (suggestion.type === "geo" && geo.detection?.city) {
+      setLocationQuery(geo.detection.city);
+    } else {
+      setLocationQuery(suggestion.label);
+    }
+    setShowLocationSuggestions(false);
+  };
+
+  const handleNearMe = () => {
+    if (geo.detection?.city) {
+      setLocationQuery(geo.detection.city);
+    } else if (geo.country) {
+      setLocationQuery(geo.country);
+    }
+  };
+
   const totalCounts = {
     all: seasonal.length + realEstate.length + services.length,
     seasonal: seasonal.length,
@@ -179,6 +234,7 @@ export default function Explore() {
     if (locationQuery) params.set("location", locationQuery);
     if (activeCategory !== "all") params.set("category", activeCategory);
     setSearchParams(params);
+    setShowLocationSuggestions(false);
   };
 
   const clearAll = () => {
@@ -205,7 +261,7 @@ export default function Explore() {
 
             {/* Desktop search bar — Airbnb style */}
             <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
-              <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow relative">
                 <div className="flex-1 px-5 py-2 border-r border-border">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What</label>
                   <Input
@@ -216,15 +272,57 @@ export default function Explore() {
                     className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
                   />
                 </div>
-                <div className="flex-1 px-5 py-2">
+                <div className="flex-1 px-5 py-2 relative" ref={locationRef}>
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Where</label>
-                  <Input
-                    value={locationQuery}
-                    onChange={e => setLocationQuery(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    placeholder="City, country..."
-                    className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={locationQuery}
+                      onChange={e => { setLocationQuery(e.target.value); setShowLocationSuggestions(true); }}
+                      onFocus={() => setShowLocationSuggestions(true)}
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                      placeholder={geo.detection?.city ? `${geo.detection.city}, ${geo.country.toUpperCase()}` : "City, country..."}
+                      className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50 flex-1"
+                    />
+                    {geo.detection?.city && !locationQuery && (
+                      <button
+                        onClick={handleNearMe}
+                        className="shrink-0 p-1 rounded-full hover:bg-muted transition-colors"
+                        title="Use my location"
+                      >
+                        <LocateFixed className="h-3.5 w-3.5 text-accent" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Location suggestions dropdown */}
+                  <AnimatePresence>
+                    {showLocationSuggestions && locationSuggestions.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden"
+                      >
+                        {locationSuggestions.map((s, i) => (
+                          <button
+                            key={`${s.type}-${s.label}-${i}`}
+                            onClick={() => handleSelectLocation(s)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0"
+                          >
+                            {s.type === "geo" ? (
+                              <LocateFixed className="h-4 w-4 text-accent shrink-0" />
+                            ) : s.type === "city" ? (
+                              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                            ) : (
+                              <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="truncate text-foreground">{s.label}</span>
+                            <span className="ml-auto text-[10px] text-muted-foreground uppercase">{s.type === "geo" ? "Near you" : s.type}</span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <button
                   onClick={handleSearch}
@@ -279,10 +377,28 @@ export default function Explore() {
                     <Input
                       value={locationQuery}
                       onChange={e => setLocationQuery(e.target.value)}
-                      placeholder="City or country"
-                      className="pl-10 rounded-xl"
+                      placeholder={geo.detection?.city ? `${geo.detection.city}, ${geo.country.toUpperCase()}` : "City or country"}
+                      className="pl-10 pr-10 rounded-xl"
                     />
+                    {geo.detection?.city && !locationQuery && (
+                      <button
+                        onClick={handleNearMe}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
+                        title="Use my location"
+                      >
+                        <LocateFixed className="h-4 w-4 text-accent" />
+                      </button>
+                    )}
                   </div>
+                  {geo.detection?.city && !locationQuery && (
+                    <button
+                      onClick={() => { handleNearMe(); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent font-medium hover:bg-accent/15 transition-colors"
+                    >
+                      <LocateFixed className="h-4 w-4" />
+                      Near me — {geo.detection.city}, {geo.country.toUpperCase()}
+                    </button>
+                  )}
                   <div className="flex gap-2">
                     <Button onClick={() => { handleSearch(); setShowMobileSearch(false); }} className="flex-1 rounded-xl gap-2">
                       <Search className="h-4 w-4" /> Search
@@ -331,11 +447,28 @@ export default function Explore() {
 
       {/* ═══════ RESULTS ═══════ */}
       <main className="max-w-[1400px] mx-auto px-4 py-6">
+        {/* Geo context banner */}
+        {!loading && !hasFilters && geo.detection?.city && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15"
+          >
+            <LocateFixed className="h-4 w-4 text-accent shrink-0" />
+            <span className="text-sm text-muted-foreground">
+              Showing all listings worldwide. <button onClick={handleNearMe} className="text-accent font-semibold hover:underline">
+                Show near {geo.detection.city}
+              </button>
+            </span>
+          </motion.div>
+        )}
+
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-foreground">
               {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
+              {locationQuery && <span className="text-muted-foreground font-normal"> in {locationQuery}</span>}
             </h2>
             {hasFilters && (
               <button onClick={clearAll} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
