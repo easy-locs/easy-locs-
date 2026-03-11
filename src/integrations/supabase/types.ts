@@ -4898,17 +4898,22 @@ export type Database = {
           categories: string[]
           city: string
           company_name: string
+          completed_jobs: number
           country: string
           cover_photo_url: string
+          created_at: string
           display_name: string
           email: string
           id: string
           phone: string
           provider_type: string
           rating: number
+          response_rate: number
+          response_time: string
           reviews_count: number
           slug: string
           verified: boolean
+          verified_at: string
           website_url: string
           whatsapp: string
         }[]
