@@ -5500,23 +5500,39 @@ const availableLocales: { value: Locale; label: string }[] = [
   { value: "uk", label: "Українська" },
 ];
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    const saved = localStorage.getItem("app_locale") as Locale;
-    if (saved && translations[saved]) return saved;
-    // Auto-detect from browser locale
+const safeGetStoredLocale = (): Locale | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = window.localStorage.getItem("app_locale") as Locale | null;
+    return saved && translations[saved] ? saved : null;
+  } catch {
+    return null;
+  }
+};
+
+const detectInitialLocale = (): Locale => {
+  const stored = safeGetStoredLocale();
+  if (stored) return stored;
+
+  if (typeof navigator !== "undefined") {
     const browserLang = (navigator.language || "").split("-")[0]?.toLowerCase() as Locale;
     if (browserLang && translations[browserLang]) return browserLang;
-    // Try country part of locale (e.g. "en-FR" → FR → "fr")
+
     const browserCountry = (navigator.language || "").split("-")[1]?.toUpperCase();
     if (browserCountry && COUNTRY_LOCALE_MAP[browserCountry] && translations[COUNTRY_LOCALE_MAP[browserCountry]]) {
       return COUNTRY_LOCALE_MAP[browserCountry];
     }
-    return "en";
-  });
+  }
+
+  return "en";
+};
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
 
   // Set HTML lang attribute on initial render
   useEffect(() => {
+    if (typeof document === "undefined") return;
     document.documentElement.lang = locale;
     document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
   }, [locale]);
@@ -5533,7 +5549,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         .single();
       if (data?.locale && translations[data.locale as Locale]) {
         setLocaleState(data.locale as Locale);
-        localStorage.setItem("app_locale", data.locale);
+        try {
+          localStorage.setItem("app_locale", data.locale);
+        } catch {
+          // ignore storage errors
+        }
       }
     };
     syncLocale();
@@ -5541,10 +5561,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback(async (l: Locale) => {
     setLocaleState(l);
-    localStorage.setItem("app_locale", l);
+    try {
+      localStorage.setItem("app_locale", l);
+    } catch {
+      // ignore storage errors
+    }
     // Update HTML lang attribute for proper multilingual rendering
-    document.documentElement.lang = l;
-    document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = l;
+      document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
+    }
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);

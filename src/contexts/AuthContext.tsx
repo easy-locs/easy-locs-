@@ -165,8 +165,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setOnboardingCompleted(onboardingDone);
 
-      // Determine active role
-      const savedRole = localStorage.getItem(`easylocs_active_role_${userId}`);
+      const savedRole = (() => {
+        try {
+          return localStorage.getItem(`easylocs_active_role_${userId}`);
+        } catch {
+          return null;
+        }
+      })();
       if (dual && savedRole && (savedRole === "landlord" || savedRole === "tenant")) {
         setActiveRole(savedRole);
       } else if (dual) {
