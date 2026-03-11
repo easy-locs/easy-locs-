@@ -55,19 +55,22 @@ export default function CityCategoryPage() {
     setLoading(true);
 
     const run = async () => {
+      const nextServices: any[] = [];
+      const nextListings: any[] = [];
+
       if (config.serviceKey) {
         const r = await supabase.rpc("get_public_marketplace_services", { _category: config.serviceKey, _city: cityName });
-        setServices((r.data || []).slice(0, 20));
+        if (r.data) nextServices.push(...(r.data || []).slice(0, 20));
       }
 
       if (config.listingType === "real-estate") {
         const r = await supabase.rpc("get_public_real_estate_listings", { p_city: cityName, p_limit: 20 });
-        setListings((r.data || []).map((l: any) => ({ ...l, _type: "real-estate" })));
+        if (r.data) nextListings.push(...(r.data || []).map((l: any) => ({ ...l, _type: "real-estate" })));
       }
 
       if (config.listingType === "seasonal" || config.listingType === "long-term") {
         const r = await supabase.from("public_listings").select("*").eq("active", true).limit(20);
-        setListings((r.data || []).map((l: any) => ({ ...l, _type: "seasonal" })));
+        if (r.data) nextListings.push(...(r.data || []).map((l: any) => ({ ...l, _type: "seasonal" })));
       }
 
       if (config.serviceKey) {
@@ -75,15 +78,20 @@ export default function CityCategoryPage() {
           .select("id,title,description,category,city,country,price,currency,photo_urls,booking_slug,active")
           .eq("active", true).eq("city", cityName).eq("category", config.serviceKey).limit(10);
         const conciergeItems = (r.data || []).map((s: any) => ({ ...s, _type: "service" }));
-        setServices(prev => {
-          const ids = new Set(prev.map(p => p.id));
-          return [...prev, ...conciergeItems.filter((c: any) => !ids.has(c.id))];
-        });
+        const ids = new Set(nextServices.map((p) => p.id));
+        nextServices.push(...conciergeItems.filter((c: any) => !ids.has(c.id)));
       }
 
+      setServices(nextServices);
+      setListings(nextListings);
       setLoading(false);
     };
-    run();
+    void run().catch((error) => {
+      console.error("[CityCategoryPage] failed to load city/category content", error);
+      setServices([]);
+      setListings([]);
+      setLoading(false);
+    });
   }, [result, config]);
 
   // Fallback: city or category not found

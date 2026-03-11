@@ -186,6 +186,12 @@ export default function PropertiesShowcase() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {loadError && (
+          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            {loadError}
+          </div>
+        )}
+
         {/* ─── Filters bar ─── */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
           <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)} className="gap-1.5 rounded-lg h-10 min-h-[44px] text-sm">

@@ -374,6 +374,12 @@ export default function Explore() {
           </motion.div>
         )}
 
+        {loadError && (
+          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            {loadError}
+          </div>
+        )}
+
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
