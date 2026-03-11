@@ -342,7 +342,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
         {/* Sticky footer */}
         {service && (
-          <div className="shrink-0 flex items-center justify-between px-4 py-3 border-t border-border bg-card">
+          <div className="shrink-0 flex items-center justify-between px-4 py-3 border-t border-border/50 bg-card safe-bottom">
             <span className="text-base font-bold text-foreground">{totalPrice.toLocaleString()} {service.currency}</span>
             <Button
               size="sm"

@@ -72,7 +72,7 @@ export default function PaymentMethodSelector({
       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
         {t("payment.method") || "Payment Method"}
       </p>
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {options.map(({ method, label, icon: Icon, description }) => {
           const selected = selectedMethod === method;
           return (
