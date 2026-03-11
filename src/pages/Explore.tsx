@@ -6,7 +6,7 @@ import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
+import { Search, Globe, ChevronDown, LocateFixed, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { RADIUS_OPTIONS, type RadiusValue } from "@/lib/geo-distance";
@@ -19,6 +19,7 @@ import { ExploreListingCard } from "@/components/explore/ExploreListingCard";
 import { ExploreFiltersStrip } from "@/components/explore/ExploreFiltersStrip";
 import { ExploreSEOFooter } from "@/components/explore/ExploreSEOFooter";
 import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
+import { ExploreRadiusSearch } from "@/components/explore/ExploreRadiusSearch";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
