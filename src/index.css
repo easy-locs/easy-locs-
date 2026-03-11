@@ -1176,8 +1176,8 @@ html {
     font-size: 0.75rem !important;
   }
   .rdp-day {
-    width: 2rem !important;
-    height: 2rem !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
   }
   .rdp-caption {
     font-size: 0.8125rem !important;
@@ -1196,22 +1196,15 @@ html {
     overscroll-behavior: contain;
   }
 
-  /* ── Landing sections mobile spacing ── */
-  section[aria-label] .container {
+  /* ── Landing container padding ── */
+  .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  /* ── Hero CTA buttons — full width on small phones ── */
-  section[aria-label="Hero"] .flex-col a,
-  section[aria-label="Hero"] .flex-col > div > a {
-    width: 100%;
-    text-align: center;
-  }
-
   /* ── Service card mobile improvements ── */
   .service-card-gallery {
-    height: 10rem; /* 160px instead of 192px for tighter mobile */
+    height: 10rem;
   }
 
   /* ── Booking summary card — compact on mobile ── */
@@ -1266,7 +1259,27 @@ html {
 
   /* ── Disclaimer compact on mobile ── */
   .marketplace-disclaimer {
-    font-size: 0.5625rem !important; /* 9px */
+    font-size: 0.625rem !important;
+  }
+
+  /* ── Popover & dropdown — ensure visibility ── */
+  [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+
+  /* ── Accordion items — roomier touch targets ── */
+  [data-state="open"] > button,
+  [data-state="closed"] > button {
+    min-height: 48px;
+  }
+
+  /* ── Stat cards on dashboard ── */
+  .stat-card {
+    min-height: 5rem;
+    padding: 0.75rem !important;
+  }
+  .stat-card .text-2xl {
+    font-size: 1.25rem !important;
   }
 }
 
