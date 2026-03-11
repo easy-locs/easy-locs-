@@ -71,46 +71,14 @@ interface TierData {
   badge?: string;
 }
 
-const TIERS: TierData[] = [
-  {
-    name: "Free",
-    subtitle: "Publish & share for free",
-    audience: "For anyone getting started",
-    icon: <Zap className="h-5 w-5" />,
-    monthly: 0, annual: 0,
-    features: FREE_FEATURES,
-  },
-  {
-    name: "Solo",
-    subtitle: "All-in-one business starter",
-    audience: "Entrepreneurs & freelancers",
-    icon: <User className="h-5 w-5" />,
-    monthly: 9.99, annual: 99,
-    features: SOLO_FEATURES,
-    badge: "Best value",
-  },
-  {
-    name: "Team",
-    subtitle: "Grow your business together",
-    audience: "Small companies & agencies",
-    icon: <Users className="h-5 w-5" />,
-    monthly: 29, annual: 299,
-    features: TEAM_FEATURES,
-    highlight: true,
-    badge: "Most popular",
-  },
-  {
-    name: "Company",
-    subtitle: "Scale without limits",
-    audience: "Agencies & larger businesses",
-    icon: <Building2 className="h-5 w-5" />,
-    monthly: 99, annual: 999,
-    features: COMPANY_FEATURES,
-    badge: "Enterprise",
-  },
+const TIER_ICONS = [
+  <Zap className="h-5 w-5" />,
+  <User className="h-5 w-5" />,
+  <Users className="h-5 w-5" />,
+  <Building2 className="h-5 w-5" />,
 ];
 
-const TRUST_SIGNALS_KEYS = [
+const TRUST_SIGNALS_DATA = [
   { icon: <BadgePercent className="h-5 w-5" />, labelKey: "pricing.trust.commission", labelFb: "0% commission", subKey: "pricing.trust.commission_sub", subFb: "Keep 100% of your revenue" },
   { icon: <Globe className="h-5 w-5" />, labelKey: "pricing.trust.countries", labelFb: "190+ countries", subKey: "pricing.trust.countries_sub", subFb: "Worldwide coverage" },
   { icon: <ShieldCheck className="h-5 w-5" />, labelKey: "pricing.trust.payments", labelFb: "Secure payments", subKey: "pricing.trust.payments_sub", subFb: "Stripe-powered billing" },
