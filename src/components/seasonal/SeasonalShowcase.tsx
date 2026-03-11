@@ -6,11 +6,13 @@ import { buildAppUrl } from "@/lib/app-domain";
 import {
   Globe, MapPin, Eye, EyeOff, ExternalLink, CalendarDays,
   Edit, BookOpen, ChevronLeft, ChevronRight, Image as ImageIcon,
-  Loader2, Users, Moon,
+  Loader2, Users, Moon, TrendingUp, BarChart3, Power,
+  DollarSign, Percent, Calendar,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface ListingWithProperty {
   id: string;
@@ -22,7 +24,6 @@ interface ListingWithProperty {
   max_guests: number | null;
   property_id: string;
   created_at: string | null;
-  // joined from properties
   property_label: string;
   property_city: string;
   property_country: string;
@@ -34,6 +35,14 @@ interface BookingForListing {
   check_in: string;
   check_out: string;
   guest_name: string;
+  status: string;
+}
+
+interface SeasonalBookingData {
+  property_id: string;
+  check_in: string;
+  check_out: string;
+  total_price: number;
   status: string;
 }
 
@@ -52,19 +61,23 @@ const COUNTRY_FLAGS: Record<string, string> = {
 const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: SeasonalShowcaseProps) => {
   const { orgId } = useAuth();
   const { t } = useI18n();
+  const { toast } = useToast();
   const [listings, setListings] = useState<ListingWithProperty[]>([]);
   const [bookings, setBookings] = useState<BookingForListing[]>([]);
+  const [seasonalBookings, setSeasonalBookings] = useState<SeasonalBookingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!orgId) return;
     setLoading(true);
 
-    const [{ data: rawListings }, { data: props }, { data: reqs }] = await Promise.all([
+    const [{ data: rawListings }, { data: props }, { data: reqs }, { data: sBookings }] = await Promise.all([
       supabase.from("public_listings").select("*").eq("org_id", orgId).order("created_at", { ascending: false }),
       supabase.from("properties").select("id, label, city, country, photo_urls").eq("org_id", orgId),
       supabase.from("booking_requests").select("id, listing_id, check_in, check_out, guest_name, status").eq("org_id", orgId).order("check_in"),
+      supabase.from("seasonal_bookings").select("property_id, check_in, check_out, total_price, status").eq("org_id", orgId),
     ]);
 
     const propMap = new Map((props || []).map(p => [p.id, p]));
@@ -96,10 +109,25 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
       guest_name: r.guest_name,
       status: r.status,
     })));
+    setSeasonalBookings((sBookings || []) as SeasonalBookingData[]);
     setLoading(false);
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
+
+  /* ── Toggle active directly from card ── */
+  const toggleActive = async (listing: ListingWithProperty) => {
+    setTogglingId(listing.id);
+    const newActive = !listing.active;
+    await supabase.from("public_listings").update({ active: newActive } as any).eq("id", listing.id);
+    setListings(prev => prev.map(l => l.id === listing.id ? { ...l, active: newActive } : l));
+    toast({
+      title: newActive
+        ? (t("page.listing_mgr.activated") || "✅ Annonce activée")
+        : (t("page.listing_mgr.deactivated") || "⏸️ Annonce désactivée"),
+    });
+    setTogglingId(null);
+  };
 
   const countries = useMemo(() => {
     const set = new Set(listings.map(l => l.property_country).filter(Boolean));
@@ -128,6 +156,47 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
       .sort((a, b) => a.check_in.localeCompare(b.check_in))[0] || null;
   };
 
+  /* ── Analytics per property ── */
+  const getPropertyAnalytics = (propertyId: string) => {
+    const propBookings = seasonalBookings.filter(b => b.property_id === propertyId && b.status !== "cancelled");
+    const propRequests = bookings.filter(b => {
+      const listing = listings.find(l => l.id === b.listing_id);
+      return listing?.property_id === propertyId && b.status !== "rejected" && b.status !== "cancelled";
+    });
+
+    const totalBookings = propBookings.length + propRequests.filter(r => r.status === "paid" || r.status === "approved").length;
+    const totalRevenue = propBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+
+    // Occupancy: count booked nights in current month
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const monthEnd = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, "0")}-01`;
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+    let bookedNights = 0;
+    [...propBookings, ...propRequests.filter(r => r.status === "paid" || r.status === "approved")].forEach(b => {
+      const start = b.check_in > monthStart ? b.check_in : monthStart;
+      const end = b.check_out < monthEnd ? b.check_out : monthEnd;
+      if (start < end) {
+        bookedNights += Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000);
+      }
+    });
+
+    const occupancyRate = daysInMonth > 0 ? Math.min(100, Math.round((bookedNights / daysInMonth) * 100)) : 0;
+    const pendingRequests = propRequests.filter(r => r.status === "pending").length;
+
+    return { totalBookings, totalRevenue, occupancyRate, pendingRequests };
+  };
+
+  /* ── Global stats ── */
+  const globalStats = useMemo(() => {
+    const active = listings.filter(l => l.active).length;
+    const inactive = listings.length - active;
+    const totalRevenue = seasonalBookings.filter(b => b.status !== "cancelled").reduce((s, b) => s + (b.total_price || 0), 0);
+    const pendingAll = bookings.filter(b => b.status === "pending").length;
+    return { active, inactive, totalRevenue, pendingAll };
+  }, [listings, seasonalBookings, bookings]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -148,6 +217,14 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
 
   return (
     <div className="space-y-6">
+      {/* ── Global Stats Bar ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatMini icon={<Eye className="h-4 w-4" />} label="Actives" value={globalStats.active} accent="text-success" />
+        <StatMini icon={<EyeOff className="h-4 w-4" />} label="Inactives" value={globalStats.inactive} accent="text-muted-foreground" />
+        <StatMini icon={<DollarSign className="h-4 w-4" />} label="Revenus" value={`${globalStats.totalRevenue.toLocaleString()}€`} accent="text-primary" />
+        <StatMini icon={<Calendar className="h-4 w-4" />} label="En attente" value={globalStats.pendingAll} accent="text-warning" />
+      </div>
+
       {/* Country filter */}
       {countries.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">
@@ -155,9 +232,7 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
           <button
             onClick={() => setCountryFilter(null)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              !countryFilter
-                ? "bg-accent text-accent-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+              !countryFilter ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
             {t("common.all") || "All"} ({listings.length})
@@ -165,13 +240,9 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
           {countries.map(c => {
             const count = listings.filter(l => l.property_country === c).length;
             return (
-              <button
-                key={c}
-                onClick={() => setCountryFilter(c === countryFilter ? null : c)}
+              <button key={c} onClick={() => setCountryFilter(c === countryFilter ? null : c)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  countryFilter === c
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  countryFilter === c ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
                 {COUNTRY_FLAGS[c] || "🌍"} {c} ({count})
@@ -189,9 +260,12 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
             listing={listing}
             bookings={getListingBookings(listing.id)}
             nextBooking={getNextBooking(listing.id)}
+            analytics={getPropertyAnalytics(listing.property_id)}
             onEdit={() => onEditListing(listing.property_id)}
             onCalendar={() => onViewCalendar(listing.property_id)}
             onBookings={() => onViewBookings(listing.property_id)}
+            onToggleActive={() => toggleActive(listing)}
+            toggling={togglingId === listing.id}
             getMainPhoto={getMainPhoto}
             t={t}
           />
@@ -201,10 +275,22 @@ const SeasonalShowcase = ({ onEditListing, onViewCalendar, onViewBookings }: Sea
   );
 };
 
+/* ─── Stat Mini Card ─── */
+function StatMini({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string | number; accent: string }) {
+  return (
+    <div className="bg-card rounded-xl border border-border/50 p-3 flex items-center gap-3">
+      <div className={`${accent} shrink-0`}>{icon}</div>
+      <div>
+        <p className={`text-lg font-bold ${accent}`}>{value}</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Mini Calendar ─── */
 function MiniCalendar({ bookings, t }: { bookings: BookingForListing[]; t: (k: string) => string }) {
   const [month, setMonth] = useState(() => new Date());
-
   const y = month.getFullYear();
   const m = month.getMonth();
   const firstDay = new Date(y, m, 1).getDay();
@@ -241,15 +327,12 @@ function MiniCalendar({ bookings, t }: { bookings: BookingForListing[]; t: (k: s
           <div key={i} className="text-[8px] text-center text-muted-foreground font-medium">{d}</div>
         ))}
         {days.map((day, i) => (
-          <div
-            key={i}
-            className={`text-[9px] text-center leading-[18px] rounded-sm ${
-              !day ? "" :
-              isBooked(day) ? "bg-accent/20 text-accent font-semibold" :
-              isToday(day) ? "bg-primary/10 text-primary font-bold" :
-              "text-foreground/60"
-            }`}
-          >
+          <div key={i} className={`text-[9px] text-center leading-[18px] rounded-sm ${
+            !day ? "" :
+            isBooked(day) ? "bg-accent/20 text-accent font-semibold" :
+            isToday(day) ? "bg-primary/10 text-primary font-bold" :
+            "text-foreground/60"
+          }`}>
             {day || ""}
           </div>
         ))}
@@ -260,21 +343,17 @@ function MiniCalendar({ bookings, t }: { bookings: BookingForListing[]; t: (k: s
 
 /* ─── Listing Card ─── */
 function ListingCard({
-  listing,
-  bookings,
-  nextBooking,
-  onEdit,
-  onCalendar,
-  onBookings,
-  getMainPhoto,
-  t,
+  listing, bookings, nextBooking, analytics, onEdit, onCalendar, onBookings, onToggleActive, toggling, getMainPhoto, t,
 }: {
   listing: ListingWithProperty;
   bookings: BookingForListing[];
   nextBooking: BookingForListing | null;
+  analytics: { totalBookings: number; totalRevenue: number; occupancyRate: number; pendingRequests: number };
   onEdit: () => void;
   onCalendar: () => void;
   onBookings: () => void;
+  onToggleActive: () => void;
+  toggling: boolean;
   getMainPhoto: (urls: any) => string | null;
   t: (k: string) => string;
 }) {
@@ -282,7 +361,7 @@ function ListingCard({
   const publicUrl = buildAppUrl(`/listing/${listing.slug}`);
 
   return (
-    <Card className="overflow-hidden group hover:shadow-md transition-shadow">
+    <Card className={`overflow-hidden group hover:shadow-md transition-all ${!listing.active ? "opacity-75" : ""}`}>
       {/* Photo */}
       <div className="relative h-40 bg-muted overflow-hidden">
         {photo ? (
@@ -292,26 +371,37 @@ function ListingCard({
             <ImageIcon className="h-10 w-10 text-muted-foreground/30" />
           </div>
         )}
-        {/* Status badge */}
-        <div className="absolute top-2 right-2">
-          <Badge
-            variant={listing.active ? "default" : "secondary"}
-            className={listing.active
-              ? "bg-emerald-500/90 text-white border-0 text-[10px]"
-              : "bg-muted/90 text-muted-foreground border-0 text-[10px]"
-            }
-          >
-            {listing.active ? (
-              <><Eye className="h-3 w-3 mr-1" /> {t("page.listing_mgr.active") || "Active"}</>
-            ) : (
-              <><EyeOff className="h-3 w-3 mr-1" /> {t("page.listing_mgr.draft") || "Draft"}</>
-            )}
-          </Badge>
-        </div>
+
+        {/* Toggle button overlay */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
+          disabled={toggling}
+          className={`absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all backdrop-blur-sm ${
+            listing.active
+              ? "bg-emerald-500/90 text-white hover:bg-emerald-600/90"
+              : "bg-muted/90 text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          {toggling ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : listing.active ? (
+            <><Power className="h-3 w-3" /> Live</>
+          ) : (
+            <><EyeOff className="h-3 w-3" /> Off</>
+          )}
+        </button>
+
         {/* Country flag */}
         {listing.property_country && (
           <div className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-xs font-medium">
             {COUNTRY_FLAGS[listing.property_country] || "🌍"} {listing.property_country}
+          </div>
+        )}
+
+        {/* Pending badge */}
+        {analytics.pendingRequests > 0 && (
+          <div className="absolute bottom-2 right-2 bg-warning text-warning-foreground px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">
+            {analytics.pendingRequests} en attente
           </div>
         )}
       </div>
@@ -326,10 +416,10 @@ function ListingCard({
           </p>
         </div>
 
-        {/* Stats row */}
+        {/* Price & specs */}
         <div className="flex items-center gap-3 text-xs">
           <span className="font-semibold text-foreground">
-            {listing.price_per_night ? `${listing.price_per_night}€` : "—"}<span className="text-muted-foreground font-normal">/{t("page.listing_mgr.night") || "night"}</span>
+            {listing.price_per_night ? `${listing.price_per_night}€` : "—"}<span className="text-muted-foreground font-normal">/{t("page.listing_mgr.night") || "nuit"}</span>
           </span>
           {listing.min_nights && listing.min_nights > 1 && (
             <span className="text-muted-foreground flex items-center gap-0.5">
@@ -343,6 +433,22 @@ function ListingCard({
           )}
         </div>
 
+        {/* ── Smart Analytics Row ── */}
+        <div className="grid grid-cols-3 gap-2 bg-muted/30 rounded-lg p-2">
+          <div className="text-center">
+            <p className="text-xs font-bold text-foreground">{analytics.totalBookings}</p>
+            <p className="text-[9px] text-muted-foreground">Réservations</p>
+          </div>
+          <div className="text-center border-x border-border/50">
+            <p className="text-xs font-bold text-foreground">{analytics.occupancyRate}%</p>
+            <p className="text-[9px] text-muted-foreground">Occupation</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-bold text-foreground">{analytics.totalRevenue > 0 ? `${analytics.totalRevenue.toLocaleString()}€` : "—"}</p>
+            <p className="text-[9px] text-muted-foreground">Revenus</p>
+          </div>
+        </div>
+
         {/* Mini calendar */}
         <div className="border border-border/50 rounded-lg p-2">
           <MiniCalendar bookings={bookings} t={t} />
@@ -352,7 +458,7 @@ function ListingCard({
         {nextBooking ? (
           <div className="bg-accent/5 border border-accent/20 rounded-lg p-2">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">
-              {t("page.seasonal.next_booking") || "Next booking"}
+              {t("page.seasonal.next_booking") || "Prochaine réservation"}
             </p>
             <p className="text-xs font-medium text-foreground">{nextBooking.guest_name}</p>
             <p className="text-[10px] text-muted-foreground">
@@ -362,7 +468,7 @@ function ListingCard({
         ) : (
           <div className="bg-muted/30 rounded-lg p-2">
             <p className="text-[10px] text-muted-foreground italic text-center">
-              {t("page.seasonal.no_upcoming") || "No upcoming bookings"}
+              {t("page.seasonal.no_upcoming") || "Aucune réservation à venir"}
             </p>
           </div>
         )}
@@ -376,10 +482,10 @@ function ListingCard({
             <CalendarDays className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.calendar") || "Calendrier"}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onBookings} className="text-xs h-9 min-h-[36px] w-full justify-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.bookings_btn") || "Bookings"}</span>
+            <BookOpen className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.bookings_btn") || "Réservations"}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.open(publicUrl, "_blank", "noopener,noreferrer")} className="text-xs h-9 min-h-[36px] w-full justify-center gap-1.5">
-            <ExternalLink className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.view_page") || "Voir l'annonce"}</span>
+            <ExternalLink className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t("page.seasonal.view_page") || "Voir"}</span>
           </Button>
         </div>
       </CardContent>
