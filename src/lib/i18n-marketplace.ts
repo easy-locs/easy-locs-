@@ -718,6 +718,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Loja não encontrada", "mp.provider_not_found": "Prestador não encontrado", "mp.review_single": "avaliação",
     "mp.status_new": "Nova solicitação", "mp.status_pending": "Pendente", "mp.status_awaiting_payment": "Aguardando pagamento",
     "mp.status_confirmed": "Confirmado", "mp.status_modified": "Modificado", "mp.status_cancelled": "Cancelado", "mp.status_completed": "Concluído", "mp.status_refunded": "Reembolsado",
+    "payment.method": "Método de pagamento", "payment.card": "Cartão de crédito", "payment.card_desc": "Pagamento seguro com Stripe",
+    "payment.cash": "Dinheiro", "payment.cash_desc": "Pagamento presencial", "payment.bank_transfer": "Transferência bancária", "payment.bank_transfer_desc": "Pagamento via transferência / IBAN",
   },
   nl: {
     "mp.title": "Marktplaats", "mp.browse": "Bladeren", "mp.my_services": "Mijn diensten", "mp.my_bookings": "Mijn boekingen",
