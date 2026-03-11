@@ -28,12 +28,12 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
     if (!result) return;
     const cityName = result.city.name;
     Promise.all([
-      supabase.rpc("get_public_marketplace_services", { _city: cityName }).then(r => r.data || []),
+      supabase.rpc("get_public_marketplace_services", { _city: cityName }),
       supabase.from("public_listings").select("id,title,slug,price_per_night,max_guests,min_nights,property_id")
         .eq("active", true).limit(12),
-    ]).then(([svcs, listings]) => {
-      setLiveServices(svcs.slice(0, 8));
-      setLiveListings(listings || []);
+    ]).then(([svcsRes, listingsRes]) => {
+      setLiveServices((svcsRes.data || []).slice(0, 8));
+      setLiveListings(listingsRes.data || []);
     });
   }, [result]);
 
