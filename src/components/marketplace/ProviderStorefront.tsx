@@ -316,7 +316,7 @@ export default function ProviderStorefront() {
           <Card className="border-dashed">
             <CardContent className="py-16 text-center">
               <Store className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">No services listed yet</p>
+              <p className="text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</p>
             </CardContent>
           </Card>
         ) : (
