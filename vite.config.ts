@@ -29,9 +29,9 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Vendor chunks for better caching
           if (id.includes("node_modules")) {
-            if (id.includes("react-dom")) return "vendor-react";
+            // Keep react + react-dom together to avoid initialization issues
+            if (id.includes("react-dom") || id.includes("/react/")) return "vendor-react";
             if (id.includes("framer-motion")) return "vendor-motion";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
@@ -39,11 +39,8 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("@radix-ui")) return "vendor-radix";
             if (id.includes("jspdf")) return "vendor-pdf";
           }
-          // Landing page sections as a separate chunk
           if (id.includes("/components/landing/")) return "chunk-landing";
-          // SEO pages
           if (id.includes("/pages/seo/")) return "chunk-seo";
-          // Templates (heavy)
           if (id.includes("/lib/templates/")) return "chunk-templates";
         },
       },
