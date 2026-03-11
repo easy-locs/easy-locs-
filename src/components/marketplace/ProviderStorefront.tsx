@@ -9,6 +9,7 @@ import ServiceCard from "./ServiceCard";
 import BookingDialog from "./BookingDialog";
 import TrustMetrics from "./TrustMetrics";
 import ReviewCard from "./ReviewCard";
+import ReviewRatingBreakdown from "./ReviewRatingBreakdown";
 import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "./MarketplaceCategories";
 import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, Store, ChevronLeft, ChevronRight, Shield } from "lucide-react";
