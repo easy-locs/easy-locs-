@@ -13,6 +13,7 @@ interface ExploreRadiusSearchProps {
   geoCountry?: string;
   onLocationChange: (v: string) => void;
   onRadiusChange: (km: number) => void;
+  onCenterChange?: (lat: number, lng: number) => void;
   onApply: () => void;
   onReset: () => void;
   onNearMe: () => void;
