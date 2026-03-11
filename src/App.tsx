@@ -88,6 +88,7 @@ const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
+const CreateListing = lazy(() => import("./pages/CreateListing"));
 const LocalServices = lazy(() => import("./pages/LocalServices"));
 const RentalCatalog = lazy(() => import("./pages/RentalCatalog"));
 const HostCatalog = lazy(() => import("./pages/HostCatalog"));
