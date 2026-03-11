@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
   Search, MapPin, Globe, X, ChevronDown,
-  LocateFixed, Radar, Navigation,
+  LocateFixed, Radar, Navigation, Layers,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
 
 /* ─── Types ─── */
 export interface LocationSuggestion {
@@ -18,6 +19,7 @@ interface ExploreSearchBarProps {
   searchQuery: string;
   locationQuery: string;
   radiusKm: number;
+  activeGroup: string;
   geoCity?: string;
   geoCountry?: string;
   geoLat?: number;
@@ -27,6 +29,7 @@ interface ExploreSearchBarProps {
   onSearchQueryChange: (v: string) => void;
   onLocationQueryChange: (v: string) => void;
   onRadiusKmChange: (km: number) => void;
+  onGroupChange: (g: string) => void;
   onSelectLocation: (s: LocationSuggestion) => void;
   onNearMe: () => void;
   onSearch: () => void;
@@ -55,6 +58,64 @@ function getZoomForRadius(km: number) {
 }
 
 const RADIUS_STEPS = [0, 5, 10, 25, 50, 100, 200];
+
+/* ─── Category quick-select (What dropdown) ─── */
+function CategoryQuickSelect({ active, onChange }: { active: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const activeLabel = active === "all"
+    ? "All categories"
+    : CATEGORY_HIERARCHY.find(g => g.value === active)?.label || "All";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 h-6 text-sm text-foreground font-medium hover:text-accent transition-colors whitespace-nowrap"
+      >
+        <Layers className="h-3.5 w-3.5" />
+        <span className="max-w-[120px] truncate">{activeLabel}</span>
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+            className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1"
+          >
+            <button
+              onClick={() => { onChange("all"); setOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors ${active === "all" ? "text-accent font-semibold" : "text-foreground"}`}
+            >
+              <Globe className="h-4 w-4 shrink-0" />
+              All categories
+            </button>
+            {CATEGORY_HIERARCHY.map(g => (
+              <button
+                key={g.value}
+                onClick={() => { onChange(g.value); setOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors ${active === g.value ? "text-accent font-semibold" : "text-foreground"}`}
+              >
+                <span className="text-base leading-none shrink-0">{g.emoji}</span>
+                {g.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 /* ─── OSM tile grid ─── */
 function MapTiles({ center, zoom }: { center: { lat: number; lng: number }; zoom: number }) {
@@ -104,13 +165,13 @@ function useNominatimSearch(query: string) {
 
 /* ─── Inline map panel (shared between desktop & mobile) ─── */
 function RadiusMapPanel({
-  locationQuery, radiusKm, resultCount,
+  locationQuery, radiusKm,
   geoCity, geoCountry, center,
   nominatimResults, showNominatim,
   onLocationInput, onSelectNominatim,
   onRadiusChange, onNearMe, onApply, onReset,
 }: {
-  locationQuery: string; radiusKm: number; resultCount: number;
+  locationQuery: string; radiusKm: number;
   geoCity?: string; geoCountry?: string;
   center: { lat: number; lng: number };
   nominatimResults: Array<{ display_name: string; lat: string; lon: string }>;
@@ -181,10 +242,9 @@ function RadiusMapPanel({
         </div>
         {radiusKm === 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-            <span className="text-xs text-muted-foreground font-medium px-3 py-1.5 bg-background/80 rounded-full">Worldwide search</span>
+            <span className="text-xs text-muted-foreground font-medium px-3 py-1.5 bg-background/80 rounded-full">Worldwide</span>
           </div>
         )}
-        {/* Location + radius badge */}
         {locationQuery && radiusKm > 0 && (
           <div className="absolute bottom-2 left-2 right-2 flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/90 border border-border text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
@@ -219,7 +279,7 @@ function RadiusMapPanel({
         </Button>
         <Button onClick={onApply} size="sm" className="flex-1 rounded-xl h-10 text-xs font-bold bg-accent hover:bg-accent/90 text-accent-foreground">
           <Search className="h-3.5 w-3.5 mr-1.5" />
-          Apply ({resultCount})
+          Apply
         </Button>
       </div>
     </div>
@@ -227,13 +287,13 @@ function RadiusMapPanel({
 }
 
 /* ═══════════════════════════════════════════════════
-   DESKTOP SEARCH BAR
+   DESKTOP SEARCH BAR — 3-level: What | Where | Radius
    ═══════════════════════════════════════════════════ */
 export function ExploreDesktopSearchBar({
-  searchQuery, locationQuery, radiusKm,
+  searchQuery, locationQuery, radiusKm, activeGroup,
   geoCity, geoCountry, geoLat, geoLng,
   locationSuggestions, resultCount,
-  onSearchQueryChange, onLocationQueryChange, onRadiusKmChange,
+  onSearchQueryChange, onLocationQueryChange, onRadiusKmChange, onGroupChange,
   onSelectLocation, onNearMe, onSearch, onReset,
 }: ExploreSearchBarProps) {
   const [showLocationPanel, setShowLocationPanel] = useState(false);
@@ -244,7 +304,6 @@ export function ExploreDesktopSearchBar({
 
   const nominatimResults = useNominatimSearch(showLocationPanel ? locationQuery : "");
 
-  // Close panel on click outside
   useEffect(() => {
     if (!showLocationPanel) return;
     const handler = (e: MouseEvent) => {
@@ -263,14 +322,17 @@ export function ExploreDesktopSearchBar({
   return (
     <div className="hidden md:flex items-center flex-1 max-w-3xl mx-8 relative">
       <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow">
-        {/* What */}
+        {/* What — category selector + text search */}
         <div className="flex-1 px-5 py-2 border-r border-border">
           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What</label>
-          <Input value={searchQuery} onChange={e => onSearchQueryChange(e.target.value)} onKeyDown={e => e.key === "Enter" && onSearch()}
-            placeholder="Service, property…" className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50" />
+          <div className="flex items-center gap-2">
+            <Input value={searchQuery} onChange={e => onSearchQueryChange(e.target.value)} onKeyDown={e => e.key === "Enter" && onSearch()}
+              placeholder="Service, property…" className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50 flex-1" />
+            <CategoryQuickSelect active={activeGroup} onChange={onGroupChange} />
+          </div>
         </div>
 
-        {/* Where — opens inline location suggestions */}
+        {/* Where — location with suggestions */}
         <div className="flex-1 px-5 py-2 border-r border-border relative">
           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Where</label>
           <div className="flex items-center gap-1">
@@ -319,7 +381,7 @@ export function ExploreDesktopSearchBar({
         </button>
       </div>
 
-      {/* ─── Map+Radius Panel (drops below search bar) ─── */}
+      {/* Map+Radius Panel */}
       <AnimatePresence>
         {showLocationPanel && (
           <motion.div ref={panelRef}
@@ -336,7 +398,7 @@ export function ExploreDesktopSearchBar({
               </button>
             </div>
             <RadiusMapPanel
-              locationQuery={locationQuery} radiusKm={radiusKm} resultCount={resultCount}
+              locationQuery={locationQuery} radiusKm={radiusKm}
               geoCity={geoCity} geoCountry={geoCountry} center={mapCenter}
               nominatimResults={nominatimResults} showNominatim={showNominatim || (nominatimResults.length > 0 && locationQuery.length >= 2)}
               onLocationInput={(v) => { onLocationQueryChange(v); setShowNominatim(true); }}
@@ -360,6 +422,7 @@ interface MobileSearchProps {
   searchQuery: string;
   locationQuery: string;
   radiusKm: number;
+  activeGroup: string;
   geoCity?: string;
   geoCountry?: string;
   geoLat?: number;
@@ -369,6 +432,7 @@ interface MobileSearchProps {
   onSearchQueryChange: (v: string) => void;
   onLocationQueryChange: (v: string) => void;
   onRadiusKmChange: (km: number) => void;
+  onGroupChange: (g: string) => void;
   onNearMe: () => void;
   onSearch: () => void;
   onClearAll: () => void;
@@ -376,9 +440,9 @@ interface MobileSearchProps {
 }
 
 export function ExploreMobileSearch({
-  searchQuery, locationQuery, radiusKm, geoCity, geoCountry, geoLat, geoLng,
+  searchQuery, locationQuery, radiusKm, activeGroup, geoCity, geoCountry, geoLat, geoLng,
   hasFilters, resultCount,
-  onSearchQueryChange, onLocationQueryChange, onRadiusKmChange,
+  onSearchQueryChange, onLocationQueryChange, onRadiusKmChange, onGroupChange,
   onNearMe, onSearch, onClearAll, onClose,
 }: MobileSearchProps) {
   const [mapCenter, setMapCenter] = useState({ lat: geoLat || 48.8566, lng: geoLng || 2.3522 });
@@ -395,15 +459,34 @@ export function ExploreMobileSearch({
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
       className="md:hidden overflow-hidden pb-4">
       <div className="space-y-3">
-        {/* Text search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={searchQuery} onChange={e => onSearchQueryChange(e.target.value)} placeholder="What are you looking for?" className="pl-10 rounded-xl" />
+        {/* What — text search + category */}
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={searchQuery} onChange={e => onSearchQueryChange(e.target.value)} placeholder="What are you looking for?" className="pl-10 rounded-xl" />
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+            <button
+              onClick={() => onGroupChange("all")}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeGroup === "all" ? "bg-foreground text-background" : "bg-card border border-border text-muted-foreground"}`}
+            >
+              All
+            </button>
+            {CATEGORY_HIERARCHY.map(g => (
+              <button
+                key={g.value}
+                onClick={() => onGroupChange(g.value)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${activeGroup === g.value ? "bg-foreground text-background" : "bg-card border border-border text-muted-foreground"}`}
+              >
+                {g.emoji} {g.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Map + radius panel */}
+        {/* Where — map + radius panel */}
         <RadiusMapPanel
-          locationQuery={locationQuery} radiusKm={radiusKm} resultCount={resultCount}
+          locationQuery={locationQuery} radiusKm={radiusKm}
           geoCity={geoCity} geoCountry={geoCountry} center={mapCenter}
           nominatimResults={nominatimResults} showNominatim={showNominatim || (nominatimResults.length > 0 && locationQuery.length >= 2)}
           onLocationInput={(v) => { onLocationQueryChange(v); setShowNominatim(true); }}
