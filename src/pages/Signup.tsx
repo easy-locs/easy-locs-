@@ -81,7 +81,7 @@ const Signup = () => {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.signup.password")}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
                 className={`${inputClass} pr-10`}
                 placeholder={t("auth.signup.password_hint")} />
