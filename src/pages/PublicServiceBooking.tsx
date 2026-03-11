@@ -584,7 +584,7 @@ const PublicServiceBooking = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Phone</label>
+                    <label className="text-xs text-muted-foreground">{t("mp.your_phone") || "Phone"}</label>
                     <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
                   </div>
 
