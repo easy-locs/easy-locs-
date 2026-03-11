@@ -13,6 +13,7 @@ interface ExploreRadiusSearchProps {
   geoCountry?: string;
   onLocationChange: (v: string) => void;
   onRadiusChange: (km: number) => void;
+  onCenterChange?: (lat: number, lng: number) => void;
   onApply: () => void;
   onReset: () => void;
   onNearMe: () => void;
@@ -25,7 +26,7 @@ const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
 export function ExploreRadiusSearch({
   locationQuery, radiusKm, resultCount,
   geoCity, geoCountry,
-  onLocationChange, onRadiusChange,
+  onLocationChange, onRadiusChange, onCenterChange,
   onApply, onReset, onNearMe, onClose,
 }: ExploreRadiusSearchProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,7 @@ export function ExploreRadiusSearch({
     const lng = parseFloat(s.lon);
     setCenter({ lat, lng });
     onLocationChange(s.display_name.split(",")[0]);
+    onCenterChange?.(lat, lng);
     setShowSuggestions(false);
     setSuggestions([]);
   };

@@ -128,7 +128,7 @@ function detectFromGPS(): Promise<Partial<GeoDetection>> {
         });
       },
       () => resolve({}),
-      { timeout: 5000, enableHighAccuracy: false }
+      { timeout: 8000, enableHighAccuracy: true, maximumAge: 60000 }
     );
   });
 }

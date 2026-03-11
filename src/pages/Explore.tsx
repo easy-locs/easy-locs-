@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
@@ -10,6 +10,8 @@ import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { haversineKm } from "@/lib/geo-distance";
+import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 
 // Extracted components
 import { ExploreDesktopSearchBar, ExploreMobileSearch } from "@/components/explore/ExploreSearchBar";
@@ -53,9 +55,12 @@ export default function Explore() {
   const [activeGroup, setActiveGroup] = useState<string>(searchParams.get("group") || "all");
   const [activeSubcategory, setActiveSubcategory] = useState<string>(searchParams.get("sub") || "all");
   const [radiusKm, setRadiusKm] = useState(() => parseInt(searchParams.get("radius") || "0", 10) || 0);
+  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [cityCoordsMap, setCityCoordsMap] = useState<Map<string, CityCoords>>(new Map());
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [geoApplied, setGeoApplied] = useState(false);
+  const geocodingRef = useRef(false);
 
   // Geo-detection passive
   useEffect(() => {
@@ -110,6 +115,30 @@ export default function Explore() {
     return () => { cancelled = true; };
   }, []);
 
+  // Batch geocode unique listing cities for distance filtering
+  useEffect(() => {
+    if (loading || geocodingRef.current) return;
+    geocodingRef.current = true;
+    const uniqueCities: Array<{ city: string; country?: string }> = [];
+    const seen = new Set<string>();
+    for (const list of [realEstate, seasonal, services]) {
+      for (const item of list) {
+        const c = (item as any).city;
+        const co = (item as any).country;
+        if (!c) continue;
+        const k = cityKey(c, co);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        uniqueCities.push({ city: c, country: co });
+      }
+    }
+    if (uniqueCities.length > 0) {
+      batchGeocideCities(uniqueCities, 15).then(map => {
+        setCityCoordsMap(map);
+      });
+    }
+  }, [loading, realEstate, seasonal, services]);
+
   // Aggregate locations
   const allCountries = useMemo(() => {
     const set = new Set<string>();
@@ -150,12 +179,30 @@ export default function Explore() {
     if (radiusKm === 0 && !locationQuery) return true;
     const itemCity = (item.city || "").toLowerCase();
     const itemCountry = (item.country || "").toLowerCase();
+
+    // If we have a search center and radius, use real distance filtering
+    if (searchCenter && radiusKm > 0) {
+      const key = cityKey(item.city || "", item.country || "");
+      const coords = cityCoordsMap.get(key);
+      if (coords) {
+        const dist = haversineKm(searchCenter.lat, searchCenter.lng, coords.lat, coords.lng);
+        return dist <= radiusKm;
+      }
+      // Fallback to string match if coords not yet geocoded
+      if (locationQuery) {
+        const q = locationQuery.toLowerCase();
+        return itemCity.includes(q) || itemCountry.includes(q);
+      }
+      return true;
+    }
+
+    // String-based fallback when no coordinates
     if (locationQuery) {
       const q = locationQuery.toLowerCase();
       return itemCity.includes(q) || itemCountry.includes(q);
     }
     return true;
-  }, [locationQuery, radiusKm]);
+  }, [locationQuery, radiusKm, searchCenter, cityCoordsMap]);
 
   const matchCategory = useCallback((item: any) => {
     if (activeGroup === "all" && activeSubcategory === "all") return true;
@@ -206,9 +253,21 @@ export default function Explore() {
     if (suggestion.type === "geo" && geo.detection?.city) {
       setLocationQuery(geo.detection.city);
       setRadiusKm(25);
+      // Use GPS/IP coordinates as search center
+      if (geo.detection.lat && geo.detection.lng) {
+        setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
+      }
     } else {
       setLocationQuery(suggestion.label);
-      if (suggestion.type === "city") setRadiusKm(25);
+      if (suggestion.type === "city") {
+        setRadiusKm(25);
+        // Geocode the selected city to get coordinates
+        import("@/lib/city-geocoder").then(({ getCityCoords }) => {
+          getCityCoords(suggestion.label).then(coords => {
+            if (coords) setSearchCenter(coords);
+          });
+        });
+      }
     }
     setGeoApplied(true);
   };
@@ -217,6 +276,9 @@ export default function Explore() {
     if (geo.detection?.city) {
       setLocationQuery(geo.detection.city);
       setRadiusKm(25);
+      if (geo.detection.lat && geo.detection.lng) {
+        setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
+      }
     } else if (geo.country) {
       setLocationQuery(geo.country);
       setRadiusKm(100);
@@ -235,7 +297,7 @@ export default function Explore() {
 
   const clearAll = () => {
     setSearchQuery(""); setLocationQuery(""); setActiveGroup("all"); setActiveSubcategory("all");
-    setRadiusKm(0); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
+    setRadiusKm(0); setSearchCenter(null); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
     setGeoApplied(false);
   };
 
