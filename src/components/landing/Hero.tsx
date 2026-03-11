@@ -1,26 +1,19 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Globe, Rocket, MapPin, Shield, Zap, Building2, Star, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Globe, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import type { Transition } from "framer-motion";
 
 const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
-  y: [0, -6, 0],
+  y: [0, -5, 0],
   transition: { duration: 5, repeat: Infinity, ease: "easeInOut" as const, delay },
 });
 
-/** SEO city showcase — programmatic internal links */
-const TOP_DESTINATIONS = [
-  { name: "Dubai", slug: "dubai", flag: "🇦🇪" },
-  { name: "Paris", slug: "paris", flag: "🇫🇷" },
-  { name: "Barcelona", slug: "barcelona", flag: "🇪🇸" },
-  { name: "Marrakech", slug: "marrakech", flag: "🇲🇦" },
-  { name: "Bali", slug: "bali", flag: "🇮🇩" },
-  { name: "Lisbon", slug: "lisbon", flag: "🇵🇹" },
-  { name: "Bangkok", slug: "bangkok", flag: "🇹🇭" },
-  { name: "London", slug: "london", flag: "🇬🇧" },
-  { name: "Tokyo", slug: "tokyo", flag: "🇯🇵" },
-  { name: "Istanbul", slug: "istanbul", flag: "🇹🇷" },
+const HERO_STATS = [
+  { value: "110+", label: "Countries" },
+  { value: "0%", label: "Commission" },
+  { value: "Multi-City", label: "Operations" },
+  { value: "24/7", label: "Remote" },
 ];
 
 const Hero = () => {
@@ -29,18 +22,14 @@ const Hero = () => {
   return (
     <section
       aria-label="Hero"
-      className="relative min-h-[85vh] sm:min-h-[96vh] flex items-center overflow-hidden pt-14 sm:pt-16"
+      className="relative min-h-[80vh] sm:min-h-[92vh] flex items-center overflow-hidden pt-14 sm:pt-16"
       style={{ background: "linear-gradient(145deg, hsl(222 50% 6%) 0%, hsl(220 45% 12%) 35%, hsl(222 42% 16%) 65%, hsl(220 38% 10%) 100%)" }}
     >
-      {/* ─── Background FX ─── */}
+      {/* Background FX */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-[20%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full"
           style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12) 0%, transparent 55%)" }}
-        />
-        <div
-          className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] rounded-full"
-          style={{ background: "radial-gradient(circle, hsl(210 60% 40% / 0.08) 0%, transparent 60%)" }}
         />
         <motion.div
           className="absolute top-[8%] right-[12%] w-72 h-72 rounded-full blur-[140px]"
@@ -57,42 +46,41 @@ const Hero = () => {
         />
       </div>
 
-      <div className="container relative z-10 py-8 sm:py-28 px-4">
-        <div className="max-w-5xl mx-auto text-center space-y-5 sm:space-y-10">
+      <div className="container relative z-10 py-10 sm:py-24 px-4">
+        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
 
-          {/* ─── Badge ─── */}
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
             className="flex justify-center"
           >
-            <motion.span
-              className="inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs font-semibold border backdrop-blur-md"
+            <span
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] sm:text-xs font-semibold border backdrop-blur-md"
               style={{
                 background: "hsl(var(--accent) / 0.1)",
                 borderColor: "hsl(var(--accent) / 0.25)",
                 color: "hsl(var(--gold-light))",
               }}
-              whileHover={{ scale: 1.04 }}
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--success))" }} />
               </span>
               {t("landing.hero.badge") || "Run Your Business From Anywhere — 110+ Countries"}
-            </motion.span>
+            </span>
           </motion.div>
 
-          {/* ─── Headline ─── */}
+          {/* Headline */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="space-y-5"
+            className="space-y-4"
           >
             <h1
-              className="text-[1.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.15]"
+              className="text-[1.6rem] leading-[1.2] sm:text-5xl lg:text-6xl font-extrabold tracking-tight sm:leading-[1.12]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
             >
               {t("landing.hero.title_1") || "Build Your Property &"}
@@ -117,19 +105,19 @@ const Hero = () => {
               </span>
             </h1>
             <p
-              className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
+              className="text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed"
               style={{ color: "hsl(220 15% 75%)" }}
             >
               {t("landing.hero.subtitle") || "One platform to manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely."}
             </p>
           </motion.div>
 
-          {/* ─── CTAs ─── */}
+          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 px-2 sm:px-0"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
@@ -165,101 +153,31 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* ─── Trust stats ─── */}
+          {/* Trust stats — compact row */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.7 }}
-            className="pt-6"
-          >
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2.5 sm:gap-4">
-              {[
-                { icon: Globe, value: "110+", label: t("landing.hero.stat_countries") || "Countries" },
-                { icon: Shield, value: t("landing.hero.stat_remote_val") || "Secure", label: t("landing.hero.stat_remote") || "Management" },
-                { icon: Rocket, value: t("landing.hero.stat_multi_val") || "Multi-City", label: t("landing.hero.stat_multi") || "Operations" },
-                { icon: MapPin, value: "24/7", label: "Remote" },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.label}
-                  className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl backdrop-blur-sm"
-                  style={{
-                    background: "hsl(220 20% 90% / 0.06)",
-                    border: "1px solid hsl(220 20% 90% / 0.08)",
-                  }}
-                  animate={floatAnim(i * 0.6)}
-                >
-                  <div
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: "hsl(var(--accent) / 0.15)" }}
-                  >
-                    <s.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: "hsl(var(--accent))" }} />
-                  </div>
-                  <div className="text-left min-w-0">
-                    <div className="text-[11px] sm:text-xs font-extrabold leading-none truncate" style={{ color: "hsl(40 50% 95%)" }}>
-                      {s.value}
-                    </div>
-                    <div className="text-[9px] font-medium mt-0.5 leading-none truncate" style={{ color: "hsl(220 15% 60%)" }}>
-                      {s.label}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* ─── SEO: Top Destinations ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.6 }}
             className="pt-4"
           >
-            <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-3" style={{ color: "hsl(220 15% 50%)" }}>
-              {t("landing.hero.top_destinations") || "Top Destinations"}
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-              {TOP_DESTINATIONS.map((dest, i) => (
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+              {HERO_STATS.map((s, i) => (
                 <motion.div
-                  key={dest.slug}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.1 + i * 0.04, duration: 0.3 }}
+                  key={s.label}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                  style={{
+                    background: "hsl(220 20% 90% / 0.05)",
+                    border: "1px solid hsl(220 20% 90% / 0.08)",
+                  }}
+                  animate={floatAnim(i * 0.5)}
                 >
-                  <Link
-                    to={`/city/${dest.slug}`}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 min-h-[40px] whitespace-nowrap"
-                    style={{
-                      background: "hsl(220 20% 90% / 0.07)",
-                      border: "1px solid hsl(220 20% 90% / 0.1)",
-                      color: "hsl(220 15% 75%)",
-                    }}
-                  >
-                    <span>{dest.flag}</span>
-                    <span>{dest.name}</span>
-                  </Link>
+                  <span className="text-xs sm:text-sm font-extrabold" style={{ color: "hsl(var(--accent))" }}>
+                    {s.value}
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-medium" style={{ color: "hsl(220 15% 60%)" }}>
+                    {s.label}
+                  </span>
                 </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* ─── SEO: Value Propositions Row ─── */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.6 }}
-            className="pt-2"
-          >
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-[11px] font-medium max-w-xl mx-auto" style={{ color: "hsl(220 15% 55%)" }}>
-              {[
-                { icon: Building2, text: t("landing.hero.vp_properties") || "Property Management", to: "/property-management" },
-                { icon: Star, text: t("landing.hero.vp_bookings") || "Direct Bookings", to: "/explore" },
-                { icon: Users, text: t("landing.hero.vp_marketplace") || "Service Marketplace", to: "/marketplace-services" },
-                { icon: TrendingUp, text: t("landing.hero.vp_analytics") || "Revenue Analytics", to: "/signup" },
-              ].map((vp) => (
-                <Link key={vp.text} to={vp.to} className="inline-flex items-center gap-1.5 hover:text-accent transition-colors whitespace-nowrap">
-                  <vp.icon className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-                  <span>{vp.text}</span>
-                </Link>
               ))}
             </div>
           </motion.div>
@@ -267,7 +185,7 @@ const Hero = () => {
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
