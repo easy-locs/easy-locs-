@@ -81,8 +81,8 @@ const Hero = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 py-20 sm:py-28">
-        <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
+      <div className="container relative z-10 py-12 sm:py-28">
+        <div className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-10">
 
           {/* ─── Badge ─── */}
           <motion.div
