@@ -210,12 +210,13 @@ export default function Explore() {
   const handleSelectLocation = (suggestion: { label: string; type: string }) => {
     if (suggestion.type === "geo" && geo.detection?.city) {
       setLocationQuery(geo.detection.city);
-      if (radius === "worldwide") setRadius("city");
+      setRadius("city");
     } else {
       setLocationQuery(suggestion.label);
       if (suggestion.type === "country") setRadius("country");
       else if (suggestion.type === "city") setRadius("city");
     }
+    setGeoApplied(true); // prevent auto-override
   };
 
   const handleNearMe = () => {
