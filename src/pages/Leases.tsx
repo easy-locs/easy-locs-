@@ -260,7 +260,7 @@ const Leases = () => {
             </div>
 
             {/* KPI */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-4 sm:mb-6 lease-kpi-grid">
               {[
                 { label: t("page.leases.active_leases"), value: activeCount, path: "/dashboard/rental?tab=tenants" },
                 { label: t("page.leases.terminated_leases"), value: terminatedCount, path: "/dashboard/rental?tab=tenants" },

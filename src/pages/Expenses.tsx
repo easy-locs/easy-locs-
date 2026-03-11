@@ -176,9 +176,9 @@ const Expenses = () => {
 
         {/* Add form */}
         {showForm && (
-          <div className="ui-card mb-6 space-y-4">
+          <div className="ui-card mb-4 sm:mb-6 space-y-3 sm:space-y-4 expense-form">
             <h3 className="font-semibold text-foreground">{t("page.expenses.new")}</h3>
-            <div className="form-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="form-group"><label className="form-label">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.amount")} *</label><input type="number" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="form-select">{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
@@ -186,7 +186,7 @@ const Expenses = () => {
               <div className="form-group"><label className="form-label">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="form-input" /></div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
               <button onClick={() => setShowForm(false)} className="btn-secondary">{t("page.common.cancel")}</button>
             </div>
