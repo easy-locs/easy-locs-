@@ -74,8 +74,26 @@ function setFont(doc: jsPDF, style: "normal" | "bold" | "italic", size: number, 
   doc.setTextColor(color[0], color[1], color[2]);
 }
 
+function addContinuationHeader(doc: jsPDF) {
+  doc.setFillColor(...COLOR_GOLD);
+  doc.rect(0, 0, PAGE_WIDTH, 3, "F");
+  doc.setFillColor(...COLOR_PRIMARY);
+  doc.rect(0, 3, PAGE_WIDTH, 1.5, "F");
+  setFont(doc, "bold", 8, COLOR_PRIMARY);
+  doc.text("EASY-LOCS", MARGIN, 12);
+  setFont(doc, "normal", 4, COLOR_PRIMARY);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 9.5);
+  doc.setDrawColor(...COLOR_GOLD);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN, 15, PAGE_WIDTH - MARGIN, 15);
+}
+
 function checkPageBreak(doc: jsPDF, y: number, needed: number = 30): number {
-  if (y + needed > 268) { doc.addPage(); return 25; }
+  if (y + needed > 268) {
+    doc.addPage();
+    addContinuationHeader(doc);
+    return 22;
+  }
   return y;
 }
 
