@@ -69,7 +69,7 @@ function AnimatedValue({ value, className }: { value: string; className?: string
       setDisplayed(value);
     }
 
-    return () => controls.stop();
+    return undefined;
   }, [value, isNumeric]);
 
   return <span className={className}>{displayed}</span>;
