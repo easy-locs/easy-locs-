@@ -231,7 +231,7 @@ export default function PublicRealEstateListing() {
               {/* Desktop grid */}
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 p-2 max-h-[520px]">
                 <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden cursor-pointer group" onClick={() => setFullscreenGallery(true)}>
-                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   {/* Desktop type badge on main photo */}
                   <Badge className={`absolute top-4 left-4 ${tc.bg} ${tc.color} border ${tc.border} text-sm px-4 py-1.5 font-semibold backdrop-blur-md`}>
