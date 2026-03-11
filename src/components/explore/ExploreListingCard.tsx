@@ -1,7 +1,9 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, ArrowRight, Eye, Users, Moon, CheckCircle, Bed, Bath, Maximize } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 import { useI18n } from "@/lib/i18n";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
