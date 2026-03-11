@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { ArrowLeft, AlertTriangle, Building2 } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Building2, FileText, Scale } from "lucide-react";
 import type { Json } from "@/integrations/supabase/types";
 import type { DocumentTemplate } from "@/lib/templates/types";
 import { validateDocument } from "@/lib/templates/validation";
