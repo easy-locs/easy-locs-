@@ -58,7 +58,7 @@ const SocialProofStrip = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] rounded-full bg-accent/[0.02] blur-[100px] pointer-events-none" />
 
       <div className="container max-w-5xl relative z-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6">
           {stats.map((s, i) => (
             <motion.div
               key={s.labelKey}
