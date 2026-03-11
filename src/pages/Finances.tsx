@@ -364,7 +364,7 @@ const Finances = () => {
         </div>
 
         {/* KPI Cards */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
           {[
             { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-success" },
             { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },

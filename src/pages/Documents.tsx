@@ -139,7 +139,7 @@ const Documents = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {templates.map((t) => (
                       <button key={t.id} onClick={() => setSelectedTemplate(t)}
-                        className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
+                        className="doc-template-card flex items-start gap-3 sm:gap-4 bg-card rounded-xl p-3.5 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
                         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
                           <Icon className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
                         </div>
