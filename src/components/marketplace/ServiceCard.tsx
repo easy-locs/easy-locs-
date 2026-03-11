@@ -155,7 +155,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             )}
             {completedJobs > 0 && (
               <span className="flex items-center gap-1">
-                <Briefcase className="h-3 w-3 text-accent/70" /> {completedJobs} jobs
+                <Briefcase className="h-3 w-3 text-accent/70" /> {completedJobs} {t("mp.jobs") || "jobs"}
               </span>
             )}
             {responseRate > 0 && (
