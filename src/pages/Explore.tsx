@@ -6,7 +6,7 @@ import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
+import { Search, Globe, ChevronDown, LocateFixed, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { RADIUS_OPTIONS, type RadiusValue } from "@/lib/geo-distance";
@@ -19,6 +19,7 @@ import { ExploreListingCard } from "@/components/explore/ExploreListingCard";
 import { ExploreFiltersStrip } from "@/components/explore/ExploreFiltersStrip";
 import { ExploreSEOFooter } from "@/components/explore/ExploreSEOFooter";
 import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
+import { ExploreRadiusSearch } from "@/components/explore/ExploreRadiusSearch";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -56,6 +57,8 @@ export default function Explore() {
   const [radius, setRadius] = useState<RadiusValue>((searchParams.get("radius") as RadiusValue) || "worldwide");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showRadiusSearch, setShowRadiusSearch] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(0);
   const [geoApplied, setGeoApplied] = useState(false);
 
   // Keep the public explore page global by default.
@@ -306,6 +309,16 @@ export default function Explore() {
 
             <div className="flex items-center gap-2">
               <ThemeSwitcher />
+              {/* Radius search toggle */}
+              <button
+                onClick={() => setShowRadiusSearch(v => !v)}
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full border text-xs font-medium transition-all ${
+                  showRadiusSearch ? "border-accent bg-accent/10 text-accent" : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                Map
+              </button>
               <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Log in</Link>
               <Link to="/signup" className="text-sm font-semibold px-4 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity">Sign up</Link>
             </div>
@@ -342,7 +355,37 @@ export default function Explore() {
       </header>
 
       {/* ═══════ RESULTS ═══════ */}
-      <main className="max-w-[1400px] mx-auto px-4 py-6">
+      <main className="max-w-[1400px] mx-auto px-4 py-6 flex gap-6">
+        {/* Radius search sidebar */}
+        <AnimatePresence>
+          {showRadiusSearch && (
+            <div className="hidden sm:block shrink-0">
+              <ExploreRadiusSearch
+                locationQuery={locationQuery}
+                radiusKm={radiusKm}
+                resultCount={allItems.length}
+                geoCity={geo.detection?.city}
+                geoCountry={geo.country}
+                onLocationChange={setLocationQuery}
+                onRadiusChange={(km) => {
+                  setRadiusKm(km);
+                  if (km === 0) setRadius("worldwide");
+                  else if (km <= 5) setRadius("5");
+                  else if (km <= 10) setRadius("10");
+                  else if (km <= 25) setRadius("25");
+                  else if (km <= 50) setRadius("50");
+                  else setRadius("country");
+                }}
+                onApply={handleSearch}
+                onReset={() => { clearAll(); setRadiusKm(0); }}
+                onNearMe={handleNearMe}
+                onClose={() => setShowRadiusSearch(false)}
+              />
+            </div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex-1 min-w-0">
         {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
@@ -428,6 +471,7 @@ export default function Explore() {
             )}
           </>
         )}
+        </div>{/* end flex-1 */}
       </main>
 
       <ExploreSEOFooter />

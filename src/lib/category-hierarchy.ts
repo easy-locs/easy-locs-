@@ -19,24 +19,38 @@ export interface CategoryGroup {
 export const CATEGORY_HIERARCHY: CategoryGroup[] = [
   {
     value: "property",
-    label: "Property & Home",
+    label: "Real Estate",
     emoji: "🏠",
     subcategories: [
       { value: "seasonal", label: "Vacation Rentals", emoji: "🏖️" },
       { value: "real-estate", label: "Real Estate", emoji: "🏡" },
+      { value: "property_management", label: "Property Management", emoji: "🏢" },
+      { value: "real_estate_agent", label: "Real Estate Agents", emoji: "🤝" },
+      { value: "property_photo", label: "Property Photography", emoji: "📸" },
+    ],
+  },
+  {
+    value: "home_services",
+    label: "Home Services",
+    emoji: "🔧",
+    subcategories: [
       { value: "cleaning", label: "Cleaning", emoji: "🧹" },
       { value: "maintenance", label: "Maintenance", emoji: "🔧" },
+      { value: "plumbing", label: "Plumbing", emoji: "🚿" },
+      { value: "electrical", label: "Electrical", emoji: "⚡" },
       { value: "construction", label: "Renovation", emoji: "🏗️" },
     ],
   },
   {
-    value: "transport",
-    label: "Transport",
-    emoji: "🚗",
+    value: "concierge",
+    label: "Concierge",
+    emoji: "🔑",
     subcategories: [
-      { value: "transport", label: "Transport", emoji: "🚐" },
-      { value: "car_rental", label: "Car Rental", emoji: "🚗" },
+      { value: "private_driver", label: "Private Driver", emoji: "🚘" },
       { value: "airport_transfer", label: "Airport Transfer", emoji: "✈️" },
+      { value: "personal_assistant", label: "Personal Assistant", emoji: "👤" },
+      { value: "car_rental", label: "Car Rental", emoji: "🚗" },
+      { value: "transport", label: "Transport", emoji: "🚐" },
     ],
   },
   {

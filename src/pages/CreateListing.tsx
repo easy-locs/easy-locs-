@@ -66,6 +66,7 @@ const COMMUNICATION_OPTIONS = [
   { value: "internal", label: "Internal Messaging", icon: "💬" },
   { value: "email", label: "Email", icon: "📧" },
   { value: "whatsapp", label: "WhatsApp", icon: "📱" },
+  { value: "telegram", label: "Telegram", icon: "✈️" },
 ];
 
 /* ─── Types ─── */
@@ -84,6 +85,7 @@ interface ListingForm {
   quantity: number;
   contact_email: string;
   contact_whatsapp: string;
+  contact_telegram: string;
   verification_types: string[];
   payment_methods: string[];
   communication_channels: string[];
@@ -108,7 +110,7 @@ const defaultForm: ListingForm = {
   country: "FR", city: "", location: "", description: "",
   price: 0, currency: "EUR", price_type: "fixed",
   deposit_amount: 0, quantity: 1,
-  contact_email: "", contact_whatsapp: "",
+  contact_email: "", contact_whatsapp: "", contact_telegram: "",
   verification_types: [], payment_methods: ["on_site"],
   communication_channels: ["internal"],
   surface_sqm: 0, rooms: 0, bedrooms: 0, bathrooms: 0,
@@ -418,6 +420,9 @@ const CreateListing = () => {
             )}
             {form.communication_channels.includes("whatsapp") && (
               <div><Label className="text-xs">WhatsApp number</Label><Input value={form.contact_whatsapp} onChange={e => set({ contact_whatsapp: e.target.value })} placeholder="+33 6 12 34 56 78" /></div>
+            )}
+            {form.communication_channels.includes("telegram") && (
+              <div><Label className="text-xs">Telegram username</Label><Input value={form.contact_telegram} onChange={e => set({ contact_telegram: e.target.value })} placeholder="@username" /></div>
             )}
           </Section>
 
