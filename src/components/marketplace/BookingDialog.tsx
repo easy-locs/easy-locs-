@@ -53,6 +53,7 @@ function deriveBookingRules(service: any): ActivityBookingRules {
 }
 
 export default function BookingDialog({ open, onOpenChange, service, provider, onSubmit, isPending }: Props) {
+  const { t } = useI18n();
   const config = useMemo(() => getCategoryBookingConfig(service?.category || "other"), [service?.category]);
   const isRange = config.calendarMode === "range";
   const rules = useMemo(() => deriveBookingRules(service), [service]);
