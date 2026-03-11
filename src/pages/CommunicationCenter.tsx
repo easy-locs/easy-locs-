@@ -988,18 +988,18 @@ const CommunicationCenter = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
+      <div className="h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
         {/* ═══ Header bar — dynamic KPIs ═══ */}
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
-                <MessageCircle className="h-4 w-4 text-accent-foreground" />
+            <h1 className="text-base sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
+                <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-foreground" />
               </div>
-              Communication
+              {t("page.communication.title") || "Communication"}
             </h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5 ml-10">
-              Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 ms-9 sm:ms-10 truncate">
+              {t("page.communication.subtitle") || "Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate"}
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
