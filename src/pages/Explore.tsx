@@ -261,7 +261,7 @@ export default function Explore() {
 
             {/* Desktop search bar — Airbnb style */}
             <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
-              <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center w-full bg-card border border-border rounded-full shadow-sm hover:shadow-md transition-shadow relative">
                 <div className="flex-1 px-5 py-2 border-r border-border">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What</label>
                   <Input
@@ -272,15 +272,57 @@ export default function Explore() {
                     className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
                   />
                 </div>
-                <div className="flex-1 px-5 py-2">
+                <div className="flex-1 px-5 py-2 relative" ref={locationRef}>
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Where</label>
-                  <Input
-                    value={locationQuery}
-                    onChange={e => setLocationQuery(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    placeholder="City, country..."
-                    className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={locationQuery}
+                      onChange={e => { setLocationQuery(e.target.value); setShowLocationSuggestions(true); }}
+                      onFocus={() => setShowLocationSuggestions(true)}
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                      placeholder={geo.detection?.city ? `${geo.detection.city}, ${geo.country.toUpperCase()}` : "City, country..."}
+                      className="border-0 p-0 h-6 text-sm bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50 flex-1"
+                    />
+                    {geo.detection?.city && !locationQuery && (
+                      <button
+                        onClick={handleNearMe}
+                        className="shrink-0 p-1 rounded-full hover:bg-muted transition-colors"
+                        title="Use my location"
+                      >
+                        <LocateFixed className="h-3.5 w-3.5 text-accent" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Location suggestions dropdown */}
+                  <AnimatePresence>
+                    {showLocationSuggestions && locationSuggestions.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden"
+                      >
+                        {locationSuggestions.map((s, i) => (
+                          <button
+                            key={`${s.type}-${s.label}-${i}`}
+                            onClick={() => handleSelectLocation(s)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0"
+                          >
+                            {s.type === "geo" ? (
+                              <LocateFixed className="h-4 w-4 text-accent shrink-0" />
+                            ) : s.type === "city" ? (
+                              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                            ) : (
+                              <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="truncate text-foreground">{s.label}</span>
+                            <span className="ml-auto text-[10px] text-muted-foreground uppercase">{s.type === "geo" ? "Near you" : s.type}</span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <button
                   onClick={handleSearch}
