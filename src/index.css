@@ -1268,6 +1268,130 @@ html {
   }
 
   /* ── Accordion items — roomier touch targets ── */
+  [data-radix-accordion-trigger] {
+    min-height: 44px;
+  }
+
+  /* ═══ LAYER: Communication Center mobile ═══ */
+  /* Thread list takes full height, chat area is overlay on mobile */
+  .comm-thread-list {
+    min-height: 0;
+    flex: 1;
+  }
+
+  /* ═══ LAYER: Intervention cards — action buttons visible on mobile ═══ */
+  .group .opacity-0.group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+
+  /* ═══ LAYER: Finances — Tabs scroll horizontally ═══ */
+  .finances-tabs [role="tablist"] {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 0.125rem;
+  }
+
+  /* ═══ LAYER: Lease KPI grid — 2 col on mobile ═══ */
+  .lease-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ═══ LAYER: Document template cards — tighter padding ═══ */
+  .doc-template-card {
+    padding: 0.75rem !important;
+  }
+  .doc-template-card .w-10 {
+    width: 2rem;
+    height: 2rem;
+  }
+  .doc-template-card .w-10 svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* ═══ LAYER: Settings — sections breathe ═══ */
+  .settings-section {
+    margin-bottom: 1rem;
+  }
+
+  /* ═══ LAYER: Expense form — inline fields on mobile ═══ */
+  .expense-form .form-grid {
+    gap: 0.5rem !important;
+  }
+
+  /* ═══ LAYER: Empty states — smaller icon, tighter padding ═══ */
+  .empty-state {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  .empty-state-icon,
+  .empty-state .h-12 {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  /* ═══ LAYER: Notification panel — bottom sheet with safe area ═══ */
+  #notification-panel {
+    max-height: 80dvh !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  /* ═══ LAYER: Stripe connect card — stack layout ═══ */
+  .stripe-connect-card .flex.items-start {
+    flex-direction: column;
+  }
+  .stripe-connect-card .flex.items-start .p-3 {
+    align-self: flex-start;
+  }
+
+  /* ═══ LAYER: Charts — reduce height on mobile ═══ */
+  .recharts-responsive-container,
+  [class*="h-[300px]"] {
+    height: 220px !important;
+  }
+
+  /* ═══ LAYER: Select trigger text — prevent truncation ═══ */
+  [data-radix-select-trigger] span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ═══ LAYER: Dialog footer — sticky bottom ═══ */
+  [role="dialog"] .flex.justify-end {
+    position: sticky;
+    bottom: 0;
+    background: hsl(var(--card));
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    z-index: 10;
+  }
+
+  /* ═══ LAYER: Intervention dialog — grid cols fix ═══ */
+  [role="dialog"] .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  [role="dialog"] .grid.grid-cols-1.sm\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ══════ iPhone SE / very narrow (< 375px) — extra tightening ══════ */
+@media (max-width: 374px) {
+  /* KPI stat values — prevent overflow */
+  .stat-card .text-2xl,
+  .stat-card .text-xl {
+    font-size: 1.125rem !important;
+  }
+  /* Thread cards — smaller avatars */
+  .comm-thread-avatar {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
   [data-state="open"] > button,
   [data-state="closed"] > button {
     min-height: 48px;

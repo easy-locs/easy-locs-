@@ -249,18 +249,18 @@ const Finances = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.finances.title")}>
-      <div className="max-w-5xl mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-accent/10"><Wallet className="h-5 w-5 text-accent" /></div>
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10 shrink-0"><Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-accent" /></div>
               {t("page.finances.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.finances.subtitle")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("page.finances.subtitle")}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
             <select value={propertyFilter} onChange={e => setPropertyFilter(e.target.value)}
-              className="form-select w-auto text-sm">
+              className="form-select w-auto text-sm max-w-[180px]">
               <option value="">{t("page.finances.all_properties")}</option>
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
@@ -287,19 +287,19 @@ const Finances = () => {
                 )}
                 className="btn-secondary btn-sm"
               >
-                <Download className="h-4 w-4" /> {t("page.common.export_csv")}
+                <Download className="h-4 w-4" /> <span className="hidden sm:inline">{t("page.common.export_csv")}</span>
               </button>
             )}
           </div>
         </motion.div>
 
         {/* Stripe Connect Card */}
-        <div className={`ui-card ${
+        <div className={`ui-card stripe-connect-card ${
           connectStatus?.onboarding_complete 
             ? "border-success/30" 
             : "border-accent/30"
         }`}>
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
             <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-success/10" : "bg-accent/10"}`}>
               <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-success" : "text-accent"}`} />
             </div>
@@ -364,7 +364,7 @@ const Finances = () => {
         </div>
 
         {/* KPI Cards */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
           {[
             { icon: TrendingUp, label: t("page.finances.collected_month"), value: dataLoading ? "..." : fmt(kpis.revenueThisMonth), sub: `${t("page.finances.on")} ${fmt(kpis.expectedThisMonth)}`, path: "/dashboard/rental?tab=payments", iconClassName: "text-success" },
             { icon: TrendingDown, label: t("page.finances.unpaid"), value: dataLoading ? "..." : fmt(kpis.totalUnpaid), sub: `${filteredRentCalls.filter(r => !r.paid).length} ${t("page.finances.call_count")}`, path: "/dashboard/dunning", iconClassName: "text-destructive" },

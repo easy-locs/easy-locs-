@@ -988,18 +988,18 @@ const CommunicationCenter = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
+      <div className="h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
         {/* ═══ Header bar — dynamic KPIs ═══ */}
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
-                <MessageCircle className="h-4 w-4 text-accent-foreground" />
+            <h1 className="text-base sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
+                <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-foreground" />
               </div>
-              Communication
+              {t("page.communication.title") || "Communication"}
             </h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5 ml-10">
-              Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 ms-9 sm:ms-10 truncate">
+              {t("page.communication.subtitle") || "Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate"}
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
@@ -1025,20 +1025,20 @@ const CommunicationCenter = () => {
 
         <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
           {/* ────── Thread list ────── */}
-          <div className={`w-full md:w-80 lg:w-96 border-r border-border/50 flex flex-col ${selectedThread ? "hidden md:flex" : "flex"}`}>
-            <div className="p-3 border-b border-border/50 space-y-2">
+          <div className={`w-full md:w-80 lg:w-96 border-e border-border/50 flex flex-col comm-thread-list ${selectedThread ? "hidden md:flex" : "flex"}`}>
+            <div className="p-2.5 sm:p-3 border-b border-border/50 space-y-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search conversations..." className="pl-9 h-9 text-sm" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t("page.communication.search") || "Search conversations..."} className="ps-9 h-9 text-sm" />
               </div>
               <div className="flex gap-1 flex-wrap">
                 {[
-                  { value: "all", label: "All", count: threads.length },
-                  { value: "tenant", label: "🏠 Long-term", count: threads.filter(t => t.type === "tenant").length },
-                  { value: "lead", label: "🏡 Leads", count: threads.filter(t => t.type === "lead").length },
-                  { value: "seasonal", label: "🏖️ Seasonal", count: threads.filter(t => t.bookingType === "seasonal").length },
-                  { value: "marketplace", label: "🛍️ Market", count: threads.filter(t => t.bookingType === "marketplace").length },
-                  { value: "concierge", label: "🎯 Concierge", count: threads.filter(t => t.bookingType === "concierge").length },
+                  { value: "all", label: t("page.communication.filter_all") || "All", count: threads.length },
+                  { value: "tenant", label: "🏠 " + (t("page.communication.filter_longterm") || "Long-term"), count: threads.filter(t => t.type === "tenant").length },
+                  { value: "lead", label: "🏡 " + (t("page.communication.filter_leads") || "Leads"), count: threads.filter(t => t.type === "lead").length },
+                  { value: "seasonal", label: "🏖️ " + (t("page.communication.filter_seasonal") || "Seasonal"), count: threads.filter(t => t.bookingType === "seasonal").length },
+                  { value: "marketplace", label: "🛍️ " + (t("page.communication.filter_market") || "Market"), count: threads.filter(t => t.bookingType === "marketplace").length },
+                  { value: "concierge", label: "🎯 " + (t("page.communication.filter_concierge") || "Concierge"), count: threads.filter(t => t.bookingType === "concierge").length },
                 ].map(f => (
                   <Button
                     key={f.value}
@@ -1054,12 +1054,12 @@ const CommunicationCenter = () => {
               </div>
               {propertyOptions.length > 1 && (
                 <Select value={filterProperty} onValueChange={setFilterProperty}>
-                  <SelectTrigger className="h-7 text-xs">
-                    <MapPin className="h-3 w-3 mr-1 text-muted-foreground" />
-                    <span className="truncate">{filterProperty === "all" ? "All properties" : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
+                  <SelectTrigger className="h-8 text-xs">
+                    <MapPin className="h-3 w-3 me-1 text-muted-foreground" />
+                    <span className="truncate">{filterProperty === "all" ? (t("page.communication.all_properties") || "All properties") : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All properties</SelectItem>
+                    <SelectItem value="all">{t("page.communication.all_properties") || "All properties"}</SelectItem>
                     {propertyOptions.map(p => (
                       <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
                     ))}

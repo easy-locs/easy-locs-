@@ -223,15 +223,15 @@ const Leases = () => {
         </motion.div>
 
         {/* Main toggle */}
-        <div className="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1">
+        <div className="flex gap-1 mb-4 sm:mb-6 bg-muted/50 rounded-lg p-1 overflow-x-auto scrollbar-thin">
           {([
             { key: "leases" as const, icon: Users, label: `${t("page.leases.leases_tab")} (${tenants.filter(t => t.property_id).length})` },
             { key: "create" as const, icon: Plus, label: t("page.leases.create_tab") },
             { key: "diagnostics" as const, icon: ClipboardCheck, label: t("page.leases.diagnostics_tab") },
           ]).map(v => (
             <button key={v.key} onClick={() => setActiveView(v.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex-1 justify-center ${activeView === v.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              <v.icon className="h-4 w-4" /> {v.label}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex-1 justify-center whitespace-nowrap ${activeView === v.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <v.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {v.label}
             </button>
           ))}
         </div>
@@ -239,20 +239,20 @@ const Leases = () => {
         {/* ─── LEASE LIST ─── */}
         {activeView === "leases" && (
           <div>
-            <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <div className="relative flex-1 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-4">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   placeholder={t("page.leases.search_tenant")} className="pl-9" />
               </div>
-              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
+              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5 overflow-x-auto scrollbar-thin">
                 {([
                   { key: "all" as const, label: t("page.leases.all"), count: tenants.filter(t => t.property_id).length },
                   { key: "active" as const, label: t("page.leases.active"), count: activeCount },
                   { key: "terminated" as const, label: t("page.leases.terminated"), count: terminatedCount },
                 ]).map(f => (
                   <button key={f.key} onClick={() => setFilter(f.key)}
-                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${filter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                    className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                     {f.label} ({f.count})
                   </button>
                 ))}
@@ -260,7 +260,7 @@ const Leases = () => {
             </div>
 
             {/* KPI */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-4 sm:mb-6 lease-kpi-grid">
               {[
                 { label: t("page.leases.active_leases"), value: activeCount, path: "/dashboard/rental?tab=tenants" },
                 { label: t("page.leases.terminated_leases"), value: terminatedCount, path: "/dashboard/rental?tab=tenants" },

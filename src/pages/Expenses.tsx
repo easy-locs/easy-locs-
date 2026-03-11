@@ -112,17 +112,17 @@ const Expenses = () => {
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.expenses.title")}>
       <div className="page-content">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-destructive/10"><Filter className="h-5 w-5 text-destructive" /></div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-destructive/10 shrink-0"><Filter className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" /></div>
               {t("page.expenses.title")}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t("page.expenses.subtitle")}</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => exportToCSV(filtered.map(e => ({ Property: propName(e.property_id), Category: catName(e.category), Label: e.label, Amount: e.amount, Date: e.expense_date, Supplier: e.supplier || "" })), "expenses")} className="btn-secondary btn-sm">
-              <Download className="h-4 w-4" /> {t("page.expenses.export")}
+              <Download className="h-4 w-4" /> <span className="hidden sm:inline">{t("page.expenses.export")}</span>
             </button>
             <PermissionGate permission="expenses:write">
               <button onClick={() => setShowForm(true)} className="btn-primary btn-sm">
@@ -133,12 +133,12 @@ const Expenses = () => {
         </motion.div>
 
         {/* Filters */}
-        <div className="flex gap-3 mb-4">
-          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+          <select value={filterProp} onChange={e => setFilterProp(e.target.value)} className="form-select w-full sm:w-auto text-sm">
             <option value="">{t("page.expenses.all_properties")}</option>
             {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-auto">
+          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="form-select w-full sm:w-auto text-sm">
             <option value="">{t("page.expenses.all_categories")}</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
@@ -176,9 +176,9 @@ const Expenses = () => {
 
         {/* Add form */}
         {showForm && (
-          <div className="ui-card mb-6 space-y-4">
+          <div className="ui-card mb-4 sm:mb-6 space-y-3 sm:space-y-4 expense-form">
             <h3 className="font-semibold text-foreground">{t("page.expenses.new")}</h3>
-            <div className="form-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="form-group"><label className="form-label">{t("page.expenses.label")} *</label><input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.amount")} *</label><input type="number" value={form.amount || ""} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.category")}</label><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className="form-select">{CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
@@ -186,7 +186,7 @@ const Expenses = () => {
               <div className="form-group"><label className="form-label">{t("page.expenses.date")}</label><input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} className="form-input" /></div>
               <div className="form-group"><label className="form-label">{t("page.expenses.supplier")}</label><input value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} className="form-input" /></div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button onClick={save} className="btn-primary">{t("page.common.save")}</button>
               <button onClick={() => setShowForm(false)} className="btn-secondary">{t("page.common.cancel")}</button>
             </div>

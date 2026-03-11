@@ -206,11 +206,11 @@ const Interventions = () => {
             </PermissionGate>
           </motion.div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")}>{t("page.interventions.all")}</Button>
+          <div className="flex gap-1.5 flex-wrap">
+            <Button variant={filterStatus === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterStatus("all")} className="text-xs h-8">{t("page.interventions.all")}</Button>
             {STATUSES.map(s => (
-              <Button key={s.value} variant={filterStatus === s.value ? "default" : "outline"} size="sm" onClick={() => setFilterStatus(s.value)}>
-                <s.icon className="h-3.5 w-3.5 mr-1" />{s.label}
+              <Button key={s.value} variant={filterStatus === s.value ? "default" : "outline"} size="sm" onClick={() => setFilterStatus(s.value)} className="text-xs h-8">
+                <s.icon className="h-3 w-3 me-1" />{s.label}
               </Button>
             ))}
           </div>
@@ -258,9 +258,9 @@ const Interventions = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(i)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => remove(i.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <div className="flex gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(i)} className="h-8 w-8"><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => remove(i.id)} className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                       </div>
                     </div>
                   </motion.div>
@@ -271,7 +271,7 @@ const Interventions = () => {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editId ? t("page.interventions.edit") : t("page.interventions.create_title")}</DialogTitle>
             </DialogHeader>
@@ -280,7 +280,7 @@ const Interventions = () => {
                 <label className="text-sm font-medium">{t("page.interventions.title_label")} *</label>
                 <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t("page.interventions.title_placeholder")} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.property")}</label>
                   <Select value={form.property_id} onValueChange={v => setForm(f => ({ ...f, property_id: v }))}>
@@ -333,7 +333,7 @@ const Interventions = () => {
                 <label className="text-sm font-medium">{t("page.interventions.description")}</label>
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder={t("page.interventions.description_placeholder")} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.scheduled_date")}</label>
                   <Input type="date" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} />
@@ -343,7 +343,7 @@ const Interventions = () => {
                   <Input type="date" value={form.completed_date} onChange={e => setForm(f => ({ ...f, completed_date: e.target.value }))} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm font-medium">{t("page.interventions.provider")}</label>
                   <Input value={form.provider_name} onChange={e => setForm(f => ({ ...f, provider_name: e.target.value }))} placeholder={t("page.interventions.provider_placeholder")} />

@@ -99,28 +99,28 @@ const Documents = () => {
     <DashboardLayout>
       <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-accent/10"><FileText className="h-5 w-5 text-accent" /></div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10 shrink-0"><FileText className="h-4 w-4 sm:h-5 sm:w-5 text-accent" /></div>
               {t("page.documents.title")}
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("page.documents.desc")}</p>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">{t("page.documents.desc")}</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg text-sm shrink-0 self-start">
             <span className="text-lg">{getCountryFlag(activeCountry)}</span>
             <span className="font-medium text-foreground">{countryLabels[activeCountry] || activeCountry}</span>
           </div>
         </motion.div>
 
-        <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8">
+        <div className="flex gap-1 bg-muted rounded-lg p-1 mb-4 sm:mb-8 overflow-x-auto scrollbar-thin">
           {([
             { key: "create" as const, label: t("page.documents.create") },
             { key: "history" as const, label: `${t("page.documents.history")} (${docs.length})` },
             { key: "europe" as const, label: "🌍 International" },
           ]).map((tb) => (
             <button key={tb.key} onClick={() => setTab(tb.key)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${tab === tb.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
               {tb.label}
             </button>
           ))}
@@ -139,7 +139,7 @@ const Documents = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {templates.map((t) => (
                       <button key={t.id} onClick={() => setSelectedTemplate(t)}
-                        className="flex items-start gap-4 bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
+                        className="doc-template-card flex items-start gap-3 sm:gap-4 bg-card rounded-xl p-3.5 sm:p-5 shadow-card border border-border/50 hover:shadow-card-hover transition-all text-left group">
                         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-gradient-gold transition-colors shrink-0">
                           <Icon className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground transition-colors" />
                         </div>
