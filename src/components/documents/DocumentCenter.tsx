@@ -191,7 +191,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
   return (
     <div className="space-y-4">
       {/* Filter bar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
         <Select value={filterType} onValueChange={setFilterType}>
           <SelectTrigger className="w-48 h-9">
             <SelectValue placeholder="Filtrer par type" />
@@ -203,55 +203,61 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
             ))}
           </SelectContent>
         </Select>
-        <Badge variant="secondary" className="text-xs">{filteredDocs.length} document(s)</Badge>
+        <Badge variant="secondary" className="text-xs shrink-0">{filteredDocs.length} document(s)</Badge>
       </div>
 
       {filteredDocs.length === 0 ? (
-        <div className="bg-card rounded-xl p-8 border border-border/50 text-center">
-          <FileText className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">Aucun document</p>
+        <div className="bg-card rounded-xl p-12 border border-border/50 text-center">
+          <FileText className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm font-medium">Aucun document</p>
+          <p className="text-xs text-muted-foreground mt-1">Les documents générés apparaîtront ici.</p>
         </div>
       ) : (
         <ScrollArea className="max-h-[60vh]">
-          <div className="bg-card rounded-xl border border-border/50 divide-y divide-border">
+          <div className="space-y-2">
             {filteredDocs.map(doc => {
               const typeInfo = getTypeInfo(doc.doc_type);
+              const isSigned = doc.signed_by_owner_at && doc.signed_by_tenant_at;
+              const isPartialSigned = doc.signed_by_owner_at || doc.signed_by_tenant_at;
               return (
-                <div key={doc.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 text-lg">
+                <div key={doc.id} className="flex items-center gap-4 bg-card rounded-xl p-4 border border-border/50 hover:shadow-card-hover transition-all group">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-lg transition-colors ${
+                    isSigned ? "bg-success/10" : isPartialSigned ? "bg-warning/10" : "bg-muted"
+                  }`}>
                     {typeInfo.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">{typeInfo.label}</span>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd/MM/yyyy")}</span>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground">
+                        {typeInfo.label}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {format(new Date(doc.created_at), "dd/MM/yyyy")}
+                      </span>
                       {doc.emailed_at && (
-                        <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="flex items-center gap-0.5 text-xs text-success">
-                            <Mail className="h-3 w-3" /> Envoyé
-                          </span>
-                        </>
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-success/10 text-[11px] font-medium text-success">
+                          <Mail className="h-3 w-3" /> Envoyé
+                        </span>
                       )}
                       {doc.requires_signature && (
-                        <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="flex items-center gap-0.5 text-xs text-warning">
-                            <PenTool className="h-3 w-3" />
-                            {doc.signed_by_owner_at && doc.signed_by_tenant_at ? "Signé" :
-                             doc.signed_by_owner_at ? "Signé (bailleur)" :
-                             doc.signed_by_tenant_at ? "Signé (locataire)" : "À signer"}
-                          </span>
-                        </>
+                        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-medium ${
+                          isSigned ? "bg-success/10 text-success" :
+                          isPartialSigned ? "bg-warning/10 text-warning" :
+                          "bg-destructive/10 text-destructive"
+                        }`}>
+                          <PenTool className="h-3 w-3" />
+                          {isSigned ? "Signé" :
+                           doc.signed_by_owner_at ? "Bailleur ✓" :
+                           doc.signed_by_tenant_at ? "Locataire ✓" : "À signer"}
+                        </span>
                       )}
                     </div>
                   </div>
                   {showActions && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                       <Button
-                        variant="ghost" size="icon"
+                        variant="ghost" size="icon" className="h-8 w-8"
                         onClick={() => openDocument(doc)}
                         disabled={!doc.pdf_url || openingId === doc.id}
                         title="Télécharger"
@@ -259,7 +265,7 @@ const DocumentCenter = ({ propertyId, tenantId, showActions = true }: Props) => 
                         {openingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                       <Button
-                        variant="ghost" size="icon"
+                        variant="ghost" size="icon" className="h-8 w-8"
                         onClick={() => emailDocument(doc)}
                         disabled={sendingId === doc.id}
                         title="Envoyer par email"
