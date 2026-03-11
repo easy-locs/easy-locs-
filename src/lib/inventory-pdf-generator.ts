@@ -121,19 +121,27 @@ export async function generateInventoryPDF(
   const doc = new jsPDF();
   const typeLabel = data.reportType === "entry" ? "Etat des lieux d'entree" : "Etat des lieux de sortie";
 
-  // Header
+  // Header — premium styling
   doc.setFillColor(...COLOR_GOLD);
-  doc.rect(0, 0, PAGE_WIDTH, 8, "F");
+  doc.rect(0, 0, PAGE_WIDTH, 7, "F");
+  doc.setFillColor(...COLOR_PRIMARY);
+  doc.rect(0, 7, PAGE_WIDTH, 1.5, "F");
+
   setFont(doc, "bold", 16, COLOR_PRIMARY);
-  doc.text("EASY-LOCS", MARGIN, 22);
+  doc.text("EASY-LOCS", MARGIN, 20);
   setFont(doc, "normal", 6, COLOR_PRIMARY);
-  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 19);
-  setFont(doc, "normal", 10, COLOR_MUTED);
-  doc.text(sanitize(typeLabel.toUpperCase()), MARGIN, 30);
+  doc.text("(R)", MARGIN + doc.getTextWidth("EASY-LOCS") + 1, 17);
+
+  // Title with background
+  doc.setFillColor(245, 247, 250);
+  doc.rect(MARGIN, 25, CONTENT_WIDTH, 10, "F");
+  setFont(doc, "bold", 11, COLOR_PRIMARY);
+  doc.text(sanitize(typeLabel.toUpperCase()), MARGIN + 3, 31);
+
   doc.setDrawColor(...COLOR_GOLD);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, 34, PAGE_WIDTH - MARGIN, 34);
-  let y = 42;
+  doc.line(MARGIN, 36, PAGE_WIDTH - MARGIN, 36);
+  let y = 44;
 
   // Property info
   setFont(doc, "bold", 12, COLOR_PRIMARY);
