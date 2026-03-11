@@ -103,9 +103,10 @@ export default function ProviderStorefront() {
     ? `https://wa.me/${provider.whatsapp.replace(/[^0-9]/g, "")}`
     : null;
 
-  const rating = Number(provider.rating || 0);
-  const reviewsCount = Number(provider.reviews_count || 0);
-  const completedJobs = Number(provider.completed_jobs || 0);
+  const providerAny = provider as Record<string, any>;
+  const rating = Number(providerAny.rating || 0);
+  const reviewsCount = Number(providerAny.reviews_count || 0);
+  const completedJobs = Number(providerAny.completed_jobs || 0);
 
   // Service areas — unique cities from services
   const serviceAreas = [...new Set(services.map((s: any) => s.city).filter(Boolean))] as string[];
