@@ -34,8 +34,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
                 onClick={onMenuOpen}
                 className="flex flex-col items-center justify-center flex-1 gap-0.5 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px]"
               >
-                <item.icon className="h-[1.125rem] w-[1.125rem]" />
-                <span className="text-[9px] font-medium leading-none">{item.label}</span>
+                <item.icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium leading-none">{item.label}</span>
               </button>
             );
           }
