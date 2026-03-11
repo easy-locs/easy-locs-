@@ -45,7 +45,10 @@ const Dashboard = () => {
     let active = true;
     import("@/components/dashboard/WorldPropertyMap")
       .then((mod) => { if (active) setWorldMapComponent(() => mod.default); })
-      .catch(() => { if (active) setMapLoadFailed(true); });
+      .catch((err) => { 
+        console.warn("[Dashboard] WorldPropertyMap load failed:", err);
+        if (active) setMapLoadFailed(true); 
+      });
     return () => { active = false; };
   }, []);
 
