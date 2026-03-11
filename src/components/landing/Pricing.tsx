@@ -115,6 +115,7 @@ const TRUST_SIGNALS = [
 ];
 
 const Pricing = () => {
+  const { t } = useI18n();
   const [interval, setInterval] = useState<"monthly" | "annual">("annual");
 
   return (
