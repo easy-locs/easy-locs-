@@ -8,6 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
 import ServiceBookingCalendar from "@/components/concierge/ServiceBookingCalendar";
+import MarketplaceDisclaimer from "./MarketplaceDisclaimer";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   service: any;
