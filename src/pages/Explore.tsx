@@ -57,6 +57,8 @@ export default function Explore() {
   const [radius, setRadius] = useState<RadiusValue>((searchParams.get("radius") as RadiusValue) || "worldwide");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showRadiusSearch, setShowRadiusSearch] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(0);
   const [geoApplied, setGeoApplied] = useState(false);
 
   // Keep the public explore page global by default.
