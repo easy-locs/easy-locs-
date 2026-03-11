@@ -85,13 +85,19 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, t }: {
       <div className="grid grid-cols-3 gap-3">
         {items.map(({ label, status, icon: Icon }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-muted/20 border border-border/30">
-            <Icon className={`h-4 w-4 ${status === "on" ? "text-accent" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
+            <Icon className={`h-4 w-4 ${status === "on" ? "text-success" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
             <span className="text-xs font-medium text-foreground">{label}</span>
             <Badge
-              variant={status === "on" ? "default" : status === "blocked" ? "destructive" : "secondary"}
-              className="text-[10px] h-5"
+              variant="outline"
+              className={`text-[10px] h-5 font-semibold ${
+                status === "on"
+                  ? "bg-success/10 text-success border-success/30"
+                  : status === "blocked"
+                  ? "bg-destructive/10 text-destructive border-destructive/30"
+                  : "bg-muted/40 text-muted-foreground border-border/40"
+              }`}
             >
-              {status === "on" ? (t("notif.status_on") || "On") : status === "blocked" ? (t("notif.status_blocked") || "Blocked") : (t("notif.status_off") || "Off")}
+              {status === "on" ? `✓ ${t("notif.status_on") || "On"}` : status === "blocked" ? `✕ ${t("notif.status_blocked") || "Blocked"}` : `— ${t("notif.status_off") || "Off"}`}
             </Badge>
           </div>
         ))}
