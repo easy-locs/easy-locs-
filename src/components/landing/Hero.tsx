@@ -265,7 +265,7 @@ const Hero = () => {
                 >
                   <Link
                     to={`/city/${dest.slug}`}
-                    className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full"
+                    className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all hover:scale-105 w-full min-h-[44px]"
                     style={{
                       background: "hsl(220 20% 90% / 0.07)",
                       border: "1px solid hsl(220 20% 90% / 0.1)",

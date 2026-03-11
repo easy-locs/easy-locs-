@@ -49,8 +49,8 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
-              <item.icon className={`h-[1.125rem] w-[1.125rem] ${active ? "text-accent" : ""}`} />
-              <span className={`text-[9px] font-medium leading-none ${active ? "text-accent" : ""}`}>
+              <item.icon className={`h-5 w-5 ${active ? "text-accent" : ""}`} />
+              <span className={`text-[10px] font-medium leading-none ${active ? "text-accent" : ""}`}>
                 {item.label}
               </span>
             </Link>
