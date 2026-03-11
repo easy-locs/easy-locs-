@@ -26,6 +26,7 @@ const fmtPrice = (amount: number, currency: string = "EUR") => {
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const servicesRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const { data: showcase, isLoading } = useQuery({
     queryKey: ["store-showcase", storeSlug],
