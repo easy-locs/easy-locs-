@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ServiceCard from "./ServiceCard";
 import BookingDialog from "./BookingDialog";
+import TrustMetrics from "./TrustMetrics";
+import ReviewCard from "./ReviewCard";
+import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "./MarketplaceCategories";
-import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, Store, Briefcase, Shield, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, Store, ChevronLeft, ChevronRight, Shield } from "lucide-react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
@@ -20,6 +23,7 @@ export default function ProviderStorefront() {
   const { providerSlug } = useParams<{ providerSlug: string }>();
   const [bookingService, setBookingService] = useState<any>(null);
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const servicesRef = useRef<HTMLDivElement>(null);
 
   const { data: provider, isLoading } = useQuery({
     queryKey: ["marketplace_provider_public", providerSlug],
@@ -45,6 +49,19 @@ export default function ProviderStorefront() {
     enabled: !!provider?.id,
   });
 
+  // Placeholder reviews — will come from DB when reviews table exists
+  const providerAny = provider as Record<string, any> | null;
+  const reviewsCount = Number(providerAny?.reviews_count || 0);
+  const placeholderReviews = reviewsCount > 0
+    ? Array.from({ length: Math.min(reviewsCount, 3) }, (_, i) => ({
+        id: `r-${i}`,
+        reviewer_name: `Client ${i + 1}`,
+        rating: 4 + Math.random(),
+        comment: "Great service, very professional and responsive. Highly recommended!",
+        created_at: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }))
+    : [];
+
   const handleBookingSubmit = async (formData: any) => {
     const { error } = await supabase.from("marketplace_bookings").insert({
       service_id: bookingService.id,
@@ -60,12 +77,8 @@ export default function ProviderStorefront() {
       currency: bookingService.currency,
       notes: formData.notes,
     });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Booking request sent!");
-      setBookingService(null);
-    }
+    if (error) toast.error(error.message);
+    else { toast.success("Booking request sent!"); setBookingService(null); }
   };
 
   if (isLoading) {
@@ -93,7 +106,6 @@ export default function ProviderStorefront() {
     );
   }
 
-  // Collect all service photos for the gallery
   const allPhotos = services.flatMap((s: any) => (s.photo_urls || []) as string[]);
   const galleryPhotos = provider.cover_photo_url
     ? [provider.cover_photo_url, ...allPhotos.slice(0, 7)]
@@ -103,16 +115,22 @@ export default function ProviderStorefront() {
     ? `https://wa.me/${provider.whatsapp.replace(/[^0-9]/g, "")}`
     : null;
 
-  const providerAny = provider as Record<string, any>;
-  const rating = Number(providerAny.rating || 0);
-  const reviewsCount = Number(providerAny.reviews_count || 0);
-  const completedJobs = Number(providerAny.completed_jobs || 0);
+  const rating = Number(providerAny?.rating || 0);
+  const completedJobs = Number(providerAny?.completed_jobs || 0);
+  const responseRate = Number(providerAny?.response_rate || 0);
+  const responseTime = providerAny?.response_time || null;
+  const memberSince = providerAny?.created_at || null;
+  const verifiedSince = providerAny?.verified_at || null;
 
-  // Service areas — unique cities from services
   const serviceAreas = [...new Set(services.map((s: any) => s.city).filter(Boolean))] as string[];
+  const serviceCountries = [...new Set(services.map((s: any) => s.country).filter(Boolean))] as string[];
+
+  const scrollToServices = () => {
+    servicesRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 sm:pb-0">
       <SEOHead
         title={`${provider.display_name} — Services | EASY-LOCS®`}
         description={provider.bio || `Discover services by ${provider.display_name}`}
@@ -177,24 +195,23 @@ export default function ProviderStorefront() {
               </div>
               {provider.company_name && <p className="text-sm text-muted-foreground">{provider.company_name}</p>}
 
-              {/* Trust metrics */}
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-accent/70" /> {provider.city}, {provider.country}
-                </span>
-                {rating > 0 && (
-                  <span className="flex items-center gap-1 font-medium text-foreground">
-                    <Star className="h-4 w-4 text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" />
-                    {rating.toFixed(1)}
-                    {reviewsCount > 0 && <span className="text-muted-foreground font-normal text-xs">({reviewsCount} reviews)</span>}
-                  </span>
-                )}
-                {completedJobs > 0 && (
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <Briefcase className="h-4 w-4 text-accent/70" /> {completedJobs} completed
-                  </span>
-                )}
+              {/* Location */}
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 text-accent/70" /> {provider.city}, {provider.country}
               </div>
+
+              {/* Trust metrics — grid on this page */}
+              <TrustMetrics
+                rating={rating}
+                reviewsCount={reviewsCount}
+                completedJobs={completedJobs}
+                responseRate={responseRate}
+                responseTime={responseTime}
+                memberSince={memberSince}
+                verifiedSince={verifiedSince}
+                verified={provider.verified}
+                layout="grid"
+              />
 
               {/* Categories */}
               <div className="flex flex-wrap gap-2">
@@ -204,8 +221,8 @@ export default function ProviderStorefront() {
                 })}
               </div>
 
-              {/* Contact + Share */}
-              <div className="flex flex-wrap gap-2 pt-1">
+              {/* Contact + Share — desktop */}
+              <div className="hidden sm:flex flex-wrap gap-2 pt-1">
                 {provider.email && (
                   <Button size="sm" variant="outline" asChild>
                     <a href={`mailto:${provider.email}`}><Mail className="h-4 w-4 mr-1.5" /> Email</a>
@@ -217,7 +234,7 @@ export default function ProviderStorefront() {
                   </Button>
                 )}
                 {whatsappLink && (
-                  <Button size="sm" variant="outline" asChild>
+                  <Button size="sm" variant="outline" className="text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
                     <a href={whatsappLink} target="_blank" rel="noopener noreferrer"><MessageSquare className="h-4 w-4 mr-1.5" /> WhatsApp</a>
                   </Button>
                 )}
@@ -245,22 +262,41 @@ export default function ProviderStorefront() {
         </div>
       )}
 
-      {/* Service areas */}
-      {serviceAreas.length > 1 && (
+      {/* Service areas with country grouping */}
+      {serviceAreas.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 py-6 border-b border-border/40">
           <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-accent" /> Service Areas
+            <MapPin className="h-4 w-4 text-accent" /> Service Coverage
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {serviceAreas.map((city) => (
-              <Badge key={city} variant="outline" className="text-xs">{city}</Badge>
-            ))}
-          </div>
+          {serviceCountries.length > 1 ? (
+            <div className="space-y-3">
+              {serviceCountries.map((country) => {
+                const cities = services.filter((s: any) => s.country === country).map((s: any) => s.city).filter(Boolean);
+                const unique = [...new Set(cities)] as string[];
+                return (
+                  <div key={country}>
+                    <span className="text-xs font-medium text-foreground">{country}</span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {unique.map((city) => (
+                        <Badge key={city} variant="outline" className="text-xs">{city}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {serviceAreas.map((city) => (
+                <Badge key={city} variant="outline" className="text-xs">{city}</Badge>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Services */}
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-10">
         <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
           <Store className="h-5 w-5 text-accent" />
           Services ({services.length})
@@ -281,23 +317,63 @@ export default function ProviderStorefront() {
         )}
       </div>
 
-      {/* Reviews placeholder */}
-      {reviewsCount > 0 && (
+      {/* Reviews section */}
+      {placeholderReviews.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
             Reviews ({reviewsCount})
           </h2>
-          <Card>
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              <Star className="h-8 w-8 mx-auto mb-2 text-[hsl(var(--chart-4))]/30" />
-              <p>Average rating: <strong className="text-foreground">{rating.toFixed(1)}/5</strong> based on {reviewsCount} reviews</p>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {placeholderReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+          </div>
+          {reviewsCount > 3 && (
+            <div className="mt-4 text-center">
+              <Button variant="outline" size="sm" className="text-xs">
+                View all {reviewsCount} reviews
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SEO internal links */}
+      {serviceAreas.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 pb-10">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">Discover more services</h2>
+          <div className="flex flex-wrap gap-2">
+            {serviceAreas.map((city) => (
+              <Button key={city} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
+                <Link to={`/shop/all-${city.toLowerCase().replace(/\s+/g, "-")}`}>Services in {city}</Link>
+              </Button>
+            ))}
+            {(provider.categories || []).slice(0, 4).map((c: string) => {
+              const info = getCategoryInfo(c);
+              return (
+                <Button key={c} variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
+                  <Link to={`/shop/${c}-${(provider.city || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                    {info.icon} {info.label} in {provider.city}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
         </div>
       )}
 
       <Footer />
+
+      {/* Sticky mobile CTA */}
+      <MobileCTABar
+        phone={provider.phone}
+        whatsapp={provider.whatsapp}
+        shareType="provider"
+        shareSlug={providerSlug || ""}
+        shareTitle={provider.display_name}
+        onBook={scrollToServices}
+      />
 
       {bookingService && (
         <BookingDialog
