@@ -396,6 +396,16 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "pricing.zero_commission_desc": "Vos réservations, vos paiements, vos revenus. Nous ne prenons jamais de commission.",
     "pricing.audience": "Conçu pour les propriétaires, entrepreneurs, freelances, prestataires, agences et entreprises dans 190+ pays.",
     "nav.marketplace": "Marketplace", "nav.more": "Plus",
+    // Payment methods
+    "payment.method": "Mode de paiement",
+    "payment.card": "Carte bancaire",
+    "payment.card_desc": "Paiement sécurisé via Stripe",
+    "payment.cash": "Espèces",
+    "payment.cash_desc": "Paiement en personne à l'arrivée",
+    "payment.bank_transfer": "Virement bancaire",
+    "payment.bank_transfer_desc": "Paiement par virement / IBAN",
+    "payment.paypal_desc": "Payer avec PayPal",
+    "mp.review_window_note": "Les avis peuvent être soumis dans les 30 jours suivant la complétion",
   },
   en: { ...MP_KEYS_EN },
   es: {

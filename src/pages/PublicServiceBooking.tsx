@@ -518,13 +518,13 @@ const PublicServiceBooking = () => {
               <Separator />
 
               {/* Step Indicators */}
-              <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-2 justify-center booking-steps">
                 {[1, 2, 3].map(s => (
-                  <div key={s} className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                  <div key={s} className="flex items-center gap-1.5 sm:gap-2">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-colors ${
                       step >= s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
                     }`}>{s}</div>
-                    {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-accent" : "bg-muted"}`} />}
+                    {s < 3 && <div className={`w-8 sm:w-12 h-0.5 ${step > s ? "bg-accent" : "bg-muted"}`} />}
                   </div>
                 ))}
               </div>
