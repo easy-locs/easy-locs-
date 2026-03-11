@@ -416,26 +416,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             return (
               <div key={section.key} className="mb-1">
                 <button
-                  onClick={() => sectionLocked ? navigate("/dashboard/billing") : toggleSection(section.key)}
+                  onClick={() => toggleSection(section.key)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors ${
-                    sectionLocked
-                      ? "text-sidebar-foreground/30 hover:text-sidebar-foreground/50"
-                      : hasActiveItem
+                    hasActiveItem
                       ? "text-sidebar-primary"
                       : "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
                   }`}
                 >
                   <section.icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="flex-1 text-left">{section.title}</span>
-                  {sectionLocked ? (
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                  ) : (
-                    <ChevronDown
-                      className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-0" : "-rotate-90"
-                      }`}
-                    />
-                  )}
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                      isOpen ? "rotate-0" : "-rotate-90"
+                    }`}
+                  />
                 </button>
 
                 {!sectionLocked && (
