@@ -742,7 +742,7 @@ const PublicServiceBooking = () => {
                       <>
                         {selectedDate && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Date</span>
+                             <span className="text-muted-foreground">{t("mp.date") || "Date"}</span>
                             <span className="text-foreground">{format(selectedDate, "dd/MM/yyyy")}</span>
                           </div>
                         )}
