@@ -322,6 +322,7 @@ export default function Explore() {
               searchQuery={searchQuery}
               locationQuery={locationQuery}
               radiusKm={radiusKm}
+              activeGroup={activeGroup}
               geoCity={geo.detection?.city}
               geoCountry={geo.country}
               geoLat={geo.detection?.lat}
@@ -331,6 +332,7 @@ export default function Explore() {
               onSearchQueryChange={setSearchQuery}
               onLocationQueryChange={setLocationQuery}
               onRadiusKmChange={setRadiusKm}
+              onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
               onSelectLocation={handleSelectLocation}
               onNearMe={handleNearMe}
               onSearch={handleSearch}
@@ -357,6 +359,7 @@ export default function Explore() {
                 searchQuery={searchQuery}
                 locationQuery={locationQuery}
                 radiusKm={radiusKm}
+                activeGroup={activeGroup}
                 geoCity={geo.detection?.city}
                 geoCountry={geo.country}
                 geoLat={geo.detection?.lat}
@@ -366,6 +369,7 @@ export default function Explore() {
                 onSearchQueryChange={setSearchQuery}
                 onLocationQueryChange={setLocationQuery}
                 onRadiusKmChange={setRadiusKm}
+                onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
                 onNearMe={handleNearMe}
                 onSearch={handleSearch}
                 onClearAll={clearAll}
@@ -424,14 +428,9 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "Loading..." : `${allItems.length} listing${allItems.length !== 1 ? "s" : ""}`}
-            {locationQuery && <span className="text-muted-foreground font-normal"> in {locationQuery}</span>}
+            {loading ? "Loading..." : locationQuery ? `Results in ${locationQuery}` : "Explore listings"}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-            <Globe className="h-3.5 w-3.5" />
-            {allCountries.length} countries | {allCities.length} cities
-          </div>
         </div>
 
         {/* Grid */}
@@ -462,7 +461,7 @@ export default function Explore() {
             {visibleCount < allItems.length && (
               <div className="flex justify-center pt-10">
                 <Button variant="outline" size="lg" onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} className="rounded-full gap-2 px-8 min-h-[48px] shadow-sm hover:shadow-md transition-shadow">
-                  Show more ({visibleCount} of {allItems.length})
+                  Show more
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>

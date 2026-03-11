@@ -132,11 +132,6 @@ function CategoryTab({ active, emoji, label, count, onClick }: {
     >
       <span className="transition-transform group-hover:scale-110">{emoji}</span>
       <span className="truncate max-w-[76px] leading-none">{label}</span>
-      {count !== undefined && count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-          {count > 99 ? "99+" : count}
-        </span>
-      )}
       {/* Active indicator bar */}
       {active && (
         <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-foreground" />
