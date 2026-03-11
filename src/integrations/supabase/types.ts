@@ -2807,84 +2807,123 @@ export type Database = {
       properties: {
         Row: {
           address: string
+          balcony: boolean | null
+          bathrooms: number | null
+          bedrooms: number | null
           building_id: string | null
           building_name: string | null
           city: string
           country: string
           created_at: string
           deposit_amount: number | null
+          description: string | null
+          elevator: boolean | null
+          energy_class: string | null
           floor: number | null
           furnished: boolean | null
+          garden: boolean | null
           heating: string | null
           id: string
           label: string
+          listing_purpose: string | null
           lot_number: string | null
           monthly_charges: number | null
           monthly_rent: number | null
           notes: string | null
           org_id: string
+          parking: boolean | null
           photo_urls: Json | null
+          pool: boolean | null
           postal_code: string
           property_type: string
           rental_mode: string | null
           rooms: number | null
           surface: number | null
+          surface_unit: string | null
+          terrace: boolean | null
           updated_at: string
           user_id: string
+          year_built: number | null
         }
         Insert: {
           address?: string
+          balcony?: boolean | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           building_id?: string | null
           building_name?: string | null
           city?: string
           country?: string
           created_at?: string
           deposit_amount?: number | null
+          description?: string | null
+          elevator?: boolean | null
+          energy_class?: string | null
           floor?: number | null
           furnished?: boolean | null
+          garden?: boolean | null
           heating?: string | null
           id?: string
           label: string
+          listing_purpose?: string | null
           lot_number?: string | null
           monthly_charges?: number | null
           monthly_rent?: number | null
           notes?: string | null
           org_id: string
+          parking?: boolean | null
           photo_urls?: Json | null
+          pool?: boolean | null
           postal_code?: string
           property_type?: string
           rental_mode?: string | null
           rooms?: number | null
           surface?: number | null
+          surface_unit?: string | null
+          terrace?: boolean | null
           updated_at?: string
           user_id: string
+          year_built?: number | null
         }
         Update: {
           address?: string
+          balcony?: boolean | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           building_id?: string | null
           building_name?: string | null
           city?: string
           country?: string
           created_at?: string
           deposit_amount?: number | null
+          description?: string | null
+          elevator?: boolean | null
+          energy_class?: string | null
           floor?: number | null
           furnished?: boolean | null
+          garden?: boolean | null
           heating?: string | null
           id?: string
           label?: string
+          listing_purpose?: string | null
           lot_number?: string | null
           monthly_charges?: number | null
           monthly_rent?: number | null
           notes?: string | null
           org_id?: string
+          parking?: boolean | null
           photo_urls?: Json | null
+          pool?: boolean | null
           postal_code?: string
           property_type?: string
           rental_mode?: string | null
           rooms?: number | null
           surface?: number | null
+          surface_unit?: string | null
+          terrace?: boolean | null
           updated_at?: string
           user_id?: string
+          year_built?: number | null
         }
         Relationships: [
           {
