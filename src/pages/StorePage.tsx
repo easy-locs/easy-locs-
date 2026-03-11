@@ -8,7 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import TrustMetrics from "@/components/marketplace/TrustMetrics";
-import ReviewCard from "@/components/marketplace/ReviewCard";
+import SortableReviewList from "@/components/marketplace/SortableReviewList";
 import ReviewRatingBreakdown from "@/components/marketplace/ReviewRatingBreakdown";
 import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2 } from "lucide-react";
@@ -222,14 +222,14 @@ export default function StorePage() {
               <ReviewRatingBreakdown
                 rating={rating}
                 reviewsCount={reviewsCount}
+                verifiedCount={reviews.filter(r => r.verified).length}
                 reviews={reviews.map((r) => ({ rating: r.rating }))}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </div>
+            <SortableReviewList
+              reviews={reviews}
+              totalCount={reviewsCount}
+            />
           </div>
         )}
 

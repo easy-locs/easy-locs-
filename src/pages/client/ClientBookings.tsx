@@ -8,8 +8,10 @@ import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import ReviewSubmitDialog from "@/components/marketplace/ReviewSubmitDialog";
+
+const REVIEW_WINDOW_DAYS = 30;
 
 interface BookingItem {
   id: string;
@@ -24,6 +26,7 @@ interface BookingItem {
   booker_name?: string;
   booker_email?: string;
   service_title?: string;
+  completed_at?: string | null;
 }
 
 const statusColor: Record<string, string> = {
@@ -50,10 +53,9 @@ const ClientBookings = () => {
       const [{ data: seasonal }, { data: concierge }, { data: marketplace }] = await Promise.all([
         supabase.from("booking_requests").select("id, guest_name, check_in, check_out, status, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
         supabase.from("concierge_orders").select("id, guest_name, service_date, status, total_price, currency, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, service_date, status, total_price, currency, created_at, service_id, provider_id, marketplace_services(title)").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
+        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, service_date, status, total_price, currency, created_at, completed_at, service_id, provider_id, marketplace_services(title)").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
       ]);
 
-      // Fetch already-reviewed booking IDs
       const mkIds = (marketplace || []).map(b => b.id);
       let reviewed = new Set<string>();
       if (mkIds.length > 0) {
@@ -78,6 +80,7 @@ const ClientBookings = () => {
           service_id: b.service_id, provider_id: b.provider_id,
           booker_name: b.booker_name, booker_email: b.booker_email,
           service_title: b.marketplace_services?.title,
+          completed_at: b.completed_at,
         })),
       ];
       items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -89,8 +92,24 @@ const ClientBookings = () => {
 
   const filterByType = (type?: string) => type ? bookings.filter(b => b.type === type) : bookings;
 
-  const canReview = (b: BookingItem) =>
-    b.type === "marketplace" && b.status === "completed" && b.service_id && b.provider_id && !reviewedBookingIds.has(b.id);
+  const canReview = (b: BookingItem) => {
+    if (b.type !== "marketplace" || b.status !== "completed" || !b.service_id || !b.provider_id) return false;
+    if (reviewedBookingIds.has(b.id)) return false;
+    // 30-day window check
+    if (b.completed_at) {
+      const daysSince = differenceInDays(new Date(), new Date(b.completed_at));
+      if (daysSince > REVIEW_WINDOW_DAYS) return false;
+    }
+    return true;
+  };
+
+  const getReviewWindowInfo = (b: BookingItem) => {
+    if (!b.completed_at) return null;
+    const daysLeft = REVIEW_WINDOW_DAYS - differenceInDays(new Date(), new Date(b.completed_at));
+    if (daysLeft <= 0) return null;
+    if (daysLeft <= 7) return `${daysLeft}d left`;
+    return null;
+  };
 
   const renderList = (items: BookingItem[]) => {
     if (items.length === 0) {
@@ -103,36 +122,51 @@ const ClientBookings = () => {
     }
     return (
       <div className="space-y-3">
-        {items.map((b, i) => (
-          <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-            className="bg-card rounded-lg p-4 border border-border/50 flex items-center justify-between gap-3 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden group"
-          >
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="flex items-center gap-3 min-w-0">
-              <CalendarCheck className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{b.title}</p>
-                <p className="text-xs text-muted-foreground">{format(new Date(b.date), "dd/MM/yyyy HH:mm")}</p>
+        {items.map((b, i) => {
+          const windowInfo = canReview(b) ? getReviewWindowInfo(b) : null;
+          return (
+            <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+              className="bg-card rounded-lg p-4 border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden group"
+            >
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CalendarCheck className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{b.title}</p>
+                    <p className="text-xs text-muted-foreground">{format(new Date(b.date), "dd/MM/yyyy HH:mm")}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {b.total != null && (
+                    <span className="text-sm font-semibold text-foreground">{b.total} {b.currency}</span>
+                  )}
+                  <Badge variant="outline" className={statusColor[b.status] || ""}>{b.status}</Badge>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {b.total != null && (
-                <span className="text-sm font-semibold text-foreground">{b.total} {b.currency}</span>
+              {/* Review action row */}
+              {(canReview(b) || (b.type === "marketplace" && reviewedBookingIds.has(b.id))) && (
+                <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border/30">
+                  {canReview(b) && (
+                    <>
+                      <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => setReviewBooking(b)}>
+                        <Star className="h-3 w-3" /> Leave a review
+                      </Button>
+                      {windowInfo && (
+                        <span className="text-[10px] text-warning font-medium">{windowInfo}</span>
+                      )}
+                    </>
+                  )}
+                  {b.type === "marketplace" && reviewedBookingIds.has(b.id) && (
+                    <Badge variant="secondary" className="text-[10px] h-5 gap-1 bg-success/10 text-success border-success/20">
+                      <Star className="h-2.5 w-2.5 fill-current" /> Reviewed
+                    </Badge>
+                  )}
+                </div>
               )}
-              <Badge variant="outline" className={statusColor[b.status] || ""}>{b.status}</Badge>
-              {canReview(b) && (
-                <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => setReviewBooking(b)}>
-                  <Star className="h-3 w-3" /> Review
-                </Button>
-              )}
-              {b.type === "marketplace" && reviewedBookingIds.has(b.id) && (
-                <Badge variant="secondary" className="text-[10px] h-5 gap-1">
-                  <Star className="h-2.5 w-2.5 fill-current" /> Reviewed
-                </Badge>
-              )}
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
     );
   };
