@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Globe } from "lucide-react";
 
 const COUNTRIES = [
   { name: "UAE", slug: "uae", flag: "🇦🇪", code: "AE" },
