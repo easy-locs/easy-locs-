@@ -10,7 +10,7 @@ import { Suspense, lazy } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
-import Explore from "./pages/Explore";
+const Explore = lazy(() => import("./pages/Explore"));
 const FloatingAIAssistant = lazy(() => import("@/components/ai/FloatingAIAssistant"));
 import { Loader2 } from "lucide-react";
 
