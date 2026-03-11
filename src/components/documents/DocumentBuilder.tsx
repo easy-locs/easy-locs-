@@ -448,15 +448,22 @@ const DocumentBuilder = ({ template, onBack, onGenerated }: Props) => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> {t("page.common.back")}
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 group">
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" /> {t("page.common.back")}
         </button>
 
-        <h1 className="text-2xl font-bold text-foreground mb-1">{template.label}</h1>
-        <p className="text-sm text-muted-foreground mb-1">{template.description}</p>
-        {template.legalBasis && (
-          <p className="text-xs text-muted-foreground/70 italic mb-6">{t("page.doc_builder.legal_basis")} : {template.legalBasis}</p>
-        )}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-accent/10"><FileText className="h-5 w-5 text-accent" /></div>
+            {template.label}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
+          {template.legalBasis && (
+            <p className="text-xs text-muted-foreground/70 italic mt-2 flex items-center gap-1">
+              <Scale className="h-3 w-3" /> {t("page.doc_builder.legal_basis")} : {template.legalBasis}
+            </p>
+          )}
+        </div>
 
         {template.needsLegalReview && (
           <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-lg p-4 mb-6">
