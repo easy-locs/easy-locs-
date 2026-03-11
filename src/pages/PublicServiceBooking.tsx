@@ -372,9 +372,34 @@ const PublicServiceBooking = () => {
     <>
       <SEOHead
         title={`${service.title} — Book Now | Easy-Locs`}
-        description={service.description || `Book ${service.title} on Easy-Locs`}
+        description={`${service.title} in ${service.city || ""}${service.country ? `, ${service.country.toUpperCase()}` : ""}. ${service.description?.slice(0, 120) || "Book trusted services online with Easy-Locs."} From ${fmtPrice(service.price, service.currency)}.`.slice(0, 160)}
         ogImage={ogImage}
         canonical={canonicalUrl}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: service.title,
+          description: service.description || `Book ${service.title} on Easy-Locs`,
+          url: canonicalUrl,
+          image: ogImage,
+          provider: {
+            "@type": "Organization",
+            name: service.provider_name || "Easy-Locs Provider",
+          },
+          areaServed: {
+            "@type": "Place",
+            name: `${service.city || ""}${service.country ? `, ${service.country}` : ""}`,
+          },
+          ...(service.price > 0 ? {
+            offers: {
+              "@type": "Offer",
+              price: service.price,
+              priceCurrency: service.currency || "EUR",
+              availability: "https://schema.org/InStock",
+            },
+          } : {}),
+          ...(service.category ? { serviceType: service.category.replace(/_/g, " ") } : {}),
+        }}
       />
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-8">

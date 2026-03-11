@@ -141,26 +141,38 @@ const PublicListing = () => {
   const seoTitle = `${listingTitle} — ${listingCity} | Easy-Locs`.slice(0, 60);
   const seoDesc = `${listingTitle} in ${listingCity}${listingCountry ? `, ${listingCountry}` : ""}. ${listing.max_guests ? `Up to ${listing.max_guests} guests.` : ""} Book directly on Easy-Locs.`.slice(0, 160);
   const listingUrl = `https://www.easy-locs.com/listing/${listingSlug}`;
-  const listingJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LodgingBusiness",
-    name: listingTitle,
-    description: listing.description?.slice(0, 300) || seoDesc,
-    url: listingUrl,
-    image: listing.cover_url || photos[0],
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: property?.address,
-      addressLocality: listingCity,
-      postalCode: property?.postal_code,
-      addressCountry: listingCountry,
+  const listingJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "LodgingBusiness",
+      name: listingTitle,
+      description: listing.description?.slice(0, 300) || seoDesc,
+      url: listingUrl,
+      image: listing.cover_url || photos[0],
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: property?.address,
+        addressLocality: listingCity,
+        postalCode: property?.postal_code,
+        addressCountry: listingCountry,
+      },
+      ...(listing.price_per_night > 0 ? {
+        priceRange: `€${listing.price_per_night}/night`,
+        offers: { "@type": "Offer", price: listing.price_per_night, priceCurrency: listing.currency || "EUR" },
+      } : {}),
+      ...(listing.max_guests ? { amenityFeature: { "@type": "LocationFeatureSpecification", name: "Max guests", value: listing.max_guests } } : {}),
     },
-    ...(listing.price_per_night > 0 ? {
-      priceRange: `€${listing.price_per_night}/night`,
-      offers: { "@type": "Offer", price: listing.price_per_night, priceCurrency: listing.currency || "EUR" },
-    } : {}),
-    ...(listing.max_guests ? { amenityFeature: { "@type": "LocationFeatureSpecification", name: "Max guests", value: listing.max_guests } } : {}),
-  };
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Explore", item: "https://www.easy-locs.com/explore" },
+        ...(listingCountry ? [{ "@type": "ListItem", position: 2, name: listingCountry.toUpperCase(), item: `https://www.easy-locs.com/country/${listingCountry.toLowerCase()}` }] : []),
+        ...(listingCity ? [{ "@type": "ListItem", position: 3, name: listingCity, item: `https://www.easy-locs.com/city/${listingCity.toLowerCase().replace(/\s+/g, "-")}` }] : []),
+        { "@type": "ListItem", position: listingCity ? 4 : listingCountry ? 3 : 2, name: listingTitle, item: listingUrl },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
