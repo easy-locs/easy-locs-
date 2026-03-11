@@ -1,11 +1,16 @@
-import { Suspense, useRef, useMemo, useState, lazy } from "react";
+import { Suspense, useRef, useMemo, useState, lazy, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-/* Lazy-load Three.js to avoid blocking the landing page */
-const GlobeCanvas = lazy(() => import("./LandingGlobe"));
+/* Lazy-load Three.js - wrapped in error-safe dynamic import */
+const GlobeCanvas = lazy(() =>
+  import("./LandingGlobe").catch(() => ({
+    default: () => null,
+  }))
+);
 
 const regions = [
   { flag: "🇫🇷", name: "France" },
