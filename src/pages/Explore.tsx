@@ -48,7 +48,7 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
 
-  // State
+  // State — initialize from URL params, fallback to geo-detected location
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [locationQuery, setLocationQuery] = useState(searchParams.get("location") || "");
   const [activeGroup, setActiveGroup] = useState<string>(searchParams.get("group") || "all");
@@ -56,6 +56,21 @@ export default function Explore() {
   const [radius, setRadius] = useState<RadiusValue>((searchParams.get("radius") as RadiusValue) || "worldwide");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [geoApplied, setGeoApplied] = useState(false);
+
+  // Auto-set location from geo-detection when no URL params exist
+  useEffect(() => {
+    if (geoApplied) return;
+    if (searchParams.get("location") || searchParams.get("q")) return; // user already filtered
+    if (!geo.detection || geo.loading) return;
+
+    // Auto-set to detected country
+    if (geo.detection.country) {
+      setLocationQuery(geo.detection.country.toUpperCase());
+      setRadius("country");
+      setGeoApplied(true);
+    }
+  }, [geo.detection, geo.loading, geoApplied, searchParams]);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
@@ -195,12 +210,13 @@ export default function Explore() {
   const handleSelectLocation = (suggestion: { label: string; type: string }) => {
     if (suggestion.type === "geo" && geo.detection?.city) {
       setLocationQuery(geo.detection.city);
-      if (radius === "worldwide") setRadius("city");
+      setRadius("city");
     } else {
       setLocationQuery(suggestion.label);
       if (suggestion.type === "country") setRadius("country");
       else if (suggestion.type === "city") setRadius("city");
     }
+    setGeoApplied(true); // prevent auto-override
   };
 
   const handleNearMe = () => {
@@ -226,6 +242,7 @@ export default function Explore() {
   const clearAll = () => {
     setSearchQuery(""); setLocationQuery(""); setActiveGroup("all"); setActiveSubcategory("all");
     setRadius("worldwide"); setVisibleCount(ITEMS_PER_PAGE); setSearchParams({});
+    setGeoApplied(false); // allow geo re-detection
   };
 
   const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radius !== "worldwide");
@@ -322,12 +339,17 @@ export default function Explore() {
         )}
 
         {/* Geo context banner */}
-        {!loading && !hasFilters && geo.detection?.city && (
+        {!loading && geo.detection?.city && locationQuery && geoApplied && !searchParams.get("location") && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15">
             <LocateFixed className="h-4 w-4 text-accent shrink-0" />
             <span className="text-sm text-muted-foreground">
-              Showing all listings worldwide. <button onClick={handleNearMe} className="text-accent font-semibold hover:underline">Show near {geo.detection.city}</button>
+              📍 Auto-located to <strong className="text-foreground">{geo.detection.country?.toUpperCase()}</strong>.
+              {geo.detection.city && (
+                <> <button onClick={handleNearMe} className="text-accent font-semibold hover:underline ml-1">Show near {geo.detection.city}</button></>
+              )}
+              {" · "}
+              <button onClick={clearAll} className="text-muted-foreground hover:text-foreground underline">Show worldwide</button>
             </span>
           </motion.div>
         )}
