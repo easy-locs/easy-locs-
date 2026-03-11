@@ -12,10 +12,10 @@ import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, UserSearch, Calendar,
+  Receipt, Calendar,
   Layers, BookOpen, Zap, Store, ChevronDown,
-  FileCheck, CalendarRange, MapPin, ArrowLeft, Globe, Clock,
-  Shield, Palette, UsersRound, Banknote,
+  FileCheck, ArrowLeft, Globe, Clock,
+  Shield, UsersRound, Banknote,
 } from "lucide-react";
 
 const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
