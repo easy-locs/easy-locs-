@@ -310,8 +310,8 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
 
             {/* Notes */}
             <div>
-              <Label className="text-xs">Notes</Label>
-              <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder="Special requests..." />
+              <Label className="text-xs">{t("mp.notes") || "Notes"}</Label>
+              <Textarea className="text-sm min-h-[60px]" value={form.notes} onChange={(e) => update("notes", e.target.value)} rows={2} placeholder={t("mp.special_requests") || "Special requests..."} />
             </div>
 
             {/* Payment method selector */}
