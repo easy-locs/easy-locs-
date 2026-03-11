@@ -663,6 +663,7 @@ const ConciergeServices = () => {
                   photos={form.photo_urls}
                   onChange={(urls) => setForm(f => ({ ...f, photo_urls: urls }))}
                   orgId={orgId}
+                  allowVideo={subscription.subscribed}
                 />
               )}
 
