@@ -81,7 +81,7 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed ? (
+            {!globeFailed && !isMobile ? (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -95,7 +95,7 @@ const WorldMapSection = () => {
               <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
                 style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
               >
-                <Globe className="h-24 w-24" style={{ color: "hsl(var(--accent) / 0.2)" }} />
+                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
               </div>
             )}
           </motion.div>
