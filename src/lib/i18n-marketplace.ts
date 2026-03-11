@@ -368,6 +368,22 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.status_cancelled": "Annulé",
     "mp.status_completed": "Terminé",
     "mp.status_refunded": "Remboursé",
+    // Explore
+    "explore.night": "nuit", "explore.mo": "mois", "explore.free": "Gratuit",
+    "explore.vacation_rental": "Location saisonnière", "explore.for_sale": "À vendre", "explore.long_term": "Location longue durée",
+    "explore.service": "Service", "explore.book_now": "Réserver", "explore.view_property": "Voir le bien",
+    "explore.view_and_book": "Voir et réserver", "explore.guests": "voyageurs", "explore.rooms": "pièces", "explore.n": "n",
+    // Pricing
+    "pricing.badge": "Plateforme sans commission", "pricing.title": "Tarification simple,", "pricing.title_hl": "Potentiel illimité",
+    "pricing.subtitle": "Gérez vos biens, services, réservations, documents et paiements dans le monde entier.",
+    "pricing.no_cut": "Vous gagnez — nous ne prenons jamais de commission.",
+    "pricing.monthly": "Mensuel", "pricing.annual": "Annuel", "pricing.forever": "pour toujours",
+    "pricing.save": "Économisez", "pricing.vs_monthly": "vs mensuel", "pricing.no_card": "Pas de carte bancaire requise",
+    "pricing.cta_free": "Commencer gratuitement", "pricing.cta_trial": "Essai gratuit",
+    "pricing.zero_commission": "0% de commission — toujours",
+    "pricing.zero_commission_desc": "Vos réservations, vos paiements, vos revenus. Nous ne prenons jamais de commission.",
+    "pricing.audience": "Conçu pour les propriétaires, entrepreneurs, freelances, prestataires, agences et entreprises dans 190+ pays.",
+    "nav.marketplace": "Marketplace", "nav.more": "Plus",
   },
   en: { ...MP_KEYS_EN },
   es: {
