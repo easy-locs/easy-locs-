@@ -566,7 +566,7 @@ const PublicServiceBooking = () => {
 
                   <Button className="w-full mt-4" disabled={!canProceedStep1}
                     onClick={() => setStep(2)}>
-                    Continue
+                    {t("mp.continue") || "Continue"}
                   </Button>
                 </div>
               )}
