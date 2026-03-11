@@ -1,11 +1,16 @@
-import { Suspense, useRef, useMemo, useState, lazy } from "react";
+import { Suspense, useRef, useMemo, useState, lazy, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-/* Lazy-load Three.js to avoid blocking the landing page */
-const GlobeCanvas = lazy(() => import("./LandingGlobe"));
+/* Lazy-load Three.js - wrapped in error-safe dynamic import */
+const GlobeCanvas = lazy(() =>
+  import("./LandingGlobe").catch(() => ({
+    default: () => null,
+  }))
+);
 
 const regions = [
   { flag: "🇫🇷", name: "France" },
@@ -31,6 +36,7 @@ const regions = [
 const WorldMapSection = () => {
   const { t } = useI18n();
   const [globeFailed, setGlobeFailed] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
@@ -75,7 +81,7 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed ? (
+            {!globeFailed && !isMobile ? (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -89,7 +95,7 @@ const WorldMapSection = () => {
               <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
                 style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
               >
-                <Globe className="h-24 w-24" style={{ color: "hsl(var(--accent) / 0.2)" }} />
+                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
               </div>
             )}
           </motion.div>
