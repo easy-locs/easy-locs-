@@ -47,16 +47,21 @@ const RE_TYPE_LABELS: Record<string, { label: string; icon: string }> = {
 const SERVICE_CATEGORIES: Record<string, string> = {
   cleaning: "🧹 Cleaning",
   maintenance: "🔧 Maintenance",
+  construction: "🏗️ Construction / Renovation",
   transport: "🚗 Transport",
   car_rental: "🚙 Car Rental",
-  tours: "🗺️ Tours & Activities",
   airport_transfer: "✈️ Airport Transfer",
-  personal_services: "💇 Personal Services",
-  wellness: "💆 Wellness / Spa",
+  tours: "🗺️ Tours & Activities",
   water_sport: "🏄 Water Sport",
+  spa: "🧖 Wellness / Spa",
+  sports_coach: "🏋️ Sports Coach",
   restaurant: "🍽️ Restaurant",
   coworking: "💻 Coworking",
-  events: "🎫 Events / Tickets",
+  legal: "⚖️ Legal / Advocate",
+  business_services: "💼 Business Services",
+  consulting: "📊 Professional Consulting",
+  personal: "💆 Personal Services",
+  event: "🎫 Events / Tickets",
   other: "📦 Other",
 };
 
@@ -254,7 +259,7 @@ export default function Explore() {
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by city, country, or keyword..."
+                placeholder="Search services worldwide..."
                 className="pl-12 pr-12 h-12 rounded-2xl text-base border-border bg-card shadow-sm focus-visible:ring-accent"
               />
               {search && (

@@ -210,6 +210,55 @@ const CATEGORY_CONFIGS: Record<string, Partial<CategoryBookingConfig>> = {
     dateLabel: "Event Date",
   },
 
+  // ── Construction / Renovation ──
+  construction: {
+    calendarMode: "range",
+    showTime: false,
+    showQuantity: false,
+    priceUnit: "/project",
+    dateLabel: "Start Date",
+    endDateLabel: "End Date",
+  },
+
+  // ── Sports Coach ──
+  sports_coach: {
+    calendarMode: "single",
+    showTime: true,
+    showQuantity: true,
+    quantityLabel: "Participants",
+    priceUnit: "/session",
+    dateLabel: "Session Date",
+    showDuration: true,
+  },
+
+  // ── Legal / Advocate ──
+  legal: {
+    calendarMode: "single",
+    showTime: true,
+    showQuantity: false,
+    priceUnit: "/consultation",
+    dateLabel: "Appointment Date",
+  },
+
+  // ── Business Services ──
+  business_services: {
+    calendarMode: "single",
+    showTime: true,
+    showQuantity: false,
+    priceUnit: "/service",
+    dateLabel: "Service Date",
+  },
+
+  // ── Professional Consulting ──
+  consulting: {
+    calendarMode: "single",
+    showTime: true,
+    showQuantity: false,
+    priceUnit: "/session",
+    dateLabel: "Consultation Date",
+    showDuration: true,
+  },
+
   // ── Real Estate ──
   real_estate: {
     calendarMode: "single",
