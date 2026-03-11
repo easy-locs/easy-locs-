@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Bell, Mail, Smartphone, Volume2, Vibrate, BellRing } from "lucide-react";
+import { Bell, Mail, Smartphone, Volume2, Vibrate, BellRing, MessageCircle, CalendarCheck, CreditCard, FileText, Wrench, SendHorizonal } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
+import { getNotifAlertPrefs, setNotifAlertPrefs, requestNotificationPermission, type NotifAlertPrefs, type NotifTypeAlerts } from "@/lib/notif-alert-prefs";
 
 interface Prefs {
   email_messages: boolean;
@@ -32,6 +32,14 @@ const DEFAULT_PREFS: Prefs = {
   in_app_maintenance: true,
 };
 
+const TYPE_ALERT_CONFIG: { key: keyof NotifTypeAlerts; label: string; icon: typeof MessageCircle; emoji: string }[] = [
+  { key: "messages", label: "Messages", icon: MessageCircle, emoji: "💬" },
+  { key: "bookings", label: "Bookings", icon: CalendarCheck, emoji: "📅" },
+  { key: "payments", label: "Payments", icon: CreditCard, emoji: "💰" },
+  { key: "documents", label: "Documents", icon: FileText, emoji: "📄" },
+  { key: "maintenance", label: "Maintenance", icon: Wrench, emoji: "🔧" },
+];
+
 export default function NotificationPreferences() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,6 +48,7 @@ export default function NotificationPreferences() {
   const [alertPrefs, setAlertPrefsState] = useState<NotifAlertPrefs>(getNotifAlertPrefs());
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
   const [browserPermission, setBrowserPermission] = useState<NotificationPermission | "unsupported">(
     "Notification" in window ? Notification.permission : "unsupported"
   );
@@ -87,7 +96,15 @@ export default function NotificationPreferences() {
   const toggle = (key: keyof Prefs) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
   const toggleAlert = (key: keyof NotifAlertPrefs) => {
+    if (key === "typeAlerts") return;
     const next = setNotifAlertPrefs({ [key]: !alertPrefs[key] });
+    setAlertPrefsState(next);
+  };
+
+  const toggleTypeAlert = (key: keyof NotifTypeAlerts) => {
+    const next = setNotifAlertPrefs({
+      typeAlerts: { ...alertPrefs.typeAlerts, [key]: !alertPrefs.typeAlerts[key] },
+    });
     setAlertPrefsState(next);
   };
 
@@ -101,6 +118,33 @@ export default function NotificationPreferences() {
     } else if (result === "denied") {
       toast({ title: "Notifications blocked", description: "Please enable them in your browser settings.", variant: "destructive" });
     }
+  };
+
+  const handleSendTest = async () => {
+    if (!user) return;
+    setSendingTest(true);
+    try {
+      // Insert a real test notification
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        org_id: null as any,
+        type: "info",
+        title: "🔔 Test notification",
+        message: "This is a test notification to verify your alert settings are working correctly.",
+        link: "/settings",
+        metadata_json: {
+          target_type: "message",
+          target_id: "test-" + Date.now(),
+          target_url: "/settings",
+          module: "long_term",
+          country_code: "",
+        },
+      });
+      toast({ title: t("notif.test_sent") || "Test notification sent!" });
+    } catch {
+      toast({ title: "Error", description: "Could not send test notification", variant: "destructive" });
+    }
+    setSendingTest(false);
   };
 
   const Row = ({ label, emailKey, appKey }: { label: string; emailKey: keyof Prefs; appKey: keyof Prefs }) => (
@@ -133,8 +177,9 @@ export default function NotificationPreferences() {
           {t("notif.alert_settings_desc") || "Control how you receive real-time alerts on this device."}
         </p>
 
-        {/* Browser notifications */}
+        {/* Global toggles */}
         <div className="space-y-3">
+          {/* Browser notifications */}
           <div className="flex items-center justify-between py-3 border-b border-border/30">
             <div className="flex items-center gap-3">
               <Bell className="h-4 w-4 text-muted-foreground" />
@@ -170,13 +215,51 @@ export default function NotificationPreferences() {
           </div>
 
           {/* Vibration */}
-          <div className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-3 border-b border-border/30">
             <div className="flex items-center gap-3">
               <Vibrate className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-foreground">{t("notif.vibration") || "Vibration"}</span>
             </div>
             <Switch checked={alertPrefs.vibration} onCheckedChange={() => toggleAlert("vibration")} />
           </div>
+        </div>
+
+        {/* Per-type alert toggles */}
+        <div className="mt-5 pt-4 border-t border-border/30">
+          <h3 className="text-sm font-medium text-foreground mb-3">
+            {t("notif.per_type_alerts") || "Alert by notification type"}
+          </h3>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t("notif.per_type_alerts_desc") || "Disable sound, vibration, and browser alerts for specific categories."}
+          </p>
+          <div className="space-y-1">
+            {TYPE_ALERT_CONFIG.map(({ key, label, emoji }) => (
+              <div key={key} className="flex items-center justify-between py-2.5 border-b border-border/20 last:border-0">
+                <span className="text-sm text-foreground">{emoji} {label}</span>
+                <Switch
+                  checked={alertPrefs.typeAlerts[key]}
+                  onCheckedChange={() => toggleTypeAlert(key)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Test notification button */}
+        <div className="mt-5 pt-4 border-t border-border/30">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendTest}
+            disabled={sendingTest}
+            className="w-full sm:w-auto gap-2"
+          >
+            <SendHorizonal className="h-4 w-4" />
+            {sendingTest ? "Sending..." : t("notif.send_test") || "Send test notification"}
+          </Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            {t("notif.test_desc") || "Sends a real notification to verify your sound, vibration, and browser alert settings."}
+          </p>
         </div>
 
         <div className="flex items-center gap-2 mt-4 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
