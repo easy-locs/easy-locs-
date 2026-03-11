@@ -562,6 +562,8 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.store_not_found": "Shop nicht gefunden", "mp.provider_not_found": "Anbieter nicht gefunden", "mp.review_single": "Bewertung",
     "mp.status_new": "Neue Anfrage", "mp.status_pending": "Ausstehend", "mp.status_awaiting_payment": "Zahlung ausstehend",
     "mp.status_confirmed": "Bestätigt", "mp.status_modified": "Geändert", "mp.status_cancelled": "Storniert", "mp.status_completed": "Abgeschlossen", "mp.status_refunded": "Erstattet",
+    "payment.method": "Zahlungsmethode", "payment.card": "Kreditkarte", "payment.card_desc": "Sicher mit Stripe bezahlen",
+    "payment.cash": "Bargeld", "payment.cash_desc": "Bezahlung vor Ort", "payment.bank_transfer": "Überweisung", "payment.bank_transfer_desc": "Per Banküberweisung / IBAN",
   },
   it: {
     "mp.title": "Marketplace",
