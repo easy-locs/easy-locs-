@@ -320,18 +320,18 @@ export default function ProviderStorefront() {
       </div>
 
       {/* Reviews section */}
-      {placeholderReviews.length > 0 && (
+      {reviews.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Star className="h-5 w-5 text-[hsl(var(--chart-4))]" />
             Reviews ({reviewsCount})
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {placeholderReviews.map((review) => (
+            {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
           </div>
-          {reviewsCount > 3 && (
+          {reviewsCount > reviews.length && (
             <div className="mt-4 text-center">
               <Button variant="outline" size="sm" className="text-xs">
                 View all {reviewsCount} reviews
