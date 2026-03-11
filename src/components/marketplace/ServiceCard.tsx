@@ -50,97 +50,107 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
   const prevPhoto = (e: React.MouseEvent) => { e.stopPropagation(); setPhotoIdx((i) => (i - 1 + photos.length) % photos.length); };
 
   return (
-    <Card className="overflow-hidden hover:border-accent/50 transition-colors group h-full flex flex-col min-h-[280px]">
+    <Card className="overflow-hidden border-border/60 hover:border-accent/40 hover:shadow-card-hover transition-all duration-300 group h-full flex flex-col min-h-[280px]">
       {/* Photo gallery */}
       {photos.length > 0 ? (
-        <div className="relative h-44 shrink-0 bg-muted overflow-hidden">
+        <div className="relative h-48 shrink-0 bg-muted overflow-hidden">
           <img
             src={photos[photoIdx]}
             alt={service.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
             loading="lazy"
           />
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+          {/* Category badge on photo */}
+          <Badge variant="secondary" className="absolute top-2.5 left-2.5 text-[10px] backdrop-blur-sm bg-background/80 border-0 shadow-sm">
+            {cat.icon} {cat.label}
+          </Badge>
           {photos.length > 1 && (
             <>
-              <button onClick={prevPhoto} className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-9 h-9 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={prevPhoto} className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <button onClick={nextPhoto} className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-9 h-9 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={nextPhoto} className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
                 <ChevronRight className="h-4 w-4" />
               </button>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {photos.map((_, i) => (
                   <button
                     key={i}
                     onClick={(e) => { e.stopPropagation(); setPhotoIdx(i); }}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${i === photoIdx ? "bg-white" : "bg-white/50"}`}
+                    className={`w-2 h-2 rounded-full transition-all ${i === photoIdx ? "bg-white scale-110" : "bg-white/50"}`}
                     aria-label={`Photo ${i + 1}`}
                   />
                 ))}
               </div>
             </>
           )}
-        </div>
-      ) : (
-        <div className="h-44 shrink-0 bg-muted/50 flex items-center justify-center text-3xl">{cat.icon}</div>
-      )}
-      <CardContent className="pt-4 space-y-2 flex-1 flex flex-col">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{cat.icon}</span>
-          <Badge variant="outline" className="text-xs">{cat.label}</Badge>
-          {(service.badges || []).map((b: string) => (
-            <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
-          ))}
           {service.requires_id_document && (
-            <Badge variant="outline" className="text-[10px]">🪪 ID Required</Badge>
+            <Badge variant="outline" className="absolute top-2.5 right-2.5 text-[10px] bg-background/80 backdrop-blur-sm border-0 shadow-sm">🪪 ID</Badge>
           )}
         </div>
+      ) : (
+        <div className="h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2">
+          <span className="text-4xl">{cat.icon}</span>
+          <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
+        </div>
+      )}
+      <CardContent className="pt-3.5 pb-4 space-y-2.5 flex-1 flex flex-col">
+        {/* Badges row — only when photo present (category already shown on photo) */}
+        {photos.length === 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(service.badges || []).map((b: string) => (
+              <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
+            ))}
+          </div>
+        )}
+        {photos.length > 0 && (service.badges || []).length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(service.badges || []).map((b: string) => (
+              <Badge key={b} variant="secondary" className="text-[10px]">{b}</Badge>
+            ))}
+          </div>
+        )}
 
-        <h3 className="font-semibold text-foreground line-clamp-1">{service.title}</h3>
-        {service.description && <p className="text-xs text-muted-foreground line-clamp-2">{service.description}</p>}
+        <h3 className="font-semibold text-foreground line-clamp-1 text-[15px]">{service.title}</h3>
+        {service.description && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{service.description}</p>}
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           {service.city && (
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {service.city}, {service.country}</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-accent/70" /> {service.city}, {service.country}</span>
           )}
           {service.duration_minutes && (
-            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {service.duration_minutes}min</span>
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-accent/70" /> {service.duration_minutes}min</span>
           )}
           {service.max_capacity > 1 && (
-            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> Max {service.max_capacity}</span>
-          )}
-          {photos.length > 1 && (
-            <span className="text-[10px] text-muted-foreground">{photos.length} photos</span>
+            <span className="flex items-center gap-1"><Users className="h-3 w-3 text-accent/70" /> Max {service.max_capacity}</span>
           )}
         </div>
 
         {provider && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/40">
             {provider.avatar_url ? (
-              <img src={provider.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+              <img src={provider.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-border" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
+              <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent text-[11px] font-bold shrink-0 ring-1 ring-accent/20">
                 {provider.display_name?.charAt(0) || "P"}
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <span className="font-medium text-foreground">{provider.display_name}</span>
-              {provider.verified && <Badge variant="secondary" className="text-[10px] ml-1">✓</Badge>}
-              <div className="flex items-center gap-2 flex-wrap">
-                {Number(provider.rating) > 0 && (
-                  <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-[hsl(45,90%,50%)]" />{Number(provider.rating).toFixed(1)}</span>
-                )}
-                {provider.phone && <span className="text-[10px]">📞 {provider.phone}</span>}
-                {provider.email && <span className="text-[10px] truncate">✉️ {provider.email}</span>}
-              </div>
+              <span className="font-medium text-foreground text-[12px]">{provider.display_name}</span>
+              {provider.verified && <Badge variant="secondary" className="text-[9px] ml-1 px-1">✓</Badge>}
+              {Number(provider.rating) > 0 && (
+                <span className="flex items-center gap-0.5 text-[11px]"><Star className="h-3 w-3 text-[hsl(var(--chart-4))]" />{Number(provider.rating).toFixed(1)}</span>
+              )}
             </div>
           </div>
         )}
 
         {/* Source / Provider Contact — only visible in dashboard (showActions mode) */}
         {showActions && service.source_contact_name && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-accent/5 rounded-lg border border-accent/10">
-            <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground p-2.5 bg-accent/5 rounded-lg border border-accent/10">
+            <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[10px] font-bold shrink-0">
               {service.source_contact_name.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
@@ -153,13 +163,19 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-          <span className="font-bold text-accent">{priceLabel}</span>
+        {/* Price + Actions footer */}
+        <div className="flex items-center justify-between pt-2.5 border-t border-border/50 mt-auto">
+          <div className="flex flex-col">
+            <span className="font-bold text-accent text-base">{priceLabel}</span>
+            {photos.length > 1 && (
+              <span className="text-[10px] text-muted-foreground">{photos.length} photos</span>
+            )}
+          </div>
           <div className="flex gap-1.5">
             {slug && links && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-accent">
                     <Share2 className="h-3.5 w-3.5" />
                   </Button>
                 </PopoverTrigger>
@@ -189,18 +205,22 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             )}
 
             {showCalendar && (
-              <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setCalendarOpen(!calendarOpen)}>
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-accent" onClick={() => setCalendarOpen(!calendarOpen)}>
                 <Calendar className="h-3.5 w-3.5" />
               </Button>
             )}
 
             {showActions && onEdit && <Button size="sm" variant="outline" onClick={onEdit}>Edit</Button>}
-            {onBook && <Button size="sm" onClick={onBook}>Book</Button>}
+            {onBook && (
+              <Button size="sm" onClick={onBook} className="shadow-sm">
+                Book
+              </Button>
+            )}
           </div>
         </div>
 
         {calendarOpen && (
-          <div className="pt-3 border-t border-border">
+          <div className="pt-3 border-t border-border/50">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-muted-foreground">Availability Calendar</p>
               <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => setCalendarOpen(false)}>
