@@ -248,27 +248,41 @@ export default function WorldPropertyMap({ propertiesByCountry, userCountry }: P
       </div>
 
       <div className="bg-card rounded-2xl shadow-card border border-border/50 overflow-hidden">
-        {/* 3D Globe */}
+        {/* 3D Globe or fallback */}
         <div className="relative w-full" style={{ height: 320 }}>
           <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-transparent to-background/30 pointer-events-none z-10 rounded-t-2xl" />
-          <Suspense fallback={
+          {canRender3D && !renderError ? (
+            <GlobeErrorBoundary fallback={
+              <div className="w-full h-full flex items-center justify-center bg-muted/10">
+                <Globe className="h-16 w-16 text-accent/20" />
+              </div>
+            }>
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center bg-muted/10">
+                  <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
+                </div>
+              }>
+                <Canvas
+                  camera={{ position: [0, 0, 2.6], fov: 42 }}
+                  style={{ background: "transparent" }}
+                  dpr={[1, 1.5]}
+                  gl={{ antialias: true, alpha: true, powerPreference: "low-power", failIfMajorPerformanceCaveat: true }}
+                  onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); }}
+                >
+                  <GlobeScene
+                    countries={countriesWithCoords}
+                    hoveredCountry={hoveredCountry}
+                    onHover={handleHover}
+                    onSelect={handleSelect}
+                  />
+                </Canvas>
+              </Suspense>
+            </GlobeErrorBoundary>
+          ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted/10">
-              <Globe className="h-10 w-10 text-muted-foreground animate-spin" />
+              <Globe className="h-16 w-16 text-accent/20 animate-pulse" />
             </div>
-          }>
-            <Canvas
-              camera={{ position: [0, 0, 2.6], fov: 42 }}
-              style={{ background: "transparent" }}
-              dpr={[1, 2]}
-            >
-              <GlobeScene
-                countries={countriesWithCoords}
-                hoveredCountry={hoveredCountry}
-                onHover={handleHover}
-                onSelect={handleSelect}
-              />
-            </Canvas>
-          </Suspense>
+          )}
         </div>
 
         {/* Country chips — horizontal scroll */}
