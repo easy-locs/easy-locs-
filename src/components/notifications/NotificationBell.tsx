@@ -184,7 +184,7 @@ const NotificationBell = () => {
           }
 
           // Browser notification — group multiple arriving within 2s
-          if (prefs.browserNotifications && "Notification" in window && Notification.permission === "granted") {
+          if (typeEnabled && prefs.browserNotifications && "Notification" in window && Notification.permission === "granted") {
             pendingCountRef.current += 1;
             if (groupTimerRef.current) clearTimeout(groupTimerRef.current);
             groupTimerRef.current = setTimeout(() => {
