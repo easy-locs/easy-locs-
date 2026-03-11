@@ -212,7 +212,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           <div className="flex flex-col">
             <span className="font-bold text-accent text-base">{priceLabel}</span>
             {photos.length > 1 && (
-              <span className="text-[10px] text-muted-foreground">{photos.length} photos</span>
+              <span className="text-[10px] text-muted-foreground">{photos.length} {t("mp.photos") || "photos"}</span>
             )}
           </div>
           <div className="flex gap-1.5">
