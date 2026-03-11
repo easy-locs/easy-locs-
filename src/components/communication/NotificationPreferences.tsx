@@ -331,7 +331,7 @@ export default function NotificationPreferences() {
             className="w-full sm:w-auto gap-2"
           >
             <SendHorizonal className="h-4 w-4" />
-            {sendingTest ? "Sending..." : t("notif.send_test") || "Send test notification"}
+            {sendingTest ? (t("notif.sending") || "Sending…") : t("notif.send_test") || "Send test notification"}
           </Button>
           <p className="text-xs text-muted-foreground mt-2">
             {t("notif.test_desc") || "Sends a real notification to verify your sound, vibration, and browser alert settings."}
