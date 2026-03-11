@@ -252,7 +252,7 @@ const Leases = () => {
                   { key: "terminated" as const, label: t("page.leases.terminated"), count: terminatedCount },
                 ]).map(f => (
                   <button key={f.key} onClick={() => setFilter(f.key)}
-                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${filter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                    className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filter === f.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                     {f.label} ({f.count})
                   </button>
                 ))}
