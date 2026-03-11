@@ -17,6 +17,7 @@ import { resolveTarget, detectModule, detectPortal } from "@/lib/shared/routes";
 import type { AppModule } from "@/lib/shared/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getNotifAlertPrefs, type NotifAlertPrefs } from "@/lib/notif-alert-prefs";
 
 const dateFnsLocaleMap: Record<string, DfLocale> = {
   fr, en: enUS, es, de, it, pt, nl, pl, tr, ja, ko, zh: zhCN,
