@@ -195,15 +195,25 @@ const App = () => (
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Explore />} />
-              <Route path="/index" element={<Index />} />
+              {/* ══════ PUBLIC WEBSITE ══════ */}
+              {/* Homepage */}
+              <Route path="/" element={<Index />} />
+
+              {/* Auth */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/tenant-signup" element={<TenantSignup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+
+              {/* Discovery */}
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/properties" element={<PropertiesShowcase />} />
+              <Route path="/properties/:slug" element={<PublicRealEstateListing />} />
+              <Route path="/property/:slug" element={<PublicRealEstateListing />} />
+
+              {/* Public listings */}
               <Route path="/listing/:slug" element={<PublicListing />} />
               <Route path="/r/:country/:city/:propertySlug" element={<PublicListing />} />
               <Route path="/rentals" element={<RentalCatalog />} />
@@ -216,14 +226,12 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/properties" element={<PropertiesShowcase />} />
-              <Route path="/properties/:slug" element={<PublicRealEstateListing />} />
-              <Route path="/property/:slug" element={<PublicRealEstateListing />} />
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
               <Route path="/agency/:accountSlug/:slug" element={<PublicRealEstateListing />} />
               <Route path="/install" element={<Install />} />
               <Route path="/vision" element={<PlatformVision />} />
+
+              {/* SEO landing pages */}
               <Route path="/property-management" element={<PropertyManagement />} />
               <Route path="/rental-management" element={<PropertyManagement />} />
               <Route path="/landlord-software" element={<PropertyManagement />} />
@@ -233,49 +241,30 @@ const App = () => (
               <Route path="/rental-management-software" element={<RentalManagementSoftwarePage />} />
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
               <Route path="/marketplace-services" element={<MarketplaceServicesPage />} />
+              <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
 
-              {/* ══════ PROGRAMMATIC SEO ROUTES ══════ */}
-
-              {/* /locations — Global hub */}
+              {/* Programmatic SEO */}
               <Route path="/locations" element={<LocationsPage />} />
-
-              {/* /country/:country — Country hub */}
               <Route path="/country/:country" element={<CountryHubPage />} />
-
-              {/* /city/:city — City hub + sub-pages */}
               <Route path="/city/:city" element={<CityHubPage />} />
               <Route path="/city/:city/services" element={<CityServicesPage />} />
               <Route path="/city/:city/activities" element={<CityActivitiesPage />} />
               <Route path="/city/:city/concierge" element={<CityConciergePage />} />
-
-              {/* /services — Services directory */}
               <Route path="/services" element={<ServicesHubPage />} />
               <Route path="/services/:service" element={<ServiceCategoryPage />} />
               <Route path="/services/:service/:city" element={<ServiceCityPage />} />
-
-              {/* /marketplace — Marketplace directory */}
               <Route path="/marketplace" element={<MarketplaceHubPage />} />
               <Route path="/marketplace/:city" element={<MarketplaceCityPage />} />
               <Route path="/marketplace/:service/:city" element={<MarketplaceServiceCityPage />} />
-
-              {/* /provider/:slug — Provider SEO landing (new) + legacy storefront */}
               <Route path="/provider/:providerSlug" element={<ProviderSEOPage />} />
-
-              {/* /activities — Activities hub + city combinations */}
               <Route path="/activities" element={<ActivitiesPage />} />
               <Route path="/activities/:activityCity" element={<ActivityCitySEOPage />} />
 
-              {/* ══════ BOOKING.COM-STYLE CLEAN URL ROUTES ══════ */}
-              {/* /:slug — resolves to country or city hub (e.g. /dubai, /france) */}
+              {/* Clean URL resolvers */}
               <Route path="/:slug" element={<SlugResolver />} />
-              {/* /:slug/:category — city + category (e.g. /dubai/services, /dubai/car-rental) */}
               <Route path="/:slug/:category" element={<SlugCategoryResolver />} />
 
-              {/* Legacy SEO routes — backward compatible */}
-              <Route path="/seasonal-rentals" element={<SeasonalRentalsPage />} />
-              {/* /services/:serviceCity handled by legacy route for hyphenated slugs */}
-
-              {/* Legal / Info pages */}
+              {/* Legal */}
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/cookies" element={<CookiePage />} />
