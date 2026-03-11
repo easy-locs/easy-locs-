@@ -42,6 +42,11 @@ const ServiceCategories = () => (
           </motion.div>
         ))}
       </div>
+      <div className="text-center mt-6">
+        <Link to="/marketplace" className="text-sm font-medium text-accent hover:underline">
+          Browse all services →
+        </Link>
+      </div>
     </div>
   </section>
 );
