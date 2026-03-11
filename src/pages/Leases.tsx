@@ -245,7 +245,7 @@ const Leases = () => {
                 <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   placeholder={t("page.leases.search_tenant")} className="pl-9" />
               </div>
-              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
+              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5 overflow-x-auto scrollbar-thin">
                 {([
                   { key: "all" as const, label: t("page.leases.all"), count: tenants.filter(t => t.property_id).length },
                   { key: "active" as const, label: t("page.leases.active"), count: activeCount },
