@@ -511,7 +511,7 @@ const PublicServiceBooking = () => {
 
               {service.conditions && (
                 <div className="bg-muted/30 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-2">Conditions</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">{t("mp.conditions") || "Conditions"}</h3>
                   <p className="text-sm text-muted-foreground">{service.conditions}</p>
                 </div>
               )}
