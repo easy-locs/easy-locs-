@@ -1,6 +1,7 @@
-import { Star, Reply } from "lucide-react";
+import { Star, Reply, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface ReviewCardProps {
   review: {
@@ -12,6 +13,7 @@ interface ReviewCardProps {
     response?: string | null;
     service_title?: string;
     created_at: string;
+    verified?: boolean;
   };
 }
 
@@ -32,7 +34,15 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-foreground">{review.reviewer_name}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-foreground">{review.reviewer_name}</span>
+              {review.verified && (
+                <Badge variant="secondary" className="text-[10px] h-4 gap-0.5 px-1.5 bg-success/10 text-success border-success/20">
+                  <ShieldCheck className="h-2.5 w-2.5" />
+                  Verified
+                </Badge>
+              )}
+            </div>
             <span className="text-[11px] text-muted-foreground shrink-0">
               {formatDate(review.created_at)}
             </span>

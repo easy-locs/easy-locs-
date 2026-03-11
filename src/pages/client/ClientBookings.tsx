@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck, MapPin, Clock, Inbox } from "lucide-react";
+import { CalendarCheck, MapPin, Clock, Inbox, Star } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import ReviewSubmitDialog from "@/components/marketplace/ReviewSubmitDialog";
 
 interface BookingItem {
   id: string;
@@ -17,6 +19,11 @@ interface BookingItem {
   status: string;
   total?: number;
   currency?: string;
+  service_id?: string;
+  provider_id?: string;
+  booker_name?: string;
+  booker_email?: string;
+  service_title?: string;
 }
 
 const statusColor: Record<string, string> = {
@@ -32,6 +39,8 @@ const ClientBookings = () => {
   const { t } = useI18n();
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewBooking, setReviewBooking] = useState<BookingItem | null>(null);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user?.email) return;
@@ -41,8 +50,20 @@ const ClientBookings = () => {
       const [{ data: seasonal }, { data: concierge }, { data: marketplace }] = await Promise.all([
         supabase.from("booking_requests").select("id, guest_name, check_in, check_out, status, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
         supabase.from("concierge_orders").select("id, guest_name, service_date, status, total_price, currency, created_at").eq("guest_email", email).order("created_at", { ascending: false }).limit(50),
-        supabase.from("marketplace_bookings").select("id, booker_name, service_date, status, total_price, currency, created_at").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
+        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, service_date, status, total_price, currency, created_at, service_id, provider_id, marketplace_services(title)").eq("booker_email", email).order("created_at", { ascending: false }).limit(50),
       ]);
+
+      // Fetch already-reviewed booking IDs
+      const mkIds = (marketplace || []).map(b => b.id);
+      let reviewed = new Set<string>();
+      if (mkIds.length > 0) {
+        const { data: existingReviews } = await supabase
+          .from("marketplace_reviews")
+          .select("booking_id")
+          .in("booking_id", mkIds);
+        reviewed = new Set((existingReviews || []).map(r => r.booking_id).filter(Boolean));
+      }
+      setReviewedBookingIds(reviewed);
 
       const lblSeasonal = t("client.type_seasonal") || "Seasonal";
       const lblConcierge = t("client.type_concierge") || "Concierge";
@@ -50,7 +71,14 @@ const ClientBookings = () => {
       const items: BookingItem[] = [
         ...(seasonal || []).map(b => ({ id: b.id, type: "seasonal" as const, title: `${lblSeasonal}: ${b.check_in} → ${b.check_out}`, date: b.created_at, status: b.status })),
         ...(concierge || []).map(b => ({ id: b.id, type: "concierge" as const, title: `${lblConcierge}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
-        ...(marketplace || []).map(b => ({ id: b.id, type: "marketplace" as const, title: `${lblService}: ${b.service_date || "—"}`, date: b.created_at, status: b.status, total: b.total_price, currency: b.currency })),
+        ...(marketplace || []).map((b: any) => ({
+          id: b.id, type: "marketplace" as const,
+          title: `${lblService}: ${b.marketplace_services?.title || b.service_date || "—"}`,
+          date: b.created_at, status: b.status, total: b.total_price, currency: b.currency,
+          service_id: b.service_id, provider_id: b.provider_id,
+          booker_name: b.booker_name, booker_email: b.booker_email,
+          service_title: b.marketplace_services?.title,
+        })),
       ];
       items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setBookings(items);
@@ -60,6 +88,9 @@ const ClientBookings = () => {
   }, [user]);
 
   const filterByType = (type?: string) => type ? bookings.filter(b => b.type === type) : bookings;
+
+  const canReview = (b: BookingItem) =>
+    b.type === "marketplace" && b.status === "completed" && b.service_id && b.provider_id && !reviewedBookingIds.has(b.id);
 
   const renderList = (items: BookingItem[]) => {
     if (items.length === 0) {
@@ -89,6 +120,16 @@ const ClientBookings = () => {
                 <span className="text-sm font-semibold text-foreground">{b.total} {b.currency}</span>
               )}
               <Badge variant="outline" className={statusColor[b.status] || ""}>{b.status}</Badge>
+              {canReview(b) && (
+                <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => setReviewBooking(b)}>
+                  <Star className="h-3 w-3" /> Review
+                </Button>
+              )}
+              {b.type === "marketplace" && reviewedBookingIds.has(b.id) && (
+                <Badge variant="secondary" className="text-[10px] h-5 gap-1">
+                  <Star className="h-2.5 w-2.5 fill-current" /> Reviewed
+                </Badge>
+              )}
             </div>
           </motion.div>
         ))}
@@ -113,6 +154,25 @@ const ClientBookings = () => {
           <TabsContent value="marketplace">{renderList(filterByType("marketplace"))}</TabsContent>
         </Tabs>
       </div>
+
+      {reviewBooking && (
+        <ReviewSubmitDialog
+          open={!!reviewBooking}
+          onOpenChange={(v) => !v && setReviewBooking(null)}
+          booking={{
+            id: reviewBooking.id,
+            service_id: reviewBooking.service_id!,
+            provider_id: reviewBooking.provider_id!,
+            booker_name: reviewBooking.booker_name,
+            booker_email: reviewBooking.booker_email,
+            service_title: reviewBooking.service_title,
+          }}
+          onSubmitted={() => {
+            setReviewedBookingIds(prev => new Set([...prev, reviewBooking.id]));
+            setReviewBooking(null);
+          }}
+        />
+      )}
     </ClientLayout>
   );
 };
