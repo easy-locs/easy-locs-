@@ -8,7 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import TrustMetrics from "@/components/marketplace/TrustMetrics";
-import ReviewCard from "@/components/marketplace/ReviewCard";
+import SortableReviewList from "@/components/marketplace/SortableReviewList";
 import ReviewRatingBreakdown from "@/components/marketplace/ReviewRatingBreakdown";
 import MobileCTABar from "@/components/marketplace/MobileCTABar";
 import { MapPin, ExternalLink, Loader2, Star, CheckCircle2 } from "lucide-react";
