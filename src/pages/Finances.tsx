@@ -294,12 +294,12 @@ const Finances = () => {
         </motion.div>
 
         {/* Stripe Connect Card */}
-        <div className={`ui-card ${
+        <div className={`ui-card stripe-connect-card ${
           connectStatus?.onboarding_complete 
             ? "border-success/30" 
             : "border-accent/30"
         }`}>
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
             <div className={`p-3 rounded-lg ${connectStatus?.onboarding_complete ? "bg-success/10" : "bg-accent/10"}`}>
               <CreditCard className={`h-6 w-6 ${connectStatus?.onboarding_complete ? "text-success" : "text-accent"}`} />
             </div>
