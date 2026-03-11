@@ -988,25 +988,27 @@ const CommunicationCenter = () => {
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
             <h1 className="text-lg sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-accent shrink-0" />
-              Communication Center
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
+                <MessageCircle className="h-4 w-4 text-accent-foreground" />
+              </div>
+              Communication
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Unified inbox — Long-term · Seasonal · Marketplace · Real Estate
+            <p className="text-[11px] text-muted-foreground mt-0.5 ml-10">
+              Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {[
-              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8" },
-              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8" },
-              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8" },
-              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8" },
+              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8", ringColor: "ring-accent/20" },
+              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8", ringColor: "ring-blue-500/20" },
+              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8", ringColor: "ring-destructive/20" },
+              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8", ringColor: "ring-amber-500/20" },
             ].map(s => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105`}
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105 ring-1 ${s.ringColor}`}
               >
                 <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                 <span className="font-bold text-foreground tabular-nums">{s.value}</span>
