@@ -584,6 +584,7 @@ export type Database = {
           service_id: string
           service_time: string | null
           status: string
+          stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           total_price: number
           unit_price: number
@@ -624,6 +625,7 @@ export type Database = {
           service_id: string
           service_time?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           total_price?: number
           unit_price?: number
@@ -664,6 +666,7 @@ export type Database = {
           service_id?: string
           service_time?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           total_price?: number
           unit_price?: number
@@ -1707,10 +1710,12 @@ export type Database = {
           property_id: string | null
           provider_id: string
           quantity: number | null
+          refunded_at: string | null
           service_date: string | null
           service_id: string
           service_time: string | null
           status: string
+          stripe_payment_intent_id: string | null
           total_price: number | null
           updated_at: string
         }
@@ -1737,10 +1742,12 @@ export type Database = {
           property_id?: string | null
           provider_id: string
           quantity?: number | null
+          refunded_at?: string | null
           service_date?: string | null
           service_id: string
           service_time?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
           total_price?: number | null
           updated_at?: string
         }
@@ -1767,10 +1774,12 @@ export type Database = {
           property_id?: string | null
           provider_id?: string
           quantity?: number | null
+          refunded_at?: string | null
           service_date?: string | null
           service_id?: string
           service_time?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
           total_price?: number | null
           updated_at?: string
         }

@@ -295,6 +295,7 @@ async function handleMarketplacePayment(supabase: any, metadata: Record<string, 
     payment_confirmed: true,
     payment_confirmed_at: new Date().toISOString(),
     payment_method: "stripe",
+    stripe_payment_intent_id: paymentIntentId || null,
   }).eq("id", bookingId);
 
   if (updateError) {

@@ -278,17 +278,17 @@ Every implementation block MUST complete this checklist before merge:
 | 1.3 | Mobile stability audit | UX | ✅ Layout | No | Full mobile pass |
 | 1.4 | SEO stability guarantee | Constraint | No | No | Sitemap validator |
 
-### LAYER 2: Reinforcement (Next 2 Sprints)
-| # | Action | Type | UX | DB | QA |
-|---|--------|------|----|----|-----|
-| 2.1 | Booking lifecycle hook | Tech+UX | ✅ Consistency | No | Scenario 1 full |
-| 2.2 | Modification flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 10 |
-| 2.3 | Quotation flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 5 |
-| 2.4 | Permission audit pass | Security | ✅ Blocked actions | RLS updates | Scenario 4 full |
-| 2.5 | Calendar unification | Tech | ✅ Accuracy | No (read-only) | Calendar accuracy |
-| 2.6 | Auth context split | Tech | ✅ Speed | No | Auth regression |
-| 2.7 | Monitoring gaps | Tech | No | audit_logs | Simulate failures |
-| 2.8 | Stripe refund automation | Tech+UX | ✅ New feature | No | Scenario 1 step 14 |
+### LAYER 2: Reinforcement (Next 2 Sprints) ✅ COMPLETE
+| # | Action | Type | UX | DB | QA | Status |
+|---|--------|------|----|----|-----|--------|
+| 2.1 | Booking lifecycle hook | Tech+UX | ✅ Consistency | No | Scenario 1 full | ✅ Done |
+| 2.2 | Modification flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 10 | ✅ Done |
+| 2.3 | Quotation flow | Tech+UX | ✅ New feature | New columns | Scenario 1 step 5 | ✅ Done |
+| 2.4 | Permission audit pass | Security | ✅ Blocked actions | RLS updates | Scenario 4 full | ✅ Done |
+| 2.5 | Calendar unification | Tech | ✅ Accuracy | No (read-only) | Calendar accuracy | ✅ Done |
+| 2.6 | Auth context split | Tech | ✅ Speed | No | Auth regression | ✅ Done |
+| 2.7 | Monitoring gaps | Tech | No | audit_logs | Simulate failures | ✅ Done |
+| 2.8 | Stripe refund automation | Tech+UX | ✅ New feature | stripe_payment_intent_id | Scenario 1 step 14 | ✅ Done |
 
 ### LAYER 3: Scale (Q3-Q4 2026)
 | # | Action | Type | UX | DB | QA |
