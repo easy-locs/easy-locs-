@@ -12,7 +12,7 @@ import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, Calendar,
+  Receipt, Calendar, CalendarRange,
   Layers, BookOpen, Zap, Store, ChevronDown,
   FileCheck, ArrowLeft, Globe, Clock,
   Shield, UsersRound, Banknote,
@@ -96,6 +96,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       title: t("nav.listings") || "Listings",
       icon: Building,
       items: [
+        { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
         { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
         { icon: Building, label: t("nav.real_estate_listings") || "Sales / Listings", path: "/dashboard/real-estate" },
       ],
