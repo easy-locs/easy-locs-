@@ -316,9 +316,11 @@ export default function RealEstateListings() {
                           <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => copyLink(listing.slug)}>
                             {copiedSlug === listing.slug ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <PermissionGate permission="properties:delete">
+                            <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(listing.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
                         </div>
                         {/* Share buttons */}
                         <div className="flex items-center gap-1.5">
