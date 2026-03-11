@@ -136,4 +136,4 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
       </div>
     </Link>
   );
-}
+});
