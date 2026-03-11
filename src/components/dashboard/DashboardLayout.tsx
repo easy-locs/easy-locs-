@@ -8,6 +8,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
@@ -550,8 +551,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
-        <main className="app-main flex-1 p-3 sm:p-6 overflow-x-hidden">{children}</main>
+        <main className="app-main flex-1 p-3 sm:p-6 pb-20 lg:pb-6 overflow-x-hidden">{children}</main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav onMenuOpen={() => setSidebarOpen(true)} />
     </div>
   );
 };
