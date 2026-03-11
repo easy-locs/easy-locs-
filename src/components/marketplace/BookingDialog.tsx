@@ -325,12 +325,12 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
             />
             {paymentMethod === "bank_transfer" && (
               <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                💳 Bank transfer details will be sent after booking confirmation.
+                💳 {t("mp.bank_transfer_note") || "Bank transfer details will be sent after booking confirmation."}
               </p>
             )}
             {paymentMethod === "cash" && (
               <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                💵 Payment in cash upon arrival or at the time of service.
+                💵 {t("mp.cash_note") || "Payment in cash upon arrival or at the time of service."}
               </p>
             )}
           </div>
