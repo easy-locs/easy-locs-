@@ -575,7 +575,7 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "mp.review_submit": "إرسال التقييم", "mp.review_submitting": "جارٍ الإرسال…",
     "mp.review_tap_to_rate": "انقر للتقييم", "mp.review_poor": "سيء", "mp.review_fair": "مقبول", "mp.review_good": "جيد", "mp.review_very_good": "جيد جداً", "mp.review_excellent": "ممتاز",
     "mp.sort_latest": "الأحدث", "mp.sort_highest": "الأعلى تقييماً", "mp.sort_lowest": "الأقل تقييماً", "mp.sort_replied": "مع ردود",
-    "mp.reviews_of": "من", "mp.view_all_reviews": "عرض جميع التقييمات", "mp.provider_reply": "رد المزود",
+    "mp.reviews_of": "من", "mp.view_all_reviews": "عرض جميع التقييمات", "mp.verified_only": "الموثّقة فقط", "mp.no_verified_reviews": "لا توجد تقييمات موثّقة بعد", "mp.no_reviews": "لا توجد تقييمات بعد", "mp.load_more_reviews": "عرض المزيد من التقييمات", "mp.remaining": "متبقية", "mp.review_booking_not_eligible": "هذا الحجز لم يعد مؤهلاً للتقييم", "mp.provider_reply": "رد المزود",
     "mp.status_new": "طلب جديد", "mp.status_pending": "قيد الانتظار", "mp.status_awaiting_payment": "بانتظار الدفع",
     "mp.status_confirmed": "مؤكد", "mp.status_modified": "معدّل", "mp.status_cancelled": "ملغى", "mp.status_completed": "مكتمل", "mp.status_refunded": "مسترد",
   },
