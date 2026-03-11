@@ -145,13 +145,13 @@ const Pricing = () => {
           </motion.div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
-            Simple Pricing,{" "}
-            <span className="text-gradient-gold">Unlimited Potential</span>
+            {t("pricing.title") || "Simple Pricing,"}{" "}
+            <span className="text-gradient-gold">{t("pricing.title_hl") || "Unlimited Potential"}</span>
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            Manage properties, services, bookings, documents and payments worldwide.
+            {t("pricing.subtitle") || "Manage properties, services, bookings, documents and payments worldwide."}
             <br className="hidden sm:block" />
-            <span className="font-semibold text-foreground">You earn — we never take a cut.</span>
+            <span className="font-semibold text-foreground">{t("pricing.no_cut") || "You earn — we never take a cut."}</span>
           </p>
         </motion.div>
 
