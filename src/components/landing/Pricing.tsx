@@ -340,7 +340,7 @@ const Pricing = () => {
           {/* Audience + payment methods */}
           <div className="text-center space-y-3">
             <p className="text-xs text-muted-foreground max-w-xl mx-auto">
-              Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries.
+              {t("pricing.audience") || "Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries."}
             </p>
             <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">💳 Credit card</span>
