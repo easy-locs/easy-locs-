@@ -471,6 +471,7 @@ export default function Explore() {
             )}
           </>
         )}
+        </div>{/* end flex-1 */}
       </main>
 
       <ExploreSEOFooter />
