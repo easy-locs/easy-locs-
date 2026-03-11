@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, Sparkles, User, Users, Building2, Zap, BadgePercent, Globe, ShieldCheck, ArrowRight, Star, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 /* ── Feature lists ── */
 const FREE_FEATURES = [
@@ -114,6 +115,7 @@ const TRUST_SIGNALS = [
 ];
 
 const Pricing = () => {
+  const { t } = useI18n();
   const [interval, setInterval] = useState<"monthly" | "annual">("annual");
 
   return (
@@ -139,17 +141,17 @@ const Pricing = () => {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-semibold mb-2"
           >
             <Crown className="h-4 w-4" />
-            Zero Commission Platform
+            {t("pricing.badge") || "Zero Commission Platform"}
           </motion.div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
-            Simple Pricing,{" "}
-            <span className="text-gradient-gold">Unlimited Potential</span>
+            {t("pricing.title") || "Simple Pricing,"}{" "}
+            <span className="text-gradient-gold">{t("pricing.title_hl") || "Unlimited Potential"}</span>
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            Manage properties, services, bookings, documents and payments worldwide.
+            {t("pricing.subtitle") || "Manage properties, services, bookings, documents and payments worldwide."}
             <br className="hidden sm:block" />
-            <span className="font-semibold text-foreground">You earn — we never take a cut.</span>
+            <span className="font-semibold text-foreground">{t("pricing.no_cut") || "You earn — we never take a cut."}</span>
           </p>
         </motion.div>
 
@@ -189,7 +191,7 @@ const Pricing = () => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {v === "monthly" ? "Monthly" : "Annual"}
+                {v === "monthly" ? (t("pricing.monthly") || "Monthly") : (t("pricing.annual") || "Annual")}
                 {v === "annual" && interval === "annual" && (
                   <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                     -17%
@@ -264,16 +266,15 @@ const Pricing = () => {
                       >
                         {price === 0 ? "0" : price}€
                       </motion.span>
-                      <span className="text-muted-foreground text-sm">/{isFree ? "forever" : intLabel}</span>
+                      <span className="text-muted-foreground text-sm">/{isFree ? (t("pricing.forever") || "forever") : intLabel}</span>
                     </div>
                     {interval === "annual" && tier.monthly > 0 && (
                       <p className="text-[11px] text-success font-semibold mt-1 flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        Save {Math.round((1 - tier.annual / (tier.monthly * 12)) * 100)}% vs monthly
+                        <Sparkles className="h-3 w-3" /> {t("pricing.save") || "Save"} {Math.round((1 - tier.annual / (tier.monthly * 12)) * 100)}% {t("pricing.vs_monthly") || "vs monthly"}
                       </p>
                     )}
                     {isFree && (
-                      <p className="text-[11px] text-muted-foreground mt-1">No credit card required</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">{t("pricing.no_card") || "No credit card required"}</p>
                     )}
                   </div>
 
@@ -302,7 +303,7 @@ const Pricing = () => {
                         : "bg-accent text-accent-foreground hover:opacity-90"
                     }`}
                   >
-                    {isFree ? "Get started free" : "Start free trial"}
+                    {isFree ? (t("pricing.cta_free") || "Get started free") : (t("pricing.cta_trial") || "Start free trial")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
@@ -325,8 +326,8 @@ const Pricing = () => {
                 <BadgePercent className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">0% commission — always</p>
-                <p className="text-xs text-muted-foreground">Your bookings, your payments, your revenue. We never take a cut.</p>
+                <p className="font-bold text-foreground text-sm">{t("pricing.zero_commission") || "0% commission — always"}</p>
+                <p className="text-xs text-muted-foreground">{t("pricing.zero_commission_desc") || "Your bookings, your payments, your revenue. We never take a cut."}</p>
               </div>
             </div>
             <div className="hidden sm:block w-px h-10 bg-success/20" />
@@ -339,7 +340,7 @@ const Pricing = () => {
           {/* Audience + payment methods */}
           <div className="text-center space-y-3">
             <p className="text-xs text-muted-foreground max-w-xl mx-auto">
-              Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries.
+              {t("pricing.audience") || "Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries."}
             </p>
             <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">💳 Credit card</span>

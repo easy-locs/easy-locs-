@@ -13,9 +13,9 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const items = [
     { icon: LayoutDashboard, label: t("nav.dashboard") || "Dashboard", path: "/dashboard" },
     { icon: Home, label: t("nav.properties") || "Properties", path: "/dashboard/rental" },
-    { icon: Store, label: "Marketplace", path: "/dashboard/activities" },
+    { icon: Store, label: t("nav.marketplace") || "Marketplace", path: "/dashboard/activities" },
     { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/communication" },
-    { icon: Menu, label: "More", path: "__menu__" },
+    { icon: Menu, label: t("nav.more") || "More", path: "__menu__" },
   ];
 
   const isActive = (path: string) => {

@@ -1119,3 +1119,47 @@ html {
     border-bottom-right-radius: 0 !important;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   MOBILE PREMIUM POLISH — Final pass
+   ══════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  /* Booking dialog calendar sizing */
+  .rdp {
+    font-size: 0.75rem !important;
+  }
+  .rdp-day {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  .rdp-caption {
+    font-size: 0.8125rem !important;
+  }
+
+  /* Provider storefront avatar overlap */
+  .ring-offset-background.-mt-12 {
+    margin-top: -2.5rem;
+  }
+
+  /* Fix dialog scrolling */
+  [role="dialog"] {
+    overscroll-behavior: contain;
+  }
+}
+
+/* ── RTL directional arrows ── */
+[dir="rtl"] [class*="ChevronRight"] { transform: scaleX(-1); }
+[dir="rtl"] [class*="ChevronLeft"] { transform: scaleX(-1); }
+[dir="rtl"] [class*="ArrowRight"] { transform: scaleX(-1); }
+[dir="rtl"] [class*="ArrowLeft"] { transform: scaleX(-1); }
+
+/* ── PWA & safe areas ── */
+@media (display-mode: standalone) {
+  .pwa-install-hint { display: none !important; }
+}
+@media (max-width: 1023px) {
+  .mobile-safe {
+    padding-bottom: max(4rem, env(safe-area-inset-bottom, 0px));
+  }
+}

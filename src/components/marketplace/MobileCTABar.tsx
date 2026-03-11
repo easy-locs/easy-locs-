@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle, Share2 } from "lucide-react";
 import { getShareLinks, type ShareableType } from "@/lib/social-share";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface MobileCTABarProps {
   phone?: string;
@@ -14,6 +15,7 @@ interface MobileCTABarProps {
 }
 
 export default function MobileCTABar({ phone, whatsapp, shareType, shareSlug, shareTitle, onBook, priceLine }: MobileCTABarProps) {
+  const { t } = useI18n();
   const whatsappLink = whatsapp
     ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`
     : null;
@@ -26,7 +28,7 @@ export default function MobileCTABar({ phone, whatsapp, shareType, shareSlug, sh
       } catch { /* user cancelled */ }
     } else {
       await navigator.clipboard.writeText(links.copy);
-      toast.success("Link copied!");
+      toast.success(t("mp.link_copied") || "Link copied!");
     }
   };
 
@@ -40,20 +42,20 @@ export default function MobileCTABar({ phone, whatsapp, shareType, shareSlug, sh
         )}
         <div className="flex items-center gap-1.5 shrink-0">
           {phone && (
-            <Button size="icon" variant="outline" className="h-10 w-10" asChild>
+            <Button size="icon" variant="outline" className="h-11 w-11" asChild>
               <a href={`tel:${phone}`}><Phone className="h-4 w-4" /></a>
             </Button>
           )}
           {whatsappLink && (
-            <Button size="icon" variant="outline" className="h-10 w-10 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
+            <Button size="icon" variant="outline" className="h-11 w-11 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" /></a>
             </Button>
           )}
-          <Button size="icon" variant="outline" className="h-10 w-10" onClick={handleShare}>
+          <Button size="icon" variant="outline" className="h-11 w-11" onClick={handleShare}>
             <Share2 className="h-4 w-4" />
           </Button>
-          <Button className="h-10 px-5 font-semibold shadow-sm" onClick={onBook}>
-            Book Now
+          <Button className="h-11 px-5 font-semibold shadow-sm" onClick={onBook}>
+            {t("mp.book_now") || "Book Now"}
           </Button>
         </div>
       </div>

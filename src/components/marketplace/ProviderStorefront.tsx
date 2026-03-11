@@ -87,7 +87,7 @@ export default function ProviderStorefront() {
       notes: formData.notes,
     });
     if (error) toast.error(error.message);
-    else { toast.success("Booking request sent!"); setBookingService(null); }
+    else { toast.success(t("mp.booking_submitted") || "Booking request sent!"); setBookingService(null); }
   };
 
   if (isLoading) {
