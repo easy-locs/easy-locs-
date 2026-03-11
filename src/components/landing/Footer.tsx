@@ -148,11 +148,11 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
             . {t("landing.footer.rights") || "All rights reserved."}
           </span>
           <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
-            <span>SaaS Platform</span>
+            <span>{t("landing.footer.saas") || "SaaS Platform"}</span>
             <span>·</span>
-            <span>110+ Countries</span>
+            <span>{t("landing.footer.countries_count") || "110+ Countries"}</span>
             <span>·</span>
-            <span>31 Languages</span>
+            <span>{t("landing.footer.languages_count") || "31 Languages"}</span>
           </div>
         </div>
       </div>

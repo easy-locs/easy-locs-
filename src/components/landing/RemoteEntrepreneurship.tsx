@@ -8,12 +8,12 @@ import { Globe, MapPin, ArrowRight, Wifi, Laptop } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 const cities = [
-  { flag: "🇫🇷", city: "Paris", service: "Cleaning services", link: "/city/paris" },
-  { flag: "🇹🇭", city: "Phuket", service: "Car rental", link: "/city/phuket" },
-  { flag: "🇦🇪", city: "Dubai", service: "Activities & tours", link: "/city/dubai" },
-  { flag: "🇲🇦", city: "Marrakech", service: "Concierge services", link: "/city/marrakech" },
-  { flag: "🇬🇧", city: "London", service: "Property management", link: "/city/london" },
-  { flag: "🇺🇸", city: "Miami", service: "Seasonal rentals", link: "/city/miami" },
+  { flag: "🇫🇷", city: "Paris", serviceKey: "landing.remote.svc.cleaning", serviceFb: "Cleaning services", link: "/city/paris" },
+  { flag: "🇹🇭", city: "Phuket", serviceKey: "landing.remote.svc.car", serviceFb: "Car rental", link: "/city/phuket" },
+  { flag: "🇦🇪", city: "Dubai", serviceKey: "landing.remote.svc.activities", serviceFb: "Activities & tours", link: "/city/dubai" },
+  { flag: "🇲🇦", city: "Marrakech", serviceKey: "landing.remote.svc.concierge", serviceFb: "Concierge services", link: "/city/marrakech" },
+  { flag: "🇬🇧", city: "London", serviceKey: "landing.remote.svc.property", serviceFb: "Property management", link: "/city/london" },
+  { flag: "🇺🇸", city: "Miami", serviceKey: "landing.remote.svc.seasonal", serviceFb: "Seasonal rentals", link: "/city/miami" },
 ];
 
 const RemoteEntrepreneurship = () => {
