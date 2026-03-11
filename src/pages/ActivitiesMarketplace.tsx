@@ -457,6 +457,7 @@ const ActivitiesMarketplace = () => {
             <TabsTrigger value="browse"><Compass className="h-4 w-4 mr-1" /> Explorer</TabsTrigger>
             {myProvider && <TabsTrigger value="my-services"><Store className="h-4 w-4 mr-1" /> Mes Services</TabsTrigger>}
             {myProvider && <TabsTrigger value="bookings"><ShoppingCart className="h-4 w-4 mr-1" /> Réservations</TabsTrigger>}
+            {myProvider && <TabsTrigger value="reviews"><MessageSquare className="h-4 w-4 mr-1" /> Avis</TabsTrigger>}
           </TabsList>
 
           {/* Browse Tab */}
