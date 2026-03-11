@@ -107,7 +107,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
         </div>
       ) : (
-        <div className="h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">
+        <div className="h-40 sm:h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">
           <span className="text-4xl">{cat.icon}</span>
           <Badge variant="secondary" className="text-[10px]">{cat.label}</Badge>
           {verified && (

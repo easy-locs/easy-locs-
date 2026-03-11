@@ -1121,7 +1121,7 @@ html {
 }
 
 /* ══════════════════════════════════════════════════
-   MOBILE PREMIUM POLISH — Final pass
+   MOBILE PREMIUM POLISH — Final stabilization pass
    ══════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
@@ -1136,6 +1136,9 @@ html {
   .rdp-caption {
     font-size: 0.8125rem !important;
   }
+  .rdp-head_cell {
+    font-size: 0.6875rem !important;
+  }
 
   /* Provider storefront avatar overlap */
   .ring-offset-background.-mt-12 {
@@ -1146,6 +1149,79 @@ html {
   [role="dialog"] {
     overscroll-behavior: contain;
   }
+
+  /* ── Landing sections mobile spacing ── */
+  section[aria-label] .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* ── Hero CTA buttons — full width on small phones ── */
+  section[aria-label="Hero"] .flex-col a,
+  section[aria-label="Hero"] .flex-col > div > a {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── Service card mobile improvements ── */
+  .service-card-gallery {
+    height: 10rem; /* 160px instead of 192px for tighter mobile */
+  }
+
+  /* ── Booking summary card — compact on mobile ── */
+  .booking-summary-card .text-2xl {
+    font-size: 1.375rem !important;
+  }
+
+  /* ── Booking step indicators — smaller on mobile ── */
+  .booking-steps .w-8 {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+  .booking-steps .w-12 {
+    width: 2rem;
+  }
+
+  /* ── Review cards — single column on mobile ── */
+  .review-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Trust metrics — wrap cleanly ── */
+  .trust-metrics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  /* ── Payment method grid — stack on very small ── */
+  .payment-methods-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Photo thumbnails ── */
+  .photo-thumbs img,
+  .photo-thumbs button {
+    width: 3.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  /* ── Form actions footer — sticky on mobile ── */
+  .booking-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: hsl(var(--card));
+    border-top: 1px solid hsl(var(--border));
+    padding: 0.75rem 1rem;
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+  }
+
+  /* ── Disclaimer compact on mobile ── */
+  .marketplace-disclaimer {
+    font-size: 0.5625rem !important; /* 9px */
+  }
 }
 
 /* ── RTL directional arrows ── */
@@ -1154,6 +1230,13 @@ html {
 [dir="rtl"] [class*="ArrowRight"] { transform: scaleX(-1); }
 [dir="rtl"] [class*="ArrowLeft"] { transform: scaleX(-1); }
 
+/* ── RTL logical property helpers ── */
+[dir="rtl"] .ms-auto { margin-inline-start: auto; }
+[dir="rtl"] .me-auto { margin-inline-end: auto; }
+[dir="rtl"] .border-l-2 { border-left-width: 0; border-right-width: 2px; }
+[dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
+[dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
+
 /* ── PWA & safe areas ── */
 @media (display-mode: standalone) {
   .pwa-install-hint { display: none !important; }
@@ -1161,5 +1244,34 @@ html {
 @media (max-width: 1023px) {
   .mobile-safe {
     padding-bottom: max(4rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   PREMIUM VISUAL POLISH — Shadows, borders, accents
+   ══════════════════════════════════════════════════ */
+
+/* Consistent card hover across all surfaces */
+@layer components {
+  .premium-card {
+    @apply bg-card border border-border/50 shadow-card hover:shadow-card-hover transition-all duration-200;
+    border-radius: var(--card-radius);
+  }
+  .premium-card:hover {
+    border-color: hsl(var(--accent) / 0.2);
+  }
+}
+
+/* ── Form field consistency ── */
+@layer components {
+  .field-label {
+    @apply block text-xs font-medium text-foreground;
+    margin-bottom: 0.25rem;
+  }
+  .field-hint {
+    @apply text-[11px] text-muted-foreground mt-0.5;
+  }
+  .field-error {
+    @apply text-[11px] text-destructive mt-0.5;
   }
 }
