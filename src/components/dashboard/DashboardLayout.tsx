@@ -362,38 +362,36 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Scrollable nav */}
         <nav className="flex-1 py-2 px-2 overflow-y-auto overscroll-contain scrollbar-thin will-change-scroll">
-          {navSections.map((section) => {
+        {navSections.map((section) => {
             const isOpen = openSections[section.key] ?? false;
             const allItems = getAllSectionItems(section);
             const hasActiveItem = allItems.some(isItemActive);
             const isSingleItem = allItems.length === 1 && !section.subGroups;
+            const sectionLocked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
+
+            // Hide restricted sections entirely for free accounts
+            if (sectionLocked) return null;
 
             if (isSingleItem) {
               const item = allItems[0];
               const active = isItemActive(item);
-              const locked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
               return (
                 <div key={section.key} className="mb-1">
                   <Link
-                    to={locked ? "/dashboard/billing" : item.path}
+                    to={item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      locked
-                        ? "text-sidebar-foreground/40 hover:text-sidebar-foreground/60"
-                        : active
+                      active
                         ? "bg-sidebar-accent text-sidebar-primary"
                         : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                     }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
                     <span className="flex-1">{item.label}</span>
-                    {locked && <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />}
                   </Link>
                 </div>
               );
             }
-
-            const sectionLocked = !isSubscribed && !FREE_NAV_SECTIONS.has(section.key);
 
             // Render nav item link
             const renderNavItem = (item: NavItem) => {
