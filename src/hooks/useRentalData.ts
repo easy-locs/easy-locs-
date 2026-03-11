@@ -30,6 +30,7 @@ export interface Property {
   lot_number?: string | null;
   building_id?: string | null;
   country: string;
+  photo_urls?: any;
 }
 
 export interface Tenant {
