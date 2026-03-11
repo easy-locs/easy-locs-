@@ -748,7 +748,7 @@ const PublicServiceBooking = () => {
                         )}
                         {selectedTime && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Time</span>
+                             <span className="text-muted-foreground">{t("mp.time") || "Time"}</span>
                             <span className="text-foreground">{selectedTime}</span>
                           </div>
                         )}
