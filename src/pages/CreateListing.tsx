@@ -110,7 +110,7 @@ const defaultForm: ListingForm = {
   country: "FR", city: "", location: "", description: "",
   price: 0, currency: "EUR", price_type: "fixed",
   deposit_amount: 0, quantity: 1,
-  contact_email: "", contact_whatsapp: "",
+  contact_email: "", contact_whatsapp: "", contact_telegram: "",
   verification_types: [], payment_methods: ["on_site"],
   communication_channels: ["internal"],
   surface_sqm: 0, rooms: 0, bedrooms: 0, bathrooms: 0,
