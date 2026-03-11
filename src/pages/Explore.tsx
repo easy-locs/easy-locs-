@@ -174,13 +174,31 @@ export default function Explore() {
     return false;
   }, [activeGroup, activeSubcategory]);
 
-  const allItems = useMemo(() => {
+  const unfilteredItems = useMemo(() => {
     const items: Array<any & { _type: string }> = [];
     seasonal.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "seasonal" }));
     realEstate.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "real-estate" }));
     services.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "service" }));
-    return items.filter(matchCategory);
-  }, [seasonal, realEstate, services, matchText, matchLocation, matchCategory]);
+    return items;
+  }, [seasonal, realEstate, services, matchText, matchLocation]);
+
+  const allItems = useMemo(() => unfilteredItems.filter(matchCategory), [unfilteredItems, matchCategory]);
+
+  // Count items per group for category bar badges
+  const groupCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: unfilteredItems.length };
+    for (const group of CATEGORY_HIERARCHY) {
+      const subValues = group.subcategories.map(s => s.value);
+      counts[group.value] = unfilteredItems.filter(item => {
+        const type = item._type as string;
+        if (subValues.includes("seasonal") && type === "seasonal") return true;
+        if (subValues.includes("real-estate") && type === "real-estate") return true;
+        if (type === "service" && subValues.includes(item.category)) return true;
+        return false;
+      }).length;
+    }
+    return counts;
+  }, [unfilteredItems]);
 
   useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [activeGroup, activeSubcategory, searchQuery, locationQuery, radiusKm]);
 
