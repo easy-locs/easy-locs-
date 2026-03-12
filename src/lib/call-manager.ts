@@ -82,6 +82,7 @@ export class CallManager {
   private _channelReady = false;
   private _pendingCandidates: RTCIceCandidate[] = [];
   private _cleaned = false;
+  private _ending = false;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
@@ -95,6 +96,10 @@ export class CallManager {
     this.userId = opts.userId;
     this.role = opts.role;
     this.onStateChange = opts.onStateChange;
+  }
+
+  private debug(step: string, meta?: Record<string, unknown>) {
+    console.log(`[CallManager][${this.role}][${this.callId}] ${step}`, meta || {});
   }
 
   /** Join the Realtime broadcast channel for signaling — MUST await */
