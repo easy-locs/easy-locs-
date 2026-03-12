@@ -64,7 +64,7 @@ const jsonLd = {
     "Long-term rental management with lease generation",
     "Direct short-term booking without intermediaries",
     "Global service marketplace (cleaning, transport, activities)",
-    "Multi-country operations in 110+ countries",
+    "Multi-country operations in 190+ countries",
     "Multi-currency payments (120+ currencies)",
     "Multi-language interface (31 languages)",
     "AI-powered document generation",
