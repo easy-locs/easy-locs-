@@ -349,8 +349,8 @@ export default function Explore() {
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <ThemeSwitcher />
-              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">Log in</Link>
-              <Link to="/signup" className="text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">Sign up</Link>
+              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">{t("landing.nav.login") || "Log in"}</Link>
+              <Link to="/signup" className="text-[11px] sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">{t("landing.nav.pro_signup") || "Sign up"}</Link>
             </div>
           </div>
 
