@@ -168,6 +168,10 @@ const Index = () => {
       </Suspense>
 
       <Suspense fallback={<SectionLoader />}>
+        <WorldMapSection />
+      </Suspense>
+
+      <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
 
