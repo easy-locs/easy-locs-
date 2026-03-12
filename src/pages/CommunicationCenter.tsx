@@ -7,6 +7,7 @@ import {
   Building, Phone, Mail, MapPin, Receipt, ChevronRight, Hash, History,
 } from "lucide-react";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
+import DealRoomPanel from "@/components/communication/DealRoomPanel";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
@@ -1585,6 +1586,20 @@ const CommunicationCenter = () => {
                             </Button>
                           )}
                         </div>
+
+                        {/* Smart Deal Room */}
+                        {selectedThread.contextId && orgId && (
+                          <div className="pt-3 border-t border-border/30">
+                            <DealRoomPanel
+                              contextType={selectedThread.contextType}
+                              contextId={selectedThread.contextId}
+                              contextTitle={selectedThread.serviceTitle || selectedThread.listingTitle || selectedThread.propertyLabel}
+                              targetOrgId={orgId}
+                              threadId={selectedThread.id}
+                              isOrgMember={true}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Activity Timeline */}
