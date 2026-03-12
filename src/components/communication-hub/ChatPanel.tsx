@@ -162,12 +162,12 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
         booking_type: thread.bookingType || null,
-        contact_name: thread.conversationType !== "property" ? thread.name : null,
-        contact_email: thread.conversationType !== "property" ? thread.email : null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
         content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      } as any);
+      });
       toast.success("File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
