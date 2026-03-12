@@ -114,7 +114,7 @@ export function ExploreRadiusSearch({
           <Input
             value={locationQuery}
             onChange={e => { onLocationChange(e.target.value); setShowSuggestions(true); }}
-            placeholder="Saisissez une ville et un rayon"
+            placeholder={t("explore.radius.placeholder") || "City, country, address..."}
             className="pl-10 rounded-xl h-12 text-base"
           />
         </div>
