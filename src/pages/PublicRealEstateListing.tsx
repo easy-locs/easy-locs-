@@ -30,6 +30,10 @@ interface Listing {
   contact_email: string; contact_phone: string; features: any;
   parking: boolean; garden: boolean; terrace: boolean; elevator: boolean;
   furnished: boolean; energy_class: string; org_id: string; views_count: number;
+  agency_name?: string; agent_name?: string; agency_logo_url?: string;
+  license_number?: string; company_registration?: string;
+  agency_phone?: string; agency_email?: string;
+  lat?: number; lng?: number;
 }
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; seoLabel: string }> = {
