@@ -20,6 +20,14 @@ const jsonLd = [
   },
   {
     "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
+      { "@type": "ListItem", position: 2, name: "Vacation Rentals", item: "https://www.easy-locs.com/seasonal-rentals" },
+    ],
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
       {
