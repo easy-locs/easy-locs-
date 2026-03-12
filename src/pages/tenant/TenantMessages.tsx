@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload } from "lucide-react";
+import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload, Languages } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
