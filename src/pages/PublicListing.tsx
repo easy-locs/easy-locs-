@@ -188,9 +188,8 @@ const PublicListing = () => {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <AppLogo variant="header" linkTo="/" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ShareButtons type="listing" slug={listingSlug || ""} title={listing?.title || "Easy-Locs"} />
-            <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
           </div>
         </div>
       </header>

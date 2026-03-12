@@ -277,7 +277,11 @@ export default function PublicRealEstateListing() {
               {/* Mobile carousel — safe touch targets */}
               <div className="md:hidden relative aspect-[4/3] overflow-hidden">
                 <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent" />
+                {/* Watermark */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <span className="text-white/15 text-3xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                </div>
                 {photos.length > 1 && (
                   <>
                     <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
@@ -288,10 +292,13 @@ export default function PublicRealEstateListing() {
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-md rounded-full w-11 h-11 flex items-center justify-center active:scale-95 shadow-lg">
                       <ChevronRight className="h-5 w-5" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {photos.slice(0, 8).map((_, i) => (
+                    {/* Thumbnail strip instead of dots */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-[90%] overflow-x-auto pb-1">
+                      {photos.slice(0, 8).map((url, i) => (
                         <button key={i} onClick={() => setPhotoIndex(i)}
-                          className={`h-2 rounded-full transition-all ${i === photoIndex ? "bg-background w-5" : "bg-background/50 w-2"}`} />
+                          className={`shrink-0 w-10 h-7 rounded-md overflow-hidden border-2 transition-all ${i === photoIndex ? "border-white scale-110" : "border-transparent opacity-50"}`}>
+                          <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
                       ))}
                     </div>
                   </>
@@ -300,13 +307,6 @@ export default function PublicRealEstateListing() {
                 <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-xs sm:text-sm px-3 py-1.5 font-semibold backdrop-blur-md`}>
                   {tc.label}
                 </Badge>
-                {/* Mobile price overlay */}
-                <div className="absolute bottom-4 left-3">
-                  <span className="text-xl font-bold text-background drop-shadow-lg tabular-nums">
-                    {listing.price.toLocaleString()} {listing.currency}
-                  </span>
-                  {priceLabel && <span className="text-background/80 text-xs ml-1">{priceLabel}</span>}
-                </div>
                 {/* Photo count */}
                 {photos.length > 1 && (
                   <span className="absolute top-3 right-3 bg-foreground/50 backdrop-blur-md text-background text-[10px] px-2 py-1 rounded-full font-medium">
