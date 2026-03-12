@@ -2039,6 +2039,10 @@ const pageFr: Record<string, string> = {
   "page.listing.error_payment": "Erreur de paiement",
   "page.listing.stripe_note": "Paiement sécurisé par Stripe · Carte & Apple Pay acceptés",
   "page.listing.powered_by_brand": "Gestion locative intelligente",
+  "page.listing.contact_direct": "Contacter directement",
+  "page.listing.call_free": "Appeler gratuitement",
+  "page.listing.calling": "Appel en cours…",
+  "page.listing.send_message": "Envoyer un message",
   // ── Catalog & Host ──
   "page.catalog.title": "Locations saisonnières",
   "page.catalog.search_placeholder": "Rechercher une destination…",
