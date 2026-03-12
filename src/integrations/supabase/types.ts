@@ -2308,6 +2308,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           attachment_url: string | null
+          attachment_urls: Json | null
           booking_id: string | null
           booking_type: string | null
           category: string
@@ -2336,6 +2337,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           attachment_url?: string | null
+          attachment_urls?: Json | null
           booking_id?: string | null
           booking_type?: string | null
           category?: string
@@ -2364,6 +2366,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           attachment_url?: string | null
+          attachment_urls?: Json | null
           booking_id?: string | null
           booking_type?: string | null
           category?: string
