@@ -416,14 +416,14 @@ export class CallManager {
     this.iceTimer = null;
     this.streamTimer = null;
     this.elapsedTimer = null;
-    this.localStream?.getTracks().forEach((t) => t.stop());
+    try { this.localStream?.getTracks().forEach((t) => t.stop()); } catch {}
     this.localStream = null;
     this.remoteStream = null;
-    this.pc?.close();
+    try { this.pc?.close(); } catch {}
     this.pc = null;
     this.iceConnected = false;
     if (this.channel) {
-      supabase.removeChannel(this.channel);
+      try { supabase.removeChannel(this.channel); } catch {}
       this.channel = null;
     }
   }
