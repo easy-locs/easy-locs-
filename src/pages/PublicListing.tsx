@@ -14,6 +14,7 @@ import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2 } from "lucide-
 import { buildAppUrl } from "@/lib/app-domain";
 import { sharePage } from "@/lib/social-share";
 import AppLogo from "@/components/AppLogo";
+import ListingMapSection from "@/components/public/ListingMapSection";
 
 const PublicListing = () => {
   const { slug, propertySlug } = useParams<{ slug?: string; propertySlug?: string }>();
@@ -261,6 +262,15 @@ const PublicListing = () => {
                 ))}
               </div>
             )}
+
+            {/* Map & Directions */}
+            <ListingMapSection
+              lat={listing.lat || property?.lat}
+              lng={listing.lng || property?.lng}
+              address={property?.address}
+              city={property?.city || listing.city}
+              country={property?.country || listing.country}
+            />
 
           </div>
 

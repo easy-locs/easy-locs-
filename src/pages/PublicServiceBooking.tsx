@@ -16,6 +16,7 @@ import MarketplaceDisclaimer from "@/components/marketplace/MarketplaceDisclaime
 import { useI18n } from "@/lib/i18n";
 import ShareButtons from "@/components/public/ShareButtons";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
+import ListingMapSection from "@/components/public/ListingMapSection";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
@@ -506,7 +507,16 @@ const PublicServiceBooking = () => {
                 </div>
               )}
 
-              {service.location && (
+              {/* Map & Directions */}
+              <ListingMapSection
+                lat={service.lat}
+                lng={service.lng}
+                address={service.location}
+                city={service.city}
+                country={service.country}
+              />
+
+              {service.location && !service.lat && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" /> {service.location}
                 </div>
