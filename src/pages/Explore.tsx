@@ -312,12 +312,23 @@ export default function Explore() {
   const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radiusKm > 0);
   const radiusLabel = radiusKm === 0 ? "Worldwide" : `${radiusKm} km`;
 
-  return (
+    const exploreJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Explore Properties, Rentals & Services — Easy-Locs",
+      description: "Discover properties for sale, vacation rentals, and local services worldwide on Easy-Locs.",
+      url: "https://www.easy-locs.com/explore",
+      provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
+      numberOfItems: allItems.length,
+    };
+
+    return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Explore — Real Estate, Rentals & Services Worldwide | Easy-Locs"
         description="Discover properties for sale, vacation rentals, and local services worldwide. Browse verified listings from trusted hosts and providers on Easy-Locs."
         canonical="https://www.easy-locs.com/explore"
+        jsonLd={exploreJsonLd}
       />
 
       {/* ═══════ STICKY HEADER ═══════ */}
