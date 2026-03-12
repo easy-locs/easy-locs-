@@ -343,8 +343,14 @@ function PropertyCard({ listing }: { listing: PublicListing }) {
         </div>
 
         <CardContent className="p-4 sm:p-5 space-y-2.5">
-          <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 group-hover:text-accent transition-colors">
-            {listing.title}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 group-hover:text-accent transition-colors flex-1 min-w-0">
+              {listing.title}
+            </h3>
+            <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap shrink-0 tabular-nums">
+              {listing.price.toLocaleString()} {listing.currency}{priceLabel}
+            </span>
+          </div>
           </h3>
 
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
