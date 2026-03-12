@@ -66,12 +66,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
           { event: "INSERT", schema: "public", table: "call_logs" },
           async (payload) => {
             const call = payload.new as any;
-            // Only show if this call is for one of our orgs and we didn't make it
             if (call.caller_id === user.id) return;
             if (!orgIds.includes(call.callee_org_id)) return;
             if (call.status !== "ringing") return;
 
-            // Get caller name
             const { data: profile } = await supabase
               .from("profiles")
               .select("name, email")
@@ -83,6 +81,18 @@ export function CallProvider({ children }: { children: ReactNode }) {
             setIncomingContextLabel(call.context_label || "");
             setIncomingIsVideo(call.is_video || false);
             setShowIncoming(true);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "call_logs" },
+          (payload) => {
+            const call = payload.new as any;
+            // If this call was accepted/declined/ended by someone else, dismiss our ring
+            if (call.status !== "ringing" && call.id === incomingCallIdRef.current) {
+              setShowIncoming(false);
+              setIncomingCallId(null);
+            }
           }
         )
         .subscribe();
