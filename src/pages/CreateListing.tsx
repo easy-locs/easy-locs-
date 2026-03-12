@@ -112,7 +112,7 @@ const defaultForm: ListingForm = {
   deposit_amount: 0, quantity: 1,
   contact_email: "", contact_whatsapp: "", contact_telegram: "",
   verification_types: [], payment_methods: ["on_site"],
-  communication_channels: ["internal"],
+  communication_channels: ["internal", "email", "whatsapp", "telegram"],
   surface_sqm: 0, rooms: 0, bedrooms: 0, bathrooms: 0,
   year_built: undefined, features: [],
   brand: "", model: "", condition: "good",

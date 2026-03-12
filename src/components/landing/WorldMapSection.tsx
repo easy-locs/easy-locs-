@@ -81,7 +81,7 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed && !isMobile ? (
+            {!globeFailed ? (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
