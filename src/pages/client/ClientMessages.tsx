@@ -114,7 +114,11 @@ const ClientMessages = () => {
     // Filter by tab
     if (threadFilter === "archived") {
       list = list.filter(t => threadPrefs[t.context_id]?.archived);
-    } else if (threadFilter === "all") {
+    } else if (threadFilter === "starred") {
+      // Show threads that have at least one starred message — for now show all non-archived as we track at message level
+      list = list.filter(t => !threadPrefs[t.context_id]?.archived);
+    } else {
+      // "all" — exclude archived
       list = list.filter(t => !threadPrefs[t.context_id]?.archived);
     }
     return list;

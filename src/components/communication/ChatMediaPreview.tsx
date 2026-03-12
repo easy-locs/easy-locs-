@@ -17,10 +17,13 @@ const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".avif"];
 
 function isImageUrl(url: string): boolean {
   try {
-    const path = new URL(url).pathname.toLowerCase();
-    return IMAGE_EXTS.some(ext => path.endsWith(ext)) || (path.includes("/object/") && !isVideoUrl(url));
+    // Strip query params (signed URLs) before checking extension
+    const pathname = new URL(url).pathname.toLowerCase();
+    return IMAGE_EXTS.some(ext => pathname.endsWith(ext));
   } catch {
-    return IMAGE_EXTS.some(ext => url.toLowerCase().includes(ext));
+    // Fallback: check before any '?' query string
+    const clean = url.split("?")[0].toLowerCase();
+    return IMAGE_EXTS.some(ext => clean.endsWith(ext));
   }
 }
 

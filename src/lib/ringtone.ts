@@ -13,10 +13,10 @@ let vibrationInterval: ReturnType<typeof setInterval> | null = null;
 
 function getAudioContext(): AudioContext {
   if (!audioCtx || audioCtx.state === "closed") {
-    audioCtx = new AudioContext();
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
   if (audioCtx.state === "suspended") {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
   }
   return audioCtx;
 }
