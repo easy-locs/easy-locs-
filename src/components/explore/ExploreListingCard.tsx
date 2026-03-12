@@ -98,9 +98,12 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
         {/* Content */}
         <div className="p-3 sm:p-3.5 flex flex-col gap-1.5">
-          <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors">
-            {item.title}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors flex-1 min-w-0">
+              {item.title}
+            </h3>
+            <span className="text-sm font-bold text-foreground whitespace-nowrap shrink-0">{priceLabel}</span>
+          </div>
 
           {/* Location */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

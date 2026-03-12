@@ -311,12 +311,12 @@ const NotificationBell = () => {
   }, []);
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative overflow-visible" ref={containerRef}>
       {/* Bell trigger */}
       <button
         ref={bellRef}
         onClick={handleBellClick}
-        className="relative p-2 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95"
+        className="relative p-2.5 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95 overflow-visible"
         aria-label="Notifications"
         type="button"
       >
@@ -325,7 +325,7 @@ const NotificationBell = () => {
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-0.5 -end-0.5 h-[18px] min-w-[18px] px-1 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-card pointer-events-none"
+            className="absolute top-0.5 end-0.5 h-[18px] min-w-[18px] px-1 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-card pointer-events-none"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </motion.span>
