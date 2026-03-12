@@ -45,6 +45,7 @@ const Navbar = () => {
     { to: "/explore", label: t("landing.nav.explore") || "Explore", isRoute: true },
     { to: "/marketplace", label: t("landing.nav.marketplace") || "Marketplace", isRoute: true },
     { to: "/properties", label: t("landing.nav.properties") || "Properties", isRoute: true },
+    { to: "/dashboard/create-listing", label: t("landing.nav.post") || "Post a listing", isRoute: true, accent: true },
     { to: "#pricing", label: t("landing.nav.pricing") || "Pricing", isRoute: false },
   ];
 
