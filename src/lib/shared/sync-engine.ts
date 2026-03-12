@@ -166,6 +166,21 @@ interface InterventionCreatedEvent extends SyncEventBase {
   propertyLabel: string;
 }
 
+interface DealCreatedEvent extends SyncEventBase {
+  type: "deal_created";
+  dealId: string;
+  contextTitle: string;
+  buyerName: string;
+}
+
+interface DealAcceptedEvent extends SyncEventBase {
+  type: "deal_accepted";
+  dealId: string;
+  contextTitle: string;
+  acceptedAmount: number;
+  currency: string;
+}
+
 export type SyncEvent =
   | LeaseCreatedEvent
   | RentCallCreatedEvent
@@ -176,7 +191,9 @@ export type SyncEvent =
   | ServiceBookingEvent
   | DocumentSharedEvent
   | PaymentRequestSentEvent
-  | InterventionCreatedEvent;
+  | InterventionCreatedEvent
+  | DealCreatedEvent
+  | DealAcceptedEvent;
 
 // ═══════════════════════════════════════════════════════
 // Strict Context Validation — rejects incomplete events
