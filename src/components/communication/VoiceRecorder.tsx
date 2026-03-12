@@ -57,8 +57,8 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
       setCancelled(false);
       setDuration(0);
       timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
-    } catch {
-      toast.error("Microphone access denied");
+    } catch (e: any) {
+      toast.error(e?.name === "NotAllowedError" ? "Microphone access denied" : "Microphone unavailable");
     }
   }, []);
 

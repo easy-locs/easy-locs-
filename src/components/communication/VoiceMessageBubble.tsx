@@ -39,9 +39,22 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe }: Props
       setPlaying(false);
       if (animRef.current) cancelAnimationFrame(animRef.current);
     } else {
-      audio.play();
-      setPlaying(true);
-      animRef.current = requestAnimationFrame(updateProgress);
+      // Safari requires handling the play() promise
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setPlaying(true);
+            animRef.current = requestAnimationFrame(updateProgress);
+          })
+          .catch(() => {
+            // Autoplay blocked or audio load failed — reset state
+            setPlaying(false);
+          });
+      } else {
+        setPlaying(true);
+        animRef.current = requestAnimationFrame(updateProgress);
+      }
     }
   };
 
