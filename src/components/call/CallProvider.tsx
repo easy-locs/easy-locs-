@@ -138,6 +138,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }) => {
       if (!user || startingCallRef.current) return;
       startingCallRef.current = true;
+      setIsStartingCall(true);
 
       try {
       // Use idempotent server-side function to prevent duplicates
