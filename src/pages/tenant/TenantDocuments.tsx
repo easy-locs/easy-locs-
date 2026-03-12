@@ -64,6 +64,7 @@ const TenantDocuments = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { tenantId, orgId, propertyId, T } = useTenantProperty();
+  const { recordTenantSignature } = useLeaseWorkflow();
 
   /* My uploads */
   const [myDocs, setMyDocs] = useState<TenantDoc[]>([]);
@@ -74,6 +75,8 @@ const TenantDocuments = () => {
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [docType, setDocType] = useState("id");
   const [filterType, setFilterType] = useState("all");
+  const [signDocId, setSignDocId] = useState<string | null>(null);
+  const [signDocTitle, setSignDocTitle] = useState("");
 
   const DOC_TYPES = [
     { value: "id", label: T.docTypeId },
