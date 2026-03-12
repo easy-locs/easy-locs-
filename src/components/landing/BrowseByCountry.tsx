@@ -33,12 +33,12 @@ const CONTINENTS = [
     name: "Africa",
     emoji: "🌍",
     countries: [
-      { name: "Morocco", slug: "morocco", flag: "🇲🇦", cities: ["Marrakech", "Casablanca"] },
-      { name: "South Africa", slug: "south-africa", flag: "🇿🇦", cities: ["Cape Town", "Johannesburg"] },
       { name: "Egypt", slug: "egypt", flag: "🇪🇬", cities: ["Cairo", "Hurghada"] },
-      { name: "Tunisia", slug: "tunisia", flag: "🇹🇳", cities: ["Tunis"] },
-      { name: "Senegal", slug: "senegal", flag: "🇸🇳", cities: ["Dakar"] },
       { name: "Mauritius", slug: "mauritius", flag: "🇲🇺", cities: ["Port Louis"] },
+      { name: "Morocco", slug: "morocco", flag: "🇲🇦", cities: ["Marrakech", "Casablanca"] },
+      { name: "Senegal", slug: "senegal", flag: "🇸🇳", cities: ["Dakar"] },
+      { name: "South Africa", slug: "south-africa", flag: "🇿🇦", cities: ["Cape Town", "Johannesburg"] },
+      { name: "Tunisia", slug: "tunisia", flag: "🇹🇳", cities: ["Tunis"] },
     ],
   },
   {
