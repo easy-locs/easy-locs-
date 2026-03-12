@@ -1,11 +1,14 @@
 /**
  * DealRoomPanel — Smart Deal Room integrated into the Communication Center.
  * Shows deal lifecycle, offers, counter-offers, and actions inside the conversation context panel.
+ * Includes realtime sync, auto-payment trigger on accept, and document exchange.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { createPaymentRequest, getOrgPaymentConfig } from "@/lib/shared/payment-request";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,6 +70,22 @@ export default function DealRoomPanel({
   const [offerAmount, setOfferAmount] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
   const [offerType, setOfferType] = useState<"offer" | "counter_offer">("offer");
+
+  // ── Realtime sync for deal rooms and events ──
+  useRealtimeSubscription({
+    table: "deal_rooms",
+    channelName: `deal-panel-${contextId}`,
+    filter: `context_id=eq.${contextId}`,
+    queryKeys: [["deal_room_context", contextType, contextId]],
+    enabled: !!contextId,
+  });
+
+  useRealtimeSubscription({
+    table: "deal_events",
+    channelName: `deal-events-panel-${contextId}`,
+    queryKeys: [["deal_events"]],
+    enabled: !!contextId,
+  });
 
   // Fetch deal room for this context
   const { data: deal, isLoading: dealLoading } = useQuery({
@@ -169,26 +188,69 @@ export default function DealRoomPanel({
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Accept deal
+  // Accept deal → auto-trigger payment request
   const acceptDeal = useMutation({
     mutationFn: async () => {
-      const accepted = (deal as any)?.counter_offer_amount || (deal as any)?.current_offer_amount;
+      const dealD = deal as any;
+      const accepted = dealD?.counter_offer_amount || dealD?.current_offer_amount;
+      const currency = dealD?.current_offer_currency || "EUR";
       const { error } = await supabase
         .from("deal_rooms")
         .update({ accepted_amount: accepted, status: "accepted" as any } as any)
-        .eq("id", deal!.id);
+        .eq("id", dealD.id);
       if (error) throw error;
       await supabase.from("deal_events").insert({
-        deal_id: deal!.id,
+        deal_id: dealD.id,
         event_type: "status_change",
         actor_id: user!.id,
         data_json: { action: "accepted", accepted_amount: accepted },
       } as any);
+
+      // Auto-trigger payment request
+      if (accepted && accepted > 0 && isOrgMember) {
+        try {
+          // Get buyer email
+          const { data: buyerProfile } = await supabase
+            .from("profiles")
+            .select("email, name")
+            .eq("id", dealD.buyer_id)
+            .single();
+
+          if (buyerProfile?.email) {
+            await createPaymentRequest({
+              orgId: targetOrgId,
+              senderId: user!.id,
+              recipientEmail: buyerProfile.email,
+              recipientName: buyerProfile.name || "Customer",
+              amount: accepted,
+              currency,
+              description: `Payment for "${dealD.context_title || "deal"}"`,
+              contextType: "deal",
+              contextId: dealD.id,
+            });
+
+            // Update deal status to payment_pending
+            await supabase
+              .from("deal_rooms")
+              .update({ status: "payment_pending" as any } as any)
+              .eq("id", dealD.id);
+
+            await supabase.from("deal_events").insert({
+              deal_id: dealD.id,
+              event_type: "payment",
+              actor_id: user!.id,
+              data_json: { action: "payment_request_sent", amount: accepted, currency },
+            } as any);
+          }
+        } catch (e) {
+          console.error("[DealRoom] auto-payment failed:", e);
+        }
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["deal_room_context"] });
       qc.invalidateQueries({ queryKey: ["deal_events"] });
-      toast.success("Deal accepted!");
+      toast.success("Deal accepted! Payment request sent.");
     },
     onError: (e: any) => toast.error(e.message),
   });

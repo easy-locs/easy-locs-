@@ -166,6 +166,21 @@ interface InterventionCreatedEvent extends SyncEventBase {
   propertyLabel: string;
 }
 
+interface DealCreatedEvent extends SyncEventBase {
+  type: "deal_created";
+  dealId: string;
+  contextTitle: string;
+  buyerName: string;
+}
+
+interface DealAcceptedEvent extends SyncEventBase {
+  type: "deal_accepted";
+  dealId: string;
+  contextTitle: string;
+  acceptedAmount: number;
+  currency: string;
+}
+
 export type SyncEvent =
   | LeaseCreatedEvent
   | RentCallCreatedEvent
@@ -176,7 +191,9 @@ export type SyncEvent =
   | ServiceBookingEvent
   | DocumentSharedEvent
   | PaymentRequestSentEvent
-  | InterventionCreatedEvent;
+  | InterventionCreatedEvent
+  | DealCreatedEvent
+  | DealAcceptedEvent;
 
 // ═══════════════════════════════════════════════════════
 // Strict Context Validation — rejects incomplete events
@@ -194,6 +211,8 @@ const REQUIRED_CONTEXT: Record<SyncEvent["type"], (ctx: SyncContext, event: Sync
   payment_request_sent: (ctx) => (ctx.paymentRequestId || ctx.bookingId || ctx.leaseId || ctx.tenantId)
     ? null : "payment_request_sent requires paymentRequestId, bookingId, leaseId, or tenantId",
   intervention_created: (ctx) => ctx.propertyId ? null : "intervention_created requires context.propertyId",
+  deal_created:         (ctx, e) => (e as DealCreatedEvent).dealId ? null : "deal_created requires dealId",
+  deal_accepted:        (ctx, e) => (e as DealAcceptedEvent).dealId ? null : "deal_accepted requires dealId",
 };
 
 // ═══════════════════════════════════════════════════════
@@ -211,6 +230,8 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   document_shared:      { targetType: "document",            module: "long_term",    notifType: "document" },
   payment_request_sent: { targetType: "payment",            module: "long_term",    notifType: "payment" },
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
+  deal_created:         { targetType: "deal",                module: "marketplace",  notifType: "info" },
+  deal_accepted:        { targetType: "deal",                module: "marketplace",  notifType: "payment" },
 };
 
 // Context-aware config resolution — certain events adapt based on context IDs
@@ -381,6 +402,8 @@ function resolveTargetId(event: SyncEvent): string {
     case "document_shared":      return ctx.documentId || "";
     case "payment_request_sent": return ctx.paymentRequestId || ctx.bookingId || ctx.leaseId || "";
     case "intervention_created": return ctx.propertyId || "";
+    case "deal_created":         return event.dealId;
+    case "deal_accepted":        return event.dealId;
     default:                     return "";
   }
 }
@@ -444,6 +467,16 @@ function buildEventContent(event: SyncEvent): { subject: string; message: string
       return {
         subject: `🔧 New intervention — ${event.title}`,
         message: `Intervention "${event.title}" created for ${event.propertyLabel} — Priority: ${event.priority}.`,
+      };
+    case "deal_created":
+      return {
+        subject: `🤝 New inquiry — ${event.buyerName}`,
+        message: `${event.buyerName} opened a Deal Room for "${event.contextTitle}".`,
+      };
+    case "deal_accepted":
+      return {
+        subject: `✅ Deal accepted — ${event.contextTitle}`,
+        message: `Deal for "${event.contextTitle}" accepted at ${event.acceptedAmount} ${event.currency}. Payment request will follow.`,
       };
     default:
       return { subject: "Platform notification", message: "An event occurred." };
