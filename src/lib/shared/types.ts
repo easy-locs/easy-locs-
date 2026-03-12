@@ -13,6 +13,8 @@ export type TargetType =
   | "marketplace_booking" | "marketplace_service" | "concierge_order" | "concierge_service"
   // Real Estate
   | "real_estate_lead" | "real_estate_listing"
+  // Deal Room
+  | "deal" | "offer" | "counter_offer"
   // General
   | "message";
 
