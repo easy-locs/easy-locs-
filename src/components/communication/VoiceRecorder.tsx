@@ -178,9 +178,9 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
   return (
     <button
-      onPointerDown={startRecording}
+      onClick={startRecording}
       className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      title="Hold to record"
+      title="Tap to record"
     >
       <Mic className="h-4 w-4" />
     </button>

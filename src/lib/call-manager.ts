@@ -160,8 +160,9 @@ export class CallManager {
 
   /** End active call */
   async endCall() {
+    if (!this.callId || this.pc === null && !this.channel) return; // Already cleaned up
     this.sendSignal({ type: "ended", data: "{}" });
-    const duration = this.elapsedTimer ? Math.floor((Date.now() - (this._startTime || Date.now())) / 1000) : 0;
+    const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
     await supabase
       .from("call_logs")
       .update({
