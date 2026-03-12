@@ -3067,7 +3067,18 @@ const pageEn: Record<string, string> = {
   "landing.nav.login": "Login",
   "landing.nav.signup": "Sign up",
   "landing.nav.tenant_access": "Tenant portal",
-  "landing.nav.pro_signup": "Create my pro account",
+  "landing.nav.pro_signup": "Create Account",
+
+  // Explore radius search
+  "explore.radius.title": "Where are you looking?",
+  "explore.radius.placeholder": "City, country, address...",
+  "explore.radius.my_location": "My location",
+  "explore.radius.label": "Search radius",
+  "explore.radius.worldwide": "Worldwide",
+  "explore.radius.worldwide_search": "Worldwide search",
+  "explore.radius.suggestions": "Suggestions",
+  "explore.radius.reset": "Reset",
+  "explore.radius.apply": "Apply",
 
   "landing.hero.badge": "Long-term | Airbnb | Booking | Multi-country",
   "landing.hero.title": "The first worldwide platform",
