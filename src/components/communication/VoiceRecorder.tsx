@@ -154,7 +154,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         onTouchMove={handleTouchMove}
       >
         {/* Cancel */}
-        <button onClick={cancelRecording} className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+        <button onClick={cancelRecording} className="p-2.5 min-w-[44px] min-h-[44px] text-destructive hover:bg-destructive/10 rounded-full transition-colors flex items-center justify-center">
           <X className="h-4 w-4" />
         </button>
 
