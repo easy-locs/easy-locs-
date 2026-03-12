@@ -280,8 +280,8 @@ const PublicListing = () => {
               <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
               <ListingContactButtons
                 contactEmail={property?.contact_email}
-                hasPhone={!!property?.contact_phone}
-                hasWhatsapp={!!property?.whatsapp_number}
+                hasPhone={property?.has_phone ?? !!property?.contact_phone}
+                hasWhatsapp={property?.has_whatsapp ?? false}
                 telegramUsername={property?.telegram_username}
                 listingTitle={listingTitle}
                 listingUrl={listingUrl}
