@@ -430,7 +430,9 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "..." : locationQuery ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? "result" : "results"}` : `${allItems.length} listings`}
+            {loading ? "..." : locationQuery
+              ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? (t("explore.result") || "result") : (t("explore.results") || "results")}`
+              : `${allItems.length} ${t("explore.listings") || "listings"}`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
         </div>
