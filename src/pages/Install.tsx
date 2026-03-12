@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { Download, Smartphone, CheckCircle, Share } from "lucide-react";
+import { Download, Smartphone, CheckCircle, Share, ArrowLeft, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Install = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -29,6 +32,14 @@ const Install = () => {
     setDeferredPrompt(null);
   };
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
@@ -38,17 +49,17 @@ const Install = () => {
 
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            {t("page.install.title") !== "page.install.title" ? t("page.install.title") : "Installer Easy-Locs"}
+            {t("page.install.title") !== "page.install.title" ? t("page.install.title") : "Install Easy-Locs"}
           </h1>
           <p className="text-muted-foreground mt-2 text-sm">
-            {t("page.install.desc") !== "page.install.desc" ? t("page.install.desc") : "Accédez à Easy-Locs directement depuis votre écran d'accueil, comme une application native."}
+            {t("page.install.desc") !== "page.install.desc" ? t("page.install.desc") : "Access Easy-Locs directly from your home screen, like a native app."}
           </p>
         </div>
 
         {installed ? (
           <div className="flex items-center justify-center gap-2 text-green-500 font-medium">
             <CheckCircle className="h-5 w-5" />
-            {t("page.install.installed") !== "page.install.installed" ? t("page.install.installed") : "Application installée !"}
+            {t("page.install.installed") !== "page.install.installed" ? t("page.install.installed") : "App installed!"}
           </div>
         ) : deferredPrompt ? (
           <button
@@ -56,19 +67,19 @@ const Install = () => {
             className="w-full bg-accent text-accent-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
             <Download className="h-5 w-5" />
-            {t("page.install.install_btn") !== "page.install.install_btn" ? t("page.install.install_btn") : "Installer l'application"}
+            {t("page.install.install_btn") !== "page.install.install_btn" ? t("page.install.install_btn") : "Install the app"}
           </button>
         ) : isIOS ? (
           <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground space-y-3">
             <p className="font-medium text-foreground">
-              {t("page.install.ios_title") !== "page.install.ios_title" ? t("page.install.ios_title") : "Sur iPhone / iPad :"}
+              {t("page.install.ios_title") !== "page.install.ios_title" ? t("page.install.ios_title") : "On iPhone / iPad:"}
             </p>
             <div className="flex items-start gap-3 text-left">
               <Share className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
               <p>
                 {t("page.install.ios_step") !== "page.install.ios_step"
                   ? t("page.install.ios_step")
-                  : "Appuyez sur le bouton Partager en bas de Safari, puis sélectionnez « Sur l'écran d'accueil »."}
+                  : "Tap the Share button at the bottom of Safari, then select 'Add to Home Screen'."}
               </p>
             </div>
           </div>
@@ -76,23 +87,35 @@ const Install = () => {
           <p className="text-sm text-muted-foreground">
             {t("page.install.browser_hint") !== "page.install.browser_hint"
               ? t("page.install.browser_hint")
-              : "Ouvrez cette page dans Chrome ou Edge pour installer l'application."}
+              : "Open this page in Chrome or Edge to install the app."}
           </p>
         )}
 
         <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground pt-4">
           <div className="space-y-1">
             <div className="text-2xl">📱</div>
-            <p>{t("page.install.feature_offline") !== "page.install.feature_offline" ? t("page.install.feature_offline") : "Accès hors-ligne"}</p>
+            <p>{t("page.install.feature_offline") !== "page.install.feature_offline" ? t("page.install.feature_offline") : "Offline access"}</p>
           </div>
           <div className="space-y-1">
             <div className="text-2xl">⚡</div>
-            <p>{t("page.install.feature_fast") !== "page.install.feature_fast" ? t("page.install.feature_fast") : "Chargement rapide"}</p>
+            <p>{t("page.install.feature_fast") !== "page.install.feature_fast" ? t("page.install.feature_fast") : "Fast loading"}</p>
           </div>
           <div className="space-y-1">
             <div className="text-2xl">🔔</div>
             <p>{t("page.install.feature_notif") !== "page.install.feature_notif" ? t("page.install.feature_notif") : "Notifications"}</p>
           </div>
+        </div>
+
+        {/* Navigation options — never trap the user */}
+        <div className="flex flex-col gap-2 pt-2">
+          <Button variant="outline" onClick={handleGoBack} className="w-full gap-2 min-h-[44px]">
+            <ArrowLeft className="h-4 w-4" />
+            {t("page.install.back") || "Back to listing"}
+          </Button>
+          <Button variant="ghost" onClick={() => navigate("/")} className="w-full gap-2 text-muted-foreground min-h-[44px]">
+            <Globe className="h-4 w-4" />
+            {t("page.install.continue_web") || "Continue on web"}
+          </Button>
         </div>
       </div>
     </div>

@@ -197,10 +197,10 @@ export default function PublicRealEstateListing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={seoTitle}
+        title={`${listing.title} — ${listing.city} | Easy-Locs`}
         description={seoDescription}
         canonical={`https://www.easy-locs.com/properties/${listing.slug}`}
-        ogImage={photos[0] || undefined}
+        ogImage={photos[0] || "https://www.easy-locs.com/pwa-512x512.png"}
         jsonLd={seoJsonLd as any}
       />
 
