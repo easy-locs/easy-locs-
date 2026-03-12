@@ -250,7 +250,7 @@ const TenantMessages = () => {
                           className="flex items-center gap-1 mt-1 text-[10px] text-accent hover:underline disabled:opacity-50"
                         >
                           <Languages className="h-3 w-3" />
-                          {translatingId === m.id ? "…" : showingOriginal ? T.showTranslation || "Show translation" : T.showOriginal || "Show original"}
+                          {translatingId === m.id ? "…" : showingOriginal ? "Show translation" : "Show original"}
                         </button>
                       )}
                       {m.attachment_url && (
