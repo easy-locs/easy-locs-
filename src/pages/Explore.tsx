@@ -3,6 +3,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SEOHead from "@/components/SEOHead";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
