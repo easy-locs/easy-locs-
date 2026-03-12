@@ -207,7 +207,7 @@ const ClientMessages = () => {
       const { data: inserted } = await supabase.from("messages").insert({
         org_id: activeThread.org_id, sender_id: user.id,
         content: newMsg.trim(), context_id: activeThread.context_id,
-        context_type: "booking", contact_email: user.email?.toLowerCase(),
+        context_type: activeThread.context_id.startsWith("direct:") ? "direct" : "booking", contact_email: user.email?.toLowerCase(),
         contact_name: user.user_metadata?.full_name || user.email,
         message_type: "user", conversation_status: "waiting_provider",
         ...(replyTo ? { reply_to_id: replyTo.id } : {}),
