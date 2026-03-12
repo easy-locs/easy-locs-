@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle, Download, Filter } from "lucide-react";
+import { FileText, Upload, Loader2, CheckCircle, Clock, XCircle, Download, Filter, PenTool } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
+import { useLeaseWorkflow } from "@/hooks/useLeaseWorkflow";
+import SignatureDialog from "@/components/documents/SignatureDialog";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
