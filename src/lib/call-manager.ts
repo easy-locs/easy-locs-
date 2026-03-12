@@ -111,19 +111,25 @@ export class CallManager {
     this.channel.on("broadcast", { event: "signal" }, ({ payload }) => {
       const signal = payload as SignalPayload;
       if (signal.from === this.userId) return;
-      this.processSignal(signal);
+      this.debug("signal received", { type: signal.type, from: signal.from });
+      void this.processSignal(signal);
     });
 
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
+        this.debug("channel subscribe timeout");
         reject(new Error("Channel subscription timeout"));
       }, 10_000);
 
       this.channel!.subscribe((status) => {
+        this.debug("channel status", { status });
         if (status === "SUBSCRIBED") {
           clearTimeout(timeout);
           this._channelReady = true;
           resolve();
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          clearTimeout(timeout);
+          reject(new Error(`Channel subscription failed: ${status}`));
         }
       });
     });
@@ -131,14 +137,18 @@ export class CallManager {
 
   private sendSignal(signal: Omit<SignalPayload, "from">) {
     if (!this._channelReady || !this.channel) {
-      console.warn("[CallManager] Channel not ready, signal dropped:", signal.type);
+      this.debug("signal dropped (channel not ready)", { type: signal.type });
       return;
     }
-    this.channel.send({
-      type: "broadcast",
-      event: "signal",
-      payload: { ...signal, from: this.userId } as SignalPayload,
-    });
+
+    void this.channel
+      .send({
+        type: "broadcast",
+        event: "signal",
+        payload: { ...signal, from: this.userId } as SignalPayload,
+      })
+      .then((result) => this.debug("signal sent", { type: signal.type, result }))
+      .catch((err) => this.debug("signal send failed", { type: signal.type, error: String(err) }));
   }
 
   /** Caller: initiate call */
