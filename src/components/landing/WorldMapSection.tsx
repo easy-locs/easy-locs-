@@ -1,15 +1,19 @@
-import { Suspense, useRef, useMemo, useState, lazy, useEffect } from "react";
+import { Suspense, useState, lazy } from "react";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-/* Lazy-load Three.js globe — safe fallback on chunk failure */
+/* Lazy-load Three.js globe — always return a valid lazy module shape */
 const NullFallback = () => null;
-const GlobeCanvas = lazy(() =>
-  import("./LandingGlobe").catch(() => ({ default: NullFallback }))
-);
+const GlobeCanvas = lazy(async () => {
+  try {
+    const mod = await import("./LandingGlobe");
+    return { default: mod.default ?? NullFallback };
+  } catch {
+    return { default: NullFallback };
+  }
+});
 
 const regions = [
   { flag: "🇫🇷", name: "France" },
