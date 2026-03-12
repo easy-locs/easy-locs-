@@ -120,10 +120,10 @@ const StatCard = ({
       <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{label}</span>
       {/* Row 3: Value — prominent, animated counter */}
       <div className={cn(
-        "font-bold text-foreground mt-auto whitespace-nowrap truncate",
+        "font-bold text-foreground mt-auto whitespace-nowrap truncate overflow-hidden text-ellipsis",
         /^[\d\s.,€$£¥₹%—–-]+$/.test(value)
-          ? "text-lg sm:text-2xl tabular-nums"
-          : "text-sm sm:text-base",
+          ? "text-base sm:text-xl lg:text-2xl tabular-nums"
+          : "text-xs sm:text-sm lg:text-base",
         valueClassName,
       )}>
         <AnimatedValue value={value} />

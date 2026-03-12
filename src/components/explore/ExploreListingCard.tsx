@@ -62,8 +62,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" width={400} />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          
           {/* Save button */}
           <div className="absolute top-2.5 right-2.5 z-10">
             <SaveButton
@@ -90,11 +88,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             )}
           </div>
 
-          {/* Price — bottom right */}
-          <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-md">
-            <span className="text-sm font-bold text-foreground whitespace-nowrap">{priceLabel}</span>
-          </div>
-
           {/* Photo count */}
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
             <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
@@ -105,9 +98,12 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
         {/* Content */}
         <div className="p-3 sm:p-3.5 flex flex-col gap-1.5">
-          <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors">
-            {item.title}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors flex-1 min-w-0">
+              {item.title}
+            </h3>
+            <span className="text-sm font-bold text-foreground whitespace-nowrap shrink-0">{priceLabel}</span>
+          </div>
 
           {/* Location */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

@@ -18,18 +18,24 @@ export interface CategoryGroup {
 
 export const CATEGORY_HIERARCHY: CategoryGroup[] = [
   {
-    value: "property",
-    label: "Real Estate",
-    emoji: "🏠",
+    value: "property_sale",
+    label: "Sale",
+    emoji: "🏡",
     subcategories: [
       { value: "property_sale", label: "Property Sales", emoji: "🏡" },
       { value: "new_development", label: "New Developments", emoji: "🏗️" },
+      { value: "office_commercial_sale", label: "Commercial Sales", emoji: "🏢" },
+    ],
+  },
+  {
+    value: "property_rent",
+    label: "Rent",
+    emoji: "📋",
+    subcategories: [
       { value: "long_term_rental", label: "Long-term Rentals", emoji: "📋" },
       { value: "seasonal", label: "Seasonal Rentals", emoji: "🏖️" },
       { value: "roommate", label: "Roommates", emoji: "🤝" },
       { value: "office_commercial", label: "Offices & Commercial", emoji: "🏢" },
-      { value: "real_estate_agent", label: "Real Estate Agents", emoji: "👔" },
-      { value: "property_photo", label: "Property Photography", emoji: "📸" },
     ],
   },
   {
