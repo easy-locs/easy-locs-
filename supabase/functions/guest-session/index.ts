@@ -31,6 +31,17 @@ async function autoTranslate(
   } catch { return null; }
 }
 
+/** Validate a guest session, returns session data or null */
+async function validateSession(supabase: any, token: string) {
+  const { data } = await supabase
+    .from("guest_sessions")
+    .select("*")
+    .eq("token", token)
+    .single();
+  if (!data || data.blocked || new Date(data.expires_at) < new Date()) return null;
+  return data;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,6 +56,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // ─── CREATE SESSION ───
     if (action === "create") {
       const { display_name, email, fingerprint, org_id, context_type, context_id } = body;
 
@@ -83,6 +95,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── VALIDATE SESSION ───
     if (action === "validate") {
       const { token } = body;
       if (!token) throw new Error("token required");
@@ -123,17 +136,13 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // ─── SEND MESSAGE ───
     if (action === "send_message") {
       const { token, content, attachment_urls, guest_locale } = body;
       if (!token) throw new Error("token required");
 
-      const { data: session } = await supabase
-        .from("guest_sessions")
-        .select("*")
-        .eq("token", token)
-        .single();
-
-      if (!session || session.blocked || new Date(session.expires_at) < new Date()) {
+      const session = await validateSession(supabase, token);
+      if (!session) {
         return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -154,11 +163,9 @@ Deno.serve(async (req) => {
       if (!content?.trim() && !hasMedia) throw new Error("Empty message");
       if (content && content.length > 2000) throw new Error("Message too long");
 
-      // Auto-translate guest message for seller
       let translatedContent: string | null = null;
       const detectedLocale = guest_locale || "en";
 
-      // Get org owner's locale (default to 'en')
       const { data: org } = await supabase
         .from("orgs").select("owner_user_id").eq("id", session.org_id).single();
 
@@ -198,9 +205,7 @@ Deno.serve(async (req) => {
         last_activity_at: new Date().toISOString(),
       }).eq("id", session.id);
 
-      // Notify org owner
       if (org?.owner_user_id) {
-        // Resolve context label
         let contextLabel = "";
         if (session.context_type === "service" && session.context_id) {
           const { data: svc } = await supabase
@@ -242,17 +247,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── GET MESSAGES ───
     if (action === "get_messages") {
       const { token, guest_locale } = body;
       if (!token) throw new Error("token required");
 
-      const { data: session } = await supabase
-        .from("guest_sessions")
-        .select("id, org_id, context_id, expires_at, blocked")
-        .eq("token", token)
-        .single();
-
-      if (!session || session.blocked || new Date(session.expires_at) < new Date()) {
+      const session = await validateSession(supabase, token);
+      if (!session) {
         return new Response(JSON.stringify({ messages: [] }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -266,12 +267,10 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: true })
         .limit(100);
 
-      // For host messages, translate to guest language if needed
       const enriched = await Promise.all((messages || []).map(async (m: any) => {
         const isFromHost = !!m.sender_id;
         let translatedForGuest = m.translated_content;
 
-        // If it's a host message and guest speaks different language, translate for guest
         if (isFromHost && guest_locale && m.content && !translatedForGuest) {
           const hostLang = m.language_detected || "en";
           if (hostLang !== guest_locale) {
@@ -291,6 +290,175 @@ Deno.serve(async (req) => {
       }));
 
       return new Response(JSON.stringify({ messages: enriched }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── CALL REQUEST (guest initiates) ───
+    if (action === "call_request") {
+      const { token, is_video } = body;
+      if (!token) throw new Error("token required");
+
+      const session = await validateSession(supabase, token);
+      if (!session) {
+        return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const callId = crypto.randomUUID();
+
+      // Resolve context label
+      let contextLabel = "";
+      if (session.context_type === "service" && session.context_id) {
+        const { data: svc } = await supabase
+          .from("concierge_services").select("title").eq("id", session.context_id).maybeSingle();
+        if (!svc) {
+          const { data: mSvc } = await supabase
+            .from("marketplace_services").select("title").eq("id", session.context_id).maybeSingle();
+          contextLabel = (mSvc as any)?.title || "";
+        } else {
+          contextLabel = svc.title;
+        }
+      } else if (session.context_type === "listing" && session.context_id) {
+        const { data: listing } = await supabase
+          .from("public_listings").select("title").eq("id", session.context_id).maybeSingle();
+        contextLabel = (listing as any)?.title || "";
+      }
+
+      // Insert call request signal
+      const { error } = await supabase.from("guest_call_signals").insert({
+        call_id: callId,
+        guest_session_id: session.id,
+        org_id: session.org_id,
+        status: "ringing",
+        is_video: !!is_video,
+        context_type: session.context_type,
+        context_id: session.context_id,
+        context_label: contextLabel,
+        guest_name: session.display_name,
+        signal_type: "call_request",
+        signal_data: JSON.stringify({ is_video: !!is_video }),
+        from_role: "caller",
+      });
+
+      if (error) throw error;
+
+      // Notify org owner
+      const { data: org } = await supabase
+        .from("orgs").select("owner_user_id").eq("id", session.org_id).single();
+
+      if (org?.owner_user_id) {
+        await supabase.from("notifications").insert({
+          user_id: org.owner_user_id,
+          org_id: session.org_id,
+          type: "info",
+          title: `📞 Incoming ${is_video ? "video" : "audio"} call`,
+          message: `${session.display_name} is calling${contextLabel ? ` — ${contextLabel}` : ""}`,
+          link: `/dashboard/communication?call=${callId}`,
+          metadata_json: {
+            target_type: "guest_call",
+            call_id: callId,
+            guest_session_id: session.id,
+            guest_name: session.display_name,
+            is_video: !!is_video,
+            context_label: contextLabel,
+          },
+        });
+      }
+
+      return new Response(JSON.stringify({ call_id: callId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── CALL SIGNAL (SDP/ICE exchange) ───
+    if (action === "call_signal") {
+      const { call_id, signal_type, signal_data, from_role, token: guestToken, auth_token } = body;
+      if (!call_id || !signal_type) throw new Error("call_id and signal_type required");
+
+      // Verify caller identity
+      if (guestToken) {
+        const session = await validateSession(supabase, guestToken);
+        if (!session) {
+          return new Response(JSON.stringify({ error: "Invalid session" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      // Get the call's org_id from existing signals
+      const { data: existing } = await supabase
+        .from("guest_call_signals")
+        .select("org_id, guest_session_id")
+        .eq("call_id", call_id)
+        .limit(1)
+        .single();
+
+      if (!existing) throw new Error("Call not found");
+
+      // Update status for declined/ended
+      if (signal_type === "declined" || signal_type === "ended") {
+        await supabase.from("guest_call_signals")
+          .update({ status: signal_type })
+          .eq("call_id", call_id)
+          .eq("signal_type", "call_request");
+      }
+
+      // Insert signal
+      await supabase.from("guest_call_signals").insert({
+        call_id,
+        guest_session_id: existing.guest_session_id,
+        org_id: existing.org_id,
+        signal_type,
+        signal_data: signal_data || "{}",
+        from_role: from_role || "unknown",
+        status: signal_type === "declined" ? "declined" : signal_type === "ended" ? "ended" : "active",
+      });
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── CALL POLL (get new signals) ───
+    if (action === "call_poll") {
+      const { call_id, role, token: guestToken } = body;
+      if (!call_id || !role) throw new Error("call_id and role required");
+
+      // Get unprocessed signals for the other role
+      const processedField = role === "caller" ? "processed_by_caller" : "processed_by_callee";
+      const otherRole = role === "caller" ? "callee" : "caller";
+
+      const { data: signals } = await supabase
+        .from("guest_call_signals")
+        .select("id, signal_type, signal_data, from_role, status")
+        .eq("call_id", call_id)
+        .eq(processedField, false)
+        .eq("from_role", otherRole)
+        .order("created_at", { ascending: true })
+        .limit(50);
+
+      // Mark as processed
+      if (signals && signals.length > 0) {
+        const ids = signals.map((s: any) => s.id);
+        await supabase.from("guest_call_signals")
+          .update({ [processedField]: true })
+          .in("id", ids);
+      }
+
+      // Check overall call status
+      const { data: callStatus } = await supabase
+        .from("guest_call_signals")
+        .select("status")
+        .eq("call_id", call_id)
+        .eq("signal_type", "call_request")
+        .single();
+
+      return new Response(JSON.stringify({
+        signals: signals || [],
+        call_status: callStatus?.status || "ringing",
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
