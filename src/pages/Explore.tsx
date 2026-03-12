@@ -3,13 +3,9 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SEOHead from "@/components/SEOHead";
-import AppLogo from "@/components/AppLogo";
-import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell, User, LogOut, LayoutDashboard, MessageSquare, Plus } from "lucide-react";
+import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
@@ -25,6 +21,7 @@ import { ExploreFiltersStrip } from "@/components/explore/ExploreFiltersStrip";
 import { ExploreSEOFooter } from "@/components/explore/ExploreSEOFooter";
 import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
 import SmartSuggestions from "@/components/explore/SmartSuggestions";
+import ExploreHeader from "@/components/explore/ExploreHeader";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -53,80 +50,6 @@ interface ServiceListing {
 }
 
 const ITEMS_PER_PAGE = 24;
-
-/* ─────────── Auth-aware User Nav (like Airbnb/Leboncoin) ─────────── */
-function ExploreUserNav() {
-  const { user, activeRole, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const dashboardPath = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
-  const initials = user?.email?.slice(0, 2).toUpperCase() || "U";
-
-  if (!user) {
-    return (
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved">
-          <Heart className="h-4 w-4" />
-        </Link>
-        <ThemeSwitcher />
-        <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">Log in</Link>
-        <Link to="/signup" className="text-[11px] sm:text-xs font-semibold px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">Sign up</Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-      <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved">
-        <Heart className="h-4 w-4" />
-      </Link>
-      <Link to="/category-notifications" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Alerts">
-        <Bell className="h-4 w-4" />
-      </Link>
-      <Link to={`${dashboardPath}/messages`} className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Messages">
-        <MessageSquare className="h-4 w-4" />
-      </Link>
-      <ThemeSwitcher />
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 rounded-full border border-border bg-card px-2 py-1.5 shadow-sm hover:shadow-md transition-shadow min-h-[36px]">
-            <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="bg-accent text-accent-foreground text-[10px] font-bold">{initials}</AvatarFallback>
-            </Avatar>
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <div className="px-3 py-2">
-            <p className="text-sm font-medium truncate">{user.email}</p>
-            <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
-          </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => navigate(dashboardPath)}>
-            <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate(`${dashboardPath}/messages`)}>
-            <MessageSquare className="h-4 w-4 mr-2" /> Messages
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/saved")}>
-            <Heart className="h-4 w-4 mr-2" /> Saved
-          </DropdownMenuItem>
-          {activeRole === "landlord" && (
-            <DropdownMenuItem onClick={() => navigate("/dashboard/create-listing")}>
-              <Plus className="h-4 w-4 mr-2" /> Post a listing
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={async () => { await signOut(); navigate("/explore"); }}>
-            <LogOut className="h-4 w-4 mr-2" /> Log out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -412,77 +335,69 @@ export default function Explore() {
         jsonLd={exploreJsonLd}
       />
 
-      {/* ═══════ STICKY HEADER ═══════ */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
-        <div className="max-w-[1400px] mx-auto px-4">
-          <div className="h-16 flex items-center justify-between gap-4">
-            <AppLogo variant="header" linkTo="/" />
-
-            <ExploreDesktopSearchBar
-              searchQuery={searchQuery}
-              locationQuery={locationQuery}
-              radiusKm={radiusKm}
-              activeGroup={activeGroup}
-              geoCity={geo.detection?.city}
-              geoCountry={geo.country}
-              geoLat={geo.detection?.lat}
-              geoLng={geo.detection?.lng}
-              locationSuggestions={locationSuggestions}
-              resultCount={allItems.length}
-              onSearchQueryChange={setSearchQuery}
-              onLocationQueryChange={setLocationQuery}
-              onRadiusKmChange={setRadiusKm}
-              onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
-              onSelectLocation={handleSelectLocation}
-              onNearMe={handleNearMe}
-              onSearch={handleSearch}
-              onReset={clearAll}
-            />
-
-            {/* Mobile search trigger */}
-            <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground min-h-[44px]" aria-label={t("explore.search") || "Open search"}>
-              <Search className="h-4 w-4" />
-              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
-            </button>
-
-            <ExploreUserNav />
-          </div>
-
-          {/* Mobile search panel */}
-          <AnimatePresence>
-            {showMobileSearch && (
-              <ExploreMobileSearch
-                searchQuery={searchQuery}
-                locationQuery={locationQuery}
-                radiusKm={radiusKm}
-                activeGroup={activeGroup}
-                geoCity={geo.detection?.city}
-                geoCountry={geo.country}
-                geoLat={geo.detection?.lat}
-                geoLng={geo.detection?.lng}
-                hasFilters={hasFilters}
-                resultCount={allItems.length}
-                onSearchQueryChange={setSearchQuery}
-                onLocationQueryChange={setLocationQuery}
-                onRadiusKmChange={setRadiusKm}
-                onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
-                onNearMe={handleNearMe}
-                onSearch={handleSearch}
-                onClearAll={clearAll}
-                onClose={() => setShowMobileSearch(false)}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-
-        <ExploreCategoryBar
+      <ExploreHeader
+        searchQuery={searchQuery}
+        locationQuery={locationQuery}
+        geoCity={geo.detection?.city}
+        geoCountry={geo.country}
+        onOpenSearch={() => setShowMobileSearch(v => !v)}
+        categoryBar={
+          <ExploreCategoryBar
+            activeGroup={activeGroup}
+            activeSubcategory={activeSubcategory}
+            onGroupChange={setActiveGroup}
+            onSubcategoryChange={setActiveSubcategory}
+            groupCounts={groupCounts}
+          />
+        }
+      >
+        <ExploreDesktopSearchBar
+          searchQuery={searchQuery}
+          locationQuery={locationQuery}
+          radiusKm={radiusKm}
           activeGroup={activeGroup}
-          activeSubcategory={activeSubcategory}
-          onGroupChange={setActiveGroup}
-          onSubcategoryChange={setActiveSubcategory}
-          groupCounts={groupCounts}
+          geoCity={geo.detection?.city}
+          geoCountry={geo.country}
+          geoLat={geo.detection?.lat}
+          geoLng={geo.detection?.lng}
+          locationSuggestions={locationSuggestions}
+          resultCount={allItems.length}
+          onSearchQueryChange={setSearchQuery}
+          onLocationQueryChange={setLocationQuery}
+          onRadiusKmChange={setRadiusKm}
+          onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
+          onSelectLocation={handleSelectLocation}
+          onNearMe={handleNearMe}
+          onSearch={handleSearch}
+          onReset={clearAll}
         />
-      </header>
+      </ExploreHeader>
+
+      {/* Mobile search panel */}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <ExploreMobileSearch
+            searchQuery={searchQuery}
+            locationQuery={locationQuery}
+            radiusKm={radiusKm}
+            activeGroup={activeGroup}
+            geoCity={geo.detection?.city}
+            geoCountry={geo.country}
+            geoLat={geo.detection?.lat}
+            geoLng={geo.detection?.lng}
+            hasFilters={hasFilters}
+            resultCount={allItems.length}
+            onSearchQueryChange={setSearchQuery}
+            onLocationQueryChange={setLocationQuery}
+            onRadiusKmChange={setRadiusKm}
+            onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
+            onNearMe={handleNearMe}
+            onSearch={handleSearch}
+            onClearAll={clearAll}
+            onClose={() => setShowMobileSearch(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ═══════ RESULTS ═══════ */}
       <main className="max-w-[1400px] mx-auto px-4 py-6">
