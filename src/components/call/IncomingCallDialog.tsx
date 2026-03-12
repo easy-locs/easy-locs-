@@ -14,6 +14,7 @@ interface IncomingCallDialogProps {
   isVideo: boolean;
   onAccept: () => void;
   onDecline: () => void;
+  onMissed?: () => void;
 }
 
 export default function IncomingCallDialog({
