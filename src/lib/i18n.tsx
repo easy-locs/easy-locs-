@@ -1,16 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
-import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, fiAll, elAll, csAll, huAll, roAll, hrAll, bgAll, skAll, heAll, ukAll } from "./i18n-world";
-import { koComplete, zhComplete, hiComplete, thComplete, viComplete, idComplete, msComplete, svComplete, daComplete, nbComplete, fiComplete, elComplete, csComplete, huComplete, roComplete, hrComplete, bgComplete, skComplete, heComplete, ukComplete } from "./i18n-world-complete";
-import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
-import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
-import { pageIt as pageItFull } from "./i18n-pages-it";
-import { nlPages, plPages, trPages, arPages, jaPages, koPages, zhPages, hiPages, thPages, viPages, idPages, msPages, svPages, daPages, nbPages, fiPages, elPages, csPages, huPages, roPages, hrPages, bgPages, skPages, hePages, ukPages, docBuilderExtraKeys } from "./i18n-world-pages";
-import { billingWorldwide } from "./i18n-billing-worldwide";
-import { notifKeys } from "./i18n-validation";
-import { pagesWorldwide } from "./i18n-pages-worldwide";
-import { marketplaceI18n } from "./i18n-marketplace";
+
+// Lazy-loaded locale data is merged at runtime — no more eager imports
+// fr + en are always inline; other locales load their heavy packs on demand
 
 export type Locale = "fr" | "en" | "es" | "de" | "it" | "pt" | "nl" | "pl" | "tr" | "ar" | "ja" | "ko" | "zh" | "hi" | "th" | "vi" | "id" | "ms" | "sv" | "da" | "nb" | "fi" | "el" | "cs" | "hu" | "ro" | "hr" | "bg" | "sk" | "he" | "uk";
 
@@ -4866,7 +4858,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Editar", "reviews.delete": "Eliminar", "reviews.reply": "Respuesta del propietario",
     "reviews.write_reply": "Responder", "reviews.updated": "Reseña actualizada", "reviews.submitted": "¡Reseña enviada!",
     "reviews.stars": "estrella(s)", "nav.reviews": "Reseñas", "nav.requests": "Solicitudes",
-    ...obEs, ...pageEs, ...pageEsExtra,
+    ...obEs, ...pageEs,
   },
   de: {
     "nav.dashboard": "Dashboard", "nav.properties": "Immobilien", "nav.tenants": "Mieter",
@@ -4922,7 +4914,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Bearbeiten", "reviews.delete": "Löschen", "reviews.reply": "Antwort des Vermieters",
     "reviews.write_reply": "Antworten", "reviews.updated": "Bewertung aktualisiert", "reviews.submitted": "Bewertung abgegeben!",
     "reviews.stars": "Stern(e)", "nav.reviews": "Bewertungen", "nav.requests": "Anfragen",
-    ...obDe, ...pageDe, ...pageDeExtra,
+    ...obDe, ...pageDe,
   },
   it: {
     "nav.dashboard": "Cruscotto", "nav.properties": "Immobili", "nav.tenants": "Inquilini",
@@ -4978,7 +4970,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Modifica", "reviews.delete": "Elimina", "reviews.reply": "Risposta del proprietario",
     "reviews.write_reply": "Rispondi", "reviews.updated": "Recensione aggiornata", "reviews.submitted": "Recensione inviata!",
     "reviews.stars": "stella/e", "nav.reviews": "Recensioni", "nav.requests": "Richieste",
-    ...obIt, ...pageIt, ...pageItFull,
+    ...obIt, ...pageIt,
   },
   pt: {
     "nav.dashboard": "Painel", "nav.properties": "Imóveis", "nav.tenants": "Inquilinos",
@@ -5034,7 +5026,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Editar", "reviews.delete": "Excluir", "reviews.reply": "Resposta do proprietário",
     "reviews.write_reply": "Responder", "reviews.updated": "Avaliação atualizada", "reviews.submitted": "Avaliação enviada!",
     "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações", "nav.requests": "Pedidos",
-    ...obPt, ...pagePt, ...pagePtExtra,
+    ...obPt, ...pagePt,
   },
   nl: {
     "nav.dashboard": "Dashboard", "nav.properties": "Vastgoed", "nav.tenants": "Huurders",
@@ -5120,7 +5112,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Handtekening opslaan",
     "page.settings.profile_updated": "Profiel bijgewerkt",
     "page.settings.org_updated": "Organisatie bijgewerkt",
-    ...obNl, ...pageNl,
   },
   pl: {
     "nav.dashboard": "Panel", "nav.properties": "Nieruchomości", "nav.tenants": "Najemcy",
@@ -5206,7 +5197,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "Zapisz podpis",
     "page.settings.profile_updated": "Profil zaktualizowany",
     "page.settings.org_updated": "Organizacja zaktualizowana",
-    ...obPl, ...pagePl,
   },
   tr: {
     "nav.dashboard": "Panel", "nav.properties": "Mülkler", "nav.tenants": "Kiracılar",
@@ -5292,7 +5282,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "İmzayı kaydet",
     "page.settings.profile_updated": "Profil güncellendi",
     "page.settings.org_updated": "Organizasyon güncellendi",
-    ...obTr, ...pageTr,
   },
   ar: {
     "nav.dashboard": "لوحة التحكم", "nav.properties": "العقارات", "nav.tenants": "المستأجرون",
@@ -5378,7 +5367,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "حفظ التوقيع",
     "page.settings.profile_updated": "تم تحديث الملف الشخصي",
     "page.settings.org_updated": "تم تحديث المنظمة",
-    ...obAr, ...pageAr,
   },
   ja: {
     "nav.dashboard": "ダッシュボード", "nav.properties": "物件", "nav.tenants": "入居者",
@@ -5464,28 +5452,10 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "署名を保存",
     "page.settings.profile_updated": "プロフィールが更新されました",
     "page.settings.org_updated": "組織が更新されました",
-    ...obJa, ...pageJa,
   },
-  ko: { ...koAll, ...koPayExtra, ...koPageExtra, ...koPages, ...koComplete },
-  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra, ...zhPages, ...zhComplete },
-  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra, ...hiPages, ...hiComplete },
-  th: { ...thAll, ...thPayExtra, ...thPageExtra, ...thPages, ...thComplete },
-  vi: { ...viAll, ...viPayExtra, ...viPageExtra, ...viPages, ...viComplete },
-  id: { ...idAll, ...idPayExtra, ...idPageExtra, ...idPages, ...idComplete },
-  ms: { ...msAll, ...msPayExtra, ...msPageExtra, ...msPages, ...msComplete },
-  sv: { ...svAll, ...svPayExtra, ...svPageExtra, ...svPages, ...svComplete },
-  da: { ...daAll, ...daPayExtra, ...daPageExtra, ...daPages, ...daComplete },
-  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra, ...nbPages, ...nbComplete },
-  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra, ...fiPages, ...fiComplete },
-  el: { ...elAll, ...elPayExtra, ...elPageExtra, ...elPages, ...elComplete },
-  cs: { ...csAll, ...csPayExtra, ...csPageExtra, ...csPages, ...csComplete },
-  hu: { ...huAll, ...huPayExtra, ...huPageExtra, ...huPages, ...huComplete },
-  ro: { ...roAll, ...roPayExtra, ...roPageExtra, ...roPages, ...roComplete },
-  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra, ...hrPages, ...hrComplete },
-  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra, ...bgPages, ...bgComplete },
-  sk: { ...skAll, ...skPayExtra, ...skPageExtra, ...skPages, ...skComplete },
-  he: { ...heAll, ...hePayExtra, ...hePageExtra, ...hePages, ...heComplete },
-  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra, ...ukPages, ...ukComplete },
+  ko: {}, zh: {}, hi: {}, th: {}, vi: {}, id: {}, ms: {},
+  sv: {}, da: {}, nb: {}, fi: {}, el: {}, cs: {}, hu: {},
+  ro: {}, hr: {}, bg: {}, sk: {}, he: {}, uk: {},
 };
 
 interface I18nContextType {
@@ -5558,14 +5528,101 @@ const detectInitialLocale = (): Locale => {
   return "en";
 };
 
+// Lazy-loaded extra data per locale (populated on demand)
+const lazyData = new Map<Locale, Record<string, string>>();
+
+async function loadLocaleExtras(locale: Locale): Promise<Record<string, string>> {
+  if (locale === "fr" || locale === "en") return {};
+  if (lazyData.has(locale)) return lazyData.get(locale)!;
+  try {
+    const { loadLocaleData } = await import("./i18n-loader");
+    const data = await loadLocaleData(locale);
+    // Also load supplementary modules
+    const [pw, mi, nk, bw, dbe] = await Promise.all([
+      import("./i18n-pages-worldwide"),
+      import("./i18n-marketplace"),
+      import("./i18n-validation"),
+      import("./i18n-billing-worldwide"),
+      import("./i18n-world-pages"),
+    ]);
+    const merged = {
+      ...data,
+      ...(pw.pagesWorldwide?.[locale] || {}),
+      ...(mi.marketplaceI18n?.[locale] || {}),
+      ...(nk.notifKeys?.[locale] || {}),
+      ...(bw.billingWorldwide?.[locale] || {}),
+      ...(dbe.docBuilderExtraKeys?.[locale] || {}),
+    };
+    lazyData.set(locale, merged);
+    return merged;
+  } catch (e) {
+    console.warn(`[i18n] Failed to load extras for ${locale}`, e);
+    return {};
+  }
+}
+
+// Pre-load en/fr supplementary data synchronously at startup
+let enExtras: Record<string, string> = {};
+let frExtras: Record<string, string> = {};
+
+// Load en/fr extras lazily too, but eagerly triggered
+const loadCoreExtras = () => {
+  import("./i18n-pages-worldwide").then(pw => {
+    import("./i18n-marketplace").then(mi => {
+      import("./i18n-validation").then(nk => {
+        import("./i18n-billing-worldwide").then(bw => {
+          import("./i18n-world-pages").then(dbe => {
+            enExtras = {
+              ...(pw.pagesWorldwide?.en || {}),
+              ...(mi.marketplaceI18n?.en || {}),
+              ...(nk.notifKeys?.en || {}),
+              ...(bw.billingWorldwide?.en || {}),
+              ...(dbe.docBuilderExtraKeys?.en || {}),
+            };
+            frExtras = {
+              ...(pw.pagesWorldwide?.fr || {}),
+              ...(mi.marketplaceI18n?.fr || {}),
+              ...(nk.notifKeys?.fr || {}),
+              ...(bw.billingWorldwide?.fr || {}),
+              ...(dbe.docBuilderExtraKeys?.fr || {}),
+            };
+          });
+        });
+      });
+    });
+  });
+};
+// Trigger core extras load after initial render
+if (typeof window !== "undefined") {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(loadCoreExtras);
+  } else {
+    setTimeout(loadCoreExtras, 500);
+  }
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
+  const [, forceUpdate] = useState(0);
+  const loadingRef = useRef<string | null>(null);
 
   // Set HTML lang attribute on initial render
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.lang = locale;
     document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
+  }, [locale]);
+
+  // Load lazy locale data when locale changes
+  useEffect(() => {
+    if (locale === "fr" || locale === "en") return;
+    if (lazyData.has(locale)) return;
+    if (loadingRef.current === locale) return;
+    loadingRef.current = locale;
+    loadLocaleExtras(locale).then(() => {
+      loadingRef.current = null;
+      forceUpdate(n => n + 1);
+    });
   }, [locale]);
 
   /* Sync locale from profile on login */
@@ -5602,6 +5659,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       document.documentElement.lang = l;
       document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
     }
+    // Pre-load extras for the new locale
+    loadLocaleExtras(l);
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);
@@ -5609,10 +5668,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string): string => {
-    // Fallback chain: locale → notif → billing → docBuilderExtra → en → fr → ""
-    const val = translations[locale]?.[key] || pagesWorldwide[locale]?.[key] || marketplaceI18n[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || pagesWorldwide.en?.[key] || marketplaceI18n.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || pagesWorldwide.fr?.[key] || marketplaceI18n.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
-    if (val) return val;
-    // Suppress warnings for keys with inline fallbacks (pricing tiers, features)
+    // Check inline translations first (always available)
+    const inlineVal = translations[locale]?.[key];
+    if (inlineVal) return inlineVal;
+    // Check lazy-loaded locale extras
+    const lazyVal = lazyData.get(locale)?.[key];
+    if (lazyVal) return lazyVal;
+    // Fallback: en inline → en extras → fr inline → fr extras
+    const enVal = translations.en?.[key] || enExtras[key];
+    if (enVal) return enVal;
+    const frVal = translations.fr?.[key] || frExtras[key];
+    if (frVal) return frVal;
+    // Suppress warnings for keys with inline fallbacks
     if (import.meta.env.DEV && !key.startsWith("pricing.")) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     return "";
   }, [locale]);
