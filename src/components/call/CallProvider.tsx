@@ -41,6 +41,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [peerName, setPeerName] = useState("");
   const [contextLabel, setContextLabel] = useState("");
   const [showCallDialog, setShowCallDialog] = useState(false);
+  const [isStartingCall, setIsStartingCall] = useState(false);
   const [showIncoming, setShowIncoming] = useState(false);
   const [incomingCallId, setIncomingCallId] = useState<string | null>(null);
   const incomingCallIdRef = useRef<string | null>(null);
