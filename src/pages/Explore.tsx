@@ -10,6 +10,7 @@ import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { useI18n } from "@/lib/i18n";
 import { haversineKm } from "@/lib/geo-distance";
 import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 
