@@ -351,7 +351,6 @@ function PropertyCard({ listing }: { listing: PublicListing }) {
               {listing.price.toLocaleString()} {listing.currency}{priceLabel}
             </span>
           </div>
-          </h3>
 
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-accent/70" />
