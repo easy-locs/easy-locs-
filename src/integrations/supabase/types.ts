@@ -2605,6 +2605,8 @@ export type Database = {
           context_type: string | null
           conversation_status: string | null
           created_at: string
+          deleted_for_all: boolean | null
+          deleted_for_sender: boolean | null
           delivered: boolean | null
           guest_session_id: string | null
           id: string
@@ -2615,8 +2617,10 @@ export type Database = {
           property_id: string | null
           read: boolean
           reply_chain_id: string | null
+          reply_to_id: string | null
           sender_id: string
           sender_locale: string | null
+          starred: boolean | null
           tenant_id: string | null
           thread_id: string | null
           translated_content: string | null
@@ -2636,6 +2640,8 @@ export type Database = {
           context_type?: string | null
           conversation_status?: string | null
           created_at?: string
+          deleted_for_all?: boolean | null
+          deleted_for_sender?: boolean | null
           delivered?: boolean | null
           guest_session_id?: string | null
           id?: string
@@ -2646,8 +2652,10 @@ export type Database = {
           property_id?: string | null
           read?: boolean
           reply_chain_id?: string | null
+          reply_to_id?: string | null
           sender_id: string
           sender_locale?: string | null
+          starred?: boolean | null
           tenant_id?: string | null
           thread_id?: string | null
           translated_content?: string | null
@@ -2667,6 +2675,8 @@ export type Database = {
           context_type?: string | null
           conversation_status?: string | null
           created_at?: string
+          deleted_for_all?: boolean | null
+          deleted_for_sender?: boolean | null
           delivered?: boolean | null
           guest_session_id?: string | null
           id?: string
@@ -2677,8 +2687,10 @@ export type Database = {
           property_id?: string | null
           read?: boolean
           reply_chain_id?: string | null
+          reply_to_id?: string | null
           sender_id?: string
           sender_locale?: string | null
+          starred?: boolean | null
           tenant_id?: string | null
           thread_id?: string | null
           translated_content?: string | null
@@ -2697,6 +2709,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {
