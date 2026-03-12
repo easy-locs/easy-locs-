@@ -293,41 +293,88 @@ const TenantDocuments = () => {
                 <div className="bg-card rounded-xl shadow-card border border-border/50 divide-y divide-border">
                   {filteredLandlordDocs.map(doc => {
                     const info = getTypeInfo(doc.doc_type);
+                    const needsSign = doc.requires_signature && !doc.signed_by_tenant_at;
                     return (
-                      <div key={doc.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg ${info.color}`}>
-                          {info.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-muted-foreground">{info.label}</span>
-                            <span className="text-xs text-muted-foreground">•</span>
-                            <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd/MM/yyyy")}</span>
-                            {doc.requires_signature && (
-                              <>
-                                <span className="text-xs text-muted-foreground">•</span>
-                                <span className={`text-xs ${doc.signed_by_owner_at && doc.signed_by_tenant_at ? "text-success" : "text-warning"}`}>
-                                  {doc.signed_by_owner_at && doc.signed_by_tenant_at ? "✅ Signé" :
-                                   doc.signed_by_tenant_at ? "⏳ En attente bailleur" :
-                                   "✍️ À signer"}
-                                </span>
-                              </>
+                      <div key={doc.id} className="p-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg ${info.color}`}>
+                            {info.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-xs text-muted-foreground">{info.label}</span>
+                              <span className="text-xs text-muted-foreground">•</span>
+                              <span className="text-xs text-muted-foreground">{format(new Date(doc.created_at), "dd/MM/yyyy")}</span>
+                              {doc.requires_signature && (
+                                <>
+                                  <span className="text-xs text-muted-foreground">•</span>
+                                  <span className={`text-xs ${doc.signed_by_owner_at && doc.signed_by_tenant_at ? "text-success" : "text-warning"}`}>
+                                    {doc.signed_by_owner_at && doc.signed_by_tenant_at ? "✅ Signé" :
+                                     doc.signed_by_tenant_at ? "⏳ En attente bailleur" :
+                                     "✍️ À signer"}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Sign button for tenant */}
+                            {needsSign && (
+                              <button
+                                onClick={() => { setSignDocId(doc.id); setSignDocTitle(doc.title); }}
+                                className="inline-flex items-center gap-1 text-xs font-medium bg-accent text-accent-foreground px-2.5 py-1.5 rounded-md hover:opacity-90 transition-opacity"
+                              >
+                                <PenTool className="h-3 w-3" /> Signer
+                              </button>
                             )}
+                            <button
+                              onClick={() => openLandlordDoc(doc)}
+                              disabled={!doc.pdf_url || openingId === doc.id}
+                              className="text-muted-foreground hover:text-foreground p-2 disabled:opacity-50"
+                              title={T.openDoc}
+                            >
+                              {openingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            </button>
                           </div>
                         </div>
-                        <button
-                          onClick={() => openLandlordDoc(doc)}
-                          disabled={!doc.pdf_url || openingId === doc.id}
-                          className="text-muted-foreground hover:text-foreground p-2 disabled:opacity-50 shrink-0"
-                          title={T.openDoc}
-                        >
-                          {openingId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                        </button>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Tenant signature dialog */}
+                {signDocId && (
+                  <SignatureDialog
+                    open={!!signDocId}
+                    onOpenChange={(open) => { if (!open) setSignDocId(null); }}
+                    documentId={signDocId}
+                    documentTitle={signDocTitle}
+                    signerRole="tenant"
+                    onSigned={async () => {
+                      const doc = landlordDocs.find(d => d.id === signDocId);
+                      // Also update lease via workflow if linked
+                      if (doc) {
+                        // Try to find linked lease
+                        const { data: docData } = await supabase.from("documents").select("lease_id").eq("id", signDocId).single();
+                        if ((docData as any)?.lease_id) {
+                          await recordTenantSignature((docData as any).lease_id);
+                        }
+                      }
+                      // Refresh docs
+                      const { data: generated } = await supabase
+                        .from("documents")
+                        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
+                        .eq("org_id", orgId!)
+                        .order("created_at", { ascending: false });
+                      const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
+                      const filtered = (generated || []).filter((d: any) =>
+                        relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)
+                      );
+                      setLandlordDocs(filtered as LandlordDoc[]);
+                    }}
+                  />
+                )}
               )}
             </TabsContent>
 
