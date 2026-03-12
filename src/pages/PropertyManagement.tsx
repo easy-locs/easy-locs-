@@ -103,17 +103,28 @@ const PropertyManagement = () => {
     ? `Manage rental properties in ${currentCountry.name}. Leases, receipts, tenant portal — compliant with ${currentCountry.name} regulations. Free to start.`
     : "All-in-one rental management for landlords worldwide. Manage properties in 190+ countries with jurisdiction-compliant legal documents.";
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Easy-Locs",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    description: pageDesc,
-    url: `https://www.easy-locs.com/property-management${countrySlug ? `-${countrySlug}` : ""}`,
-    ...(currentCountry ? { countryOfOrigin: { "@type": "Country", name: currentCountry.name } } : {}),
-    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Free plan available" },
-  };
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Easy-Locs",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description: pageDesc,
+      url: `https://www.easy-locs.com/property-management${countrySlug ? `-${countrySlug}` : ""}`,
+      ...(currentCountry ? { countryOfOrigin: { "@type": "Country", name: currentCountry.name } } : {}),
+      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Free plan available" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
+        { "@type": "ListItem", position: 2, name: "Property Management", item: "https://www.easy-locs.com/property-management" },
+        ...(currentCountry ? [{ "@type": "ListItem", position: 3, name: currentCountry.name, item: `https://www.easy-locs.com/property-management-${countrySlug}` }] : []),
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
