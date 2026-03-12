@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, Send, MessageSquare, Lock, LogIn, Eye, Loader2 } from "lucide-react";
+import { Mail, Phone, MessageSquare, Lock, LogIn, Eye, Loader2 } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { emailLink, type ListingContext } from "@/lib/contact-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useCall } from "@/components/call/CallProvider";
 
 interface Props {
   contactPhone?: string | null;
