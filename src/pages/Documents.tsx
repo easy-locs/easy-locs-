@@ -56,11 +56,11 @@ const Documents = () => {
     if (!orgId) return;
     const { data } = await supabase
       .from("documents")
-      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country")
+      .select("id, title, doc_type, template_id, template_version, data_json, pdf_url, created_at, country, routed_to, routing_status, property_id, tenant_id, lease_id")
       .eq("org_id", orgId)
       .eq("country", activeCountry)
       .order("created_at", { ascending: false });
-    setDocs((data as DocRow[]) ?? []);
+    setDocs((data as any[]) ?? []);
     setLoading(false);
   };
 

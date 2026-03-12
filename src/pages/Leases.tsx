@@ -286,12 +286,12 @@ const Leases = () => {
               ))}
             </div>
 
-            {/* Saved leases */}
+            {/* Saved leases with signature flow */}
             {savedLeases.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-foreground mb-3">📄 {t("page.leases.generated")}</h2>
-                <div className="space-y-2">
-                  {savedLeases.slice(0, 5).map(doc => {
+                <div className="space-y-3">
+                  {savedLeases.slice(0, 10).map(doc => {
                     const handleDownloadSaved = () => {
                       const templateMap: Record<string, DocumentTemplate> = {
                         "lease-empty": frLeaseEmpty,
@@ -304,31 +304,90 @@ const Leases = () => {
                         downloadPDF(pdf, `${doc.title?.replace(/\s/g, "_") || "bail"}.pdf`);
                       }
                     };
+
+                    // Status logic
+                    const tenantSigned = !!doc.signed_by_tenant_at;
+                    const ownerSigned = !!doc.signed_by_owner_at;
+                    const isActive = tenantSigned && ownerSigned;
+                    const isPending = doc.status === "draft" || doc.status === "pending_signature";
+                    const statusLabel = isActive ? "✅ Actif" : tenantSigned ? "⏳ Signature bailleur" : ownerSigned ? "⏳ Signature locataire" : isPending ? "📝 En attente" : doc.status === "finalized" ? "✅ Finalisé" : doc.status;
+                    const statusColor = isActive ? "bg-success/10 text-success" : (tenantSigned || ownerSigned) ? "bg-warning/10 text-warning" : isPending ? "bg-muted text-muted-foreground" : "bg-success/10 text-success";
+
                     return (
-                      <div key={doc.id} className="flex items-center gap-3 bg-card rounded-lg p-3 border border-border/50 text-sm">
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground truncate block">{doc.title}</span>
-                          <span className="text-muted-foreground text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
+                      <div key={doc.id} className="bg-card rounded-xl p-4 border border-border/50 shadow-card">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium text-foreground text-sm truncate block">{doc.title}</span>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <span className="text-muted-foreground text-xs">{new Date(doc.created_at).toLocaleDateString()}</span>
+                              <span className={`inline-flex items-center h-5 text-[10px] px-2 rounded-full font-medium ${statusColor}`}>{statusLabel}</span>
+                            </div>
+
+                            {/* Signature progress */}
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              <div className={`flex items-center gap-2 p-2 rounded-lg border text-xs ${tenantSigned ? "border-success/30 bg-success/5" : "border-border"}`}>
+                                {tenantSigned ? <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" /> : <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                                <span className={tenantSigned ? "text-success font-medium" : "text-muted-foreground"}>
+                                  Locataire {tenantSigned ? "✓" : "—"}
+                                </span>
+                              </div>
+                              <div className={`flex items-center gap-2 p-2 rounded-lg border text-xs ${ownerSigned ? "border-success/30 bg-success/5" : "border-border"}`}>
+                                {ownerSigned ? <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" /> : <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                                <span className={ownerSigned ? "text-success font-medium" : "text-muted-foreground"}>
+                                  Bailleur {ownerSigned ? "✓" : "—"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button onClick={handleDownloadSaved} className="text-muted-foreground hover:text-foreground transition-colors p-1" title={t("page.leases.download_tooltip")}>
-                            <Download className="h-4 w-4" />
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50 flex-wrap">
+                          <button onClick={handleDownloadSaved} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-md hover:bg-muted/50">
+                            <Download className="h-3.5 w-3.5" /> PDF
                           </button>
-                          {doc.status === "draft" ? (
+
+                          {/* Send for signature (draft → pending_signature) */}
+                          {doc.status === "draft" && (
                             <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await supabase.from("documents").update({ status: "finalized" }).eq("id", doc.id);
-                                toast({ title: t("page.leases.finalized") });
+                              onClick={async () => {
+                                await supabase.from("documents").update({ status: "pending_signature", requires_signature: true }).eq("id", doc.id);
+                                toast({ title: "📝 Envoyé pour signature" });
                                 loadSavedLeases();
                               }}
-                              className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-semibold bg-accent text-accent-foreground hover:opacity-90 transition-opacity"
+                              className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent text-accent-foreground px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity"
                             >
-                              {t("page.leases.finalize")}
+                              <PenTool className="h-3.5 w-3.5" /> Envoyer pour signature
                             </button>
-                          ) : (
-                            <span className="inline-flex items-center justify-center whitespace-nowrap h-6 text-xs px-2.5 rounded-full font-medium bg-success/10 text-success">
-                              ✅ {t("page.leases.finalized")}
+                          )}
+
+                          {/* Owner sign button */}
+                          {!ownerSigned && doc.status !== "draft" && (
+                            <button
+                              onClick={() => { setSignDocId(doc.id); setSignDocTitle(doc.title); setSignRole("owner"); }}
+                              className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/10 text-accent px-3 py-1.5 rounded-md hover:bg-accent/20 transition-colors"
+                            >
+                              <PenTool className="h-3.5 w-3.5" /> Signer (Bailleur)
+                            </button>
+                          )}
+
+                          {/* Tenant sign button (for tenant portal, owner can also trigger) */}
+                          {!tenantSigned && doc.status !== "draft" && (
+                            <button
+                              onClick={() => { setSignDocId(doc.id); setSignDocTitle(doc.title); setSignRole("tenant"); }}
+                              className="inline-flex items-center gap-1.5 text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors"
+                            >
+                              <PenTool className="h-3.5 w-3.5" /> Signer (Locataire)
+                            </button>
+                          )}
+
+                          {/* Active badge with rent schedule info */}
+                          {isActive && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success ml-auto">
+                              <Shield className="h-3.5 w-3.5" /> Bail actif — échéancier généré
                             </span>
                           )}
                         </div>
@@ -337,6 +396,29 @@ const Leases = () => {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Signature dialog */}
+            {signDocId && (
+              <SignatureDialog
+                open={!!signDocId}
+                onOpenChange={(open) => { if (!open) setSignDocId(null); }}
+                documentId={signDocId}
+                documentTitle={signDocTitle}
+                signerRole={signRole}
+                onSigned={async () => {
+                  // Also update lease record via workflow hook
+                  const doc = savedLeases.find(d => d.id === signDocId);
+                  if (doc?.lease_id) {
+                    if (signRole === "owner") {
+                      await recordOwnerSignature(doc.lease_id);
+                    } else {
+                      await recordTenantSignature(doc.lease_id);
+                    }
+                  }
+                  loadSavedLeases();
+                }}
+              />
             )}
 
             {/* Lease list */}
