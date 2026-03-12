@@ -39,7 +39,7 @@ export default function NewConversationDialog({ open, onOpenChange, onThreadCrea
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("id, name, email, avatar_url")
+        .select("id, name, email")
         .or(`name.ilike.%${q}%,email.ilike.%${q}%`)
         .neq("id", user?.id || "")
         .limit(10);
