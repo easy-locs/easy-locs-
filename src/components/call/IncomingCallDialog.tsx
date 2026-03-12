@@ -18,7 +18,7 @@ interface IncomingCallDialogProps {
 }
 
 export default function IncomingCallDialog({
-  open, callerName, contextLabel, isVideo, onAccept, onDecline,
+  open, callerName, contextLabel, isVideo, onAccept, onDecline, onMissed,
 }: IncomingCallDialogProps) {
   const [ringTime, setRingTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
