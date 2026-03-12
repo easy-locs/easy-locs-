@@ -303,6 +303,12 @@ const ClientMessages = () => {
 
           {/* Input */}
           <form onSubmit={handleSend} className="border-t border-border p-3 flex gap-2 items-center">
+            <input ref={mediaInputRef} type="file" className="hidden" accept={MEDIA_ACCEPT + ",.pdf,.doc,.docx"}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleMediaUpload(f); e.target.value = ""; }} />
+            <button type="button" onClick={() => mediaInputRef.current?.click()} disabled={uploading}
+              className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40">
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            </button>
             <input
               type="text"
               value={newMsg}
