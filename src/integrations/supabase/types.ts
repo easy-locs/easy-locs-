@@ -501,6 +501,33 @@ export type Database = {
           },
         ]
       }
+      category_subscriptions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          notify_email: boolean | null
+          notify_push: boolean | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          notify_email?: boolean | null
+          notify_push?: boolean | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          notify_email?: boolean | null
+          notify_push?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       collaboration_invitations: {
         Row: {
           accepted_at: string | null
@@ -3812,6 +3839,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      saved_listings: {
+        Row: {
+          created_at: string
+          id: string
+          listing_city: string | null
+          listing_country: string | null
+          listing_currency: string | null
+          listing_id: string
+          listing_image: string | null
+          listing_price: number | null
+          listing_title: string | null
+          listing_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_city?: string | null
+          listing_country?: string | null
+          listing_currency?: string | null
+          listing_id: string
+          listing_image?: string | null
+          listing_price?: number | null
+          listing_title?: string | null
+          listing_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_city?: string | null
+          listing_country?: string | null
+          listing_currency?: string | null
+          listing_id?: string
+          listing_image?: string | null
+          listing_price?: number | null
+          listing_title?: string | null
+          listing_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       seasonal_bookings: {
         Row: {
