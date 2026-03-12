@@ -243,13 +243,14 @@ export function ExploreRadiusSearch({
           onClick={onReset}
           className="flex-1 rounded-xl h-12 text-sm font-semibold"
         >
-          Effacer
+          {t("explore.radius.reset") || "Reset"}
         </Button>
         <Button
           onClick={onApply}
-          className="flex-1 rounded-xl h-12 text-sm font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          className="flex-1 rounded-xl h-12 text-sm font-bold bg-accent hover:bg-accent/90 text-accent-foreground"
         >
-          Valider la localisation ({resultCount.toLocaleString()})
+          <Search className="h-4 w-4 me-1.5" />
+          {t("explore.radius.apply") || "Apply"}
         </Button>
       </div>
     </motion.div>
