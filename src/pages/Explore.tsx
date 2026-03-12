@@ -247,7 +247,7 @@ export default function Explore() {
       counts[group.value] = unfilteredItems.filter(item => {
         const type = item._type as string;
         if (subValues.includes("seasonal") && type === "seasonal") return true;
-        if (subValues.includes("real-estate") && type === "real-estate") return true;
+        if ((subValues.includes("property_sale") || subValues.includes("long_term_rental")) && type === "real-estate") return true;
         if (type === "service" && subValues.includes(item.category)) return true;
         return false;
       }).length;
