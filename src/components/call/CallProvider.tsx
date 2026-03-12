@@ -280,6 +280,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
   }, [incomingCallId, user, incomingThreadId, incomingOrgId]);
 
   const handleCloseCall = useCallback(async () => {
+    console.log("[CallProvider] handleCloseCall", {
+      activeCallId: activeCallRef.current?.callId || null,
+      status: callState.status || null,
+    });
+
     // Log ended call to thread
     const meta = activeCallRef.current;
     if (meta?.threadId && user) {
@@ -299,13 +304,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
       }
     }
     activeCallRef.current = null;
-    callManager?.cleanup();
+    callManager?.cleanup("provider-close");
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
     startingCallRef.current = false;
     setIsStartingCall(false);
-  }, [callManager, user]);
+  }, [callManager, callState.status, user]);
 
   return (
     <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
