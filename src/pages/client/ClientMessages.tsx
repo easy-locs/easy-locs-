@@ -374,6 +374,7 @@ const ClientMessages = () => {
                 }
 
                 const repliedMsg = m.reply_to_id ? messages.find(rm => rm.id === m.reply_to_id) : null;
+                const repliedDeleted = repliedMsg && !!(repliedMsg as any).deleted_for_all;
                 const minutesSince = differenceInMinutes(new Date(), new Date(m.created_at));
 
                 const bubble = (
