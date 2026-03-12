@@ -76,7 +76,7 @@ const ConciergeServicesPage = () => (
             Concierge Services for Property Owners
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Deliver 5-star hospitality to your guests. Manage check-ins, cleaning, maintenance, airport transfers, and local experiences — all from one platform, in 110+ countries.
+            Deliver 5-star hospitality to your guests. Manage check-ins, cleaning, maintenance, airport transfers, and local experiences — all from one platform, in 190+ countries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-base">

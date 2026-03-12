@@ -97,7 +97,7 @@ const ActivitiesPage = () => (
           <h2 className="text-3xl font-bold text-center text-foreground mb-8">Why List on Easy-Locs?</h2>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              { title: "Reach Global Guests", desc: "Your activities are visible to travelers staying in local vacation rentals across 110+ countries." },
+              { title: "Reach Global Guests", desc: "Your activities are visible to travelers staying in local vacation rentals across 190+ countries." },
               { title: "Smart Booking Calendar", desc: "Each activity gets a dynamic calendar with time slots, participant limits, and automatic availability updates." },
               { title: "Secure Payments", desc: "Get paid via Stripe with automatic invoicing and multi-currency support." },
               { title: "Built-in Communication", desc: "Chat directly with guests, send confirmations, and manage modifications from one dashboard." },
