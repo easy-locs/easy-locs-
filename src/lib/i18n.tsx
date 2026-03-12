@@ -3159,7 +3159,7 @@ const pageEn: Record<string, string> = {
   "landing.trust.secure": "Secure Platform",
   "landing.trust.secure_desc": "End-to-end encryption, GDPR & international compliance.",
   "landing.trust.global": "Global Infrastructure",
-  "landing.trust.global_desc": "110+ countries, multi-region hosting, 99.9% uptime.",
+  "landing.trust.global_desc": "190+ countries, multi-region hosting, 99.9% uptime.",
   "landing.trust.automated": "Automated Management",
   "landing.trust.automated_desc": "Receipts, reminders, reports & workflows on autopilot.",
   "landing.trust.ai": "AI-Powered Tools",
