@@ -290,7 +290,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   }, [callManager, user]);
 
   return (
-    <CallContext.Provider value={{ startCall, isInCall: showCallDialog }}>
+    <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall: startingCallRef.current }}>
       {children}
 
       {/* Incoming call dialog */}
