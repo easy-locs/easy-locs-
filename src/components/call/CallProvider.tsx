@@ -49,6 +49,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
   // Track active call metadata for logging
   const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string } | null>(null);
+  const startingCallRef = useRef(false); // Lock to prevent duplicate startCall
 
   // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
@@ -132,8 +133,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
       peerName: string;
       isVideo?: boolean;
     }) => {
-      if (!user) return;
+      if (!user || startingCallRef.current) return;
+      startingCallRef.current = true;
 
+      try {
       // Create call log entry
       const { data: callLog, error } = await supabase
         .from("call_logs")
@@ -152,6 +155,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
       if (error || !callLog) {
         console.error("Failed to create call:", error);
+        startingCallRef.current = false;
         return;
       }
 
@@ -169,6 +173,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
       activeCallRef.current = { callId: callLog.id, threadId: opts.threadId, orgId: opts.orgId };
 
       await manager.startCall(opts.isVideo || false);
+      } catch (err) {
+        console.error("Failed to start call:", err);
+      } finally {
+        startingCallRef.current = false;
+      }
     },
     [user]
   );
@@ -280,6 +289,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
+    startingCallRef.current = false; // Reset lock for next call
   }, [callManager, user]);
 
   return (
