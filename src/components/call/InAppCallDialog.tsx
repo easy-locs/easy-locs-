@@ -32,7 +32,9 @@ export default function InAppCallDialog({
   const [usingRelay, setUsingRelay] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isEnding, setIsEnding] = useState(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const speakerSupported = typeof window !== "undefined" && typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
   // Attach remote stream to audio element and handle Safari autoplay
   useEffect(() => {
@@ -42,17 +44,23 @@ export default function InAppCallDialog({
     // Safari requires explicit play() after setting srcObject
     const playPromise = el.play();
     if (playPromise) {
-      playPromise.catch((err) => {
-        console.warn("[InAppCallDialog] audio.play() blocked, retrying on user gesture:", err);
-        // Retry on next user interaction
-        const retry = () => {
-          el.play().catch(() => {});
-          document.removeEventListener("touchstart", retry);
-          document.removeEventListener("click", retry);
-        };
-        document.addEventListener("touchstart", retry, { once: true });
-        document.addEventListener("click", retry, { once: true });
-      });
+      playPromise
+        .then(() => {
+          console.log("[InAppCallDialog] remote audio play started");
+        })
+        .catch((err) => {
+          console.warn("[InAppCallDialog] audio.play() blocked, retrying on user gesture:", err);
+          // Retry on next user interaction
+          const retry = () => {
+            el.play()
+              .then(() => console.log("[InAppCallDialog] remote audio play resumed after gesture"))
+              .catch(() => {});
+            document.removeEventListener("touchstart", retry);
+            document.removeEventListener("click", retry);
+          };
+          document.addEventListener("touchstart", retry, { once: true });
+          document.addEventListener("click", retry, { once: true });
+        });
     }
   }, [remoteStream]);
 
@@ -80,14 +88,22 @@ export default function InAppCallDialog({
       setUsingRelay(false);
       setError(null);
       setRemoteStream(null);
+      setIsEnding(false);
     }
   }, [open]);
 
   const handleEndCall = async () => {
-    if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
-      await callManager?.endCall();
+    if (isEnding) return;
+    setIsEnding(true);
+
+    try {
+      if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
+        await callManager?.endCall();
+      }
+      onClose();
+    } finally {
+      setIsEnding(false);
     }
-    onClose();
   };
 
   const handleToggleMute = () => {
@@ -96,6 +112,7 @@ export default function InAppCallDialog({
   };
 
   const handleToggleSpeaker = () => {
+    if (!speakerSupported) return;
     setSpeakerOff((prev) => {
       if (remoteAudioRef.current) {
         remoteAudioRef.current.muted = !prev;
@@ -174,16 +191,18 @@ export default function InAppCallDialog({
             </p>
             {onFallbackChat && (
               <button
-                className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                 onClick={() => { handleEndCall(); onFallbackChat(); }}
+                disabled={isEnding}
               >
                 <MessageSquare className="h-4 w-4" />
                 Switch to chat
               </button>
             )}
             <button
-              className="w-full inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              className="w-full inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
               onClick={handleEndCall}
+              disabled={isEnding}
             >
               Close
             </button>
@@ -197,7 +216,7 @@ export default function InAppCallDialog({
               {/* Mute */}
               <button
                 onClick={handleToggleMute}
-                disabled={status !== "active"}
+                disabled={status !== "active" || isEnding}
                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
                   muted
                     ? "bg-destructive/10 text-destructive"
@@ -210,36 +229,41 @@ export default function InAppCallDialog({
               {/* End call */}
               <button
                 onClick={handleEndCall}
-                className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg"
+                disabled={isEnding}
+                className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg disabled:opacity-60"
               >
-                <PhoneOff className="h-6 w-6" />
+                {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
               </button>
 
-              {/* Speaker */}
-              <button
-                onClick={handleToggleSpeaker}
-                disabled={status !== "active"}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
-                  speakerOff
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-muted text-foreground hover:bg-muted/80"
-                } disabled:opacity-40`}
-              >
-                {speakerOff ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-              </button>
+              {/* Speaker (only on supported devices) */}
+              {speakerSupported && (
+                <button
+                  onClick={handleToggleSpeaker}
+                  disabled={status !== "active" || isEnding}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                    speakerOff
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-muted text-foreground hover:bg-muted/80"
+                  } disabled:opacity-40`}
+                >
+                  {speakerOff ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+              )}
             </div>
 
             {/* Labels */}
-            <div className="flex items-center justify-center gap-6 mt-2">
+            <div className={`flex items-center justify-center mt-2 ${speakerSupported ? "gap-6" : "gap-12"}`}>
               <span className="text-[10px] text-muted-foreground w-14 text-center">
                 {muted ? "Unmute" : "Mute"}
               </span>
               <span className="text-[10px] text-destructive w-16 text-center font-medium">
                 End
               </span>
-              <span className="text-[10px] text-muted-foreground w-14 text-center">
-                Speaker
-              </span>
+              {speakerSupported && (
+                <span className="text-[10px] text-muted-foreground w-14 text-center">
+                  Speaker
+                </span>
+              )}
             </div>
           </div>
         )}

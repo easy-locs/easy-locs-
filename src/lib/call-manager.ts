@@ -82,6 +82,7 @@ export class CallManager {
   private _channelReady = false;
   private _pendingCandidates: RTCIceCandidate[] = [];
   private _cleaned = false;
+  private _ending = false;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
@@ -97,6 +98,10 @@ export class CallManager {
     this.onStateChange = opts.onStateChange;
   }
 
+  private debug(step: string, meta?: Record<string, unknown>) {
+    console.log(`[CallManager][${this.role}][${this.callId}] ${step}`, meta || {});
+  }
+
   /** Join the Realtime broadcast channel for signaling — MUST await */
   private async joinSignalChannel(): Promise<void> {
     this.channel = supabase.channel(`call:${this.callId}`, {
@@ -106,19 +111,25 @@ export class CallManager {
     this.channel.on("broadcast", { event: "signal" }, ({ payload }) => {
       const signal = payload as SignalPayload;
       if (signal.from === this.userId) return;
-      this.processSignal(signal);
+      this.debug("signal received", { type: signal.type, from: signal.from });
+      void this.processSignal(signal);
     });
 
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
+        this.debug("channel subscribe timeout");
         reject(new Error("Channel subscription timeout"));
       }, 10_000);
 
       this.channel!.subscribe((status) => {
+        this.debug("channel status", { status });
         if (status === "SUBSCRIBED") {
           clearTimeout(timeout);
           this._channelReady = true;
           resolve();
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          clearTimeout(timeout);
+          reject(new Error(`Channel subscription failed: ${status}`));
         }
       });
     });
@@ -126,20 +137,26 @@ export class CallManager {
 
   private sendSignal(signal: Omit<SignalPayload, "from">) {
     if (!this._channelReady || !this.channel) {
-      console.warn("[CallManager] Channel not ready, signal dropped:", signal.type);
+      this.debug("signal dropped (channel not ready)", { type: signal.type });
       return;
     }
-    this.channel.send({
-      type: "broadcast",
-      event: "signal",
-      payload: { ...signal, from: this.userId } as SignalPayload,
-    });
+
+    void this.channel
+      .send({
+        type: "broadcast",
+        event: "signal",
+        payload: { ...signal, from: this.userId } as SignalPayload,
+      })
+      .then((result) => this.debug("signal sent", { type: signal.type, result }))
+      .catch((err) => this.debug("signal send failed", { type: signal.type, error: String(err) }));
   }
 
   /** Caller: initiate call */
   async startCall(isVideo: boolean) {
     this._isVideo = isVideo;
     this._cleaned = false;
+    this._ending = false;
+    this.debug("startCall", { isVideo });
     this.onStateChange({ status: "ringing", callId: this.callId, isVideo });
     await this.joinSignalChannel();
     await this.setupMedia(isVideo);
@@ -150,6 +167,8 @@ export class CallManager {
   async acceptCall(isVideo: boolean) {
     this._isVideo = isVideo;
     this._cleaned = false;
+    this._ending = false;
+    this.debug("acceptCall", { isVideo });
     this.onStateChange({ status: "connecting", callId: this.callId, isVideo });
     await this.joinSignalChannel();
     await this.setupMedia(isVideo);
@@ -174,23 +193,31 @@ export class CallManager {
 
   /** Decline call */
   async declineCall() {
+    this.debug("declineCall");
     this.sendSignal({ type: "declined", data: "{}" });
     await supabase
       .from("call_logs")
       .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-      .eq("id", this.callId);
+      .eq("id", this.callId)
+      .neq("status", "declined");
     this.onStateChange({ status: "declined" });
-    this.cleanup();
+    this.cleanup("decline");
   }
 
   /** End active call */
   async endCall() {
-    if (this._cleaned) return;
+    if (this._cleaned || this._ending) {
+      this.debug("endCall skipped", { cleaned: this._cleaned, ending: this._ending });
+      return;
+    }
+
+    this._ending = true;
+    this.debug("endCall start");
+
     try {
       this.sendSignal({ type: "ended", data: "{}" });
-    } catch { /* best effort */ }
-    const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
-    try {
+
+      const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
       await supabase
         .from("call_logs")
         .update({
@@ -199,10 +226,15 @@ export class CallManager {
           duration_seconds: duration,
           ended_by: this.role,
         } as any)
-        .eq("id", this.callId);
-    } catch { /* best effort */ }
-    this.onStateChange({ status: "ended" });
-    this.cleanup();
+        .eq("id", this.callId)
+        .neq("status", "ended");
+
+      this.onStateChange({ status: "ended" });
+    } catch (err) {
+      this.debug("endCall update failed", { error: String(err) });
+    } finally {
+      this.cleanup("end");
+    }
   }
 
   private startElapsedTimer() {
@@ -215,6 +247,8 @@ export class CallManager {
 
   private async processSignal(signal: SignalPayload) {
     try {
+      this.debug("processing signal", { type: signal.type });
+
       if (signal.type === "accepted") {
         // Caller received acceptance — prepare PC and wait for callee's offer
         this.onStateChange({ status: "connecting" });
@@ -226,11 +260,14 @@ export class CallManager {
         if (!this.pc) this.createPeerConnection();
         const offer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
-        // Flush any pending ICE candidates
+
+        const pendingCount = this._pendingCandidates.length;
         for (const c of this._pendingCandidates) {
           try { await this.pc!.addIceCandidate(c); } catch { /* ignore late candidates */ }
         }
         this._pendingCandidates = [];
+        this.debug("pending ICE flushed after offer", { count: pendingCount });
+
         const answer = await this.pc!.createAnswer();
         await this.pc!.setLocalDescription(answer);
         this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
@@ -238,18 +275,25 @@ export class CallManager {
         if (!this.pc) return;
         const answer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(answer));
-        // Flush pending candidates
+
+        const pendingCount = this._pendingCandidates.length;
         for (const c of this._pendingCandidates) {
           try { await this.pc!.addIceCandidate(c); } catch { /* ignore */ }
         }
         this._pendingCandidates = [];
+        this.debug("pending ICE flushed after answer", { count: pendingCount });
       } else if (signal.type === "ice") {
         const candidate = new RTCIceCandidate(JSON.parse(signal.data));
         if (this.pc?.remoteDescription) {
-          try { await this.pc.addIceCandidate(candidate); } catch { /* ignore */ }
+          try {
+            await this.pc.addIceCandidate(candidate);
+            this.debug("ICE candidate applied");
+          } catch {
+            this.debug("ICE candidate apply failed");
+          }
         } else {
-          // Queue until remote description is set
           this._pendingCandidates.push(candidate);
+          this.debug("ICE candidate queued", { pending: this._pendingCandidates.length });
         }
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
@@ -257,15 +301,18 @@ export class CallManager {
           await supabase
             .from("call_logs")
             .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-            .eq("id", this.callId);
-        } catch { /* best effort */ }
-        this.cleanup();
+            .eq("id", this.callId)
+            .neq("status", "declined");
+        } catch {
+          this.debug("declined status update failed");
+        }
+        this.cleanup("remote-declined");
       } else if (signal.type === "ended") {
         this.onStateChange({ status: "ended" });
-        this.cleanup();
+        this.cleanup("remote-ended");
       }
     } catch (err) {
-      console.error("[CallManager] Signal processing error:", signal.type, err);
+      this.debug("signal processing error", { type: signal.type, error: String(err) });
     }
   }
 
@@ -273,6 +320,8 @@ export class CallManager {
     if (this.pc) {
       try { this.pc.close(); } catch {}
     }
+
+    this.debug("createPeerConnection", { transport: "all" });
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "all" });
     this.remoteStream = new MediaStream();
     this.iceConnected = false;
@@ -283,11 +332,19 @@ export class CallManager {
       this.localStream.getTracks().forEach((track) => {
         this.pc!.addTrack(track, this.localStream!);
       });
+      this.debug("local tracks added", {
+        audioTracks: this.localStream.getAudioTracks().length,
+        videoTracks: this.localStream.getVideoTracks().length,
+      });
     }
 
     this.pc.ontrack = (event) => {
       event.streams[0]?.getTracks().forEach((track) => {
         this.remoteStream!.addTrack(track);
+      });
+      this.debug("remote track received", {
+        streamTracks: event.streams[0]?.getTracks().length || 0,
+        remoteTracks: this.remoteStream?.getTracks().length || 0,
       });
       this.clearTimeouts();
       this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
@@ -295,21 +352,28 @@ export class CallManager {
 
     this.pc.onicecandidate = (event) => {
       if (event.candidate) {
+        this.debug("local ICE candidate", {
+          candidateType: event.candidate.type,
+          protocol: event.candidate.protocol,
+        });
         this.sendSignal({ type: "ice", data: JSON.stringify(event.candidate) });
       }
     };
 
     this.pc.oniceconnectionstatechange = () => {
       const state = this.pc?.iceConnectionState;
+      this.debug("iceConnectionState", { state });
       if (state === "connected" || state === "completed") {
         this.iceConnected = true;
         this.clearTimeouts();
-        this.detectRelay();
+        void this.detectRelay();
       }
     };
 
     this.pc.onconnectionstatechange = () => {
       const state = this.pc?.connectionState;
+      this.debug("connectionState", { state, iceConnected: this.iceConnected });
+
       if (state === "connected") {
         this.iceConnected = true;
         this.clearTimeouts();
@@ -323,7 +387,7 @@ export class CallManager {
         } else {
           this.onStateChange({ status: "failed", error: "Connection lost" });
         }
-        this.cleanup();
+        this.cleanup("connection-failed");
       }
     };
   }
@@ -342,8 +406,11 @@ export class CallManager {
           });
         }
       });
+      this.debug("relay detection", { usingRelay });
       this.onStateChange({ usingRelay });
-    } catch { /* stats unavailable */ }
+    } catch {
+      this.debug("relay detection unavailable");
+    }
   }
 
   private clearTimeouts() {
@@ -353,9 +420,12 @@ export class CallManager {
 
   private startIceTimeout() {
     this.clearTimeouts();
+    this.debug("ICE timers started", { iceTimeoutMs: ICE_TIMEOUT_MS, streamTimeoutMs: STREAM_TIMEOUT_MS });
+
     this.iceTimer = setTimeout(() => {
       if (!this.iceConnected) {
-        this.retryRelayOnly();
+        this.debug("ICE timeout reached, triggering relay retry");
+        void this.retryRelayOnly();
       }
     }, ICE_TIMEOUT_MS);
 
@@ -365,20 +435,19 @@ export class CallManager {
           status: "network_blocked",
           error: "Unable to establish call. Your network may restrict internet calls.",
         });
-        this.cleanup();
+        this.cleanup("stream-timeout");
       }
     }, STREAM_TIMEOUT_MS);
   }
 
   private async retryRelayOnly() {
     if (!this.pc || this.iceConnected) return;
-    console.log("[CallManager] Retrying with relay-only transport");
+    this.debug("retryRelayOnly start");
+
     try {
-      // Close old PC
       const oldPc = this.pc;
       try { oldPc.close(); } catch {}
-      
-      // Create relay-only PC
+
       this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "relay" });
       this.remoteStream = new MediaStream();
       this._pendingCandidates = [];
@@ -394,35 +463,45 @@ export class CallManager {
         event.streams[0]?.getTracks().forEach((track) => {
           this.remoteStream!.addTrack(track);
         });
+        this.debug("remote track received (relay retry)", {
+          remoteTracks: this.remoteStream?.getTracks().length || 0,
+        });
         this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
       };
 
       this.pc.onicecandidate = (event) => {
         if (event.candidate) {
+          this.debug("local ICE candidate (relay retry)", {
+            candidateType: event.candidate.type,
+            protocol: event.candidate.protocol,
+          });
           this.sendSignal({ type: "ice", data: JSON.stringify(event.candidate) });
         }
       };
 
       this.pc.onconnectionstatechange = () => {
-        if (this.pc?.connectionState === "connected") {
+        const state = this.pc?.connectionState;
+        this.debug("connectionState (relay retry)", { state });
+
+        if (state === "connected") {
           this.iceConnected = true;
           this.clearTimeouts();
           this.onStateChange({ status: "active", usingRelay: true });
-        } else if (this.pc?.connectionState === "failed") {
+        } else if (state === "failed") {
           this.onStateChange({
             status: "network_blocked",
             error: "Internet calling unavailable on your network.",
           });
-          this.cleanup();
+          this.cleanup("relay-retry-failed");
         }
       };
 
-      // Re-negotiate: create a new offer and send it
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
       this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
+      this.debug("relay retry offer sent");
     } catch (err) {
-      console.error("[CallManager] Relay retry failed:", err);
+      this.debug("relay retry failed", { error: String(err) });
       // Stream timeout will handle final fallback
     }
   }
@@ -433,9 +512,17 @@ export class CallManager {
         audio: true,
         video: isVideo,
       });
+
+      const audioTrack = this.localStream.getAudioTracks()[0];
+      this.debug("media ready", {
+        audioTracks: this.localStream.getAudioTracks().length,
+        videoTracks: this.localStream.getVideoTracks().length,
+        audioEnabled: audioTrack?.enabled ?? false,
+        audioMuted: audioTrack?.muted ?? false,
+      });
       this.onStateChange({ localStream: this.localStream });
     } catch (err) {
-      console.error("[CallManager] getUserMedia failed:", err);
+      this.debug("getUserMedia failed", { error: String(err) });
       this.onStateChange({
         status: "failed",
         error: "Microphone access denied. Please allow microphone access to make calls.",
@@ -449,6 +536,7 @@ export class CallManager {
     const track = this.localStream.getAudioTracks()[0];
     if (track) {
       track.enabled = !track.enabled;
+      this.debug("toggleMute", { enabled: track.enabled });
       return !track.enabled;
     }
     return false;
@@ -468,9 +556,13 @@ export class CallManager {
     return false;
   }
 
-  cleanup() {
+  cleanup(reason = "unknown") {
     if (this._cleaned) return;
+
+    this.debug("cleanup", { reason });
     this._cleaned = true;
+    this._ending = false;
+
     if (this.iceTimer) clearTimeout(this.iceTimer);
     if (this.streamTimer) clearTimeout(this.streamTimer);
     if (this.elapsedTimer) clearInterval(this.elapsedTimer);
@@ -479,13 +571,16 @@ export class CallManager {
     this.elapsedTimer = null;
     this._startTime = null;
     this._pendingCandidates = [];
+
     try { this.localStream?.getTracks().forEach((t) => t.stop()); } catch {}
     this.localStream = null;
     this.remoteStream = null;
+
     try { this.pc?.close(); } catch {}
     this.pc = null;
     this.iceConnected = false;
     this._channelReady = false;
+
     if (this.channel) {
       try { supabase.removeChannel(this.channel); } catch {}
       this.channel = null;
