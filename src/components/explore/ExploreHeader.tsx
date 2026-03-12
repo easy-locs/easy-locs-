@@ -325,7 +325,7 @@ export default function ExploreHeader({
   const navigate = useNavigate();
 
   const dash = getDashboardPath(activeRole);
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
   const locationLabel = geoCity || geoCountry || null;
 
   return (
