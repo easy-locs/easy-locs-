@@ -57,11 +57,11 @@ const CONTINENTS = [
     name: "Americas",
     emoji: "🌎",
     countries: [
-      { name: "USA", slug: "usa", flag: "🇺🇸", cities: ["Miami", "New York", "Los Angeles"] },
-      { name: "Mexico", slug: "mexico", flag: "🇲🇽", cities: ["Mexico City", "Cancún"] },
       { name: "Brazil", slug: "brazil", flag: "🇧🇷", cities: ["São Paulo", "Rio"] },
-      { name: "Colombia", slug: "colombia", flag: "🇨🇴", cities: ["Bogotá", "Medellín"] },
       { name: "Canada", slug: "canada", flag: "🇨🇦", cities: ["Toronto", "Montreal"] },
+      { name: "Colombia", slug: "colombia", flag: "🇨🇴", cities: ["Bogotá", "Medellín"] },
+      { name: "Mexico", slug: "mexico", flag: "🇲🇽", cities: ["Mexico City", "Cancún"] },
+      { name: "USA", slug: "usa", flag: "🇺🇸", cities: ["Miami", "New York", "Los Angeles"] },
     ],
   },
 ];

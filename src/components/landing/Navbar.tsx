@@ -153,16 +153,16 @@ const Navbar = () => {
 
           <ThemeSwitcher />
 
-          {/* Auth buttons — always visible, never cut */}
+          {/* Auth buttons — adapt to language, never overflow */}
           <Link
             to="/login"
-            className="text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5 text-white/80 whitespace-nowrap"
+            className="hidden sm:inline-block text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5 text-white/80 whitespace-nowrap"
           >
             {t("landing.nav.login") || "Log in"}
           </Link>
           <Link
             to="/signup"
-            className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0"
+            className="text-[11px] sm:text-sm font-bold px-2.5 sm:px-5 py-1.5 sm:py-2 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0"
             style={{
               background: "var(--gradient-gold)",
               color: "hsl(var(--accent-foreground))",
