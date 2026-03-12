@@ -359,6 +359,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ar: {
     "notif.title": "الإشعارات", "notif.mark_all_read": "تحديد الكل كمقروء", "notif.empty": "لا إشعارات",
+    "notif.all": "الكل", "notif.unread": "جديد", "notif.bookings": "الحجوزات", "notif.payments": "المدفوعات", "notif.messages_filter": "الرسائل",
     "notif.reply": "رد", "notif.view_document": "عرض المستند", "notif.view_payment": "عرض الدفع",
     "notif.view_dunning": "عرض التذكير", "notif.open": "فتح",
     "notif.view_booking": "عرض الحجز", "notif.outdated": "هذا السجل لم يعد متاحاً",
