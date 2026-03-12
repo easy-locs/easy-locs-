@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import { supabase } from "@/integrations/supabase/client";
 import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
 import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, fiAll, elAll, csAll, huAll, roAll, hrAll, bgAll, skAll, heAll, ukAll } from "./i18n-world";
+import { koComplete, zhComplete, hiComplete, thComplete, viComplete, idComplete, msComplete, svComplete, daComplete, nbComplete, fiComplete, elComplete, csComplete, huComplete, roComplete, hrComplete, bgComplete, skComplete, heComplete, ukComplete } from "./i18n-world-complete";
 import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
 import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
 import { pageIt as pageItFull } from "./i18n-pages-it";
@@ -5465,26 +5466,26 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.org_updated": "組織が更新されました",
     ...obJa, ...pageJa,
   },
-  ko: { ...koAll, ...koPayExtra, ...koPageExtra, ...koPages },
-  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra, ...zhPages },
-  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra, ...hiPages },
-  th: { ...thAll, ...thPayExtra, ...thPageExtra, ...thPages },
-  vi: { ...viAll, ...viPayExtra, ...viPageExtra, ...viPages },
-  id: { ...idAll, ...idPayExtra, ...idPageExtra, ...idPages },
-  ms: { ...msAll, ...msPayExtra, ...msPageExtra, ...msPages },
-  sv: { ...svAll, ...svPayExtra, ...svPageExtra, ...svPages },
-  da: { ...daAll, ...daPayExtra, ...daPageExtra, ...daPages },
-  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra, ...nbPages },
-  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra, ...fiPages },
-  el: { ...elAll, ...elPayExtra, ...elPageExtra, ...elPages },
-  cs: { ...csAll, ...csPayExtra, ...csPageExtra, ...csPages },
-  hu: { ...huAll, ...huPayExtra, ...huPageExtra, ...huPages },
-  ro: { ...roAll, ...roPayExtra, ...roPageExtra, ...roPages },
-  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra, ...hrPages },
-  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra, ...bgPages },
-  sk: { ...skAll, ...skPayExtra, ...skPageExtra, ...skPages },
-  he: { ...heAll, ...hePayExtra, ...hePageExtra, ...hePages },
-  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra, ...ukPages },
+  ko: { ...koAll, ...koPayExtra, ...koPageExtra, ...koPages, ...koComplete },
+  zh: { ...zhAll, ...zhPayExtra, ...zhPageExtra, ...zhPages, ...zhComplete },
+  hi: { ...hiAll, ...hiPayExtra, ...hiPageExtra, ...hiPages, ...hiComplete },
+  th: { ...thAll, ...thPayExtra, ...thPageExtra, ...thPages, ...thComplete },
+  vi: { ...viAll, ...viPayExtra, ...viPageExtra, ...viPages, ...viComplete },
+  id: { ...idAll, ...idPayExtra, ...idPageExtra, ...idPages, ...idComplete },
+  ms: { ...msAll, ...msPayExtra, ...msPageExtra, ...msPages, ...msComplete },
+  sv: { ...svAll, ...svPayExtra, ...svPageExtra, ...svPages, ...svComplete },
+  da: { ...daAll, ...daPayExtra, ...daPageExtra, ...daPages, ...daComplete },
+  nb: { ...nbAll, ...nbPayExtra, ...nbPageExtra, ...nbPages, ...nbComplete },
+  fi: { ...fiAll, ...fiPayExtra, ...fiPageExtra, ...fiPages, ...fiComplete },
+  el: { ...elAll, ...elPayExtra, ...elPageExtra, ...elPages, ...elComplete },
+  cs: { ...csAll, ...csPayExtra, ...csPageExtra, ...csPages, ...csComplete },
+  hu: { ...huAll, ...huPayExtra, ...huPageExtra, ...huPages, ...huComplete },
+  ro: { ...roAll, ...roPayExtra, ...roPageExtra, ...roPages, ...roComplete },
+  hr: { ...hrAll, ...hrPayExtra, ...hrPageExtra, ...hrPages, ...hrComplete },
+  bg: { ...bgAll, ...bgPayExtra, ...bgPageExtra, ...bgPages, ...bgComplete },
+  sk: { ...skAll, ...skPayExtra, ...skPageExtra, ...skPages, ...skComplete },
+  he: { ...heAll, ...hePayExtra, ...hePageExtra, ...hePages, ...heComplete },
+  uk: { ...ukAll, ...ukPayExtra, ...ukPageExtra, ...ukPages, ...ukComplete },
 };
 
 interface I18nContextType {
