@@ -266,6 +266,17 @@ const ClientMessages = () => {
               messages.map((m) => {
                 const isMe = m.sender_id === user?.id;
                 const isSystem = m.message_type === "system";
+                const isCallEvent = isSystem && m.context_type === "call";
+                if (isCallEvent) {
+                  return (
+                    <CallEventBubble
+                      key={m.id}
+                      content={m.content}
+                      createdAt={m.created_at}
+                      metadata={m.metadata_json as any}
+                    />
+                  );
+                }
                 if (isSystem) {
                   return (
                     <div key={m.id} className="flex justify-center">
