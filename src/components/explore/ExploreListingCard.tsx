@@ -11,6 +11,7 @@ const PLACEHOLDER_IMG = "/placeholder.svg";
 
 export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
   const { t } = useI18n();
+  const { isSaved, toggleSave } = useSavedListings();
   const type = item._type as string;
 
   const href = type === "seasonal"
