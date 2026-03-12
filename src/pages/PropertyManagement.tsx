@@ -87,7 +87,7 @@ const FEATURES = [
   { icon: FileText, title: "Legal Documents", desc: "Generate jurisdiction-compliant leases, receipts, and legal notices automatically." },
   { icon: Users, title: "Tenant Portal", desc: "Self-service portal for tenants to view documents, pay rent, and communicate." },
   { icon: CreditCard, title: "Rent Collection", desc: "Collect rent via Stripe, PayPal, SEPA Direct Debit, or bank transfer." },
-  { icon: BarChart3, title: "Financial Reports", desc: "Automated fiscal reports adapted to local tax regulations across 110+ countries." },
+  { icon: BarChart3, title: "Financial Reports", desc: "Automated fiscal reports adapted to local tax regulations across 190+ countries." },
   { icon: Shield, title: "Enterprise Security", desc: "SSO, MFA, encrypted storage, and GDPR-compliant data handling." },
 ];
 
