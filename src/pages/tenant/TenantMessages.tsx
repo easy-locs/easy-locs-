@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload } from "lucide-react";
+import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload, Languages } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,8 @@ const TenantMessages = () => {
   const [sending, setSending] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [uploading, setUploading] = useState(false);
+  const [showOriginalMap, setShowOriginalMap] = useState<Record<string, boolean>>({});
+  const [translatingId, setTranslatingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,6 +83,30 @@ const TenantMessages = () => {
   }, [tenantId, user?.id]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const handleToggleTranslation = async (m: any) => {
+    const isShowingOriginal = showOriginalMap[m.id];
+    if (isShowingOriginal) {
+      setShowOriginalMap(prev => ({ ...prev, [m.id]: false }));
+      return;
+    }
+    if (!m.translated_content) {
+      setTranslatingId(m.id);
+      try {
+        const senderLocale = m.sender_locale || "en";
+        const { data: transData } = await supabase.functions.invoke("translate-message", {
+          body: { text: m.content, from_locale: senderLocale, to_locale: tenantLocale },
+        });
+        if (transData?.translated) {
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, translated_content: transData.translated } : msg));
+          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", m.id);
+        }
+      } catch (e) { console.error("Translation failed:", e); }
+      setTranslatingId(null);
+      return;
+    }
+    setShowOriginalMap(prev => ({ ...prev, [m.id]: true }));
+  };
 
   const handleFileUpload = async (file: File) => {
     if (!orgId || !tenantId || !user) return;
@@ -224,6 +250,14 @@ const TenantMessages = () => {
                   );
                 }
 
+                const showingOriginal = showOriginalMap[m.id];
+                const displayContent = isMe
+                  ? m.content
+                  : showingOriginal
+                    ? m.content
+                    : (m.translated_content || m.content);
+                const hasTranslation = !isMe && (m.translated_content || m.sender_locale !== tenantLocale);
+
                 return (
                   <motion.div key={m.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
@@ -231,9 +265,18 @@ const TenantMessages = () => {
                       {m.category && m.category !== "general" && (
                         <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(m.category)}</span>
                       )}
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {isMe ? m.content : (m.translated_content || m.content)}
-                      </p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{displayContent}</p>
+                      {/* Translation toggle */}
+                      {hasTranslation && (
+                        <button
+                          onClick={() => handleToggleTranslation(m)}
+                          disabled={translatingId === m.id}
+                          className="flex items-center gap-1 mt-1 text-[10px] text-accent hover:underline disabled:opacity-50"
+                        >
+                          <Languages className="h-3 w-3" />
+                          {translatingId === m.id ? "…" : showingOriginal ? "Show translation" : "Show original"}
+                        </button>
+                      )}
                       {m.attachment_url && (
                         <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
                           className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-accent-foreground/80" : "text-accent"}`}>
