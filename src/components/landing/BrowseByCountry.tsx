@@ -45,12 +45,12 @@ const CONTINENTS = [
     name: "Asia & Pacific",
     emoji: "🌏",
     countries: [
-      { name: "Thailand", slug: "thailand", flag: "🇹🇭", cities: ["Bangkok", "Phuket", "Chiang Mai"] },
-      { name: "Japan", slug: "japan", flag: "🇯🇵", cities: ["Tokyo", "Osaka"] },
       { name: "Indonesia", slug: "indonesia", flag: "🇮🇩", cities: ["Bali", "Jakarta"] },
-      { name: "Vietnam", slug: "vietnam", flag: "🇻🇳", cities: ["Ho Chi Minh", "Hanoi"] },
-      { name: "South Korea", slug: "south-korea", flag: "🇰🇷", cities: ["Seoul", "Busan"] },
+      { name: "Japan", slug: "japan", flag: "🇯🇵", cities: ["Tokyo", "Osaka"] },
       { name: "Malaysia", slug: "malaysia", flag: "🇲🇾", cities: ["Kuala Lumpur"] },
+      { name: "South Korea", slug: "south-korea", flag: "🇰🇷", cities: ["Seoul", "Busan"] },
+      { name: "Thailand", slug: "thailand", flag: "🇹🇭", cities: ["Bangkok", "Phuket", "Chiang Mai"] },
+      { name: "Vietnam", slug: "vietnam", flag: "🇻🇳", cities: ["Ho Chi Minh", "Hanoi"] },
     ],
   },
   {
