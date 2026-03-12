@@ -2,13 +2,13 @@
  * InAppCallDialog — Full in-app call UI (caller & callee).
  * Shows call status, mute/speaker/end controls, timer.
  * Mobile-first design with bottom-sheet feel.
+ * Safari: handles audio.play() promise + playsInline.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Phone, PhoneOff, Mic, MicOff, Volume2, VolumeX,
+  PhoneOff, Mic, MicOff, Volume2, VolumeX,
   Loader2, Shield, MessageSquare, WifiOff, User,
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
@@ -34,9 +34,25 @@ export default function InAppCallDialog({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
+  // Attach remote stream to audio element and handle Safari autoplay
   useEffect(() => {
-    if (remoteAudioRef.current && remoteStream) {
-      remoteAudioRef.current.srcObject = remoteStream;
+    const el = remoteAudioRef.current;
+    if (!el || !remoteStream) return;
+    el.srcObject = remoteStream;
+    // Safari requires explicit play() after setting srcObject
+    const playPromise = el.play();
+    if (playPromise) {
+      playPromise.catch((err) => {
+        console.warn("[InAppCallDialog] audio.play() blocked, retrying on user gesture:", err);
+        // Retry on next user interaction
+        const retry = () => {
+          el.play().catch(() => {});
+          document.removeEventListener("touchstart", retry);
+          document.removeEventListener("click", retry);
+        };
+        document.addEventListener("touchstart", retry, { once: true });
+        document.addEventListener("click", retry, { once: true });
+      });
     }
   }, [remoteStream]);
 
@@ -53,6 +69,19 @@ export default function InAppCallDialog({
       callManager.onStateChange = handleStateChange;
     }
   }, [callManager, handleStateChange]);
+
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStatus("idle");
+      setMuted(false);
+      setSpeakerOff(false);
+      setElapsed(0);
+      setUsingRelay(false);
+      setError(null);
+      setRemoteStream(null);
+    }
+  }, [open]);
 
   const handleEndCall = async () => {
     if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
@@ -100,12 +129,11 @@ export default function InAppCallDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleEndCall()}>
       <DialogContent className="sm:max-w-sm p-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border">
-        {/* Hidden audio element for remote stream */}
+        {/* Hidden audio element for remote stream — playsInline for Safari */}
         <audio ref={remoteAudioRef} autoPlay playsInline />
 
         {/* Call header */}
         <div className="pt-8 pb-4 px-6 text-center">
-          {/* Avatar placeholder */}
           <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <User className="h-10 w-10 text-primary/60" />
           </div>
@@ -145,18 +173,20 @@ export default function InAppCallDialog({
               {error || "Your network may restrict internet calls."}
             </p>
             {onFallbackChat && (
-              <Button
-                variant="outline"
-                className="w-full gap-2"
+              <button
+                className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                 onClick={() => { handleEndCall(); onFallbackChat(); }}
               >
                 <MessageSquare className="h-4 w-4" />
                 Switch to chat
-              </Button>
+              </button>
             )}
-            <Button variant="outline" onClick={handleEndCall} className="w-full">
+            <button
+              className="w-full inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              onClick={handleEndCall}
+            >
               Close
-            </Button>
+            </button>
           </div>
         )}
 

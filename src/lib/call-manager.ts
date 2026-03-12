@@ -77,6 +77,11 @@ export class CallManager {
   private userId: string;
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream | null = null;
+  private _startTime: number | null = null;
+  private _isVideo = false;
+  private _channelReady = false;
+  private _pendingCandidates: RTCIceCandidate[] = [];
+  private _cleaned = false;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
@@ -92,23 +97,39 @@ export class CallManager {
     this.onStateChange = opts.onStateChange;
   }
 
-  /** Join the Realtime broadcast channel for signaling */
-  private joinSignalChannel() {
+  /** Join the Realtime broadcast channel for signaling — MUST await */
+  private async joinSignalChannel(): Promise<void> {
     this.channel = supabase.channel(`call:${this.callId}`, {
       config: { broadcast: { self: false } },
     });
 
     this.channel.on("broadcast", { event: "signal" }, ({ payload }) => {
       const signal = payload as SignalPayload;
-      if (signal.from === this.userId) return; // ignore own signals
+      if (signal.from === this.userId) return;
       this.processSignal(signal);
     });
 
-    this.channel.subscribe();
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Channel subscription timeout"));
+      }, 10_000);
+
+      this.channel!.subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          clearTimeout(timeout);
+          this._channelReady = true;
+          resolve();
+        }
+      });
+    });
   }
 
   private sendSignal(signal: Omit<SignalPayload, "from">) {
-    this.channel?.send({
+    if (!this._channelReady || !this.channel) {
+      console.warn("[CallManager] Channel not ready, signal dropped:", signal.type);
+      return;
+    }
+    this.channel.send({
       type: "broadcast",
       event: "signal",
       payload: { ...signal, from: this.userId } as SignalPayload,
@@ -117,16 +138,20 @@ export class CallManager {
 
   /** Caller: initiate call */
   async startCall(isVideo: boolean) {
+    this._isVideo = isVideo;
+    this._cleaned = false;
     this.onStateChange({ status: "ringing", callId: this.callId, isVideo });
-    this.joinSignalChannel();
+    await this.joinSignalChannel();
     await this.setupMedia(isVideo);
-    // Wait for callee to accept (they'll send an "accepted" signal, then we create offer)
+    // Wait for callee "accepted" signal → then callee sends offer → caller answers
   }
 
   /** Callee: accept incoming call */
   async acceptCall(isVideo: boolean) {
+    this._isVideo = isVideo;
+    this._cleaned = false;
     this.onStateChange({ status: "connecting", callId: this.callId, isVideo });
-    this.joinSignalChannel();
+    await this.joinSignalChannel();
     await this.setupMedia(isVideo);
 
     // Update call_logs status
@@ -135,10 +160,10 @@ export class CallManager {
       .update({ status: "active", started_at: new Date().toISOString() } as any)
       .eq("id", this.callId);
 
-    // Tell caller we accepted
+    // Tell caller we accepted — caller will wait for our offer
     this.sendSignal({ type: "accepted", data: "{}" });
 
-    // Create offer (callee creates offer for simplicity)
+    // Callee creates the offer
     this.createPeerConnection();
     const offer = await this.pc!.createOffer();
     await this.pc!.setLocalDescription(offer);
@@ -160,23 +185,25 @@ export class CallManager {
 
   /** End active call */
   async endCall() {
-    if (!this.callId || this.pc === null && !this.channel) return; // Already cleaned up
-    this.sendSignal({ type: "ended", data: "{}" });
+    if (this._cleaned) return;
+    try {
+      this.sendSignal({ type: "ended", data: "{}" });
+    } catch { /* best effort */ }
     const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
-    await supabase
-      .from("call_logs")
-      .update({
-        status: "ended",
-        ended_at: new Date().toISOString(),
-        duration_seconds: duration,
-        ended_by: this.role,
-      } as any)
-      .eq("id", this.callId);
+    try {
+      await supabase
+        .from("call_logs")
+        .update({
+          status: "ended",
+          ended_at: new Date().toISOString(),
+          duration_seconds: duration,
+          ended_by: this.role,
+        } as any)
+        .eq("id", this.callId);
+    } catch { /* best effort */ }
     this.onStateChange({ status: "ended" });
     this.cleanup();
   }
-
-  private _startTime: number | null = null;
 
   private startElapsedTimer() {
     this._startTime = Date.now();
@@ -187,42 +214,69 @@ export class CallManager {
   }
 
   private async processSignal(signal: SignalPayload) {
-    if (signal.type === "accepted") {
-      // Caller received acceptance — create peer connection and wait for offer
-      this.onStateChange({ status: "connecting" });
-      this.createPeerConnection();
-      this.startIceTimeout();
-      this.startElapsedTimer();
-    } else if (signal.type === "offer") {
-      if (!this.pc) this.createPeerConnection();
-      const offer = JSON.parse(signal.data);
-      await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await this.pc!.createAnswer();
-      await this.pc!.setLocalDescription(answer);
-      this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
-    } else if (signal.type === "answer") {
-      const answer = JSON.parse(signal.data);
-      await this.pc!.setRemoteDescription(new RTCSessionDescription(answer));
-    } else if (signal.type === "ice") {
-      const candidate = JSON.parse(signal.data);
-      await this.pc?.addIceCandidate(new RTCIceCandidate(candidate));
-    } else if (signal.type === "declined") {
-      this.onStateChange({ status: "declined" });
-      await supabase
-        .from("call_logs")
-        .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-        .eq("id", this.callId);
-      this.cleanup();
-    } else if (signal.type === "ended") {
-      this.onStateChange({ status: "ended" });
-      this.cleanup();
+    try {
+      if (signal.type === "accepted") {
+        // Caller received acceptance — prepare PC and wait for callee's offer
+        this.onStateChange({ status: "connecting" });
+        this.createPeerConnection();
+        this.startIceTimeout();
+        this.startElapsedTimer();
+      } else if (signal.type === "offer") {
+        // Caller receives the offer from callee
+        if (!this.pc) this.createPeerConnection();
+        const offer = JSON.parse(signal.data);
+        await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
+        // Flush any pending ICE candidates
+        for (const c of this._pendingCandidates) {
+          try { await this.pc!.addIceCandidate(c); } catch { /* ignore late candidates */ }
+        }
+        this._pendingCandidates = [];
+        const answer = await this.pc!.createAnswer();
+        await this.pc!.setLocalDescription(answer);
+        this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
+      } else if (signal.type === "answer") {
+        if (!this.pc) return;
+        const answer = JSON.parse(signal.data);
+        await this.pc!.setRemoteDescription(new RTCSessionDescription(answer));
+        // Flush pending candidates
+        for (const c of this._pendingCandidates) {
+          try { await this.pc!.addIceCandidate(c); } catch { /* ignore */ }
+        }
+        this._pendingCandidates = [];
+      } else if (signal.type === "ice") {
+        const candidate = new RTCIceCandidate(JSON.parse(signal.data));
+        if (this.pc?.remoteDescription) {
+          try { await this.pc.addIceCandidate(candidate); } catch { /* ignore */ }
+        } else {
+          // Queue until remote description is set
+          this._pendingCandidates.push(candidate);
+        }
+      } else if (signal.type === "declined") {
+        this.onStateChange({ status: "declined" });
+        try {
+          await supabase
+            .from("call_logs")
+            .update({ status: "declined", ended_at: new Date().toISOString() } as any)
+            .eq("id", this.callId);
+        } catch { /* best effort */ }
+        this.cleanup();
+      } else if (signal.type === "ended") {
+        this.onStateChange({ status: "ended" });
+        this.cleanup();
+      }
+    } catch (err) {
+      console.error("[CallManager] Signal processing error:", signal.type, err);
     }
   }
 
   private createPeerConnection() {
+    if (this.pc) {
+      try { this.pc.close(); } catch {}
+    }
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "all" });
     this.remoteStream = new MediaStream();
     this.iceConnected = false;
+    this._pendingCandidates = [];
     this.onStateChange({ remoteStream: this.remoteStream });
 
     if (this.localStream) {
@@ -318,11 +372,16 @@ export class CallManager {
 
   private async retryRelayOnly() {
     if (!this.pc || this.iceConnected) return;
+    console.log("[CallManager] Retrying with relay-only transport");
     try {
-      const oldRemoteDesc = this.pc.remoteDescription;
-      this.pc.close();
+      // Close old PC
+      const oldPc = this.pc;
+      try { oldPc.close(); } catch {}
+      
+      // Create relay-only PC
       this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "relay" });
       this.remoteStream = new MediaStream();
+      this._pendingCandidates = [];
       this.onStateChange({ remoteStream: this.remoteStream, usingRelay: true });
 
       if (this.localStream) {
@@ -358,14 +417,13 @@ export class CallManager {
         }
       };
 
-      if (oldRemoteDesc) {
-        await this.pc.setRemoteDescription(oldRemoteDesc);
-        const answer = await this.pc.createAnswer();
-        await this.pc.setLocalDescription(answer);
-        this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
-      }
-    } catch {
-      // Stream timeout will handle
+      // Re-negotiate: create a new offer and send it
+      const offer = await this.pc.createOffer();
+      await this.pc.setLocalDescription(offer);
+      this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
+    } catch (err) {
+      console.error("[CallManager] Relay retry failed:", err);
+      // Stream timeout will handle final fallback
     }
   }
 
@@ -376,7 +434,8 @@ export class CallManager {
         video: isVideo,
       });
       this.onStateChange({ localStream: this.localStream });
-    } catch {
+    } catch (err) {
+      console.error("[CallManager] getUserMedia failed:", err);
       this.onStateChange({
         status: "failed",
         error: "Microphone access denied. Please allow microphone access to make calls.",
@@ -406,23 +465,27 @@ export class CallManager {
   }
 
   toggleSpeaker(): boolean {
-    // Speaker toggle is handled at the UI level via audio element
     return false;
   }
 
   cleanup() {
+    if (this._cleaned) return;
+    this._cleaned = true;
     if (this.iceTimer) clearTimeout(this.iceTimer);
     if (this.streamTimer) clearTimeout(this.streamTimer);
     if (this.elapsedTimer) clearInterval(this.elapsedTimer);
     this.iceTimer = null;
     this.streamTimer = null;
     this.elapsedTimer = null;
+    this._startTime = null;
+    this._pendingCandidates = [];
     try { this.localStream?.getTracks().forEach((t) => t.stop()); } catch {}
     this.localStream = null;
     this.remoteStream = null;
     try { this.pc?.close(); } catch {}
     this.pc = null;
     this.iceConnected = false;
+    this._channelReady = false;
     if (this.channel) {
       try { supabase.removeChannel(this.channel); } catch {}
       this.channel = null;
