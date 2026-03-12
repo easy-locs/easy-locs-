@@ -56,7 +56,7 @@ const SeasonalRentalsPage = () => (
   <div className="min-h-screen bg-background">
     <SEOHead
       title="Vacation Rental Management Software | Easy-Locs"
-      description="Manage short-term rentals with smart calendars, dynamic pricing, Stripe payments, and channel sync. Direct booking pages for your properties. 110+ countries."
+      description="Manage short-term rentals with smart calendars, dynamic pricing, Stripe payments, and channel sync. Direct booking pages for your properties. 190+ countries."
       canonical="https://www.easy-locs.com/seasonal-rentals"
       jsonLd={jsonLd as any}
     />
