@@ -290,11 +290,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
-    startingCallRef.current = false; // Reset lock for next call
+    startingCallRef.current = false;
+    setIsStartingCall(false);
   }, [callManager, user]);
 
   return (
-    <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall: startingCallRef.current }}>
+    <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
       {children}
 
       {/* Incoming call dialog */}
