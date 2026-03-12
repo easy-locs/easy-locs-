@@ -2374,7 +2374,7 @@ const pageEn: Record<string, string> = {
   "landing.advantages.subtitle": "Built for scale, designed for simplicity, optimized for every market.",
   "landing.advantages.cta": "Get Started Free",
   "landing.advantages.worldwide": "Worldwide Coverage",
-  "landing.advantages.worldwide_desc": "110+ countries with local regulations, taxes, and legal templates.",
+  "landing.advantages.worldwide_desc": "190+ countries with local regulations, taxes, and legal templates.",
   "landing.advantages.languages": "31 Languages",
   "landing.advantages.languages_desc": "Auto-translated interface, documents and tenant communication.",
   "landing.advantages.currency": "Multi-Currency",
