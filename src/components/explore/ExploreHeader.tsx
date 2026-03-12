@@ -115,6 +115,14 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
+        {/* Post a listing — universal for all roles */}
+        <Separator />
+        <div className="py-1">
+          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
+            <Plus className="h-4 w-4 mr-3" /> Post a listing
+          </DropdownMenuItem>
+        </div>
+
         {/* Landlord/Pro — business suite */}
         {isLandlord && (
           <>
@@ -147,9 +155,6 @@ function DesktopUserMenu() {
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/billing")}>
                 <CreditCard className="h-4 w-4 mr-3 text-muted-foreground" /> Subscription
-              </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
-                <Plus className="h-4 w-4 mr-3" /> Post a listing
               </DropdownMenuItem>
             </div>
           </>
