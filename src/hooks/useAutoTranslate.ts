@@ -88,7 +88,7 @@ export function useAutoTranslateBatch(
           chunk.map(async ([key, text]) => {
             try {
               const { data } = await supabase.functions.invoke("translate-message", {
-                body: { text, targetLang: browserLang },
+                body: { text, from_locale: srcLang, to_locale: browserLang },
               });
               if (!cancelled && data?.translated) {
                 results[key] = data.translated;
