@@ -13,7 +13,7 @@ const jsonLd = [
     name: "Easy-Locs Seasonal Rental Management",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description: "Vacation rental management software for short-term property owners. Calendar booking, dynamic pricing, guest communication, Stripe payments, and channel management in 110+ countries.",
+    description: "Vacation rental management software for short-term property owners. Calendar booking, dynamic pricing, guest communication, Stripe payments, and channel management in 190+ countries.",
     url: "https://www.easy-locs.com/seasonal-rentals",
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Free to start" },
     provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
