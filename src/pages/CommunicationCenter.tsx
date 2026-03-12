@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
+import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
