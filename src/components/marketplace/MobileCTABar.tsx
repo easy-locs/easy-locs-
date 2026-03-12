@@ -1,33 +1,36 @@
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Share2 } from "lucide-react";
-import { getShareLinks, type ShareableType } from "@/lib/social-share";
+import { Phone, MessageCircle, Send, Mail, Share2 } from "lucide-react";
+import { whatsappLink, telegramLink, emailLink, type ListingContext } from "@/lib/contact-utils";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 
 interface MobileCTABarProps {
   phone?: string;
   whatsapp?: string;
-  shareType: ShareableType;
-  shareSlug: string;
-  shareTitle: string;
+  telegram?: string;
+  email?: string;
+  listingTitle: string;
+  listingUrl?: string;
+  listingPrice?: string;
   onBook: () => void;
   priceLine?: string;
 }
 
-export default function MobileCTABar({ phone, whatsapp, shareType, shareSlug, shareTitle, onBook, priceLine }: MobileCTABarProps) {
+export default function MobileCTABar({ phone, whatsapp, telegram, email, listingTitle, listingUrl, listingPrice, onBook, priceLine }: MobileCTABarProps) {
   const { t } = useI18n();
-  const whatsappLink = whatsapp
-    ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`
-    : null;
+
+  const ctx: ListingContext = {
+    title: listingTitle,
+    url: listingUrl || (typeof window !== "undefined" ? window.location.href : ""),
+    price: listingPrice,
+  };
 
   const handleShare = async () => {
-    const links = getShareLinks(shareType, shareSlug, shareTitle);
+    const url = ctx.url || "";
     if (navigator.share) {
-      try {
-        await navigator.share({ title: shareTitle, url: links.copy });
-      } catch { /* user cancelled */ }
+      try { await navigator.share({ title: listingTitle, url }); } catch { /* cancelled */ }
     } else {
-      await navigator.clipboard.writeText(links.copy);
+      await navigator.clipboard.writeText(url);
       toast.success(t("mp.link_copied") || "Link copied!");
     }
   };
@@ -41,14 +44,30 @@ export default function MobileCTABar({ phone, whatsapp, shareType, shareSlug, sh
           </div>
         )}
         <div className="flex items-center gap-1.5 shrink-0">
+          {whatsapp && (
+            <Button size="icon" variant="outline" className="h-11 w-11 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
+              <a href={whatsappLink(whatsapp, ctx)} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
+          {telegram && (
+            <Button size="icon" variant="outline" className="h-11 w-11 text-[#0088cc] border-[#0088cc]/30 hover:bg-[#0088cc]/10" asChild>
+              <a href={telegramLink(telegram, ctx)} target="_blank" rel="noopener noreferrer">
+                <Send className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
+          {email && (
+            <Button size="icon" variant="outline" className="h-11 w-11" asChild>
+              <a href={emailLink(email, ctx)}>
+                <Mail className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
           {phone && (
             <Button size="icon" variant="outline" className="h-11 w-11" asChild>
               <a href={`tel:${phone}`}><Phone className="h-4 w-4" /></a>
-            </Button>
-          )}
-          {whatsappLink && (
-            <Button size="icon" variant="outline" className="h-11 w-11 text-[#25D366] border-[#25D366]/30 hover:bg-[#25D366]/10" asChild>
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" /></a>
             </Button>
           )}
           <Button size="icon" variant="outline" className="h-11 w-11" onClick={handleShare}>

@@ -6,6 +6,8 @@ import { useI18n } from "@/lib/i18n";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import SaveButton from "@/components/explore/SaveButton";
 import { useSavedListings } from "@/hooks/useSavedListings";
+import { whatsappLink, telegramLink, emailLink, type ListingContext } from "@/lib/contact-utils";
+import { buildAppUrl } from "@/lib/app-domain";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
@@ -20,11 +22,12 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (item.slug ? `/properties/${item.slug}` : "/explore")
     : (item.booking_slug ? `/book/${item.booking_slug}` : "/explore");
 
+  const fullUrl = buildAppUrl(href);
+
   const imgSrc = type === "seasonal"
     ? (item.cover_url || PLACEHOLDER_IMG)
     : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG);
 
-  // Smart currency display using Intl formatter
   const currCode = item.currency || "EUR";
   const fmtPrice = (amount: number) => {
     try {
@@ -40,7 +43,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
-  // Marketplace listings can be sale/rental/service — adapt badge accordingly
   const isMarketplaceSaleOrRental = type === "service" && (item.listing_type === "sale" || item.listing_type === "rental");
   const typeBadge = type === "seasonal"
     ? { label: t("explore.vacation_rental") || "Vacation Rental", color: "bg-warning/15 text-warning border-warning/25" }
@@ -57,14 +59,26 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (t("explore.view_property") || "View")
     : (t("explore.view_and_book") || "View & book");
 
-  // Smart location — proper formatting: capitalize city, uppercase country code
   const fmtCity = (s: string) => s ? s.split(/[\s-]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ") : "";
   const fmtCountry = (s: string) => {
     if (!s) return "";
-    // If already a 2-letter code, uppercase it; otherwise capitalize
     return s.length <= 3 ? s.toUpperCase() : s.charAt(0).toUpperCase() + s.slice(1);
   };
   const locationText = [fmtCity(item.city), fmtCountry(item.country)].filter(Boolean).join(", ");
+
+  // Build listing context for smart contact links
+  const ctx: ListingContext = {
+    title: item.title,
+    url: fullUrl,
+    price: priceLabel,
+    city: item.city,
+    country: item.country,
+  };
+
+  const waPhone = item.whatsapp_number || item.contact_whatsapp;
+  const tgUser = item.telegram_username;
+  const email = item.contact_email || item.source_contact_email;
+  const phone = item.contact_phone || item.source_contact_phone;
 
   return (
     <Link to={href} className="group block h-full">
@@ -73,7 +87,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" width={400} />
           
-          {/* Save button */}
           <div className="absolute top-2.5 right-2.5 z-10">
             <SaveButton
               isSaved={isSaved(type, item.id)}
@@ -86,7 +99,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             />
           </div>
 
-          {/* Top badge */}
           <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
@@ -99,7 +111,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             )}
           </div>
 
-          {/* Photo count */}
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
             <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
               1/{item.photo_urls.length}
@@ -116,13 +127,11 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             <span className="text-sm font-bold text-foreground whitespace-nowrap shrink-0">{priceLabel}</span>
           </div>
 
-          {/* Location */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
             <span className="line-clamp-1">{locationText || "—"}</span>
           </div>
 
-          {/* Type-specific details */}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests} {t("explore.guests") || "guests"}</span>}
@@ -146,30 +155,34 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             </div>
           )}
 
-          {/* Contact quick icons + CTA */}
+          {/* Contact quick-actions + CTA */}
           <div className="pt-1.5 mt-auto flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2 transition-all px-2.5 py-1.5 rounded-lg bg-accent/8 group-hover:bg-accent/15 whitespace-nowrap">
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
             <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-              {item.contact_phone && (
-                <a href={`tel:${item.contact_phone}`} className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Call">
-                  <Phone className="h-3 w-3 text-muted-foreground" />
+              {waPhone && (
+                <a href={whatsappLink(waPhone, ctx)} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors" title="WhatsApp">
+                  <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" />
                 </a>
               )}
-              {item.contact_email && (
-                <a href={`mailto:${item.contact_email}`} className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Email">
-                  <Mail className="h-3 w-3 text-muted-foreground" />
+              {tgUser && (
+                <a href={telegramLink(tgUser, ctx)} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors" title="Telegram">
+                  <Send className="h-3.5 w-3.5 text-[#0088cc]" />
                 </a>
               )}
-              {item.whatsapp_number && (
-                <a href={`https://wa.me/${item.whatsapp_number.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="w-7 h-7 flex items-center justify-center rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors" title="WhatsApp">
-                  <MessageCircle className="h-3 w-3 text-[#25D366]" />
+              {email && (
+                <a href={emailLink(email, ctx)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Email">
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                 </a>
               )}
-              {item.telegram_username && (
-                <a href={`https://t.me/${(item.telegram_username || "").replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="w-7 h-7 flex items-center justify-center rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors" title="Telegram">
-                  <Send className="h-3 w-3 text-[#0088cc]" />
+              {phone && (
+                <a href={`tel:${phone}`}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Call">
+                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                 </a>
               )}
             </div>
