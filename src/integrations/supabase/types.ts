@@ -5537,6 +5537,18 @@ export type Database = {
         Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
       }
+      create_call_idempotent: {
+        Args: {
+          _callee_org_id: string
+          _caller_id: string
+          _context_id?: string
+          _context_label?: string
+          _context_type?: string
+          _is_video?: boolean
+          _thread_id?: string
+        }
+        Returns: string
+      }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
       get_order_by_session: { Args: { _session_id: string }; Returns: Json }
       get_org_role: {
