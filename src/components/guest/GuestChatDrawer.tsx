@@ -63,7 +63,7 @@ const GUEST_LANGUAGES = [
 
 export default function GuestChatDrawer({
   open, onClose, providerName, serviceTitle, orgId,
-  contextType = "general", contextId, providerPhone,
+  contextType = "general", contextId, providerPhone, providerWhatsApp,
   listingUrl, listingPrice, listingCity,
 }: GuestChatDrawerProps) {
   const [session, setSession] = useState<GuestSession | null>(null);
