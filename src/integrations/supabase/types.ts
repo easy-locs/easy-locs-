@@ -225,6 +225,30 @@ export type Database = {
           },
         ]
       }
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string | null
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           check_in: string
@@ -990,6 +1014,36 @@ export type Database = {
           org_id?: string | null
           reveal_type?: string
           service_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversation_preferences: {
+        Row: {
+          archived: boolean | null
+          context_id: string
+          created_at: string | null
+          id: string
+          muted: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean | null
+          context_id: string
+          created_at?: string | null
+          id?: string
+          muted?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          archived?: boolean | null
+          context_id?: string
+          created_at?: string | null
+          id?: string
+          muted?: boolean | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2595,6 +2649,8 @@ export type Database = {
           assigned_to: string | null
           attachment_url: string | null
           attachment_urls: Json | null
+          audio_duration_seconds: number | null
+          audio_url: string | null
           booking_id: string | null
           booking_type: string | null
           category: string
@@ -2608,6 +2664,7 @@ export type Database = {
           deleted_for_all: boolean | null
           deleted_for_sender: boolean | null
           delivered: boolean | null
+          forwarded_from: string | null
           guest_session_id: string | null
           id: string
           inbound_message_id: string | null
@@ -2630,6 +2687,8 @@ export type Database = {
           assigned_to?: string | null
           attachment_url?: string | null
           attachment_urls?: Json | null
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           booking_id?: string | null
           booking_type?: string | null
           category?: string
@@ -2643,6 +2702,7 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
@@ -2665,6 +2725,8 @@ export type Database = {
           assigned_to?: string | null
           attachment_url?: string | null
           attachment_urls?: Json | null
+          audio_duration_seconds?: number | null
+          audio_url?: string | null
           booking_id?: string | null
           booking_type?: string | null
           category?: string
@@ -2678,6 +2740,7 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
@@ -2697,6 +2760,13 @@ export type Database = {
           translated_locale?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_forwarded_from_fkey"
+            columns: ["forwarded_from"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_guest_session_id_fkey"
             columns: ["guest_session_id"]
@@ -4963,6 +5033,47 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reports: {
+        Row: {
+          context_id: string | null
+          created_at: string | null
+          id: string
+          message_id: string | null
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status: string | null
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status?: string | null
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reports_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
