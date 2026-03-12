@@ -1444,3 +1444,41 @@ html {
     @apply text-[11px] text-destructive mt-0.5;
   }
 }
+
+/* ══════ Accessibility ══════ */
+@layer base {
+  /* Enhanced focus-visible for all interactive elements */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Ensure minimum 44px touch targets on mobile */
+  @media (pointer: coarse) {
+    button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  /* Skip link styling */
+  .skip-link:focus {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 99999;
+    padding: 8px 16px;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}

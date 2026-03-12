@@ -136,20 +136,20 @@ const Login = () => {
         {mode === "password" && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.email")}</label>
+              <label htmlFor="login-email" className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.email")}</label>
               <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  className={inputClass} placeholder={t("auth.login.placeholder_email")} />
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email" className={inputClass} placeholder={t("auth.login.placeholder_email")} />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.password")}</label>
+              <label htmlFor="login-password" className="block text-sm font-medium text-foreground mb-1.5">{t("auth.login.password")}</label>
               <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                  className={`${inputClass} pe-10`} placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPw(!showPw)} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <input id="login-password" type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password" className={`${inputClass} pe-10`} placeholder="••••••••" />
+                <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Hide password" : "Show password"} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1">
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>

@@ -312,12 +312,23 @@ export default function Explore() {
   const hasFilters = !!(searchQuery || locationQuery || activeGroup !== "all" || activeSubcategory !== "all" || radiusKm > 0);
   const radiusLabel = radiusKm === 0 ? "Worldwide" : `${radiusKm} km`;
 
-  return (
+    const exploreJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Explore Properties, Rentals & Services — Easy-Locs",
+      description: "Discover properties for sale, vacation rentals, and local services worldwide on Easy-Locs.",
+      url: "https://www.easy-locs.com/explore",
+      provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
+      numberOfItems: allItems.length,
+    };
+
+    return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Explore — Real Estate, Rentals & Services Worldwide | Easy-Locs"
         description="Discover properties for sale, vacation rentals, and local services worldwide. Browse verified listings from trusted hosts and providers on Easy-Locs."
         canonical="https://www.easy-locs.com/explore"
+        jsonLd={exploreJsonLd}
       />
 
       {/* ═══════ STICKY HEADER ═══════ */}
@@ -348,7 +359,7 @@ export default function Explore() {
             />
 
             {/* Mobile search trigger */}
-            <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground">
+            <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground min-h-[44px]" aria-label={t("explore.search") || "Open search"}>
               <Search className="h-4 w-4" />
               <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
             </button>
@@ -458,12 +469,12 @@ export default function Explore() {
 
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-foreground">
+          <h1 className="text-lg font-bold text-foreground">
             {loading ? "..." : locationQuery
               ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? (t("explore.result") || "result") : (t("explore.results") || "results")}`
               : `${allItems.length} ${t("explore.listings") || "listings"}`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
-          </h2>
+          </h1>
         </div>
 
         {/* Grid */}
