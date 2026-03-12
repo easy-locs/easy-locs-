@@ -10,15 +10,17 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { MessageCircle, FileText, CreditCard, Wrench } from "lucide-react";
+import { MessageCircle, FileText, CreditCard, Wrench, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 
 import ConversationList from "@/components/communication-hub/ConversationList";
 import ChatPanel from "@/components/communication-hub/ChatPanel";
 import ContextPanel from "@/components/communication-hub/ContextPanel";
+import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,22 +34,38 @@ const CommunicationCenter = () => {
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
+  const [showNewConversation, setShowNewConversation] = useState(false);
 
   // Request notification permission
   useEffect(() => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
 
-  // Deep-link from notifications: ?thread=booking-xxx or ?booking=xxx
+  // Deep-link from notifications: ?thread=booking-xxx or ?booking=xxx or ?deal=xxx
   useEffect(() => {
-    const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal");
+    const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
     if (!threadParam || loading || threads.length === 0) return;
 
     const found = threads.find(t =>
       t.id === `booking-${threadParam}` || t.id === threadParam ||
       t.bookingId === threadParam || t.dealId === threadParam ||
       t.id === `deal-${threadParam}` || t.id === `tenant-${threadParam}` ||
-      t.tenantId === threadParam
+      t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
+      t.leadId === threadParam
+    );
+    if (found) {
+      setSelectedThread(found);
+      setSearchParams({}, { replace: true });
+    }
+  }, [threads, loading, searchParams, setSearchParams]);
+
+  // Deep-link search param
+  useEffect(() => {
+    const searchQ = searchParams.get("search");
+    if (!searchQ || loading || threads.length === 0) return;
+    const found = threads.find(t =>
+      t.name.toLowerCase().includes(searchQ.toLowerCase()) ||
+      t.email?.toLowerCase().includes(searchQ.toLowerCase())
     );
     if (found) {
       setSelectedThread(found);
@@ -57,7 +75,11 @@ const CommunicationCenter = () => {
 
   const handleSelectThread = useCallback((thread: ConversationThread) => {
     setSelectedThread(thread);
-  }, []);
+    // Auto-show context on desktop for contextual threads
+    if (!isMobile && ["booking", "property", "listing", "deal"].includes(thread.conversationType)) {
+      setShowContext(true);
+    }
+  }, [isMobile]);
 
   const handleBack = useCallback(() => {
     setSelectedThread(null);
@@ -70,6 +92,13 @@ const CommunicationCenter = () => {
       setSelectedThread(prev => prev ? { ...prev, ...updates } : null);
     }
   }, [updateThreadLocally, selectedThread?.id]);
+
+  const handleNewThreadCreated = useCallback((contextId: string) => {
+    // Refresh threads and try to select the new one
+    loadThreads().then(() => {
+      // The thread should appear after reload
+    });
+  }, [loadThreads]);
 
   return (
     <DashboardLayout>
@@ -85,6 +114,10 @@ const CommunicationCenter = () => {
             </h1>
           </div>
           <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg" onClick={() => setShowNewConversation(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">New</span>
+            </Button>
             {[
               { icon: MessageCircle, value: stats.unread, color: "text-accent", bg: "bg-accent/8" },
               { icon: FileText, value: stats.pending_docs, color: "text-blue-500", bg: "bg-blue-500/8" },
@@ -132,6 +165,13 @@ const CommunicationCenter = () => {
           </div>
         </div>
       </div>
+
+      {/* New conversation dialog */}
+      <NewConversationDialog
+        open={showNewConversation}
+        onOpenChange={setShowNewConversation}
+        onThreadCreated={handleNewThreadCreated}
+      />
     </DashboardLayout>
   );
 };
