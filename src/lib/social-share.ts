@@ -86,21 +86,17 @@ export async function sharePage(opts: {
  * Copy uses clean SPA URL.
  */
 export function getShareLinks(type: ShareableType, slug: string, title: string, version?: string | number) {
-  const socialUrl = getSocialShareUrl(type, slug, version);
   const cleanUrl = getCleanShareUrl(type, slug);
-  const encodedSocial = encodeURIComponent(socialUrl);
   const encodedClean = encodeURIComponent(cleanUrl);
   const encodedTitle = encodeURIComponent(title);
 
   return {
-    // Social platforms: send social-preview URL so crawlers get OG tags, 
-    // users get redirected to clean URL automatically
-    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedSocial}`,
-    telegram: `https://t.me/share/url?url=${encodedSocial}&text=${encodedTitle}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedSocial}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedSocial}&text=${encodedTitle}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedSocial}`,
-    // Non-crawler channels: use clean URL directly
+    // Use clean URLs for all platforms — looks professional and trustworthy
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedClean}`,
+    telegram: `https://t.me/share/url?url=${encodedClean}&text=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedClean}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodedClean}&text=${encodedTitle}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedClean}`,
     email: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%20${encodedClean}`,
     sms: `sms:?body=${encodedTitle}%20${encodedClean}`,
     copy: cleanUrl,

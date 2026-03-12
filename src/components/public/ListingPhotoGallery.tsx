@@ -79,14 +79,23 @@ const ListingPhotoGallery = ({ photos }: Props) => {
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-            {photos.map((_, i) => (
+          {/* Thumbnail strip */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-[90%] overflow-x-auto pb-1">
+            {photos.map((url, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`w-3 h-3 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/40"}`}
+                className={`shrink-0 w-10 h-7 rounded-md overflow-hidden border-2 transition-all ${i === index ? "border-white scale-110" : "border-transparent opacity-50"}`}
                 aria-label={`Media ${i + 1}`}
-              />
+              >
+                {isVideoUrl(url) ? (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Play className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                ) : (
+                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                )}
+              </button>
             ))}
           </div>
         </>

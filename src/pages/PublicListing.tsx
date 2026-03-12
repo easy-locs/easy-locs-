@@ -3,7 +3,6 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
-import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
@@ -188,9 +187,8 @@ const PublicListing = () => {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <AppLogo variant="header" linkTo="/" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ShareButtons type="listing" slug={listingSlug || ""} title={listing?.title || "Easy-Locs"} />
-            <PublicLanguageSwitcher locale={locale} supportedLocales={supportedLocales} onChange={changeLocale} />
           </div>
         </div>
       </header>

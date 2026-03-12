@@ -160,21 +160,21 @@ const Hero = () => {
             transition={{ delay: 0.7, duration: 0.7 }}
             className="pt-4"
           >
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 max-w-lg sm:max-w-2xl mx-auto">
               {HERO_STATS.map((s, i) => (
                 <motion.div
                   key={s.label}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl min-h-[44px]"
                   style={{
                     background: "hsl(220 20% 90% / 0.05)",
                     border: "1px solid hsl(220 20% 90% / 0.08)",
                   }}
                   animate={floatAnim(i * 0.5)}
                 >
-                  <span className="text-xs sm:text-sm font-extrabold" style={{ color: "hsl(var(--accent))" }}>
+                  <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: "hsl(var(--accent))" }}>
                     {s.value}
                   </span>
-                  <span className="text-[10px] sm:text-xs font-medium" style={{ color: "hsl(220 15% 60%)" }}>
+                  <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap" style={{ color: "hsl(220 15% 60%)" }}>
                     {s.label}
                   </span>
                 </motion.div>

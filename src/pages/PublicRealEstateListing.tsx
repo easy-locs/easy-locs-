@@ -237,8 +237,12 @@ export default function PublicRealEstateListing() {
               {/* Desktop grid */}
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 p-2 max-h-[520px]">
                 <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden cursor-pointer group" onClick={() => setFullscreenGallery(true)}>
-                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Watermark */}
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <span className="text-white/15 text-4xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                  </div>
                   {/* Desktop type badge on main photo */}
                   <Badge className={`absolute top-4 left-4 ${tc.bg} ${tc.color} border ${tc.border} text-sm px-4 py-1.5 font-semibold backdrop-blur-md`}>
                     {tc.label}
@@ -252,6 +256,10 @@ export default function PublicRealEstateListing() {
                     onClick={() => { setPhotoIndex(i + 1); setFullscreenGallery(true); }}
                   >
                     <img src={url} alt={`${listing.title} — photo ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    {/* Watermark */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                      <span className="text-white/10 text-xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                    </div>
                     {i === 3 && photos.length > 5 && (
                       <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center backdrop-blur-sm">
                         <span className="text-background font-bold text-xl">+{photos.length - 5}</span>
@@ -269,7 +277,11 @@ export default function PublicRealEstateListing() {
               {/* Mobile carousel — safe touch targets */}
               <div className="md:hidden relative aspect-[4/3] overflow-hidden">
                 <img src={photos[photoIndex]} alt={`${listing.title} — photo ${photoIndex + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 via-transparent to-transparent" />
+                {/* Watermark */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <span className="text-white/15 text-3xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                </div>
                 {photos.length > 1 && (
                   <>
                     <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
@@ -280,10 +292,13 @@ export default function PublicRealEstateListing() {
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-md rounded-full w-11 h-11 flex items-center justify-center active:scale-95 shadow-lg">
                       <ChevronRight className="h-5 w-5" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {photos.slice(0, 8).map((_, i) => (
+                    {/* Thumbnail strip instead of dots */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-[90%] overflow-x-auto pb-1">
+                      {photos.slice(0, 8).map((url, i) => (
                         <button key={i} onClick={() => setPhotoIndex(i)}
-                          className={`h-2 rounded-full transition-all ${i === photoIndex ? "bg-background w-5" : "bg-background/50 w-2"}`} />
+                          className={`shrink-0 w-10 h-7 rounded-md overflow-hidden border-2 transition-all ${i === photoIndex ? "border-white scale-110" : "border-transparent opacity-50"}`}>
+                          <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
                       ))}
                     </div>
                   </>
@@ -292,13 +307,6 @@ export default function PublicRealEstateListing() {
                 <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-xs sm:text-sm px-3 py-1.5 font-semibold backdrop-blur-md`}>
                   {tc.label}
                 </Badge>
-                {/* Mobile price overlay */}
-                <div className="absolute bottom-4 left-3">
-                  <span className="text-xl font-bold text-background drop-shadow-lg tabular-nums">
-                    {listing.price.toLocaleString()} {listing.currency}
-                  </span>
-                  {priceLabel && <span className="text-background/80 text-xs ml-1">{priceLabel}</span>}
-                </div>
                 {/* Photo count */}
                 {photos.length > 1 && (
                   <span className="absolute top-3 right-3 bg-foreground/50 backdrop-blur-md text-background text-[10px] px-2 py-1 rounded-full font-medium">
@@ -483,7 +491,12 @@ export default function PublicRealEstateListing() {
           <div className="flex-1 flex items-center justify-center px-2 sm:px-4" onClick={e => e.stopPropagation()}>
             <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronLeft className="h-6 sm:h-8 w-6 sm:w-8" /></button>
-            <img src={photos[photoIndex]} alt={`Property photo ${photoIndex + 1}`} className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
+            <div className="relative">
+              <img src={photos[photoIndex]} alt={`Property photo ${photoIndex + 1}`} className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <span className="text-white/10 text-5xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+              </div>
+            </div>
             <button onClick={() => setPhotoIndex(i => (i + 1) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronRight className="h-6 sm:h-8 w-6 sm:w-8" /></button>
           </div>
