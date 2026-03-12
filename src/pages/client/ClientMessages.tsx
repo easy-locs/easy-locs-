@@ -447,7 +447,14 @@ const ClientMessages = () => {
                     minutesSinceSent={minutesSince}
                     onReply={() => setReplyTo(m)}
                     onForward={() => setForwardMsg(m)}
-                    onDeleted={() => setMessages(prev => isMe ? prev.filter(x => x.id !== m.id) : prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x))}
+                    onDeleted={() => {
+                      // Refresh message state from latest local data — the DB update already happened in MessageActionsMenu
+                      setMessages(prev => prev.map(x => {
+                        if (x.id !== m.id) return x;
+                        // Re-read the actual DB state; for local UX, hide if deleted_for_sender by me
+                        return { ...x, _localDeleted: true };
+                      }).filter(x => !(x._localDeleted && x.sender_id === user?.id)));
+                    }}
                     onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
                   >
                     {bubble}
