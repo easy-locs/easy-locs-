@@ -7,6 +7,7 @@ import {
   Building, Phone, Mail, MapPin, Receipt, ChevronRight, Hash, History,
 } from "lucide-react";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
+import DealRoomPanel from "@/components/communication/DealRoomPanel";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
