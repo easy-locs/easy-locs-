@@ -116,13 +116,13 @@ const StatCard = ({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
         )}
       </div>
-      {/* Row 2: Label — single line */}
-      <span className="text-xs sm:text-sm text-muted-foreground truncate mb-1">{label}</span>
-      {/* Row 3: Value — prominent, animated counter */}
+      {/* Row 2: Label — wrap allowed for all languages */}
+      <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mb-1 line-clamp-2">{label}</span>
+      {/* Row 3: Value — prominent, animated counter, allow wrapping for large numbers */}
       <div className={cn(
-        "font-bold text-foreground mt-auto whitespace-nowrap truncate overflow-hidden text-ellipsis",
+        "font-bold text-foreground mt-auto break-words hyphens-auto",
         /^[\d\s.,€$£¥₹%—–-]+$/.test(value)
-          ? "text-base sm:text-xl lg:text-2xl tabular-nums"
+          ? "text-sm sm:text-lg lg:text-2xl tabular-nums"
           : "text-xs sm:text-sm lg:text-base",
         valueClassName,
       )}>
@@ -130,7 +130,7 @@ const StatCard = ({
       </div>
       {/* Row 4: Secondary info */}
       {sub && (
-        <div className="text-[11px] sm:text-xs text-muted-foreground truncate mt-1">{sub}</div>
+        <div className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
       )}
     </div>
   );
