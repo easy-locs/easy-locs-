@@ -69,7 +69,7 @@ const SeasonalRentalsPage = () => (
             Vacation Rental Management Made Simple
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Smart booking calendars, dynamic pricing, guest communication, and Stripe payments — everything you need to manage short-term rentals professionally in 110+ countries.
+            Smart booking calendars, dynamic pricing, guest communication, and Stripe payments — everything you need to manage short-term rentals professionally in 190+ countries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg"><Link to="/signup">Start Free</Link></Button>
