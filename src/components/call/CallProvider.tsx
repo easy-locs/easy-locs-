@@ -3,7 +3,7 @@
  * Listens for incoming calls via Supabase Realtime on call_logs table.
  * Renders IncomingCallDialog and InAppCallDialog globally.
  */
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
@@ -40,9 +40,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [showCallDialog, setShowCallDialog] = useState(false);
   const [showIncoming, setShowIncoming] = useState(false);
   const [incomingCallId, setIncomingCallId] = useState<string | null>(null);
+  const incomingCallIdRef = useRef<string | null>(null);
   const [incomingCallerName, setIncomingCallerName] = useState("");
   const [incomingContextLabel, setIncomingContextLabel] = useState("");
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
+
+  // Keep ref in sync for use in realtime closures
+  useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
 
   // Listen for incoming calls (calls where user's org is the callee)
   useEffect(() => {
@@ -66,12 +70,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
           { event: "INSERT", schema: "public", table: "call_logs" },
           async (payload) => {
             const call = payload.new as any;
-            // Only show if this call is for one of our orgs and we didn't make it
             if (call.caller_id === user.id) return;
             if (!orgIds.includes(call.callee_org_id)) return;
             if (call.status !== "ringing") return;
 
-            // Get caller name
             const { data: profile } = await supabase
               .from("profiles")
               .select("name, email")
@@ -83,6 +85,18 @@ export function CallProvider({ children }: { children: ReactNode }) {
             setIncomingContextLabel(call.context_label || "");
             setIncomingIsVideo(call.is_video || false);
             setShowIncoming(true);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "call_logs" },
+          (payload) => {
+            const call = payload.new as any;
+            // If this call was accepted/declined/ended by someone else, dismiss our ring
+            if (call.status !== "ringing" && call.id === incomingCallIdRef.current) {
+              setShowIncoming(false);
+              setIncomingCallId(null);
+            }
           }
         )
         .subscribe();
@@ -193,6 +207,29 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setIncomingCallId(null);
   }, [incomingCallId, user]);
 
+  const handleMissedIncoming = useCallback(async () => {
+    if (!incomingCallId) return;
+    setShowIncoming(false);
+
+    await supabase
+      .from("call_logs")
+      .update({ status: "missed", ended_at: new Date().toISOString() } as any)
+      .eq("id", incomingCallId);
+
+    const channel = supabase.channel(`call:${incomingCallId}`, {
+      config: { broadcast: { self: false } },
+    });
+    await channel.subscribe();
+    channel.send({
+      type: "broadcast",
+      event: "signal",
+      payload: { type: "declined", data: "{}", from: user?.id || "" },
+    });
+    setTimeout(() => supabase.removeChannel(channel), 1000);
+
+    setIncomingCallId(null);
+  }, [incomingCallId, user]);
+
   const handleCloseCall = useCallback(() => {
     callManager?.cleanup();
     setCallManager(null);
@@ -212,6 +249,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         isVideo={incomingIsVideo}
         onAccept={handleAcceptIncoming}
         onDecline={handleDeclineIncoming}
+        onMissed={handleMissedIncoming}
       />
 
       {/* Active call dialog */}

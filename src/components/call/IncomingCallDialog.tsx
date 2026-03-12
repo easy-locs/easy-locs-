@@ -14,10 +14,11 @@ interface IncomingCallDialogProps {
   isVideo: boolean;
   onAccept: () => void;
   onDecline: () => void;
+  onMissed?: () => void;
 }
 
 export default function IncomingCallDialog({
-  open, callerName, contextLabel, isVideo, onAccept, onDecline,
+  open, callerName, contextLabel, isVideo, onAccept, onDecline, onMissed,
 }: IncomingCallDialogProps) {
   const [ringTime, setRingTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -32,10 +33,12 @@ export default function IncomingCallDialog({
 
   // Auto-decline after 30 seconds (missed call)
   useEffect(() => {
-    if (ringTime >= 30) {
+    if (ringTime >= 30 && onMissed) {
+      onMissed();
+    } else if (ringTime >= 30) {
       onDecline();
     }
-  }, [ringTime, onDecline]);
+  }, [ringTime, onDecline, onMissed]);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
