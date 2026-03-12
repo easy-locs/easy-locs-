@@ -402,6 +402,8 @@ function resolveTargetId(event: SyncEvent): string {
     case "document_shared":      return ctx.documentId || "";
     case "payment_request_sent": return ctx.paymentRequestId || ctx.bookingId || ctx.leaseId || "";
     case "intervention_created": return ctx.propertyId || "";
+    case "deal_created":         return event.dealId;
+    case "deal_accepted":        return event.dealId;
     default:                     return "";
   }
 }
