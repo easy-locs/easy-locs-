@@ -179,6 +179,7 @@ export function getProfileLabels(locale: string): Record<string, string> {
 export const notifKeys: Record<string, Record<string, string>> = {
   fr: {
     "notif.title": "Notifications", "notif.mark_all_read": "Tout marquer lu", "notif.empty": "Aucune notification",
+    "notif.all": "Tout", "notif.unread": "Non lus", "notif.bookings": "Réservations", "notif.payments": "Paiements", "notif.messages_filter": "Messages",
     "notif.reply": "Répondre", "notif.view_document": "Voir le document", "notif.view_payment": "Voir le paiement",
     "notif.view_dunning": "Voir la relance", "notif.open": "Ouvrir",
     "notif.view_booking": "Voir la réservation", "notif.outdated": "Cet élément n'est plus disponible",
