@@ -197,10 +197,10 @@ export default function PublicRealEstateListing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={seoTitle}
+        title={`${listing.title} — ${listing.city} | Easy-Locs`}
         description={seoDescription}
         canonical={`https://www.easy-locs.com/properties/${listing.slug}`}
-        ogImage={photos[0] || undefined}
+        ogImage={photos[0] || "https://www.easy-locs.com/pwa-512x512.png"}
         jsonLd={seoJsonLd as any}
       />
 
@@ -629,11 +629,7 @@ function ContactCard({
               onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.open(links.telegram, "_blank"); }}>
               <Send className="h-4 w-4 shrink-0" /> Telegram
             </Button>
-            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
-              onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title); window.location.href = links.email; }}>
-              <Mail className="h-4 w-4 shrink-0" /> Email
-            </Button>
-            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium" onClick={handleShare}>
+            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium col-span-2" onClick={handleShare}>
               <Share2 className="h-3.5 w-3.5 shrink-0" /> Copy link
             </Button>
           </div>
