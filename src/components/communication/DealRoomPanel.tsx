@@ -188,26 +188,69 @@ export default function DealRoomPanel({
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Accept deal
+  // Accept deal → auto-trigger payment request
   const acceptDeal = useMutation({
     mutationFn: async () => {
-      const accepted = (deal as any)?.counter_offer_amount || (deal as any)?.current_offer_amount;
+      const dealD = deal as any;
+      const accepted = dealD?.counter_offer_amount || dealD?.current_offer_amount;
+      const currency = dealD?.current_offer_currency || "EUR";
       const { error } = await supabase
         .from("deal_rooms")
         .update({ accepted_amount: accepted, status: "accepted" as any } as any)
-        .eq("id", deal!.id);
+        .eq("id", dealD.id);
       if (error) throw error;
       await supabase.from("deal_events").insert({
-        deal_id: deal!.id,
+        deal_id: dealD.id,
         event_type: "status_change",
         actor_id: user!.id,
         data_json: { action: "accepted", accepted_amount: accepted },
       } as any);
+
+      // Auto-trigger payment request
+      if (accepted && accepted > 0 && isOrgMember) {
+        try {
+          // Get buyer email
+          const { data: buyerProfile } = await supabase
+            .from("profiles")
+            .select("email, full_name")
+            .eq("id", dealD.buyer_id)
+            .single();
+
+          if (buyerProfile?.email) {
+            await createPaymentRequest({
+              orgId: targetOrgId,
+              senderId: user!.id,
+              recipientEmail: buyerProfile.email,
+              recipientName: buyerProfile.full_name || "Customer",
+              amount: accepted,
+              currency,
+              description: `Payment for "${dealD.context_title || "deal"}"`,
+              contextType: "deal",
+              contextId: dealD.id,
+            });
+
+            // Update deal status to payment_pending
+            await supabase
+              .from("deal_rooms")
+              .update({ status: "payment_pending" as any } as any)
+              .eq("id", dealD.id);
+
+            await supabase.from("deal_events").insert({
+              deal_id: dealD.id,
+              event_type: "payment",
+              actor_id: user!.id,
+              data_json: { action: "payment_request_sent", amount: accepted, currency },
+            } as any);
+          }
+        } catch (e) {
+          console.error("[DealRoom] auto-payment failed:", e);
+        }
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["deal_room_context"] });
       qc.invalidateQueries({ queryKey: ["deal_events"] });
-      toast.success("Deal accepted!");
+      toast.success("Deal accepted! Payment request sent.");
     },
     onError: (e: any) => toast.error(e.message),
   });
