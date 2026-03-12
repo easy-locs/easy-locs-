@@ -17,6 +17,7 @@ const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
 const Footer = lazy(() => import("@/components/landing/Footer"));
 const TrustSection = lazy(() => import("@/components/landing/TrustSection"));
 const ValueProposition = lazy(() => import("@/components/landing/ValueProposition"));
+const WorldMapSection = lazy(() => import("@/components/landing/WorldMapSection"));
 
 const SectionLoader = memo(() => (
   <div className="flex items-center justify-center py-16">
