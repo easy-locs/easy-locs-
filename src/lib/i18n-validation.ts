@@ -323,6 +323,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   nl: {
     "notif.title": "Meldingen", "notif.mark_all_read": "Alles gelezen", "notif.empty": "Geen meldingen",
+    "notif.all": "Alles", "notif.unread": "Nieuw", "notif.bookings": "Boekingen", "notif.payments": "Betalingen", "notif.messages_filter": "Berichten",
     "notif.reply": "Beantwoorden", "notif.view_document": "Document bekijken", "notif.view_payment": "Betaling bekijken",
     "notif.view_dunning": "Herinnering bekijken", "notif.open": "Openen",
     "notif.view_booking": "Boeking bekijken", "notif.outdated": "Dit item is niet meer beschikbaar",
