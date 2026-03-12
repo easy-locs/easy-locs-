@@ -1364,12 +1364,10 @@ const CommunicationCenter = () => {
                                     <ExternalLink className="h-3 w-3" /> Open payment link
                                   </a>
                                 )}
-                                {msg.attachment_url && (
-                                  <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer"
-                                    className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-primary-foreground/80" : "text-accent"}`}>
-                                    <Paperclip className="h-3 w-3" /> Attachment
-                                  </a>
-                                )}
+                                {msg.attachment_url && (() => {
+                                  const ChatMediaPreview = require("@/components/communication/ChatMediaPreview").default;
+                                  return <ChatMediaPreview url={msg.attachment_url} fileName={msg.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />;
+                                })()}
                                 <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                                   <p className={`text-[10px] ${isMe && !isPayment ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                                     {format(new Date(msg.created_at), "HH:mm")}
