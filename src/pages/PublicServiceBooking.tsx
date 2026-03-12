@@ -507,7 +507,16 @@ const PublicServiceBooking = () => {
                 </div>
               )}
 
-              {service.location && (
+              {/* Map & Directions */}
+              <ListingMapSection
+                lat={service.lat}
+                lng={service.lng}
+                address={service.location}
+                city={service.city}
+                country={service.country}
+              />
+
+              {service.location && !service.lat && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" /> {service.location}
                 </div>
