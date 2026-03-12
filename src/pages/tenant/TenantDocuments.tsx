@@ -110,7 +110,7 @@ const TenantDocuments = () => {
       // For now, show all org docs that have been emailed or are receipts/leases
       const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
       const filtered = (generated || []).filter((d: any) =>
-        relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.emailed_at)
+        relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)
       );
 
       setMyDocs((uploaded as TenantDoc[]) || []);
