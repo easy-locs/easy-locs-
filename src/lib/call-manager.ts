@@ -206,11 +206,21 @@ export class CallManager {
   async declineCall() {
     this.debug("declineCall");
     this.sendSignal({ type: "declined", data: "{}" });
-    await supabase
+    const { data: declinedRow, error: declinedError } = await supabase
       .from("call_logs")
       .update({ status: "declined", ended_at: new Date().toISOString() } as any)
       .eq("id", this.callId)
-      .neq("status", "declined");
+      .neq("status", "declined")
+      .select("id,status,ended_at")
+      .maybeSingle();
+
+    this.debug("declineCall DB update", {
+      updated: !!declinedRow,
+      status: declinedRow?.status || null,
+      endedAt: declinedRow?.ended_at || null,
+      error: declinedError?.message || null,
+    });
+
     this.onStateChange({ status: "declined" });
     this.cleanup("decline");
   }
