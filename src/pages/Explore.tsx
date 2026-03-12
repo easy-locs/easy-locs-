@@ -474,7 +474,7 @@ export default function Explore() {
               ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? (t("explore.result") || "result") : (t("explore.results") || "results")}`
               : `${allItems.length} ${t("explore.listings") || "listings"}`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
-          </h2>
+          </h1>
         </div>
 
         {/* Grid */}
