@@ -136,43 +136,56 @@ export function CallProvider({ children }: { children: ReactNode }) {
       peerName: string;
       isVideo?: boolean;
     }) => {
-      if (!user || startingCallRef.current) return;
+      if (!user) return;
+      if (startingCallRef.current) {
+        console.log("[CallProvider] startCall ignored (already starting)");
+        return;
+      }
+
       startingCallRef.current = true;
       setIsStartingCall(true);
 
       try {
-      // Use idempotent server-side function to prevent duplicates
-      const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
-        _caller_id: user.id,
-        _callee_org_id: opts.orgId,
-        _thread_id: opts.threadId || null,
-        _context_type: opts.contextType || "listing",
-        _context_id: opts.contextId || null,
-        _context_label: opts.contextLabel || null,
-        _is_video: opts.isVideo || false,
-      });
+        console.log("[CallProvider] startCall requested", {
+          orgId: opts.orgId,
+          contextType: opts.contextType || "listing",
+          contextId: opts.contextId || null,
+          threadId: opts.threadId || null,
+        });
 
-      if (error || !callId) {
-        console.error("Failed to create call:", error);
-        startingCallRef.current = false;
-        setIsStartingCall(false);
-        return;
-      }
+        // Use idempotent server-side function to prevent duplicates
+        const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
+          _caller_id: user.id,
+          _callee_org_id: opts.orgId,
+          _thread_id: opts.threadId || null,
+          _context_type: opts.contextType || "listing",
+          _context_id: opts.contextId || null,
+          _context_label: opts.contextLabel || null,
+          _is_video: opts.isVideo || false,
+        });
 
-      const manager = new CallManager({
-        callId: callId as string,
-        userId: user.id,
-        role: "caller",
-        onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
-      });
+        console.log("[CallProvider] create_call_idempotent response", { callId, error: error?.message || null });
 
-      setPeerName(opts.peerName);
-      setContextLabel(opts.contextLabel || "");
-      setCallManager(manager);
-      setShowCallDialog(true);
-      activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId };
+        if (error || !callId) {
+          console.error("Failed to create call:", error);
+          return;
+        }
 
-      await manager.startCall(opts.isVideo || false);
+        const manager = new CallManager({
+          callId: callId as string,
+          userId: user.id,
+          role: "caller",
+          onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
+        });
+
+        setPeerName(opts.peerName);
+        setContextLabel(opts.contextLabel || "");
+        setCallManager(manager);
+        setShowCallDialog(true);
+        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId };
+
+        console.log("[CallProvider] call manager initialized", { callId });
+        await manager.startCall(opts.isVideo || false);
       } catch (err) {
         console.error("Failed to start call:", err);
       } finally {
