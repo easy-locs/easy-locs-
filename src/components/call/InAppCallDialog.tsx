@@ -32,7 +32,9 @@ export default function InAppCallDialog({
   const [usingRelay, setUsingRelay] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isEnding, setIsEnding] = useState(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const speakerSupported = typeof window !== "undefined" && typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
   // Attach remote stream to audio element and handle Safari autoplay
   useEffect(() => {
