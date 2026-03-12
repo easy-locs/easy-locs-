@@ -1,17 +1,17 @@
 /**
  * ExploreContactDrawer — Allows visitors to contact a provider directly from Explore.
- * Opens as a sheet/drawer. If not logged in, prompts to sign up.
+ * Uses GuestChatDrawer for unauthenticated users (full chat with media support).
+ * Authenticated users get direct messaging.
  */
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import GuestChatDrawer from "@/components/guest/GuestChatDrawer";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { MessageSquare, Send, Loader2, LogIn } from "lucide-react";
+import { MessageSquare, Send, Loader2 } from "lucide-react";
 
 interface ExploreContactDrawerProps {
   open: boolean;
@@ -20,61 +20,77 @@ interface ExploreContactDrawerProps {
   serviceTitle: string;
   serviceId: string;
   orgId: string;
+  providerPhone?: string;
 }
 
 export default function ExploreContactDrawer({
-  open, onClose, providerName, serviceTitle, serviceId, orgId,
+  open, onClose, providerName, serviceTitle, serviceId, orgId, providerPhone,
 }: ExploreContactDrawerProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
+
+  // Guest users → full-featured GuestChatDrawer
+  if (!user) {
+    return (
+      <GuestChatDrawer
+        open={open}
+        onClose={onClose}
+        providerName={providerName}
+        serviceTitle={serviceTitle}
+        orgId={orgId}
+        contextType="service"
+        contextId={serviceId}
+        providerPhone={providerPhone}
+      />
+    );
+  }
+
+  // Authenticated users → direct message
+  return (
+    <AuthenticatedContact
+      open={open}
+      onClose={onClose}
+      providerName={providerName}
+      serviceTitle={serviceTitle}
+      serviceId={serviceId}
+      orgId={orgId}
+    />
+  );
+}
+
+function AuthenticatedContact({
+  open, onClose, providerName, serviceTitle, serviceId, orgId,
+}: Omit<ExploreContactDrawerProps, "providerPhone">) {
+  const { user } = useAuth();
   const [message, setMessage] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
-    const senderName = user?.user_metadata?.name || name.trim();
-    const senderEmail = user?.email || email.trim();
-
-    if (!senderName || !senderEmail) {
-      toast.error("Please fill in your name and email");
-      return;
-    }
-    if (!message.trim()) {
-      toast.error("Please write a message");
-      return;
-    }
-
+    if (!message.trim()) { toast.error("Please write a message"); return; }
     setSending(true);
     try {
       const { error } = await supabase.from("messages").insert({
         org_id: orgId,
-        sender_id: user?.id || "00000000-0000-0000-0000-000000000000",
+        sender_id: user?.id,
         content: message.trim(),
         category: "general",
-        contact_name: senderName,
-        contact_email: senderEmail.toLowerCase(),
+        contact_name: user?.user_metadata?.name || user?.email,
+        contact_email: user?.email,
         context_id: serviceId,
         message_type: "inquiry",
         read: false,
       });
-
       if (error) throw error;
-
-      toast.success("Message sent! The provider will reply soon.");
+      toast.success("Message sent!");
       setMessage("");
-      setName("");
-      setEmail("");
       onClose();
-    } catch (err) {
+    } catch {
       toast.error("Failed to send message");
-    } finally {
-      setSending(false);
     }
+    setSending(false);
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] pb-safe">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-left">
@@ -83,49 +99,18 @@ export default function ExploreContactDrawer({
           </SheetTitle>
           <p className="text-sm text-muted-foreground text-left">{serviceTitle}</p>
         </SheetHeader>
-
         <div className="mt-4 space-y-3">
-          {!user && (
-            <>
-              <Input
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="min-h-[44px]"
-              />
-              <Input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="min-h-[44px]"
-              />
-            </>
-          )}
-
           <Textarea
             placeholder="Write your message..."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={e => setMessage(e.target.value)}
             rows={4}
             className="resize-none"
           />
-
-          <div className="flex gap-2">
-            <Button onClick={handleSend} disabled={sending} className="flex-1 gap-2 min-h-[44px]">
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send
-            </Button>
-          </div>
-
-          {!user && (
-            <button
-              onClick={() => { onClose(); navigate("/signup"); }}
-              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center justify-center gap-1"
-            >
-              <LogIn className="h-3 w-3" /> Sign up for faster replies and booking tracking
-            </button>
-          )}
+          <Button onClick={handleSend} disabled={sending} className="w-full gap-2 min-h-[44px]">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            Send
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
