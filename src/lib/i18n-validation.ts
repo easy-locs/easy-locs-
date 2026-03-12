@@ -407,6 +407,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   zh: {
     "notif.title": "通知", "notif.mark_all_read": "全部已读", "notif.empty": "没有通知",
+    "notif.all": "全部", "notif.unread": "未读", "notif.bookings": "预订", "notif.payments": "付款", "notif.messages_filter": "消息",
     "notif.reply": "回复", "notif.view_document": "查看文档", "notif.view_payment": "查看付款",
     "notif.view_dunning": "查看提醒", "notif.open": "打开",
     "notif.view_booking": "查看预订", "notif.outdated": "此记录已不可用",
