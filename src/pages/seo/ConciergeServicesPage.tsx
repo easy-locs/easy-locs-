@@ -18,7 +18,7 @@ const jsonLd = [
       url: "https://www.easy-locs.com",
     },
     areaServed: { "@type": "Place", name: "Worldwide" },
-    description: "Professional concierge services for property owners and vacation rental managers. Guest check-in, cleaning, maintenance, key handover, and hospitality services in 110+ countries.",
+    description: "Professional concierge services for property owners and vacation rental managers. Guest check-in, cleaning, maintenance, key handover, and hospitality services in 190+ countries.",
     offers: {
       "@type": "Offer",
       priceCurrency: "EUR",
