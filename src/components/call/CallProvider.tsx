@@ -40,6 +40,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [showCallDialog, setShowCallDialog] = useState(false);
   const [showIncoming, setShowIncoming] = useState(false);
   const [incomingCallId, setIncomingCallId] = useState<string | null>(null);
+  const incomingCallIdRef = useRef<string | null>(null);
   const [incomingCallerName, setIncomingCallerName] = useState("");
   const [incomingContextLabel, setIncomingContextLabel] = useState("");
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
