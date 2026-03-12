@@ -6,9 +6,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
-  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight,
+  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
 } from "lucide-react";
-import { MessageCircle } from "lucide-react";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
