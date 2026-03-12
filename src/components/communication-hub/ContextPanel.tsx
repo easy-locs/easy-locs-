@@ -54,24 +54,29 @@ export default function ContextPanel({ thread, orgId }: Props) {
     setPropertyCtx(p => ({ ...p, loading: true }));
 
     const loadPropertyContext = async () => {
-      const [leaseRes, rentRes, interventionRes, docRes] = await Promise.all([
-        supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
-          .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("start_date", { ascending: false }).limit(3),
-        supabase.from("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
-          .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("month", { ascending: false }).limit(6),
-        supabase.from("interventions").select("id, title, status, priority, category, created_at")
-          .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
-        supabase.from("documents").select("id, title, doc_type, status, created_at")
-          .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
-      ]);
+      try {
+        const [leaseRes, rentRes, interventionRes, docRes] = await Promise.all([
+          supabase.from("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
+            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("start_date", { ascending: false }).limit(3),
+          supabase.from("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
+            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("month", { ascending: false }).limit(6),
+          supabase.from("interventions").select("id, title, status, priority, category, created_at")
+            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
+          supabase.from("documents").select("id, title, doc_type, status, created_at")
+            .eq("org_id", orgId).eq("tenant_id", thread.tenantId!).order("created_at", { ascending: false }).limit(5),
+        ]);
 
-      setPropertyCtx({
-        leases: leaseRes.data || [],
-        rentCalls: rentRes.data || [],
-        interventions: interventionRes.data || [],
-        documents: docRes.data || [],
-        loading: false,
-      });
+        setPropertyCtx({
+          leases: leaseRes.data || [],
+          rentCalls: rentRes.data || [],
+          interventions: interventionRes.data || [],
+          documents: docRes.data || [],
+          loading: false,
+        });
+      } catch (e) {
+        console.warn("[ContextPanel] property context load failed:", e);
+        setPropertyCtx(p => ({ ...p, loading: false }));
+      }
     };
     loadPropertyContext();
   }, [thread.conversationType, thread.tenantId, orgId]);
@@ -85,29 +90,36 @@ export default function ContextPanel({ thread, orgId }: Props) {
       let booking: any = null;
       let service: any = null;
 
-      if (thread.bookingType === "marketplace") {
-        const { data } = await supabase.from("marketplace_bookings").select("*").eq("id", thread.bookingId!).single();
-        booking = data;
-        if (data?.service_id) {
-          const { data: svc } = await supabase.from("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
-          service = svc;
+      try {
+        if (thread.bookingType === "marketplace") {
+          const { data } = await supabase.from("marketplace_bookings").select("*").eq("id", thread.bookingId!).single();
+          booking = data;
+          if (data?.service_id) {
+            const { data: svc } = await supabase.from("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
+            service = svc;
+          }
+        } else if (thread.bookingType === "concierge") {
+          const { data } = await supabase.from("concierge_orders").select("*").eq("id", thread.bookingId!).single();
+          booking = data;
+          if (data?.service_id) {
+            const { data: svc } = await supabase.from("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
+            service = svc;
+          }
+        } else if (thread.bookingType === "seasonal") {
+          const { data } = await supabase.from("booking_requests").select("*").eq("id", thread.bookingId!).single();
+          booking = data;
         }
-      } else if (thread.bookingType === "concierge") {
-        const { data } = await supabase.from("concierge_orders").select("*").eq("id", thread.bookingId!).single();
-        booking = data;
-        if (data?.service_id) {
-          const { data: svc } = await supabase.from("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
-          service = svc;
-        }
-      } else if (thread.bookingType === "seasonal") {
-        const { data } = await supabase.from("booking_requests").select("*").eq("id", thread.bookingId!).single();
-        booking = data;
+      } catch (e) {
+        console.warn("[ContextPanel] booking context load failed:", e);
       }
 
       setBookingCtx({ booking, service, loading: false });
     };
     loadBookingContext();
   }, [thread.conversationType, thread.bookingId, thread.bookingType, orgId]);
+
+  // Determine if deal room panel should show
+  const showDealRoom = !!(thread.dealId || thread.conversationType === "deal" || thread.conversationType === "listing");
 
   return (
     <div className="w-72 lg:w-80 border-s border-border/50 flex flex-col overflow-hidden bg-muted/5">
@@ -151,7 +163,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
           {/* ═══ PROPERTY MANAGEMENT CONTEXT ═══ */}
           {thread.conversationType === "property" && (
             <>
-              {/* Property info */}
               {(thread.propertyLabel || thread.propertyCountry) && (
                 <div className="space-y-1 p-2.5 rounded-lg bg-muted/30 border border-border/30">
                   <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -170,7 +181,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 </div>
               ) : (
                 <>
-                  {/* Active lease */}
                   {propertyCtx.leases.length > 0 && (
                     <div className="space-y-1.5">
                       <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -191,7 +201,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                     </div>
                   )}
 
-                  {/* Rent status */}
                   {propertyCtx.rentCalls.length > 0 && (
                     <div className="space-y-1.5">
                       <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -215,7 +224,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                     </div>
                   )}
 
-                  {/* Maintenance */}
                   {propertyCtx.interventions.length > 0 && (
                     <div className="space-y-1.5">
                       <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -232,7 +240,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                     </div>
                   )}
 
-                  {/* Documents */}
                   {propertyCtx.documents.length > 0 && (
                     <div className="space-y-1.5">
                       <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -249,7 +256,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 </>
               )}
 
-              {/* Quick actions */}
               <div className="space-y-1">
                 <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
                   <a href={`/dashboard/rental?tab=tenants`}><User className="h-3 w-3" /> Tenant File</a>
@@ -276,7 +282,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 </div>
               ) : (
                 <>
-                  {/* Booking details */}
                   <div className="space-y-2 p-2.5 rounded-lg bg-muted/30 border border-border/30">
                     <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <Calendar className="h-3 w-3 text-accent" /> Booking
@@ -299,7 +304,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                       </p>
                     )}
 
-                    {/* Booking-specific fields */}
                     {bookingCtx.booking && (
                       <div className="space-y-1 text-xs text-muted-foreground pt-1 border-t border-border/20">
                         {bookingCtx.booking.service_date && <p>📅 {bookingCtx.booking.service_date}</p>}
@@ -312,7 +316,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                     )}
                   </div>
 
-                  {/* Service info */}
                   {bookingCtx.service && (
                     <div className="space-y-1.5 p-2.5 rounded-lg bg-muted/20 border border-border/20">
                       <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -327,7 +330,6 @@ export default function ContextPanel({ thread, orgId }: Props) {
                 </>
               )}
 
-              {/* Quick links */}
               <div className="space-y-1">
                 {thread.bookingType === "marketplace" && (
                   <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
@@ -394,8 +396,8 @@ export default function ContextPanel({ thread, orgId }: Props) {
             </div>
           )}
 
-          {/* Deal Room Panel */}
-          {thread.contextId && orgId && (
+          {/* Deal Room Panel — only for threads with deal context */}
+          {showDealRoom && thread.contextId && orgId && (
             <div className="pt-3 border-t border-border/30">
               <DealRoomPanel
                 contextType={thread.contextType}
