@@ -113,13 +113,31 @@ inquiry → negotiation → offer_sent → accepted → payment_pending → conf
 - Uses existing `dispatchSyncEvent` for notifications
 - Stripe payment link reused from concierge/marketplace infra
 
+### Deal Flow (Confirmed)
+```
+Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
+```
+
 ### Implementation Phases
-| Phase | Scope |
-|-------|-------|
-| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) |
-| 9b | Negotiation flow with counter-offers |
-| 9c | Payment integration (Stripe link generation + tracking) |
-| 9d | Analytics & deal conversion metrics |
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | 📋 Planned |
+| 9b | Negotiation flow with counter-offers | 📋 Planned |
+| 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
+| 9d | Analytics & deal conversion metrics | 📋 Planned |
+
+## STABILIZATION LOG — Call Pipeline (March 2026)
+| Issue | Fix | Status |
+|-------|-----|--------|
+| channel.subscribe() not awaited — signals sent before channel ready | Await subscribe with SUBSCRIBED callback + timeout | ✅ Fixed |
+| ICE candidates received before remoteDescription set → addIceCandidate fails | Queue pending candidates, flush after setRemoteDescription | ✅ Fixed |
+| audio.play() blocked on Safari — no sound | Handle play() promise, retry on user gesture (touch/click) | ✅ Fixed |
+| _startTime never reset between calls → wrong elapsed timer | Reset in cleanup() | ✅ Fixed |
+| Relay retry creates new PC but doesn't re-negotiate with peer | Send new offer after relay-only PC creation | ✅ Fixed |
+| Double cleanup crash on repeated endCall() | Added _cleaned guard flag | ✅ Fixed |
+| InAppCallDialog state not reset between calls | Added useEffect reset on open | ✅ Fixed |
+| Missing i18n keys (common.property, nav.explore) | Fallbacks already in place, non-breaking | ⚠️ Cosmetic |
+| Audit log cascade failure (network) | Monitoring errors are fire-and-forget, non-blocking | ⚠️ Cosmetic |
 
 ### Key Design Decisions
 - Deals live inside threads — the thread IS the deal room
