@@ -3,7 +3,7 @@
  * Listens for incoming calls via Supabase Realtime on call_logs table.
  * Renders IncomingCallDialog and InAppCallDialog globally.
  */
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
