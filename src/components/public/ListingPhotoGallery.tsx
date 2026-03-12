@@ -53,7 +53,7 @@ const ListingPhotoGallery = ({ photos }: Props) => {
           </div>
         )
       ) : (
-        <img src={currentUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <img src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
       )}
 
       {photos.length > 1 && (

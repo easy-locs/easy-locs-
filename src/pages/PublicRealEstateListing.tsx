@@ -492,7 +492,7 @@ export default function PublicRealEstateListing() {
                 className={`shrink-0 w-14 sm:w-16 h-10 sm:h-12 rounded-lg overflow-hidden border-2 transition-all ${
                   i === photoIndex ? "border-background scale-105" : "border-transparent opacity-40 hover:opacity-70"
                 }`}>
-                <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <img src={url} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
               </button>
             ))}
           </div>

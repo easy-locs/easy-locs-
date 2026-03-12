@@ -257,7 +257,7 @@ const PublicListing = () => {
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {photos.map((url, i) => (
                   <div key={i} className="rounded-xl overflow-hidden aspect-[4/3]">
-                    <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={url} alt={`Property photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 ))}
               </div>

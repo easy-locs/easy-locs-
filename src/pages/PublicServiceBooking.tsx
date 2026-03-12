@@ -438,7 +438,7 @@ const PublicServiceBooking = () => {
               {photos.map((url, i) => (
                 <button key={i} onClick={() => setPhotoIndex(i)}
                   className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors ${i === photoIndex ? "border-accent" : "border-transparent"}`}>
-                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={url} alt={`Service photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>
