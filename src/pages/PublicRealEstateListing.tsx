@@ -208,10 +208,14 @@ export default function PublicRealEstateListing() {
       <header className="border-b border-border bg-card/95 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14">
           <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/explore")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] min-w-[44px] rounded-lg hover:bg-muted/50 px-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
             <AppLogo variant="header" linkTo="/" />
-            <Link to="/properties" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground hidden sm:flex items-center gap-1.5 transition-colors">
-              <ArrowLeft className="h-3.5 w-3.5" /> All properties
-            </Link>
           </div>
           <div className="flex gap-2 items-center">
             <Button variant="ghost" size="sm" onClick={handleShare} className="gap-1.5 text-muted-foreground hover:text-foreground rounded-lg min-h-[44px] min-w-[44px]">
@@ -221,13 +225,6 @@ export default function PublicRealEstateListing() {
           </div>
         </div>
       </header>
-
-      {/* ─── Breadcrumb (mobile back) ─── */}
-      <div className="sm:hidden border-b border-border px-4 py-2.5 bg-card">
-        <Link to="/properties" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 min-h-[36px]">
-          <ArrowLeft className="h-4 w-4" /> All properties
-        </Link>
-      </div>
 
       {/* ─── Photo Gallery ─── */}
       <section className="bg-muted/20">

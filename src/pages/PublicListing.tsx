@@ -187,7 +187,16 @@ const PublicListing = () => {
       {/* Top bar with logo + language */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
-          <AppLogo variant="header" linkTo="/" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/explore")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[36px] min-w-[36px] rounded-lg hover:bg-muted/50 px-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("explore.back") || "Back"}</span>
+            </button>
+            <AppLogo variant="header" linkTo="/" />
+          </div>
           <div className="flex items-center gap-2">
             <ShareButtons type="listing" slug={listingSlug || ""} title={listing?.title || "Easy-Locs"} />
           </div>
