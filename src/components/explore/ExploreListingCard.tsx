@@ -4,6 +4,8 @@ import { MapPin, ArrowRight, Users, Moon, CheckCircle, Bed, Bath, Maximize } fro
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 import { useI18n } from "@/lib/i18n";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import SaveButton from "@/components/explore/SaveButton";
+import { useSavedListings } from "@/hooks/useSavedListings";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
