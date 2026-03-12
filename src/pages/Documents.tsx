@@ -159,7 +159,22 @@ const Documents = () => {
         )}
 
         {tab === "history" && (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Document routing legend */}
+            <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
+              <span className="font-medium text-foreground text-xs">Routage :</span>
+              {[
+                { icon: "🏠", label: "Bien" },
+                { icon: "👤", label: "Locataire" },
+                { icon: "📝", label: "Bail" },
+                { icon: "💰", label: "Comptabilité" },
+                { icon: "📊", label: "Dashboard" },
+                { icon: "🔓", label: "Portail locataire" },
+              ].map(r => (
+                <span key={r.label} className="inline-flex items-center gap-0.5">{r.icon} {r.label}</span>
+              ))}
+            </div>
+
             {loading ? (
               <div className="text-center py-12 text-muted-foreground text-sm">{t("page.documents.loading")}</div>
             ) : docs.length === 0 ? (
@@ -168,25 +183,46 @@ const Documents = () => {
                 <p className="text-muted-foreground">{t("page.documents.no_doc")}</p>
               </div>
             ) : (
-              docs.map((d) => (
-                <div key={d.id} className="flex items-center gap-4 bg-card rounded-xl p-4 shadow-card border border-border/50">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground truncate">{d.title}</div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {new Date(d.created_at).toLocaleDateString(activeLocale)}
-                      <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
-                      {d.template_version && <span className="text-muted-foreground/60">v{d.template_version}</span>}
+              docs.map((d: any) => {
+                const routed: string[] = Array.isArray(d.routed_to) ? d.routed_to : [];
+                const routeIcons: Record<string, string> = {
+                  property_file: "🏠", tenant_file: "👤", lease_file: "📝",
+                  accounting_record: "💰", owner_dashboard: "📊", tenant_portal: "🔓",
+                };
+                return (
+                  <div key={d.id} className="bg-card rounded-xl p-4 shadow-card border border-border/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{d.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                          <Clock className="h-3 w-3" />
+                          {new Date(d.created_at).toLocaleDateString(activeLocale)}
+                          <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
+                          {d.routing_status === "routed" && (
+                            <span className="bg-success/10 text-success px-1.5 py-0.5 rounded text-[10px]">✓ Routé</span>
+                          )}
+                        </div>
+                        {/* Routing chips */}
+                        {routed.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                            {routed.map(r => (
+                              <span key={r} className="inline-flex items-center gap-0.5 text-[10px] bg-muted/60 px-1.5 py-0.5 rounded" title={r}>
+                                {routeIcons[r] || "📁"} {r.replace(/_/g, " ")}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={() => handleDownload(d)} className="text-muted-foreground hover:text-foreground transition-colors p-2 shrink-0">
+                        <Download className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <button onClick={() => handleDownload(d)} className="text-muted-foreground hover:text-foreground transition-colors p-2">
-                    <Download className="h-4 w-4" />
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
