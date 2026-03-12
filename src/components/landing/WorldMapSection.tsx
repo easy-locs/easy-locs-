@@ -137,7 +137,7 @@ const WorldMapSection = () => {
                 className="inline-flex items-center gap-2 text-sm font-medium hover:underline underline-offset-4"
                 style={{ color: "hsl(var(--accent))" }}
               >
-                {t("landing.world.cta") || "View all 110+ countries"}
+                {t("landing.world.cta") || "View all 190+ countries"}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
