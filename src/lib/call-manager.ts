@@ -335,13 +335,22 @@ export class CallManager {
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
         try {
-          await supabase
+          const { data: declinedRow, error: declinedError } = await supabase
             .from("call_logs")
             .update({ status: "declined", ended_at: new Date().toISOString() } as any)
             .eq("id", this.callId)
-            .neq("status", "declined");
-        } catch {
-          this.debug("declined status update failed");
+            .neq("status", "declined")
+            .select("id,status,ended_at")
+            .maybeSingle();
+
+          this.debug("remote declined DB update", {
+            updated: !!declinedRow,
+            status: declinedRow?.status || null,
+            endedAt: declinedRow?.ended_at || null,
+            error: declinedError?.message || null,
+          });
+        } catch (err) {
+          this.debug("declined status update failed", { error: String(err) });
         }
         this.cleanup("remote-declined");
       } else if (signal.type === "ended") {
