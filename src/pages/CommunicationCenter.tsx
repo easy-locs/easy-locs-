@@ -10,12 +10,13 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { MessageCircle, FileText, CreditCard, Wrench, Plus } from "lucide-react";
+import { MessageCircle, FileText, CreditCard, Wrench, Plus, PanelRightOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 import ConversationList from "@/components/communication-hub/ConversationList";
 import ChatPanel from "@/components/communication-hub/ChatPanel";
@@ -35,6 +36,7 @@ const CommunicationCenter = () => {
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
   const [showNewConversation, setShowNewConversation] = useState(false);
+  const [mobileContextOpen, setMobileContextOpen] = useState(false);
 
   // Request notification permission
   useEffect(() => {
@@ -84,7 +86,16 @@ const CommunicationCenter = () => {
   const handleBack = useCallback(() => {
     setSelectedThread(null);
     setShowContext(false);
+    setMobileContextOpen(false);
   }, []);
+
+  const handleToggleContext = useCallback(() => {
+    if (isMobile) {
+      setMobileContextOpen(prev => !prev);
+    } else {
+      setShowContext(prev => !prev);
+    }
+  }, [isMobile]);
 
   const handleThreadUpdate = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
     updateThreadLocally(threadId, updates);
@@ -94,10 +105,7 @@ const CommunicationCenter = () => {
   }, [updateThreadLocally, selectedThread?.id]);
 
   const handleNewThreadCreated = useCallback((contextId: string) => {
-    // Refresh threads and try to select the new one
-    loadThreads().then(() => {
-      // The thread should appear after reload
-    });
+    loadThreads();
   }, [loadThreads]);
 
   return (
@@ -149,12 +157,12 @@ const CommunicationCenter = () => {
               <ChatPanel
                 thread={selectedThread}
                 onBack={handleBack}
-                onToggleContext={() => setShowContext(!showContext)}
-                showContext={showContext}
+                onToggleContext={handleToggleContext}
+                showContext={showContext || mobileContextOpen}
                 onThreadUpdate={handleThreadUpdate}
               />
 
-              {/* Layer 3: Context Panel — hidden on mobile, shown on lg+ */}
+              {/* Layer 3: Context Panel — desktop only inline */}
               {showContext && selectedThread && orgId && !isMobile && (
                 <ContextPanel
                   thread={selectedThread}
@@ -165,6 +173,23 @@ const CommunicationCenter = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Context Panel — as a Sheet */}
+      {isMobile && selectedThread && orgId && (
+        <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
+          <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl">
+            <SheetHeader className="px-4 py-3 border-b border-border/50">
+              <SheetTitle className="text-sm">Context — {selectedThread.name}</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto">
+              <ContextPanel
+                thread={selectedThread}
+                orgId={orgId}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* New conversation dialog */}
       <NewConversationDialog

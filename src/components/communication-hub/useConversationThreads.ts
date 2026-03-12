@@ -12,7 +12,7 @@
  * 9. Marketplace listing inquiries (conversation_threads)
  * 10. Business/service conversations (conversation_threads)
  *
- * Includes realtime subscription for live updates.
+ * Includes realtime subscription for live updates with debounce.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ export function useConversationThreads() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ unread: 0, pending_docs: 0, overdue: 0, maintenance: 0 });
   const loadingRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadThreads = useCallback(async () => {
     if (!orgId || loadingRef.current) { setLoading(false); return; }
@@ -264,7 +265,6 @@ export function useConversationThreads() {
             else if (ctxType === "business" || ctxType === "service") { convType = "business"; sourceModule = "marketplace"; }
 
             const key = `${convType}-${ct.id}`;
-            // Don't overwrite richer thread data already in the map
             if (!threadMap.has(key)) {
               threadMap.set(key, {
                 id: key,
@@ -305,18 +305,21 @@ export function useConversationThreads() {
               const bookingThread = threadMap.get(`booking-${deal.booking_id}`);
               if (bookingThread) {
                 bookingThread.dealId = deal.id;
-                continue; // Don't create separate thread
+                continue;
               }
             }
 
             // Attach deal to listing thread via context_id
             if (deal.context_id && deal.thread_id) {
+              let attached = false;
               for (const [, t] of threadMap) {
                 if (t.threadId === deal.thread_id || t.contextId === deal.context_id) {
                   t.dealId = deal.id;
+                  attached = true;
                   break;
                 }
               }
+              if (attached) continue;
             }
 
             // Create standalone deal thread only if not already represented
@@ -360,7 +363,6 @@ export function useConversationThreads() {
             if (m.context_type === "real_estate_lead") key = `lead-${m.context_id}`;
             else if (m.context_type === "tenant") key = `tenant-${m.context_id}`;
             else if (m.context_type === "direct") {
-              // Find matching direct thread
               for (const [k, t] of threadMap) {
                 if (t.conversationType === "direct" && (t.contextId === m.context_id || t.threadId === m.context_id)) {
                   key = k; break;
@@ -378,9 +380,9 @@ export function useConversationThreads() {
           }
 
           // Also try thread_id matching
-          if (!key && (m as any).thread_id) {
+          if (!key && m.thread_id) {
             for (const [k, t] of threadMap) {
-              if (t.threadId === (m as any).thread_id) {
+              if (t.threadId === m.thread_id) {
                 key = k; break;
               }
             }
@@ -438,27 +440,38 @@ export function useConversationThreads() {
   // Initial load
   useEffect(() => { loadThreads(); loadStats(); }, [loadThreads, loadStats]);
 
+  // Debounced reload for realtime events
+  const debouncedReload = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadThreads();
+    }, 800);
+  }, [loadThreads]);
+
   // Realtime: refresh threads on new messages, booking changes, deal changes
   useEffect(() => {
     if (!orgId) return;
     const channel = supabase
       .channel("hub-live")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}` }, () => {
-        loadThreads();
+        debouncedReload();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => {
-        loadThreads();
+        debouncedReload();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "concierge_orders", filter: `org_id=eq.${orgId}` }, () => {
-        loadThreads();
+        debouncedReload();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => {
-        loadThreads();
+        debouncedReload();
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, loadThreads]);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, debouncedReload]);
 
   const updateThreadLocally = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
     setThreads(prev => prev.map(t => t.id === threadId ? { ...t, ...updates } : t));
