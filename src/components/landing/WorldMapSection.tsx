@@ -5,11 +5,12 @@ import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-/* Lazy-load Three.js globe with safe fallback on chunk failure */
+/* Lazy-load Three.js globe — safe fallback on chunk failure */
 const GlobeCanvas = lazy(() =>
-  import("./LandingGlobe").catch(() => ({
-    default: () => null,
-  }))
+  import("./LandingGlobe").then(
+    (mod) => mod,
+    () => ({ default: () => null })
+  )
 );
 
 const regions = [
@@ -80,7 +81,7 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed && !isMobile ? (
+            {!globeFailed ? (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
