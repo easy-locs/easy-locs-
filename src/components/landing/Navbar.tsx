@@ -91,7 +91,9 @@ const Navbar = () => {
           <div className="relative hidden sm:block" ref={langRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10 text-white/75"
+              aria-label="Change language"
+              aria-expanded={langOpen}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10 text-white/75 min-h-[44px]"
             >
               <Globe className="h-3.5 w-3.5" />
               <span>{LANG_FLAGS[locale] || "🌐"} {locale.toUpperCase()}</span>
