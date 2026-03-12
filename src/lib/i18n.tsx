@@ -1289,11 +1289,11 @@ const pageFr: Record<string, string> = {
   "landing.features.ai.title": "Outils IA",
   "landing.features.ai.desc": "Assistant IA pour la génération de documents, l'optimisation des loyers et la communication locataire.",
 
-  "landing.world.badge": "110+ pays supportés",
+  "landing.world.badge": "190+ pays supportés",
   "landing.world.title": "Gérez vos biens",
   "landing.world.title_highlight": "partout dans le monde",
   "landing.world.subtitle": "Chaque pays a ses propres réglementations, devises, langues et modèles de documents — entièrement séparés et conformes.",
-  "landing.world.cta": "Voir les 110+ pays",
+  "landing.world.cta": "Voir les 190+ pays",
 
   "landing.footer.desc": "Votre assistant de gestion locative intelligent, conforme et sécurisé.",
   "landing.footer.product": "Produit",
