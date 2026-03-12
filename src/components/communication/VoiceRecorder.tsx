@@ -36,7 +36,19 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4" });
+      // Safari doesn't support audio/webm; try webm first, then mp4, then default
+      const mimeOpts: MediaRecorderOptions = {};
+      if (typeof MediaRecorder.isTypeSupported === "function") {
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          mimeOpts.mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+          mimeOpts.mimeType = "audio/webm";
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeOpts.mimeType = "audio/mp4";
+        }
+        // else: let browser pick default
+      }
+      const recorder = new MediaRecorder(stream, mimeOpts);
       chunksRef.current = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.start(100);
