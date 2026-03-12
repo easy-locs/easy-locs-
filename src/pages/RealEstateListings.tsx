@@ -574,6 +574,18 @@ export default function RealEstateListings() {
               </div>
 
               <Separator />
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Building2 className="h-4 w-4" /> Agency / Agent (optional)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Agency Name</Label><Input value={form.agency_name} onChange={e => setForm(f => ({ ...f, agency_name: e.target.value }))} placeholder="ABC Real Estate" /></div>
+                <div><Label>Agent Name</Label><Input value={form.agent_name} onChange={e => setForm(f => ({ ...f, agent_name: e.target.value }))} placeholder="John Smith" /></div>
+                <div><Label>License Number</Label><Input value={form.license_number} onChange={e => setForm(f => ({ ...f, license_number: e.target.value }))} placeholder="CPI 1234" /></div>
+                <div><Label>Company Reg.</Label><Input value={form.company_registration} onChange={e => setForm(f => ({ ...f, company_registration: e.target.value }))} placeholder="SIRET / RCS" /></div>
+                <div><Label>Agency Phone</Label><Input value={form.agency_phone} onChange={e => setForm(f => ({ ...f, agency_phone: e.target.value }))} /></div>
+                <div><Label>Agency Email</Label><Input value={form.agency_email} onChange={e => setForm(f => ({ ...f, agency_email: e.target.value }))} /></div>
+                <div className="col-span-2"><Label>Agency Logo URL</Label><Input value={form.agency_logo_url} onChange={e => setForm(f => ({ ...f, agency_logo_url: e.target.value }))} placeholder="https://..." /></div>
+              </div>
+
+              <Separator />
               <h4 className="text-sm font-semibold text-foreground">Contact</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))} /></div>
