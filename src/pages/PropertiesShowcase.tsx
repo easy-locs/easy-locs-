@@ -327,31 +327,30 @@ function PropertyCard({ listing }: { listing: PublicListing }) {
               <Home className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground/10" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/5 to-transparent" />
+          {/* Transparent Easy-Locs watermark */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <span className="text-white/10 text-2xl sm:text-3xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+          </div>
           {/* Type badge */}
           <Badge className={`absolute top-3 left-3 ${tc.bg} ${tc.color} border ${tc.border} text-[11px] sm:text-xs font-semibold backdrop-blur-md px-2.5 sm:px-3 py-1`}>
             {tc.icon} {tc.label}
           </Badge>
-          {/* Price overlay */}
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-            <div>
-              <span className="text-xl sm:text-2xl font-bold text-background drop-shadow-lg tabular-nums">
-                {listing.price.toLocaleString()} {listing.currency}
-              </span>
-              {priceLabel && <span className="text-background/80 text-xs sm:text-sm ml-1">{priceLabel}</span>}
-            </div>
-            {photos.length > 1 && (
-              <span className="bg-foreground/50 backdrop-blur-md text-background text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0">
-                📷 {photos.length}
-              </span>
-            )}
-          </div>
+          {photos.length > 1 && (
+            <span className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
+              1/{photos.length}
+            </span>
+          )}
         </div>
 
         <CardContent className="p-4 sm:p-5 space-y-2.5">
-          <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 group-hover:text-accent transition-colors">
-            {listing.title}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 group-hover:text-accent transition-colors flex-1 min-w-0">
+              {listing.title}
+            </h3>
+            <span className="text-sm sm:text-base font-bold text-foreground whitespace-nowrap shrink-0 tabular-nums">
+              {listing.price.toLocaleString()} {listing.currency}{priceLabel}
+            </span>
+          </div>
 
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-accent/70" />

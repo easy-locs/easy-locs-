@@ -170,21 +170,10 @@ export default function ExplorePreview() {
                         {tab === "seasonal" ? `🏖️ ${t("landing.explore.seasonal") || "Seasonal"}` : tab === "real-estate" ? `🏠 ${t("landing.explore.real_estate") || "Real Estate"}` : `🛍️ ${t("landing.explore.service") || "Service"}`}
                       </Badge>
                     </div>
-                    {tab === "seasonal" && item.price_per_night && (
-                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {item.price_per_night}€<span className="text-[10px] font-normal text-muted-foreground">/{t("landing.explore.per_night") || "night"}</span>
-                      </div>
-                    )}
-                    {tab === "real-estate" && item.price && (
-                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {Number(item.price).toLocaleString()} {item.currency || "€"}
-                      </div>
-                    )}
-                    {tab === "services" && item.price && (
-                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-2.5 py-1 text-sm font-bold text-foreground shadow-sm">
-                        {item.price} {item.currency || "€"}
-                      </div>
-                    )}
+                    {/* Transparent watermark */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                      <span className="text-white/10 text-lg font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                    </div>
                   </div>
                   <div className="p-4 flex flex-col flex-1 min-h-[100px]">
                     <h3 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-accent transition-colors">

@@ -316,7 +316,8 @@ const NotificationBell = () => {
       <button
         ref={bellRef}
         onClick={handleBellClick}
-        className="relative p-2.5 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95 overflow-visible"
+        className="relative p-2.5 rounded-xl hover:bg-muted/80 transition-all duration-200 active:scale-95"
+        style={{ overflow: "visible" }}
         aria-label="Notifications"
         type="button"
       >
