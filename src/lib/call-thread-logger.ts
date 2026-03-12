@@ -29,18 +29,29 @@ export async function logCallEventToThread(opts: {
 }) {
   const content = EVENT_CONTENT[opts.event](opts.durationSeconds);
 
+  // Use context_type = "call" to identify call events in the thread
+  // Embed call metadata in the content tag for parsing
+  const taggedContent = `${content} [call:${opts.event}:${opts.durationSeconds ?? 0}]`;
+
   await supabase.from("messages").insert({
     org_id: opts.orgId,
     sender_id: opts.senderId,
-    content,
+    content: taggedContent,
     context_id: opts.threadId,
     context_type: "call",
     message_type: "system",
     read: false,
-    metadata_json: {
-      call_id: opts.callId,
-      call_event: opts.event,
-      duration_seconds: opts.durationSeconds ?? null,
-    },
   } as any);
+}
+
+/** Parse call metadata from tagged content */
+export function parseCallEvent(content: string): { event: string; durationSeconds: number } | null {
+  const match = content.match(/\[call:(ended|declined|missed):(\d+)\]/);
+  if (!match) return null;
+  return { event: match[1], durationSeconds: parseInt(match[2], 10) };
+}
+
+/** Strip the call tag from content for display */
+export function cleanCallContent(content: string): string {
+  return content.replace(/\s*\[call:[^\]]+\]/, "").trim();
 }
