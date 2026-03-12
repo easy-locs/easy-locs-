@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.run-scheduled-audit]
 verify_jwt = false
+
+[functions.reveal-contact]
+verify_jwt = false

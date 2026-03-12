@@ -33,14 +33,13 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
 
     const body = await req.json();
     const { reveal_type, org_id, listing_id, service_id, source } = body;
@@ -57,7 +56,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Rate limit check: count reveals today for this user and type
+    // Rate limit check
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -83,7 +82,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch real contact data based on source
+    // Fetch real contact data
     let contactData: Record<string, string | null> = {};
 
     if (source === "real_estate" && listing_id) {
@@ -95,13 +94,9 @@ Deno.serve(async (req) => {
         .single();
 
       if (listing) {
-        contactData = {
-          phone: listing.contact_phone,
-          email: listing.contact_email,
-        };
+        contactData = { phone: listing.contact_phone, email: listing.contact_email };
       }
     } else if (source === "seasonal" && listing_id) {
-      // Public listings → property contact
       const { data: pl } = await adminClient
         .from("public_listings")
         .select("contact_phone, whatsapp_number, contact_email, telegram_username")
@@ -144,7 +139,6 @@ Deno.serve(async (req) => {
         contactData = { phone: svc.provider_phone };
       }
     } else if (org_id) {
-      // Fallback: org email
       const { data: org } = await adminClient
         .from("orgs")
         .select("email")
@@ -178,6 +172,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (err) {
+    console.error("reveal-contact error:", err);
     return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
