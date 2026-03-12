@@ -132,7 +132,7 @@ const PropertyManagement = () => {
         title={pageTitle}
         description={pageDesc}
         canonical={`https://www.easy-locs.com/property-management${countrySlug ? `-${countrySlug}` : ""}`}
-        jsonLd={jsonLd}
+        jsonLd={jsonLd as any}
       />
       {/* Nav */}
       <header className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-40">
