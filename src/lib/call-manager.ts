@@ -247,6 +247,8 @@ export class CallManager {
 
   private async processSignal(signal: SignalPayload) {
     try {
+      this.debug("processing signal", { type: signal.type });
+
       if (signal.type === "accepted") {
         // Caller received acceptance — prepare PC and wait for callee's offer
         this.onStateChange({ status: "connecting" });
@@ -258,11 +260,14 @@ export class CallManager {
         if (!this.pc) this.createPeerConnection();
         const offer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
-        // Flush any pending ICE candidates
+
+        const pendingCount = this._pendingCandidates.length;
         for (const c of this._pendingCandidates) {
           try { await this.pc!.addIceCandidate(c); } catch { /* ignore late candidates */ }
         }
         this._pendingCandidates = [];
+        this.debug("pending ICE flushed after offer", { count: pendingCount });
+
         const answer = await this.pc!.createAnswer();
         await this.pc!.setLocalDescription(answer);
         this.sendSignal({ type: "answer", data: JSON.stringify(answer) });
@@ -270,18 +275,25 @@ export class CallManager {
         if (!this.pc) return;
         const answer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(answer));
-        // Flush pending candidates
+
+        const pendingCount = this._pendingCandidates.length;
         for (const c of this._pendingCandidates) {
           try { await this.pc!.addIceCandidate(c); } catch { /* ignore */ }
         }
         this._pendingCandidates = [];
+        this.debug("pending ICE flushed after answer", { count: pendingCount });
       } else if (signal.type === "ice") {
         const candidate = new RTCIceCandidate(JSON.parse(signal.data));
         if (this.pc?.remoteDescription) {
-          try { await this.pc.addIceCandidate(candidate); } catch { /* ignore */ }
+          try {
+            await this.pc.addIceCandidate(candidate);
+            this.debug("ICE candidate applied");
+          } catch {
+            this.debug("ICE candidate apply failed");
+          }
         } else {
-          // Queue until remote description is set
           this._pendingCandidates.push(candidate);
+          this.debug("ICE candidate queued", { pending: this._pendingCandidates.length });
         }
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
@@ -289,15 +301,18 @@ export class CallManager {
           await supabase
             .from("call_logs")
             .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-            .eq("id", this.callId);
-        } catch { /* best effort */ }
-        this.cleanup();
+            .eq("id", this.callId)
+            .neq("status", "declined");
+        } catch {
+          this.debug("declined status update failed");
+        }
+        this.cleanup("remote-declined");
       } else if (signal.type === "ended") {
         this.onStateChange({ status: "ended" });
-        this.cleanup();
+        this.cleanup("remote-ended");
       }
     } catch (err) {
-      console.error("[CallManager] Signal processing error:", signal.type, err);
+      this.debug("signal processing error", { type: signal.type, error: String(err) });
     }
   }
 
