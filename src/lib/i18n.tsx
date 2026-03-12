@@ -2039,6 +2039,10 @@ const pageFr: Record<string, string> = {
   "page.listing.error_payment": "Erreur de paiement",
   "page.listing.stripe_note": "Paiement sécurisé par Stripe · Carte & Apple Pay acceptés",
   "page.listing.powered_by_brand": "Gestion locative intelligente",
+  "page.listing.contact_direct": "Contacter directement",
+  "page.listing.call_free": "Appeler gratuitement",
+  "page.listing.calling": "Appel en cours…",
+  "page.listing.send_message": "Envoyer un message",
   // ── Catalog & Host ──
   "page.catalog.title": "Locations saisonnières",
   "page.catalog.search_placeholder": "Rechercher une destination…",
@@ -3842,6 +3846,10 @@ const pageEn: Record<string, string> = {
   "page.listing.error_payment": "Payment error",
   "page.listing.stripe_note": "Secure payment via Stripe · Card & Apple Pay accepted",
   "page.listing.powered_by_brand": "Smart rental management",
+  "page.listing.contact_direct": "Contact directly",
+  "page.listing.call_free": "Call for free",
+  "page.listing.calling": "Calling…",
+  "page.listing.send_message": "Send message",
   // ── Catalog & Host ──
   "page.catalog.title": "Seasonal rentals",
   "page.catalog.search_placeholder": "Search a destination…",

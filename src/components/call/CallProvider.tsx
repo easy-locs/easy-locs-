@@ -76,40 +76,48 @@ export function CallProvider({ children }: { children: ReactNode }) {
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "call_logs" },
           async (payload) => {
-            const call = payload.new as any;
-            if (call.caller_id === user.id) return;
-            if (call.status !== "ringing") return;
-            // Accept call if targeted at user's org OR if direct context targets this user
-            const isOrgCall = orgIds.includes(call.callee_org_id);
-            const isDirectCall = call.context_type === "direct" && 
-              typeof call.context_id === "string" && 
-              call.context_id.includes(user.id);
-            if (!isOrgCall && !isDirectCall) return;
+            try {
+              const call = payload.new as any;
+              if (!call || call.caller_id === user.id) return;
+              if (call.status !== "ringing") return;
+              // Accept call if targeted at user's org OR if direct context targets this user
+              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.callee_org_id);
+              const isDirectCall = call.context_type === "direct" && 
+                typeof call.context_id === "string" && 
+                call.context_id.includes(user.id);
+              if (!isOrgCall && !isDirectCall) return;
 
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("name, email")
-              .eq("id", call.caller_id)
-              .single();
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("name, email")
+                .eq("id", call.caller_id)
+                .single();
 
-            setIncomingCallId(call.id);
-            setIncomingCallerName(profile?.name || profile?.email || "User");
-            setIncomingContextLabel(call.context_label || "");
-            setIncomingIsVideo(call.is_video || false);
-            setIncomingOrgId(call.callee_org_id || "");
-            setIncomingThreadId(call.thread_id || null);
-            setShowIncoming(true);
+              setIncomingCallId(call.id);
+              setIncomingCallerName(profile?.name || profile?.email || "User");
+              setIncomingContextLabel(call.context_label || "");
+              setIncomingIsVideo(call.is_video || false);
+              setIncomingOrgId(call.callee_org_id || "");
+              setIncomingThreadId(call.thread_id || null);
+              setShowIncoming(true);
+            } catch (err) {
+              console.error("[CallProvider] incoming call handler error:", err);
+            }
           }
         )
         .on(
           "postgres_changes",
           { event: "UPDATE", schema: "public", table: "call_logs" },
           (payload) => {
-            const call = payload.new as any;
-            // If this call was accepted/declined/ended by someone else, dismiss our ring
-            if (call.status !== "ringing" && call.id === incomingCallIdRef.current) {
-              setShowIncoming(false);
-              setIncomingCallId(null);
+            try {
+              const call = payload.new as any;
+              // If this call was accepted/declined/ended by someone else, dismiss our ring
+              if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
+                setShowIncoming(false);
+                setIncomingCallId(null);
+              }
+            } catch (err) {
+              console.error("[CallProvider] call update handler error:", err);
             }
           }
         )
@@ -122,7 +130,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     const cleanup = setupListener();
     return () => {
-      cleanup.then((fn) => fn?.());
+      cleanup.then((fn) => fn?.()).catch(() => {});
     };
   }, [user]);
 
