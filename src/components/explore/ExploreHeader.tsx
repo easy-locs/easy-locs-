@@ -291,7 +291,7 @@ function MobileUserSheet() {
               <MobileNavItem icon={Briefcase} label="My company" onClick={() => go("/dashboard/company")} />
               <MobileNavItem icon={Users} label="Team" onClick={() => go("/dashboard/collaboration")} />
               <MobileNavItem icon={CreditCard} label="Subscription" onClick={() => go("/dashboard/billing")} />
-              <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
+              
             </>
           )}
 

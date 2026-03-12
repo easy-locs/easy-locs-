@@ -75,7 +75,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
           {navLinks.map((link) =>
             link.isRoute ? (
-              <Link key={link.to} to={link.to} className="hover:text-accent transition-colors duration-200">
+              <Link key={link.to} to={link.to} className={`transition-colors duration-200 ${(link as any).accent ? "text-accent font-semibold" : "hover:text-accent"}`}>
                 {link.label}
               </Link>
             ) : (
