@@ -3206,11 +3206,11 @@ const pageEn: Record<string, string> = {
   "landing.pillars.marketplace.f5": "Online payments & invoicing",
   "landing.pillars.marketplace.cta": "Create Your Business",
 
-  "landing.world.badge": "110+ Countries Supported",
+  "landing.world.badge": "190+ Countries Supported",
   "landing.world.title": "Manage Properties",
   "landing.world.title_highlight": "Worldwide",
   "landing.world.subtitle": "Each country has its own regulations, currencies, languages and document templates — fully separated and compliant.",
-  "landing.world.cta": "View all 110+ countries",
+  "landing.world.cta": "View all 190+ countries",
 
   "landing.proof.countries": "Countries",
   "landing.proof.languages": "Languages",
