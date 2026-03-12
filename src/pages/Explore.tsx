@@ -10,6 +10,7 @@ import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { useI18n } from "@/lib/i18n";
 import { haversineKm } from "@/lib/geo-distance";
 import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 
@@ -48,6 +49,7 @@ const ITEMS_PER_PAGE = 24;
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
+  const { t } = useI18n();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -428,7 +430,7 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "Loading..." : locationQuery ? `Results in ${locationQuery}` : "Explore listings"}
+            {loading ? "..." : locationQuery ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? "result" : "results"}` : `${allItems.length} listings`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
         </div>
@@ -461,7 +463,7 @@ export default function Explore() {
             {visibleCount < allItems.length && (
               <div className="flex justify-center pt-10">
                 <Button variant="outline" size="lg" onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)} className="rounded-full gap-2 px-8 min-h-[48px] shadow-sm hover:shadow-md transition-shadow">
-                  Show more
+                  {t("explore.show_more") || "Show more"} ({allItems.length - visibleCount})
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>

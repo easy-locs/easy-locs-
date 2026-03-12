@@ -21,13 +21,18 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (item.cover_url || PLACEHOLDER_IMG)
     : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG);
 
-  // Smart currency display — use item currency, no hardcoded €
-  const curr = item.currency || "€";
+  // Smart currency display using Intl formatter
+  const currCode = item.currency || "EUR";
+  const fmtPrice = (amount: number) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency: currCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    } catch { return `${amount} ${currCode}`; }
+  };
   const priceLabel = type === "seasonal"
-    ? `${item.price_per_night}${curr} / ${t("explore.night") || "night"}`
+    ? `${fmtPrice(item.price_per_night)} / ${t("explore.night") || "night"}`
     : type === "real-estate"
-    ? `${Number(item.price || 0).toLocaleString()} ${curr}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
-    : item.price > 0 ? `${item.price} ${curr}` : (t("explore.free") || "Free");
+    ? `${fmtPrice(item.price || 0)}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
+    : item.price > 0 ? fmtPrice(item.price) : (t("explore.free") || "Free");
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
@@ -97,8 +102,8 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           {/* Type-specific details */}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
-              {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}n</span>}
+              {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests} {t("explore.guests") || "guests"}</span>}
+              {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights} {t("explore.nights") || "nights"}</span>}
             </div>
           )}
           {type === "real-estate" && (
