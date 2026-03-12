@@ -342,39 +342,36 @@ const TenantDocuments = () => {
                     );
                   })}
                 </div>
+              )}
 
-                {/* Tenant signature dialog */}
-                {signDocId && (
-                  <SignatureDialog
-                    open={!!signDocId}
-                    onOpenChange={(open) => { if (!open) setSignDocId(null); }}
-                    documentId={signDocId}
-                    documentTitle={signDocTitle}
-                    signerRole="tenant"
-                    onSigned={async () => {
-                      const doc = landlordDocs.find(d => d.id === signDocId);
-                      // Also update lease via workflow if linked
-                      if (doc) {
-                        // Try to find linked lease
-                        const { data: docData } = await supabase.from("documents").select("lease_id").eq("id", signDocId).single();
-                        if ((docData as any)?.lease_id) {
-                          await recordTenantSignature((docData as any).lease_id);
-                        }
+              {/* Tenant signature dialog */}
+              {signDocId && (
+                <SignatureDialog
+                  open={!!signDocId}
+                  onOpenChange={(open) => { if (!open) setSignDocId(null); }}
+                  documentId={signDocId}
+                  documentTitle={signDocTitle}
+                  signerRole="tenant"
+                  onSigned={async () => {
+                    const doc = landlordDocs.find(d => d.id === signDocId);
+                    if (doc) {
+                      const { data: docData } = await supabase.from("documents").select("lease_id").eq("id", signDocId).single();
+                      if ((docData as any)?.lease_id) {
+                        await recordTenantSignature((docData as any).lease_id);
                       }
-                      // Refresh docs
-                      const { data: generated } = await supabase
-                        .from("documents")
-                        .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
-                        .eq("org_id", orgId!)
-                        .order("created_at", { ascending: false });
-                      const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
-                      const filtered = (generated || []).filter((d: any) =>
-                        relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)
-                      );
-                      setLandlordDocs(filtered as LandlordDoc[]);
-                    }}
-                  />
-                )}
+                    }
+                    const { data: generated } = await supabase
+                      .from("documents")
+                      .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
+                      .eq("org_id", orgId!)
+                      .order("created_at", { ascending: false });
+                    const relevantTypes = ["rent-receipt", "lease", "payment-notice", "inventory", "dunning", "termination", "sworn-statement"];
+                    const filtered = (generated || []).filter((d: any) =>
+                      relevantTypes.includes(d.doc_type) && (d.status === "generated" || d.status === "signed" || d.status === "pending_signature" || d.emailed_at)
+                    );
+                    setLandlordDocs(filtered as LandlordDoc[]);
+                  }}
+                />
               )}
             </TabsContent>
 
