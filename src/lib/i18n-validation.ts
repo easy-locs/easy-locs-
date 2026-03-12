@@ -383,6 +383,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ja: {
     "notif.title": "通知", "notif.mark_all_read": "すべて既読", "notif.empty": "通知なし",
+    "notif.all": "すべて", "notif.unread": "未読", "notif.bookings": "予約", "notif.payments": "支払い", "notif.messages_filter": "メッセージ",
     "notif.reply": "返信", "notif.view_document": "書類を見る", "notif.view_payment": "支払いを見る",
     "notif.view_dunning": "リマインダーを見る", "notif.open": "開く",
     "notif.view_booking": "予約を見る", "notif.outdated": "このレコードはもう利用できません",
