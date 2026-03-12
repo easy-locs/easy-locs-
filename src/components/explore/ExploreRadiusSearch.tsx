@@ -165,7 +165,7 @@ export function ExploreRadiusSearch({
           className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent font-medium hover:bg-accent/15 transition-colors"
         >
           <LocateFixed className="h-4 w-4" />
-          Ma position — {geoCity}, {geoCountry?.toUpperCase()}
+          {t("explore.radius.my_location") || "My location"} — {geoCity}, {geoCountry?.toUpperCase()}
         </button>
       )}
 
