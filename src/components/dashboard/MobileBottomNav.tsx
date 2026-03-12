@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Home, MessageCircle, Store, Menu } from "lucide-react";
+import { LayoutDashboard, Home, MessageCircle, Compass, Menu } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface MobileBottomNavProps {
@@ -13,7 +13,7 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const items = [
     { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Home", path: "/dashboard" },
     { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },
-    { icon: Store, label: t("nav.market_short") || "Market", path: "/dashboard/activities" },
+    { icon: Compass, label: t("nav.explore") || "Explore", path: "/explore" },
     { icon: MessageCircle, label: t("nav.messages_short") || "Chat", path: "/dashboard/communication" },
     { icon: Menu, label: t("nav.more") || "More", path: "__menu__" },
   ];

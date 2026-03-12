@@ -146,11 +146,33 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             </div>
           )}
 
-          {/* CTA */}
-          <div className="pt-1.5 mt-auto">
+          {/* Contact quick icons + CTA */}
+          <div className="pt-1.5 mt-auto flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2 transition-all px-2.5 py-1.5 rounded-lg bg-accent/8 group-hover:bg-accent/15 whitespace-nowrap">
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
+            <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+              {item.contact_phone && (
+                <a href={`tel:${item.contact_phone}`} className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Call">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                </a>
+              )}
+              {item.contact_email && (
+                <a href={`mailto:${item.contact_email}`} className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Email">
+                  <Mail className="h-3 w-3 text-muted-foreground" />
+                </a>
+              )}
+              {item.whatsapp_number && (
+                <a href={`https://wa.me/${item.whatsapp_number.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="w-7 h-7 flex items-center justify-center rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors" title="WhatsApp">
+                  <MessageCircle className="h-3 w-3 text-[#25D366]" />
+                </a>
+              )}
+              {item.telegram_username && (
+                <a href={`https://t.me/${(item.telegram_username || "").replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="w-7 h-7 flex items-center justify-center rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors" title="Telegram">
+                  <Send className="h-3 w-3 text-[#0088cc]" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>

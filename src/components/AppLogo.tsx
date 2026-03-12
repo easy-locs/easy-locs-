@@ -18,7 +18,7 @@ const AppLogo = ({
   const href = isLanding || isAuth ? "/" : linkTo;
 
   const sizeMap: Record<string, string> = {
-    sidebar: "text-xl",
+    sidebar: "text-lg",
     header: "text-xl",
     landing: "text-2xl",
     footer: "text-xl",
@@ -28,7 +28,7 @@ const AppLogo = ({
   return (
     <Link
       to={href}
-      className={`flex items-center gap-2 shrink-0 select-none group ${className}`}
+      className={`flex items-center gap-2 shrink-0 select-none group max-w-[140px] ${className}`}
     >
       <div className="flex items-baseline gap-0.5">
         <span

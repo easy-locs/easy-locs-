@@ -13,7 +13,7 @@ import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, Calendar, CalendarRange,
+  Receipt, Calendar, CalendarRange, Compass,
   Layers, BookOpen, Zap, Store, ChevronDown,
   FileCheck, ArrowLeft, Globe, Clock,
   Shield, UsersRound, Banknote,
