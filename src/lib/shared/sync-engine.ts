@@ -211,6 +211,8 @@ const REQUIRED_CONTEXT: Record<SyncEvent["type"], (ctx: SyncContext, event: Sync
   payment_request_sent: (ctx) => (ctx.paymentRequestId || ctx.bookingId || ctx.leaseId || ctx.tenantId)
     ? null : "payment_request_sent requires paymentRequestId, bookingId, leaseId, or tenantId",
   intervention_created: (ctx) => ctx.propertyId ? null : "intervention_created requires context.propertyId",
+  deal_created:         (ctx, e) => (e as DealCreatedEvent).dealId ? null : "deal_created requires dealId",
+  deal_accepted:        (ctx, e) => (e as DealAcceptedEvent).dealId ? null : "deal_accepted requires dealId",
 };
 
 // ═══════════════════════════════════════════════════════
