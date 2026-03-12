@@ -14,7 +14,7 @@ const jsonLd = [
     serviceType: "Tourism & Activity Booking",
     provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
     areaServed: { "@type": "Place", name: "Worldwide" },
-    description: "Book local tours, excursions, outdoor activities, cultural experiences, and dining for vacation rental guests. Available in 110+ countries.",
+    description: "Book local tours, excursions, outdoor activities, cultural experiences, and dining for vacation rental guests. Available in 190+ countries.",
   },
   {
     "@context": "https://schema.org",
