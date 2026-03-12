@@ -197,6 +197,13 @@ export default function RealEstateListings() {
       visibility: (listing as any).visibility || "public",
       latitude: (listing as any).latitude || 0,
       longitude: (listing as any).longitude || 0,
+      agency_name: (listing as any).agency_name || "",
+      agent_name: (listing as any).agent_name || "",
+      agency_logo_url: (listing as any).agency_logo_url || "",
+      license_number: (listing as any).license_number || "",
+      company_registration: (listing as any).company_registration || "",
+      agency_phone: (listing as any).agency_phone || "",
+      agency_email: (listing as any).agency_email || "",
     });
     setEditId(listing.id);
     setCreateOpen(true);
