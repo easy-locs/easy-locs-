@@ -1228,7 +1228,10 @@ const pageFr: Record<string, string> = {
   "landing.hero.demo": "Voir la démo",
 
   "landing.nav.explore": "Explorer",
+  "landing.nav.marketplace": "Marketplace",
+  "landing.nav.properties": "Propriétés",
   "landing.nav.language": "Langue",
+  "landing.footer.languages_count": "31 langues supportées",
 
   "landing.pillars.badge": "Trois modèles d'affaires",
   "landing.pillars.heading": "Une plateforme,",
@@ -3287,7 +3290,10 @@ const pageEn: Record<string, string> = {
   "landing.footer.concierge": "Concierge",
   "landing.footer.top_cities": "Top Cities",
   "landing.nav.explore": "Explore",
+  "landing.nav.marketplace": "Marketplace",
+  "landing.nav.properties": "Properties",
   "landing.nav.language": "Language",
+  "landing.footer.languages_count": "31 languages supported",
 
   "landing.legal.title": "Legal information",
   "landing.legal.text": "This application provides administrative assistance only. Generated documents are for informational purposes and do not replace a lawyer, notary or accountant.",
