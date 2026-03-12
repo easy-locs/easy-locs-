@@ -35,6 +35,7 @@ interface GuestChatDrawerProps {
   contextType?: string;
   contextId?: string;
   providerPhone?: string;
+  providerWhatsApp?: string;
   listingUrl?: string;
   listingPrice?: string;
   listingCity?: string;
@@ -62,7 +63,7 @@ const GUEST_LANGUAGES = [
 
 export default function GuestChatDrawer({
   open, onClose, providerName, serviceTitle, orgId,
-  contextType = "general", contextId, providerPhone,
+  contextType = "general", contextId, providerPhone, providerWhatsApp,
   listingUrl, listingPrice, listingCity,
 }: GuestChatDrawerProps) {
   const [session, setSession] = useState<GuestSession | null>(null);
@@ -490,7 +491,7 @@ export default function GuestChatDrawer({
         serviceTitle={serviceTitle}
         onFallbackChat={() => setCallDialogOpen(false)}
         providerPhone={providerPhone}
-        providerWhatsApp={providerPhone}
+        providerWhatsApp={providerWhatsApp || providerPhone}
       />
     </>
   );

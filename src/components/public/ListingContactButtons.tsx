@@ -169,6 +169,7 @@ const ListingContactButtons = ({
           contextType={serviceId ? "service" : listingId ? "listing" : "general"}
           contextId={serviceId || listingId || undefined}
           providerPhone={contactPhone || undefined}
+          providerWhatsApp={whatsappNumber || undefined}
           listingUrl={listingUrl}
           listingPrice={listingPrice}
           listingCity={listingCity}
