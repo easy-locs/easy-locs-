@@ -40,8 +40,11 @@ User-agent: *
 Allow: /
 Disallow: /dashboard/
 Disallow: /tenant/
+Disallow: /client/
 Disallow: /onboarding
 Disallow: /reset-password
 Disallow: /verify-email
+Disallow: /admin
+Disallow: /guest-portal
 
 Sitemap: https://www.easy-locs.com/sitemap.xml
