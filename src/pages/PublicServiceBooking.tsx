@@ -16,6 +16,7 @@ import MarketplaceDisclaimer from "@/components/marketplace/MarketplaceDisclaime
 import { useI18n } from "@/lib/i18n";
 import ShareButtons from "@/components/public/ShareButtons";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
+import ListingMapSection from "@/components/public/ListingMapSection";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/marketplace/PaymentMethodSelector";
 import { format, differenceInCalendarDays } from "date-fns";
 import { buildAppUrl } from "@/lib/app-domain";
