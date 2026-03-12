@@ -396,7 +396,7 @@ const ClientMessages = () => {
                       {repliedMsg && !isDeletedForAll && (
                         <div className="mb-1.5">
                           <ReplyPreview
-                            replyContent={repliedMsg.content}
+                            replyContent={repliedDeleted ? "🚫 This message was deleted" : repliedMsg.content}
                             replyAuthor={repliedMsg.sender_id === user?.id ? "You" : (repliedMsg.contact_name || "Provider")}
                             compact
                           />
