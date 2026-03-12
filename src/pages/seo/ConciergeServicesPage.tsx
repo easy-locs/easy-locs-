@@ -54,7 +54,7 @@ const features = [
   { icon: Users, title: "Guest Management", desc: "Track guest details, special requests, check-in times, and communication history in one place." },
   { icon: CreditCard, title: "Secure Payments", desc: "Stripe-powered payments with automatic invoicing, commission tracking, and multi-currency support." },
   { icon: MessageSquare, title: "Communication Hub", desc: "Centralized messaging between guests, property owners, and service providers with email sync." },
-  { icon: Globe, title: "Multi-Country Support", desc: "Operate concierge services in 110+ countries with localized pricing, languages, and compliance." },
+  { icon: Globe, title: "Multi-Country Support", desc: "Operate concierge services in 190+ countries with localized pricing, languages, and compliance." },
   { icon: Shield, title: "Professional Dashboard", desc: "Track all bookings, revenue, provider performance, and guest satisfaction from a single dashboard." },
 ];
 
