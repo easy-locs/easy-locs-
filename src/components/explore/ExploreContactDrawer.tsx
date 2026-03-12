@@ -1,17 +1,16 @@
 /**
  * ExploreContactDrawer — Allows visitors to contact a provider directly from Explore.
- * Uses GuestChatDrawer for unauthenticated users (full chat with media support).
- * Authenticated users get direct messaging.
+ * Requires authentication. Authenticated users get direct messaging with sender_id.
  */
 import { useAuth } from "@/contexts/AuthContext";
-import GuestChatDrawer from "@/components/guest/GuestChatDrawer";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { MessageSquare, Send, Loader2 } from "lucide-react";
+import { MessageSquare, Send, Loader2, LogIn, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ExploreContactDrawerProps {
   open: boolean;
@@ -28,25 +27,35 @@ export default function ExploreContactDrawer({
   open, onClose, providerName, serviceTitle, serviceId, orgId, providerPhone, providerWhatsApp,
 }: ExploreContactDrawerProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // Guest users → full-featured GuestChatDrawer
+  // Not logged in → show login prompt inside drawer
   if (!user) {
     return (
-      <GuestChatDrawer
-        open={open}
-        onClose={onClose}
-        providerName={providerName}
-        serviceTitle={serviceTitle}
-        orgId={orgId}
-        contextType="service"
-        contextId={serviceId}
-        providerPhone={providerPhone}
-        providerWhatsApp={providerWhatsApp}
-      />
+      <Sheet open={open} onOpenChange={v => !v && onClose()}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] pb-safe">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-left">
+              <Lock className="h-5 w-5 text-muted-foreground" />
+              Login to contact {providerName}
+            </SheetTitle>
+            <p className="text-sm text-muted-foreground text-left">{serviceTitle}</p>
+          </SheetHeader>
+          <div className="mt-4 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Create a free account to send messages and access contact information.
+            </p>
+            <Button onClick={() => { onClose(); navigate("/login"); }} className="w-full gap-2 min-h-[44px]">
+              <LogIn className="h-4 w-4" />
+              Login / Sign up
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 
-  // Authenticated users → direct message
+  // Authenticated users → direct message with sender_id
   return (
     <AuthenticatedContact
       open={open}
@@ -61,22 +70,23 @@ export default function ExploreContactDrawer({
 
 function AuthenticatedContact({
   open, onClose, providerName, serviceTitle, serviceId, orgId,
-}: Omit<ExploreContactDrawerProps, "providerPhone">) {
+}: Omit<ExploreContactDrawerProps, "providerPhone" | "providerWhatsApp">) {
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
     if (!message.trim()) { toast.error("Please write a message"); return; }
+    if (!user) { toast.error("Please login first"); return; }
     setSending(true);
     try {
       const { error } = await supabase.from("messages").insert({
         org_id: orgId,
-        sender_id: user?.id,
+        sender_id: user.id,
         content: message.trim(),
         category: "general",
-        contact_name: user?.user_metadata?.name || user?.email,
-        contact_email: user?.email,
+        contact_name: user.user_metadata?.name || user.email,
+        contact_email: user.email,
         context_id: serviceId,
         message_type: "inquiry",
         read: false,

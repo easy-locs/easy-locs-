@@ -1,19 +1,20 @@
 import { memo } from "react";
-import { Link } from "react-router-dom";
-import { MapPin, ArrowRight, Users, Moon, CheckCircle, Bed, Bath, Maximize, Phone, Mail, MessageCircle, Send } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { MapPin, ArrowRight, Users, Moon, CheckCircle, Bed, Bath, Maximize, Lock } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 import { useI18n } from "@/lib/i18n";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import SaveButton from "@/components/explore/SaveButton";
 import { useSavedListings } from "@/hooks/useSavedListings";
-import { whatsappLink, telegramLink, emailLink, type ListingContext } from "@/lib/contact-utils";
 import { buildAppUrl } from "@/lib/app-domain";
+import { useAuth } from "@/contexts/AuthContext";
 
 const PLACEHOLDER_IMG = "/placeholder.svg";
 
 export const ExploreListingCard = memo(function ExploreListingCard({ item }: { item: any }) {
   const { t } = useI18n();
   const { isSaved, toggleSave } = useSavedListings();
+  const { user } = useAuth();
   const type = item._type as string;
 
   const href = type === "seasonal"
@@ -21,8 +22,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     : type === "real-estate"
     ? (item.slug ? `/properties/${item.slug}` : "/explore")
     : (item.booking_slug ? `/book/${item.booking_slug}` : "/explore");
-
-  const fullUrl = buildAppUrl(href);
 
   const imgSrc = type === "seasonal"
     ? (item.cover_url || PLACEHOLDER_IMG)
@@ -66,27 +65,20 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
   };
   const locationText = [fmtCity(item.city), fmtCountry(item.country)].filter(Boolean).join(", ");
 
-  // Build listing context for smart contact links
-  const ctx: ListingContext = {
-    title: item.title,
-    url: fullUrl,
-    price: priceLabel,
-    city: item.city,
-    country: item.country,
-  };
-
-  const waPhone = item.whatsapp_number || item.contact_whatsapp;
-  const tgUser = item.telegram_username;
-  const email = item.contact_email || item.source_contact_email;
-  const phone = item.contact_phone || item.source_contact_phone;
-
   return (
     <Link to={href} className="group block h-full">
       <div className="h-full rounded-2xl overflow-hidden bg-card border border-border/40 hover:shadow-lg hover:border-accent/25 transition-all duration-300">
-        {/* Image */}
+        {/* Image with watermark */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" width={400} />
           
+          {/* Transparent Easy-Locs watermark */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <span className="text-white/10 text-2xl sm:text-3xl font-black tracking-widest select-none rotate-[-15deg]">
+              EASY-LOCS
+            </span>
+          </div>
+
           <div className="absolute top-2.5 right-2.5 z-10">
             <SaveButton
               isSaved={isSaved(type, item.id)}
@@ -118,7 +110,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           )}
         </div>
 
-        {/* Content */}
+        {/* Content — price under image, not on it */}
         <div className="p-3 sm:p-3.5 flex flex-col gap-1.5">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2 group-hover:text-accent transition-colors flex-1 min-w-0">
@@ -155,37 +147,16 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             </div>
           )}
 
-          {/* Contact quick-actions + CTA */}
+          {/* CTA — no contact icons on card (require login on detail page) */}
           <div className="pt-1.5 mt-auto flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent group-hover:gap-2 transition-all px-2.5 py-1.5 rounded-lg bg-accent/8 group-hover:bg-accent/15 whitespace-nowrap">
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
-            <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-              {waPhone && (
-                <a href={whatsappLink(waPhone, ctx)} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-colors" title="WhatsApp">
-                  <MessageCircle className="h-3.5 w-3.5 text-[#25D366]" />
-                </a>
-              )}
-              {tgUser && (
-                <a href={telegramLink(tgUser, ctx)} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-colors" title="Telegram">
-                  <Send className="h-3.5 w-3.5 text-[#0088cc]" />
-                </a>
-              )}
-              {email && (
-                <a href={emailLink(email, ctx)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Email">
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                </a>
-              )}
-              {phone && (
-                <a href={`tel:${phone}`}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors" title="Call">
-                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                </a>
-              )}
-            </div>
+            {!user && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                <Lock className="h-3 w-3" /> Login to contact
+              </span>
+            )}
           </div>
         </div>
       </div>
