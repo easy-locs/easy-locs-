@@ -23,7 +23,7 @@ interface Props {
   minutesSinceSent?: number;
   onReply: () => void;
   onForward: () => void;
-  onDeleted: () => void;
+  onDeleted: (type: "for_me" | "for_all") => void;
   onStarToggle: (starred: boolean) => void;
 }
 
