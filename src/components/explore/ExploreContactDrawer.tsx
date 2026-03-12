@@ -1,6 +1,6 @@
 /**
- * ExploreContactDrawer — Allows visitors to contact a provider directly from Explore.
- * Requires authentication. Authenticated users get direct messaging with sender_id.
+ * ExploreContactDrawer — Marketplace contact drawer with thread-based messaging.
+ * Requires authentication. Creates conversation threads for clean inbox architecture.
  */
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -24,12 +24,11 @@ interface ExploreContactDrawerProps {
 }
 
 export default function ExploreContactDrawer({
-  open, onClose, providerName, serviceTitle, serviceId, orgId, providerPhone, providerWhatsApp,
+  open, onClose, providerName, serviceTitle, serviceId, orgId,
 }: ExploreContactDrawerProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Not logged in → show login prompt inside drawer
   if (!user) {
     return (
       <Sheet open={open} onOpenChange={v => !v && onClose()}>
@@ -55,7 +54,6 @@ export default function ExploreContactDrawer({
     );
   }
 
-  // Authenticated users → direct message with sender_id
   return (
     <AuthenticatedContact
       open={open}
@@ -80,6 +78,38 @@ function AuthenticatedContact({
     if (!user) { toast.error("Please login first"); return; }
     setSending(true);
     try {
+      // 1. Get or create conversation thread
+      let threadId: string | null = null;
+      const { data: existing } = await supabase
+        .from("conversation_threads")
+        .select("id")
+        .eq("org_id", orgId)
+        .eq("initiator_id", user.id)
+        .eq("context_id", serviceId)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        threadId = existing.id;
+      } else {
+        const { data: thread } = await supabase
+          .from("conversation_threads")
+          .insert({
+            org_id: orgId,
+            initiator_id: user.id,
+            participant_ids: [user.id],
+            context_type: "service",
+            context_id: serviceId,
+            listing_title: serviceTitle,
+            provider_name: providerName,
+          })
+          .select("id")
+          .single();
+        threadId = thread?.id || null;
+      }
+
+      // 2. Insert message with thread reference
       const { error } = await supabase.from("messages").insert({
         org_id: orgId,
         sender_id: user.id,
@@ -90,6 +120,7 @@ function AuthenticatedContact({
         context_id: serviceId,
         message_type: "inquiry",
         read: false,
+        thread_id: threadId,
       });
       if (error) throw error;
       toast.success("Message sent!");
