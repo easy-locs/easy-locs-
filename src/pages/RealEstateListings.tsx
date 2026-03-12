@@ -114,6 +114,8 @@ const emptyForm = {
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
   energy_class: "", visibility: "public", latitude: 0, longitude: 0,
+  agency_name: "", agent_name: "", agency_logo_url: "", license_number: "",
+  company_registration: "", agency_phone: "", agency_email: "",
 };
 
 export default function RealEstateListings() {
@@ -195,6 +197,13 @@ export default function RealEstateListings() {
       visibility: (listing as any).visibility || "public",
       latitude: (listing as any).latitude || 0,
       longitude: (listing as any).longitude || 0,
+      agency_name: (listing as any).agency_name || "",
+      agent_name: (listing as any).agent_name || "",
+      agency_logo_url: (listing as any).agency_logo_url || "",
+      license_number: (listing as any).license_number || "",
+      company_registration: (listing as any).company_registration || "",
+      agency_phone: (listing as any).agency_phone || "",
+      agency_email: (listing as any).agency_email || "",
     });
     setEditId(listing.id);
     setCreateOpen(true);
@@ -562,6 +571,18 @@ export default function RealEstateListings() {
                     </div>
                   </label>
                 ))}
+              </div>
+
+              <Separator />
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Building2 className="h-4 w-4" /> Agency / Agent (optional)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Agency Name</Label><Input value={form.agency_name} onChange={e => setForm(f => ({ ...f, agency_name: e.target.value }))} placeholder="ABC Real Estate" /></div>
+                <div><Label>Agent Name</Label><Input value={form.agent_name} onChange={e => setForm(f => ({ ...f, agent_name: e.target.value }))} placeholder="John Smith" /></div>
+                <div><Label>License Number</Label><Input value={form.license_number} onChange={e => setForm(f => ({ ...f, license_number: e.target.value }))} placeholder="CPI 1234" /></div>
+                <div><Label>Company Reg.</Label><Input value={form.company_registration} onChange={e => setForm(f => ({ ...f, company_registration: e.target.value }))} placeholder="SIRET / RCS" /></div>
+                <div><Label>Agency Phone</Label><Input value={form.agency_phone} onChange={e => setForm(f => ({ ...f, agency_phone: e.target.value }))} /></div>
+                <div><Label>Agency Email</Label><Input value={form.agency_email} onChange={e => setForm(f => ({ ...f, agency_email: e.target.value }))} /></div>
+                <div className="col-span-2"><Label>Agency Logo URL</Label><Input value={form.agency_logo_url} onChange={e => setForm(f => ({ ...f, agency_logo_url: e.target.value }))} placeholder="https://..." /></div>
               </div>
 
               <Separator />
