@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { useListingSync, useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { useAppStore } from "@/stores/useAppStore";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -34,6 +35,8 @@ const ActivitiesMarketplace = () => {
   const { user, orgId, subscription } = useAuth();
   const { ensureOrg, creating: creatingOrg } = useEnsureOrg();
   const qc = useQueryClient();
+  const { changeStatus } = useListingSync();
+  useExploreRealtimeSync();
   const [searchParams, setSearchParams] = useSearchParams();
   const [providerFormOpen, setProviderFormOpen] = useState(false);
   const [serviceFormOpen, setServiceFormOpen] = useState(false);

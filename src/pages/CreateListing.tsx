@@ -232,6 +232,7 @@ const CreateListing = () => {
         condition: form.condition,
         requires_id_document: form.verification_types.length > 0,
         active: true,
+        status: 'published',
       } as any);
 
       if (error) throw error;

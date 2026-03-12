@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -55,6 +56,7 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
   const { t } = useI18n();
+  useExploreRealtimeSync();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
