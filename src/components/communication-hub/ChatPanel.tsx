@@ -427,7 +427,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden shrink-0 h-9 w-9">
+              <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>
