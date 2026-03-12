@@ -603,9 +603,13 @@ export class CallManager {
   }
 
   cleanup(reason = "unknown") {
-    if (this._cleaned) return;
+    if (this._cleaned) {
+      this.debug("cleanup skipped", { reason, cleanupInvocations: this._cleanupInvocations });
+      return;
+    }
 
-    this.debug("cleanup", { reason });
+    this._cleanupInvocations += 1;
+    this.debug("cleanup", { reason, cleanupInvocations: this._cleanupInvocations });
     this._cleaned = true;
     this._ending = false;
 
