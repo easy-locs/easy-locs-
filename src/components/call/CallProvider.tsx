@@ -173,6 +173,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
       activeCallRef.current = { callId: callLog.id, threadId: opts.threadId, orgId: opts.orgId };
 
       await manager.startCall(opts.isVideo || false);
+      } catch (err) {
+        console.error("Failed to start call:", err);
+      } finally {
+        startingCallRef.current = false;
+      }
     },
     [user]
   );
