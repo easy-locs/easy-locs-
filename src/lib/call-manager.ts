@@ -83,6 +83,8 @@ export class CallManager {
   private _pendingCandidates: RTCIceCandidate[] = [];
   private _cleaned = false;
   private _ending = false;
+  private _endFlowInvocations = 0;
+  private _cleanupInvocations = 0;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
