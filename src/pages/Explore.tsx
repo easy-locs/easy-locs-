@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell, User, LogOut, LayoutDashboard, MessageSquare, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
