@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Inbox, MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck } from "lucide-react";
+import { Inbox, MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Image as ImageIcon } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
+import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
+import { validateMediaFile, MEDIA_ACCEPT } from "@/lib/media-utils";
+import { toast } from "sonner";
 
 interface ThreadSummary {
   context_id: string;
