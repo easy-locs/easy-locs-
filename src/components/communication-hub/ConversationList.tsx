@@ -113,13 +113,10 @@ export default function ConversationList({ threads, loading, selectedThread, onS
               <span className="truncate">{filterProperty === "all" ? "All properties" : propertyOptions.find(p => p.id === filterProperty)?.label || "Property"}</span>
             </SelectTrigger>
             <SelectContent>
-              <SelectContent>
-                {[{ id: "all", label: "All properties" }, ...propertyOptions].map(p => (
-                  <Button key={p.id} variant="ghost" className="w-full justify-start text-xs" onClick={() => setFilterProperty(p.id)}>
-                    {p.label}
-                  </Button>
-                ))}
-              </SelectContent>
+              <SelectItem value="all">All properties</SelectItem>
+              {propertyOptions.map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
