@@ -87,7 +87,6 @@ export async function createGuestSession(opts: {
   contextType?: string;
   contextId?: string;
 }): Promise<GuestSession> {
-  // Check for existing valid session with same org
   const cached = getCachedSession();
   if (cached && cached.org_id === opts.orgId) return cached;
 
@@ -124,13 +123,19 @@ export async function validateGuestSession(token: string): Promise<{
   return invokeGuestSession({ action: "validate", token });
 }
 
-/** Send a message as guest */
-export async function sendGuestMessage(token: string, content: string, attachmentUrls?: string[]) {
+/** Send a message as guest (with optional language for auto-translation) */
+export async function sendGuestMessage(
+  token: string,
+  content: string,
+  attachmentUrls?: string[],
+  guestLocale?: string,
+) {
   return invokeGuestSession({
     action: "send_message",
     token,
     content,
     attachment_urls: attachmentUrls,
+    guest_locale: guestLocale,
   });
 }
 

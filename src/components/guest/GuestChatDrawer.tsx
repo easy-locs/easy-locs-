@@ -2,6 +2,7 @@
  * GuestChatDrawer — Full-featured guest communication drawer.
  * Allows visitors to chat, send photos/videos, without creating an account.
  * Creates a temporary guest session with rate limiting and expiry.
+ * Includes auto-translation between guest and seller languages.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -13,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import {
   MessageSquare, Send, Loader2, Image, Video, X, Camera,
-  Shield, Clock, AlertTriangle, User, Phone,
+  Shield, Clock, AlertTriangle, Phone, Globe, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -32,25 +33,43 @@ interface GuestChatDrawerProps {
   contextType?: string;
   contextId?: string;
   providerPhone?: string;
+  /** Listing/service context for display */
+  listingUrl?: string;
+  listingPrice?: string;
+  listingCity?: string;
 }
 
 interface ChatMessage {
   id: string;
   content: string;
+  translated_content?: string;
   created_at: string;
   is_from_host: boolean;
   attachment_urls?: string[];
   contact_name?: string;
 }
 
+const GUEST_LANGUAGES = [
+  { code: "en", label: "English" }, { code: "fr", label: "Français" },
+  { code: "es", label: "Español" }, { code: "de", label: "Deutsch" },
+  { code: "it", label: "Italiano" }, { code: "pt", label: "Português" },
+  { code: "ar", label: "العربية" }, { code: "zh", label: "中文" },
+  { code: "ja", label: "日本語" }, { code: "ko", label: "한국어" },
+  { code: "tr", label: "Türkçe" }, { code: "nl", label: "Nederlands" },
+  { code: "pl", label: "Polski" }, { code: "ru", label: "Русский" },
+];
+
 export default function GuestChatDrawer({
   open, onClose, providerName, serviceTitle, orgId,
   contextType = "general", contextId, providerPhone,
+  listingUrl, listingPrice, listingCity,
 }: GuestChatDrawerProps) {
   const [session, setSession] = useState<GuestSession | null>(null);
   const [step, setStep] = useState<"intro" | "chat">("intro");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [guestLang, setGuestLang] = useState(() => navigator.language?.slice(0, 2) || "en");
+  const [showLangPicker, setShowLangPicker] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,11 +77,11 @@ export default function GuestChatDrawer({
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
   const [limits, setLimits] = useState({ messages_remaining: 20, media_remaining: 5 });
+  const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval>>();
 
-  // Check for existing session on open
   useEffect(() => {
     if (!open) return;
     const cached = getCachedSession();
@@ -73,14 +92,12 @@ export default function GuestChatDrawer({
     }
   }, [open, orgId]);
 
-  // Poll for new messages
   useEffect(() => {
     if (step !== "chat" || !session) return;
     pollRef.current = setInterval(() => loadMessages(session.token), 10000);
     return () => clearInterval(pollRef.current);
   }, [step, session]);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -90,6 +107,24 @@ export default function GuestChatDrawer({
       const data = await getGuestMessages(token);
       setMessages(data.messages || []);
     } catch { /* silent */ }
+  }, []);
+
+  /** Translate text via edge function */
+  const translateText = useCallback(async (text: string, fromLocale: string, toLocale: string): Promise<string | null> => {
+    if (fromLocale === toLocale || !text.trim()) return null;
+    try {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const res = await fetch(`https://${projectId}.supabase.co/functions/v1/translate-message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ text, from_locale: fromLocale, to_locale: toLocale }),
+      });
+      const data = await res.json();
+      return data.translated || null;
+    } catch { return null; }
   }, []);
 
   const handleStartSession = async () => {
@@ -138,7 +173,9 @@ export default function GuestChatDrawer({
         }
         setUploading(false);
       }
-      await sendGuestMessage(session.token, message.trim(), attachmentUrls);
+
+      // Send with guest language for translation
+      await sendGuestMessage(session.token, message.trim(), attachmentUrls, guestLang);
       setMessage("");
       previews.forEach(p => URL.revokeObjectURL(p.url));
       setPreviews([]);
@@ -175,6 +212,10 @@ export default function GuestChatDrawer({
     ? Math.max(0, Math.round((new Date(session.expires_at).getTime() - Date.now()) / 60000))
     : 0;
 
+  const toggleOriginal = (id: string) => {
+    setShowOriginal(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <Sheet open={open} onOpenChange={v => !v && onClose()}>
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[90vh] pb-safe flex flex-col">
@@ -183,7 +224,11 @@ export default function GuestChatDrawer({
             <MessageSquare className="h-5 w-5 text-accent" />
             {step === "intro" ? `Contact ${providerName}` : providerName}
           </SheetTitle>
-          <p className="text-sm text-muted-foreground text-left">{serviceTitle}</p>
+          <p className="text-sm text-muted-foreground text-left">
+            {serviceTitle}
+            {listingCity && <span className="ml-1">— {listingCity}</span>}
+            {listingPrice && <span className="ml-1">· {listingPrice}</span>}
+          </p>
         </SheetHeader>
 
         {step === "intro" ? (
@@ -192,7 +237,7 @@ export default function GuestChatDrawer({
               <Shield className="h-5 w-5 text-accent shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">Secure guest session</p>
-                <p>No account needed. Your session will expire after 2 hours. Messages are rate-limited for security.</p>
+                <p>No account needed. Your session expires after 2 hours. Messages are rate-limited and automatically translated.</p>
               </div>
             </div>
 
@@ -211,6 +256,33 @@ export default function GuestChatDrawer({
               className="min-h-[44px]"
             />
 
+            {/* Language selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangPicker(!showLangPicker)}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <span>{GUEST_LANGUAGES.find(l => l.code === guestLang)?.label || "English"}</span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </button>
+              {showLangPicker && (
+                <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-xl shadow-lg">
+                  {GUEST_LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setGuestLang(l.code); setShowLangPicker(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-accent/10 transition-colors ${l.code === guestLang ? "bg-accent/5 font-medium" : ""}`}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Button onClick={handleStartSession} disabled={loading} className="w-full gap-2 min-h-[44px]">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
               Start conversation
@@ -228,7 +300,7 @@ export default function GuestChatDrawer({
         ) : (
           <div className="flex flex-col flex-1 min-h-0 mt-2">
             {/* Session info bar */}
-            <div className="flex items-center gap-2 mb-2 px-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 mb-2 px-1 text-xs text-muted-foreground flex-wrap">
               <Badge variant="outline" className="gap-1 text-[10px]">
                 <Clock className="h-3 w-3" />
                 {timeLeft}m left
@@ -241,7 +313,24 @@ export default function GuestChatDrawer({
                 <Image className="h-3 w-3" />
                 {limits.media_remaining} media
               </Badge>
+              <Badge variant="outline" className="gap-1 text-[10px]">
+                <Globe className="h-3 w-3" />
+                {GUEST_LANGUAGES.find(l => l.code === guestLang)?.label}
+              </Badge>
             </div>
+
+            {/* Context banner */}
+            {(serviceTitle || listingCity) && (
+              <div className="flex items-center gap-2 px-3 py-1.5 mb-2 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                <span className="truncate font-medium">{serviceTitle}</span>
+                {listingCity && <span>· {listingCity}</span>}
+                {listingUrl && (
+                  <a href={listingUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-accent underline shrink-0">
+                    View listing
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Messages area */}
             <ScrollArea className="flex-1 min-h-0 border border-border rounded-xl p-3 mb-2">
@@ -251,35 +340,50 @@ export default function GuestChatDrawer({
                     Send your first message to {providerName}
                   </p>
                 )}
-                {messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`p-2.5 rounded-lg text-sm max-w-[85%] ${
-                      m.is_from_host
-                        ? "bg-card border border-border mr-auto"
-                        : "bg-accent/10 border border-accent/20 ml-auto"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {m.is_from_host ? providerName : "You"}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground ml-auto">
-                        {format(new Date(m.created_at), "HH:mm")}
-                      </span>
-                    </div>
-                    {m.content && (
-                      <p className="text-foreground whitespace-pre-line">{m.content}</p>
-                    )}
-                    {m.attachment_urls && (m.attachment_urls as string[]).length > 0 && (
-                      <div className="mt-1 space-y-1">
-                        {(m.attachment_urls as string[]).map((url, i) => (
-                          <ChatMediaPreview key={i} url={url} isMe={!m.is_from_host} />
-                        ))}
+                {messages.map((m) => {
+                  const hasTranslation = m.translated_content && m.translated_content !== m.content;
+                  const showOrig = showOriginal[m.id];
+                  const displayText = hasTranslation && !showOrig ? m.translated_content : m.content;
+
+                  return (
+                    <div
+                      key={m.id}
+                      className={`p-2.5 rounded-lg text-sm max-w-[85%] ${
+                        m.is_from_host
+                          ? "bg-card border border-border mr-auto"
+                          : "bg-accent/10 border border-accent/20 ml-auto"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {m.is_from_host ? providerName : "You"}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">
+                          {format(new Date(m.created_at), "HH:mm")}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {displayText && (
+                        <p className="text-foreground whitespace-pre-line">{displayText}</p>
+                      )}
+                      {hasTranslation && (
+                        <button
+                          onClick={() => toggleOriginal(m.id)}
+                          className="text-[10px] text-accent/70 hover:text-accent mt-1 flex items-center gap-1"
+                        >
+                          <Globe className="h-2.5 w-2.5" />
+                          {showOrig ? "Show translation" : "Show original"}
+                        </button>
+                      )}
+                      {m.attachment_urls && (m.attachment_urls as string[]).length > 0 && (
+                        <div className="mt-1 space-y-1">
+                          {(m.attachment_urls as string[]).map((url, i) => (
+                            <ChatMediaPreview key={i} url={url} isMe={!m.is_from_host} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
@@ -348,7 +452,7 @@ export default function GuestChatDrawer({
             </div>
 
             {timeLeft <= 10 && timeLeft > 0 && (
-              <div className="flex items-center gap-2 mt-2 text-xs text-warning">
+              <div className="flex items-center gap-2 mt-2 text-xs text-destructive">
                 <AlertTriangle className="h-3 w-3" />
                 Session expires in {timeLeft} minutes
               </div>
