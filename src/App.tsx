@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CallProvider } from "@/components/call/CallProvider";
 import RealtimeMessageToast from "@/components/communication/RealtimeMessageToast";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
@@ -203,6 +204,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <CallProvider>
           <RealtimeMessageToast />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
@@ -361,6 +363,7 @@ const App = () => (
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>
+          </CallProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

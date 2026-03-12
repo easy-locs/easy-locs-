@@ -432,6 +432,72 @@ export type Database = {
           },
         ]
       }
+      call_logs: {
+        Row: {
+          callee_org_id: string
+          caller_id: string
+          context_id: string | null
+          context_label: string | null
+          context_type: string
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          ended_by: string | null
+          id: string
+          is_video: boolean
+          started_at: string | null
+          status: string
+          thread_id: string | null
+        }
+        Insert: {
+          callee_org_id: string
+          caller_id: string
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          is_video?: boolean
+          started_at?: string | null
+          status?: string
+          thread_id?: string | null
+        }
+        Update: {
+          callee_org_id?: string
+          caller_id?: string
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          is_video?: boolean
+          started_at?: string | null
+          status?: string
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_callee_org_id_fkey"
+            columns: ["callee_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_logs_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidates: {
         Row: {
           applied_at: string

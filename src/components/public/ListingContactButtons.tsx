@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, Send, MessageSquare, Lock, LogIn, Eye, Loader2 } from "lucide-react";
+import { Mail, Phone, MessageSquare, Lock, LogIn, Eye, Loader2 } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { emailLink, type ListingContext } from "@/lib/contact-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useCall } from "@/components/call/CallProvider";
 
 interface Props {
   contactPhone?: string | null;
@@ -104,6 +106,7 @@ const ListingContactButtons = ({
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { startCall, isInCall } = useCall();
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [messageSending, setMessageSending] = useState(false);
@@ -203,6 +206,19 @@ const ListingContactButtons = ({
   };
 
 
+  const handleFreeCall = () => {
+    if (!user || !orgId) return;
+    trackClick("free_call", trackOpts);
+    startCall({
+      orgId,
+      contextType: serviceId ? "service" : "listing",
+      contextId: serviceId || listingId || undefined,
+      contextLabel: listingTitle,
+      peerName: providerName || "Provider",
+      isVideo: false,
+    });
+  };
+
   const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
 
   return (
@@ -212,6 +228,18 @@ const ListingContactButtons = ({
         {t("page.listing.contact_direct") || "Contact directly"}
       </p>
       <div className="space-y-2">
+        {/* Call for free — in-app call */}
+        {orgId && (
+          <button
+            onClick={handleFreeCall}
+            disabled={isInCall}
+            className="w-full flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 px-4 py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 min-h-[44px]"
+          >
+            <PhoneCall className="h-4 w-4" />
+            {t("page.listing.call_free") || "Call for free"}
+          </button>
+        )}
+
         {/* Send message */}
         {orgId && (
           <button
