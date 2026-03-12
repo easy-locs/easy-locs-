@@ -5,18 +5,23 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getPostLoginRoute = async (userId: string): Promise<string> => {
   try {
-    const [{ data: tenantLink }, { data: orgLink }] = await Promise.all([
+    const [{ data: tenantLink }, { data: orgLink }, { data: profile }] = await Promise.all([
       supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
       supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
+      supabase.from("profiles").select("onboarding_completed").eq("id", userId).maybeSingle(),
     ]);
 
     const hasTenant = !!tenantLink;
     const hasOrg = !!orgLink;
+    const onboardingDone = profile?.onboarding_completed ?? false;
+
+    // New user with no org/tenant and no onboarding → send to onboarding
+    if (!hasOrg && !hasTenant && !onboardingDone) return "/onboarding";
 
     if (hasTenant && hasOrg) return "/dashboard";
     if (hasTenant && !hasOrg) return "/tenant";
     if (hasOrg) return "/dashboard";
-    // No org, no tenant link → client account
+    // Client account (has onboarding but no org/tenant)
     return "/client";
   } catch (err) {
     console.warn("[auth-redirect] getPostLoginRoute failed:", err);
