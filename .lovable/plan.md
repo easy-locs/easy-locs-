@@ -68,3 +68,61 @@
 | Composants shadcn/ui standardisés | ✅ Terminé |
 | Espacement/layout mobile cohérent | ✅ Terminé |
 | Audit visuel complet | ✅ Terminé (tokens sémantiques vérifiés, pas de couleurs hardcodées) |
+
+---
+
+## PHASE 9 — Smart Deal Room (PLANNED — NOT YET IMPLEMENTED)
+
+### Overview
+Transform conversation threads linked to listings/services into transaction workspaces where users negotiate, send offers, track payment, and close deals — all within the chat UI.
+
+### Status Lifecycle
+```
+inquiry → negotiation → offer_sent → accepted → payment_pending → confirmed → completed → cancelled/expired
+```
+
+### Database Schema: `deals` table
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid PK | |
+| thread_id | uuid FK → conversation_threads | Links deal to chat thread |
+| context_id | text | Same context_id as the thread |
+| org_id | uuid FK → orgs | Provider's org |
+| buyer_id | uuid | User making the purchase |
+| seller_id | uuid | User selling/providing |
+| listing_id | uuid? | Optional link to listing/service |
+| listing_type | text | `real_estate_listing` / `marketplace_service` / `concierge_service` / `public_listing` |
+| status | text | Current deal status (see lifecycle) |
+| offer_amount | numeric | Current offer price |
+| currency | text | e.g. EUR, USD, AED |
+| counter_offers | jsonb[] | History: `[{amount, by, at, note}]` |
+| payment_link_url | text? | Stripe/bank payment link |
+| payment_status | text | `pending` / `paid` / `refunded` |
+| documents | jsonb[] | `[{name, url, uploaded_by, at}]` |
+| notes | text? | Internal notes |
+| accepted_at / paid_at / completed_at | timestamptz? | |
+| created_at / updated_at | timestamptz | |
+
+### UI Components
+1. **DealRoomPanel** — Right sidebar/drawer in chat: status stepper, offer form, payment link, document upload, action buttons
+2. **DealStatusBubble** — Inline system messages: "Offer sent: €250,000", "Offer accepted"
+3. **DealContextHeader** — Top bar in chat: listing thumbnail, price, status badge, quick actions
+
+### Integration Points
+- Deal events logged as `message_type: "deal_event"` system messages
+- Uses existing `dispatchSyncEvent` for notifications
+- Stripe payment link reused from concierge/marketplace infra
+
+### Implementation Phases
+| Phase | Scope |
+|-------|-------|
+| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) |
+| 9b | Negotiation flow with counter-offers |
+| 9c | Payment integration (Stripe link generation + tracking) |
+| 9d | Analytics & deal conversion metrics |
+
+### Key Design Decisions
+- Deals live inside threads — the thread IS the deal room
+- One active deal per thread
+- Reuses existing Stripe, notification, and media infrastructure
+- Progressive disclosure — deal panel only appears when active

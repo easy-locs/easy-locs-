@@ -36,35 +36,47 @@ export default function ForwardMessageDialog({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    supabase
-      .from("messages")
-      .select("context_id, org_id, contact_name")
-      .eq("contact_email", userEmail)
-      .not("context_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(200)
-      .then(({ data }) => {
-        const seen = new Set<string>();
-        const unique: Thread[] = [];
-        for (const m of data || []) {
-          if (m.context_id && !seen.has(m.context_id) && m.context_id !== currentContextId) {
-            seen.add(m.context_id);
-            unique.push({ context_id: m.context_id, org_id: m.org_id, contact_name: m.contact_name });
-          }
+
+    // Fetch threads where user is contact_email OR sender_id (covers direct threads)
+    Promise.all([
+      supabase
+        .from("messages")
+        .select("context_id, org_id, contact_name")
+        .eq("contact_email", userEmail)
+        .not("context_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("messages")
+        .select("context_id, org_id, contact_name")
+        .eq("sender_id", userId)
+        .not("context_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(200),
+    ]).then(([byEmail, bySender]) => {
+      const allData = [...(byEmail.data || []), ...(bySender.data || [])];
+      const seen = new Set<string>();
+      const unique: Thread[] = [];
+      for (const m of allData) {
+        if (m.context_id && !seen.has(m.context_id) && m.context_id !== currentContextId) {
+          seen.add(m.context_id);
+          unique.push({ context_id: m.context_id, org_id: m.org_id, contact_name: m.contact_name });
         }
-        setThreads(unique);
-        setLoading(false);
-      });
-  }, [open, userEmail, currentContextId]);
+      }
+      setThreads(unique);
+      setLoading(false);
+    });
+  }, [open, userEmail, userId, currentContextId]);
 
   const handleForward = async (thread: Thread) => {
     setForwarding(true);
+    const contextType = thread.context_id.startsWith("direct:") ? "direct" : "booking";
     await supabase.from("messages").insert({
       org_id: thread.org_id,
       sender_id: userId,
       content: messageContent,
       context_id: thread.context_id,
-      context_type: "booking",
+      context_type: contextType,
       contact_email: userEmail,
       contact_name: userName,
       message_type: "user",

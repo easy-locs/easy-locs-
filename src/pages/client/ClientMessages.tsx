@@ -49,6 +49,7 @@ const ClientMessages = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [threadFilter, setThreadFilter] = useState<ThreadFilter>("all");
   const [threadPrefs, setThreadPrefs] = useState<Record<string, { muted: boolean; archived: boolean }>>({});
+  const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   const [forwardMsg, setForwardMsg] = useState<any | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,15 @@ const ClientMessages = () => {
         const map: Record<string, { muted: boolean; archived: boolean }> = {};
         prefs.forEach((p: any) => { map[p.context_id] = { muted: p.muted, archived: p.archived }; });
         setThreadPrefs(map);
+      }
+
+      // Load blocked users
+      const { data: blocked } = await supabase
+        .from("blocked_users")
+        .select("blocked_id")
+        .eq("blocker_id", user.id);
+      if (blocked) {
+        setBlockedUserIds(new Set(blocked.map((b: any) => b.blocked_id)));
       }
 
       setLoading(false);
@@ -251,8 +261,9 @@ const ClientMessages = () => {
 
   const visibleMessages = messages.filter(m => {
     if ((m as any).deleted_for_sender && m.sender_id === user?.id) return false;
+    // Hide messages from blocked users (except system messages)
+    if (m.message_type !== "system" && blockedUserIds.has(m.sender_id)) return false;
     if ((m as any).deleted_for_all) {
-      // Show "deleted" placeholder
       return true;
     }
     if (searchQuery && !m.content?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
