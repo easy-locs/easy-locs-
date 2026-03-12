@@ -172,9 +172,9 @@ export function ExploreRadiusSearch({
       {/* Radius slider */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-foreground">Dans un rayon de</label>
+          <label className="text-sm font-bold text-foreground">{t("explore.radius.label") || "Search radius"}</label>
           <span className="text-base font-bold text-accent">
-            {radiusKm === 0 ? "Tous" : `${radiusKm} km`}
+            {radiusKm === 0 ? (t("explore.radius.worldwide") || "Worldwide") : `${radiusKm} km`}
           </span>
         </div>
         <Slider
