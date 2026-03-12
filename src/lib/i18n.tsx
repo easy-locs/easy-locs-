@@ -5284,7 +5284,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "İmzayı kaydet",
     "page.settings.profile_updated": "Profil güncellendi",
     "page.settings.org_updated": "Organizasyon güncellendi",
-    ...obTr, ...pageTr,
+    },
   },
   ar: {
     "nav.dashboard": "لوحة التحكم", "nav.properties": "العقارات", "nav.tenants": "المستأجرون",
