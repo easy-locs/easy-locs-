@@ -363,6 +363,7 @@ const App = () => (
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>
+          </CallProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
