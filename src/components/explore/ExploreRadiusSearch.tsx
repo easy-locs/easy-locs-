@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, X, Search, LocateFixed } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface ExploreRadiusSearchProps {
   locationQuery: string;
@@ -29,6 +30,7 @@ export function ExploreRadiusSearch({
   onLocationChange, onRadiusChange, onCenterChange,
   onApply, onReset, onNearMe, onClose,
 }: ExploreRadiusSearchProps) {
+  const { t } = useI18n();
   const mapRef = useRef<HTMLDivElement>(null);
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
@@ -98,7 +100,7 @@ export function ExploreRadiusSearch({
       <div className="flex items-center justify-between">
         <h3 className="text-base font-bold text-foreground flex items-center gap-2">
           <MapPin className="h-4 w-4 text-accent" />
-          Où cherchez-vous ?
+          {t("explore.radius.title") || "Where are you looking?"}
         </h3>
         <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
           <X className="h-4 w-4 text-muted-foreground" />
@@ -112,7 +114,7 @@ export function ExploreRadiusSearch({
           <Input
             value={locationQuery}
             onChange={e => { onLocationChange(e.target.value); setShowSuggestions(true); }}
-            placeholder="Saisissez une ville et un rayon"
+            placeholder={t("explore.radius.placeholder") || "City, country, address..."}
             className="pl-10 rounded-xl h-12 text-base"
           />
         </div>
@@ -163,16 +165,16 @@ export function ExploreRadiusSearch({
           className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent font-medium hover:bg-accent/15 transition-colors"
         >
           <LocateFixed className="h-4 w-4" />
-          Ma position — {geoCity}, {geoCountry?.toUpperCase()}
+          {t("explore.radius.my_location") || "My location"} — {geoCity}, {geoCountry?.toUpperCase()}
         </button>
       )}
 
       {/* Radius slider */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-foreground">Dans un rayon de</label>
+          <label className="text-sm font-bold text-foreground">{t("explore.radius.label") || "Search radius"}</label>
           <span className="text-base font-bold text-accent">
-            {radiusKm === 0 ? "Tous" : `${radiusKm} km`}
+            {radiusKm === 0 ? (t("explore.radius.worldwide") || "Worldwide") : `${radiusKm} km`}
           </span>
         </div>
         <Slider
@@ -211,17 +213,17 @@ export function ExploreRadiusSearch({
           <div className="w-4 h-4 rounded-full bg-foreground border-2 border-background shadow-lg" />
         </div>
 
-        {radiusKm === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/60">
-            <span className="text-sm text-muted-foreground font-medium">Recherche mondiale</span>
-          </div>
-        )}
+      {radiusKm === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/60">
+          <span className="text-xs sm:text-sm text-muted-foreground font-medium px-3 text-center">{t("explore.radius.worldwide_search") || "Worldwide search"}</span>
+        </div>
+      )}
       </div>
 
       {/* Suggestions */}
       {locationQuery && radiusKm > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-bold text-foreground">Suggestions</p>
+          <p className="text-sm font-bold text-foreground">{t("explore.radius.suggestions") || "Suggestions"}</p>
           <button
             onClick={onApply}
             className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-muted/50 text-sm text-muted-foreground hover:bg-muted transition-colors"
@@ -241,13 +243,14 @@ export function ExploreRadiusSearch({
           onClick={onReset}
           className="flex-1 rounded-xl h-12 text-sm font-semibold"
         >
-          Effacer
+          {t("explore.radius.reset") || "Reset"}
         </Button>
         <Button
           onClick={onApply}
-          className="flex-1 rounded-xl h-12 text-sm font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          className="flex-1 rounded-xl h-12 text-sm font-bold bg-accent hover:bg-accent/90 text-accent-foreground"
         >
-          Valider la localisation ({resultCount.toLocaleString()})
+          <Search className="h-4 w-4 me-1.5" />
+          {t("explore.radius.apply") || "Apply"}
         </Button>
       </div>
     </motion.div>

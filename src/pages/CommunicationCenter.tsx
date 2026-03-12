@@ -992,13 +992,13 @@ const CommunicationCenter = () => {
         {/* ═══ Header bar — dynamic KPIs ═══ */}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4 flex-wrap px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-xl font-bold text-foreground truncate flex items-center gap-2">
+            <h1 className="text-sm sm:text-xl font-bold text-foreground flex items-center gap-2">
               <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
                 <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-foreground" />
               </div>
-              {t("page.communication.title") || "Communication"}
+              <span className="truncate">{t("page.communication.title") || "Communication"}</span>
             </h1>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 ms-9 sm:ms-10 truncate">
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 ms-9 sm:ms-10 truncate max-w-[calc(100vw-12rem)] sm:max-w-none">
               {t("page.communication.subtitle") || "Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate"}
             </p>
           </div>
