@@ -180,7 +180,7 @@ const PublicListing = () => {
         title={seoTitle}
         description={seoDesc}
         canonical={listingUrl}
-        ogImage={listing.cover_url || photos[0]}
+        ogImage={listing.cover_url || photos[0] || "https://www.easy-locs.com/pwa-512x512.png"}
         jsonLd={listingJsonLd}
       />
       {/* Top bar with logo + language */}

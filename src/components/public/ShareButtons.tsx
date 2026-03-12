@@ -4,7 +4,7 @@
  */
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Share2, MessageCircle, Send, Mail, Copy, Check } from "lucide-react";
+import { Share2, MessageCircle, Send, Copy, Check } from "lucide-react";
 import { getShareLinks, type ShareableType } from "@/lib/social-share";
 import { useState } from "react";
 import { toast } from "sonner";
