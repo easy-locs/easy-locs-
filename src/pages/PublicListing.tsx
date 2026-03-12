@@ -19,6 +19,7 @@ const PublicListing = () => {
   const { slug, propertySlug } = useParams<{ slug?: string; propertySlug?: string }>();
   const listingSlug = slug || propertySlug;
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { t, setLocale } = useI18n();
   const { locale, changeLocale, supportedLocales } = usePublicLocale();
   const [listing, setListing] = useState<any>(null);
