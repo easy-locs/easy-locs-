@@ -75,6 +75,9 @@ const Referrals = lazy(() => import("./pages/Referrals"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AIQualityDashboard = lazy(() => import("./pages/AIQualityDashboard"));
 const Install = lazy(() => import("./pages/Install"));
+const SavedListings = lazy(() => import("./pages/SavedListings"));
+const CVGenerator = lazy(() => import("./pages/CVGenerator"));
+const CategorySubscriptions = lazy(() => import("./pages/CategorySubscriptions"));
 const ChannelManager = lazy(() => import("./pages/ChannelManager"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const DynamicPricing = lazy(() => import("./pages/DynamicPricing"));
@@ -236,6 +239,9 @@ const App = () => (
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
               <Route path="/agency/:accountSlug/:slug" element={<PublicRealEstateListing />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/saved" element={<SavedListings />} />
+              <Route path="/cv-generator" element={<CVGenerator />} />
+              <Route path="/category-notifications" element={<CategorySubscriptions />} />
               <Route path="/vision" element={<PlatformVision />} />
 
               {/* SEO landing pages */}

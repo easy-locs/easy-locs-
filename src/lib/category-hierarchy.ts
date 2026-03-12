@@ -85,6 +85,17 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
       { value: "personal", label: "Personal Services", emoji: "💆" },
     ],
   },
+  {
+    value: "jobs",
+    label: "Jobs & Freelance",
+    emoji: "💼",
+    subcategories: [
+      { value: "job_offer", label: "Job Offers", emoji: "📋" },
+      { value: "freelance", label: "Freelance", emoji: "🧑‍💻" },
+      { value: "internship", label: "Internships", emoji: "🎓" },
+      { value: "remote_work", label: "Remote Work", emoji: "🌍" },
+    ],
+  },
 ];
 
 /** Flat list of all sub-category values */

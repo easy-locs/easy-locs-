@@ -6,7 +6,7 @@ import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed } from "lucide-react";
+import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
@@ -348,6 +348,15 @@ export default function Explore() {
             </button>
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved listings">
+                <Heart className="h-4 w-4" />
+              </Link>
+              <Link to="/cv-generator" className="hidden lg:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="CV Generator">
+                <FileText className="h-4 w-4" />
+              </Link>
+              <Link to="/category-notifications" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Category alerts">
+                <Bell className="h-4 w-4" />
+              </Link>
               <ThemeSwitcher />
               <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">{t("landing.nav.login") || "Log in"}</Link>
               <Link to="/signup" className="text-[11px] sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">{t("landing.nav.pro_signup") || "Sign up"}</Link>
