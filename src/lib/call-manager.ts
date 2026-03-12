@@ -234,7 +234,7 @@ export class CallManager {
       event.streams[0]?.getTracks().forEach((track) => {
         this.remoteStream!.addTrack(track);
       });
-      this.clearStreamTimeout();
+      this.clearTimeouts();
       this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
     };
 
