@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, ArrowRight, Eye, Users, Moon, CheckCircle, Bed, Bath, Maximize } from "lucide-react";
+import { MapPin, ArrowRight, Users, Moon, CheckCircle, Bed, Bath, Maximize } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
 import { useI18n } from "@/lib/i18n";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -21,11 +21,13 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (item.cover_url || PLACEHOLDER_IMG)
     : (Array.isArray(item.photo_urls) && item.photo_urls[0] ? item.photo_urls[0] : PLACEHOLDER_IMG);
 
+  // Smart currency display — use item currency, no hardcoded €
+  const curr = item.currency || "€";
   const priceLabel = type === "seasonal"
-    ? `${item.price_per_night}€ / ${t("explore.night") || "night"}`
+    ? `${item.price_per_night}${curr} / ${t("explore.night") || "night"}`
     : type === "real-estate"
-    ? `${Number(item.price || 0).toLocaleString()} ${item.currency || "€"}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
-    : item.price > 0 ? `${item.price} ${item.currency || "€"}` : (t("explore.free") || "Free");
+    ? `${Number(item.price || 0).toLocaleString()} ${curr}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
+    : item.price > 0 ? `${item.price} ${curr}` : (t("explore.free") || "Free");
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
@@ -42,19 +44,19 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (t("explore.view_property") || "View")
     : (t("explore.view_and_book") || "View & book");
 
-  // Format location — full country name, no truncation
+  // Smart location — full city + country, dynamic
   const locationText = [item.city, item.country].filter(Boolean).join(", ");
 
   return (
     <Link to={href} className="group block h-full">
-      <div className="h-full rounded-2xl overflow-hidden bg-card border border-border hover:shadow-xl hover:border-accent/30 transition-all duration-300">
+      <div className="h-full rounded-2xl overflow-hidden bg-card border border-border/40 hover:shadow-lg hover:border-accent/25 transition-all duration-300">
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" width={400} />
+          <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" width={400} />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           
-          {/* Top badges — properly sized, no overflow */}
+          {/* Top badge */}
           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
@@ -67,17 +69,10 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             )}
           </div>
 
-          {/* Price badge — bottom right */}
+          {/* Price — bottom right */}
           <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-md">
             <span className="text-sm font-bold text-foreground whitespace-nowrap">{priceLabel}</span>
           </div>
-
-          {/* Views count */}
-          {type === "real-estate" && item.views_count > 0 && (
-            <div className="absolute top-2.5 right-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground flex items-center gap-1">
-              <Eye className="h-3 w-3" /> {item.views_count}
-            </div>
-          )}
 
           {/* Photo count */}
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
@@ -93,19 +88,13 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
             {item.title}
           </h3>
 
-          {/* Location — full text, no truncation of country */}
+          {/* Location */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0 text-accent/70" />
             <span className="line-clamp-1">{locationText || "—"}</span>
           </div>
 
           {/* Type-specific details */}
-          {type === "service" && subInfo && (
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <span>{subInfo.emoji}</span>
-              <span className="font-medium line-clamp-1">{subInfo.label}</span>
-            </div>
-          )}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
