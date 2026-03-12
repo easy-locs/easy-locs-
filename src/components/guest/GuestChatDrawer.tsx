@@ -35,6 +35,7 @@ interface GuestChatDrawerProps {
   contextType?: string;
   contextId?: string;
   providerPhone?: string;
+  providerWhatsApp?: string;
   listingUrl?: string;
   listingPrice?: string;
   listingCity?: string;
