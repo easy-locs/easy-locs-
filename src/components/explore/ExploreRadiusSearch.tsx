@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, X, Search, LocateFixed } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface ExploreRadiusSearchProps {
   locationQuery: string;
