@@ -62,8 +62,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <OptimizedImage src={imgSrc} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" width={400} />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          
           {/* Save button */}
           <div className="absolute top-2.5 right-2.5 z-10">
             <SaveButton
@@ -88,11 +86,6 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
                 <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
-          </div>
-
-          {/* Price — bottom right */}
-          <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-md">
-            <span className="text-sm font-bold text-foreground whitespace-nowrap">{priceLabel}</span>
           </div>
 
           {/* Photo count */}
