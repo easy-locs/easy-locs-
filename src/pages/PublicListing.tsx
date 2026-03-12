@@ -263,6 +263,15 @@ const PublicListing = () => {
               </div>
             )}
 
+            {/* Map & Directions */}
+            <ListingMapSection
+              lat={listing.lat || property?.lat}
+              lng={listing.lng || property?.lng}
+              address={property?.address}
+              city={property?.city || listing.city}
+              country={property?.country || listing.country}
+            />
+
           </div>
 
           {/* Booking form */}

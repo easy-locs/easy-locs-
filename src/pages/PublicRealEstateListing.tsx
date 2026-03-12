@@ -406,7 +406,40 @@ export default function PublicRealEstateListing() {
               </div>
             )}
 
-            {/* Mobile CTA */}
+            {/* Agency / Agent info */}
+            {(listing.agency_name || listing.agent_name) && (
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4">Listed by</h2>
+                <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-card">
+                  {listing.agency_logo_url && (
+                    <img src={listing.agency_logo_url} alt={listing.agency_name || ""} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                  )}
+                  <div className="space-y-1 min-w-0">
+                    {listing.agency_name && <p className="font-semibold text-foreground">{listing.agency_name}</p>}
+                    {listing.agent_name && <p className="text-sm text-muted-foreground">Agent: {listing.agent_name}</p>}
+                    {listing.license_number && <p className="text-xs text-muted-foreground">License: {listing.license_number}</p>}
+                    {listing.company_registration && <p className="text-xs text-muted-foreground">Reg: {listing.company_registration}</p>}
+                    <div className="flex gap-3 pt-1">
+                      {listing.agency_phone && (
+                        <a href={`tel:${listing.agency_phone}`} className="text-xs text-accent hover:underline">📞 {listing.agency_phone}</a>
+                      )}
+                      {listing.agency_email && (
+                        <a href={`mailto:${listing.agency_email}`} className="text-xs text-accent hover:underline">✉️ Email</a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Map & Directions */}
+            <ListingMapSection
+              lat={listing.lat}
+              lng={listing.lng}
+              address={listing.address}
+              city={listing.city}
+              country={listing.country}
+            />
             <div className="lg:hidden">
               <ContactCard
                 listing={listing}
