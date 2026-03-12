@@ -52,8 +52,14 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
     ? (t("explore.view_property") || "View")
     : (t("explore.view_and_book") || "View & book");
 
-  // Smart location — full city + country, dynamic
-  const locationText = [item.city, item.country].filter(Boolean).join(", ");
+  // Smart location — proper formatting: capitalize city, uppercase country code
+  const fmtCity = (s: string) => s ? s.split(/[\s-]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ") : "";
+  const fmtCountry = (s: string) => {
+    if (!s) return "";
+    // If already a 2-letter code, uppercase it; otherwise capitalize
+    return s.length <= 3 ? s.toUpperCase() : s.charAt(0).toUpperCase() + s.slice(1);
+  };
+  const locationText = [fmtCity(item.city), fmtCountry(item.country)].filter(Boolean).join(", ");
 
   return (
     <Link to={href} className="group block h-full">

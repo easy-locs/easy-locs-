@@ -210,16 +210,21 @@ export default function Explore() {
   const matchCategory = useCallback((item: any) => {
     if (activeGroup === "all" && activeSubcategory === "all") return true;
     const type = item._type as string;
+    // Subcategory-level filter
     if (activeSubcategory !== "all") {
       if (activeSubcategory === "seasonal") return type === "seasonal";
-      if (activeSubcategory === "real-estate") return type === "real-estate";
+      if (activeSubcategory === "property_sale") return type === "real-estate" && item.listing_type === "sale";
+      if (activeSubcategory === "long_term_rental") return type === "real-estate" && item.listing_type !== "sale";
+      if (activeSubcategory === "new_development") return type === "real-estate";
+      if (activeSubcategory === "roommate" || activeSubcategory === "office_commercial") return type === "real-estate";
       return type === "service" && item.category === activeSubcategory;
     }
+    // Group-level filter
     const group = CATEGORY_HIERARCHY.find(g => g.value === activeGroup);
     if (!group) return true;
     const subValues = group.subcategories.map(s => s.value);
     if (subValues.includes("seasonal") && type === "seasonal") return true;
-    if (subValues.includes("real-estate") && type === "real-estate") return true;
+    if ((subValues.includes("property_sale") || subValues.includes("long_term_rental")) && type === "real-estate") return true;
     if (type === "service" && subValues.includes(item.category)) return true;
     return false;
   }, [activeGroup, activeSubcategory]);
@@ -242,7 +247,7 @@ export default function Explore() {
       counts[group.value] = unfilteredItems.filter(item => {
         const type = item._type as string;
         if (subValues.includes("seasonal") && type === "seasonal") return true;
-        if (subValues.includes("real-estate") && type === "real-estate") return true;
+        if ((subValues.includes("property_sale") || subValues.includes("long_term_rental")) && type === "real-estate") return true;
         if (type === "service" && subValues.includes(item.category)) return true;
         return false;
       }).length;
