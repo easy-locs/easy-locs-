@@ -223,7 +223,7 @@ export function ExploreRadiusSearch({
       {/* Suggestions */}
       {locationQuery && radiusKm > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-bold text-foreground">Suggestions</p>
+          <p className="text-sm font-bold text-foreground">{t("explore.radius.suggestions") || "Suggestions"}</p>
           <button
             onClick={onApply}
             className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-muted/50 text-sm text-muted-foreground hover:bg-muted transition-colors"
