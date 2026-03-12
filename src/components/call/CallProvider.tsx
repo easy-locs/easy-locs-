@@ -133,8 +133,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
       peerName: string;
       isVideo?: boolean;
     }) => {
-      if (!user) return;
+      if (!user || startingCallRef.current) return;
+      startingCallRef.current = true;
 
+      try {
       // Create call log entry
       const { data: callLog, error } = await supabase
         .from("call_logs")
