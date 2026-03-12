@@ -34,12 +34,19 @@ interface ExploreHeaderProps {
 }
 
 /* ───── Role helpers ───── */
-const BUSINESS_ROLES = new Set(["landlord"]);
-
 function getDashboardPath(role: string) {
   if (role === "tenant") return "/tenant";
   if (role === "client") return "/client";
   return "/dashboard";
+}
+
+function getRoleLabel(role: string) {
+  switch (role) {
+    case "landlord": return "Professional";
+    case "tenant": return "Tenant";
+    case "client": return "Client";
+    default: return role;
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -53,7 +60,16 @@ function DesktopUserMenu() {
 
   const dash = getDashboardPath(activeRole);
   const initials = (user.user_metadata?.name || user.email || "U").slice(0, 2).toUpperCase();
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
+  const isTenant = activeRole === "tenant";
+  const isClient = activeRole === "client";
+
+  // All possible switch targets for dual/multi-role
+  const switchTargets: { label: string; role: "landlord" | "tenant" | "client" }[] = [];
+  if (hasDualRole) {
+    if (activeRole !== "landlord") switchTargets.push({ label: "Professional", role: "landlord" });
+    if (activeRole !== "tenant") switchTargets.push({ label: "Tenant", role: "tenant" });
+  }
 
   return (
     <DropdownMenu>
@@ -75,8 +91,8 @@ function DesktopUserMenu() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.name || user.email}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-0.5 capitalize font-medium">
-                {activeRole}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-0.5 font-medium">
+                {getRoleLabel(activeRole)}
               </Badge>
             </div>
           </div>
@@ -84,7 +100,7 @@ function DesktopUserMenu() {
 
         <Separator />
 
-        {/* Quick actions */}
+        {/* Quick actions — universal */}
         <div className="py-1">
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(dash)}>
             <LayoutDashboard className="h-4 w-4 mr-3 text-muted-foreground" /> Dashboard
@@ -97,8 +113,8 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
-        {/* Business actions — only for eligible roles */}
-        {isBusiness && (
+        {/* Landlord/Pro actions */}
+        {isLandlord && (
           <>
             <Separator />
             <div className="py-1">
@@ -115,19 +131,50 @@ function DesktopUserMenu() {
           </>
         )}
 
-        {/* Role switcher */}
-        {hasDualRole && (
+        {/* Tenant actions */}
+        {isTenant && (
           <>
             <Separator />
             <div className="py-1">
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => {
-                const next = activeRole === "landlord" ? "tenant" : "landlord";
-                switchRole(next);
-                navigate(getDashboardPath(next));
-              }}>
-                <ArrowLeftRight className="h-4 w-4 mr-3 text-muted-foreground" />
-                Switch to {activeRole === "landlord" ? "tenant" : "landlord"}
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/documents")}>
+                <Bookmark className="h-4 w-4 mr-3 text-muted-foreground" /> My documents
               </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/pay")}>
+                <Globe className="h-4 w-4 mr-3 text-muted-foreground" /> Payments
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/requests")}>
+                <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Requests
+              </DropdownMenuItem>
+            </div>
+          </>
+        )}
+
+        {/* Client actions */}
+        {isClient && (
+          <>
+            <Separator />
+            <div className="py-1">
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/client/bookings")}>
+                <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> My bookings
+              </DropdownMenuItem>
+            </div>
+          </>
+        )}
+
+        {/* Role switcher */}
+        {switchTargets.length > 0 && (
+          <>
+            <Separator />
+            <div className="py-1">
+              {switchTargets.map(t => (
+                <DropdownMenuItem key={t.role} className="px-4 py-2.5 cursor-pointer" onClick={() => {
+                  switchRole(t.role);
+                  navigate(getDashboardPath(t.role));
+                }}>
+                  <ArrowLeftRight className="h-4 w-4 mr-3 text-muted-foreground" />
+                  Switch to {t.label}
+                </DropdownMenuItem>
+              ))}
             </div>
           </>
         )}
@@ -147,10 +194,6 @@ function DesktopUserMenu() {
     </DropdownMenu>
   );
 }
-
-/* ═══════════════════════════════════════════════
-   MOBILE USER SHEET
-   ═══════════════════════════════════════════════ */
 function MobileUserSheet() {
   const { user, activeRole, hasDualRole, switchRole, signOut } = useAuth();
   const navigate = useNavigate();
@@ -160,9 +203,17 @@ function MobileUserSheet() {
 
   const dash = getDashboardPath(activeRole);
   const initials = (user.user_metadata?.name || user.email || "U").slice(0, 2).toUpperCase();
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
+  const isTenant = activeRole === "tenant";
+  const isClient = activeRole === "client";
 
   const go = (path: string) => { setOpen(false); navigate(path); };
+
+  const switchTargets: { label: string; role: "landlord" | "tenant" | "client" }[] = [];
+  if (hasDualRole) {
+    if (activeRole !== "landlord") switchTargets.push({ label: "Professional", role: "landlord" });
+    if (activeRole !== "tenant") switchTargets.push({ label: "Tenant", role: "tenant" });
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -182,7 +233,7 @@ function MobileUserSheet() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.name || user.email}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-1 capitalize">{activeRole}</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-1">{getRoleLabel(activeRole)}</Badge>
             </div>
           </div>
         </div>
@@ -190,12 +241,13 @@ function MobileUserSheet() {
         <Separator />
 
         <nav className="flex-1 overflow-y-auto py-2">
-          {/* Quick actions */}
+          {/* Universal */}
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
           <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go(`${dash}/messages`)} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
 
-          {isBusiness && (
+          {/* Landlord/Pro */}
+          {isLandlord && (
             <>
               <Separator className="my-2" />
               <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</p>
@@ -205,11 +257,33 @@ function MobileUserSheet() {
             </>
           )}
 
-          {hasDualRole && (
+          {/* Tenant */}
+          {isTenant && (
             <>
               <Separator className="my-2" />
-              <MobileNavItem icon={ArrowLeftRight} label={`Switch to ${activeRole === "landlord" ? "tenant" : "landlord"}`}
-                onClick={() => { const next = activeRole === "landlord" ? "tenant" : "landlord"; switchRole(next); go(getDashboardPath(next)); }} />
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rental</p>
+              <MobileNavItem icon={Bookmark} label="My documents" onClick={() => go("/tenant/documents")} />
+              <MobileNavItem icon={Globe} label="Payments" onClick={() => go("/tenant/pay")} />
+              <MobileNavItem icon={CalendarCheck} label="Requests" onClick={() => go("/tenant/requests")} />
+            </>
+          )}
+
+          {/* Client */}
+          {isClient && (
+            <>
+              <Separator className="my-2" />
+              <MobileNavItem icon={CalendarCheck} label="My bookings" onClick={() => go("/client/bookings")} />
+            </>
+          )}
+
+          {/* Role switcher */}
+          {switchTargets.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              {switchTargets.map(st => (
+                <MobileNavItem key={st.role} icon={ArrowLeftRight} label={`Switch to ${st.label}`}
+                  onClick={() => { switchRole(st.role); go(getDashboardPath(st.role)); }} />
+              ))}
             </>
           )}
 
@@ -251,7 +325,7 @@ export default function ExploreHeader({
   const navigate = useNavigate();
 
   const dash = getDashboardPath(activeRole);
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
   const locationLabel = geoCity || geoCountry || null;
 
   return (
@@ -278,7 +352,7 @@ export default function ExploreHeader({
           {/* Right: actions */}
           <div className="flex items-center gap-1 shrink-0">
             {/* Post CTA for business users */}
-            {user && isBusiness && (
+            {user && isLandlord && (
               <button onClick={() => navigate("/dashboard/create-listing")}
                 className="hidden lg:flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity mr-1">
                 <Plus className="h-3.5 w-3.5" /> Post
