@@ -248,7 +248,7 @@ export class CallManager {
       const state = this.pc?.iceConnectionState;
       if (state === "connected" || state === "completed") {
         this.iceConnected = true;
-        this.clearIceTimeout();
+        this.clearTimeouts();
         this.detectRelay();
       }
     };
@@ -257,8 +257,7 @@ export class CallManager {
       const state = this.pc?.connectionState;
       if (state === "connected") {
         this.iceConnected = true;
-        this.clearIceTimeout();
-        this.clearStreamTimeout();
+        this.clearTimeouts();
         this.onStateChange({ status: "active" });
       } else if (state === "failed" || state === "disconnected") {
         if (!this.iceConnected) {
