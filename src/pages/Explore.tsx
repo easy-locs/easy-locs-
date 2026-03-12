@@ -482,6 +482,29 @@ export default function Explore() {
             )}
           </>
         )}
+
+        {/* Smart Suggestions — show related items from different categories */}
+        {!loading && allItems.length > 0 && (() => {
+          const currentCategories = new Set(allItems.slice(0, 6).map((i: any) => i.category || i._type));
+          const suggestions = unfilteredItems
+            .filter((item: any) => !currentCategories.has(item.category || item._type))
+            .slice(0, 8)
+            .map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              city: item.city,
+              country: item.country,
+              photo_url: item._type === "seasonal" ? item.cover_url : item.photo_urls?.[0],
+              price: item.price || item.price_per_night,
+              currency: item.currency || "EUR",
+              href: item._type === "seasonal"
+                ? `/listing/${item.slug}`
+                : item._type === "real-estate"
+                ? `/properties/${item.slug}`
+                : `/book/${item.booking_slug}`,
+            }));
+          return <SmartSuggestions items={suggestions} title={t("explore.you_may_like") || "You may also be interested in"} />;
+        })()}
       </main>
 
       <ExploreSEOFooter />
