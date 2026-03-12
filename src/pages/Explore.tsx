@@ -335,77 +335,69 @@ export default function Explore() {
         jsonLd={exploreJsonLd}
       />
 
-      {/* ═══════ STICKY HEADER ═══════ */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
-        <div className="max-w-[1400px] mx-auto px-4">
-          <div className="h-16 flex items-center justify-between gap-4">
-            <AppLogo variant="header" linkTo="/" />
-
-            <ExploreDesktopSearchBar
-              searchQuery={searchQuery}
-              locationQuery={locationQuery}
-              radiusKm={radiusKm}
-              activeGroup={activeGroup}
-              geoCity={geo.detection?.city}
-              geoCountry={geo.country}
-              geoLat={geo.detection?.lat}
-              geoLng={geo.detection?.lng}
-              locationSuggestions={locationSuggestions}
-              resultCount={allItems.length}
-              onSearchQueryChange={setSearchQuery}
-              onLocationQueryChange={setLocationQuery}
-              onRadiusKmChange={setRadiusKm}
-              onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
-              onSelectLocation={handleSelectLocation}
-              onNearMe={handleNearMe}
-              onSearch={handleSearch}
-              onReset={clearAll}
-            />
-
-            {/* Mobile search trigger */}
-            <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground min-h-[44px]" aria-label={t("explore.search") || "Open search"}>
-              <Search className="h-4 w-4" />
-              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
-            </button>
-
-            <ExploreUserNav />
-          </div>
-
-          {/* Mobile search panel */}
-          <AnimatePresence>
-            {showMobileSearch && (
-              <ExploreMobileSearch
-                searchQuery={searchQuery}
-                locationQuery={locationQuery}
-                radiusKm={radiusKm}
-                activeGroup={activeGroup}
-                geoCity={geo.detection?.city}
-                geoCountry={geo.country}
-                geoLat={geo.detection?.lat}
-                geoLng={geo.detection?.lng}
-                hasFilters={hasFilters}
-                resultCount={allItems.length}
-                onSearchQueryChange={setSearchQuery}
-                onLocationQueryChange={setLocationQuery}
-                onRadiusKmChange={setRadiusKm}
-                onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
-                onNearMe={handleNearMe}
-                onSearch={handleSearch}
-                onClearAll={clearAll}
-                onClose={() => setShowMobileSearch(false)}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-
-        <ExploreCategoryBar
+      <ExploreHeader
+        searchQuery={searchQuery}
+        locationQuery={locationQuery}
+        geoCity={geo.detection?.city}
+        geoCountry={geo.country}
+        onOpenSearch={() => setShowMobileSearch(v => !v)}
+        categoryBar={
+          <ExploreCategoryBar
+            activeGroup={activeGroup}
+            activeSubcategory={activeSubcategory}
+            onGroupChange={setActiveGroup}
+            onSubcategoryChange={setActiveSubcategory}
+            groupCounts={groupCounts}
+          />
+        }
+      >
+        <ExploreDesktopSearchBar
+          searchQuery={searchQuery}
+          locationQuery={locationQuery}
+          radiusKm={radiusKm}
           activeGroup={activeGroup}
-          activeSubcategory={activeSubcategory}
-          onGroupChange={setActiveGroup}
-          onSubcategoryChange={setActiveSubcategory}
-          groupCounts={groupCounts}
+          geoCity={geo.detection?.city}
+          geoCountry={geo.country}
+          geoLat={geo.detection?.lat}
+          geoLng={geo.detection?.lng}
+          locationSuggestions={locationSuggestions}
+          resultCount={allItems.length}
+          onSearchQueryChange={setSearchQuery}
+          onLocationQueryChange={setLocationQuery}
+          onRadiusKmChange={setRadiusKm}
+          onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
+          onSelectLocation={handleSelectLocation}
+          onNearMe={handleNearMe}
+          onSearch={handleSearch}
+          onReset={clearAll}
         />
-      </header>
+      </ExploreHeader>
+
+      {/* Mobile search panel */}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <ExploreMobileSearch
+            searchQuery={searchQuery}
+            locationQuery={locationQuery}
+            radiusKm={radiusKm}
+            activeGroup={activeGroup}
+            geoCity={geo.detection?.city}
+            geoCountry={geo.country}
+            geoLat={geo.detection?.lat}
+            geoLng={geo.detection?.lng}
+            hasFilters={hasFilters}
+            resultCount={allItems.length}
+            onSearchQueryChange={setSearchQuery}
+            onLocationQueryChange={setLocationQuery}
+            onRadiusKmChange={setRadiusKm}
+            onGroupChange={(g) => { setActiveGroup(g); setActiveSubcategory("all"); }}
+            onNearMe={handleNearMe}
+            onSearch={handleSearch}
+            onClearAll={clearAll}
+            onClose={() => setShowMobileSearch(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ═══════ RESULTS ═══════ */}
       <main className="max-w-[1400px] mx-auto px-4 py-6">
