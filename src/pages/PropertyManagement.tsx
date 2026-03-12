@@ -197,7 +197,7 @@ const PropertyManagement = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA + Internal Links */}
       <section className="py-16 px-4 bg-muted/30">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">Ready to manage your properties?</h2>
@@ -205,6 +205,13 @@ const PropertyManagement = () => {
           <Link to="/signup" className="inline-flex items-center gap-2 bg-gradient-gold text-accent-foreground px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
             Get Started Free <ArrowRight className="h-4 w-4" />
           </Link>
+          <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
+            <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-accent transition-colors">Vacation Rentals →</Link>
+            <Link to="/concierge-services" className="text-muted-foreground hover:text-accent transition-colors">Concierge Services →</Link>
+            <Link to="/marketplace-services" className="text-muted-foreground hover:text-accent transition-colors">Marketplace →</Link>
+            <Link to="/explore" className="text-muted-foreground hover:text-accent transition-colors">Explore Listings →</Link>
+            <Link to="/locations" className="text-muted-foreground hover:text-accent transition-colors">All Locations →</Link>
+          </nav>
         </div>
       </section>
 

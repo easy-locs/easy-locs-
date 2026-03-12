@@ -145,6 +145,12 @@ const ConciergeServicesPage = () => (
           <h2 className="text-2xl font-bold text-foreground mb-4">Ready to elevate your guest experience?</h2>
           <p className="text-muted-foreground mb-6">Join thousands of property owners using Easy-Locs to deliver professional concierge services worldwide.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
+          <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
+            <Link to="/property-management" className="text-muted-foreground hover:text-primary transition-colors">Property Management →</Link>
+            <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-primary transition-colors">Vacation Rentals →</Link>
+            <Link to="/marketplace-services" className="text-muted-foreground hover:text-primary transition-colors">Marketplace →</Link>
+            <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">Explore Listings →</Link>
+          </nav>
         </div>
       </section>
     </main>

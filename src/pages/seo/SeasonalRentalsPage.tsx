@@ -136,6 +136,12 @@ const SeasonalRentalsPage = () => (
           <h2 className="text-2xl font-bold text-foreground mb-4">Start managing your vacation rentals today</h2>
           <p className="text-muted-foreground mb-6">Join property owners in 190+ countries using Easy-Locs for professional short-term rental management.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
+          <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
+            <Link to="/property-management" className="text-muted-foreground hover:text-primary transition-colors">Property Management →</Link>
+            <Link to="/concierge-services" className="text-muted-foreground hover:text-primary transition-colors">Concierge Services →</Link>
+            <Link to="/marketplace-services" className="text-muted-foreground hover:text-primary transition-colors">Marketplace →</Link>
+            <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">Explore Listings →</Link>
+          </nav>
         </div>
       </section>
     </main>
