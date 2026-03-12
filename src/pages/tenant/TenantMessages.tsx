@@ -224,6 +224,14 @@ const TenantMessages = () => {
                   );
                 }
 
+                const showingOriginal = showOriginalMap[m.id];
+                const displayContent = isMe
+                  ? m.content
+                  : showingOriginal
+                    ? m.content
+                    : (m.translated_content || m.content);
+                const hasTranslation = !isMe && (m.translated_content || m.sender_locale !== tenantLocale);
+
                 return (
                   <motion.div key={m.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
@@ -231,9 +239,18 @@ const TenantMessages = () => {
                       {m.category && m.category !== "general" && (
                         <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(m.category)}</span>
                       )}
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {isMe ? m.content : (m.translated_content || m.content)}
-                      </p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{displayContent}</p>
+                      {/* Translation toggle */}
+                      {hasTranslation && (
+                        <button
+                          onClick={() => handleToggleTranslation(m)}
+                          disabled={translatingId === m.id}
+                          className="flex items-center gap-1 mt-1 text-[10px] text-accent hover:underline disabled:opacity-50"
+                        >
+                          <Languages className="h-3 w-3" />
+                          {translatingId === m.id ? "…" : showingOriginal ? T.showTranslation || "Show translation" : T.showOriginal || "Show original"}
+                        </button>
+                      )}
                       {m.attachment_url && (
                         <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
                           className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-accent-foreground/80" : "text-accent"}`}>

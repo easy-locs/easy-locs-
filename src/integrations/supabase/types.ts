@@ -3591,7 +3591,9 @@ export type Database = {
         Row: {
           charges_amount: number
           created_at: string
+          due_date: string | null
           id: string
+          last_reminder_at: string | null
           month: string
           org_id: string
           paid: boolean | null
@@ -3603,6 +3605,7 @@ export type Database = {
           property_id: string | null
           receipt_pdf_url: string | null
           receipt_validated: boolean | null
+          reminder_level: number | null
           rent_amount: number
           stripe_payment_intent_id: string | null
           tenant_id: string
@@ -3612,7 +3615,9 @@ export type Database = {
         Insert: {
           charges_amount?: number
           created_at?: string
+          due_date?: string | null
           id?: string
+          last_reminder_at?: string | null
           month: string
           org_id: string
           paid?: boolean | null
@@ -3624,6 +3629,7 @@ export type Database = {
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
+          reminder_level?: number | null
           rent_amount?: number
           stripe_payment_intent_id?: string | null
           tenant_id: string
@@ -3633,7 +3639,9 @@ export type Database = {
         Update: {
           charges_amount?: number
           created_at?: string
+          due_date?: string | null
           id?: string
+          last_reminder_at?: string | null
           month?: string
           org_id?: string
           paid?: boolean | null
@@ -3645,6 +3653,7 @@ export type Database = {
           property_id?: string | null
           receipt_pdf_url?: string | null
           receipt_validated?: boolean | null
+          reminder_level?: number | null
           rent_amount?: number
           stripe_payment_intent_id?: string | null
           tenant_id?: string
