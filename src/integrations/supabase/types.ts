@@ -1104,6 +1104,122 @@ export type Database = {
           },
         ]
       }
+      deal_events: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          data_json: Json | null
+          deal_id: string
+          event_type: string
+          id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          data_json?: Json | null
+          deal_id: string
+          event_type: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          data_json?: Json | null
+          deal_id?: string
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_events_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_rooms: {
+        Row: {
+          accepted_amount: number | null
+          booking_id: string | null
+          buyer_id: string | null
+          context_id: string | null
+          context_title: string | null
+          context_type: string
+          counter_offer_amount: number | null
+          created_at: string
+          current_offer_amount: number | null
+          current_offer_currency: string | null
+          id: string
+          metadata_json: Json | null
+          notes: string | null
+          org_id: string
+          seller_id: string | null
+          status: Database["public"]["Enums"]["deal_status"]
+          thread_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_amount?: number | null
+          booking_id?: string | null
+          buyer_id?: string | null
+          context_id?: string | null
+          context_title?: string | null
+          context_type?: string
+          counter_offer_amount?: number | null
+          created_at?: string
+          current_offer_amount?: number | null
+          current_offer_currency?: string | null
+          id?: string
+          metadata_json?: Json | null
+          notes?: string | null
+          org_id: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_amount?: number | null
+          booking_id?: string | null
+          buyer_id?: string | null
+          context_id?: string | null
+          context_title?: string | null
+          context_type?: string
+          counter_offer_amount?: number | null
+          created_at?: string
+          current_offer_amount?: number | null
+          current_offer_currency?: string | null
+          id?: string
+          metadata_json?: Json | null
+          notes?: string | null
+          org_id?: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_rooms_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_rooms_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -5820,6 +5936,16 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
+      deal_status:
+        | "inquiry"
+        | "negotiation"
+        | "offer_sent"
+        | "counter_offer"
+        | "accepted"
+        | "payment_pending"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
       listing_status:
         | "draft"
         | "pending_review"
@@ -5957,6 +6083,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "member", "agent", "staff", "accountant"],
+      deal_status: [
+        "inquiry",
+        "negotiation",
+        "offer_sent",
+        "counter_offer",
+        "accepted",
+        "payment_pending",
+        "confirmed",
+        "completed",
+        "cancelled",
+      ],
       listing_status: [
         "draft",
         "pending_review",
