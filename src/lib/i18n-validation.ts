@@ -275,6 +275,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   it: {
     "notif.title": "Notifiche", "notif.mark_all_read": "Segna tutto letto", "notif.empty": "Nessuna notifica",
+    "notif.all": "Tutto", "notif.unread": "Nuove", "notif.bookings": "Prenotazioni", "notif.payments": "Pagamenti", "notif.messages_filter": "Messaggi",
     "notif.reply": "Rispondi", "notif.view_document": "Vedi documento", "notif.view_payment": "Vedi pagamento",
     "notif.view_dunning": "Vedi sollecito", "notif.open": "Apri",
     "notif.view_booking": "Vedi prenotazione", "notif.outdated": "Questo elemento non è più disponibile",
