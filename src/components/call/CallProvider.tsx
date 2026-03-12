@@ -7,6 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
+import { logCallEventToThread } from "@/lib/call-thread-logger";
 import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
 
