@@ -5,12 +5,13 @@ import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-/* Lazy-load Three.js - wrapped in error-safe dynamic import */
-const GlobeCanvas = lazy(() =>
-  import("./LandingGlobe").catch(() => ({
-    default: ((_props: any) => null) as any,
-  }))
-);
+/* Lazy-load Three.js globe — no .catch() on lazy (breaks React 19 internals) */
+let GlobeCanvas: React.LazyExoticComponent<React.ComponentType<any>> | null = null;
+try {
+  GlobeCanvas = lazy(() => import("./LandingGlobe"));
+} catch {
+  // Static import resolution failed — will render fallback
+}
 
 const regions = [
   { flag: "🇫🇷", name: "France" },
