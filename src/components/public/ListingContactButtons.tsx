@@ -202,16 +202,6 @@ const ListingContactButtons = ({
     setRevealLoading(false);
   };
 
-  /** Can call = installed PWA or mobile device (iOS standalone detection is unreliable) */
-  const canCall = (() => {
-    if (typeof window === "undefined") return false;
-    if ((window as any).Capacitor?.isNativePlatform?.()) return true;
-    if (window.matchMedia("(display-mode: standalone)").matches) return true;
-    if ((navigator as any).standalone === true) return true;
-    // Allow calls on mobile devices (iOS PWA detection is unreliable)
-    if (isMobile) return true;
-    return false;
-  })();
 
   const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
 
@@ -235,35 +225,22 @@ const ListingContactButtons = ({
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          {/* Reveal phone → show number, then call button */}
+          {/* Reveal phone → show masked number, call reveals full */}
           {phoneAvailable && (
             revealedPhone ? (
               <div className="col-span-2 flex items-center gap-2">
+                <div className="flex-1 flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-2.5 rounded-xl text-sm font-medium">
+                  <Phone className="h-4 w-4" />
+                  {revealedPhone.slice(0, -4).replace(/./g, (c, i) => i < 6 ? c : "•") + revealedPhone.slice(-2)}
+                </div>
                 <a
                   href={`tel:${revealedPhone}`}
-                  className="flex-1 flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-2.5 rounded-xl text-sm font-medium"
+                  onClick={() => trackClick("call", trackOpts)}
+                  className="flex items-center justify-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors min-h-[44px]"
                 >
                   <Phone className="h-4 w-4" />
-                  {revealedPhone}
+                  {t("page.listing.call") || "Call"}
                 </a>
-                {canCall ? (
-                  <a
-                    href={`tel:${revealedPhone}`}
-                    onClick={() => trackClick("call", trackOpts)}
-                    className="flex items-center justify-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors min-h-[44px]"
-                  >
-                    <Phone className="h-4 w-4" />
-                    {t("page.listing.call") || "Call"}
-                  </a>
-                ) : (
-                  <a
-                    href={`tel:${revealedPhone}`}
-                    className="flex items-center justify-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors min-h-[44px]"
-                  >
-                    <Phone className="h-4 w-4" />
-                    {t("page.listing.call") || "Call"}
-                  </a>
-                )}
               </div>
             ) : (
               <button
@@ -277,7 +254,7 @@ const ListingContactButtons = ({
             )
           )}
 
-          {/* Email — only in contact section */}
+          {/* Email */}
           {mailUrl && (
             <a
               href={mailUrl}
