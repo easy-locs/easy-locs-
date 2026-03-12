@@ -3113,7 +3113,7 @@ const pageEn: Record<string, string> = {
   "landing.features.ai.title": "AI Automation Tools",
   "landing.features.ai.desc": "AI assistant for document generation, rent optimization, and tenant communication.",
   "landing.features.multi_country.title": "Multi-Country Operations",
-  "landing.features.multi_country.desc": "Operate across 110+ countries with localized compliance and regulations.",
+  "landing.features.multi_country.desc": "Operate across 190+ countries with localized compliance and regulations.",
   "landing.features.multi_currency.title": "Multi-Currency Payments",
   "landing.features.multi_currency.desc": "Accept payments in 120+ currencies with automatic conversion.",
   "landing.features.multi_language.title": "Multi-Language Interface",
