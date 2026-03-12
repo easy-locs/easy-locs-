@@ -363,7 +363,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      } as any);
+      });
 
       setPaymentLinkDialog(false);
       setPaymentAmount("");
