@@ -29,9 +29,9 @@ export default function CallEventBubble({ content, createdAt, isVideo }: Props) 
   const config: Record<string, { icon: React.ReactNode; color: string; bg: string; border: string }> = {
     ended: {
       icon: <CallIcon className="h-3.5 w-3.5" />,
-      color: "text-muted-foreground",
-      bg: "bg-muted/40",
-      border: "border-border/30",
+      color: "text-green-600 dark:text-green-400",
+      bg: "bg-green-500/8",
+      border: "border-green-500/15",
     },
     missed: {
       icon: <PhoneMissed className="h-3.5 w-3.5" />,

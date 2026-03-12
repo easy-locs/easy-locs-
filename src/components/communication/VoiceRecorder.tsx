@@ -79,8 +79,9 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
         setUploading(true);
         try {
-          const ext = MediaRecorder.isTypeSupported("audio/webm") ? "webm" : "m4a";
-          const blob = new Blob(chunksRef.current, { type: ext === "webm" ? "audio/webm" : "audio/mp4" });
+          const mime = recorderRef.current?.mimeType || "audio/webm";
+          const ext = mime.includes("mp4") ? "m4a" : mime.includes("webm") ? "webm" : "ogg";
+          const blob = new Blob(chunksRef.current, { type: mime });
           const path = `${orgId}/${contextId}/voice-${Date.now()}.${ext}`;
           const { error } = await supabase.storage.from("chat-media").upload(path, blob);
           if (error) throw error;
