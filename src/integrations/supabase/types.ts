@@ -5326,10 +5326,9 @@ export type Database = {
         Args: { _token: string; _user_id: string }
         Returns: Json
       }
-      check_inquiry_quota: {
-        Args: { _hourly_limit?: number; _user_id: string }
-        Returns: Json
-      }
+      check_inquiry_quota:
+        | { Args: { _user_id: string }; Returns: Json }
+        | { Args: { _hourly_limit?: number; _user_id: string }; Returns: Json }
       check_reveal_quota: {
         Args: { _daily_limit?: number; _reveal_type: string; _user_id: string }
         Returns: Json
