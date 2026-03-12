@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Home, MessageCircle, Store, FileText, Menu } from "lucide-react";
+import { LayoutDashboard, Home, MessageCircle, Store, Menu } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface MobileBottomNavProps {
@@ -11,7 +11,7 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const { t } = useI18n();
 
   const items = [
-    { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Board", path: "/dashboard" },
+    { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Home", path: "/dashboard" },
     { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },
     { icon: Store, label: t("nav.market_short") || "Market", path: "/dashboard/activities" },
     { icon: MessageCircle, label: t("nav.messages_short") || "Chat", path: "/dashboard/communication" },
@@ -32,10 +32,10 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
               <button
                 key="menu"
                 onClick={onMenuOpen}
-                className="flex flex-col items-center justify-center flex-1 gap-0.5 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px]"
+                className="flex flex-col items-center justify-center flex-1 gap-0.5 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px] max-w-[72px]"
               >
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span className="text-[10px] font-medium leading-tight truncate w-full text-center">{item.label}</span>
               </button>
             );
           }
@@ -45,12 +45,12 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors min-w-[44px] min-h-[44px] active:bg-muted/50 ${
+              className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 ${
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
-              <item.icon className={`h-5 w-5 ${active ? "text-accent" : ""}`} />
-              <span className={`text-[10px] font-medium leading-none ${active ? "text-accent" : ""}`}>
+              <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-accent" : ""}`} />
+              <span className={`text-[10px] font-medium leading-tight truncate w-full text-center ${active ? "text-accent" : ""}`}>
                 {item.label}
               </span>
             </Link>

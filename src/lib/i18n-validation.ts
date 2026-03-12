@@ -248,6 +248,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.status_summary": "Resumen de estado", "notif.status_browser": "Navegador", "notif.status_sound": "Sonido", "notif.status_vibration": "Vibración",
     "notif.status_on": "Activado", "notif.status_off": "Desactivado", "notif.status_blocked": "Bloqueado",
     "notif.types_enabled": "tipos activados de", "notif.status_email_urgent": "Modo urgente",
+    "nav.dashboard_short": "Inicio", "nav.properties_short": "Bienes", "nav.market_short": "Tienda", "nav.messages_short": "Chat", "nav.more": "Más",
   },
   de: {
     "notif.title": "Benachrichtigungen", "notif.mark_all_read": "Alle gelesen", "notif.empty": "Keine Benachrichtigungen",
@@ -272,6 +273,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.status_summary": "Statusübersicht", "notif.status_browser": "Browser", "notif.status_sound": "Ton", "notif.status_vibration": "Vibration",
     "notif.status_on": "Ein", "notif.status_off": "Aus", "notif.status_blocked": "Blockiert",
     "notif.types_enabled": "Typen aktiviert von", "notif.status_email_urgent": "Dringend-Modus",
+    "nav.dashboard_short": "Start", "nav.properties_short": "Objekte", "nav.market_short": "Markt", "nav.messages_short": "Chat", "nav.more": "Mehr",
   },
   it: {
     "notif.title": "Notifiche", "notif.mark_all_read": "Segna tutto letto", "notif.empty": "Nessuna notifica",
@@ -296,6 +298,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.status_summary": "Riepilogo stato", "notif.status_browser": "Browser", "notif.status_sound": "Suono", "notif.status_vibration": "Vibrazione",
     "notif.status_on": "Attivo", "notif.status_off": "Disattivato", "notif.status_blocked": "Bloccato",
     "notif.types_enabled": "tipi attivati su", "notif.status_email_urgent": "Modalità urgente",
+    "nav.dashboard_short": "Home", "nav.properties_short": "Immobili", "nav.market_short": "Servizi", "nav.messages_short": "Chat", "nav.more": "Altro",
   },
   pt: {
     "notif.title": "Notificações", "notif.mark_all_read": "Marcar tudo lido", "notif.empty": "Sem notificações",
@@ -320,6 +323,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.status_summary": "Resumo do status", "notif.status_browser": "Navegador", "notif.status_sound": "Som", "notif.status_vibration": "Vibração",
     "notif.status_on": "Ativado", "notif.status_off": "Desativado", "notif.status_blocked": "Bloqueado",
     "notif.types_enabled": "tipos ativados de", "notif.status_email_urgent": "Modo urgente",
+    "nav.dashboard_short": "Início", "nav.properties_short": "Imóveis", "nav.market_short": "Loja", "nav.messages_short": "Chat", "nav.more": "Mais",
   },
   nl: {
     "notif.title": "Meldingen", "notif.mark_all_read": "Alles gelezen", "notif.empty": "Geen meldingen",
@@ -332,6 +336,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "Niet ondersteund in deze browser",
     "notif.status_on": "Aan", "notif.status_off": "Uit", "notif.status_blocked": "Geblokkeerd",
     "notif.col_email": "E-mail", "notif.col_inapp": "In-app",
+    "nav.dashboard_short": "Home", "nav.properties_short": "Panden", "nav.market_short": "Markt", "nav.messages_short": "Chat", "nav.more": "Meer",
   },
   pl: {
     "notif.title": "Powiadomienia", "notif.mark_all_read": "Zaznacz wszystkie", "notif.empty": "Brak powiadomień",
@@ -344,6 +349,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "Nieobsługiwane w tej przeglądarce",
     "notif.status_on": "Wł.", "notif.status_off": "Wył.", "notif.status_blocked": "Zablokowane",
     "notif.col_email": "E-mail", "notif.col_inapp": "W aplikacji",
+    "nav.dashboard_short": "Start", "nav.properties_short": "Obiekty", "nav.market_short": "Rynek", "nav.messages_short": "Chat", "nav.more": "Więcej",
   },
   tr: {
     "notif.title": "Bildirimler", "notif.mark_all_read": "Tümünü okundu", "notif.empty": "Bildirim yok",
@@ -356,6 +362,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "Bu tarayıcıda desteklenmiyor",
     "notif.status_on": "Açık", "notif.status_off": "Kapalı", "notif.status_blocked": "Engelli",
     "notif.col_email": "E-posta", "notif.col_inapp": "Uygulama içi",
+    "nav.dashboard_short": "Ana", "nav.properties_short": "Mülkler", "nav.market_short": "Pazar", "nav.messages_short": "Chat", "nav.more": "Daha",
   },
   ar: {
     "notif.title": "الإشعارات", "notif.mark_all_read": "تحديد الكل كمقروء", "notif.empty": "لا إشعارات",
@@ -376,10 +383,10 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.smart_alerts_hint": "يتم كتم التنبيهات تلقائياً عند عرض المحتوى ذي الصلة أو عندما تكون لوحة الإشعارات مفتوحة.",
     "notif.channel_prefs": "قنوات الإشعارات", "notif.channel_prefs_desc": "تحكم في الإشعارات التي تتلقاها عبر البريد الإلكتروني وفي التطبيق.",
     "notif.col_email": "البريد", "notif.col_inapp": "في التطبيق",
-    "notif.urgent_only": "العاجلة فقط", "notif.urgent_only_desc": "تلقي رسائل البريد الإلكتروني فقط للعناصر العاجلة",
     "notif.status_summary": "ملخص الحالة", "notif.status_browser": "المتصفح", "notif.status_sound": "الصوت", "notif.status_vibration": "الاهتزاز",
     "notif.status_on": "مفعّل", "notif.status_off": "معطّل", "notif.status_blocked": "محظور",
     "notif.types_enabled": "أنواع مفعّلة من", "notif.status_email_urgent": "الوضع العاجل",
+    "nav.dashboard_short": "الرئيسية", "nav.properties_short": "عقارات", "nav.market_short": "سوق", "nav.messages_short": "دردشة", "nav.more": "المزيد",
   },
   ja: {
     "notif.title": "通知", "notif.mark_all_read": "すべて既読", "notif.empty": "通知なし",
@@ -392,6 +399,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "このブラウザではサポートされていません",
     "notif.status_on": "オン", "notif.status_off": "オフ", "notif.status_blocked": "ブロック",
     "notif.col_email": "メール", "notif.col_inapp": "アプリ内",
+    "nav.dashboard_short": "ホーム", "nav.properties_short": "物件", "nav.market_short": "市場", "nav.messages_short": "チャット", "nav.more": "他",
   },
   ko: {
     "notif.title": "알림", "notif.mark_all_read": "모두 읽음", "notif.empty": "알림 없음",
@@ -404,6 +412,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "이 브라우저에서 지원되지 않습니다",
     "notif.status_on": "켜짐", "notif.status_off": "꺼짐", "notif.status_blocked": "차단됨",
     "notif.col_email": "이메일", "notif.col_inapp": "인앱",
+    "nav.dashboard_short": "홈", "nav.properties_short": "부동산", "nav.market_short": "마켓", "nav.messages_short": "채팅", "nav.more": "더보기",
   },
   zh: {
     "notif.title": "通知", "notif.mark_all_read": "全部已读", "notif.empty": "没有通知",
@@ -416,6 +425,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "此浏览器不支持",
     "notif.status_on": "开", "notif.status_off": "关", "notif.status_blocked": "已屏蔽",
     "notif.col_email": "邮件", "notif.col_inapp": "应用内",
+    "nav.dashboard_short": "首页", "nav.properties_short": "房产", "nav.market_short": "商城", "nav.messages_short": "聊天", "nav.more": "更多",
   },
   hi: {
     "notif.title": "सूचनाएं", "notif.mark_all_read": "सब पढ़ा हुआ", "notif.empty": "कोई सूचना नहीं",
@@ -427,6 +437,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "इस ब्राउज़र में समर्थित नहीं",
     "notif.status_on": "चालू", "notif.status_off": "बंद", "notif.status_blocked": "अवरुद्ध",
     "notif.col_email": "ईमेल", "notif.col_inapp": "ऐप में",
+    "nav.dashboard_short": "होम", "nav.properties_short": "संपत्ति", "nav.market_short": "बाज़ार", "nav.messages_short": "चैट", "nav.more": "और",
   },
   th: {
     "notif.title": "การแจ้งเตือน", "notif.mark_all_read": "ทำเครื่องหมายอ่านแล้ว", "notif.empty": "ไม่มีการแจ้งเตือน",
@@ -438,6 +449,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "ไม่รองรับในเบราว์เซอร์นี้",
     "notif.status_on": "เปิด", "notif.status_off": "ปิด", "notif.status_blocked": "ถูกบล็อก",
     "notif.col_email": "อีเมล", "notif.col_inapp": "ในแอป",
+    "nav.dashboard_short": "หน้าหลัก", "nav.properties_short": "ทรัพย์สิน", "nav.market_short": "ตลาด", "nav.messages_short": "แชท", "nav.more": "เพิ่มเติม",
   },
   sv: {
     "notif.title": "Aviseringar", "notif.mark_all_read": "Markera alla", "notif.empty": "Inga aviseringar",
@@ -449,5 +461,60 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.browser_unsupported": "Stöds inte i denna webbläsare",
     "notif.status_on": "På", "notif.status_off": "Av", "notif.status_blocked": "Blockerad",
     "notif.col_email": "E-post", "notif.col_inapp": "I appen",
+    "nav.dashboard_short": "Hem", "nav.properties_short": "Objekt", "nav.market_short": "Butik", "nav.messages_short": "Chatt", "nav.more": "Mer",
+  },
+  da: {
+    "nav.dashboard_short": "Hjem", "nav.properties_short": "Boliger", "nav.market_short": "Marked", "nav.messages_short": "Chat", "nav.more": "Mere",
+  },
+  nb: {
+    "nav.dashboard_short": "Hjem", "nav.properties_short": "Eiend.", "nav.market_short": "Marked", "nav.messages_short": "Chat", "nav.more": "Mer",
+  },
+  fi: {
+    "nav.dashboard_short": "Koti", "nav.properties_short": "Kohteet", "nav.market_short": "Kauppa", "nav.messages_short": "Chat", "nav.more": "Lisää",
+  },
+  el: {
+    "nav.dashboard_short": "Αρχική", "nav.properties_short": "Ακίνητα", "nav.market_short": "Αγορά", "nav.messages_short": "Chat", "nav.more": "Άλλα",
+  },
+  cs: {
+    "nav.dashboard_short": "Domů", "nav.properties_short": "Objekty", "nav.market_short": "Trh", "nav.messages_short": "Chat", "nav.more": "Více",
+  },
+  hu: {
+    "nav.dashboard_short": "Főoldal", "nav.properties_short": "Ingatlan", "nav.market_short": "Piac", "nav.messages_short": "Chat", "nav.more": "Több",
+  },
+  ro: {
+    "nav.dashboard_short": "Acasă", "nav.properties_short": "Imobile", "nav.market_short": "Piață", "nav.messages_short": "Chat", "nav.more": "Mai mult",
+  },
+  hr: {
+    "nav.dashboard_short": "Početna", "nav.properties_short": "Objekti", "nav.market_short": "Tržište", "nav.messages_short": "Chat", "nav.more": "Više",
+  },
+  bg: {
+    "nav.dashboard_short": "Начало", "nav.properties_short": "Имоти", "nav.market_short": "Пазар", "nav.messages_short": "Чат", "nav.more": "Още",
+  },
+  sk: {
+    "nav.dashboard_short": "Domov", "nav.properties_short": "Objekty", "nav.market_short": "Trh", "nav.messages_short": "Chat", "nav.more": "Viac",
+  },
+  he: {
+    "nav.dashboard_short": "ראשי", "nav.properties_short": "נכסים", "nav.market_short": "שוק", "nav.messages_short": "צ׳אט", "nav.more": "עוד",
+  },
+  uk: {
+    "nav.dashboard_short": "Головна", "nav.properties_short": "Об'єкти", "nav.market_short": "Ринок", "nav.messages_short": "Чат", "nav.more": "Ще",
+  },
+  ru: {
+    "nav.dashboard_short": "Главная", "nav.properties_short": "Объекты", "nav.market_short": "Рынок", "nav.messages_short": "Чат", "nav.more": "Ещё",
+  },
+  sw: {
+    "nav.dashboard_short": "Nyumbani", "nav.properties_short": "Mali", "nav.market_short": "Soko", "nav.messages_short": "Chat", "nav.more": "Zaidi",
+  },
+  bn: {
+    "nav.dashboard_short": "হোম", "nav.properties_short": "সম্পত্তি", "nav.market_short": "বাজার", "nav.messages_short": "চ্যাট", "nav.more": "আরও",
+  },
+  vi: {
+    "nav.dashboard_short": "Trang chủ", "nav.properties_short": "BĐS", "nav.market_short": "Chợ", "nav.messages_short": "Chat", "nav.more": "Thêm",
+  },
+  id: {
+    "nav.dashboard_short": "Beranda", "nav.properties_short": "Properti", "nav.market_short": "Pasar", "nav.messages_short": "Chat", "nav.more": "Lainnya",
+  },
+  ms: {
+    "nav.dashboard_short": "Utama", "nav.properties_short": "Hartanah", "nav.market_short": "Pasaran", "nav.messages_short": "Chat", "nav.more": "Lagi",
   },
 };
