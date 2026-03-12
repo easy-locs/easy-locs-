@@ -49,6 +49,7 @@ const ITEMS_PER_PAGE = 24;
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
+  const { t } = useI18n();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
