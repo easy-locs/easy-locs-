@@ -355,6 +355,7 @@ export default function ExploreHeader({
   const { user, activeRole } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { unreadCount } = useUnreadMessages();
 
   const dash = getDashboardPath(activeRole);
   const isLandlord = activeRole === "landlord";
