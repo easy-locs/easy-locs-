@@ -213,11 +213,11 @@ export function ExploreRadiusSearch({
           <div className="w-4 h-4 rounded-full bg-foreground border-2 border-background shadow-lg" />
         </div>
 
-        {radiusKm === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/60">
-            <span className="text-sm text-muted-foreground font-medium">Recherche mondiale</span>
-          </div>
-        )}
+      {radiusKm === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/60">
+          <span className="text-xs sm:text-sm text-muted-foreground font-medium px-3 text-center">{t("explore.radius.worldwide_search") || "Worldwide search"}</span>
+        </div>
+      )}
       </div>
 
       {/* Suggestions */}
