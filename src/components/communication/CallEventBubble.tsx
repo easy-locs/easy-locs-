@@ -4,18 +4,17 @@
  */
 import { Phone, PhoneMissed, PhoneOff } from "lucide-react";
 import { format } from "date-fns";
+import { parseCallEvent, cleanCallContent } from "@/lib/call-thread-logger";
 
 interface Props {
   content: string;
   createdAt: string;
-  metadata?: {
-    call_event?: string;
-    duration_seconds?: number;
-  };
 }
 
-export default function CallEventBubble({ content, createdAt, metadata }: Props) {
-  const event = metadata?.call_event || "ended";
+export default function CallEventBubble({ content, createdAt }: Props) {
+  const parsed = parseCallEvent(content);
+  const event = parsed?.event || "ended";
+  const displayContent = cleanCallContent(content);
 
   const config: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
     ended: {
@@ -41,7 +40,7 @@ export default function CallEventBubble({ content, createdAt, metadata }: Props)
     <div className="flex justify-center my-2">
       <div className={`${bg} ${color} inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full`}>
         {icon}
-        <span className="font-medium">{content.replace(/^📞\s*/, "")}</span>
+        <span className="font-medium">{displayContent.replace(/^📞\s*/, "")}</span>
         <span className="opacity-60 text-[10px]">
           {format(new Date(createdAt), "HH:mm")}
         </span>
