@@ -42,6 +42,8 @@ const TenantMessages = () => {
   const [sending, setSending] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [uploading, setUploading] = useState(false);
+  const [showOriginalMap, setShowOriginalMap] = useState<Record<string, boolean>>({});
+  const [translatingId, setTranslatingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
