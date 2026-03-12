@@ -177,6 +177,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         console.error("Failed to start call:", err);
       } finally {
         startingCallRef.current = false;
+        setIsStartingCall(false);
       }
     },
     [user]
