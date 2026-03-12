@@ -417,7 +417,21 @@ export default function Explore() {
           />
         )}
 
-        {/* Geo context banner */}
+        {/* GPS Near Me quick button — show when no location filter active */}
+        {!loading && !locationQuery && geo.detection?.city && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15">
+            <LocateFixed className="h-4 w-4 text-accent shrink-0" />
+            <span className="text-sm text-muted-foreground flex-1">
+              📍 {t("explore.detected_location") || "Detected location"}: <strong className="text-foreground">{geo.detection.city}, {geo.country.toUpperCase()}</strong>
+            </span>
+            <button onClick={handleNearMe} className="text-xs font-semibold text-accent-foreground bg-accent px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity whitespace-nowrap">
+              {t("explore.near_me") || "Near me"}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Geo context banner when location filter is active */}
         {!loading && geo.detection?.city && locationQuery && geoApplied && !searchParams.get("location") && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-accent/5 border border-accent/15">
