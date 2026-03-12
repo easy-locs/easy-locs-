@@ -6,9 +6,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
-  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight,
+  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
 } from "lucide-react";
-import { MessageCircle } from "lucide-react";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,12 +162,12 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
         booking_type: thread.bookingType || null,
-        contact_name: thread.conversationType !== "property" ? thread.name : null,
-        contact_email: thread.conversationType !== "property" ? thread.email : null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
         content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      } as any);
+      });
       toast.success("File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
@@ -204,15 +203,15 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
         booking_type: thread.bookingType || null,
-        contact_name: thread.conversationType !== "property" ? thread.name : null,
-        contact_email: thread.conversationType !== "property" ? thread.email : null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
         content, translated_content: translatedContent,
         category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
         sender_locale: locale, read: false, message_type: "user",
         property_id: thread.propertyId || null,
         conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
-      } as any);
+      });
 
       setNewMessage("");
       setConvStatus("waiting_tenant");
@@ -306,7 +305,8 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         tenant_id: thread.tenantId || null, booking_id: thread.bookingId,
         booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
-      } as any);
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
@@ -363,7 +363,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      } as any);
+      });
 
       setPaymentLinkDialog(false);
       setPaymentAmount("");
@@ -427,7 +427,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden shrink-0 h-9 w-9">
+              <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>

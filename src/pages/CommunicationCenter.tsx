@@ -14,6 +14,7 @@ import { MessageCircle, FileText, CreditCard, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import ConversationList from "@/components/communication-hub/ConversationList";
 import ChatPanel from "@/components/communication-hub/ChatPanel";
@@ -25,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const CommunicationCenter = () => {
   const { orgId } = useAuth();
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
@@ -41,7 +43,7 @@ const CommunicationCenter = () => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal");
     if (!threadParam || loading || threads.length === 0) return;
 
-    let found = threads.find(t =>
+    const found = threads.find(t =>
       t.id === `booking-${threadParam}` || t.id === threadParam ||
       t.bookingId === threadParam || t.dealId === threadParam ||
       t.id === `deal-${threadParam}` || t.id === `tenant-${threadParam}` ||
@@ -59,6 +61,7 @@ const CommunicationCenter = () => {
 
   const handleBack = useCallback(() => {
     setSelectedThread(null);
+    setShowContext(false);
   }, []);
 
   const handleThreadUpdate = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
@@ -98,17 +101,17 @@ const CommunicationCenter = () => {
 
         {/* 3-Layer Layout */}
         <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
-          {/* Layer 1: Conversation List */}
+          {/* Layer 1: Conversation List — hide on mobile when a thread is selected */}
           <ConversationList
             threads={threads}
             loading={loading}
             selectedThread={selectedThread}
             onSelectThread={handleSelectThread}
-            visible={!selectedThread || window.innerWidth >= 768}
+            visible={!selectedThread || !isMobile}
           />
 
-          {/* Layer 2: Chat Panel */}
-          <div className={`flex-1 flex flex-col ${!selectedThread ? "hidden md:flex" : "flex"}`}>
+          {/* Layer 2 + 3: Chat + Context — hide on mobile when no thread selected */}
+          <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
             <div className="flex-1 flex min-h-0">
               <ChatPanel
                 thread={selectedThread}
@@ -118,8 +121,8 @@ const CommunicationCenter = () => {
                 onThreadUpdate={handleThreadUpdate}
               />
 
-              {/* Layer 3: Context Panel */}
-              {showContext && selectedThread && orgId && (
+              {/* Layer 3: Context Panel — hidden on mobile, shown on lg+ */}
+              {showContext && selectedThread && orgId && !isMobile && (
                 <ContextPanel
                   thread={selectedThread}
                   orgId={orgId}
