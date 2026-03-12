@@ -17,7 +17,7 @@ const AboutPage = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="About Easy-Locs — Global Property Management Platform"
-        description="Discover Easy-Locs, the all-in-one SaaS platform for property management across 110+ countries. Leases, receipts, tenant portals and more."
+        description="Discover Easy-Locs, the all-in-one SaaS platform for property management across 190+ countries. Leases, receipts, tenant portals and more."
         canonical="https://www.easy-locs.com/about"
         jsonLd={{ "@context": "https://schema.org", "@type": "AboutPage", name: "About Easy-Locs", url: "https://www.easy-locs.com/about", description: "Easy-Locs is a global property management SaaS platform." }}
       />

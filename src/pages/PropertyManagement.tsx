@@ -141,7 +141,7 @@ const PropertyManagement = () => {
             {currentCountry ? (
               <>{currentCountry.flag} Property Management in {currentCountry.name}</>
             ) : (
-              <>🌍 Property Management Software for 110+ Countries</>
+              <>🌍 Property Management Software for 190+ Countries</>
             )}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">{pageDesc}</p>
