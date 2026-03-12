@@ -41,6 +41,7 @@ export default function ExploreContactDrawer({
         contextType="service"
         contextId={serviceId}
         providerPhone={providerPhone}
+        providerWhatsApp={providerWhatsApp}
       />
     );
   }

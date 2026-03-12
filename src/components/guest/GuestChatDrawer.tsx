@@ -491,7 +491,7 @@ export default function GuestChatDrawer({
         serviceTitle={serviceTitle}
         onFallbackChat={() => setCallDialogOpen(false)}
         providerPhone={providerPhone}
-        providerWhatsApp={providerPhone}
+        providerWhatsApp={providerWhatsApp || providerPhone}
       />
     </>
   );
