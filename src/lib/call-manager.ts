@@ -346,7 +346,7 @@ export class CallManager {
       this.pc.onconnectionstatechange = () => {
         if (this.pc?.connectionState === "connected") {
           this.iceConnected = true;
-          this.clearStreamTimeout();
+          this.clearTimeouts();
           this.onStateChange({ status: "active", usingRelay: true });
         } else if (this.pc?.connectionState === "failed") {
           this.onStateChange({
