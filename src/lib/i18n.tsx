@@ -1194,7 +1194,7 @@ const pageFr: Record<string, string> = {
   "page.fiscal.deduction_text": "Déduction des charges réelles ({amount}).",
 
   "page.landing.hero.badge": "Longue durée | Airbnb | Booking | Multi-pays",
-  "landing.hero.badge": "Gérez votre business depuis n'importe où — 110+ pays",
+  "landing.hero.badge": "Gérez votre business depuis n'importe où — 190+ pays",
   "landing.hero.title": "La première plateforme mondiale",
   "landing.hero.title_1": "Créez votre business immobilier &",
   "landing.hero.title_2": "services",
