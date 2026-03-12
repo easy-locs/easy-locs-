@@ -1,16 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Inbox, MessageCircle, Send, Loader2, Image as ImageIcon, Check, CheckCheck, Star, Search } from "lucide-react";
+import { Inbox, MessageCircle, Send, Loader2, Image as ImageIcon, Check, CheckCheck, Star, Search, Archive, Forward as ForwardIcon } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import CallEventBubble from "@/components/communication/CallEventBubble";
 import MessageActionsMenu from "@/components/communication/MessageActionsMenu";
 import ReplyPreview from "@/components/communication/ReplyPreview";
+import VoiceRecorder from "@/components/communication/VoiceRecorder";
+import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
+import ThreadActionsMenu from "@/components/communication/ThreadActionsMenu";
+import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { validateMediaFile, MEDIA_ACCEPT } from "@/lib/media-utils";
 import { toast } from "sonner";
 
@@ -21,7 +25,10 @@ interface ThreadSummary {
   last_message: string;
   last_time: string;
   unread_count: number;
+  other_sender_id?: string;
 }
+
+type ThreadFilter = "all" | "starred" | "archived";
 
 const ClientMessages = () => {
   const { user } = useAuth();
@@ -36,14 +43,18 @@ const ClientMessages = () => {
   const [uploading, setUploading] = useState(false);
   const [replyTo, setReplyTo] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [threadFilter, setThreadFilter] = useState<ThreadFilter>("all");
+  const [threadPrefs, setThreadPrefs] = useState<Record<string, { muted: boolean; archived: boolean }>>({});
+  const [forwardMsg, setForwardMsg] = useState<any | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch threads
   useEffect(() => {
     if (!user?.email) { setLoading(false); return; }
-    const fetchThreads = async () => {
+    const fetch = async () => {
       const { data } = await supabase
         .from("messages")
         .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
@@ -63,29 +74,58 @@ const ClientMessages = () => {
             contact_name: msg.contact_name, last_message: msg.content,
             last_time: msg.created_at,
             unread_count: (!msg.read && msg.sender_id !== user.id) ? 1 : 0,
+            other_sender_id: msg.sender_id !== user.id ? msg.sender_id : undefined,
           });
         } else {
           const existing = threadMap.get(key)!;
           if (!msg.read && msg.sender_id !== user.id) existing.unread_count++;
+          if (!existing.other_sender_id && msg.sender_id !== user.id) existing.other_sender_id = msg.sender_id;
         }
       }
 
       setThreads(Array.from(threadMap.values()).sort((a, b) =>
         new Date(b.last_time).getTime() - new Date(a.last_time).getTime()
       ));
+
+      // Load conversation preferences
+      const { data: prefs } = await supabase
+        .from("conversation_preferences")
+        .select("context_id, muted, archived")
+        .eq("user_id", user.id);
+      if (prefs) {
+        const map: Record<string, { muted: boolean; archived: boolean }> = {};
+        prefs.forEach((p: any) => { map[p.context_id] = { muted: p.muted, archived: p.archived }; });
+        setThreadPrefs(map);
+      }
+
       setLoading(false);
     };
-    fetchThreads();
+    fetch();
   }, [user]);
+
+  // Filtered threads
+  const filteredThreads = useMemo(() => {
+    let list = threads;
+    // Global search
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter(t => t.contact_name?.toLowerCase().includes(q) || t.last_message?.toLowerCase().includes(q));
+    }
+    // Filter by tab
+    if (threadFilter === "archived") {
+      list = list.filter(t => threadPrefs[t.context_id]?.archived);
+    } else if (threadFilter === "all") {
+      list = list.filter(t => !threadPrefs[t.context_id]?.archived);
+    }
+    return list;
+  }, [threads, globalSearch, threadFilter, threadPrefs]);
 
   // Load messages for active thread
   useEffect(() => {
     if (!activeThread) return;
     setMsgLoading(true);
     const load = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
+      const { data } = await supabase.from("messages").select("*")
         .eq("context_id", activeThread.context_id)
         .order("created_at", { ascending: true });
       setMessages(data || []);
@@ -132,30 +172,17 @@ const ClientMessages = () => {
     if (!newMsg.trim() || !user || !activeThread) return;
     setSending(true);
     try {
-      const { data: inserted } = await supabase
-        .from("messages")
-        .insert({
-          org_id: activeThread.org_id,
-          sender_id: user.id,
-          content: newMsg.trim(),
-          context_id: activeThread.context_id,
-          context_type: "booking",
-          contact_email: user.email?.toLowerCase(),
-          contact_name: user.user_metadata?.full_name || user.email,
-          message_type: "user",
-          conversation_status: "waiting_provider",
-          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
-        } as any)
-        .select("*")
-        .single();
-      if (inserted) {
-        setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
-      }
-      setNewMsg("");
-      setReplyTo(null);
-    } finally {
-      setSending(false);
-    }
+      const { data: inserted } = await supabase.from("messages").insert({
+        org_id: activeThread.org_id, sender_id: user.id,
+        content: newMsg.trim(), context_id: activeThread.context_id,
+        context_type: "booking", contact_email: user.email?.toLowerCase(),
+        contact_name: user.user_metadata?.full_name || user.email,
+        message_type: "user", conversation_status: "waiting_provider",
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+      } as any).select("*").single();
+      if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
+      setNewMsg(""); setReplyTo(null);
+    } finally { setSending(false); }
   };
 
   const handleMediaUpload = async (file: File) => {
@@ -172,75 +199,94 @@ const ClientMessages = () => {
       const url = signed?.signedUrl || path;
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       const { data: inserted } = await supabase.from("messages").insert({
-        org_id: activeThread.org_id,
-        sender_id: user.id,
+        org_id: activeThread.org_id, sender_id: user.id,
         content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
-        context_id: activeThread.context_id,
-        context_type: "booking",
+        context_id: activeThread.context_id, context_type: "booking",
         contact_email: user.email?.toLowerCase(),
         contact_name: user.user_metadata?.full_name || user.email,
-        message_type: "user",
-        conversation_status: "waiting_provider",
+        message_type: "user", conversation_status: "waiting_provider",
         attachment_url: url,
       } as any).select("*").single();
       if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
       toast.success("Media sent");
-    } catch (e: any) {
-      toast.error(e.message);
-    }
+    } catch (e: any) { toast.error(e.message); }
     setUploading(false);
   };
 
-  const handleMessageDeleted = (id: string) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
+  const handleVoiceSent = (msg: any) => {
+    setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
   };
 
-  const handleStarToggle = (id: string, starred: boolean) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, starred } : m));
-  };
-
-  // Filter deleted messages and apply search
   const visibleMessages = messages.filter(m => {
     if ((m as any).deleted_for_sender && m.sender_id === user?.id) return false;
-    if ((m as any).deleted_for_all) return false;
+    if ((m as any).deleted_for_all) {
+      // Show "deleted" placeholder
+      return true;
+    }
     if (searchQuery && !m.content?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
+  const currentPrefs = activeThread ? (threadPrefs[activeThread.context_id] || { muted: false, archived: false }) : { muted: false, archived: false };
+
+  // ─── Thread list view ───
   if (!activeThread) {
     return (
       <ClientLayout>
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-2xl font-bold text-foreground mb-6">{t("nav.messages") || "Messages"}</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-4">{t("nav.messages") || "Messages"}</h1>
           </motion.div>
+
+          {/* Global search */}
+          <div className="mb-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text" value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)}
+                placeholder="Search conversations..."
+                className="w-full bg-muted/50 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex gap-1 mb-4">
+            {(["all", "starred", "archived"] as ThreadFilter[]).map(f => (
+              <button key={f} onClick={() => setThreadFilter(f)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  threadFilter === f ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}>
+                {f === "all" ? "All" : f === "starred" ? "⭐ Starred" : "📦 Archived"}
+              </button>
+            ))}
+          </div>
 
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-muted/30 animate-pulse" />)}
             </div>
-          ) : threads.length === 0 ? (
+          ) : filteredThreads.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl p-8 shadow-card border border-border/50 text-center">
               <Inbox className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">{t("client.messages_empty") || "No messages yet"}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t("client.messages_empty_desc") || "Your conversations with providers will appear here."}</p>
+              <p className="text-muted-foreground">{threadFilter === "archived" ? "No archived conversations" : (t("client.messages_empty") || "No messages yet")}</p>
             </motion.div>
           ) : (
             <div className="space-y-2">
-              {threads.map((thread, i) => (
-                <motion.button
-                  key={thread.context_id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
+              {filteredThreads.map((thread, i) => (
+                <motion.button key={thread.context_id}
+                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
                   onClick={() => setActiveThread(thread)}
-                  className="w-full bg-card rounded-xl p-4 shadow-card border border-border/50 flex items-center gap-3 hover:border-accent/30 transition-all group text-left"
-                >
+                  className="w-full bg-card rounded-xl p-4 shadow-card border border-border/50 flex items-center gap-3 hover:border-accent/30 transition-all group text-left">
                   <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                     <MessageCircle className="h-5 w-5 text-accent" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{thread.contact_name || "Provider"}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium text-foreground truncate">{thread.contact_name || "Provider"}</p>
+                      {threadPrefs[thread.context_id]?.muted && <span className="text-[10px] text-muted-foreground">🔇</span>}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{thread.last_message}</p>
                   </div>
                   <div className="text-right shrink-0">
@@ -260,7 +306,7 @@ const ClientMessages = () => {
     );
   }
 
-  // Chat view
+  // ─── Chat view ───
   return (
     <ClientLayout>
       <div className="max-w-3xl mx-auto flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
@@ -275,19 +321,24 @@ const ClientMessages = () => {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setShowSearch(!showSearch); if (showSearch) setSearchQuery(""); }}>
             <Search className="h-4 w-4" />
           </Button>
+          <ThreadActionsMenu
+            userId={user!.id}
+            contextId={activeThread.context_id}
+            otherUserId={activeThread.other_sender_id}
+            isMuted={currentPrefs.muted}
+            isArchived={currentPrefs.archived}
+            onPrefsChanged={(muted, archived) => {
+              setThreadPrefs(prev => ({ ...prev, [activeThread.context_id]: { muted, archived } }));
+            }}
+          />
         </div>
 
-        {/* Search bar */}
         {showSearch && (
           <div className="mb-2">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search in conversation..."
               className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              autoFocus
-            />
+              autoFocus />
           </div>
         )}
 
@@ -306,10 +357,10 @@ const ClientMessages = () => {
                 const isMe = m.sender_id === user?.id;
                 const isSystem = m.message_type === "system";
                 const isCallEvent = isSystem && m.context_type === "call";
+                const isDeletedForAll = !!(m as any).deleted_for_all;
+                const isForwarded = !!(m as any).forwarded_from;
 
-                if (isCallEvent) {
-                  return <CallEventBubble key={m.id} content={m.content} createdAt={m.created_at} />;
-                }
+                if (isCallEvent) return <CallEventBubble key={m.id} content={m.content} createdAt={m.created_at} />;
 
                 if (isSystem) {
                   return (
@@ -322,58 +373,83 @@ const ClientMessages = () => {
                   );
                 }
 
-                // Find replied message
                 const repliedMsg = m.reply_to_id ? messages.find(rm => rm.id === m.reply_to_id) : null;
+                const minutesSince = differenceInMinutes(new Date(), new Date(m.created_at));
+
+                const bubble = (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                      isDeletedForAll
+                        ? "bg-muted/30 border border-border/30"
+                        : isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"
+                    }`}>
+                      {/* Forwarded label */}
+                      {isForwarded && !isDeletedForAll && (
+                        <div className={`flex items-center gap-1 mb-1 text-[10px] ${isMe ? "text-accent-foreground/50" : "text-muted-foreground"}`}>
+                          <ForwardIcon className="h-2.5 w-2.5" /> Forwarded
+                        </div>
+                      )}
+
+                      {/* Reply quote */}
+                      {repliedMsg && !isDeletedForAll && (
+                        <div className="mb-1.5">
+                          <ReplyPreview
+                            replyContent={repliedMsg.content}
+                            replyAuthor={repliedMsg.sender_id === user?.id ? "You" : (repliedMsg.contact_name || "Provider")}
+                            compact
+                          />
+                        </div>
+                      )}
+
+                      {/* Starred */}
+                      {(m as any).starred && !isDeletedForAll && (
+                        <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 inline mr-1" />
+                      )}
+
+                      {/* Content */}
+                      {isDeletedForAll ? (
+                        <p className="text-xs italic text-muted-foreground">🚫 This message was deleted</p>
+                      ) : (
+                        <>
+                          <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+                          {m.attachment_url && (
+                            <ChatMediaPreview url={m.attachment_url} fileName={m.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
+                          )}
+                          {(m as any).audio_url && (
+                            <VoiceMessageBubble url={(m as any).audio_url} durationSeconds={(m as any).audio_duration_seconds || 0} isMe={isMe} />
+                          )}
+                        </>
+                      )}
+
+                      {/* Timestamp */}
+                      <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
+                        <p className={`text-[10px] ${isMe && !isDeletedForAll ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
+                          {format(new Date(m.created_at), "dd MMM HH:mm")}
+                        </p>
+                        {isMe && !isDeletedForAll && (
+                          <span className="text-[10px]">
+                            {m.read ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+
+                if (isDeletedForAll) return <div key={m.id}>{bubble}</div>;
 
                 return (
-                  <MessageActionsMenu
-                    key={m.id}
-                    messageId={m.id}
-                    content={m.content}
-                    isMe={isMe}
+                  <MessageActionsMenu key={m.id}
+                    messageId={m.id} content={m.content} isMe={isMe}
                     isStarred={!!(m as any).starred}
+                    minutesSinceSent={minutesSince}
                     onReply={() => setReplyTo(m)}
-                    onDeleted={() => handleMessageDeleted(m.id)}
-                    onStarToggle={(starred) => handleStarToggle(m.id, starred)}
+                    onForward={() => setForwardMsg(m)}
+                    onDeleted={() => setMessages(prev => isMe ? prev.filter(x => x.id !== m.id) : prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x))}
+                    onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
                   >
-                    <motion.div
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                    >
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
-                        {/* Reply quote */}
-                        {repliedMsg && (
-                          <div className="mb-1.5">
-                            <ReplyPreview
-                              replyContent={repliedMsg.content}
-                              replyAuthor={repliedMsg.sender_id === user?.id ? "You" : (repliedMsg.contact_name || "Provider")}
-                              compact
-                            />
-                          </div>
-                        )}
-
-                        {/* Starred indicator */}
-                        {(m as any).starred && (
-                          <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 inline mr-1" />
-                        )}
-
-                        <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
-                        {m.attachment_url && (
-                          <ChatMediaPreview url={m.attachment_url} fileName={m.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
-                        )}
-                        <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
-                          <p className={`text-[10px] ${isMe ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
-                            {format(new Date(m.created_at), "dd MMM HH:mm")}
-                          </p>
-                          {isMe && (
-                            <span className="text-[10px]">
-                              {m.read ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
+                    {bubble}
                   </MessageActionsMenu>
                 );
               })
@@ -400,19 +476,46 @@ const ClientMessages = () => {
               className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
             </button>
-            <input
-              type="text"
-              value={newMsg}
-              onChange={(e) => setNewMsg(e.target.value)}
+
+            {/* Voice recorder (when no text typed) */}
+            {!newMsg.trim() && activeThread && user && (
+              <VoiceRecorder
+                orgId={activeThread.org_id}
+                contextId={activeThread.context_id}
+                userId={user.id}
+                userEmail={user.email?.toLowerCase() || ""}
+                userName={user.user_metadata?.full_name || user.email || ""}
+                onSent={handleVoiceSent}
+              />
+            )}
+
+            <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)}
               placeholder={t("client.type_message") || "Type a message..."}
-              className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button type="submit" disabled={sending || !newMsg.trim()} className="bg-gradient-gold text-accent-foreground p-2.5 rounded-lg hover:opacity-90 disabled:opacity-40">
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </button>
+              className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+
+            {newMsg.trim() && (
+              <button type="submit" disabled={sending}
+                className="bg-gradient-gold text-accent-foreground p-2.5 rounded-lg hover:opacity-90 disabled:opacity-40">
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            )}
           </form>
         </div>
       </div>
+
+      {/* Forward dialog */}
+      {forwardMsg && user && (
+        <ForwardMessageDialog
+          open={!!forwardMsg}
+          onClose={() => setForwardMsg(null)}
+          messageContent={forwardMsg.content}
+          messageId={forwardMsg.id}
+          userId={user.id}
+          userEmail={user.email?.toLowerCase() || ""}
+          userName={user.user_metadata?.full_name || user.email || ""}
+          currentContextId={activeThread.context_id}
+        />
+      )}
     </ClientLayout>
   );
 };
