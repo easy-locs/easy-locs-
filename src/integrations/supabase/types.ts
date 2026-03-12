@@ -2513,6 +2513,7 @@ export type Database = {
           source_contact_name: string | null
           source_contact_notes: string | null
           source_contact_phone: string | null
+          status: Database["public"]["Enums"]["listing_status"]
           surface_sqm: number | null
           time_slots: Json | null
           title: string
@@ -2566,6 +2567,7 @@ export type Database = {
           source_contact_name?: string | null
           source_contact_notes?: string | null
           source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"]
           surface_sqm?: number | null
           time_slots?: Json | null
           title: string
@@ -2619,6 +2621,7 @@ export type Database = {
           source_contact_name?: string | null
           source_contact_notes?: string | null
           source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"]
           surface_sqm?: number | null
           time_slots?: Json | null
           title?: string
@@ -5763,6 +5766,15 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
+      listing_status:
+        | "draft"
+        | "pending_review"
+        | "published"
+        | "paused"
+        | "sold"
+        | "rented"
+        | "archived"
+        | "deleted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5891,6 +5903,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "member", "agent", "staff", "accountant"],
+      listing_status: [
+        "draft",
+        "pending_review",
+        "published",
+        "paused",
+        "sold",
+        "rented",
+        "archived",
+        "deleted",
+      ],
     },
   },
 } as const
