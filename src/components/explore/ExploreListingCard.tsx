@@ -64,8 +64,21 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           
+          {/* Save button */}
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <SaveButton
+              isSaved={isSaved(type, item.id)}
+              onToggle={() => toggleSave({
+                type, id: item.id, title: item.title,
+                image: type === "seasonal" ? item.cover_url : item.photo_urls?.[0],
+                city: item.city, country: item.country,
+                price: item.price || item.price_per_night, currency: item.currency,
+              })}
+            />
+          </div>
+
           {/* Top badge */}
-          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start gap-1.5 flex-wrap">
+          <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
               <span className="truncate max-w-[120px]">{typeBadge.label}</span>

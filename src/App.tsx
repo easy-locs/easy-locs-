@@ -239,6 +239,9 @@ const App = () => (
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
               <Route path="/agency/:accountSlug/:slug" element={<PublicRealEstateListing />} />
               <Route path="/install" element={<Install />} />
+              <Route path="/saved" element={<SavedListings />} />
+              <Route path="/cv-generator" element={<CVGenerator />} />
+              <Route path="/category-notifications" element={<CategorySubscriptions />} />
               <Route path="/vision" element={<PlatformVision />} />
 
               {/* SEO landing pages */}
