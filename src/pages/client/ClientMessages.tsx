@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
+import CallEventBubble from "@/components/communication/CallEventBubble";
 import { validateMediaFile, MEDIA_ACCEPT } from "@/lib/media-utils";
 import { toast } from "sonner";
 
