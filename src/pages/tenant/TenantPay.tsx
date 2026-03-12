@@ -127,13 +127,56 @@ const TenantPay = () => {
     }
   };
 
+  const handleDeclareTransfer = async (rentCallId: string, month: string) => {
+    try {
+      // Update rent call status to "processing"
+      await supabase
+        .from("rent_calls")
+        .update({ payment_status: "processing", payment_method: "bank_transfer" } as any)
+        .eq("id", rentCallId);
+
+      // Find org owner to notify
+      if (tenantInfo?.org_id) {
+        const { data: members } = await supabase
+          .from("org_members")
+          .select("user_id")
+          .eq("org_id", tenantInfo.org_id)
+          .eq("role", "owner")
+          .limit(1);
+        const ownerId = members?.[0]?.user_id;
+
+        // Create notification for landlord
+        if (ownerId) {
+          await supabase.from("notifications").insert({
+            user_id: ownerId,
+            org_id: tenantInfo.org_id,
+            type: "payment",
+            title: `🏦 ${t("page.tenant_pay.transfer_declared") || "Bank transfer declared"}`,
+            message: `${user?.email} - ${month} - ${fmt(unpaidCalls.find(c => c.id === rentCallId)?.total_amount || 0)}`,
+            metadata_json: { target_type: "rent_call", target_id: rentCallId, module: "rental" },
+          } as any);
+        }
+      }
+
+      toast({
+        title: t("page.tenant_pay.transfer_declared") || "Transfer declared",
+        description: t("page.tenant_pay.transfer_declared_desc") || "Your landlord has been notified. Payment will be confirmed upon receipt.",
+      });
+
+      // Update local state
+      setUnpaidCalls(prev => prev.map(c => c.id === rentCallId ? { ...c, payment_status: "processing" } : c));
+    } catch (err: any) {
+      toast({ title: t("page.common.error") || "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const handlePay = async (rentCallId: string) => {
+    const call = unpaidCalls.find(c => c.id === rentCallId);
     if (method === "sepa") {
       setExpandedSepaId(expandedSepaId === rentCallId ? null : rentCallId);
       return;
     }
     if (method === "bank_transfer") {
-      // Just show the bank info section — no action needed
       setExpandedSepaId(null);
       return;
     }
@@ -205,6 +248,8 @@ const TenantPay = () => {
           </div>
         )}
 
+        {/* Requests / Needs section (future) */}
+
         {/* Rent calls list */}
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -255,24 +300,35 @@ const TenantPay = () => {
                       )}
                     </div>
 
-                    <button
-                      onClick={() => handlePay(call.id)}
-                      disabled={payingId === call.id}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
-                    >
-                      {payingId === call.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : method === "sepa" ? (
-                        <Banknote className="h-4 w-4" />
-                      ) : method === "bank_transfer" ? (
-                        <Building className="h-4 w-4" />
-                      ) : (
-                        <ExternalLink className="h-4 w-4" />
-                      )}
-                       {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
-                        method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Transfer") :
-                        (t("page.tenant_pay.pay_btn") || "Pay")}
-                    </button>
+                    {method === "bank_transfer" ? (
+                      <button
+                        onClick={() => handleDeclareTransfer(call.id, call.month)}
+                        disabled={payingId === call.id || call.payment_status === "processing"}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                      >
+                        {call.payment_status === "processing" ? (
+                          <><CheckCircle className="h-4 w-4" /> {t("status.processing") || "Processing"}</>
+                        ) : (
+                          <><Building className="h-4 w-4" /> {t("page.tenant_pay.declare_transfer") || "J'ai effectué le virement"}</>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePay(call.id)}
+                        disabled={payingId === call.id}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                      >
+                        {payingId === call.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : method === "sepa" ? (
+                          <Banknote className="h-4 w-4" />
+                        ) : (
+                          <ExternalLink className="h-4 w-4" />
+                        )}
+                        {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
+                          (t("page.tenant_pay.pay_btn") || "Pay")}
+                      </button>
+                    )}
                   </div>
                 </div>
 
