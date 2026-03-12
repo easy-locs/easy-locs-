@@ -468,6 +468,16 @@ function buildEventContent(event: SyncEvent): { subject: string; message: string
         subject: `🔧 New intervention — ${event.title}`,
         message: `Intervention "${event.title}" created for ${event.propertyLabel} — Priority: ${event.priority}.`,
       };
+    case "deal_created":
+      return {
+        subject: `🤝 New inquiry — ${event.buyerName}`,
+        message: `${event.buyerName} opened a Deal Room for "${event.contextTitle}".`,
+      };
+    case "deal_accepted":
+      return {
+        subject: `✅ Deal accepted — ${event.contextTitle}`,
+        message: `Deal for "${event.contextTitle}" accepted at ${event.acceptedAmount} ${event.currency}. Payment request will follow.`,
+      };
     default:
       return { subject: "Platform notification", message: "An event occurred." };
   }
