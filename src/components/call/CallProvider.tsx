@@ -45,6 +45,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingCallerName, setIncomingCallerName] = useState("");
   const [incomingContextLabel, setIncomingContextLabel] = useState("");
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
+  const [incomingOrgId, setIncomingOrgId] = useState("");
+  const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
+  // Track active call metadata for logging
+  const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string } | null>(null);
 
   // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
