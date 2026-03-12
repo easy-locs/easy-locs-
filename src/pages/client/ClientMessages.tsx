@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import DealRoomPanel from "@/components/communication/DealRoomPanel";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Inbox, MessageCircle, Send, Loader2, Image as ImageIcon, Check, CheckCheck, Star, Search, Archive, Forward as ForwardIcon } from "lucide-react";
@@ -382,6 +383,19 @@ const ClientMessages = () => {
               placeholder="Search in conversation..."
               className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               autoFocus />
+          </div>
+        )}
+
+        {/* Deal Room Panel — shows if a deal exists for this context */}
+        {activeThread.context_id && activeThread.org_id && (
+          <div className="mb-2 bg-card rounded-xl shadow-card border border-border/50 overflow-hidden max-h-60">
+            <DealRoomPanel
+              contextType="marketplace_service"
+              contextId={activeThread.context_id}
+              contextTitle={activeThread.contact_name || undefined}
+              targetOrgId={activeThread.org_id}
+              isOrgMember={false}
+            />
           </div>
         )}
 
