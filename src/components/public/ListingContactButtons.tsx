@@ -106,7 +106,7 @@ const ListingContactButtons = ({
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { startCall, isInCall } = useCall();
+  const { startCall, isInCall, isStartingCall } = useCall();
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [messageSending, setMessageSending] = useState(false);
@@ -232,11 +232,17 @@ const ListingContactButtons = ({
         {orgId && (
           <button
             onClick={handleFreeCall}
-            disabled={isInCall}
+            disabled={isInCall || isStartingCall}
             className="w-full flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 px-4 py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 min-h-[44px]"
           >
-            <PhoneCall className="h-4 w-4" />
-            {t("page.listing.call_free") || "Call for free"}
+            {isStartingCall ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <PhoneCall className="h-4 w-4" />
+            )}
+            {isStartingCall
+              ? (t("page.listing.calling") || "Calling…")
+              : (t("page.listing.call_free") || "Call for free")}
           </button>
         )}
 

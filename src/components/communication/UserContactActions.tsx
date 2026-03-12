@@ -31,7 +31,7 @@ export default function UserContactActions({
   variant = "row", className = "",
 }: Props) {
   const { user } = useAuth();
-  const { startCall } = useCall();
+  const { startCall, isStartingCall } = useCall();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<"msg" | "audio" | "video" | null>(null);
 
@@ -119,8 +119,8 @@ export default function UserContactActions({
         variant="outline"
         size={isCompact ? "sm" : "default"}
         onClick={handleMessage}
-        disabled={!!loading}
-        className="gap-2"
+        disabled={!!loading || isStartingCall}
+        className="gap-2 min-h-[44px]"
       >
         {loading === "msg" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
         {!isCompact && "Message"}
@@ -129,8 +129,8 @@ export default function UserContactActions({
         variant="outline"
         size={isCompact ? "sm" : "default"}
         onClick={() => handleCall(false)}
-        disabled={!!loading}
-        className="gap-2"
+        disabled={!!loading || isStartingCall}
+        className="gap-2 min-h-[44px]"
       >
         {loading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
         {!isCompact && "Call"}
@@ -139,8 +139,8 @@ export default function UserContactActions({
         variant="outline"
         size={isCompact ? "sm" : "default"}
         onClick={() => handleCall(true)}
-        disabled={!!loading}
-        className="gap-2"
+        disabled={!!loading || isStartingCall}
+        className="gap-2 min-h-[44px]"
       >
         {loading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
         {!isCompact && "Video"}

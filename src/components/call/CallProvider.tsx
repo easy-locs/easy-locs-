@@ -23,11 +23,13 @@ interface CallContextType {
     isVideo?: boolean;
   }) => Promise<void>;
   isInCall: boolean;
+  isStartingCall: boolean;
 }
 
 const CallContext = createContext<CallContextType>({
   startCall: async () => {},
   isInCall: false,
+  isStartingCall: false,
 });
 
 export const useCall = () => useContext(CallContext);
@@ -39,6 +41,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [peerName, setPeerName] = useState("");
   const [contextLabel, setContextLabel] = useState("");
   const [showCallDialog, setShowCallDialog] = useState(false);
+  const [isStartingCall, setIsStartingCall] = useState(false);
   const [showIncoming, setShowIncoming] = useState(false);
   const [incomingCallId, setIncomingCallId] = useState<string | null>(null);
   const incomingCallIdRef = useRef<string | null>(null);
@@ -135,32 +138,29 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }) => {
       if (!user || startingCallRef.current) return;
       startingCallRef.current = true;
+      setIsStartingCall(true);
 
       try {
-      // Create call log entry
-      const { data: callLog, error } = await supabase
-        .from("call_logs")
-        .insert({
-          caller_id: user.id,
-          callee_org_id: opts.orgId,
-          thread_id: opts.threadId || null,
-          context_type: opts.contextType || "listing",
-          context_id: opts.contextId || null,
-          context_label: opts.contextLabel || null,
-          status: "ringing",
-          is_video: opts.isVideo || false,
-        } as any)
-        .select("id")
-        .single();
+      // Use idempotent server-side function to prevent duplicates
+      const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
+        _caller_id: user.id,
+        _callee_org_id: opts.orgId,
+        _thread_id: opts.threadId || null,
+        _context_type: opts.contextType || "listing",
+        _context_id: opts.contextId || null,
+        _context_label: opts.contextLabel || null,
+        _is_video: opts.isVideo || false,
+      });
 
-      if (error || !callLog) {
+      if (error || !callId) {
         console.error("Failed to create call:", error);
         startingCallRef.current = false;
+        setIsStartingCall(false);
         return;
       }
 
       const manager = new CallManager({
-        callId: callLog.id,
+        callId: callId as string,
         userId: user.id,
         role: "caller",
         onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
@@ -170,13 +170,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setContextLabel(opts.contextLabel || "");
       setCallManager(manager);
       setShowCallDialog(true);
-      activeCallRef.current = { callId: callLog.id, threadId: opts.threadId, orgId: opts.orgId };
+      activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId };
 
       await manager.startCall(opts.isVideo || false);
       } catch (err) {
         console.error("Failed to start call:", err);
       } finally {
         startingCallRef.current = false;
+        setIsStartingCall(false);
       }
     },
     [user]
@@ -289,11 +290,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
-    startingCallRef.current = false; // Reset lock for next call
+    startingCallRef.current = false;
+    setIsStartingCall(false);
   }, [callManager, user]);
 
   return (
-    <CallContext.Provider value={{ startCall, isInCall: showCallDialog }}>
+    <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
       {children}
 
       {/* Incoming call dialog */}
