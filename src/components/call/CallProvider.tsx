@@ -174,6 +174,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (!user || !incomingCallId) return;
 
     setShowIncoming(false);
+    activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId };
 
     const manager = new CallManager({
       callId: incomingCallId,
@@ -188,19 +189,25 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setShowCallDialog(true);
 
     await manager.acceptCall(incomingIsVideo);
-  }, [user, incomingCallId, incomingCallerName, incomingContextLabel, incomingIsVideo]);
+  }, [user, incomingCallId, incomingCallerName, incomingContextLabel, incomingIsVideo, incomingOrgId, incomingThreadId]);
 
   const handleDeclineIncoming = useCallback(async () => {
     if (!incomingCallId) return;
     setShowIncoming(false);
 
-    // Update call status to declined
     await supabase
       .from("call_logs")
       .update({ status: "declined", ended_at: new Date().toISOString() } as any)
       .eq("id", incomingCallId);
 
-    // Send decline signal via broadcast
+    // Log decline to thread
+    if (incomingThreadId && user) {
+      logCallEventToThread({
+        callId: incomingCallId, threadId: incomingThreadId,
+        orgId: incomingOrgId, senderId: user.id, event: "declined",
+      });
+    }
+
     const channel = supabase.channel(`call:${incomingCallId}`, {
       config: { broadcast: { self: false } },
     });
@@ -213,7 +220,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setTimeout(() => supabase.removeChannel(channel), 1000);
 
     setIncomingCallId(null);
-  }, [incomingCallId, user]);
+  }, [incomingCallId, user, incomingThreadId, incomingOrgId]);
 
   const handleMissedIncoming = useCallback(async () => {
     if (!incomingCallId) return;
@@ -224,6 +231,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .update({ status: "missed", ended_at: new Date().toISOString() } as any)
       .eq("id", incomingCallId);
 
+    // Log missed to thread
+    if (incomingThreadId && user) {
+      logCallEventToThread({
+        callId: incomingCallId, threadId: incomingThreadId,
+        orgId: incomingOrgId, senderId: user.id, event: "missed",
+      });
+    }
+
     const channel = supabase.channel(`call:${incomingCallId}`, {
       config: { broadcast: { self: false } },
     });
@@ -236,14 +251,33 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setTimeout(() => supabase.removeChannel(channel), 1000);
 
     setIncomingCallId(null);
-  }, [incomingCallId, user]);
+  }, [incomingCallId, user, incomingThreadId, incomingOrgId]);
 
-  const handleCloseCall = useCallback(() => {
+  const handleCloseCall = useCallback(async () => {
+    // Log ended call to thread
+    const meta = activeCallRef.current;
+    if (meta?.threadId && user) {
+      // Fetch duration from call_logs
+      const { data: log } = await supabase
+        .from("call_logs")
+        .select("status, duration_seconds")
+        .eq("id", meta.callId)
+        .single();
+      const status = (log as any)?.status;
+      if (status === "ended") {
+        logCallEventToThread({
+          callId: meta.callId, threadId: meta.threadId,
+          orgId: meta.orgId, senderId: user.id, event: "ended",
+          durationSeconds: (log as any)?.duration_seconds || 0,
+        });
+      }
+    }
+    activeCallRef.current = null;
     callManager?.cleanup();
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
-  }, [callManager]);
+  }, [callManager, user]);
 
   return (
     <CallContext.Provider value={{ startCall, isInCall: showCallDialog }}>
