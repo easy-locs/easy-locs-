@@ -21,10 +21,11 @@ interface ExploreContactDrawerProps {
   serviceId: string;
   orgId: string;
   providerPhone?: string;
+  providerWhatsApp?: string;
 }
 
 export default function ExploreContactDrawer({
-  open, onClose, providerName, serviceTitle, serviceId, orgId, providerPhone,
+  open, onClose, providerName, serviceTitle, serviceId, orgId, providerPhone, providerWhatsApp,
 }: ExploreContactDrawerProps) {
   const { user } = useAuth();
 
