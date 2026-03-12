@@ -261,8 +261,9 @@ const ClientMessages = () => {
 
   const visibleMessages = messages.filter(m => {
     if ((m as any).deleted_for_sender && m.sender_id === user?.id) return false;
+    // Hide messages from blocked users (except system messages)
+    if (m.message_type !== "system" && blockedUserIds.has(m.sender_id)) return false;
     if ((m as any).deleted_for_all) {
-      // Show "deleted" placeholder
       return true;
     }
     if (searchQuery && !m.content?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
