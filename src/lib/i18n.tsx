@@ -1356,7 +1356,7 @@ const pageFr: Record<string, string> = {
   "landing.advantages.subtitle": "Conçu pour l'échelle, pensé pour la simplicité, optimisé pour chaque marché.",
   "landing.advantages.cta": "Commencer gratuitement",
   "landing.advantages.worldwide": "Couverture mondiale",
-  "landing.advantages.worldwide_desc": "110+ pays avec réglementations locales, taxes et modèles juridiques.",
+  "landing.advantages.worldwide_desc": "190+ pays avec réglementations locales, taxes et modèles juridiques.",
   "landing.advantages.languages": "31 langues",
   "landing.advantages.languages_desc": "Interface, documents et communication locataire traduits automatiquement.",
   "landing.advantages.currency": "Multi-devises",
