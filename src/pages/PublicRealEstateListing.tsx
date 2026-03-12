@@ -20,6 +20,7 @@ import {
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
   MessageCircle,
 } from "lucide-react";
+import ListingMapSection from "@/components/public/ListingMapSection";
 
 interface Listing {
   id: string; title: string; description: string; listing_type: string;
