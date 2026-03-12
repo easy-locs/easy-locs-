@@ -273,7 +273,6 @@ const ClientMessages = () => {
                       key={m.id}
                       content={m.content}
                       createdAt={m.created_at}
-                      metadata={m.metadata_json as any}
                     />
                   );
                 }
