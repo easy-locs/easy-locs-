@@ -428,7 +428,7 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "Loading..." : locationQuery ? `Results in ${locationQuery}` : "Explore listings"}
+            {loading ? "..." : locationQuery ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? "result" : "results"}` : `${allItems.length} listings`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
         </div>
