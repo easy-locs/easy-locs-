@@ -30,10 +30,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            // Keep react + react-dom together to avoid initialization issues
-            // IMPORTANT: match react-dom but NOT react-router-dom (which depends on react-router in a separate module)
             if (id.includes("/react-dom/") || id.includes("/react/")) return "vendor-react";
-            // Group react-router and react-router-dom together to avoid TDZ issues
             if (id.includes("react-router")) return "vendor-router";
             if (id.includes("framer-motion")) return "vendor-motion";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
@@ -42,9 +39,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("@radix-ui")) return "vendor-radix";
             if (id.includes("jspdf")) return "vendor-pdf";
           }
-          if (id.includes("/components/landing/")) return "chunk-landing";
-          if (id.includes("/pages/seo/")) return "chunk-seo";
-          if (id.includes("/lib/templates/")) return "chunk-templates";
+          // NOTE: Removed app-level manual chunks (landing, seo, templates)
+          // to prevent cross-chunk initialization order issues in production.
+          // Vite/Rollup's automatic code splitting via lazy() handles these better.
         },
       },
     },
