@@ -320,6 +320,8 @@ export class CallManager {
     if (this.pc) {
       try { this.pc.close(); } catch {}
     }
+
+    this.debug("createPeerConnection", { transport: "all" });
     this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "all" });
     this.remoteStream = new MediaStream();
     this.iceConnected = false;
@@ -330,11 +332,19 @@ export class CallManager {
       this.localStream.getTracks().forEach((track) => {
         this.pc!.addTrack(track, this.localStream!);
       });
+      this.debug("local tracks added", {
+        audioTracks: this.localStream.getAudioTracks().length,
+        videoTracks: this.localStream.getVideoTracks().length,
+      });
     }
 
     this.pc.ontrack = (event) => {
       event.streams[0]?.getTracks().forEach((track) => {
         this.remoteStream!.addTrack(track);
+      });
+      this.debug("remote track received", {
+        streamTracks: event.streams[0]?.getTracks().length || 0,
+        remoteTracks: this.remoteStream?.getTracks().length || 0,
       });
       this.clearTimeouts();
       this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
@@ -342,21 +352,28 @@ export class CallManager {
 
     this.pc.onicecandidate = (event) => {
       if (event.candidate) {
+        this.debug("local ICE candidate", {
+          candidateType: event.candidate.type,
+          protocol: event.candidate.protocol,
+        });
         this.sendSignal({ type: "ice", data: JSON.stringify(event.candidate) });
       }
     };
 
     this.pc.oniceconnectionstatechange = () => {
       const state = this.pc?.iceConnectionState;
+      this.debug("iceConnectionState", { state });
       if (state === "connected" || state === "completed") {
         this.iceConnected = true;
         this.clearTimeouts();
-        this.detectRelay();
+        void this.detectRelay();
       }
     };
 
     this.pc.onconnectionstatechange = () => {
       const state = this.pc?.connectionState;
+      this.debug("connectionState", { state, iceConnected: this.iceConnected });
+
       if (state === "connected") {
         this.iceConnected = true;
         this.clearTimeouts();
@@ -370,7 +387,7 @@ export class CallManager {
         } else {
           this.onStateChange({ status: "failed", error: "Connection lost" });
         }
-        this.cleanup();
+        this.cleanup("connection-failed");
       }
     };
   }
