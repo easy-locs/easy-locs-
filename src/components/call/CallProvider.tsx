@@ -155,6 +155,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
       if (error || !callLog) {
         console.error("Failed to create call:", error);
+        startingCallRef.current = false;
         return;
       }
 
