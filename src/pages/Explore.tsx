@@ -344,13 +344,13 @@ export default function Explore() {
             {/* Mobile search trigger */}
             <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground">
               <Search className="h-4 w-4" />
-              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || "Search..."}</span>
+              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
             </button>
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <ThemeSwitcher />
-              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">Log in</Link>
-              <Link to="/signup" className="text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">Sign up</Link>
+              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">{t("landing.nav.login") || "Log in"}</Link>
+              <Link to="/signup" className="text-[11px] sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">{t("landing.nav.pro_signup") || "Sign up"}</Link>
             </div>
           </div>
 
@@ -430,7 +430,9 @@ export default function Explore() {
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-foreground">
-            {loading ? "..." : locationQuery ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? "result" : "results"}` : `${allItems.length} listings`}
+            {loading ? "..." : locationQuery
+              ? `${locationQuery} — ${allItems.length} ${allItems.length === 1 ? (t("explore.result") || "result") : (t("explore.results") || "results")}`
+              : `${allItems.length} ${t("explore.listings") || "listings"}`}
             {radiusKm > 0 && <span className="text-muted-foreground font-normal"> · {radiusKm} km</span>}
           </h2>
         </div>

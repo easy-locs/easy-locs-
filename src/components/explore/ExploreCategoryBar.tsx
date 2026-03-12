@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { useI18n } from "@/lib/i18n";
 
 interface ExploreCategoryBarProps {
   activeGroup: string;
@@ -11,6 +12,7 @@ interface ExploreCategoryBarProps {
 }
 
 export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChange, onSubcategoryChange, groupCounts }: ExploreCategoryBarProps) {
+  const { t } = useI18n();
   const activeGroupData = CATEGORY_HIERARCHY.find(g => g.value === activeGroup);
   const scrollRef = useRef<HTMLDivElement>(null);
   const subScrollRef = useRef<HTMLDivElement>(null);
@@ -38,11 +40,14 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
     scrollRef.current?.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
   };
 
+  // i18n helper: try translating category keys, fallback to English label
+  const tGroup = (value: string, fallback: string) => t(`explore.cat.${value}`) || fallback;
+  const tSub = (value: string, fallback: string) => t(`explore.sub.${value}`) || fallback;
+
   return (
     <>
       {/* ── Main group bar ── */}
       <div className="relative border-t border-border/40">
-        {/* Fade + arrow left */}
         {canScrollLeft && (
           <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center">
             <div className="w-12 h-full bg-gradient-to-r from-background to-transparent pointer-events-none absolute inset-0" />
@@ -52,7 +57,6 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
           </div>
         )}
 
-        {/* Fade + arrow right */}
         {canScrollRight && (
           <div className="absolute right-0 top-0 bottom-0 z-10 flex items-center">
             <div className="w-12 h-full bg-gradient-to-l from-background to-transparent pointer-events-none absolute inset-0" />
@@ -64,11 +68,10 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
 
         <div className="max-w-[1400px] mx-auto px-4">
           <div ref={scrollRef} className="flex items-center gap-1 overflow-x-auto scrollbar-none py-2.5 -mx-1 scroll-smooth">
-            {/* All */}
             <CategoryTab
               active={activeGroup === "all"}
               emoji={<Globe className="h-5 w-5" />}
-              label="All"
+              label={t("explore.all") || "All"}
               count={groupCounts?.all}
               onClick={() => { onGroupChange("all"); onSubcategoryChange("all"); }}
             />
@@ -77,7 +80,7 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
                 key={group.value}
                 active={activeGroup === group.value}
                 emoji={<span className="text-lg leading-none">{group.emoji}</span>}
-                label={group.label}
+                label={tGroup(group.value, group.label)}
                 count={groupCounts?.[group.value]}
                 onClick={() => { onGroupChange(group.value); onSubcategoryChange("all"); }}
               />
@@ -93,7 +96,7 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
             <div ref={subScrollRef} className="flex items-center gap-2 overflow-x-auto scrollbar-none py-2">
               <SubCategoryChip
                 active={activeSubcategory === "all"}
-                label={`All ${activeGroupData.label}`}
+                label={`${t("explore.all") || "All"} ${tGroup(activeGroupData.value, activeGroupData.label)}`}
                 onClick={() => onSubcategoryChange("all")}
               />
               {activeGroupData.subcategories.map(sub => (
@@ -101,7 +104,7 @@ export function ExploreCategoryBar({ activeGroup, activeSubcategory, onGroupChan
                   key={sub.value}
                   active={activeSubcategory === sub.value}
                   emoji={sub.emoji}
-                  label={sub.label}
+                  label={tSub(sub.value, sub.label)}
                   onClick={() => onSubcategoryChange(sub.value)}
                 />
               ))}
@@ -132,7 +135,6 @@ function CategoryTab({ active, emoji, label, count, onClick }: {
     >
       <span className="transition-transform group-hover:scale-110">{emoji}</span>
       <span className="truncate max-w-[76px] leading-none">{label}</span>
-      {/* Active indicator bar */}
       {active && (
         <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-foreground" />
       )}
