@@ -1240,6 +1240,65 @@ export type Database = {
           },
         ]
       }
+      guest_sessions: {
+        Row: {
+          blocked: boolean
+          context_id: string | null
+          context_type: string
+          created_at: string
+          display_name: string
+          email: string | null
+          expires_at: string
+          fingerprint: string | null
+          id: string
+          last_activity_at: string
+          media_sent: number
+          messages_sent: number
+          org_id: string | null
+          token: string
+        }
+        Insert: {
+          blocked?: boolean
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          expires_at?: string
+          fingerprint?: string | null
+          id?: string
+          last_activity_at?: string
+          media_sent?: number
+          messages_sent?: number
+          org_id?: string | null
+          token?: string
+        }
+        Update: {
+          blocked?: boolean
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          expires_at?: string
+          fingerprint?: string | null
+          id?: string
+          last_activity_at?: string
+          media_sent?: number
+          messages_sent?: number
+          org_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_config: {
         Row: {
           key: string
@@ -2320,6 +2379,7 @@ export type Database = {
           conversation_status: string | null
           created_at: string
           delivered: boolean | null
+          guest_session_id: string | null
           id: string
           inbound_message_id: string | null
           language_detected: string | null
@@ -2349,6 +2409,7 @@ export type Database = {
           conversation_status?: string | null
           created_at?: string
           delivered?: boolean | null
+          guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
           language_detected?: string | null
@@ -2378,6 +2439,7 @@ export type Database = {
           conversation_status?: string | null
           created_at?: string
           delivered?: boolean | null
+          guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
           language_detected?: string | null
@@ -2393,6 +2455,13 @@ export type Database = {
           translated_locale?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_guest_session_id_fkey"
+            columns: ["guest_session_id"]
+            isOneToOne: false
+            referencedRelation: "guest_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_org_id_fkey"
             columns: ["org_id"]
