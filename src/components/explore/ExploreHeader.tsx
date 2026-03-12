@@ -22,6 +22,7 @@ import {
   Bookmark, CalendarCheck, Store, Globe, MapPin,
   Building2, FileText, Receipt, Users, Briefcase, CreditCard,
 } from "lucide-react";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 /* ───── Types ───── */
 interface ExploreHeaderProps {
