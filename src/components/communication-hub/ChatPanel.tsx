@@ -305,7 +305,8 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         tenant_id: thread.tenantId || null, booking_id: thread.bookingId,
         booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
-      } as any);
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
