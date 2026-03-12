@@ -3,7 +3,6 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
-import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
 import ListingContactButtons from "@/components/public/ListingContactButtons";

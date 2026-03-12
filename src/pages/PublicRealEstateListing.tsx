@@ -491,7 +491,12 @@ export default function PublicRealEstateListing() {
           <div className="flex-1 flex items-center justify-center px-2 sm:px-4" onClick={e => e.stopPropagation()}>
             <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronLeft className="h-6 sm:h-8 w-6 sm:w-8" /></button>
-            <img src={photos[photoIndex]} alt={`Property photo ${photoIndex + 1}`} className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
+            <div className="relative">
+              <img src={photos[photoIndex]} alt={`Property photo ${photoIndex + 1}`} className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <span className="text-white/10 text-5xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+              </div>
+            </div>
             <button onClick={() => setPhotoIndex(i => (i + 1) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronRight className="h-6 sm:h-8 w-6 sm:w-8" /></button>
           </div>
