@@ -180,6 +180,9 @@ const BASE_REGISTRY: CountryEntry[] = [
   { code: "FJ", name: "Fiji", flag: "🇫🇯", defaultLanguage: "en", supportedLanguages: ["en"], currency: "FJD", currencySymbol: "FJ$", locale: "en-FJ", dateFormat: "dd/MM/yyyy", timezone: "Pacific/Fiji", addressFormat: "anglo", phonePrefix: "+679", phoneFormat: "912 3456", measurementUnit: "metric", region: "asia_pacific", taxIdLabel: "TIN", legalDocumentTypes: ["lease-residential", "rent-receipt"] },
 ];
 
+// ─── Merge base + extra ───
+const REGISTRY: CountryEntry[] = [...BASE_REGISTRY, ...EXTRA_COUNTRIES];
+
 // ─── Indexed lookups ───
 
 const byCode = new Map<string, CountryEntry>();
