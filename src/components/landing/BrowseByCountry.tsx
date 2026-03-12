@@ -23,10 +23,10 @@ const CONTINENTS = [
     name: "Middle East",
     emoji: "🏜️",
     countries: [
-      { name: "UAE", slug: "uae", flag: "🇦🇪", cities: ["Dubai", "Abu Dhabi"] },
-      { name: "Turkey", slug: "turkey", flag: "🇹🇷", cities: ["Istanbul", "Antalya"] },
-      { name: "Saudi Arabia", slug: "saudi-arabia", flag: "🇸🇦", cities: ["Riyadh", "Jeddah"] },
       { name: "Qatar", slug: "qatar", flag: "🇶🇦", cities: ["Doha"] },
+      { name: "Saudi Arabia", slug: "saudi-arabia", flag: "🇸🇦", cities: ["Riyadh", "Jeddah"] },
+      { name: "Turkey", slug: "turkey", flag: "🇹🇷", cities: ["Istanbul", "Antalya"] },
+      { name: "UAE", slug: "uae", flag: "🇦🇪", cities: ["Dubai", "Abu Dhabi"] },
     ],
   },
   {
