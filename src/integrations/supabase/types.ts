@@ -898,6 +898,92 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_reveals: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string | null
+          org_id: string | null
+          reveal_type: string
+          service_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          org_id?: string | null
+          reveal_type?: string
+          service_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          org_id?: string | null
+          reveal_type?: string
+          service_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversation_threads: {
+        Row: {
+          context_id: string | null
+          context_type: string
+          created_at: string
+          id: string
+          initiator_id: string
+          last_message_at: string | null
+          listing_title: string | null
+          listing_url: string | null
+          org_id: string
+          participant_ids: string[]
+          provider_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          initiator_id: string
+          last_message_at?: string | null
+          listing_title?: string | null
+          listing_url?: string | null
+          org_id: string
+          participant_ids?: string[]
+          provider_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          initiator_id?: string
+          last_message_at?: string | null
+          listing_title?: string | null
+          listing_url?: string | null
+          org_id?: string
+          participant_ids?: string[]
+          provider_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_threads_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -2466,6 +2552,7 @@ export type Database = {
           sender_id: string
           sender_locale: string | null
           tenant_id: string | null
+          thread_id: string | null
           translated_content: string | null
           translated_locale: string | null
         }
@@ -2496,6 +2583,7 @@ export type Database = {
           sender_id: string
           sender_locale?: string | null
           tenant_id?: string | null
+          thread_id?: string | null
           translated_content?: string | null
           translated_locale?: string | null
         }
@@ -2526,6 +2614,7 @@ export type Database = {
           sender_id?: string
           sender_locale?: string | null
           tenant_id?: string | null
+          thread_id?: string | null
           translated_content?: string | null
           translated_locale?: string | null
         }
@@ -2549,6 +2638,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
             referencedColumns: ["id"]
           },
         ]
