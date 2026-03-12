@@ -5420,83 +5420,137 @@ export type Database = {
         Row: {
           active: boolean | null
           badges: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string | null
+          brand: string | null
           category: string | null
           city: string | null
+          condition: string | null
+          contact_email: string | null
+          contact_whatsapp: string | null
           country: string | null
           created_at: string | null
           currency: string | null
+          deposit_amount: number | null
           description: string | null
           duration_minutes: number | null
+          features: Json | null
           id: string | null
+          listing_expires_at: string | null
+          listing_type: string | null
           location: string | null
           max_capacity: number | null
+          model: string | null
           org_id: string | null
           photo_urls: Json | null
           price: number | null
           price_type: string | null
           provider_id: string | null
+          quantity: number | null
           requires_id_document: boolean | null
+          rooms: number | null
           sort_order: number | null
+          source_contact_email: string | null
+          source_contact_phone: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm: number | null
           time_slots: Json | null
           title: string | null
           updated_at: string | null
           user_id: string | null
+          year_built: number | null
         }
         Insert: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string | null
+          brand?: string | null
           category?: string | null
           city?: string | null
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
           price?: number | null
           price_type?: string | null
           provider_id?: string | null
+          quantity?: number | null
           requires_id_document?: boolean | null
+          rooms?: number | null
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          year_built?: number | null
         }
         Update: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string | null
+          brand?: string | null
           category?: string | null
           city?: string | null
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
           price?: number | null
           price_type?: string | null
           provider_id?: string | null
+          quantity?: number | null
           requires_id_document?: boolean | null
+          rooms?: number | null
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          year_built?: number | null
         }
         Relationships: [
           {
