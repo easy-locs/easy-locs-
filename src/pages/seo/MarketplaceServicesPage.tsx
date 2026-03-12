@@ -153,6 +153,12 @@ const MarketplaceServicesPage = () => (
           <h2 className="text-2xl font-bold text-foreground mb-4">Start earning more from your properties</h2>
           <p className="text-muted-foreground mb-6">List your services on Easy-Locs and reach guests in 190+ countries.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
+          <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
+            <Link to="/property-management" className="text-muted-foreground hover:text-primary transition-colors">Property Management →</Link>
+            <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-primary transition-colors">Vacation Rentals →</Link>
+            <Link to="/concierge-services" className="text-muted-foreground hover:text-primary transition-colors">Concierge Services →</Link>
+            <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">Explore Listings →</Link>
+          </nav>
         </div>
       </section>
     </main>

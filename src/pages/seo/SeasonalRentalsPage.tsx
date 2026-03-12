@@ -20,6 +20,14 @@ const jsonLd = [
   },
   {
     "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
+      { "@type": "ListItem", position: 2, name: "Vacation Rentals", item: "https://www.easy-locs.com/seasonal-rentals" },
+    ],
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
       {
@@ -122,7 +130,7 @@ const SeasonalRentalsPage = () => (
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 max-w-3xl">
           <h2 className="text-3xl font-bold text-center text-foreground mb-10">Frequently Asked Questions</h2>
-          {jsonLd[1].mainEntity.map((q: any) => (
+          {jsonLd[2].mainEntity.map((q: any) => (
             <details key={q.name} className="mb-4 border border-border rounded-lg">
               <summary className="p-4 font-medium text-foreground cursor-pointer">{q.name}</summary>
               <p className="px-4 pb-4 text-muted-foreground text-sm">{q.acceptedAnswer.text}</p>
@@ -136,6 +144,12 @@ const SeasonalRentalsPage = () => (
           <h2 className="text-2xl font-bold text-foreground mb-4">Start managing your vacation rentals today</h2>
           <p className="text-muted-foreground mb-6">Join property owners in 190+ countries using Easy-Locs for professional short-term rental management.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
+          <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
+            <Link to="/property-management" className="text-muted-foreground hover:text-primary transition-colors">Property Management →</Link>
+            <Link to="/concierge-services" className="text-muted-foreground hover:text-primary transition-colors">Concierge Services →</Link>
+            <Link to="/marketplace-services" className="text-muted-foreground hover:text-primary transition-colors">Marketplace →</Link>
+            <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">Explore Listings →</Link>
+          </nav>
         </div>
       </section>
     </main>
