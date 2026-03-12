@@ -1228,7 +1228,10 @@ const pageFr: Record<string, string> = {
   "landing.hero.demo": "Voir la démo",
 
   "landing.nav.explore": "Explorer",
+  "landing.nav.marketplace": "Marketplace",
+  "landing.nav.properties": "Propriétés",
   "landing.nav.language": "Langue",
+  "landing.footer.languages_count": "31 langues supportées",
 
   "landing.pillars.badge": "Trois modèles d'affaires",
   "landing.pillars.heading": "Une plateforme,",
