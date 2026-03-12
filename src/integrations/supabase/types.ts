@@ -737,6 +737,8 @@ export type Database = {
           blocked_dates: Json | null
           booking_slug: string | null
           booking_type: string
+          boost_tier: string | null
+          boost_until: string | null
           category: string
           city: string
           commission_amount: number
@@ -748,6 +750,8 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           id: string
+          lat: number | null
+          lng: number | null
           location: string | null
           max_capacity: number | null
           org_id: string
@@ -772,6 +776,8 @@ export type Database = {
           blocked_dates?: Json | null
           booking_slug?: string | null
           booking_type?: string
+          boost_tier?: string | null
+          boost_until?: string | null
           category?: string
           city?: string
           commission_amount?: number
@@ -783,6 +789,8 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           location?: string | null
           max_capacity?: number | null
           org_id: string
@@ -807,6 +815,8 @@ export type Database = {
           blocked_dates?: Json | null
           booking_slug?: string | null
           booking_type?: string
+          boost_tier?: string | null
+          boost_until?: string | null
           category?: string
           city?: string
           commission_amount?: number
@@ -818,6 +828,8 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           location?: string | null
           max_capacity?: number | null
           org_id?: string
@@ -2088,6 +2100,8 @@ export type Database = {
           bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string
+          boost_tier: string | null
+          boost_until: string | null
           brand: string | null
           category: string
           city: string
@@ -2139,6 +2153,8 @@ export type Database = {
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug: string
+          boost_tier?: string | null
+          boost_until?: string | null
           brand?: string | null
           category?: string
           city?: string
@@ -2190,6 +2206,8 @@ export type Database = {
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string
+          boost_tier?: string | null
+          boost_until?: string | null
           brand?: string | null
           category?: string
           city?: string
@@ -3175,6 +3193,8 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          lat: number | null
+          lng: number | null
           max_guests: number | null
           min_nights: number | null
           org_id: string
@@ -3195,6 +3215,8 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           max_guests?: number | null
           min_nights?: number | null
           org_id: string
@@ -3215,6 +3237,8 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           max_guests?: number | null
           min_nights?: number | null
           org_id?: string
@@ -3298,9 +3322,17 @@ export type Database = {
       real_estate_listings: {
         Row: {
           address: string | null
+          agency_email: string | null
+          agency_logo_url: string | null
+          agency_name: string | null
+          agency_phone: string | null
+          agent_name: string | null
           bathrooms: number | null
           bedrooms: number | null
+          boost_tier: string | null
+          boost_until: string | null
           city: string
+          company_registration: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string
@@ -3315,8 +3347,11 @@ export type Database = {
           garden: boolean | null
           heating_type: string | null
           id: string
+          lat: number | null
           latitude: number | null
+          license_number: string | null
           listing_type: string
+          lng: number | null
           longitude: number | null
           org_id: string
           parking: boolean | null
@@ -3340,9 +3375,17 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          agency_email?: string | null
+          agency_logo_url?: string | null
+          agency_name?: string | null
+          agency_phone?: string | null
+          agent_name?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          boost_tier?: string | null
+          boost_until?: string | null
           city?: string
+          company_registration?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string
@@ -3357,8 +3400,11 @@ export type Database = {
           garden?: boolean | null
           heating_type?: string | null
           id?: string
+          lat?: number | null
           latitude?: number | null
+          license_number?: string | null
           listing_type?: string
+          lng?: number | null
           longitude?: number | null
           org_id: string
           parking?: boolean | null
@@ -3382,9 +3428,17 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          agency_email?: string | null
+          agency_logo_url?: string | null
+          agency_name?: string | null
+          agency_phone?: string | null
+          agent_name?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          boost_tier?: string | null
+          boost_until?: string | null
           city?: string
+          company_registration?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string
@@ -3399,8 +3453,11 @@ export type Database = {
           garden?: boolean | null
           heating_type?: string | null
           id?: string
+          lat?: number | null
           latitude?: number | null
+          license_number?: string | null
           listing_type?: string
+          lng?: number | null
           longitude?: number | null
           org_id?: string
           parking?: boolean | null
