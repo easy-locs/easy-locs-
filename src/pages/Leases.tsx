@@ -50,12 +50,16 @@ const Leases = () => {
   const [selectedLeaseType, setSelectedLeaseType] = useState<string>("empty");
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [generating, setGenerating] = useState(false);
+  const [signDocId, setSignDocId] = useState<string | null>(null);
+  const [signDocTitle, setSignDocTitle] = useState("");
+  const [signRole, setSignRole] = useState<"owner" | "tenant">("owner");
   const countryFilter = useCountryFilter();
   const { properties, tenants, loading } = useRentalData(countryFilter);
   const { fillFromOwner, getInventoryForProperty } = useAutoFill(properties, tenants);
   const { user, orgId, userCountry } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const { recordOwnerSignature, recordTenantSignature } = useLeaseWorkflow();
 
   const fmt = (n: number) => formatCurrency(n, userCountry);
 
