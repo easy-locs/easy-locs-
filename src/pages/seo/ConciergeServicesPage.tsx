@@ -28,6 +28,14 @@ const jsonLd = [
   },
   {
     "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.easy-locs.com/" },
+      { "@type": "ListItem", position: 2, name: "Concierge Services", item: "https://www.easy-locs.com/concierge-services" },
+    ],
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
       {
