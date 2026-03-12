@@ -5367,7 +5367,6 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.settings.save_signature": "حفظ التوقيع",
     "page.settings.profile_updated": "تم تحديث الملف الشخصي",
     "page.settings.org_updated": "تم تحديث المنظمة",
-    },
   },
   ja: {
     "nav.dashboard": "ダッシュボード", "nav.properties": "物件", "nav.tenants": "入居者",
