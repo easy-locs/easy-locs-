@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Inbox, MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck } from "lucide-react";
+import { Inbox, MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Image as ImageIcon } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
+import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
+import { validateMediaFile, MEDIA_ACCEPT } from "@/lib/media-utils";
+import { toast } from "sonner";
 
 interface ThreadSummary {
   context_id: string;
@@ -27,7 +30,9 @@ const ClientMessages = () => {
   const [msgLoading, setMsgLoading] = useState(false);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch threads grouped by context_id where contact_email = user email
   useEffect(() => {
@@ -145,7 +150,40 @@ const ClientMessages = () => {
     }
   };
 
-  // Thread list view
+  const handleMediaUpload = async (file: File) => {
+    if (!user || !activeThread) return;
+    const err = validateMediaFile(file);
+    if (err) { toast.error(err); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${activeThread.org_id}/${activeThread.context_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("chat-media").upload(path, file);
+      if (error) throw error;
+      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = signed?.signedUrl || path;
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+      const { data: inserted } = await supabase.from("messages").insert({
+        org_id: activeThread.org_id,
+        sender_id: user.id,
+        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        context_id: activeThread.context_id,
+        context_type: "booking",
+        contact_email: user.email?.toLowerCase(),
+        contact_name: user.user_metadata?.full_name || user.email,
+        message_type: "user",
+        conversation_status: "waiting_provider",
+        attachment_url: url,
+      } as any).select("*").single();
+      if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
+      toast.success("Media sent");
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+    setUploading(false);
+  };
+
+
   if (!activeThread) {
     return (
       <ClientLayout>
@@ -243,10 +281,7 @@ const ClientMessages = () => {
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
                       <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
                       {m.attachment_url && (
-                        <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
-                          className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-accent-foreground/80" : "text-accent"}`}>
-                          <Paperclip className="h-3 w-3" /> Attachment
-                        </a>
+                        <ChatMediaPreview url={m.attachment_url} fileName={m.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
                       )}
                       <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                         <p className={`text-[10px] ${isMe ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
@@ -268,6 +303,12 @@ const ClientMessages = () => {
 
           {/* Input */}
           <form onSubmit={handleSend} className="border-t border-border p-3 flex gap-2 items-center">
+            <input ref={mediaInputRef} type="file" className="hidden" accept={MEDIA_ACCEPT + ",.pdf,.doc,.docx"}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleMediaUpload(f); e.target.value = ""; }} />
+            <button type="button" onClick={() => mediaInputRef.current?.click()} disabled={uploading}
+              className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40">
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            </button>
             <input
               type="text"
               value={newMsg}

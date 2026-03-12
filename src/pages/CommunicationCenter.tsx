@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
+import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -498,18 +499,24 @@ const CommunicationCenter = () => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedThread, orgId, user?.id]);
 
-  /* ────── File upload ────── */
+  /* ────── File/media upload ────── */
   const handleFileUpload = async (file: File) => {
     if (!orgId || !selectedThread || !user) return;
     setUploading(true);
     try {
-      const path = `${orgId}/messages/${selectedThread.id}/${Date.now()}-${file.name}`;
-      const { error: uploadErr } = await supabase.storage.from("rental-docs").upload(path, file);
+      const { validateMediaFile } = await import("@/lib/media-utils");
+      const validationErr = validateMediaFile(file);
+      if (validationErr) { toast.error(validationErr); setUploading(false); return; }
+
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${orgId}/${selectedThread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const { data: signedData } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signedData?.signedUrl || path;
 
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       await supabase.from("messages").insert({
         org_id: orgId,
         sender_id: user.id,
@@ -518,7 +525,7 @@ const CommunicationCenter = () => {
         booking_type: selectedThread.bookingType || null,
         contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
         contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
-        content: `📎 ${file.name}`,
+        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general",
         attachment_url: url,
         message_type: "user",
@@ -530,6 +537,27 @@ const CommunicationCenter = () => {
       toast.error("Erreur: " + e.message);
     }
     setUploading(false);
+  };
+
+  const handleMediaUploaded = async (urls: string[], names: string[]) => {
+    if (!orgId || !selectedThread || !user) return;
+    for (let i = 0; i < urls.length; i++) {
+      await supabase.from("messages").insert({
+        org_id: orgId,
+        sender_id: user.id,
+        tenant_id: selectedThread.tenantId || null,
+        booking_id: selectedThread.bookingId || null,
+        booking_type: selectedThread.bookingType || null,
+        contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
+        contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
+        content: `📷 ${names[i]}`,
+        category: "general",
+        attachment_url: urls[i],
+        message_type: "user",
+        sender_locale: locale,
+      } as any);
+    }
+    toast.success(`${urls.length} media sent`);
   };
 
   const updateConversationStatus = async (status: string) => {
@@ -1338,10 +1366,7 @@ const CommunicationCenter = () => {
                                   </a>
                                 )}
                                 {msg.attachment_url && (
-                                  <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer"
-                                    className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-primary-foreground/80" : "text-accent"}`}>
-                                    <Paperclip className="h-3 w-3" /> Attachment
-                                  </a>
+                                  <ChatMediaPreview url={msg.attachment_url} fileName={msg.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
                                 )}
                                 <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                                   <p className={`text-[10px] ${isMe && !isPayment ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
@@ -1423,9 +1448,9 @@ const CommunicationCenter = () => {
                       <div className="flex-1 min-w-0">
                         <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Write a message..." className="h-10 text-sm" />
                       </div>
-                      <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.heic"
+                      <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
                         onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hidden sm:flex" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
                       <div className="hidden sm:block">
