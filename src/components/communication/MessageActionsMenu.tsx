@@ -72,7 +72,7 @@ export default function MessageActionsMenu({
       deleted_for_all: true,
       content: "🚫 This message was deleted",
     } as any).eq("id", messageId);
-    onDeleted();
+    onDeleted("for_all");
     toast.success("Deleted for everyone");
     close();
   };
