@@ -989,36 +989,30 @@ const CommunicationCenter = () => {
   return (
     <DashboardLayout>
       <div className="h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-        {/* ═══ Header bar — dynamic KPIs ═══ */}
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4 flex-wrap px-1">
+        {/* ═══ Header bar — clean & compact ═══ */}
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-3 px-1">
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-xl font-bold text-foreground flex items-center gap-2">
-              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
-                <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-foreground" />
+            <h1 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
+                <MessageCircle className="h-4 w-4 text-accent-foreground" />
               </div>
               <span className="truncate">{t("page.communication.title") || "Communication"}</span>
             </h1>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 ms-9 sm:ms-10 truncate max-w-[calc(100vw-12rem)] sm:max-w-none">
-              {t("page.communication.subtitle") || "Inbox unifié — Long-term · Seasonal · Marketplace · Real Estate"}
-            </p>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
             {[
-              { icon: MessageCircle, label: "Unread", value: stats.unread, color: "text-accent", bgColor: "bg-accent/8", ringColor: "ring-accent/20" },
-              { icon: FileText, label: "Docs", value: stats.pending_docs, color: "text-blue-500", bgColor: "bg-blue-500/8", ringColor: "ring-blue-500/20" },
-              { icon: CreditCard, label: "Overdue", value: stats.overdue, color: "text-destructive", bgColor: "bg-destructive/8", ringColor: "ring-destructive/20" },
-              { icon: Wrench, label: "Maint.", value: stats.maintenance, color: "text-amber-500", bgColor: "bg-amber-500/8", ringColor: "ring-amber-500/20" },
-            ].map(s => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 ${s.bgColor} rounded-xl text-xs transition-all hover:scale-105 ring-1 ${s.ringColor}`}
+              { icon: MessageCircle, value: stats.unread, color: "text-accent", bg: "bg-accent/8" },
+              { icon: FileText, value: stats.pending_docs, color: "text-blue-500", bg: "bg-blue-500/8" },
+              { icon: CreditCard, value: stats.overdue, color: "text-destructive", bg: "bg-destructive/8" },
+              { icon: Wrench, value: stats.maintenance, color: "text-amber-500", bg: "bg-amber-500/8" },
+            ].filter(s => s.value > 0).map((s, i) => (
+              <div
+                key={i}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 ${s.bg} rounded-lg text-xs`}
               >
                 <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                 <span className="font-bold text-foreground tabular-nums">{s.value}</span>
-                <span className="text-muted-foreground hidden sm:inline text-[11px]">{s.label}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>

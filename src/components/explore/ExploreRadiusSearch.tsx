@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, X, Search, LocateFixed } from "lucide-react";
+import { MapPin, X, Search, LocateFixed, Zap, Globe, Navigation } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface ExploreRadiusSearchProps {
@@ -21,8 +21,15 @@ interface ExploreRadiusSearchProps {
   onClose: () => void;
 }
 
-// Default center (Paris) — overridden when user searches
 const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
+
+const QUICK_RADIUS = [
+  { km: 5, label: "5 km", emoji: "📍" },
+  { km: 15, label: "15 km", emoji: "🏘️" },
+  { km: 50, label: "50 km", emoji: "🌆" },
+  { km: 100, label: "100 km", emoji: "🗺️" },
+  { km: 0, label: "Worldwide", emoji: "🌍" },
+];
 
 export function ExploreRadiusSearch({
   locationQuery, radiusKm, resultCount,
@@ -37,7 +44,6 @@ export function ExploreRadiusSearch({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Geocode city name → lat/lng via Nominatim
   useEffect(() => {
     if (!locationQuery || locationQuery.length < 2) {
       setSuggestions([]);
@@ -69,7 +75,6 @@ export function ExploreRadiusSearch({
     setSuggestions([]);
   };
 
-  // Calculate zoom level from radius
   const getZoomForRadius = (km: number) => {
     if (km <= 0) return 5;
     if (km <= 5) return 13;
@@ -80,11 +85,7 @@ export function ExploreRadiusSearch({
     return 7;
   };
 
-  // Build OSM tile URL for static map display
   const zoom = getZoomForRadius(radiusKm);
-  const mapTileUrl = `https://tile.openstreetmap.org/${zoom}/${lonToTileX(center.lng, zoom)}/${latToTileY(center.lat, zoom)}.png`;
-
-  // Calculate circle size in pixels based on radius and zoom
   const metersPerPixel = (156543.03392 * Math.cos((center.lat * Math.PI) / 180)) / Math.pow(2, zoom);
   const circleDiameterPx = radiusKm > 0 ? Math.min(280, Math.max(40, (radiusKm * 1000 * 2) / metersPerPixel)) : 0;
 
@@ -93,165 +94,230 @@ export function ExploreRadiusSearch({
       initial={{ opacity: 0, y: -8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-      className="bg-card border border-border rounded-2xl shadow-2xl p-5 space-y-4 w-full max-w-md"
+      transition={{ duration: 0.25 }}
+      className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-accent" />
-          {t("explore.radius.title") || "Where are you looking?"}
-        </h3>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-          <X className="h-4 w-4 text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* City input with autocomplete */}
-      <div className="relative">
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={locationQuery}
-            onChange={e => { onLocationChange(e.target.value); setShowSuggestions(true); }}
-            placeholder={t("explore.radius.placeholder") || "City, country, address..."}
-            className="pl-10 rounded-xl h-12 text-base"
-          />
-        </div>
-
-        {/* Autocomplete suggestions */}
-        <AnimatePresence>
-          {showSuggestions && suggestions.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-20 overflow-hidden"
-            >
-              {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => selectSuggestion(s)}
-                  className="w-full text-left px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors flex items-center gap-2 border-b border-border/50 last:border-0"
-                >
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="truncate">{s.display_name}</span>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Selected location chip */}
-      {locationQuery && radiusKm > 0 && (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-sm font-medium text-foreground">
-            {locationQuery} - {radiusKm} km
-            <button
-              onClick={() => { onLocationChange(""); onRadiusChange(0); }}
-              className="hover:text-destructive transition-colors"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </span>
-        </div>
-      )}
-
-      {/* Near me button */}
-      {geoCity && !locationQuery && (
-        <button
-          onClick={onNearMe}
-          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent font-medium hover:bg-accent/15 transition-colors"
-        >
-          <LocateFixed className="h-4 w-4" />
-          {t("explore.radius.my_location") || "My location"} — {geoCity}, {geoCountry?.toUpperCase()}
-        </button>
-      )}
-
-      {/* Radius slider */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-foreground">{t("explore.radius.label") || "Search radius"}</label>
-          <span className="text-base font-bold text-accent">
-            {radiusKm === 0 ? (t("explore.radius.worldwide") || "Worldwide") : `${radiusKm} km`}
-          </span>
-        </div>
-        <Slider
-          value={[radiusKm]}
-          onValueChange={([v]) => onRadiusChange(v)}
-          min={0}
-          max={200}
-          step={5}
-          className="w-full"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>0 km</span>
-          <span>200 km</span>
-        </div>
-      </div>
-
-      {/* Interactive map with OSM tiles */}
-      <div ref={mapRef} className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-border bg-muted">
-        {/* OSM tile grid */}
-        <MapTiles center={center} zoom={zoom} />
-
-        {/* Radius circle overlay */}
-        {radiusKm > 0 && (
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent/50 pointer-events-none"
-            style={{
-              width: `${Math.min(90, circleDiameterPx)}%`,
-              height: `${Math.min(90, circleDiameterPx)}%`,
-              background: "hsl(var(--accent) / 0.12)",
-            }}
-          />
-        )}
-
-        {/* Center pin */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="w-4 h-4 rounded-full bg-foreground border-2 border-background shadow-lg" />
-        </div>
-
-      {radiusKm === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/60">
-          <span className="text-xs sm:text-sm text-muted-foreground font-medium px-3 text-center">{t("explore.radius.worldwide_search") || "Worldwide search"}</span>
-        </div>
-      )}
-      </div>
-
-      {/* Suggestions */}
-      {locationQuery && radiusKm > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-bold text-foreground">{t("explore.radius.suggestions") || "Suggestions"}</p>
-          <button
-            onClick={onApply}
-            className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-muted/50 text-sm text-muted-foreground hover:bg-muted transition-colors"
-          >
-            <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-              <Search className="h-4 w-4" />
-            </span>
-            {locationQuery} - {radiusKm} km
+      {/* ── Premium header ── */}
+      <div className="relative px-5 pt-5 pb-4"
+        style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.06), hsl(var(--accent) / 0.02))" }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl bg-accent/15 flex items-center justify-center">
+              <Navigation className="h-4 w-4 text-accent" />
+            </div>
+            {t("explore.radius.title") || "Where are you looking?"}
+          </h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
-      )}
 
-      {/* Actions */}
-      <div className="flex gap-3 pt-1">
-        <Button
-          variant="outline"
-          onClick={onReset}
-          className="flex-1 rounded-xl h-12 text-sm font-semibold"
-        >
-          {t("explore.radius.reset") || "Reset"}
-        </Button>
-        <Button
-          onClick={onApply}
-          className="flex-1 rounded-xl h-12 text-sm font-bold bg-accent hover:bg-accent/90 text-accent-foreground"
-        >
-          <Search className="h-4 w-4 me-1.5" />
-          {t("explore.radius.apply") || "Apply"}
-        </Button>
+        {/* City input */}
+        <div className="relative">
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={locationQuery}
+              onChange={e => { onLocationChange(e.target.value); setShowSuggestions(true); }}
+              placeholder={t("explore.radius.placeholder") || "City, country, address..."}
+              className="pl-10 rounded-xl h-12 text-base border-accent/20 focus:border-accent/50"
+            />
+          </div>
+          <AnimatePresence>
+            {showSuggestions && suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-20 overflow-hidden"
+              >
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => selectSuggestion(s)}
+                    className="w-full text-left px-4 py-3 text-sm text-foreground hover:bg-accent/5 transition-colors flex items-center gap-2 border-b border-border/50 last:border-0"
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-accent shrink-0" />
+                    <span className="truncate">{s.display_name}</span>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="px-5 pb-5 space-y-4">
+        {/* ── Near me CTA ── */}
+        {geoCity && !locationQuery && (
+          <motion.button
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={onNearMe}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-accent/20 text-sm font-medium hover:border-accent/40 hover:bg-accent/5 transition-all group"
+          >
+            <div className="h-9 w-9 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+              <LocateFixed className="h-4 w-4 text-accent" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-foreground">{t("explore.radius.my_location") || "My location"}</p>
+              <p className="text-xs text-muted-foreground">{geoCity}, {geoCountry?.toUpperCase()}</p>
+            </div>
+            <Zap className="h-4 w-4 text-accent ml-auto" />
+          </motion.button>
+        )}
+
+        {/* ── Quick radius chips ── */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("explore.radius.quick") || "Quick select"}</label>
+          <div className="flex gap-2 flex-wrap">
+            {QUICK_RADIUS.map(q => (
+              <button
+                key={q.km}
+                onClick={() => onRadiusChange(q.km)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
+                  radiusKm === q.km
+                    ? "bg-accent text-accent-foreground border-accent shadow-sm"
+                    : "bg-card border-border text-muted-foreground hover:border-accent/30 hover:text-foreground"
+                }`}
+              >
+                <span>{q.emoji}</span>
+                {q.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Precision slider ── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-foreground">{t("explore.radius.label") || "Precision"}</label>
+            <motion.span
+              key={radiusKm}
+              initial={{ scale: 0.8, opacity: 0.5 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-lg font-bold text-accent tabular-nums"
+            >
+              {radiusKm === 0 ? (
+                <span className="flex items-center gap-1.5 text-base">
+                  <Globe className="h-4 w-4" />
+                  {t("explore.radius.worldwide") || "Worldwide"}
+                </span>
+              ) : (
+                `${radiusKm} km`
+              )}
+            </motion.span>
+          </div>
+          <Slider
+            value={[radiusKm]}
+            onValueChange={([v]) => onRadiusChange(v)}
+            min={0}
+            max={200}
+            step={5}
+            className="w-full"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+            <span>📍 0 km</span>
+            <span>50</span>
+            <span>100</span>
+            <span>🌍 200 km</span>
+          </div>
+        </div>
+
+        {/* ── Interactive map ── */}
+        <div ref={mapRef} className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-border bg-muted">
+          <MapTiles center={center} zoom={zoom} />
+
+          {/* Animated radius circle */}
+          {radiusKm > 0 && (
+            <motion.div
+              key={radiusKm}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+              style={{
+                width: `${Math.min(90, circleDiameterPx)}%`,
+                height: `${Math.min(90, circleDiameterPx)}%`,
+                background: "radial-gradient(circle, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05))",
+                border: "2px solid hsl(var(--accent) / 0.4)",
+                boxShadow: "0 0 20px hsl(var(--accent) / 0.1), inset 0 0 20px hsl(var(--accent) / 0.05)",
+              }}
+            />
+          )}
+
+          {/* Center pin with pulse */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            <div className="relative">
+              <div className="w-4 h-4 rounded-full bg-accent border-2 border-background shadow-lg" />
+              <div className="absolute inset-0 rounded-full bg-accent/30 animate-ping" />
+            </div>
+          </div>
+
+          {/* Worldwide overlay */}
+          {radiusKm === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+              <div className="text-center">
+                <Globe className="h-8 w-8 text-accent/40 mx-auto mb-1" />
+                <span className="text-xs text-muted-foreground font-medium">{t("explore.radius.worldwide_search") || "Worldwide search"}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Live result count badge */}
+          {radiusKm > 0 && locationQuery && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute bottom-2 right-2 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground shadow-sm"
+            >
+              {resultCount} {resultCount === 1 ? "result" : "results"}
+            </motion.div>
+          )}
+        </div>
+
+        {/* ── Selected location chip ── */}
+        {locationQuery && radiusKm > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between bg-accent/5 border border-accent/15 rounded-xl px-4 py-3"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <MapPin className="h-4 w-4 text-accent shrink-0" />
+              <span className="text-sm font-medium text-foreground truncate">{locationQuery}</span>
+              <span className="text-xs text-muted-foreground">· {radiusKm} km</span>
+            </div>
+            <button
+              onClick={() => { onLocationChange(""); onRadiusChange(0); }}
+              className="p-1 rounded-md hover:bg-destructive/10 transition-colors"
+            >
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* ── Actions ── */}
+        <div className="flex gap-3 pt-1">
+          <Button
+            variant="outline"
+            onClick={onReset}
+            className="flex-1 rounded-xl h-12 text-sm font-semibold"
+          >
+            {t("explore.radius.reset") || "Reset"}
+          </Button>
+          <Button
+            onClick={onApply}
+            className="flex-1 rounded-xl h-12 text-sm font-bold bg-accent hover:bg-accent/90 text-accent-foreground gap-2 shadow-md hover:shadow-lg transition-shadow"
+          >
+            <Search className="h-4 w-4" />
+            {t("explore.radius.apply") || "Apply"}
+            {resultCount > 0 && locationQuery && (
+              <span className="bg-accent-foreground/20 px-1.5 py-0.5 rounded-md text-[10px] tabular-nums">{resultCount}</span>
+            )}
+          </Button>
+        </div>
       </div>
     </motion.div>
   );
@@ -279,12 +345,10 @@ function tileYToLat(y: number, zoom: number) {
   return (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
 }
 
-/** Renders a 3x3 grid of OSM tiles centered on the given coordinates */
 function MapTiles({ center, zoom }: { center: { lat: number; lng: number }; zoom: number }) {
   const cx = lonToTileX(center.lng, zoom);
   const cy = latToTileY(center.lat, zoom);
 
-  // Offset within the center tile
   const tileLonLeft = tileXToLon(cx, zoom);
   const tileLonRight = tileXToLon(cx + 1, zoom);
   const tileLatTop = tileYToLat(cy, zoom);
@@ -293,8 +357,8 @@ function MapTiles({ center, zoom }: { center: { lat: number; lng: number }; zoom
   const fracX = (center.lng - tileLonLeft) / (tileLonRight - tileLonLeft);
   const fracY = (tileLatTop - center.lat) / (tileLatTop - tileLatBottom);
 
-  const offsetX = -(fracX * 256 + 256 - 0); // center in view
-  const offsetY = -(fracY * 256 + 256 - 0);
+  const offsetX = -(fracX * 256 + 256);
+  const offsetY = -(fracY * 256 + 256);
 
   const tiles: Array<{ x: number; y: number }> = [];
   for (let dy = -1; dy <= 1; dy++) {
@@ -313,7 +377,7 @@ function MapTiles({ center, zoom }: { center: { lat: number; lng: number }; zoom
         top: `calc(50% + ${offsetY}px)`,
       }}
     >
-      {tiles.map((tile, i) => (
+      {tiles.map((tile) => (
         <img
           key={`${tile.x}-${tile.y}-${zoom}`}
           src={`https://tile.openstreetmap.org/${zoom}/${tile.x}/${tile.y}.png`}
