@@ -281,10 +281,7 @@ const ClientMessages = () => {
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
                       <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
                       {m.attachment_url && (
-                        <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
-                          className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-accent-foreground/80" : "text-accent"}`}>
-                          <Paperclip className="h-3 w-3" /> Attachment
-                        </a>
+                        <ChatMediaPreview url={m.attachment_url} fileName={m.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
                       )}
                       <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                         <p className={`text-[10px] ${isMe ? "text-accent-foreground/60" : "text-muted-foreground"}`}>
