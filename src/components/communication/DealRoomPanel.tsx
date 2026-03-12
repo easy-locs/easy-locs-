@@ -212,7 +212,7 @@ export default function DealRoomPanel({
           // Get buyer email
           const { data: buyerProfile } = await supabase
             .from("profiles")
-            .select("email, full_name")
+            .select("email, name")
             .eq("id", dealD.buyer_id)
             .single();
 
@@ -221,7 +221,7 @@ export default function DealRoomPanel({
               orgId: targetOrgId,
               senderId: user!.id,
               recipientEmail: buyerProfile.email,
-              recipientName: buyerProfile.full_name || "Customer",
+              recipientName: buyerProfile.name || "Customer",
               amount: accepted,
               currency,
               description: `Payment for "${dealD.context_title || "deal"}"`,
