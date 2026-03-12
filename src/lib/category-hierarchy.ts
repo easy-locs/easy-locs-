@@ -42,6 +42,8 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
       { value: "construction", label: "Renovation", emoji: "🏗️" },
       { value: "moving", label: "Moving", emoji: "🚛" },
       { value: "personal", label: "Personal Services", emoji: "💆" },
+      { value: "gardening", label: "Gardening", emoji: "🌱" },
+      { value: "pest_control", label: "Pest Control", emoji: "🐛" },
     ],
   },
   {
@@ -54,6 +56,7 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
       { value: "personal_assistant", label: "Personal Assistant", emoji: "👤" },
       { value: "car_rental", label: "Car Rental", emoji: "🚗" },
       { value: "transport", label: "Transport", emoji: "🚐" },
+      { value: "luxury_concierge", label: "Luxury Concierge", emoji: "💎" },
     ],
   },
   {
@@ -67,6 +70,7 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
       { value: "spa", label: "Wellness & Spa", emoji: "🧖" },
       { value: "event", label: "Events & Tickets", emoji: "🎫" },
       { value: "local_activity", label: "Local Activities", emoji: "🎭" },
+      { value: "outdoor", label: "Outdoor & Adventure", emoji: "🧗" },
     ],
   },
   {
@@ -76,6 +80,8 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
     subcategories: [
       { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
       { value: "coworking", label: "Coworking", emoji: "💻" },
+      { value: "catering", label: "Catering", emoji: "🍴" },
+      { value: "private_chef", label: "Private Chef", emoji: "👨‍🍳" },
     ],
   },
   {
@@ -86,6 +92,9 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
       { value: "legal", label: "Legal & Advocate", emoji: "⚖️" },
       { value: "business_services", label: "Business Services", emoji: "💼" },
       { value: "consulting", label: "Consulting", emoji: "📊" },
+      { value: "accounting", label: "Accounting & Tax", emoji: "🧮" },
+      { value: "insurance", label: "Insurance", emoji: "🛡️" },
+      { value: "translation", label: "Translation", emoji: "🌐" },
     ],
   },
   {
@@ -93,25 +102,37 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
     label: "Jobs & Freelance",
     emoji: "📋",
     subcategories: [
+      // ── Hospitality & Tourism ──
       { value: "job_hospitality", label: "Hospitality & Tourism", emoji: "🏨" },
-      { value: "job_construction", label: "Construction & BTP", emoji: "🏗️" },
       { value: "job_services", label: "Customer Service", emoji: "🛎️" },
+      // ── Construction & Technical ──
+      { value: "job_construction", label: "Construction & BTP", emoji: "🏗️" },
+      { value: "job_engineering", label: "Engineering", emoji: "⚙️" },
+      // ── Office & Business ──
       { value: "job_admin", label: "Administration & Office", emoji: "📂" },
+      { value: "job_finance", label: "Finance & Accounting", emoji: "💰" },
+      { value: "job_sales", label: "Sales & Marketing", emoji: "📈" },
+      { value: "job_hr", label: "Human Resources", emoji: "👥" },
+      // ── Tech & Creative ──
       { value: "job_tech", label: "IT & Technology", emoji: "💻" },
+      { value: "job_creative", label: "Creative & Design", emoji: "🎨" },
+      { value: "job_data", label: "Data & Analytics", emoji: "📊" },
+      // ── Healthcare & Education ──
       { value: "job_healthcare", label: "Healthcare & Medical", emoji: "🏥" },
       { value: "job_education", label: "Education & Training", emoji: "📚" },
+      // ── Logistics & Real Estate ──
       { value: "job_logistics", label: "Logistics & Transport", emoji: "🚛" },
-      { value: "job_sales", label: "Sales & Marketing", emoji: "📈" },
-      { value: "job_finance", label: "Finance & Accounting", emoji: "💰" },
-      { value: "job_creative", label: "Creative & Design", emoji: "🎨" },
-      { value: "job_legal", label: "Legal & Compliance", emoji: "⚖️" },
       { value: "job_real_estate", label: "Real Estate & Property", emoji: "🏠" },
+      // ── Legal & Agriculture ──
+      { value: "job_legal", label: "Legal & Compliance", emoji: "⚖️" },
       { value: "job_agriculture", label: "Agriculture & Environment", emoji: "🌾" },
+      // ── Work Types ──
       { value: "freelance", label: "Freelance", emoji: "🧑‍💻" },
       { value: "internship", label: "Internships & Apprentice", emoji: "🎓" },
       { value: "remote_work", label: "Remote Work", emoji: "🌍" },
       { value: "seasonal_job", label: "Seasonal Jobs", emoji: "☀️" },
       { value: "part_time", label: "Part-time", emoji: "⏰" },
+      { value: "executive", label: "Executive & Management", emoji: "🎩" },
     ],
   },
 ];
