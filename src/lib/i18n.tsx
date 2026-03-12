@@ -1216,7 +1216,7 @@ const pageFr: Record<string, string> = {
   "landing.hero.stat_remote_val": "À distance",
   "landing.hero.stat_multi": "Opérations",
   "landing.hero.stat_multi_val": "Multi-villes",
-  "landing.hero.trust_countries": "110+ pays",
+  "landing.hero.trust_countries": "190+ pays",
   "landing.hero.trust_gdpr": "Conforme RGPD",
   "landing.hero.trust_legal": "Documents légaux",
   "landing.hero.trust_portal": "Portail locataire",
