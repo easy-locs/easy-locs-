@@ -1240,6 +1240,81 @@ export type Database = {
           },
         ]
       }
+      guest_call_signals: {
+        Row: {
+          call_id: string
+          context_id: string | null
+          context_label: string | null
+          context_type: string | null
+          created_at: string
+          expires_at: string
+          from_role: string | null
+          guest_name: string | null
+          guest_session_id: string | null
+          id: string
+          is_video: boolean
+          org_id: string | null
+          processed_by_callee: boolean | null
+          processed_by_caller: boolean | null
+          signal_data: string | null
+          signal_type: string | null
+          status: string
+        }
+        Insert: {
+          call_id: string
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string | null
+          created_at?: string
+          expires_at?: string
+          from_role?: string | null
+          guest_name?: string | null
+          guest_session_id?: string | null
+          id?: string
+          is_video?: boolean
+          org_id?: string | null
+          processed_by_callee?: boolean | null
+          processed_by_caller?: boolean | null
+          signal_data?: string | null
+          signal_type?: string | null
+          status?: string
+        }
+        Update: {
+          call_id?: string
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string | null
+          created_at?: string
+          expires_at?: string
+          from_role?: string | null
+          guest_name?: string | null
+          guest_session_id?: string | null
+          id?: string
+          is_video?: boolean
+          org_id?: string | null
+          processed_by_callee?: boolean | null
+          processed_by_caller?: boolean | null
+          signal_data?: string | null
+          signal_type?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_call_signals_guest_session_id_fkey"
+            columns: ["guest_session_id"]
+            isOneToOne: false
+            referencedRelation: "guest_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_call_signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_sessions: {
         Row: {
           blocked: boolean
