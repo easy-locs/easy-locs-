@@ -88,6 +88,7 @@ export default function InAppCallDialog({
       setUsingRelay(false);
       setError(null);
       setRemoteStream(null);
+      setIsEnding(false);
     }
   }, [open]);
 
