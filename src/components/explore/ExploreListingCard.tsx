@@ -102,8 +102,8 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           {/* Type-specific details */}
           {type === "seasonal" && (
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests}</span>}
-              {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights}n</span>}
+              {item.max_guests > 0 && <span className="flex items-center gap-1"><Users className="h-3 w-3" />{item.max_guests} {t("explore.guests") || "guests"}</span>}
+              {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights} {t("explore.nights") || "nights"}</span>}
             </div>
           )}
           {type === "real-estate" && (
