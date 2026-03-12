@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import { supabase } from "@/integrations/supabase/client";
 import { obNl, obPl, obTr, obAr, obJa, pageNl, pagePl, pageTr, pageAr, pageJa } from "./i18n-extended";
 import { koAll, zhAll, hiAll, thAll, viAll, idAll, msAll, svAll, daAll, nbAll, fiAll, elAll, csAll, huAll, roAll, hrAll, bgAll, skAll, heAll, ukAll } from "./i18n-world";
+import { koComplete, zhComplete, hiComplete, thComplete, viComplete, idComplete, msComplete, svComplete, daComplete, nbComplete, fiComplete, elComplete, csComplete, huComplete, roComplete, hrComplete, bgComplete, skComplete, heComplete, ukComplete } from "./i18n-world-complete";
 import { koPayExtra, zhPayExtra, hiPayExtra, thPayExtra, viPayExtra, idPayExtra, msPayExtra, svPayExtra, daPayExtra, nbPayExtra, fiPayExtra, elPayExtra, csPayExtra, huPayExtra, roPayExtra, hrPayExtra, bgPayExtra, skPayExtra, hePayExtra, ukPayExtra } from "./i18n-world-extra";
 import { pageEsExtra, pageDeExtra, pagePtExtra, koPageExtra, zhPageExtra, hiPageExtra, svPageExtra, daPageExtra, nbPageExtra, fiPageExtra, elPageExtra, csPageExtra, huPageExtra, roPageExtra, hrPageExtra, bgPageExtra, skPageExtra, hePageExtra, ukPageExtra, thPageExtra, viPageExtra, idPageExtra, msPageExtra } from "./i18n-pages-extra";
 import { pageIt as pageItFull } from "./i18n-pages-it";
