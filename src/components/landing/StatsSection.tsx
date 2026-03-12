@@ -44,7 +44,7 @@ const StatsSection = () => {
 
   const stats = [
     { value: 10000, suffix: "+", label: t("landing.stats.properties"), icon: "🏠" },
-    { value: 110, suffix: "+", label: t("landing.stats.countries"), icon: "🌍" },
+    { value: 190, suffix: "+", label: t("landing.stats.countries"), icon: "🌍" },
     { value: 50000, suffix: "+", label: t("landing.stats.documents"), icon: "📄" },
     { value: 2, prefix: "€", suffix: "M+", label: t("landing.stats.payments"), icon: "💳" },
   ];

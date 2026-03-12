@@ -18,7 +18,7 @@ const ADVANTAGES = [
   },
   {
     icon: Globe,
-    title: "110+ Countries",
+    title: "190+ Countries",
     desc: "Manage properties and services across every continent from one dashboard.",
     color: "accent",
   },
