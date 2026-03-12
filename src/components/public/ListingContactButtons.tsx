@@ -158,9 +158,9 @@ const ListingContactButtons = ({
     trackClick("chat", trackOpts);
     try {
       // Check inquiry quota
-      const { data: quota } = await supabase.rpc("check_inquiry_quota", { _user_id: user.id });
-      if (quota && !quota.allowed) {
-        toast.error(`Inquiry limit reached (${quota.limit}/hour). Please wait.`);
+      const { data: quota } = await supabase.rpc("check_inquiry_quota", { _user_id: user.id }) as { data: any };
+      if (quota && !(quota as any).allowed) {
+        toast.error(`Inquiry limit reached (${(quota as any).limit}/hour). Please wait.`);
         setMessageSending(false);
         return;
       }
