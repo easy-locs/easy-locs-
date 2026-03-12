@@ -93,7 +93,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
             sender_id: userId,
             content: `🎤 Voice message (${formatDur(duration)})`,
             context_id: contextId,
-            context_type: "booking",
+            context_type: contextId.startsWith("direct:") ? "direct" : "booking",
             contact_email: userEmail,
             contact_name: userName,
             message_type: "user",

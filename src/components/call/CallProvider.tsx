@@ -64,9 +64,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         .select("org_id")
         .eq("user_id", user.id);
 
-      if (!memberships?.length) return;
-
-      const orgIds = memberships.map((m) => m.org_id);
+      const orgIds = memberships?.map((m) => m.org_id) || [];
 
       const channel = supabase
         .channel("incoming-calls")
@@ -76,8 +74,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
           async (payload) => {
             const call = payload.new as any;
             if (call.caller_id === user.id) return;
-            if (!orgIds.includes(call.callee_org_id)) return;
             if (call.status !== "ringing") return;
+            // Accept call if targeted at user's org OR if direct context targets this user
+            const isOrgCall = orgIds.includes(call.callee_org_id);
+            const isDirectCall = call.context_type === "direct" && 
+              typeof call.context_id === "string" && 
+              call.context_id.includes(user.id);
+            if (!isOrgCall && !isDirectCall) return;
 
             const { data: profile } = await supabase
               .from("profiles")
