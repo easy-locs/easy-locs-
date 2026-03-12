@@ -34,6 +34,7 @@ type ThreadFilter = "all" | "starred" | "archived";
 const ClientMessages = () => {
   const { user } = useAuth();
   const { t } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeThread, setActiveThread] = useState<ThreadSummary | null>(null);
