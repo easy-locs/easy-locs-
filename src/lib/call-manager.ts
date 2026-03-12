@@ -83,6 +83,8 @@ export class CallManager {
   private _pendingCandidates: RTCIceCandidate[] = [];
   private _cleaned = false;
   private _ending = false;
+  private _endFlowInvocations = 0;
+  private _cleanupInvocations = 0;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
@@ -174,10 +176,19 @@ export class CallManager {
     await this.setupMedia(isVideo);
 
     // Update call_logs status
-    await supabase
+    const { data: activatedRow, error: activatedError } = await supabase
       .from("call_logs")
       .update({ status: "active", started_at: new Date().toISOString() } as any)
-      .eq("id", this.callId);
+      .eq("id", this.callId)
+      .select("id,status,started_at")
+      .maybeSingle();
+
+    this.debug("acceptCall DB update", {
+      updated: !!activatedRow,
+      status: activatedRow?.status || null,
+      startedAt: activatedRow?.started_at || null,
+      error: activatedError?.message || null,
+    });
 
     // Tell caller we accepted — caller will wait for our offer
     this.sendSignal({ type: "accepted", data: "{}" });
@@ -195,30 +206,46 @@ export class CallManager {
   async declineCall() {
     this.debug("declineCall");
     this.sendSignal({ type: "declined", data: "{}" });
-    await supabase
+    const { data: declinedRow, error: declinedError } = await supabase
       .from("call_logs")
       .update({ status: "declined", ended_at: new Date().toISOString() } as any)
       .eq("id", this.callId)
-      .neq("status", "declined");
+      .neq("status", "declined")
+      .select("id,status,ended_at")
+      .maybeSingle();
+
+    this.debug("declineCall DB update", {
+      updated: !!declinedRow,
+      status: declinedRow?.status || null,
+      endedAt: declinedRow?.ended_at || null,
+      error: declinedError?.message || null,
+    });
+
     this.onStateChange({ status: "declined" });
     this.cleanup("decline");
   }
 
   /** End active call */
   async endCall() {
+    this._endFlowInvocations += 1;
+
     if (this._cleaned || this._ending) {
-      this.debug("endCall skipped", { cleaned: this._cleaned, ending: this._ending });
+      this.debug("endCall skipped", {
+        cleaned: this._cleaned,
+        ending: this._ending,
+        endFlowInvocations: this._endFlowInvocations,
+      });
       return;
     }
 
     this._ending = true;
-    this.debug("endCall start");
+    this.debug("endCall start", { endFlowInvocations: this._endFlowInvocations });
 
     try {
       this.sendSignal({ type: "ended", data: "{}" });
 
       const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
-      await supabase
+      const { data: endedRow, error: endedError } = await supabase
         .from("call_logs")
         .update({
           status: "ended",
@@ -227,7 +254,17 @@ export class CallManager {
           ended_by: this.role,
         } as any)
         .eq("id", this.callId)
-        .neq("status", "ended");
+        .neq("status", "ended")
+        .select("id,status,ended_at,duration_seconds")
+        .maybeSingle();
+
+      this.debug("endCall DB update", {
+        updated: !!endedRow,
+        status: endedRow?.status || null,
+        endedAt: endedRow?.ended_at || null,
+        duration: endedRow?.duration_seconds ?? duration,
+        error: endedError?.message || null,
+      });
 
       this.onStateChange({ status: "ended" });
     } catch (err) {
@@ -298,13 +335,22 @@ export class CallManager {
       } else if (signal.type === "declined") {
         this.onStateChange({ status: "declined" });
         try {
-          await supabase
+          const { data: declinedRow, error: declinedError } = await supabase
             .from("call_logs")
             .update({ status: "declined", ended_at: new Date().toISOString() } as any)
             .eq("id", this.callId)
-            .neq("status", "declined");
-        } catch {
-          this.debug("declined status update failed");
+            .neq("status", "declined")
+            .select("id,status,ended_at")
+            .maybeSingle();
+
+          this.debug("remote declined DB update", {
+            updated: !!declinedRow,
+            status: declinedRow?.status || null,
+            endedAt: declinedRow?.ended_at || null,
+            error: declinedError?.message || null,
+          });
+        } catch (err) {
+          this.debug("declined status update failed", { error: String(err) });
         }
         this.cleanup("remote-declined");
       } else if (signal.type === "ended") {
@@ -557,9 +603,13 @@ export class CallManager {
   }
 
   cleanup(reason = "unknown") {
-    if (this._cleaned) return;
+    if (this._cleaned) {
+      this.debug("cleanup skipped", { reason, cleanupInvocations: this._cleanupInvocations });
+      return;
+    }
 
-    this.debug("cleanup", { reason });
+    this._cleanupInvocations += 1;
+    this.debug("cleanup", { reason, cleanupInvocations: this._cleanupInvocations });
     this._cleaned = true;
     this._ending = false;
 
