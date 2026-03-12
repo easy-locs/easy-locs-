@@ -93,10 +93,17 @@ export default function InAppCallDialog({
   }, [open]);
 
   const handleEndCall = async () => {
-    if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
-      await callManager?.endCall();
+    if (isEnding) return;
+    setIsEnding(true);
+
+    try {
+      if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
+        await callManager?.endCall();
+      }
+      onClose();
+    } finally {
+      setIsEnding(false);
     }
-    onClose();
   };
 
   const handleToggleMute = () => {
@@ -105,6 +112,7 @@ export default function InAppCallDialog({
   };
 
   const handleToggleSpeaker = () => {
+    if (!speakerSupported) return;
     setSpeakerOff((prev) => {
       if (remoteAudioRef.current) {
         remoteAudioRef.current.muted = !prev;
