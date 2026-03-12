@@ -55,7 +55,9 @@ export default function InAppCallDialog({
   }, [callManager, handleStateChange]);
 
   const handleEndCall = async () => {
-    await callManager?.endCall();
+    if (status !== "ended" && status !== "declined" && status !== "missed" && status !== "failed" && status !== "network_blocked") {
+      await callManager?.endCall();
+    }
     onClose();
   };
 

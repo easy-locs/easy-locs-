@@ -154,7 +154,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         onTouchMove={handleTouchMove}
       >
         {/* Cancel */}
-        <button onClick={cancelRecording} className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+        <button onClick={cancelRecording} className="p-2.5 min-w-[44px] min-h-[44px] text-destructive hover:bg-destructive/10 rounded-full transition-colors flex items-center justify-center">
           <X className="h-4 w-4" />
         </button>
 
@@ -168,7 +168,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         {/* Send */}
         <button
           onClick={stopAndSend}
-          className="p-2.5 rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors"
+          className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center justify-center"
         >
           <Send className="h-4 w-4" />
         </button>
@@ -178,9 +178,9 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
   return (
     <button
-      onPointerDown={startRecording}
+      onClick={startRecording}
       className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      title="Hold to record"
+      title="Tap to record"
     >
       <Mic className="h-4 w-4" />
     </button>

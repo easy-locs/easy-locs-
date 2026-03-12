@@ -107,12 +107,12 @@ export default function IncomingCallDialog({
             {ringTime}s
           </p>
 
-          {/* Action buttons */}
+          {/* Action buttons — mobile-friendly 48px touch targets */}
           <div className="flex gap-10 mt-2">
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={handleDecline}
-                className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20 active:scale-95"
+                className="w-16 h-16 min-w-[64px] min-h-[64px] rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20 active:scale-95"
               >
                 <PhoneOff className="h-6 w-6" />
               </button>
@@ -121,7 +121,7 @@ export default function IncomingCallDialog({
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={handleAccept}
-                className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-all shadow-lg shadow-green-600/30 active:scale-95"
+                className="w-16 h-16 min-w-[64px] min-h-[64px] rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-all shadow-lg shadow-green-600/30 active:scale-95"
               >
                 <Phone className="h-6 w-6" />
               </button>
