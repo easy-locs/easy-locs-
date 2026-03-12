@@ -494,8 +494,13 @@ const PublicServiceBooking = () => {
               <ListingContactButtons
                 contactEmail={service.provider_email || null}
                 contactPhone={service.provider_phone || null}
-                whatsappNumber={service.provider_phone || null}
+                whatsappNumber={service.whatsapp_number || service.provider_whatsapp || null}
+                telegramUsername={service.telegram_username || null}
                 listingTitle={service.title}
+                listingUrl={canonicalUrl}
+                listingPrice={fmtPrice(service.price, service.currency)}
+                listingCity={service.city}
+                listingCountry={service.country}
                 serviceId={service.id}
                 orgId={service.org_id}
               />

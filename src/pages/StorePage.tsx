@@ -259,8 +259,10 @@ export default function StorePage() {
         <MobileCTABar
           phone={profile.phone}
           whatsapp={profile.whatsapp}
+          telegram={profile.telegram}
           email={profile.email}
           listingTitle={name}
+          listingUrl={buildAppUrl(`/store/${storeSlug}`)}
           onBook={() => servicesRef.current?.scrollIntoView({ behavior: "smooth" })}
         />
       </div>

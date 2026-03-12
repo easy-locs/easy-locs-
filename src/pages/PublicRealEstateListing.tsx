@@ -20,6 +20,7 @@ import {
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
   MessageCircle,
 } from "lucide-react";
+import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
 
 interface Listing {
