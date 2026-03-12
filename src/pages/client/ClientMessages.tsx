@@ -53,22 +53,33 @@ const ClientMessages = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch threads
+  // Fetch threads — includes both contact_email threads AND direct threads where user is sender
   useEffect(() => {
-    if (!user?.email) { setLoading(false); return; }
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
-        .eq("contact_email", user.email.toLowerCase())
-        .not("context_id", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(500);
+    if (!user?.id) { setLoading(false); return; }
+    const fetchThreads = async () => {
+      // Fetch messages where user is involved (by email or by sender_id for direct threads)
+      const [byEmail, bySender] = await Promise.all([
+        user.email ? supabase
+          .from("messages")
+          .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
+          .eq("contact_email", user.email.toLowerCase())
+          .not("context_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(500) : { data: [] },
+        supabase
+          .from("messages")
+          .select("context_id, org_id, contact_name, content, created_at, read, sender_id")
+          .eq("sender_id", user.id)
+          .not("context_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(500),
+      ]);
 
-      if (!data || data.length === 0) { setLoading(false); return; }
+      const allData = [...(byEmail.data || []), ...(bySender.data || [])];
+      if (allData.length === 0) { setLoading(false); return; }
 
       const threadMap = new Map<string, ThreadSummary>();
-      for (const msg of data) {
+      for (const msg of allData) {
         const key = msg.context_id!;
         if (!threadMap.has(key)) {
           threadMap.set(key, {
@@ -80,14 +91,29 @@ const ClientMessages = () => {
           });
         } else {
           const existing = threadMap.get(key)!;
+          if (new Date(msg.created_at) > new Date(existing.last_time)) {
+            existing.last_message = msg.content;
+            existing.last_time = msg.created_at;
+          }
           if (!msg.read && msg.sender_id !== user.id) existing.unread_count++;
           if (!existing.other_sender_id && msg.sender_id !== user.id) existing.other_sender_id = msg.sender_id;
         }
       }
 
-      setThreads(Array.from(threadMap.values()).sort((a, b) =>
+      const sortedThreads = Array.from(threadMap.values()).sort((a, b) =>
         new Date(b.last_time).getTime() - new Date(a.last_time).getTime()
-      ));
+      );
+      setThreads(sortedThreads);
+
+      // Auto-open thread from URL param ?thread=xxx
+      const threadParam = searchParams.get("thread");
+      if (threadParam && !activeThread) {
+        const match = sortedThreads.find(t => t.context_id === threadParam);
+        if (match) {
+          setActiveThread(match);
+          setSearchParams({}, { replace: true }); // Clean URL
+        }
+      }
 
       // Load conversation preferences
       const { data: prefs } = await supabase
@@ -102,7 +128,7 @@ const ClientMessages = () => {
 
       setLoading(false);
     };
-    fetch();
+    fetchThreads();
   }, [user]);
 
   // Filtered threads
