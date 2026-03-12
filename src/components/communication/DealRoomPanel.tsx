@@ -71,6 +71,22 @@ export default function DealRoomPanel({
   const [offerMessage, setOfferMessage] = useState("");
   const [offerType, setOfferType] = useState<"offer" | "counter_offer">("offer");
 
+  // ── Realtime sync for deal rooms and events ──
+  useRealtimeSubscription({
+    table: "deal_rooms",
+    channelName: `deal-panel-${contextId}`,
+    filter: `context_id=eq.${contextId}`,
+    queryKeys: [["deal_room_context", contextType, contextId]],
+    enabled: !!contextId,
+  });
+
+  useRealtimeSubscription({
+    table: "deal_events",
+    channelName: `deal-events-panel-${contextId}`,
+    queryKeys: [["deal_events"]],
+    enabled: !!contextId,
+  });
+
   // Fetch deal room for this context
   const { data: deal, isLoading: dealLoading } = useQuery({
     queryKey: ["deal_room_context", contextType, contextId],
