@@ -5533,28 +5533,41 @@ const detectInitialLocale = (): Locale => {
 // Lazy-loaded extra data per locale (populated on demand)
 const lazyData = new Map<Locale, Record<string, string>>();
 
+const readLocaleMessages = (mod: unknown, exportKey: string, locale: Locale): Record<string, string> => {
+  if (!mod || typeof mod !== "object") return {};
+  const namespace = (mod as Record<string, unknown>)[exportKey];
+  if (!namespace || typeof namespace !== "object") return {};
+  const localeMessages = (namespace as Record<string, unknown>)[locale];
+  return localeMessages && typeof localeMessages === "object"
+    ? (localeMessages as Record<string, string>)
+    : {};
+};
+
 async function loadLocaleExtras(locale: Locale): Promise<Record<string, string>> {
   if (locale === "fr" || locale === "en") return {};
   if (lazyData.has(locale)) return lazyData.get(locale)!;
+
   try {
     const { loadLocaleData } = await import("./i18n-loader");
     const data = await loadLocaleData(locale);
-    // Also load supplementary modules
-    const [pw, mi, nk, bw, dbe] = await Promise.all([
+
+    const [pwRes, miRes, nkRes, bwRes, dbeRes] = await Promise.allSettled([
       import("./i18n-pages-worldwide"),
       import("./i18n-marketplace"),
       import("./i18n-validation"),
       import("./i18n-billing-worldwide"),
       import("./i18n-world-pages"),
     ]);
+
     const merged = {
       ...data,
-      ...(pw.pagesWorldwide?.[locale] || {}),
-      ...(mi.marketplaceI18n?.[locale] || {}),
-      ...(nk.notifKeys?.[locale] || {}),
-      ...(bw.billingWorldwide?.[locale] || {}),
-      ...(dbe.docBuilderExtraKeys?.[locale] || {}),
+      ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", locale),
+      ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", locale),
+      ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", locale),
+      ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", locale),
+      ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", locale),
     };
+
     lazyData.set(locale, merged);
     return merged;
   } catch (e) {
@@ -5568,38 +5581,42 @@ let enExtras: Record<string, string> = {};
 let frExtras: Record<string, string> = {};
 
 // Load en/fr extras lazily too, but eagerly triggered
-const loadCoreExtras = () => {
-  import("./i18n-pages-worldwide").then(pw => {
-    import("./i18n-marketplace").then(mi => {
-      import("./i18n-validation").then(nk => {
-        import("./i18n-billing-worldwide").then(bw => {
-          import("./i18n-world-pages").then(dbe => {
-            enExtras = {
-              ...(pw.pagesWorldwide?.en || {}),
-              ...(mi.marketplaceI18n?.en || {}),
-              ...(nk.notifKeys?.en || {}),
-              ...(bw.billingWorldwide?.en || {}),
-              ...(dbe.docBuilderExtraKeys?.en || {}),
-            };
-            frExtras = {
-              ...(pw.pagesWorldwide?.fr || {}),
-              ...(mi.marketplaceI18n?.fr || {}),
-              ...(nk.notifKeys?.fr || {}),
-              ...(bw.billingWorldwide?.fr || {}),
-              ...(dbe.docBuilderExtraKeys?.fr || {}),
-            };
-          });
-        });
-      });
-    });
-  });
+const loadCoreExtras = async () => {
+  const [pwRes, miRes, nkRes, bwRes, dbeRes] = await Promise.allSettled([
+    import("./i18n-pages-worldwide"),
+    import("./i18n-marketplace"),
+    import("./i18n-validation"),
+    import("./i18n-billing-worldwide"),
+    import("./i18n-world-pages"),
+  ]);
+
+  enExtras = {
+    ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", "en"),
+    ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", "en"),
+    ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", "en"),
+    ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", "en"),
+    ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", "en"),
+  };
+
+  frExtras = {
+    ...readLocaleMessages(pwRes.status === "fulfilled" ? pwRes.value : undefined, "pagesWorldwide", "fr"),
+    ...readLocaleMessages(miRes.status === "fulfilled" ? miRes.value : undefined, "marketplaceI18n", "fr"),
+    ...readLocaleMessages(nkRes.status === "fulfilled" ? nkRes.value : undefined, "notifKeys", "fr"),
+    ...readLocaleMessages(bwRes.status === "fulfilled" ? bwRes.value : undefined, "billingWorldwide", "fr"),
+    ...readLocaleMessages(dbeRes.status === "fulfilled" ? dbeRes.value : undefined, "docBuilderExtraKeys", "fr"),
+  };
 };
+
 // Trigger core extras load after initial render
 if (typeof window !== "undefined") {
   if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(loadCoreExtras);
+    window.requestIdleCallback(() => {
+      void loadCoreExtras();
+    });
   } else {
-    setTimeout(loadCoreExtras, 500);
+    setTimeout(() => {
+      void loadCoreExtras();
+    }, 500);
   }
 }
 
