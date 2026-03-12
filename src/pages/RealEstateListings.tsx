@@ -114,6 +114,8 @@ const emptyForm = {
   rooms: 1, bedrooms: 0, bathrooms: 1, contact_email: "", contact_phone: "",
   parking: false, garden: false, terrace: false, elevator: false, furnished: false,
   energy_class: "", visibility: "public", latitude: 0, longitude: 0,
+  agency_name: "", agent_name: "", agency_logo_url: "", license_number: "",
+  company_registration: "", agency_phone: "", agency_email: "",
 };
 
 export default function RealEstateListings() {
