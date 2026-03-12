@@ -5,6 +5,7 @@
 import { useState, useMemo } from "react";
 import { Search, MessageCircle, User, Hash, Building, Handshake, Users, Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
