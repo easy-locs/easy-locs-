@@ -23,11 +23,13 @@ interface CallContextType {
     isVideo?: boolean;
   }) => Promise<void>;
   isInCall: boolean;
+  isStartingCall: boolean;
 }
 
 const CallContext = createContext<CallContextType>({
   startCall: async () => {},
   isInCall: false,
+  isStartingCall: false,
 });
 
 export const useCall = () => useContext(CallContext);
