@@ -114,7 +114,11 @@ const ClientMessages = () => {
     // Filter by tab
     if (threadFilter === "archived") {
       list = list.filter(t => threadPrefs[t.context_id]?.archived);
-    } else if (threadFilter === "all") {
+    } else if (threadFilter === "starred") {
+      // Show threads that have at least one starred message — for now show all non-archived as we track at message level
+      list = list.filter(t => !threadPrefs[t.context_id]?.archived);
+    } else {
+      // "all" — exclude archived
       list = list.filter(t => !threadPrefs[t.context_id]?.archived);
     }
     return list;
@@ -374,6 +378,7 @@ const ClientMessages = () => {
                 }
 
                 const repliedMsg = m.reply_to_id ? messages.find(rm => rm.id === m.reply_to_id) : null;
+                const repliedDeleted = repliedMsg && !!(repliedMsg as any).deleted_for_all;
                 const minutesSince = differenceInMinutes(new Date(), new Date(m.created_at));
 
                 const bubble = (
@@ -395,7 +400,7 @@ const ClientMessages = () => {
                       {repliedMsg && !isDeletedForAll && (
                         <div className="mb-1.5">
                           <ReplyPreview
-                            replyContent={repliedMsg.content}
+                            replyContent={repliedDeleted ? "🚫 This message was deleted" : repliedMsg.content}
                             replyAuthor={repliedMsg.sender_id === user?.id ? "You" : (repliedMsg.contact_name || "Provider")}
                             compact
                           />
@@ -446,7 +451,14 @@ const ClientMessages = () => {
                     minutesSinceSent={minutesSince}
                     onReply={() => setReplyTo(m)}
                     onForward={() => setForwardMsg(m)}
-                    onDeleted={() => setMessages(prev => isMe ? prev.filter(x => x.id !== m.id) : prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x))}
+                    onDeleted={(type) => {
+                      if (type === "for_all") {
+                        setMessages(prev => prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x));
+                      } else {
+                        // delete for me — just hide locally
+                        setMessages(prev => prev.filter(x => x.id !== m.id));
+                      }
+                    }}
                     onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
                   >
                     {bubble}

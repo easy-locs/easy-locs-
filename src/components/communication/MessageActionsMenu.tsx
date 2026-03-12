@@ -23,7 +23,7 @@ interface Props {
   minutesSinceSent?: number;
   onReply: () => void;
   onForward: () => void;
-  onDeleted: () => void;
+  onDeleted: (type: "for_me" | "for_all") => void;
   onStarToggle: (starred: boolean) => void;
 }
 
@@ -60,7 +60,7 @@ export default function MessageActionsMenu({
 
   const handleDeleteForMe = async () => {
     await supabase.from("messages").update({ deleted_for_sender: true } as any).eq("id", messageId);
-    onDeleted();
+    onDeleted("for_me");
     toast.success("Deleted for you");
     close();
   };
@@ -72,7 +72,7 @@ export default function MessageActionsMenu({
       deleted_for_all: true,
       content: "🚫 This message was deleted",
     } as any).eq("id", messageId);
-    onDeleted();
+    onDeleted("for_all");
     toast.success("Deleted for everyone");
     close();
   };
