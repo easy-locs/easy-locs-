@@ -51,7 +51,7 @@ const ActivitiesPage = () => (
   <div className="min-h-screen bg-background">
     <SEOHead
       title="Tours & Activities for Rental Guests | Easy-Locs"
-      description="Book local tours, outdoor adventures, food & wine experiences, water sports, and cultural activities for your vacation rental guests. 110+ countries."
+      description="Book local tours, outdoor adventures, food & wine experiences, water sports, and cultural activities for your vacation rental guests. 190+ countries."
       canonical="https://www.easy-locs.com/activities"
       jsonLd={jsonLd as any}
     />
