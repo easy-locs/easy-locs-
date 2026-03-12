@@ -163,6 +163,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setContextLabel(opts.contextLabel || "");
       setCallManager(manager);
       setShowCallDialog(true);
+      activeCallRef.current = { callId: callLog.id, threadId: opts.threadId, orgId: opts.orgId };
 
       await manager.startCall(opts.isVideo || false);
     },
