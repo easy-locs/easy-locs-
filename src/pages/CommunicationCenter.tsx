@@ -498,18 +498,24 @@ const CommunicationCenter = () => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedThread, orgId, user?.id]);
 
-  /* ────── File upload ────── */
+  /* ────── File/media upload ────── */
   const handleFileUpload = async (file: File) => {
     if (!orgId || !selectedThread || !user) return;
     setUploading(true);
     try {
-      const path = `${orgId}/messages/${selectedThread.id}/${Date.now()}-${file.name}`;
-      const { error: uploadErr } = await supabase.storage.from("rental-docs").upload(path, file);
+      const { validateMediaFile } = await import("@/lib/media-utils");
+      const validationErr = validateMediaFile(file);
+      if (validationErr) { toast.error(validationErr); setUploading(false); return; }
+
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${orgId}/${selectedThread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const { data: signedData } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signedData?.signedUrl || path;
 
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       await supabase.from("messages").insert({
         org_id: orgId,
         sender_id: user.id,
@@ -518,7 +524,7 @@ const CommunicationCenter = () => {
         booking_type: selectedThread.bookingType || null,
         contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
         contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
-        content: `📎 ${file.name}`,
+        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general",
         attachment_url: url,
         message_type: "user",
@@ -530,6 +536,27 @@ const CommunicationCenter = () => {
       toast.error("Erreur: " + e.message);
     }
     setUploading(false);
+  };
+
+  const handleMediaUploaded = async (urls: string[], names: string[]) => {
+    if (!orgId || !selectedThread || !user) return;
+    for (let i = 0; i < urls.length; i++) {
+      await supabase.from("messages").insert({
+        org_id: orgId,
+        sender_id: user.id,
+        tenant_id: selectedThread.tenantId || null,
+        booking_id: selectedThread.bookingId || null,
+        booking_type: selectedThread.bookingType || null,
+        contact_name: selectedThread.type === "booking" ? selectedThread.name : null,
+        contact_email: selectedThread.type === "booking" ? selectedThread.email : null,
+        content: `📷 ${names[i]}`,
+        category: "general",
+        attachment_url: urls[i],
+        message_type: "user",
+        sender_locale: locale,
+      } as any);
+    }
+    toast.success(`${urls.length} media sent`);
   };
 
   const updateConversationStatus = async (status: string) => {
