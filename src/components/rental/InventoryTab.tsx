@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ClipboardCheck, Home, Users, Calendar, Eye, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -145,28 +145,28 @@ const InventoryTab = ({ properties, tenants, orgId, isLeaseActive, setInventoryM
                 </div>
               )}
 
-              <div className="flex gap-2 flex-wrap px-4 sm:px-5 mb-4">
+              <div className="grid grid-cols-2 gap-2 px-4 sm:px-5 mb-4">
                 {propTenants.filter(isLeaseActive).length > 0 ? (
                   propTenants.filter(isLeaseActive).map(tn => (
-                    <div key={tn.id} className="flex gap-2">
+                    <React.Fragment key={tn.id}>
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "entry", propertyLabel: p.label })}
-                        className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors h-9 whitespace-nowrap">
-                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.entry")} ({tn.name})
+                        className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-accent/10 text-accent px-3 py-2.5 rounded-lg hover:bg-accent/20 transition-colors min-h-[40px] truncate">
+                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{t("comp.inventory.entry")} ({tn.name})</span>
                       </button>
                       <button onClick={() => setInventoryMode({ propertyId: p.id, tenantId: tn.id, reportType: "exit", propertyLabel: p.label })}
-                        className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors h-9 whitespace-nowrap">
-                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.exit")} ({tn.name})
+                        className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2.5 rounded-lg hover:bg-destructive/20 transition-colors min-h-[40px] truncate">
+                        <ClipboardCheck className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{t("comp.inventory.exit")} ({tn.name})</span>
                       </button>
-                    </div>
+                    </React.Fragment>
                   ))
                 ) : (
                   <>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "entry", propertyLabel: p.label })}
-                      className="inline-flex items-center gap-2 text-xs font-medium bg-accent/10 text-accent px-3 py-2 rounded-lg hover:bg-accent/20 transition-colors h-9 whitespace-nowrap">
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-accent/10 text-accent px-3 py-2.5 rounded-lg hover:bg-accent/20 transition-colors min-h-[40px]">
                       <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.entry")}
                     </button>
                     <button onClick={() => setInventoryMode({ propertyId: p.id, reportType: "exit", propertyLabel: p.label })}
-                      className="inline-flex items-center gap-2 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2 rounded-lg hover:bg-destructive/20 transition-colors h-9 whitespace-nowrap">
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-destructive/10 text-destructive px-3 py-2.5 rounded-lg hover:bg-destructive/20 transition-colors min-h-[40px]">
                       <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />{t("comp.inventory.exit")}
                     </button>
                   </>
