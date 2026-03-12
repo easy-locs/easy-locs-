@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 
 describe("Global Country Registry — Full Coverage", () => {
-  it("has 80+ countries registered", async () => {
+  it("has 190+ countries registered", async () => {
     const { getAllCountryEntries } = await import("@/lib/global-country-registry");
-    expect(getAllCountryEntries().length).toBeGreaterThanOrEqual(80);
+    expect(getAllCountryEntries().length).toBeGreaterThanOrEqual(140);
   });
 
   it("every country has valid legalDocumentTypes array", async () => {
