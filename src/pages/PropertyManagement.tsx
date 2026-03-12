@@ -98,10 +98,10 @@ const PropertyManagement = () => {
   const currentCountry = COUNTRY_PAGES.find(c => c.slug === countrySlug);
   const pageTitle = currentCountry
     ? `Property Management in ${currentCountry.name} — Easy-Locs`
-    : "Property Management Software — Easy-Locs | 110+ Countries";
+    : "Property Management Software — Easy-Locs | 190+ Countries";
   const pageDesc = currentCountry
     ? `Manage rental properties in ${currentCountry.name}. Leases, receipts, tenant portal — compliant with ${currentCountry.name} regulations. Free to start.`
-    : "All-in-one rental management for landlords worldwide. Manage properties in 110+ countries with jurisdiction-compliant legal documents.";
+    : "All-in-one rental management for landlords worldwide. Manage properties in 190+ countries with jurisdiction-compliant legal documents.";
 
   const jsonLd = {
     "@context": "https://schema.org",
