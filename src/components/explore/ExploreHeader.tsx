@@ -20,6 +20,7 @@ import {
   Heart, MessageSquare, Search, ChevronDown, Menu, LogOut,
   LayoutDashboard, Plus, Settings, User, ArrowLeftRight,
   Bookmark, CalendarCheck, Store, Globe, MapPin,
+  Building2, FileText, Receipt, Users, Briefcase, CreditCard,
 } from "lucide-react";
 
 /* ───── Types ───── */
