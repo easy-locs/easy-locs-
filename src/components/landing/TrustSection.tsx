@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 
 const items = [
   { icon: ShieldCheck, key: "secure", color: "success", fallback: "Secure Platform", desc: "End-to-end encryption, GDPR & international compliance" },
-  { icon: Globe, key: "global", color: "info", fallback: "Global Infrastructure", desc: "110+ countries, multi-region hosting, 99.9% uptime" },
+  { icon: Globe, key: "global", color: "info", fallback: "Global Infrastructure", desc: "190+ countries, multi-region hosting, 99.9% uptime" },
   { icon: Cpu, key: "automated", color: "warning", fallback: "Automated Management", desc: "Receipts, reminders, reports & workflows on autopilot" },
   { icon: BrainCircuit, key: "ai", color: "accent", fallback: "AI-Powered Tools", desc: "Smart documents, dynamic pricing & predictive analytics" },
 ];
