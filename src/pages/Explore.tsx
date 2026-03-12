@@ -42,6 +42,11 @@ interface ServiceListing {
   id: string; title: string; description: string; category: string; city: string;
   country: string; price: number; currency: string; photo_urls: any;
   booking_slug: string; active: boolean; badges?: string[];
+  listing_type?: string; surface_sqm?: number; rooms?: number;
+  bedrooms?: number; bathrooms?: number; contact_whatsapp?: string;
+  source_contact_email?: string; brand?: string; model?: string;
+  condition?: string; features?: any; deposit_amount?: number;
+  quantity?: number; contact_email?: string;
 }
 
 const ITEMS_PER_PAGE = 24;

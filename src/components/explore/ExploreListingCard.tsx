@@ -128,7 +128,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights} {t("explore.nights") || "nights"}</span>}
             </div>
           )}
-          {type === "real-estate" && (
+          {(type === "real-estate" || isMarketplaceSaleOrRental) && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
               {item.surface_sqm > 0 && (
                 <span className="flex items-center gap-0.5 whitespace-nowrap"><Maximize className="h-3 w-3" /> {item.surface_sqm}m²</span>
@@ -138,6 +138,9 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               )}
               {item.bathrooms > 0 && (
                 <span className="flex items-center gap-0.5 whitespace-nowrap"><Bath className="h-3 w-3" /> {item.bathrooms}</span>
+              )}
+              {item.brand && (
+                <span className="flex items-center gap-0.5 whitespace-nowrap text-muted-foreground">{item.brand} {item.model || ""}</span>
               )}
             </div>
           )}
