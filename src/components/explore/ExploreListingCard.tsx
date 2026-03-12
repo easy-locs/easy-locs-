@@ -39,10 +39,14 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
+  // Marketplace listings can be sale/rental/service — adapt badge accordingly
+  const isMarketplaceSaleOrRental = type === "service" && (item.listing_type === "sale" || item.listing_type === "rental");
   const typeBadge = type === "seasonal"
     ? { label: t("explore.vacation_rental") || "Vacation Rental", color: "bg-warning/15 text-warning border-warning/25" }
     : type === "real-estate"
     ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.long_term") || "Long-term"), color: "bg-info/15 text-info border-info/25" }
+    : isMarketplaceSaleOrRental
+    ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.rental") || "Rental"), color: "bg-info/15 text-info border-info/25" }
     : { label: subInfo?.label || item.category?.replace(/_/g, " ") || (t("explore.service") || "Service"), color: "bg-success/15 text-success border-success/25" };
 
   const isVerified = type === "service" && Array.isArray(item.badges) && item.badges.includes("verified");
