@@ -25,7 +25,7 @@ export function useAutoTranslate(originalText: string | null | undefined, source
       setLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke("translate-message", {
-          body: { text: originalText, targetLang: browserLang },
+          body: { text: originalText, from_locale: srcLang, to_locale: browserLang },
         });
         if (!cancelled && data?.translated) {
           setTranslated(data.translated);
