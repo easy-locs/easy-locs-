@@ -6,11 +6,9 @@ import { useI18n } from "@/lib/i18n";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 /* Lazy-load Three.js globe — safe fallback on chunk failure */
+const NullFallback = () => null;
 const GlobeCanvas = lazy(() =>
-  import("./LandingGlobe").then(
-    (mod) => mod,
-    () => ({ default: () => null })
-  )
+  import("./LandingGlobe").catch(() => ({ default: NullFallback }))
 );
 
 const regions = [
