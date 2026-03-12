@@ -11,10 +11,10 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const { t } = useI18n();
 
   const items = [
-    { icon: LayoutDashboard, label: t("nav.dashboard") || "Dashboard", path: "/dashboard" },
-    { icon: Home, label: t("nav.properties") || "Properties", path: "/dashboard/rental" },
-    { icon: Store, label: t("nav.marketplace") || "Marketplace", path: "/dashboard/activities" },
-    { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/communication" },
+    { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Board", path: "/dashboard" },
+    { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },
+    { icon: Store, label: t("nav.market_short") || "Market", path: "/dashboard/activities" },
+    { icon: MessageCircle, label: t("nav.messages_short") || "Chat", path: "/dashboard/communication" },
     { icon: Menu, label: t("nav.more") || "More", path: "__menu__" },
   ];
 

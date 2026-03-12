@@ -179,6 +179,7 @@ export function getProfileLabels(locale: string): Record<string, string> {
 export const notifKeys: Record<string, Record<string, string>> = {
   fr: {
     "notif.title": "Notifications", "notif.mark_all_read": "Tout marquer lu", "notif.empty": "Aucune notification",
+    "notif.all": "Tout", "notif.unread": "Non lus", "notif.bookings": "Réservations", "notif.payments": "Paiements", "notif.messages_filter": "Messages",
     "notif.reply": "Répondre", "notif.view_document": "Voir le document", "notif.view_payment": "Voir le paiement",
     "notif.view_dunning": "Voir la relance", "notif.open": "Ouvrir",
     "notif.view_booking": "Voir la réservation", "notif.outdated": "Cet élément n'est plus disponible",
@@ -202,6 +203,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   en: {
     "notif.title": "Notifications", "notif.mark_all_read": "Mark all read", "notif.empty": "No notifications",
+    "notif.all": "All", "notif.unread": "New", "notif.bookings": "Bookings", "notif.payments": "Payments", "notif.messages_filter": "Messages",
     "notif.reply": "Reply", "notif.view_document": "View document", "notif.view_payment": "View payment",
     "notif.view_dunning": "View reminder", "notif.open": "Open",
     "notif.view_booking": "View booking", "notif.outdated": "This record is no longer available",
@@ -225,6 +227,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   es: {
     "notif.title": "Notificaciones", "notif.mark_all_read": "Marcar todo leído", "notif.empty": "Sin notificaciones",
+    "notif.all": "Todo", "notif.unread": "Nuevas", "notif.bookings": "Reservas", "notif.payments": "Pagos", "notif.messages_filter": "Mensajes",
     "notif.reply": "Responder", "notif.view_document": "Ver documento", "notif.view_payment": "Ver pago",
     "notif.view_dunning": "Ver recordatorio", "notif.open": "Abrir",
     "notif.view_booking": "Ver reserva", "notif.outdated": "Este registro ya no está disponible",
@@ -248,6 +251,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   de: {
     "notif.title": "Benachrichtigungen", "notif.mark_all_read": "Alle gelesen", "notif.empty": "Keine Benachrichtigungen",
+    "notif.all": "Alle", "notif.unread": "Neu", "notif.bookings": "Buchungen", "notif.payments": "Zahlungen", "notif.messages_filter": "Nachrichten",
     "notif.reply": "Antworten", "notif.view_document": "Dokument anzeigen", "notif.view_payment": "Zahlung anzeigen",
     "notif.view_dunning": "Mahnung anzeigen", "notif.open": "Öffnen",
     "notif.view_booking": "Buchung anzeigen", "notif.outdated": "Dieser Eintrag ist nicht mehr verfügbar",
@@ -271,6 +275,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   it: {
     "notif.title": "Notifiche", "notif.mark_all_read": "Segna tutto letto", "notif.empty": "Nessuna notifica",
+    "notif.all": "Tutto", "notif.unread": "Nuove", "notif.bookings": "Prenotazioni", "notif.payments": "Pagamenti", "notif.messages_filter": "Messaggi",
     "notif.reply": "Rispondi", "notif.view_document": "Vedi documento", "notif.view_payment": "Vedi pagamento",
     "notif.view_dunning": "Vedi sollecito", "notif.open": "Apri",
     "notif.view_booking": "Vedi prenotazione", "notif.outdated": "Questo elemento non è più disponibile",
@@ -294,6 +299,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   pt: {
     "notif.title": "Notificações", "notif.mark_all_read": "Marcar tudo lido", "notif.empty": "Sem notificações",
+    "notif.all": "Tudo", "notif.unread": "Novas", "notif.bookings": "Reservas", "notif.payments": "Pagamentos", "notif.messages_filter": "Mensagens",
     "notif.reply": "Responder", "notif.view_document": "Ver documento", "notif.view_payment": "Ver pagamento",
     "notif.view_dunning": "Ver lembrete", "notif.open": "Abrir",
     "notif.view_booking": "Ver reserva", "notif.outdated": "Este registro não está mais disponível",
@@ -317,6 +323,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   nl: {
     "notif.title": "Meldingen", "notif.mark_all_read": "Alles gelezen", "notif.empty": "Geen meldingen",
+    "notif.all": "Alles", "notif.unread": "Nieuw", "notif.bookings": "Boekingen", "notif.payments": "Betalingen", "notif.messages_filter": "Berichten",
     "notif.reply": "Beantwoorden", "notif.view_document": "Document bekijken", "notif.view_payment": "Betaling bekijken",
     "notif.view_dunning": "Herinnering bekijken", "notif.open": "Openen",
     "notif.view_booking": "Boeking bekijken", "notif.outdated": "Dit item is niet meer beschikbaar",
@@ -328,6 +335,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   pl: {
     "notif.title": "Powiadomienia", "notif.mark_all_read": "Zaznacz wszystkie", "notif.empty": "Brak powiadomień",
+    "notif.all": "Wszystko", "notif.unread": "Nowe", "notif.bookings": "Rezerwacje", "notif.payments": "Płatności", "notif.messages_filter": "Wiadomości",
     "notif.reply": "Odpowiedz", "notif.view_document": "Zobacz dokument", "notif.view_payment": "Zobacz płatność",
     "notif.view_dunning": "Zobacz przypomnienie", "notif.open": "Otwórz",
     "notif.view_booking": "Zobacz rezerwację", "notif.outdated": "Ten wpis nie jest już dostępny",
@@ -339,6 +347,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   tr: {
     "notif.title": "Bildirimler", "notif.mark_all_read": "Tümünü okundu", "notif.empty": "Bildirim yok",
+    "notif.all": "Tümü", "notif.unread": "Yeni", "notif.bookings": "Rezervasyonlar", "notif.payments": "Ödemeler", "notif.messages_filter": "Mesajlar",
     "notif.reply": "Yanıtla", "notif.view_document": "Belge görüntüle", "notif.view_payment": "Ödeme görüntüle",
     "notif.view_dunning": "Hatırlatma görüntüle", "notif.open": "Aç",
     "notif.view_booking": "Rezervasyonu görüntüle", "notif.outdated": "Bu kayıt artık mevcut değil",
@@ -350,6 +359,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ar: {
     "notif.title": "الإشعارات", "notif.mark_all_read": "تحديد الكل كمقروء", "notif.empty": "لا إشعارات",
+    "notif.all": "الكل", "notif.unread": "جديد", "notif.bookings": "الحجوزات", "notif.payments": "المدفوعات", "notif.messages_filter": "الرسائل",
     "notif.reply": "رد", "notif.view_document": "عرض المستند", "notif.view_payment": "عرض الدفع",
     "notif.view_dunning": "عرض التذكير", "notif.open": "فتح",
     "notif.view_booking": "عرض الحجز", "notif.outdated": "هذا السجل لم يعد متاحاً",
@@ -373,6 +383,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ja: {
     "notif.title": "通知", "notif.mark_all_read": "すべて既読", "notif.empty": "通知なし",
+    "notif.all": "すべて", "notif.unread": "未読", "notif.bookings": "予約", "notif.payments": "支払い", "notif.messages_filter": "メッセージ",
     "notif.reply": "返信", "notif.view_document": "書類を見る", "notif.view_payment": "支払いを見る",
     "notif.view_dunning": "リマインダーを見る", "notif.open": "開く",
     "notif.view_booking": "予約を見る", "notif.outdated": "このレコードはもう利用できません",
@@ -384,6 +395,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ko: {
     "notif.title": "알림", "notif.mark_all_read": "모두 읽음", "notif.empty": "알림 없음",
+    "notif.all": "전체", "notif.unread": "새 알림", "notif.bookings": "예약", "notif.payments": "결제", "notif.messages_filter": "메시지",
     "notif.reply": "답장", "notif.view_document": "문서 보기", "notif.view_payment": "결제 보기",
     "notif.view_dunning": "알림 보기", "notif.open": "열기",
     "notif.view_booking": "예약 보기", "notif.outdated": "이 레코드는 더 이상 사용할 수 없습니다",
@@ -395,6 +407,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   zh: {
     "notif.title": "通知", "notif.mark_all_read": "全部已读", "notif.empty": "没有通知",
+    "notif.all": "全部", "notif.unread": "未读", "notif.bookings": "预订", "notif.payments": "付款", "notif.messages_filter": "消息",
     "notif.reply": "回复", "notif.view_document": "查看文档", "notif.view_payment": "查看付款",
     "notif.view_dunning": "查看提醒", "notif.open": "打开",
     "notif.view_booking": "查看预订", "notif.outdated": "此记录已不可用",
