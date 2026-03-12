@@ -30,6 +30,7 @@ export function ExploreRadiusSearch({
   onLocationChange, onRadiusChange, onCenterChange,
   onApply, onReset, onNearMe, onClose,
 }: ExploreRadiusSearchProps) {
+  const { t } = useI18n();
   const mapRef = useRef<HTMLDivElement>(null);
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
