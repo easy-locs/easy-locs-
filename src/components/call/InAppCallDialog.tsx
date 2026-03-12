@@ -44,17 +44,23 @@ export default function InAppCallDialog({
     // Safari requires explicit play() after setting srcObject
     const playPromise = el.play();
     if (playPromise) {
-      playPromise.catch((err) => {
-        console.warn("[InAppCallDialog] audio.play() blocked, retrying on user gesture:", err);
-        // Retry on next user interaction
-        const retry = () => {
-          el.play().catch(() => {});
-          document.removeEventListener("touchstart", retry);
-          document.removeEventListener("click", retry);
-        };
-        document.addEventListener("touchstart", retry, { once: true });
-        document.addEventListener("click", retry, { once: true });
-      });
+      playPromise
+        .then(() => {
+          console.log("[InAppCallDialog] remote audio play started");
+        })
+        .catch((err) => {
+          console.warn("[InAppCallDialog] audio.play() blocked, retrying on user gesture:", err);
+          // Retry on next user interaction
+          const retry = () => {
+            el.play()
+              .then(() => console.log("[InAppCallDialog] remote audio play resumed after gesture"))
+              .catch(() => {});
+            document.removeEventListener("touchstart", retry);
+            document.removeEventListener("click", retry);
+          };
+          document.addEventListener("touchstart", retry, { once: true });
+          document.addEventListener("click", retry, { once: true });
+        });
     }
   }, [remoteStream]);
 
