@@ -3290,7 +3290,10 @@ const pageEn: Record<string, string> = {
   "landing.footer.concierge": "Concierge",
   "landing.footer.top_cities": "Top Cities",
   "landing.nav.explore": "Explore",
+  "landing.nav.marketplace": "Marketplace",
+  "landing.nav.properties": "Properties",
   "landing.nav.language": "Language",
+  "landing.footer.languages_count": "31 languages supported",
 
   "landing.legal.title": "Legal information",
   "landing.legal.text": "This application provides administrative assistance only. Generated documents are for informational purposes and do not replace a lawyer, notary or accountant.",
