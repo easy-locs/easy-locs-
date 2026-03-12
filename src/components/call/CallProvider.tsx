@@ -139,23 +139,18 @@ export function CallProvider({ children }: { children: ReactNode }) {
       startingCallRef.current = true;
 
       try {
-      // Create call log entry
-      const { data: callLog, error } = await supabase
-        .from("call_logs")
-        .insert({
-          caller_id: user.id,
-          callee_org_id: opts.orgId,
-          thread_id: opts.threadId || null,
-          context_type: opts.contextType || "listing",
-          context_id: opts.contextId || null,
-          context_label: opts.contextLabel || null,
-          status: "ringing",
-          is_video: opts.isVideo || false,
-        } as any)
-        .select("id")
-        .single();
+      // Use idempotent server-side function to prevent duplicates
+      const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
+        _caller_id: user.id,
+        _callee_org_id: opts.orgId,
+        _thread_id: opts.threadId || null,
+        _context_type: opts.contextType || "listing",
+        _context_id: opts.contextId || null,
+        _context_label: opts.contextLabel || null,
+        _is_video: opts.isVideo || false,
+      });
 
-      if (error || !callLog) {
+      if (error || !callId) {
         console.error("Failed to create call:", error);
         startingCallRef.current = false;
         return;
