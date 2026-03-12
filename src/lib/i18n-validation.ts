@@ -395,6 +395,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   ko: {
     "notif.title": "알림", "notif.mark_all_read": "모두 읽음", "notif.empty": "알림 없음",
+    "notif.all": "전체", "notif.unread": "새 알림", "notif.bookings": "예약", "notif.payments": "결제", "notif.messages_filter": "메시지",
     "notif.reply": "답장", "notif.view_document": "문서 보기", "notif.view_payment": "결제 보기",
     "notif.view_dunning": "알림 보기", "notif.open": "열기",
     "notif.view_booking": "예약 보기", "notif.outdated": "이 레코드는 더 이상 사용할 수 없습니다",
