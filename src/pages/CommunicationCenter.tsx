@@ -339,6 +339,30 @@ const CommunicationCenter = () => {
       }
     }
 
+    // 6. Load guest session conversations
+    const { data: guestSessions } = await supabase
+      .from("guest_sessions" as any)
+      .select("id, display_name, email, context_type, context_id, created_at, expires_at")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (guestSessions?.length) {
+      for (const gs of guestSessions as any[]) {
+        threadMap.set(`guest-${gs.id}`, {
+          id: `guest-${gs.id}`,
+          type: "lead" as const,
+          contextType: "guest_session",
+          contextId: gs.id,
+          name: gs.display_name || "Guest",
+          email: gs.email || null,
+          listingTitle: gs.context_type !== "general" ? gs.context_type : undefined,
+          unreadCount: 0,
+          lastMessageTime: gs.created_at,
+        });
+      }
+    }
+
     // 6. Load message metadata (unread counts + last messages)
     const { data: allMsgs } = await supabase
       .from("messages")
