@@ -34,12 +34,19 @@ interface ExploreHeaderProps {
 }
 
 /* ───── Role helpers ───── */
-const BUSINESS_ROLES = new Set(["landlord"]);
-
 function getDashboardPath(role: string) {
   if (role === "tenant") return "/tenant";
   if (role === "client") return "/client";
   return "/dashboard";
+}
+
+function getRoleLabel(role: string) {
+  switch (role) {
+    case "landlord": return "Professional";
+    case "tenant": return "Tenant";
+    case "client": return "Client";
+    default: return role;
+  }
 }
 
 /* ═══════════════════════════════════════════════
