@@ -1586,6 +1586,20 @@ const CommunicationCenter = () => {
                             </Button>
                           )}
                         </div>
+
+                        {/* Smart Deal Room */}
+                        {selectedThread.contextId && orgId && (
+                          <div className="pt-3 border-t border-border/30">
+                            <DealRoomPanel
+                              contextType={selectedThread.contextType}
+                              contextId={selectedThread.contextId}
+                              contextTitle={selectedThread.serviceTitle || selectedThread.listingTitle || selectedThread.propertyLabel}
+                              targetOrgId={orgId}
+                              threadId={selectedThread.id}
+                              isOrgMember={true}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Activity Timeline */}
