@@ -271,6 +271,7 @@ function MobileUserSheet() {
 
         <nav className="flex-1 overflow-y-auto py-2">
           {/* Universal */}
+          <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
           <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go(`${dash}/messages`)} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
