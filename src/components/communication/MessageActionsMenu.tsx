@@ -60,7 +60,7 @@ export default function MessageActionsMenu({
 
   const handleDeleteForMe = async () => {
     await supabase.from("messages").update({ deleted_for_sender: true } as any).eq("id", messageId);
-    onDeleted();
+    onDeleted("for_me");
     toast.success("Deleted for you");
     close();
   };
