@@ -406,8 +406,11 @@ export class CallManager {
           });
         }
       });
+      this.debug("relay detection", { usingRelay });
       this.onStateChange({ usingRelay });
-    } catch { /* stats unavailable */ }
+    } catch {
+      this.debug("relay detection unavailable");
+    }
   }
 
   private clearTimeouts() {
@@ -417,9 +420,12 @@ export class CallManager {
 
   private startIceTimeout() {
     this.clearTimeouts();
+    this.debug("ICE timers started", { iceTimeoutMs: ICE_TIMEOUT_MS, streamTimeoutMs: STREAM_TIMEOUT_MS });
+
     this.iceTimer = setTimeout(() => {
       if (!this.iceConnected) {
-        this.retryRelayOnly();
+        this.debug("ICE timeout reached, triggering relay retry");
+        void this.retryRelayOnly();
       }
     }, ICE_TIMEOUT_MS);
 
@@ -429,20 +435,19 @@ export class CallManager {
           status: "network_blocked",
           error: "Unable to establish call. Your network may restrict internet calls.",
         });
-        this.cleanup();
+        this.cleanup("stream-timeout");
       }
     }, STREAM_TIMEOUT_MS);
   }
 
   private async retryRelayOnly() {
     if (!this.pc || this.iceConnected) return;
-    console.log("[CallManager] Retrying with relay-only transport");
+    this.debug("retryRelayOnly start");
+
     try {
-      // Close old PC
       const oldPc = this.pc;
       try { oldPc.close(); } catch {}
-      
-      // Create relay-only PC
+
       this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "relay" });
       this.remoteStream = new MediaStream();
       this._pendingCandidates = [];
@@ -458,35 +463,45 @@ export class CallManager {
         event.streams[0]?.getTracks().forEach((track) => {
           this.remoteStream!.addTrack(track);
         });
+        this.debug("remote track received (relay retry)", {
+          remoteTracks: this.remoteStream?.getTracks().length || 0,
+        });
         this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
       };
 
       this.pc.onicecandidate = (event) => {
         if (event.candidate) {
+          this.debug("local ICE candidate (relay retry)", {
+            candidateType: event.candidate.type,
+            protocol: event.candidate.protocol,
+          });
           this.sendSignal({ type: "ice", data: JSON.stringify(event.candidate) });
         }
       };
 
       this.pc.onconnectionstatechange = () => {
-        if (this.pc?.connectionState === "connected") {
+        const state = this.pc?.connectionState;
+        this.debug("connectionState (relay retry)", { state });
+
+        if (state === "connected") {
           this.iceConnected = true;
           this.clearTimeouts();
           this.onStateChange({ status: "active", usingRelay: true });
-        } else if (this.pc?.connectionState === "failed") {
+        } else if (state === "failed") {
           this.onStateChange({
             status: "network_blocked",
             error: "Internet calling unavailable on your network.",
           });
-          this.cleanup();
+          this.cleanup("relay-retry-failed");
         }
       };
 
-      // Re-negotiate: create a new offer and send it
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
       this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
+      this.debug("relay retry offer sent");
     } catch (err) {
-      console.error("[CallManager] Relay retry failed:", err);
+      this.debug("relay retry failed", { error: String(err) });
       // Stream timeout will handle final fallback
     }
   }
@@ -497,9 +512,17 @@ export class CallManager {
         audio: true,
         video: isVideo,
       });
+
+      const audioTrack = this.localStream.getAudioTracks()[0];
+      this.debug("media ready", {
+        audioTracks: this.localStream.getAudioTracks().length,
+        videoTracks: this.localStream.getVideoTracks().length,
+        audioEnabled: audioTrack?.enabled ?? false,
+        audioMuted: audioTrack?.muted ?? false,
+      });
       this.onStateChange({ localStream: this.localStream });
     } catch (err) {
-      console.error("[CallManager] getUserMedia failed:", err);
+      this.debug("getUserMedia failed", { error: String(err) });
       this.onStateChange({
         status: "failed",
         error: "Microphone access denied. Please allow microphone access to make calls.",
@@ -513,6 +536,7 @@ export class CallManager {
     const track = this.localStream.getAudioTracks()[0];
     if (track) {
       track.enabled = !track.enabled;
+      this.debug("toggleMute", { enabled: track.enabled });
       return !track.enabled;
     }
     return false;
@@ -532,9 +556,13 @@ export class CallManager {
     return false;
   }
 
-  cleanup() {
+  cleanup(reason = "unknown") {
     if (this._cleaned) return;
+
+    this.debug("cleanup", { reason });
     this._cleaned = true;
+    this._ending = false;
+
     if (this.iceTimer) clearTimeout(this.iceTimer);
     if (this.streamTimer) clearTimeout(this.streamTimer);
     if (this.elapsedTimer) clearInterval(this.elapsedTimer);
@@ -543,13 +571,16 @@ export class CallManager {
     this.elapsedTimer = null;
     this._startTime = null;
     this._pendingCandidates = [];
+
     try { this.localStream?.getTracks().forEach((t) => t.stop()); } catch {}
     this.localStream = null;
     this.remoteStream = null;
+
     try { this.pc?.close(); } catch {}
     this.pc = null;
     this.iceConnected = false;
     this._channelReady = false;
+
     if (this.channel) {
       try { supabase.removeChannel(this.channel); } catch {}
       this.channel = null;
