@@ -32,10 +32,12 @@ export default function IncomingCallDialog({
 
   // Auto-decline after 30 seconds (missed call)
   useEffect(() => {
-    if (ringTime >= 30) {
+    if (ringTime >= 30 && onMissed) {
+      onMissed();
+    } else if (ringTime >= 30) {
       onDecline();
     }
-  }, [ringTime, onDecline]);
+  }, [ringTime, onDecline, onMissed]);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
