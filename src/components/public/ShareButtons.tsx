@@ -54,15 +54,7 @@ export default function ShareButtons({ type, slug, title, version, inline }: Sha
       <Button
         variant="outline"
         size="sm"
-        className="h-9 gap-2 text-xs font-medium"
-        onClick={() => { window.location.href = links.email; }}
-      >
-        <Mail className="h-3.5 w-3.5" /> Email
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-9 gap-2 text-xs font-medium"
+        className="h-9 gap-2 text-xs font-medium col-span-2"
         onClick={handleCopy}
       >
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
