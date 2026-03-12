@@ -1,15 +1,19 @@
-import { Suspense, useState, lazy } from "react";
+import { Suspense, useState, lazy, type ComponentType } from "react";
 import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 
+interface GlobeCanvasProps {
+  onError?: () => void;
+}
+
 /* Lazy-load Three.js globe — always return a valid lazy module shape */
-const NullFallback = () => null;
-const GlobeCanvas = lazy(async () => {
+const NullFallback: ComponentType<GlobeCanvasProps> = () => null;
+const GlobeCanvas = lazy(async (): Promise<{ default: ComponentType<GlobeCanvasProps> }> => {
   try {
     const mod = await import("./LandingGlobe");
-    return { default: mod.default ?? NullFallback };
+    return { default: (mod.default as ComponentType<GlobeCanvasProps>) ?? NullFallback };
   } catch {
     return { default: NullFallback };
   }
