@@ -383,9 +383,8 @@ export default function ProviderStorefront() {
       <MobileCTABar
         phone={provider.phone}
         whatsapp={provider.whatsapp}
-        shareType="provider"
-        shareSlug={providerSlug || ""}
-        shareTitle={provider.display_name}
+        email={provider.email}
+        listingTitle={provider.display_name}
         onBook={scrollToServices}
       />
 
