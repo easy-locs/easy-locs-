@@ -86,7 +86,7 @@ const Navbar = () => {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
           {/* Language switcher — hidden on small mobile to save space */}
           <div className="relative hidden sm:block" ref={langRef}>
             <button
