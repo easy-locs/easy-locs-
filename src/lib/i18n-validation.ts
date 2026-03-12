@@ -347,6 +347,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
   },
   tr: {
     "notif.title": "Bildirimler", "notif.mark_all_read": "Tümünü okundu", "notif.empty": "Bildirim yok",
+    "notif.all": "Tümü", "notif.unread": "Yeni", "notif.bookings": "Rezervasyonlar", "notif.payments": "Ödemeler", "notif.messages_filter": "Mesajlar",
     "notif.reply": "Yanıtla", "notif.view_document": "Belge görüntüle", "notif.view_payment": "Ödeme görüntüle",
     "notif.view_dunning": "Hatırlatma görüntüle", "notif.open": "Aç",
     "notif.view_booking": "Rezervasyonu görüntüle", "notif.outdated": "Bu kayıt artık mevcut değil",
