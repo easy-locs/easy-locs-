@@ -289,6 +289,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
+    startingCallRef.current = false; // Reset lock for next call
   }, [callManager, user]);
 
   return (
