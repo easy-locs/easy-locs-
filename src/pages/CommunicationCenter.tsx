@@ -1448,9 +1448,9 @@ const CommunicationCenter = () => {
                       <div className="flex-1 min-w-0">
                         <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Write a message..." className="h-10 text-sm" />
                       </div>
-                      <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.heic"
+                      <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
                         onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hidden sm:flex" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                      <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
                       <div className="hidden sm:block">
