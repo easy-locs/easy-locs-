@@ -11,7 +11,6 @@ export function isVideoUrl(url: string): boolean {
     const pathname = new URL(url).pathname.toLowerCase();
     return VIDEO_EXTENSIONS.some((ext) => pathname.endsWith(ext));
   } catch {
-    // Fallback: check raw string
     const lower = url.toLowerCase();
     return VIDEO_EXTENSIONS.some((ext) => lower.includes(ext));
   }

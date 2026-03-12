@@ -5,11 +5,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Rate limits
 const MAX_MESSAGES_PER_SESSION = 20;
 const MAX_MEDIA_PER_SESSION = 5;
-const MAX_SESSIONS_PER_FINGERPRINT = 5; // per 24h
+const MAX_SESSIONS_PER_FINGERPRINT = 5;
 const SESSION_DURATION_HOURS = 2;
+
+/** Auto-translate via the translate-message function */
+async function autoTranslate(
+  supabaseUrl: string,
+  anonKey: string,
+  text: string,
+  fromLocale: string,
+  toLocale: string,
+): Promise<string | null> {
+  if (!text.trim() || fromLocale === toLocale) return null;
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/translate-message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: anonKey },
+      body: JSON.stringify({ text, from_locale: fromLocale, to_locale: toLocale }),
+    });
+    if (!res.ok) { await res.text(); return null; }
+    const data = await res.json();
+    return data.translated || null;
+  } catch { return null; }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,6 +37,7 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceKey);
 
@@ -27,12 +48,10 @@ Deno.serve(async (req) => {
     if (action === "create") {
       const { display_name, email, fingerprint, org_id, context_type, context_id } = body;
 
-      // Validate required fields
       if (!org_id) throw new Error("org_id required");
       if (!display_name || display_name.length > 100) throw new Error("Invalid display_name");
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Invalid email");
 
-      // Abuse detection: check fingerprint rate
       if (fingerprint) {
         const { count } = await supabase
           .from("guest_sessions")
@@ -92,10 +111,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update last activity
-      await supabase.from("guest_sessions")
-        .update({ last_activity_at: new Date().toISOString() })
-        .eq("id", data.id);
+      await supabase.from("guest_sessions").update({ last_activity_at: new Date().toISOString() }).eq("id", data.id);
 
       return new Response(JSON.stringify({
         valid: true,
@@ -108,10 +124,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === "send_message") {
-      const { token, content, attachment_urls } = body;
+      const { token, content, attachment_urls, guest_locale } = body;
       if (!token) throw new Error("token required");
 
-      // Validate session
       const { data: session } = await supabase
         .from("guest_sessions")
         .select("*")
@@ -124,7 +139,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Rate limit check
       const hasMedia = attachment_urls && attachment_urls.length > 0;
       if (session.messages_sent >= MAX_MESSAGES_PER_SESSION) {
         return new Response(JSON.stringify({ error: "Message limit reached" }), {
@@ -137,16 +151,36 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Content validation
       if (!content?.trim() && !hasMedia) throw new Error("Empty message");
       if (content && content.length > 2000) throw new Error("Message too long");
 
-      // Insert message
+      // Auto-translate guest message for seller
+      let translatedContent: string | null = null;
+      const detectedLocale = guest_locale || "en";
+
+      // Get org owner's locale (default to 'en')
+      const { data: org } = await supabase
+        .from("orgs").select("owner_user_id").eq("id", session.org_id).single();
+
+      let sellerLocale = "en";
+      if (org?.owner_user_id) {
+        const { data: profile } = await supabase
+          .from("profiles").select("language").eq("id", org.owner_user_id).maybeSingle();
+        sellerLocale = (profile as any)?.language || "en";
+      }
+
+      if (content?.trim() && detectedLocale !== sellerLocale) {
+        translatedContent = await autoTranslate(supabaseUrl, anonKey, content.trim(), detectedLocale, sellerLocale);
+      }
+
       const { data: msg, error: msgErr } = await supabase.from("messages").insert({
         org_id: session.org_id,
         sender_id: null,
         guest_session_id: session.id,
         content: content?.trim() || "",
+        translated_content: translatedContent,
+        language_detected: detectedLocale,
+        translated_locale: translatedContent ? sellerLocale : null,
         contact_name: session.display_name,
         contact_email: session.email,
         category: "general",
@@ -158,7 +192,6 @@ Deno.serve(async (req) => {
 
       if (msgErr) throw msgErr;
 
-      // Update counters
       await supabase.from("guest_sessions").update({
         messages_sent: session.messages_sent + 1,
         media_sent: session.media_sent + (hasMedia ? attachment_urls.length : 0),
@@ -166,23 +199,40 @@ Deno.serve(async (req) => {
       }).eq("id", session.id);
 
       // Notify org owner
-      const { data: org } = await supabase
-        .from("orgs").select("owner_user_id").eq("id", session.org_id).single();
-
       if (org?.owner_user_id) {
+        // Resolve context label
+        let contextLabel = "";
+        if (session.context_type === "service" && session.context_id) {
+          const { data: svc } = await supabase
+            .from("concierge_services").select("title").eq("id", session.context_id).maybeSingle();
+          if (!svc) {
+            const { data: mSvc } = await supabase
+              .from("marketplace_services").select("title").eq("id", session.context_id).maybeSingle();
+            contextLabel = (mSvc as any)?.title || "";
+          } else {
+            contextLabel = svc.title;
+          }
+        } else if (session.context_type === "listing" && session.context_id) {
+          const { data: listing } = await supabase
+            .from("public_listings").select("title").eq("id", session.context_id).maybeSingle();
+          contextLabel = (listing as any)?.title || "";
+        }
+
         await supabase.from("notifications").insert({
           user_id: org.owner_user_id,
           org_id: session.org_id,
           type: "info",
           title: "💬 New guest message",
-          message: `${session.display_name} sent a message${session.context_type !== "general" ? ` about ${session.context_type}` : ""}`,
-          link: "/dashboard/communication",
+          message: `${session.display_name}: ${(translatedContent || content || "").slice(0, 100)}${contextLabel ? ` — ${contextLabel}` : ""}`,
+          link: `/dashboard/communication?thread=guest-${session.id}`,
           metadata_json: {
             target_type: "guest_message",
             target_id: msg.id,
             guest_session_id: session.id,
             context_type: session.context_type,
             context_id: session.context_id,
+            context_label: contextLabel,
+            guest_locale: detectedLocale,
           },
         });
       }
@@ -193,7 +243,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "get_messages") {
-      const { token } = body;
+      const { token, guest_locale } = body;
       if (!token) throw new Error("token required");
 
       const { data: session } = await supabase
@@ -208,21 +258,41 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Get messages for this guest session + replies from org
       const { data: messages } = await supabase
         .from("messages")
-        .select("id, content, created_at, sender_id, attachment_urls, contact_name")
+        .select("id, content, translated_content, language_detected, translated_locale, created_at, sender_id, attachment_urls, contact_name")
         .eq("org_id", session.org_id)
         .or(`guest_session_id.eq.${session.id},context_id.eq.guest_${session.id}`)
         .order("created_at", { ascending: true })
         .limit(100);
 
-      return new Response(JSON.stringify({
-        messages: (messages || []).map(m => ({
-          ...m,
-          is_from_host: !!m.sender_id,
-        })),
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      // For host messages, translate to guest language if needed
+      const enriched = await Promise.all((messages || []).map(async (m: any) => {
+        const isFromHost = !!m.sender_id;
+        let translatedForGuest = m.translated_content;
+
+        // If it's a host message and guest speaks different language, translate for guest
+        if (isFromHost && guest_locale && m.content && !translatedForGuest) {
+          const hostLang = m.language_detected || "en";
+          if (hostLang !== guest_locale) {
+            translatedForGuest = await autoTranslate(supabaseUrl, anonKey, m.content, hostLang, guest_locale);
+          }
+        }
+
+        return {
+          id: m.id,
+          content: m.content,
+          translated_content: isFromHost ? translatedForGuest : m.translated_content,
+          created_at: m.created_at,
+          is_from_host: isFromHost,
+          attachment_urls: m.attachment_urls,
+          contact_name: m.contact_name,
+        };
+      }));
+
+      return new Response(JSON.stringify({ messages: enriched }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     throw new Error("Unknown action");

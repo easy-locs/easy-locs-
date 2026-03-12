@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Mail, Phone, MessageCircle, Send, MessageSquare, Link2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { whatsappLink, telegramLink, emailLink, phoneLink, smsLink, type ListingContext } from "@/lib/contact-utils";
+import GuestChatDrawer from "@/components/guest/GuestChatDrawer";
 
 interface Props {
   contactEmail?: string | null;
@@ -17,6 +20,7 @@ interface Props {
   listingId?: string | null;
   serviceId?: string | null;
   orgId?: string | null;
+  providerName?: string;
 }
 
 /** Fire-and-forget click tracking */
@@ -33,10 +37,12 @@ const trackClick = (channel: string, opts: { listingId?: string | null; serviceI
 const ListingContactButtons = ({
   contactEmail, contactPhone, whatsappNumber, telegramUsername,
   listingTitle = "", listingUrl, listingPrice, listingCity, listingCountry,
-  listingId, serviceId, orgId,
+  listingId, serviceId, orgId, providerName,
 }: Props) => {
   const { t } = useI18n();
-  const hasAny = contactEmail || contactPhone || whatsappNumber || telegramUsername;
+  const { user } = useAuth();
+  const [guestChatOpen, setGuestChatOpen] = useState(false);
+  const hasAny = contactEmail || contactPhone || whatsappNumber || telegramUsername || orgId;
   if (!hasAny) return null;
 
   const trackOpts = { listingId, serviceId, orgId };
@@ -70,7 +76,19 @@ const ListingContactButtons = ({
     }
   };
 
-  const buttons: { url: string | null; channel: string; label: string; icon: React.ReactNode; colors: string }[] = [
+  const handleChatClick = () => {
+    trackClick("chat", trackOpts);
+    setGuestChatOpen(true);
+  };
+
+  const buttons: { url?: string | null; channel: string; label: string; icon: React.ReactNode; colors: string; onClick?: () => void }[] = [
+    // In-app chat button (always available when orgId exists)
+    ...(orgId ? [{
+      channel: "chat", label: t("page.listing.chat") || "Chat",
+      icon: <MessageSquare className="h-4 w-4" />,
+      colors: "bg-primary/10 text-primary hover:bg-primary/20",
+      onClick: handleChatClick,
+    }] : []),
     {
       url: waUrl, channel: "whatsapp", label: "WhatsApp",
       icon: <MessageCircle className="h-4 w-4" />,
@@ -99,35 +117,64 @@ const ListingContactButtons = ({
   ];
 
   return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {t("page.listing.contact_direct") || "Contact directly"}
-      </p>
-      <div className="grid grid-cols-2 gap-2">
-        {buttons
-          .filter((b) => b.url)
-          .map((b) => (
-            <a
-              key={b.channel}
-              href={b.url!}
-              target={b.channel === "whatsapp" || b.channel === "telegram" ? "_blank" : undefined}
-              rel={b.channel === "whatsapp" || b.channel === "telegram" ? "noopener noreferrer" : undefined}
-              onClick={() => trackClick(b.channel, trackOpts)}
-              className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
-            >
-              {b.icon}
-              {b.label}
-            </a>
-          ))}
-        <button
-          onClick={handleShare}
-          className="flex items-center justify-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
-        >
-          <Link2 className="h-4 w-4" />
-          {t("page.listing.share") || "Share"}
-        </button>
+    <>
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {t("page.listing.contact_direct") || "Contact directly"}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {buttons
+            .filter((b) => b.url || b.onClick)
+            .map((b) =>
+              b.onClick ? (
+                <button
+                  key={b.channel}
+                  onClick={b.onClick}
+                  className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
+                >
+                  {b.icon}
+                  {b.label}
+                </button>
+              ) : (
+                <a
+                  key={b.channel}
+                  href={b.url!}
+                  target={b.channel === "whatsapp" || b.channel === "telegram" ? "_blank" : undefined}
+                  rel={b.channel === "whatsapp" || b.channel === "telegram" ? "noopener noreferrer" : undefined}
+                  onClick={() => trackClick(b.channel, trackOpts)}
+                  className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
+                >
+                  {b.icon}
+                  {b.label}
+                </a>
+              )
+            )}
+          <button
+            onClick={handleShare}
+            className="flex items-center justify-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          >
+            <Link2 className="h-4 w-4" />
+            {t("page.listing.share") || "Share"}
+          </button>
+        </div>
       </div>
-    </div>
+
+      {orgId && (
+        <GuestChatDrawer
+          open={guestChatOpen}
+          onClose={() => setGuestChatOpen(false)}
+          providerName={providerName || "Provider"}
+          serviceTitle={listingTitle}
+          orgId={orgId}
+          contextType={serviceId ? "service" : listingId ? "listing" : "general"}
+          contextId={serviceId || listingId || undefined}
+          providerPhone={contactPhone || undefined}
+          listingUrl={listingUrl}
+          listingPrice={listingPrice}
+          listingCity={listingCity}
+        />
+      )}
+    </>
   );
 };
 
