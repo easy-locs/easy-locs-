@@ -5145,26 +5145,42 @@ export type Database = {
         Returns: {
           active: boolean
           badges: string[]
+          bathrooms: number
+          bedrooms: number
           blocked_dates: Json
           booking_slug: string
+          brand: string
           category: string
           city: string
+          condition: string
+          contact_email: string
+          contact_whatsapp: string
           country: string
           currency: string
+          deposit_amount: number
           description: string
           duration_minutes: number
+          features: Json
           id: string
+          listing_type: string
           location: string
           max_capacity: number
+          model: string
           org_id: string
           photo_urls: Json
           price: number
           price_type: string
           provider_id: string
+          quantity: number
           requires_id_document: boolean
+          rooms: number
           sort_order: number
+          source_contact_email: string
+          source_contact_phone: string
+          surface_sqm: number
           time_slots: Json
           title: string
+          year_built: number
         }[]
       }
       get_public_real_estate_listing: {
