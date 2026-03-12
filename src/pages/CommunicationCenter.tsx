@@ -427,8 +427,10 @@ const CommunicationCenter = () => {
       .eq("org_id", orgId)
       .order("created_at", { ascending: true });
 
-    // Use context-based query for leads, legacy for others
-    if (selectedThread.type === "lead" && selectedThread.leadId) {
+    // Use context-based query for leads/guests, legacy for others
+    if (selectedThread.contextType === "guest_session" && selectedThread.contextId) {
+      query = query.eq("guest_session_id", selectedThread.contextId);
+    } else if (selectedThread.type === "lead" && selectedThread.leadId) {
       query = query.eq("context_type", "real_estate_lead").eq("context_id", selectedThread.leadId);
     } else if (selectedThread.type === "booking" && selectedThread.bookingId) {
       query = query.eq("booking_id", selectedThread.bookingId);
