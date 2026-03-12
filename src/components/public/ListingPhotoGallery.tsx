@@ -56,6 +56,13 @@ const ListingPhotoGallery = ({ photos }: Props) => {
         <img src={currentUrl} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
       )}
 
+      {/* Transparent Easy-Locs watermark */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <span className="text-white/15 text-4xl sm:text-5xl font-black tracking-widest select-none rotate-[-15deg]">
+          EASY-LOCS
+        </span>
+      </div>
+
       {photos.length > 1 && (
         <>
           <button

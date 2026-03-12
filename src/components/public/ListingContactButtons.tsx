@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Mail, Phone, MessageCircle, Send, MessageSquare, Link2 } from "lucide-react";
+import { Mail, Phone, MessageCircle, Send, MessageSquare, Link2, Lock, Download, LogIn, Eye } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { whatsappLink, telegramLink, emailLink, phoneLink, smsLink, type ListingContext } from "@/lib/contact-utils";
-import GuestChatDrawer from "@/components/guest/GuestChatDrawer";
+import { useAppInstalled } from "@/hooks/useAppInstalled";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   contactEmail?: string | null;
@@ -41,7 +43,10 @@ const ListingContactButtons = ({
 }: Props) => {
   const { t } = useI18n();
   const { user } = useAuth();
-  const [guestChatOpen, setGuestChatOpen] = useState(false);
+  const isInstalled = useAppInstalled();
+  const navigate = useNavigate();
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
+
   const hasAny = contactEmail || contactPhone || whatsappNumber || telegramUsername || orgId;
   if (!hasAny) return null;
 
@@ -54,11 +59,70 @@ const ListingContactButtons = ({
     country: listingCountry,
   };
 
+  // ── Not logged in: show login gate ──
+  if (!user) {
+    return (
+      <div className="space-y-3 p-4 rounded-2xl border border-border bg-card">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Lock className="h-4 w-4 text-muted-foreground" />
+          {t("gate.login_to_contact") || "Login to contact this provider"}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {t("gate.login_desc") || "Create a free account to send messages, call providers, and access contact information."}
+        </p>
+        <Button onClick={() => navigate("/login")} className="w-full gap-2 min-h-[44px]">
+          <LogIn className="h-4 w-4" />
+          {t("gate.login_signup") || "Login / Sign up"}
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Logged in: build contact buttons ──
   const waUrl = whatsappNumber ? whatsappLink(whatsappNumber, ctx) : null;
   const tgUrl = telegramUsername ? telegramLink(telegramUsername, ctx) : null;
   const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
-  const callUrl = contactPhone ? phoneLink(contactPhone) : null;
-  const sUrl = contactPhone ? smsLink(contactPhone, ctx) : null;
+
+  const handleChat = () => {
+    trackClick("chat", trackOpts);
+    // For authenticated users, insert a message
+    handleSendFirstMessage();
+  };
+
+  const handleSendFirstMessage = async () => {
+    if (!user || !orgId) return;
+    try {
+      const { error } = await supabase.from("messages").insert({
+        org_id: orgId,
+        sender_id: user.id,
+        content: `Hi, I'm interested in "${listingTitle}"`,
+        category: "general",
+        contact_name: user.user_metadata?.name || user.email,
+        contact_email: user.email,
+        context_id: serviceId || listingId || undefined,
+        message_type: "inquiry",
+        read: false,
+      });
+      if (error) throw error;
+      toast.success(t("gate.message_sent") || "Message sent!");
+    } catch {
+      toast.error(t("gate.message_failed") || "Failed to send message");
+    }
+  };
+
+  const handleRevealPhone = () => {
+    trackClick("reveal_phone", trackOpts);
+    setPhoneRevealed(true);
+  };
+
+  const handleCall = () => {
+    if (!isInstalled) {
+      navigate("/install");
+      return;
+    }
+    trackClick("call", trackOpts);
+    if (contactPhone) window.location.href = phoneLink(contactPhone);
+  };
 
   const handleShare = async () => {
     trackClick("share", trackOpts);
@@ -76,106 +140,116 @@ const ListingContactButtons = ({
     }
   };
 
-  const handleChatClick = () => {
-    trackClick("chat", trackOpts);
-    setGuestChatOpen(true);
-  };
-
-  const buttons: { url?: string | null; channel: string; label: string; icon: React.ReactNode; colors: string; onClick?: () => void }[] = [
-    // In-app chat button (always available when orgId exists)
-    ...(orgId ? [{
-      channel: "chat", label: t("page.listing.chat") || "Chat",
-      icon: <MessageSquare className="h-4 w-4" />,
-      colors: "bg-primary/10 text-primary hover:bg-primary/20",
-      onClick: handleChatClick,
-    }] : []),
-    {
-      url: waUrl, channel: "whatsapp", label: "WhatsApp",
-      icon: <MessageCircle className="h-4 w-4" />,
-      colors: "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20",
-    },
-    {
-      url: tgUrl, channel: "telegram", label: "Telegram",
-      icon: <Send className="h-4 w-4" />,
-      colors: "bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20",
-    },
-    {
-      url: callUrl, channel: "call", label: t("page.listing.call") || "Call",
-      icon: <Phone className="h-4 w-4" />,
-      colors: "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20",
-    },
-    {
-      url: sUrl, channel: "sms", label: "SMS",
-      icon: <MessageSquare className="h-4 w-4" />,
-      colors: "bg-sky-500/10 text-sky-600 hover:bg-sky-500/20",
-    },
-    {
-      url: mailUrl, channel: "email", label: "Email",
-      icon: <Mail className="h-4 w-4" />,
-      colors: "bg-accent/10 text-accent hover:bg-accent/20",
-    },
-  ];
-
   return (
-    <>
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {t("page.listing.contact_direct") || "Contact directly"}
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {buttons
-            .filter((b) => b.url || b.onClick)
-            .map((b) =>
-              b.onClick ? (
-                <button
-                  key={b.channel}
-                  onClick={b.onClick}
-                  className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
-                >
-                  {b.icon}
-                  {b.label}
-                </button>
-              ) : (
-                <a
-                  key={b.channel}
-                  href={b.url!}
-                  target={b.channel === "whatsapp" || b.channel === "telegram" ? "_blank" : undefined}
-                  rel={b.channel === "whatsapp" || b.channel === "telegram" ? "noopener noreferrer" : undefined}
-                  onClick={() => trackClick(b.channel, trackOpts)}
-                  className={`flex items-center justify-center gap-2 ${b.colors} px-3 py-2.5 rounded-xl text-sm font-medium transition-colors`}
-                >
-                  {b.icon}
-                  {b.label}
-                </a>
-              )
-            )}
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {t("page.listing.contact_direct") || "Contact directly"}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {/* Chat button */}
+        {orgId && (
           <button
-            onClick={handleShare}
-            className="flex items-center justify-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            onClick={handleChat}
+            className="flex items-center justify-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
           >
-            <Link2 className="h-4 w-4" />
-            {t("page.listing.share") || "Share"}
+            <MessageSquare className="h-4 w-4" />
+            {t("page.listing.chat") || "Chat"}
           </button>
-        </div>
+        )}
+
+        {/* WhatsApp — only with real WhatsApp number */}
+        {waUrl && (
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick("whatsapp", trackOpts)}
+            className="flex items-center justify-center gap-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          >
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
+          </a>
+        )}
+
+        {/* Telegram */}
+        {tgUrl && (
+          <a
+            href={tgUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick("telegram", trackOpts)}
+            className="flex items-center justify-center gap-2 bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          >
+            <Send className="h-4 w-4" />
+            Telegram
+          </a>
+        )}
+
+        {/* Call — only on installed app */}
+        {contactPhone && (
+          phoneRevealed ? (
+            isInstalled ? (
+              <a
+                href={phoneLink(contactPhone)}
+                onClick={() => trackClick("call", trackOpts)}
+                className="flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                {t("page.listing.call") || "Call"}
+              </a>
+            ) : (
+              <button
+                onClick={() => navigate("/install")}
+                className="flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                {t("gate.install_to_call_short") || "Install to call free"}
+              </button>
+            )
+          ) : (
+            <button
+              onClick={handleRevealPhone}
+              className="flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            >
+              <Eye className="h-4 w-4" />
+              {t("gate.reveal_phone") || "Reveal phone"}
+            </button>
+          )
+        )}
+
+        {/* Email */}
+        {mailUrl && (
+          <a
+            href={mailUrl}
+            onClick={() => trackClick("email", trackOpts)}
+            className="flex items-center justify-center gap-2 bg-accent/10 text-accent hover:bg-accent/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </a>
+        )}
+
+        {/* Share */}
+        <button
+          onClick={handleShare}
+          className="flex items-center justify-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        >
+          <Link2 className="h-4 w-4" />
+          {t("page.listing.share") || "Share"}
+        </button>
       </div>
 
-      {orgId && (
-        <GuestChatDrawer
-          open={guestChatOpen}
-          onClose={() => setGuestChatOpen(false)}
-          providerName={providerName || "Provider"}
-          serviceTitle={listingTitle}
-          orgId={orgId}
-          contextType={serviceId ? "service" : listingId ? "listing" : "general"}
-          contextId={serviceId || listingId || undefined}
-          providerPhone={contactPhone || undefined}
-          providerWhatsApp={whatsappNumber || undefined}
-          listingUrl={listingUrl}
-          listingPrice={listingPrice}
-          listingCity={listingCity}
-        />
+      {/* App install nudge for web users */}
+      {!isInstalled && (
+        <button
+          onClick={() => navigate("/install")}
+          className="w-full flex items-center justify-center gap-2 mt-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
+        >
+          <Download className="h-3.5 w-3.5" />
+          {t("gate.install_unlock") || "Install the app for free calls & full access"}
+        </button>
       )}
-    </>
+    </div>
   );
 };
 
