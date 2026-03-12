@@ -155,6 +155,8 @@ export class CallManager {
   async startCall(isVideo: boolean) {
     this._isVideo = isVideo;
     this._cleaned = false;
+    this._ending = false;
+    this.debug("startCall", { isVideo });
     this.onStateChange({ status: "ringing", callId: this.callId, isVideo });
     await this.joinSignalChannel();
     await this.setupMedia(isVideo);
@@ -165,6 +167,8 @@ export class CallManager {
   async acceptCall(isVideo: boolean) {
     this._isVideo = isVideo;
     this._cleaned = false;
+    this._ending = false;
+    this.debug("acceptCall", { isVideo });
     this.onStateChange({ status: "connecting", callId: this.callId, isVideo });
     await this.joinSignalChannel();
     await this.setupMedia(isVideo);
@@ -189,23 +193,31 @@ export class CallManager {
 
   /** Decline call */
   async declineCall() {
+    this.debug("declineCall");
     this.sendSignal({ type: "declined", data: "{}" });
     await supabase
       .from("call_logs")
       .update({ status: "declined", ended_at: new Date().toISOString() } as any)
-      .eq("id", this.callId);
+      .eq("id", this.callId)
+      .neq("status", "declined");
     this.onStateChange({ status: "declined" });
-    this.cleanup();
+    this.cleanup("decline");
   }
 
   /** End active call */
   async endCall() {
-    if (this._cleaned) return;
+    if (this._cleaned || this._ending) {
+      this.debug("endCall skipped", { cleaned: this._cleaned, ending: this._ending });
+      return;
+    }
+
+    this._ending = true;
+    this.debug("endCall start");
+
     try {
       this.sendSignal({ type: "ended", data: "{}" });
-    } catch { /* best effort */ }
-    const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
-    try {
+
+      const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
       await supabase
         .from("call_logs")
         .update({
@@ -214,10 +226,15 @@ export class CallManager {
           duration_seconds: duration,
           ended_by: this.role,
         } as any)
-        .eq("id", this.callId);
-    } catch { /* best effort */ }
-    this.onStateChange({ status: "ended" });
-    this.cleanup();
+        .eq("id", this.callId)
+        .neq("status", "ended");
+
+      this.onStateChange({ status: "ended" });
+    } catch (err) {
+      this.debug("endCall update failed", { error: String(err) });
+    } finally {
+      this.cleanup("end");
+    }
   }
 
   private startElapsedTimer() {
