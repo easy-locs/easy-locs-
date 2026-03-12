@@ -1142,7 +1142,18 @@ const pageFr: Record<string, string> = {
   "landing.nav.login": "Connexion",
   "landing.nav.signup": "S'inscrire",
   "landing.nav.tenant_access": "Espace locataire",
-  "landing.nav.pro_signup": "Créer mon compte pro",
+  "landing.nav.pro_signup": "Créer mon compte",
+
+  // Explore radius search
+  "explore.radius.title": "Où cherchez-vous ?",
+  "explore.radius.placeholder": "Ville, pays, adresse...",
+  "explore.radius.my_location": "Ma position",
+  "explore.radius.label": "Rayon de recherche",
+  "explore.radius.worldwide": "Mondial",
+  "explore.radius.worldwide_search": "Recherche mondiale",
+  "explore.radius.suggestions": "Suggestions",
+  "explore.radius.reset": "Réinitialiser",
+  "explore.radius.apply": "Appliquer",
 
   "page.fiscal.title": "Bilan fiscal — Revenus fonciers",
   "page.fiscal.subtitle": "Analysez vos revenus et dépenses pour votre déclaration fiscale.",
