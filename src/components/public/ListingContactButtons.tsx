@@ -106,6 +106,7 @@ const ListingContactButtons = ({
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { startCall, isInCall } = useCall();
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [messageSending, setMessageSending] = useState(false);
