@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import SEOHead from "@/components/SEOHead";
 import AppLogo from "@/components/AppLogo";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Globe, ChevronDown, LocateFixed, Heart, FileText, Bell, User, LogOut, LayoutDashboard, MessageSquare, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
@@ -51,7 +54,80 @@ interface ServiceListing {
 
 const ITEMS_PER_PAGE = 24;
 
-/* ─────────── Component ─────────── */
+/* ─────────── Auth-aware User Nav (like Airbnb/Leboncoin) ─────────── */
+function ExploreUserNav() {
+  const { user, activeRole, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const dashboardPath = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
+  const initials = user?.email?.slice(0, 2).toUpperCase() || "U";
+
+  if (!user) {
+    return (
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved">
+          <Heart className="h-4 w-4" />
+        </Link>
+        <ThemeSwitcher />
+        <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">Log in</Link>
+        <Link to="/signup" className="text-[11px] sm:text-xs font-semibold px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center">Sign up</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved">
+        <Heart className="h-4 w-4" />
+      </Link>
+      <Link to="/category-notifications" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Alerts">
+        <Bell className="h-4 w-4" />
+      </Link>
+      <Link to={`${dashboardPath}/messages`} className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Messages">
+        <MessageSquare className="h-4 w-4" />
+      </Link>
+      <ThemeSwitcher />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-2 rounded-full border border-border bg-card px-2 py-1.5 shadow-sm hover:shadow-md transition-shadow min-h-[36px]">
+            <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-accent text-accent-foreground text-[10px] font-bold">{initials}</AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <div className="px-3 py-2">
+            <p className="text-sm font-medium truncate">{user.email}</p>
+            <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => navigate(dashboardPath)}>
+            <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate(`${dashboardPath}/messages`)}>
+            <MessageSquare className="h-4 w-4 mr-2" /> Messages
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/saved")}>
+            <Heart className="h-4 w-4 mr-2" /> Saved
+          </DropdownMenuItem>
+          {activeRole === "landlord" && (
+            <DropdownMenuItem onClick={() => navigate("/dashboard/create-listing")}>
+              <Plus className="h-4 w-4 mr-2" /> Post a listing
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={async () => { await signOut(); navigate("/explore"); }}>
+            <LogOut className="h-4 w-4 mr-2" /> Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
@@ -369,20 +445,7 @@ export default function Explore() {
               <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
             </button>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved listings">
-                <Heart className="h-4 w-4" />
-              </Link>
-              <Link to="/cv-generator" className="hidden lg:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="CV Generator">
-                <FileText className="h-4 w-4" />
-              </Link>
-              <Link to="/category-notifications" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Category alerts">
-                <Bell className="h-4 w-4" />
-              </Link>
-              <ThemeSwitcher />
-              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">{t("landing.nav.login") || "Log in"}</Link>
-              <Link to="/signup" className="text-[11px] sm:text-xs font-semibold px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center truncate max-w-[90px] sm:max-w-none">{t("landing.nav.pro_signup") || "Sign up"}</Link>
-            </div>
+            <ExploreUserNav />
           </div>
 
           {/* Mobile search panel */}
