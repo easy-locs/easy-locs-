@@ -60,7 +60,16 @@ function DesktopUserMenu() {
 
   const dash = getDashboardPath(activeRole);
   const initials = (user.user_metadata?.name || user.email || "U").slice(0, 2).toUpperCase();
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
+  const isTenant = activeRole === "tenant";
+  const isClient = activeRole === "client";
+
+  // All possible switch targets for dual/multi-role
+  const switchTargets: { label: string; role: "landlord" | "tenant" | "client" }[] = [];
+  if (hasDualRole) {
+    if (activeRole !== "landlord") switchTargets.push({ label: "Professional", role: "landlord" });
+    if (activeRole !== "tenant") switchTargets.push({ label: "Tenant", role: "tenant" });
+  }
 
   return (
     <DropdownMenu>
@@ -82,8 +91,8 @@ function DesktopUserMenu() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.name || user.email}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-0.5 capitalize font-medium">
-                {activeRole}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-0.5 font-medium">
+                {getRoleLabel(activeRole)}
               </Badge>
             </div>
           </div>
@@ -91,7 +100,7 @@ function DesktopUserMenu() {
 
         <Separator />
 
-        {/* Quick actions */}
+        {/* Quick actions — universal */}
         <div className="py-1">
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(dash)}>
             <LayoutDashboard className="h-4 w-4 mr-3 text-muted-foreground" /> Dashboard
@@ -104,8 +113,8 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
-        {/* Business actions — only for eligible roles */}
-        {isBusiness && (
+        {/* Landlord/Pro actions */}
+        {isLandlord && (
           <>
             <Separator />
             <div className="py-1">
@@ -122,19 +131,50 @@ function DesktopUserMenu() {
           </>
         )}
 
-        {/* Role switcher */}
-        {hasDualRole && (
+        {/* Tenant actions */}
+        {isTenant && (
           <>
             <Separator />
             <div className="py-1">
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => {
-                const next = activeRole === "landlord" ? "tenant" : "landlord";
-                switchRole(next);
-                navigate(getDashboardPath(next));
-              }}>
-                <ArrowLeftRight className="h-4 w-4 mr-3 text-muted-foreground" />
-                Switch to {activeRole === "landlord" ? "tenant" : "landlord"}
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/documents")}>
+                <Bookmark className="h-4 w-4 mr-3 text-muted-foreground" /> My documents
               </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/pay")}>
+                <Globe className="h-4 w-4 mr-3 text-muted-foreground" /> Payments
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/tenant/requests")}>
+                <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Requests
+              </DropdownMenuItem>
+            </div>
+          </>
+        )}
+
+        {/* Client actions */}
+        {isClient && (
+          <>
+            <Separator />
+            <div className="py-1">
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/client/bookings")}>
+                <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> My bookings
+              </DropdownMenuItem>
+            </div>
+          </>
+        )}
+
+        {/* Role switcher */}
+        {switchTargets.length > 0 && (
+          <>
+            <Separator />
+            <div className="py-1">
+              {switchTargets.map(t => (
+                <DropdownMenuItem key={t.role} className="px-4 py-2.5 cursor-pointer" onClick={() => {
+                  switchRole(t.role);
+                  navigate(getDashboardPath(t.role));
+                }}>
+                  <ArrowLeftRight className="h-4 w-4 mr-3 text-muted-foreground" />
+                  Switch to {t.label}
+                </DropdownMenuItem>
+              ))}
             </div>
           </>
         )}
@@ -154,10 +194,6 @@ function DesktopUserMenu() {
     </DropdownMenu>
   );
 }
-
-/* ═══════════════════════════════════════════════
-   MOBILE USER SHEET
-   ═══════════════════════════════════════════════ */
 function MobileUserSheet() {
   const { user, activeRole, hasDualRole, switchRole, signOut } = useAuth();
   const navigate = useNavigate();
