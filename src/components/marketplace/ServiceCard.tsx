@@ -170,7 +170,7 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
         {provider && (
           <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/40">
             {provider.avatar_url ? (
-              <img src={provider.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-border" />
+              <img src={provider.avatar_url} alt={provider.name || "Provider"} className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-border" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent text-[11px] font-bold shrink-0 ring-1 ring-accent/20">
                 {provider.display_name?.charAt(0) || "P"}

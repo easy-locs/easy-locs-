@@ -482,7 +482,7 @@ export default function PublicRealEstateListing() {
           <div className="flex-1 flex items-center justify-center px-2 sm:px-4" onClick={e => e.stopPropagation()}>
             <button onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronLeft className="h-6 sm:h-8 w-6 sm:w-8" /></button>
-            <img src={photos[photoIndex]} alt="" className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
+            <img src={photos[photoIndex]} alt={`Property photo ${photoIndex + 1}`} className="max-h-[70vh] sm:max-h-[75vh] max-w-[calc(100%-5rem)] object-contain rounded-xl" loading="lazy" />
             <button onClick={() => setPhotoIndex(i => (i + 1) % photos.length)}
               className="text-background p-2 sm:p-3 hover:opacity-70 min-w-[44px] min-h-[44px] flex items-center justify-center"><ChevronRight className="h-6 sm:h-8 w-6 sm:w-8" /></button>
           </div>
@@ -492,7 +492,7 @@ export default function PublicRealEstateListing() {
                 className={`shrink-0 w-14 sm:w-16 h-10 sm:h-12 rounded-lg overflow-hidden border-2 transition-all ${
                   i === photoIndex ? "border-background scale-105" : "border-transparent opacity-40 hover:opacity-70"
                 }`}>
-                <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <img src={url} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
               </button>
             ))}
           </div>
