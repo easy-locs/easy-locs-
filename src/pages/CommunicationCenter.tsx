@@ -1364,10 +1364,9 @@ const CommunicationCenter = () => {
                                     <ExternalLink className="h-3 w-3" /> Open payment link
                                   </a>
                                 )}
-                                {msg.attachment_url && (() => {
-                                  const ChatMediaPreview = require("@/components/communication/ChatMediaPreview").default;
-                                  return <ChatMediaPreview url={msg.attachment_url} fileName={msg.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />;
-                                })()}
+                                {msg.attachment_url && (
+                                  <ChatMediaPreview url={msg.attachment_url} fileName={msg.content?.replace(/^📎 |^📷 /, "")} isMe={isMe} />
+                                )}
                                 <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
                                   <p className={`text-[10px] ${isMe && !isPayment ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                                     {format(new Date(msg.created_at), "HH:mm")}
