@@ -129,8 +129,8 @@ export default function UserContactActions({
         variant="outline"
         size={isCompact ? "sm" : "default"}
         onClick={() => handleCall(false)}
-        disabled={!!loading}
-        className="gap-2"
+        disabled={!!loading || isStartingCall}
+        className="gap-2 min-h-[44px]"
       >
         {loading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
         {!isCompact && "Call"}
