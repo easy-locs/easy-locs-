@@ -1,11 +1,12 @@
 /**
- * IncomingCallDialog — Shows when another user is calling.
- * Accept / Decline buttons with ring animation.
+ * IncomingCallDialog — Premium incoming call experience.
+ * Ringtone, vibration, elegant UI with caller context.
  */
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Phone, PhoneOff, Shield, User, MapPin } from "lucide-react";
+import { Phone, PhoneOff, Video, Shield, User, MapPin } from "lucide-react";
+import { startRingtone, stopRingtone } from "@/lib/ringtone";
 
 interface IncomingCallDialogProps {
   open: boolean;
@@ -23,74 +24,109 @@ export default function IncomingCallDialog({
   const [ringTime, setRingTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
+  // Start/stop ringtone with dialog
   useEffect(() => {
     if (open) {
       setRingTime(0);
       timerRef.current = setInterval(() => setRingTime((t) => t + 1), 1000);
+      startRingtone(isVideo ? "video" : "audio");
+    } else {
+      stopRingtone();
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [open]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      stopRingtone();
+    };
+  }, [open, isVideo]);
 
-  // Auto-decline after 30 seconds (missed call)
+  // Auto-miss after 30 seconds
   useEffect(() => {
-    if (ringTime >= 30 && onMissed) {
-      onMissed();
-    } else if (ringTime >= 30) {
-      onDecline();
+    if (ringTime >= 30) {
+      stopRingtone();
+      if (onMissed) onMissed();
+      else onDecline();
     }
   }, [ringTime, onDecline, onMissed]);
 
+  const handleAccept = () => {
+    stopRingtone();
+    onAccept();
+  };
+
+  const handleDecline = () => {
+    stopRingtone();
+    onDecline();
+  };
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-sm text-center" onPointerDownOutside={(e) => e.preventDefault()}>
-        <div className="flex flex-col items-center gap-4 py-6">
-          {/* Ring animation */}
+      <DialogContent
+        className="sm:max-w-sm text-center border-none bg-gradient-to-b from-background via-background to-muted/50 backdrop-blur-xl"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
+        <div className="flex flex-col items-center gap-5 py-8">
+          {/* Animated ring pulse */}
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-green-500/20 animate-ping" />
-            <div className="absolute inset-[-8px] rounded-full bg-green-500/10 animate-pulse" />
-            <div className="relative w-20 h-20 rounded-full bg-green-500/10 border-2 border-green-500/30 flex items-center justify-center">
-              <Phone className="h-8 w-8 text-green-500 animate-bounce" />
+            <div className="absolute inset-[-20px] rounded-full bg-green-500/10 animate-ping" style={{ animationDuration: "2s" }} />
+            <div className="absolute inset-[-12px] rounded-full bg-green-500/8 animate-pulse" />
+            <div className="absolute inset-[-4px] rounded-full border border-green-500/20 animate-pulse" style={{ animationDelay: "0.5s" }} />
+            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-500/15 to-green-600/10 border-2 border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10">
+              {isVideo ? (
+                <Video className="h-9 w-9 text-green-500 animate-bounce" style={{ animationDuration: "1.5s" }} />
+              ) : (
+                <Phone className="h-9 w-9 text-green-500 animate-bounce" style={{ animationDuration: "1.5s" }} />
+              )}
             </div>
           </div>
 
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">
+          {/* Call info */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
               Incoming {isVideo ? "video" : "voice"} call
             </p>
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-lg font-semibold text-foreground">{callerName}</span>
+              <span className="text-xl font-bold text-foreground">{callerName}</span>
             </div>
             {contextLabel && (
-              <div className="flex items-center justify-center gap-1 mt-1 text-muted-foreground">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                 <MapPin className="h-3 w-3" />
                 <span className="text-xs">{contextLabel}</span>
               </div>
             )}
           </div>
 
-          <Badge variant="outline" className="gap-1 text-[10px]">
+          {/* Security badge */}
+          <Badge variant="outline" className="gap-1.5 text-[10px] px-3 py-1 border-green-500/20 bg-green-500/5">
             <Shield className="h-2.5 w-2.5 text-green-500" />
-            Encrypted call via Easy-Locs
+            <span className="text-green-600 dark:text-green-400">End-to-end encrypted</span>
           </Badge>
 
-          <div className="flex gap-6 mt-4">
-            <button
-              onClick={onDecline}
-              className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg"
-            >
-              <PhoneOff className="h-6 w-6" />
-            </button>
-            <button
-              onClick={onAccept}
-              className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors shadow-lg"
-            >
-              <Phone className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="flex gap-6">
-            <span className="text-[10px] text-muted-foreground w-16 text-center">Decline</span>
-            <span className="text-[10px] text-green-600 w-16 text-center font-medium">Accept</span>
+          {/* Timer */}
+          <p className="text-[10px] text-muted-foreground/60 font-mono tabular-nums">
+            {ringTime}s
+          </p>
+
+          {/* Action buttons */}
+          <div className="flex gap-10 mt-2">
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={handleDecline}
+                className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20 active:scale-95"
+              >
+                <PhoneOff className="h-6 w-6" />
+              </button>
+              <span className="text-[10px] text-muted-foreground font-medium">Decline</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={handleAccept}
+                className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-all shadow-lg shadow-green-600/30 active:scale-95"
+              >
+                <Phone className="h-6 w-6" />
+              </button>
+              <span className="text-[10px] text-green-600 font-semibold">Accept</span>
+            </div>
           </div>
         </div>
       </DialogContent>
