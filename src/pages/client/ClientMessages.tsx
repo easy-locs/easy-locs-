@@ -30,7 +30,9 @@ const ClientMessages = () => {
   const [msgLoading, setMsgLoading] = useState(false);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch threads grouped by context_id where contact_email = user email
   useEffect(() => {
