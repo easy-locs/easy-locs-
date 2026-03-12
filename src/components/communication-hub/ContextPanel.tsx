@@ -22,7 +22,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
   const moduleConfig = SOURCE_MODULE_CONFIG[thread.sourceModule];
 
   return (
-    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden hidden lg:flex bg-muted/5">
+    <div className="w-72 border-l border-border/50 flex flex-col overflow-hidden bg-muted/5">
       <div className="p-4 space-y-4 overflow-y-auto flex-shrink-0">
         {/* Conversation type badge */}
         <div className="flex items-center gap-2">
