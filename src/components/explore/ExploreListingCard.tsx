@@ -31,11 +31,12 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
       return new Intl.NumberFormat(undefined, { style: "currency", currency: currCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
     } catch { return `${amount} ${currCode}`; }
   };
+  const pricePeriodSuffix = item.price_type === "per_hour" ? "/h" : item.price_type === "per_day" ? `/${t("explore.day") || "day"}` : item.price_type === "per_week" ? `/${t("explore.week") || "wk"}` : item.price_type === "per_month" ? `/${t("explore.mo") || "mo"}` : "";
   const priceLabel = type === "seasonal"
     ? `${fmtPrice(item.price_per_night)} / ${t("explore.night") || "night"}`
     : type === "real-estate"
     ? `${fmtPrice(item.price || 0)}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
-    : item.price > 0 ? fmtPrice(item.price) : (t("explore.free") || "Free");
+    : item.price > 0 ? `${fmtPrice(item.price)}${pricePeriodSuffix}` : (t("explore.free") || "Free");
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
