@@ -49,7 +49,7 @@ const features = [
   { icon: MessageSquare, title: "Guest Communication", desc: "Centralized messaging with guests, booking confirmations, check-in instructions, and review requests." },
   { icon: Globe, title: "Channel Manager", desc: "Sync calendars with Airbnb, Booking.com, VRBO via iCal to prevent double bookings." },
   { icon: Search, title: "Public Catalog", desc: "SEO-optimized rental catalog searchable by country, city, and property type for direct bookings." },
-  { icon: Shield, title: "Secure & Compliant", desc: "GDPR compliant, secure data handling, and localized tax compliance in 110+ countries." },
+  { icon: Shield, title: "Secure & Compliant", desc: "GDPR compliant, secure data handling, and localized tax compliance in 190+ countries." },
 ];
 
 const SeasonalRentalsPage = () => (
