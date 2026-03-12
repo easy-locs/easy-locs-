@@ -284,6 +284,10 @@ const PublicListing = () => {
                 whatsappNumber={property?.whatsapp_number}
                 telegramUsername={property?.telegram_username}
                 listingTitle={listingTitle}
+                listingUrl={listingUrl}
+                listingPrice={`${listing.price_per_night} € / ${t("page.listing.per_night")}`}
+                listingCity={listingCity}
+                listingCountry={listingCountry}
                 listingId={listing?.id}
                 orgId={listing?.org_id}
               />

@@ -20,6 +20,7 @@ import {
   Mail, Phone, Share2, ArrowLeft, Eye, CheckCircle2, Shield, Star,
   MessageCircle,
 } from "lucide-react";
+import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ListingMapSection from "@/components/public/ListingMapSection";
 
 interface Listing {
@@ -583,19 +584,19 @@ function ContactCard({
             {(listing.contact_email || listing.contact_phone) && !submitted && (
               <>
                 <Separator />
-                <div className="space-y-2">
-                  <p className="text-[10px] sm:text-[11px] text-muted-foreground font-semibold uppercase tracking-widest">Or contact directly</p>
-                  {listing.contact_email && (
-                    <a href={`mailto:${listing.contact_email}`} className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted/50 min-h-[40px]">
-                      <Mail className="h-4 w-4 text-accent shrink-0" /> <span className="truncate">{listing.contact_email}</span>
-                    </a>
-                  )}
-                  {listing.contact_phone && (
-                    <a href={`tel:${listing.contact_phone}`} className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted/50 min-h-[40px]">
-                      <Phone className="h-4 w-4 text-accent shrink-0" /> {listing.contact_phone}
-                    </a>
-                  )}
-                </div>
+                <ListingContactButtons
+                  contactEmail={listing.contact_email}
+                  contactPhone={listing.contact_phone}
+                  whatsappNumber={(listing as any).whatsapp_number || null}
+                  telegramUsername={(listing as any).telegram_username || null}
+                  listingTitle={listing.title}
+                  listingUrl={`https://www.easy-locs.com/properties/${listing.slug}`}
+                  listingPrice={`${listing.price.toLocaleString()} ${listing.currency}${priceLabel}`}
+                  listingCity={listing.city}
+                  listingCountry={listing.country}
+                  listingId={listing.id}
+                  orgId={listing.org_id}
+                />
               </>
             )}
           </div>
