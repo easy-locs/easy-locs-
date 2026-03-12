@@ -81,7 +81,7 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed && !isMobile ? (
+            {!globeFailed && !isMobile && GlobeCanvas ? (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -89,7 +89,7 @@ const WorldMapSection = () => {
                   </div>
                 }
               >
-                <GlobeCanvas />
+                <GlobeCanvas onError={() => setGlobeFailed(true)} />
               </Suspense>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
