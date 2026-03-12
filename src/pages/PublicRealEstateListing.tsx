@@ -59,6 +59,7 @@ const PRICE_LABEL: Record<string, string> = {
 
 export default function PublicRealEstateListing() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
