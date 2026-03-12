@@ -291,8 +291,13 @@ export class CallManager {
     } catch { /* stats unavailable */ }
   }
 
+  private clearTimeouts() {
+    if (this.iceTimer) { clearTimeout(this.iceTimer); this.iceTimer = null; }
+    if (this.streamTimer) { clearTimeout(this.streamTimer); this.streamTimer = null; }
+  }
+
   private startIceTimeout() {
-    this.clearIceTimeout();
+    this.clearTimeouts();
     this.iceTimer = setTimeout(() => {
       if (!this.iceConnected) {
         this.retryRelayOnly();
