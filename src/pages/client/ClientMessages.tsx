@@ -127,6 +127,15 @@ const ClientMessages = () => {
         setThreadPrefs(map);
       }
 
+      // Load blocked users
+      const { data: blocked } = await supabase
+        .from("blocked_users")
+        .select("blocked_id")
+        .eq("blocker_id", user.id);
+      if (blocked) {
+        setBlockedUserIds(new Set(blocked.map((b: any) => b.blocked_id)));
+      }
+
       setLoading(false);
     };
     fetchThreads();
