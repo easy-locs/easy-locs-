@@ -202,16 +202,6 @@ const ListingContactButtons = ({
     setRevealLoading(false);
   };
 
-  /** Can call = installed PWA or mobile device (iOS standalone detection is unreliable) */
-  const canCall = (() => {
-    if (typeof window === "undefined") return false;
-    if ((window as any).Capacitor?.isNativePlatform?.()) return true;
-    if (window.matchMedia("(display-mode: standalone)").matches) return true;
-    if ((navigator as any).standalone === true) return true;
-    // Allow calls on mobile devices (iOS PWA detection is unreliable)
-    if (isMobile) return true;
-    return false;
-  })();
 
   const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
 
