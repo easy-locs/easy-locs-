@@ -97,7 +97,7 @@ export default function UserContactActions({
 
       await startCall({
         orgId: calleeOrgId,
-        threadId: thread.contextId,
+        // Don't pass contextId as threadId — thread_id is a UUID FK to conversation_threads
         contextType: contextType || "direct",
         contextId: contextId || thread.contextId,
         contextLabel: contextLabel || `Direct call`,
