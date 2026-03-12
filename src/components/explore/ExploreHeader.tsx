@@ -115,6 +115,14 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
+        {/* Post a listing — universal for all roles */}
+        <Separator />
+        <div className="py-1">
+          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
+            <Plus className="h-4 w-4 mr-3" /> Post a listing
+          </DropdownMenuItem>
+        </div>
+
         {/* Landlord/Pro — business suite */}
         {isLandlord && (
           <>
@@ -147,9 +155,6 @@ function DesktopUserMenu() {
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/billing")}>
                 <CreditCard className="h-4 w-4 mr-3 text-muted-foreground" /> Subscription
-              </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
-                <Plus className="h-4 w-4 mr-3" /> Post a listing
               </DropdownMenuItem>
             </div>
           </>
@@ -266,6 +271,7 @@ function MobileUserSheet() {
 
         <nav className="flex-1 overflow-y-auto py-2">
           {/* Universal */}
+          <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
           <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go(`${dash}/messages`)} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
@@ -285,7 +291,7 @@ function MobileUserSheet() {
               <MobileNavItem icon={Briefcase} label="My company" onClick={() => go("/dashboard/company")} />
               <MobileNavItem icon={Users} label="Team" onClick={() => go("/dashboard/collaboration")} />
               <MobileNavItem icon={CreditCard} label="Subscription" onClick={() => go("/dashboard/billing")} />
-              <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
+              
             </>
           )}
 
@@ -384,13 +390,11 @@ export default function ExploreHeader({
 
           {/* Right: actions */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* Post CTA for business users */}
-            {user && isLandlord && (
-              <button onClick={() => navigate("/dashboard/create-listing")}
-                className="hidden lg:flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity mr-1">
-                <Plus className="h-3.5 w-3.5" /> Post
-              </button>
-            )}
+            {/* Post CTA — visible to all users */}
+            <button onClick={() => navigate(user ? "/dashboard/create-listing" : "/login")}
+              className="hidden lg:flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity mr-1">
+              <Plus className="h-3.5 w-3.5" /> Post a listing
+            </button>
 
             {/* Saved — always visible */}
             <Link to={user ? "/saved" : "/login"} className="flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors" title="Saved">
