@@ -18,7 +18,7 @@ const jsonLd = [
       url: "https://www.easy-locs.com",
     },
     areaServed: { "@type": "Place", name: "Worldwide" },
-    description: "Professional concierge services for property owners and vacation rental managers. Guest check-in, cleaning, maintenance, key handover, and hospitality services in 110+ countries.",
+    description: "Professional concierge services for property owners and vacation rental managers. Guest check-in, cleaning, maintenance, key handover, and hospitality services in 190+ countries.",
     offers: {
       "@type": "Offer",
       priceCurrency: "EUR",
@@ -38,7 +38,7 @@ const jsonLd = [
       {
         "@type": "Question",
         name: "Can I manage concierge services for multiple properties?",
-        acceptedAnswer: { "@type": "Answer", text: "Yes. Easy-Locs supports unlimited properties across 110+ countries. Each property can have its own concierge team, service catalog, and booking calendar." },
+        acceptedAnswer: { "@type": "Answer", text: "Yes. Easy-Locs supports unlimited properties across 190+ countries. Each property can have its own concierge team, service catalog, and booking calendar." },
       },
       {
         "@type": "Question",
@@ -54,7 +54,7 @@ const features = [
   { icon: Users, title: "Guest Management", desc: "Track guest details, special requests, check-in times, and communication history in one place." },
   { icon: CreditCard, title: "Secure Payments", desc: "Stripe-powered payments with automatic invoicing, commission tracking, and multi-currency support." },
   { icon: MessageSquare, title: "Communication Hub", desc: "Centralized messaging between guests, property owners, and service providers with email sync." },
-  { icon: Globe, title: "Multi-Country Support", desc: "Operate concierge services in 110+ countries with localized pricing, languages, and compliance." },
+  { icon: Globe, title: "Multi-Country Support", desc: "Operate concierge services in 190+ countries with localized pricing, languages, and compliance." },
   { icon: Shield, title: "Professional Dashboard", desc: "Track all bookings, revenue, provider performance, and guest satisfaction from a single dashboard." },
 ];
 
@@ -62,7 +62,7 @@ const ConciergeServicesPage = () => (
   <div className="min-h-screen bg-background">
     <SEOHead
       title="Concierge Services for Property Owners | Easy-Locs"
-      description="Professional concierge management for vacation rentals and properties. Guest check-in, cleaning, maintenance, airport transfers. 110+ countries. Free to start."
+      description="Professional concierge management for vacation rentals and properties. Guest check-in, cleaning, maintenance, airport transfers. 190+ countries. Free to start."
       canonical="https://www.easy-locs.com/concierge-services"
       jsonLd={jsonLd as any}
     />
@@ -76,7 +76,7 @@ const ConciergeServicesPage = () => (
             Concierge Services for Property Owners
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Deliver 5-star hospitality to your guests. Manage check-ins, cleaning, maintenance, airport transfers, and local experiences — all from one platform, in 110+ countries.
+            Deliver 5-star hospitality to your guests. Manage check-ins, cleaning, maintenance, airport transfers, and local experiences — all from one platform, in 190+ countries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-base">

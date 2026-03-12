@@ -69,7 +69,7 @@ const RentalCatalog = () => {
     ? `Browse vacation rental properties in ${city.replace(/-/g, " ")}. Book directly from verified landlords on Easy-Locs.`
     : country
     ? `Find vacation rentals in ${country}. Book directly with verified property owners. No commission fees.`
-    : "Discover vacation rentals in 110+ countries. Book directly from verified landlords. Best prices, no middleman.";
+    : "Discover vacation rentals in 190+ countries. Book directly from verified landlords. Best prices, no middleman.";
 
   const catalogJsonLd = {
     "@context": "https://schema.org",

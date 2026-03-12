@@ -151,7 +151,7 @@ const MarketplaceServicesPage = () => (
       <section className="py-16 bg-primary/5">
         <div className="container mx-auto px-4 max-w-3xl text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">Start earning more from your properties</h2>
-          <p className="text-muted-foreground mb-6">List your services on Easy-Locs and reach guests in 110+ countries.</p>
+          <p className="text-muted-foreground mb-6">List your services on Easy-Locs and reach guests in 190+ countries.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
         </div>
       </section>

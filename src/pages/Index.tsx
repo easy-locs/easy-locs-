@@ -31,7 +31,7 @@ const jsonLd = {
   name: "Easy-Locs",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
-  description: "Global platform for entrepreneurs to create and manage property rental and service businesses remotely. Long-term rentals, direct short-term bookings, and service marketplace — all from one platform in 110+ countries.",
+  description: "Global platform for entrepreneurs to create and manage property rental and service businesses remotely. Long-term rentals, direct short-term bookings, and service marketplace — all from one platform in 190+ countries.",
   url: "https://www.easy-locs.com",
   inLanguage: ["fr", "en", "es", "de", "it", "pt", "ar", "ja", "ko", "zh", "tr", "nl", "pl", "sv", "da", "nb", "fi", "el", "cs", "hu", "ro", "hr", "bg", "sk", "he", "uk", "hi", "th", "vi", "id", "ms"],
   offers: {
@@ -64,7 +64,7 @@ const jsonLd = {
     "Long-term rental management with lease generation",
     "Direct short-term booking without intermediaries",
     "Global service marketplace (cleaning, transport, activities)",
-    "Multi-country operations in 110+ countries",
+    "Multi-country operations in 190+ countries",
     "Multi-currency payments (120+ currencies)",
     "Multi-language interface (31 languages)",
     "AI-powered document generation",
@@ -136,7 +136,7 @@ const Index = () => {
     <div className="min-h-screen" role="main" id="main-content">
       <SEOHead
         title="Easy-Locs — Build & Manage Property & Service Businesses Globally | Remote Platform"
-        description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 110+ countries."
+        description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 190+ countries."
         canonical="https://www.easy-locs.com/"
         jsonLd={combinedJsonLd as any}
         hreflangAlternates={hreflangAlternates}

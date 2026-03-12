@@ -10,7 +10,7 @@ const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
 });
 
 const HERO_STATS = [
-  { value: "110+", label: "Countries" },
+  { value: "190+", label: "Countries" },
   { value: "0%", label: "Commission" },
   { value: "Multi-City", label: "Operations" },
   { value: "24/7", label: "Remote" },
@@ -68,7 +68,7 @@ const Hero = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--success))" }} />
               </span>
-              {t("landing.hero.badge") || "Run Your Business From Anywhere — 110+ Countries"}
+              {t("landing.hero.badge") || "Run Your Business From Anywhere — 190+ Countries"}
             </span>
           </motion.div>
 

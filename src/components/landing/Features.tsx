@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 const features = [
-  { icon: Globe, key: "multi_country", color: "info", fallback: "Multi-Country", fallbackDesc: "Operate across 110+ countries with localized compliance and regulations." },
+  { icon: Globe, key: "multi_country", color: "info", fallback: "Multi-Country", fallbackDesc: "Operate across 190+ countries with localized compliance and regulations." },
   { icon: Banknote, key: "multi_currency", color: "success", fallback: "Multi-Currency", fallbackDesc: "Accept payments in 120+ currencies with automatic conversion." },
   { icon: Languages, key: "multi_language", color: "accent", fallback: "Multi-Language", fallbackDesc: "Interface and documents available in 31 languages worldwide." },
   { icon: MessageSquare, key: "communication", color: "warning", fallback: "Centralized Communication", fallbackDesc: "Unified inbox for tenants, guests and service providers." },

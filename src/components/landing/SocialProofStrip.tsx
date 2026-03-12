@@ -41,7 +41,7 @@ const AnimatedCounter = ({ from, to, suffix = "", prefix = "", duration = 2 }: C
 };
 
 const stats = [
-  { icon: Globe, valueFrom: 0, valueTo: 110, suffix: "+", labelKey: "landing.proof.countries", fallback: "Countries", color: "accent" },
+  { icon: Globe, valueFrom: 0, valueTo: 190, suffix: "+", labelKey: "landing.proof.countries", fallback: "Countries", color: "accent" },
   { icon: Languages, valueFrom: 0, valueTo: 31, suffix: "", labelKey: "landing.proof.languages", fallback: "Languages", color: "info" },
   { icon: CreditCard, valueFrom: 0, valueTo: 120, suffix: "+", labelKey: "landing.proof.currencies", fallback: "Currencies", color: "success" },
   { icon: Building2, valueFrom: 0, valueTo: 50000, suffix: "+", labelKey: "landing.proof.properties", fallback: "Properties Managed", color: "warning" },

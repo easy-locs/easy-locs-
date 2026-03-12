@@ -13,7 +13,7 @@ const jsonLd = [
     name: "Easy-Locs Seasonal Rental Management",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description: "Vacation rental management software for short-term property owners. Calendar booking, dynamic pricing, guest communication, Stripe payments, and channel management in 110+ countries.",
+    description: "Vacation rental management software for short-term property owners. Calendar booking, dynamic pricing, guest communication, Stripe payments, and channel management in 190+ countries.",
     url: "https://www.easy-locs.com/seasonal-rentals",
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Free to start" },
     provider: { "@type": "Organization", name: "Easy-Locs", url: "https://www.easy-locs.com" },
@@ -49,14 +49,14 @@ const features = [
   { icon: MessageSquare, title: "Guest Communication", desc: "Centralized messaging with guests, booking confirmations, check-in instructions, and review requests." },
   { icon: Globe, title: "Channel Manager", desc: "Sync calendars with Airbnb, Booking.com, VRBO via iCal to prevent double bookings." },
   { icon: Search, title: "Public Catalog", desc: "SEO-optimized rental catalog searchable by country, city, and property type for direct bookings." },
-  { icon: Shield, title: "Secure & Compliant", desc: "GDPR compliant, secure data handling, and localized tax compliance in 110+ countries." },
+  { icon: Shield, title: "Secure & Compliant", desc: "GDPR compliant, secure data handling, and localized tax compliance in 190+ countries." },
 ];
 
 const SeasonalRentalsPage = () => (
   <div className="min-h-screen bg-background">
     <SEOHead
       title="Vacation Rental Management Software | Easy-Locs"
-      description="Manage short-term rentals with smart calendars, dynamic pricing, Stripe payments, and channel sync. Direct booking pages for your properties. 110+ countries."
+      description="Manage short-term rentals with smart calendars, dynamic pricing, Stripe payments, and channel sync. Direct booking pages for your properties. 190+ countries."
       canonical="https://www.easy-locs.com/seasonal-rentals"
       jsonLd={jsonLd as any}
     />
@@ -69,7 +69,7 @@ const SeasonalRentalsPage = () => (
             Vacation Rental Management Made Simple
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Smart booking calendars, dynamic pricing, guest communication, and Stripe payments — everything you need to manage short-term rentals professionally in 110+ countries.
+            Smart booking calendars, dynamic pricing, guest communication, and Stripe payments — everything you need to manage short-term rentals professionally in 190+ countries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg"><Link to="/signup">Start Free</Link></Button>
@@ -134,7 +134,7 @@ const SeasonalRentalsPage = () => (
       <section className="py-16 bg-primary/5">
         <div className="container mx-auto px-4 max-w-3xl text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">Start managing your vacation rentals today</h2>
-          <p className="text-muted-foreground mb-6">Join property owners in 110+ countries using Easy-Locs for professional short-term rental management.</p>
+          <p className="text-muted-foreground mb-6">Join property owners in 190+ countries using Easy-Locs for professional short-term rental management.</p>
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
         </div>
       </section>

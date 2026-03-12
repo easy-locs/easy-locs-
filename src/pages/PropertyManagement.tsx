@@ -87,7 +87,7 @@ const FEATURES = [
   { icon: FileText, title: "Legal Documents", desc: "Generate jurisdiction-compliant leases, receipts, and legal notices automatically." },
   { icon: Users, title: "Tenant Portal", desc: "Self-service portal for tenants to view documents, pay rent, and communicate." },
   { icon: CreditCard, title: "Rent Collection", desc: "Collect rent via Stripe, PayPal, SEPA Direct Debit, or bank transfer." },
-  { icon: BarChart3, title: "Financial Reports", desc: "Automated fiscal reports adapted to local tax regulations across 110+ countries." },
+  { icon: BarChart3, title: "Financial Reports", desc: "Automated fiscal reports adapted to local tax regulations across 190+ countries." },
   { icon: Shield, title: "Enterprise Security", desc: "SSO, MFA, encrypted storage, and GDPR-compliant data handling." },
 ];
 
@@ -98,10 +98,10 @@ const PropertyManagement = () => {
   const currentCountry = COUNTRY_PAGES.find(c => c.slug === countrySlug);
   const pageTitle = currentCountry
     ? `Property Management in ${currentCountry.name} — Easy-Locs`
-    : "Property Management Software — Easy-Locs | 110+ Countries";
+    : "Property Management Software — Easy-Locs | 190+ Countries";
   const pageDesc = currentCountry
     ? `Manage rental properties in ${currentCountry.name}. Leases, receipts, tenant portal — compliant with ${currentCountry.name} regulations. Free to start.`
-    : "All-in-one rental management for landlords worldwide. Manage properties in 110+ countries with jurisdiction-compliant legal documents.";
+    : "All-in-one rental management for landlords worldwide. Manage properties in 190+ countries with jurisdiction-compliant legal documents.";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -141,7 +141,7 @@ const PropertyManagement = () => {
             {currentCountry ? (
               <>{currentCountry.flag} Property Management in {currentCountry.name}</>
             ) : (
-              <>🌍 Property Management Software for 110+ Countries</>
+              <>🌍 Property Management Software for 190+ Countries</>
             )}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">{pageDesc}</p>

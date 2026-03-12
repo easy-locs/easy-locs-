@@ -24,7 +24,9 @@ export interface CountryEntry {
   legalDocumentTypes: string[];
 }
 
-const REGISTRY: CountryEntry[] = [
+import { EXTRA_COUNTRIES } from "./global-country-registry-extra";
+
+const BASE_REGISTRY: CountryEntry[] = [
   // ─── EUROPE ───
   { code: "FR", name: "France", flag: "🇫🇷", defaultLanguage: "fr", supportedLanguages: ["fr", "en"], currency: "EUR", currencySymbol: "€", locale: "fr-FR", dateFormat: "dd/MM/yyyy", timezone: "Europe/Paris", addressFormat: "european", phonePrefix: "+33", phoneFormat: "06 12 34 56 78", measurementUnit: "metric", region: "europe", taxIdLabel: "SIRET / NIF", legalDocumentTypes: ["lease-empty", "lease-furnished", "lease-commercial", "rent-receipt", "inventory", "formal-notice", "termination", "sworn-statement"] },
   { code: "BE", name: "Belgique", flag: "🇧🇪", defaultLanguage: "fr", supportedLanguages: ["fr", "nl", "de", "en"], currency: "EUR", currencySymbol: "€", locale: "fr-BE", dateFormat: "dd/MM/yyyy", timezone: "Europe/Brussels", addressFormat: "european", phonePrefix: "+32", phoneFormat: "0470 12 34 56", measurementUnit: "metric", region: "europe", taxIdLabel: "Numéro d'entreprise", legalDocumentTypes: ["lease-residential", "rent-receipt"] },
@@ -177,6 +179,9 @@ const REGISTRY: CountryEntry[] = [
   { code: "BN", name: "Brunei", flag: "🇧🇳", defaultLanguage: "en", supportedLanguages: ["en", "ms"], currency: "BND", currencySymbol: "B$", locale: "ms-BN", dateFormat: "dd/MM/yyyy", timezone: "Asia/Brunei", addressFormat: "anglo", phonePrefix: "+673", phoneFormat: "712 3456", measurementUnit: "metric", region: "asia_pacific", taxIdLabel: "IC", legalDocumentTypes: ["lease-residential", "rent-receipt"] },
   { code: "FJ", name: "Fiji", flag: "🇫🇯", defaultLanguage: "en", supportedLanguages: ["en"], currency: "FJD", currencySymbol: "FJ$", locale: "en-FJ", dateFormat: "dd/MM/yyyy", timezone: "Pacific/Fiji", addressFormat: "anglo", phonePrefix: "+679", phoneFormat: "912 3456", measurementUnit: "metric", region: "asia_pacific", taxIdLabel: "TIN", legalDocumentTypes: ["lease-residential", "rent-receipt"] },
 ];
+
+// ─── Merge base + extra ───
+const REGISTRY: CountryEntry[] = [...BASE_REGISTRY, ...EXTRA_COUNTRIES];
 
 // ─── Indexed lookups ───
 
