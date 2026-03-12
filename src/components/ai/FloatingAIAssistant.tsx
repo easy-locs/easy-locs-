@@ -128,7 +128,7 @@ const FloatingAIAssistant = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setOpen(true)}
-            className="floating-ai-btn fixed bottom-[4.5rem] lg:bottom-6 end-4 z-30 w-11 h-11 rounded-full bg-gradient-to-br from-accent to-accent/80 text-accent-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center group"
+            className="floating-ai-btn fixed bottom-[5.5rem] lg:bottom-6 end-4 z-30 w-11 h-11 rounded-full bg-gradient-to-br from-accent to-accent/80 text-accent-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center group"
             aria-label="Open AI Assistant"
           >
             <BrainCircuit className="h-6 w-6 group-hover:scale-110 transition-transform" />
