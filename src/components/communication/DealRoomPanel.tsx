@@ -1,11 +1,14 @@
 /**
  * DealRoomPanel — Smart Deal Room integrated into the Communication Center.
  * Shows deal lifecycle, offers, counter-offers, and actions inside the conversation context panel.
+ * Includes realtime sync, auto-payment trigger on accept, and document exchange.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { createPaymentRequest, getOrgPaymentConfig } from "@/lib/shared/payment-request";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
