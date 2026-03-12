@@ -207,6 +207,29 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setIncomingCallId(null);
   }, [incomingCallId, user]);
 
+  const handleMissedIncoming = useCallback(async () => {
+    if (!incomingCallId) return;
+    setShowIncoming(false);
+
+    await supabase
+      .from("call_logs")
+      .update({ status: "missed", ended_at: new Date().toISOString() } as any)
+      .eq("id", incomingCallId);
+
+    const channel = supabase.channel(`call:${incomingCallId}`, {
+      config: { broadcast: { self: false } },
+    });
+    await channel.subscribe();
+    channel.send({
+      type: "broadcast",
+      event: "signal",
+      payload: { type: "declined", data: "{}", from: user?.id || "" },
+    });
+    setTimeout(() => supabase.removeChannel(channel), 1000);
+
+    setIncomingCallId(null);
+  }, [incomingCallId, user]);
+
   const handleCloseCall = useCallback(() => {
     callManager?.cleanup();
     setCallManager(null);
@@ -226,6 +249,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         isVideo={incomingIsVideo}
         onAccept={handleAcceptIncoming}
         onDecline={handleDeclineIncoming}
+        onMissed={handleMissedIncoming}
       />
 
       {/* Active call dialog */}
