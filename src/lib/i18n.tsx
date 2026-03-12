@@ -5528,14 +5528,101 @@ const detectInitialLocale = (): Locale => {
   return "en";
 };
 
+// Lazy-loaded extra data per locale (populated on demand)
+const lazyData = new Map<Locale, Record<string, string>>();
+
+async function loadLocaleExtras(locale: Locale): Promise<Record<string, string>> {
+  if (locale === "fr" || locale === "en") return {};
+  if (lazyData.has(locale)) return lazyData.get(locale)!;
+  try {
+    const { loadLocaleData } = await import("./i18n-loader");
+    const data = await loadLocaleData(locale);
+    // Also load supplementary modules
+    const [pw, mi, nk, bw, dbe] = await Promise.all([
+      import("./i18n-pages-worldwide"),
+      import("./i18n-marketplace"),
+      import("./i18n-validation"),
+      import("./i18n-billing-worldwide"),
+      import("./i18n-world-pages"),
+    ]);
+    const merged = {
+      ...data,
+      ...(pw.pagesWorldwide?.[locale] || {}),
+      ...(mi.marketplaceI18n?.[locale] || {}),
+      ...(nk.notifKeys?.[locale] || {}),
+      ...(bw.billingWorldwide?.[locale] || {}),
+      ...(dbe.docBuilderExtraKeys?.[locale] || {}),
+    };
+    lazyData.set(locale, merged);
+    return merged;
+  } catch (e) {
+    console.warn(`[i18n] Failed to load extras for ${locale}`, e);
+    return {};
+  }
+}
+
+// Pre-load en/fr supplementary data synchronously at startup
+let enExtras: Record<string, string> = {};
+let frExtras: Record<string, string> = {};
+
+// Load en/fr extras lazily too, but eagerly triggered
+const loadCoreExtras = () => {
+  import("./i18n-pages-worldwide").then(pw => {
+    import("./i18n-marketplace").then(mi => {
+      import("./i18n-validation").then(nk => {
+        import("./i18n-billing-worldwide").then(bw => {
+          import("./i18n-world-pages").then(dbe => {
+            enExtras = {
+              ...(pw.pagesWorldwide?.en || {}),
+              ...(mi.marketplaceI18n?.en || {}),
+              ...(nk.notifKeys?.en || {}),
+              ...(bw.billingWorldwide?.en || {}),
+              ...(dbe.docBuilderExtraKeys?.en || {}),
+            };
+            frExtras = {
+              ...(pw.pagesWorldwide?.fr || {}),
+              ...(mi.marketplaceI18n?.fr || {}),
+              ...(nk.notifKeys?.fr || {}),
+              ...(bw.billingWorldwide?.fr || {}),
+              ...(dbe.docBuilderExtraKeys?.fr || {}),
+            };
+          });
+        });
+      });
+    });
+  });
+};
+// Trigger core extras load after initial render
+if (typeof window !== "undefined") {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(loadCoreExtras);
+  } else {
+    setTimeout(loadCoreExtras, 500);
+  }
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
+  const [, forceUpdate] = useState(0);
+  const loadingRef = useRef<string | null>(null);
 
   // Set HTML lang attribute on initial render
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.lang = locale;
     document.documentElement.dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
+  }, [locale]);
+
+  // Load lazy locale data when locale changes
+  useEffect(() => {
+    if (locale === "fr" || locale === "en") return;
+    if (lazyData.has(locale)) return;
+    if (loadingRef.current === locale) return;
+    loadingRef.current = locale;
+    loadLocaleExtras(locale).then(() => {
+      loadingRef.current = null;
+      forceUpdate(n => n + 1);
+    });
   }, [locale]);
 
   /* Sync locale from profile on login */
@@ -5572,6 +5659,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       document.documentElement.lang = l;
       document.documentElement.dir = (l === "ar" || l === "he") ? "rtl" : "ltr";
     }
+    // Pre-load extras for the new locale
+    loadLocaleExtras(l);
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       await supabase.from("profiles").update({ locale: l }).eq("id", session.user.id);
@@ -5579,10 +5668,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string): string => {
-    // Fallback chain: locale → notif → billing → docBuilderExtra → en → fr → ""
-    const val = translations[locale]?.[key] || pagesWorldwide[locale]?.[key] || marketplaceI18n[locale]?.[key] || notifKeys[locale]?.[key] || billingWorldwide[locale]?.[key] || docBuilderExtraKeys[locale]?.[key] || translations.en?.[key] || pagesWorldwide.en?.[key] || marketplaceI18n.en?.[key] || notifKeys.en?.[key] || billingWorldwide.en?.[key] || docBuilderExtraKeys.en?.[key] || translations.fr?.[key] || pagesWorldwide.fr?.[key] || marketplaceI18n.fr?.[key] || notifKeys.fr?.[key] || billingWorldwide.fr?.[key] || docBuilderExtraKeys.fr?.[key];
-    if (val) return val;
-    // Suppress warnings for keys with inline fallbacks (pricing tiers, features)
+    // Check inline translations first (always available)
+    const inlineVal = translations[locale]?.[key];
+    if (inlineVal) return inlineVal;
+    // Check lazy-loaded locale extras
+    const lazyVal = lazyData.get(locale)?.[key];
+    if (lazyVal) return lazyVal;
+    // Fallback: en inline → en extras → fr inline → fr extras
+    const enVal = translations.en?.[key] || enExtras[key];
+    if (enVal) return enVal;
+    const frVal = translations.fr?.[key] || frExtras[key];
+    if (frVal) return frVal;
+    // Suppress warnings for keys with inline fallbacks
     if (import.meta.env.DEV && !key.startsWith("pricing.")) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     return "";
   }, [locale]);
