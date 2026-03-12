@@ -386,6 +386,19 @@ const ClientMessages = () => {
           </div>
         )}
 
+        {/* Deal Room Panel — shows if a deal exists for this context */}
+        {activeThread.context_id && activeThread.org_id && (
+          <div className="mb-2 bg-card rounded-xl shadow-card border border-border/50 overflow-hidden max-h-60">
+            <DealRoomPanel
+              contextType="marketplace_service"
+              contextId={activeThread.context_id}
+              contextTitle={activeThread.contact_name || undefined}
+              targetOrgId={activeThread.org_id}
+              isOrgMember={false}
+            />
+          </div>
+        )}
+
         {/* Messages */}
         <div className="flex-1 bg-card rounded-xl shadow-card border border-border/50 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
