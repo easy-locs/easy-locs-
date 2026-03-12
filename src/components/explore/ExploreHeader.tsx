@@ -203,9 +203,17 @@ function MobileUserSheet() {
 
   const dash = getDashboardPath(activeRole);
   const initials = (user.user_metadata?.name || user.email || "U").slice(0, 2).toUpperCase();
-  const isBusiness = BUSINESS_ROLES.has(activeRole);
+  const isLandlord = activeRole === "landlord";
+  const isTenant = activeRole === "tenant";
+  const isClient = activeRole === "client";
 
   const go = (path: string) => { setOpen(false); navigate(path); };
+
+  const switchTargets: { label: string; role: "landlord" | "tenant" | "client" }[] = [];
+  if (hasDualRole) {
+    if (activeRole !== "landlord") switchTargets.push({ label: "Professional", role: "landlord" });
+    if (activeRole !== "tenant") switchTargets.push({ label: "Tenant", role: "tenant" });
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -225,7 +233,7 @@ function MobileUserSheet() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.name || user.email}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-1 capitalize">{activeRole}</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-1">{getRoleLabel(activeRole)}</Badge>
             </div>
           </div>
         </div>
@@ -233,12 +241,13 @@ function MobileUserSheet() {
         <Separator />
 
         <nav className="flex-1 overflow-y-auto py-2">
-          {/* Quick actions */}
+          {/* Universal */}
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
           <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go(`${dash}/messages`)} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
 
-          {isBusiness && (
+          {/* Landlord/Pro */}
+          {isLandlord && (
             <>
               <Separator className="my-2" />
               <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</p>
@@ -248,11 +257,33 @@ function MobileUserSheet() {
             </>
           )}
 
-          {hasDualRole && (
+          {/* Tenant */}
+          {isTenant && (
             <>
               <Separator className="my-2" />
-              <MobileNavItem icon={ArrowLeftRight} label={`Switch to ${activeRole === "landlord" ? "tenant" : "landlord"}`}
-                onClick={() => { const next = activeRole === "landlord" ? "tenant" : "landlord"; switchRole(next); go(getDashboardPath(next)); }} />
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rental</p>
+              <MobileNavItem icon={Bookmark} label="My documents" onClick={() => go("/tenant/documents")} />
+              <MobileNavItem icon={Globe} label="Payments" onClick={() => go("/tenant/pay")} />
+              <MobileNavItem icon={CalendarCheck} label="Requests" onClick={() => go("/tenant/requests")} />
+            </>
+          )}
+
+          {/* Client */}
+          {isClient && (
+            <>
+              <Separator className="my-2" />
+              <MobileNavItem icon={CalendarCheck} label="My bookings" onClick={() => go("/client/bookings")} />
+            </>
+          )}
+
+          {/* Role switcher */}
+          {switchTargets.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              {switchTargets.map(st => (
+                <MobileNavItem key={st.role} icon={ArrowLeftRight} label={`Switch to ${st.label}`}
+                  onClick={() => { switchRole(st.role); go(getDashboardPath(st.role)); }} />
+              ))}
             </>
           )}
 
