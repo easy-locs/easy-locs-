@@ -344,7 +344,7 @@ export default function Explore() {
             {/* Mobile search trigger */}
             <button onClick={() => setShowMobileSearch(v => !v)} className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card shadow-sm text-sm text-muted-foreground">
               <Search className="h-4 w-4" />
-              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || "Search..."}</span>
+              <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
             </button>
 
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">

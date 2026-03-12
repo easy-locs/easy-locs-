@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, X, Radar } from "lucide-react";
 import { getSubcategoryInfo } from "@/lib/category-hierarchy";
+import { useI18n } from "@/lib/i18n";
 
 interface ExploreFiltersStripProps {
   searchQuery: string;
@@ -19,6 +20,8 @@ export function ExploreFiltersStrip({
   searchQuery, locationQuery, radius, radiusLabel, activeSubcategory,
   onClearSearch, onClearLocation, onClearRadius, onClearSubcategory, onClearAll,
 }: ExploreFiltersStripProps) {
+  const { t } = useI18n();
+
   return (
     <div className="flex items-center gap-2 flex-wrap mb-4">
       {radius !== "worldwide" && (
@@ -33,7 +36,7 @@ export function ExploreFiltersStrip({
       )}
       {activeSubcategory !== "all" && (
         <Badge variant="secondary" className="gap-1 cursor-pointer" onClick={onClearSubcategory}>
-          {getSubcategoryInfo(activeSubcategory)?.emoji} {getSubcategoryInfo(activeSubcategory)?.label} <X className="h-3 w-3 ml-1" />
+          {getSubcategoryInfo(activeSubcategory)?.emoji} {t(`explore.sub.${activeSubcategory}`) || getSubcategoryInfo(activeSubcategory)?.label} <X className="h-3 w-3 ml-1" />
         </Badge>
       )}
       {searchQuery && (
@@ -41,7 +44,9 @@ export function ExploreFiltersStrip({
           <Search className="h-3 w-3" /> "{searchQuery}" <X className="h-3 w-3 ml-1" />
         </Badge>
       )}
-      <button onClick={onClearAll} className="text-xs text-muted-foreground hover:text-foreground transition-colors underline">Clear all</button>
+      <button onClick={onClearAll} className="text-xs text-muted-foreground hover:text-foreground transition-colors underline">
+        {t("explore.clear_all") || "Clear all"}
+      </button>
     </div>
   );
 }
