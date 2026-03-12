@@ -372,20 +372,7 @@ export default function Explore() {
               <span className="truncate max-w-[140px]">{searchQuery || locationQuery || t("explore.search") || "Search..."}</span>
             </button>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <Link to="/saved" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1" title="Saved listings">
-                <Heart className="h-4 w-4" />
-              </Link>
-              <Link to="/cv-generator" className="hidden lg:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="CV Generator">
-                <FileText className="h-4 w-4" />
-              </Link>
-              <Link to="/category-notifications" className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors px-1.5 py-1" title="Category alerts">
-                <Bell className="h-4 w-4" />
-              </Link>
-              <ThemeSwitcher />
-              <Link to="/login" className="hidden sm:inline text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5">{t("landing.nav.login") || "Log in"}</Link>
-              <Link to="/signup" className="text-[11px] sm:text-xs font-semibold px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity whitespace-nowrap shrink-0 min-h-[36px] flex items-center truncate max-w-[90px] sm:max-w-none">{t("landing.nav.pro_signup") || "Sign up"}</Link>
-            </div>
+            <ExploreUserNav />
           </div>
 
           {/* Mobile search panel */}
