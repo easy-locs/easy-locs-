@@ -204,6 +204,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <CallProvider>
           <RealtimeMessageToast />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
