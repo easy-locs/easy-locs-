@@ -20,6 +20,7 @@ import {
   Heart, MessageSquare, Search, ChevronDown, Menu, LogOut,
   LayoutDashboard, Plus, Settings, User, ArrowLeftRight,
   Bookmark, CalendarCheck, Store, Globe, MapPin,
+  Building2, FileText, Receipt, Users, Briefcase, CreditCard,
 } from "lucide-react";
 
 /* ───── Types ───── */
@@ -113,16 +114,38 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
-        {/* Landlord/Pro actions */}
+        {/* Landlord/Pro — business suite */}
         {isLandlord && (
           <>
             <Separator />
             <div className="py-1">
+              <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/marketplace")}>
                 <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My listings
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/concierge")}>
                 <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Bookings
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/rental")}>
+                <Building2 className="h-4 w-4 mr-3 text-muted-foreground" /> Properties
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/documents")}>
+                <FileText className="h-4 w-4 mr-3 text-muted-foreground" /> Documents
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/finances")}>
+                <Receipt className="h-4 w-4 mr-3 text-muted-foreground" /> Finances
+              </DropdownMenuItem>
+            </div>
+            <Separator />
+            <div className="py-1">
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/company")}>
+                <Briefcase className="h-4 w-4 mr-3 text-muted-foreground" /> My company
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/collaboration")}>
+                <Users className="h-4 w-4 mr-3 text-muted-foreground" /> Team
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/billing")}>
+                <CreditCard className="h-4 w-4 mr-3 text-muted-foreground" /> Subscription
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
                 <Plus className="h-4 w-4 mr-3" /> Post a listing
@@ -250,9 +273,17 @@ function MobileUserSheet() {
           {isLandlord && (
             <>
               <Separator className="my-2" />
-              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</p>
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
               <MobileNavItem icon={Store} label="My listings" onClick={() => go("/dashboard/marketplace")} />
               <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/concierge")} />
+              <MobileNavItem icon={Building2} label="Properties" onClick={() => go("/dashboard/rental")} />
+              <MobileNavItem icon={FileText} label="Documents" onClick={() => go("/dashboard/documents")} />
+              <MobileNavItem icon={Receipt} label="Finances" onClick={() => go("/dashboard/finances")} />
+              <Separator className="my-2" />
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Company</p>
+              <MobileNavItem icon={Briefcase} label="My company" onClick={() => go("/dashboard/company")} />
+              <MobileNavItem icon={Users} label="Team" onClick={() => go("/dashboard/collaboration")} />
+              <MobileNavItem icon={CreditCard} label="Subscription" onClick={() => go("/dashboard/billing")} />
               <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
             </>
           )}
