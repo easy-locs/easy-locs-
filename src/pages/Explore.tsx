@@ -56,6 +56,7 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const geo = useGeoDetect();
   const { t } = useI18n();
+  useExploreRealtimeSync();
 
   // State
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
