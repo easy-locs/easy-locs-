@@ -157,7 +157,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       }
 
       const manager = new CallManager({
-        callId: callLog.id,
+        callId: callId as string,
         userId: user.id,
         role: "caller",
         onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
@@ -167,7 +167,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setContextLabel(opts.contextLabel || "");
       setCallManager(manager);
       setShowCallDialog(true);
-      activeCallRef.current = { callId: callLog.id, threadId: opts.threadId, orgId: opts.orgId };
+      activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId };
 
       await manager.startCall(opts.isVideo || false);
       } catch (err) {
