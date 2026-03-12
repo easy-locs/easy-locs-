@@ -962,14 +962,18 @@ export type Database = {
           org_id: string
           owner_signature_url: string | null
           pdf_url: string | null
+          property_id: string | null
           qr_verification_url: string | null
           requires_signature: boolean | null
+          routed_to: Json | null
+          routing_status: string
           sent_to_emails: Json | null
           signed_by_owner_at: string | null
           signed_by_tenant_at: string | null
           status: string
           template_id: string | null
           template_version: string | null
+          tenant_id: string | null
           tenant_signature_url: string | null
           title: string
           user_id: string
@@ -986,14 +990,18 @@ export type Database = {
           org_id: string
           owner_signature_url?: string | null
           pdf_url?: string | null
+          property_id?: string | null
           qr_verification_url?: string | null
           requires_signature?: boolean | null
+          routed_to?: Json | null
+          routing_status?: string
           sent_to_emails?: Json | null
           signed_by_owner_at?: string | null
           signed_by_tenant_at?: string | null
           status?: string
           template_id?: string | null
           template_version?: string | null
+          tenant_id?: string | null
           tenant_signature_url?: string | null
           title: string
           user_id: string
@@ -1010,14 +1018,18 @@ export type Database = {
           org_id?: string
           owner_signature_url?: string | null
           pdf_url?: string | null
+          property_id?: string | null
           qr_verification_url?: string | null
           requires_signature?: boolean | null
+          routed_to?: Json | null
+          routing_status?: string
           sent_to_emails?: Json | null
           signed_by_owner_at?: string | null
           signed_by_tenant_at?: string | null
           status?: string
           template_id?: string | null
           template_version?: string | null
+          tenant_id?: string | null
           tenant_signature_url?: string | null
           title?: string
           user_id?: string
@@ -1035,6 +1047,20 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -1549,16 +1575,19 @@ export type Database = {
           notice_period_months: number | null
           org_id: string
           owner_profile_id: string | null
+          owner_signed_at: string | null
           payment_day: number | null
           pdf_url: string | null
           property_id: string
           rent_amount: number
+          rent_schedule_generated: boolean
           signed_at: string | null
           signed_by_owner: boolean | null
           signed_by_tenant: boolean | null
           start_date: string
           status: string
           tenant_id: string
+          tenant_signed_at: string | null
           updated_at: string
           user_id: string
         }
@@ -1576,16 +1605,19 @@ export type Database = {
           notice_period_months?: number | null
           org_id: string
           owner_profile_id?: string | null
+          owner_signed_at?: string | null
           payment_day?: number | null
           pdf_url?: string | null
           property_id: string
           rent_amount?: number
+          rent_schedule_generated?: boolean
           signed_at?: string | null
           signed_by_owner?: boolean | null
           signed_by_tenant?: boolean | null
           start_date: string
           status?: string
           tenant_id: string
+          tenant_signed_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1603,16 +1635,19 @@ export type Database = {
           notice_period_months?: number | null
           org_id?: string
           owner_profile_id?: string | null
+          owner_signed_at?: string | null
           payment_day?: number | null
           pdf_url?: string | null
           property_id?: string
           rent_amount?: number
+          rent_schedule_generated?: boolean
           signed_at?: string | null
           signed_by_owner?: boolean | null
           signed_by_tenant?: boolean | null
           start_date?: string
           status?: string
           tenant_id?: string
+          tenant_signed_at?: string | null
           updated_at?: string
           user_id?: string
         }
