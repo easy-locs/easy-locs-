@@ -352,7 +352,7 @@ export default function ExploreHeader({
           {/* Right: actions */}
           <div className="flex items-center gap-1 shrink-0">
             {/* Post CTA for business users */}
-            {user && isBusiness && (
+            {user && isLandlord && (
               <button onClick={() => navigate("/dashboard/create-listing")}
                 className="hidden lg:flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full bg-accent text-accent-foreground hover:opacity-90 transition-opacity mr-1">
                 <Plus className="h-3.5 w-3.5" /> Post
