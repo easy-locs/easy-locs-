@@ -49,6 +49,7 @@ const ClientMessages = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [threadFilter, setThreadFilter] = useState<ThreadFilter>("all");
   const [threadPrefs, setThreadPrefs] = useState<Record<string, { muted: boolean; archived: boolean }>>({});
+  const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   const [forwardMsg, setForwardMsg] = useState<any | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
