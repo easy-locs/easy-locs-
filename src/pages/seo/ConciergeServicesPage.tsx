@@ -38,7 +38,7 @@ const jsonLd = [
       {
         "@type": "Question",
         name: "Can I manage concierge services for multiple properties?",
-        acceptedAnswer: { "@type": "Answer", text: "Yes. Easy-Locs supports unlimited properties across 110+ countries. Each property can have its own concierge team, service catalog, and booking calendar." },
+        acceptedAnswer: { "@type": "Answer", text: "Yes. Easy-Locs supports unlimited properties across 190+ countries. Each property can have its own concierge team, service catalog, and booking calendar." },
       },
       {
         "@type": "Question",
