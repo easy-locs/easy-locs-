@@ -97,6 +97,7 @@ export default function ChatMediaPreview({ url, fileName, isMe }: Props) {
             <video
               src={url}
               preload="metadata"
+              playsInline
               className="w-full max-h-[200px] bg-black cursor-pointer"
               onClick={() => setVideoFullscreen(true)}
             />

@@ -168,7 +168,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         {/* Send */}
         <button
           onClick={stopAndSend}
-          className="p-2.5 rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors"
+          className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center justify-center"
         >
           <Send className="h-4 w-4" />
         </button>
