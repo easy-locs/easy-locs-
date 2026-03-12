@@ -3188,6 +3188,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          access_tier: string
           address: string | null
           city: string | null
           company_name: string | null
@@ -3218,6 +3219,7 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          access_tier?: string
           address?: string | null
           city?: string | null
           company_name?: string | null
@@ -3248,6 +3250,7 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          access_tier?: string
           address?: string | null
           city?: string | null
           company_name?: string | null
@@ -5321,6 +5324,14 @@ export type Database = {
       }
       accept_tenant_invitation: {
         Args: { _token: string; _user_id: string }
+        Returns: Json
+      }
+      check_inquiry_quota: {
+        Args: { _hourly_limit?: number; _user_id: string }
+        Returns: Json
+      }
+      check_reveal_quota: {
+        Args: { _daily_limit?: number; _reveal_type: string; _user_id: string }
         Returns: Json
       }
       check_service_availability: {

@@ -587,8 +587,8 @@ function ContactCard({
                 <ListingContactButtons
                   contactEmail={listing.contact_email}
                   contactPhone={listing.contact_phone}
-                  whatsappNumber={(listing as any).whatsapp_number || null}
-                  telegramUsername={(listing as any).telegram_username || null}
+                  hasPhone={(listing as any).has_phone ?? !!listing.contact_phone}
+                  hasWhatsapp={(listing as any).has_whatsapp ?? false}
                   listingTitle={listing.title}
                   listingUrl={`https://www.easy-locs.com/properties/${listing.slug}`}
                   listingPrice={`${listing.price.toLocaleString()} ${listing.currency}${priceLabel}`}
@@ -596,6 +596,7 @@ function ContactCard({
                   listingCountry={listing.country}
                   listingId={listing.id}
                   orgId={listing.org_id}
+                  source="real_estate"
                 />
               </>
             )}

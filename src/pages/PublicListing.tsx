@@ -280,8 +280,8 @@ const PublicListing = () => {
               <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
               <ListingContactButtons
                 contactEmail={property?.contact_email}
-                contactPhone={property?.contact_phone}
-                whatsappNumber={property?.whatsapp_number}
+                hasPhone={!!property?.contact_phone}
+                hasWhatsapp={!!property?.whatsapp_number}
                 telegramUsername={property?.telegram_username}
                 listingTitle={listingTitle}
                 listingUrl={listingUrl}
@@ -290,6 +290,7 @@ const PublicListing = () => {
                 listingCountry={listingCountry}
                 listingId={listing?.id}
                 orgId={listing?.org_id}
+                source="seasonal"
               />
             </div>
           </div>

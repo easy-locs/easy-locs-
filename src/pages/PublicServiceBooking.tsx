@@ -493,8 +493,8 @@ const PublicServiceBooking = () => {
 
               <ListingContactButtons
                 contactEmail={service.provider_email || null}
-                contactPhone={service.provider_phone || null}
-                whatsappNumber={service.whatsapp_number || service.provider_whatsapp || null}
+                hasPhone={!!service.provider_phone}
+                hasWhatsapp={!!(service.whatsapp_number || service.provider_whatsapp)}
                 telegramUsername={service.telegram_username || null}
                 listingTitle={service.title}
                 listingUrl={canonicalUrl}
@@ -503,6 +503,7 @@ const PublicServiceBooking = () => {
                 listingCountry={service.country}
                 serviceId={service.id}
                 orgId={service.org_id}
+                source="marketplace"
               />
 
               {service.conditions && (

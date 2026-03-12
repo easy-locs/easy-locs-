@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Mail, Phone, MessageCircle, Send, MessageSquare, Link2, Lock, Download, LogIn, Eye, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,11 +10,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  contactEmail?: string | null;
-  /** Never pass raw phone — use masked or omit. Real number fetched on reveal. */
+  /** Masked phone from public RPC (e.g. "+3365••••") — never a real number */
   contactPhone?: string | null;
+  contactEmail?: string | null;
   whatsappNumber?: string | null;
   telegramUsername?: string | null;
+  /** Flags from public RPC indicating contact availability */
+  hasPhone?: boolean;
+  hasWhatsapp?: boolean;
   listingTitle?: string;
   listingUrl?: string;
   listingPrice?: string;
@@ -24,6 +27,8 @@ interface Props {
   serviceId?: string | null;
   orgId?: string | null;
   providerName?: string;
+  /** Source type for secure reveal: "real_estate" | "seasonal" | "marketplace" | "concierge" */
+  source?: string;
 }
 
 /** Fire-and-forget click tracking */
@@ -37,18 +42,11 @@ const trackClick = (channel: string, opts: { listingId?: string | null; serviceI
   } as any).then(() => {});
 };
 
-/** Mask phone for display: +33612... → +33 6** ** ** */
-function maskPhone(phone: string): string {
-  if (phone.length <= 6) return phone.slice(0, 4) + "••••";
-  return phone.slice(0, 6) + " •• •• ••";
-}
-
-/** Get or create a conversation thread for this context */
+/** Get or create a conversation thread */
 async function getOrCreateThread(userId: string, orgId: string, opts: {
   contextType?: string; contextId?: string; listingTitle?: string; listingUrl?: string; providerName?: string;
 }): Promise<string | null> {
   try {
-    // Check existing thread
     const { data: existing } = await supabase
       .from("conversation_threads")
       .select("id")
@@ -58,10 +56,8 @@ async function getOrCreateThread(userId: string, orgId: string, opts: {
       .eq("status", "active")
       .limit(1)
       .maybeSingle();
-
     if (existing) return existing.id;
 
-    // Create new thread
     const { data: thread, error } = await supabase
       .from("conversation_threads")
       .insert({
@@ -76,43 +72,55 @@ async function getOrCreateThread(userId: string, orgId: string, opts: {
       })
       .select("id")
       .single();
-
     if (error) throw error;
     return thread?.id || null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
-/** Log a contact reveal event */
-async function logReveal(userId: string, opts: { orgId?: string | null; listingId?: string | null; serviceId?: string | null; revealType: string }) {
-  try {
-    await supabase.from("contact_reveals").insert({
-      user_id: userId,
+/** Securely reveal contact data via backend function */
+async function secureReveal(revealType: string, opts: {
+  orgId?: string | null; listingId?: string | null; serviceId?: string | null; source?: string;
+}): Promise<{ value: string | null; remaining: number }> {
+  const { data, error } = await supabase.functions.invoke("reveal-contact", {
+    body: {
+      reveal_type: revealType,
       org_id: opts.orgId || null,
       listing_id: opts.listingId || null,
       service_id: opts.serviceId || null,
-      reveal_type: opts.revealType,
-    } as any);
-  } catch { /* silent */ }
+      source: opts.source || "real_estate",
+    },
+  });
+
+  if (error) throw error;
+  if (data?.error) {
+    if (data.error === "Daily reveal limit reached") {
+      throw new Error(`Daily limit reached (${data.limit}/day). Try again tomorrow.`);
+    }
+    throw new Error(data.error);
+  }
+  return { value: data?.[revealType] || null, remaining: data?.remaining ?? 0 };
 }
 
 const ListingContactButtons = ({
   contactEmail, contactPhone, whatsappNumber, telegramUsername,
+  hasPhone, hasWhatsapp,
   listingTitle = "", listingUrl, listingPrice, listingCity, listingCountry,
-  listingId, serviceId, orgId, providerName,
+  listingId, serviceId, orgId, providerName, source,
 }: Props) => {
   const { t } = useI18n();
   const { user } = useAuth();
   const isInstalled = useAppInstalled();
   const navigate = useNavigate();
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
-  const [waRevealed, setWaRevealed] = useState(false);
+  const [revealedWa, setRevealedWa] = useState<string | null>(null);
   const [revealLoading, setRevealLoading] = useState(false);
   const [messageSending, setMessageSending] = useState(false);
 
-  const hasAny = contactEmail || contactPhone || whatsappNumber || telegramUsername || orgId;
+  // Determine if phone/whatsapp exist (from flags or masked props)
+  const phoneAvailable = hasPhone || !!contactPhone;
+  const waAvailable = hasWhatsapp || !!whatsappNumber;
+
+  const hasAny = contactEmail || phoneAvailable || waAvailable || telegramUsername || orgId;
   if (!hasAny) return null;
 
   const trackOpts = { listingId, serviceId, orgId };
@@ -143,15 +151,20 @@ const ListingContactButtons = ({
     );
   }
 
-  // ── Logged in: build contact buttons ──
-  const tgUrl = telegramUsername ? telegramLink(telegramUsername, ctx) : null;
-  const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
-
+  // ── Handlers ──
   const handleChat = async () => {
     if (!user || !orgId) return;
     setMessageSending(true);
     trackClick("chat", trackOpts);
     try {
+      // Check inquiry quota
+      const { data: quota } = await supabase.rpc("check_inquiry_quota", { _user_id: user.id }) as { data: any };
+      if (quota && !(quota as any).allowed) {
+        toast.error(`Inquiry limit reached (${(quota as any).limit}/hour). Please wait.`);
+        setMessageSending(false);
+        return;
+      }
+
       const threadId = await getOrCreateThread(user.id, orgId, {
         contextType: serviceId ? "service" : "listing",
         contextId: serviceId || listingId || "",
@@ -183,29 +196,33 @@ const ListingContactButtons = ({
   const handleRevealPhone = async () => {
     setRevealLoading(true);
     trackClick("reveal_phone", trackOpts);
-    await logReveal(user.id, { ...trackOpts, revealType: "phone" });
-    // In a production setup, phone would be fetched from a secure endpoint.
-    // For now we reveal the prop (which should be passed masked from parent and revealed here).
-    setRevealedPhone(contactPhone || null);
-    setPhoneRevealed(true);
+    try {
+      const { value } = await secureReveal("phone", { ...trackOpts, source });
+      if (value) {
+        setRevealedPhone(value);
+      } else {
+        toast.error("Phone number not available");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reveal phone");
+    }
     setRevealLoading(false);
   };
 
   const handleRevealWhatsApp = async () => {
     setRevealLoading(true);
     trackClick("reveal_whatsapp", trackOpts);
-    await logReveal(user.id, { ...trackOpts, revealType: "whatsapp" });
-    setWaRevealed(true);
-    setRevealLoading(false);
-  };
-
-  const handleCall = () => {
-    if (!isInstalled) {
-      navigate("/install");
-      return;
+    try {
+      const { value } = await secureReveal("whatsapp", { ...trackOpts, source });
+      if (value) {
+        setRevealedWa(value);
+      } else {
+        toast.error("WhatsApp not available");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reveal WhatsApp");
     }
-    trackClick("call", trackOpts);
-    if (revealedPhone) window.location.href = phoneLink(revealedPhone);
+    setRevealLoading(false);
   };
 
   const handleShare = async () => {
@@ -224,13 +241,16 @@ const ListingContactButtons = ({
     }
   };
 
+  const tgUrl = telegramUsername ? telegramLink(telegramUsername, ctx) : null;
+  const mailUrl = contactEmail ? emailLink(contactEmail, ctx) : null;
+
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {t("page.listing.contact_direct") || "Contact directly"}
       </p>
       <div className="grid grid-cols-2 gap-2">
-        {/* Chat button */}
+        {/* Chat */}
         {orgId && (
           <button
             onClick={handleChat}
@@ -242,11 +262,11 @@ const ListingContactButtons = ({
           </button>
         )}
 
-        {/* WhatsApp — gated behind reveal */}
-        {whatsappNumber && (
-          waRevealed ? (
+        {/* WhatsApp — secure reveal */}
+        {waAvailable && (
+          revealedWa ? (
             <a
-              href={whatsappLink(whatsappNumber, ctx)}
+              href={whatsappLink(revealedWa, ctx)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackClick("whatsapp", trackOpts)}
@@ -281,12 +301,12 @@ const ListingContactButtons = ({
           </a>
         )}
 
-        {/* Call — phone reveal + app-installed check */}
-        {contactPhone && (
-          phoneRevealed ? (
+        {/* Phone — secure reveal + app-only call */}
+        {phoneAvailable && (
+          revealedPhone ? (
             isInstalled ? (
               <a
-                href={phoneLink(revealedPhone || contactPhone)}
+                href={phoneLink(revealedPhone)}
                 onClick={() => trackClick("call", trackOpts)}
                 className="flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
               >
@@ -336,7 +356,7 @@ const ListingContactButtons = ({
         </button>
       </div>
 
-      {/* App install nudge for web users */}
+      {/* App install nudge */}
       {!isInstalled && (
         <button
           onClick={() => navigate("/install")}
