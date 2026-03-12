@@ -3081,7 +3081,7 @@ const pageEn: Record<string, string> = {
   "landing.hero.vp_bookings": "Direct Bookings",
   "landing.hero.vp_marketplace": "Service Marketplace",
   "landing.hero.vp_analytics": "Revenue Analytics",
-  "landing.hero.trust_countries": "110+ countries",
+  "landing.hero.trust_countries": "190+ countries",
   "landing.hero.trust_gdpr": "GDPR compliant",
   "landing.hero.trust_legal": "Legal documents",
   "landing.hero.trust_portal": "Tenant portal",
