@@ -476,6 +476,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           )}
 
+          {/* Quick Explore access */}
+          <Link
+            to="/explore"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-accent hover:bg-accent/10 transition-colors"
+            title={t("nav.explore") || "Explore"}
+          >
+            <Compass className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("nav.explore") || "Explore"}</span>
+          </Link>
+
           <div className="flex-1" />
           {/* Language selector */}
           <div className="relative">
