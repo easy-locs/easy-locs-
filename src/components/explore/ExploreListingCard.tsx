@@ -31,18 +31,23 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
       return new Intl.NumberFormat(undefined, { style: "currency", currency: currCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
     } catch { return `${amount} ${currCode}`; }
   };
+  const pricePeriodSuffix = item.price_type === "per_hour" ? "/h" : item.price_type === "per_day" ? `/${t("explore.day") || "day"}` : item.price_type === "per_week" ? `/${t("explore.week") || "wk"}` : item.price_type === "per_month" ? `/${t("explore.mo") || "mo"}` : "";
   const priceLabel = type === "seasonal"
     ? `${fmtPrice(item.price_per_night)} / ${t("explore.night") || "night"}`
     : type === "real-estate"
     ? `${fmtPrice(item.price || 0)}${item.listing_type === "long_term_rent" ? `/${t("explore.mo") || "mo"}` : ""}`
-    : item.price > 0 ? fmtPrice(item.price) : (t("explore.free") || "Free");
+    : item.price > 0 ? `${fmtPrice(item.price)}${pricePeriodSuffix}` : (t("explore.free") || "Free");
 
   const subInfo = getSubcategoryInfo(type === "service" ? item.category : type === "seasonal" ? "seasonal" : "real-estate");
 
+  // Marketplace listings can be sale/rental/service — adapt badge accordingly
+  const isMarketplaceSaleOrRental = type === "service" && (item.listing_type === "sale" || item.listing_type === "rental");
   const typeBadge = type === "seasonal"
     ? { label: t("explore.vacation_rental") || "Vacation Rental", color: "bg-warning/15 text-warning border-warning/25" }
     : type === "real-estate"
     ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.long_term") || "Long-term"), color: "bg-info/15 text-info border-info/25" }
+    : isMarketplaceSaleOrRental
+    ? { label: item.listing_type === "sale" ? (t("explore.for_sale") || "For Sale") : (t("explore.rental") || "Rental"), color: "bg-info/15 text-info border-info/25" }
     : { label: subInfo?.label || item.category?.replace(/_/g, " ") || (t("explore.service") || "Service"), color: "bg-success/15 text-success border-success/25" };
 
   const isVerified = type === "service" && Array.isArray(item.badges) && item.badges.includes("verified");
@@ -124,7 +129,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               {item.min_nights > 0 && <span className="flex items-center gap-1"><Moon className="h-3 w-3" />min {item.min_nights} {t("explore.nights") || "nights"}</span>}
             </div>
           )}
-          {type === "real-estate" && (
+          {(type === "real-estate" || isMarketplaceSaleOrRental) && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
               {item.surface_sqm > 0 && (
                 <span className="flex items-center gap-0.5 whitespace-nowrap"><Maximize className="h-3 w-3" /> {item.surface_sqm}m²</span>
@@ -134,6 +139,9 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               )}
               {item.bathrooms > 0 && (
                 <span className="flex items-center gap-0.5 whitespace-nowrap"><Bath className="h-3 w-3" /> {item.bathrooms}</span>
+              )}
+              {item.brand && (
+                <span className="flex items-center gap-0.5 whitespace-nowrap text-muted-foreground">{item.brand} {item.model || ""}</span>
               )}
             </div>
           )}
