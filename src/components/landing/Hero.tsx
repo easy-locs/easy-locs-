@@ -10,7 +10,7 @@ const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
 });
 
 const HERO_STATS = [
-  { value: "110+", label: "Countries" },
+  { value: "190+", label: "Countries" },
   { value: "0%", label: "Commission" },
   { value: "Multi-City", label: "Operations" },
   { value: "24/7", label: "Remote" },
