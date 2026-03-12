@@ -1104,6 +1104,122 @@ export type Database = {
           },
         ]
       }
+      deal_events: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          data_json: Json | null
+          deal_id: string
+          event_type: string
+          id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          data_json?: Json | null
+          deal_id: string
+          event_type: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          data_json?: Json | null
+          deal_id?: string
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_events_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_rooms: {
+        Row: {
+          accepted_amount: number | null
+          booking_id: string | null
+          buyer_id: string | null
+          context_id: string | null
+          context_title: string | null
+          context_type: string
+          counter_offer_amount: number | null
+          created_at: string
+          current_offer_amount: number | null
+          current_offer_currency: string | null
+          id: string
+          metadata_json: Json | null
+          notes: string | null
+          org_id: string
+          seller_id: string | null
+          status: Database["public"]["Enums"]["deal_status"]
+          thread_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_amount?: number | null
+          booking_id?: string | null
+          buyer_id?: string | null
+          context_id?: string | null
+          context_title?: string | null
+          context_type?: string
+          counter_offer_amount?: number | null
+          created_at?: string
+          current_offer_amount?: number | null
+          current_offer_currency?: string | null
+          id?: string
+          metadata_json?: Json | null
+          notes?: string | null
+          org_id: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_amount?: number | null
+          booking_id?: string | null
+          buyer_id?: string | null
+          context_id?: string | null
+          context_title?: string | null
+          context_type?: string
+          counter_offer_amount?: number | null
+          created_at?: string
+          current_offer_amount?: number | null
+          current_offer_currency?: string | null
+          id?: string
+          metadata_json?: Json | null
+          notes?: string | null
+          org_id?: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_rooms_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_rooms_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -5420,83 +5536,137 @@ export type Database = {
         Row: {
           active: boolean | null
           badges: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string | null
+          brand: string | null
           category: string | null
           city: string | null
+          condition: string | null
+          contact_email: string | null
+          contact_whatsapp: string | null
           country: string | null
           created_at: string | null
           currency: string | null
+          deposit_amount: number | null
           description: string | null
           duration_minutes: number | null
+          features: Json | null
           id: string | null
+          listing_expires_at: string | null
+          listing_type: string | null
           location: string | null
           max_capacity: number | null
+          model: string | null
           org_id: string | null
           photo_urls: Json | null
           price: number | null
           price_type: string | null
           provider_id: string | null
+          quantity: number | null
           requires_id_document: boolean | null
+          rooms: number | null
           sort_order: number | null
+          source_contact_email: string | null
+          source_contact_phone: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm: number | null
           time_slots: Json | null
           title: string | null
           updated_at: string | null
           user_id: string | null
+          year_built: number | null
         }
         Insert: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string | null
+          brand?: string | null
           category?: string | null
           city?: string | null
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
           price?: number | null
           price_type?: string | null
           provider_id?: string | null
+          quantity?: number | null
           requires_id_document?: boolean | null
+          rooms?: number | null
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          year_built?: number | null
         }
         Update: {
           active?: boolean | null
           badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string | null
+          brand?: string | null
           category?: string | null
           city?: string | null
+          condition?: string | null
+          contact_email?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          features?: Json | null
           id?: string | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
           location?: string | null
           max_capacity?: number | null
+          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
           price?: number | null
           price_type?: string | null
           provider_id?: string | null
+          quantity?: number | null
           requires_id_document?: boolean | null
+          rooms?: number | null
           sort_order?: number | null
+          source_contact_email?: string | null
+          source_contact_phone?: string | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
           time_slots?: Json | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          year_built?: number | null
         }
         Relationships: [
           {
@@ -5766,6 +5936,16 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
+      deal_status:
+        | "inquiry"
+        | "negotiation"
+        | "offer_sent"
+        | "counter_offer"
+        | "accepted"
+        | "payment_pending"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
       listing_status:
         | "draft"
         | "pending_review"
@@ -5903,6 +6083,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "member", "agent", "staff", "accountant"],
+      deal_status: [
+        "inquiry",
+        "negotiation",
+        "offer_sent",
+        "counter_offer",
+        "accepted",
+        "payment_pending",
+        "confirmed",
+        "completed",
+        "cancelled",
+      ],
       listing_status: [
         "draft",
         "pending_review",

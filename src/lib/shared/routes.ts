@@ -26,6 +26,10 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   // Real Estate
   real_estate_lead:    { landlord: "/dashboard/real-estate?tab=leads" },
   real_estate_listing: { landlord: "/dashboard/real-estate" },
+  // Deal Room
+  deal:                { landlord: "/dashboard/communication" },
+  offer:               { landlord: "/dashboard/communication" },
+  counter_offer:       { landlord: "/dashboard/communication" },
   // General
   message:             { landlord: "/dashboard/communication",   tenant: "/tenant/messages" },
 };
