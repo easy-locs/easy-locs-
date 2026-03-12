@@ -31,7 +31,7 @@ export default function UserContactActions({
   variant = "row", className = "",
 }: Props) {
   const { user } = useAuth();
-  const { startCall } = useCall();
+  const { startCall, isStartingCall } = useCall();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<"msg" | "audio" | "video" | null>(null);
 
