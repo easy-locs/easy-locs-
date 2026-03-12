@@ -200,6 +200,7 @@ export const notifKeys: Record<string, Record<string, string>> = {
     "notif.status_summary": "Résumé du statut", "notif.status_browser": "Navigateur", "notif.status_sound": "Son", "notif.status_vibration": "Vibration",
     "notif.status_on": "Activé", "notif.status_off": "Désactivé", "notif.status_blocked": "Bloqué",
     "notif.types_enabled": "types activés sur", "notif.status_email_urgent": "Mode urgent",
+    "nav.dashboard_short": "Accueil", "nav.properties_short": "Biens", "nav.market_short": "Services", "nav.messages_short": "Chat", "nav.more": "Plus",
   },
   en: {
     "notif.title": "Notifications", "notif.mark_all_read": "Mark all read", "notif.empty": "No notifications",
