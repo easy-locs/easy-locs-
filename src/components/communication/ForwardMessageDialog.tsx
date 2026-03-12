@@ -70,12 +70,13 @@ export default function ForwardMessageDialog({
 
   const handleForward = async (thread: Thread) => {
     setForwarding(true);
+    const contextType = thread.context_id.startsWith("direct:") ? "direct" : "booking";
     await supabase.from("messages").insert({
       org_id: thread.org_id,
       sender_id: userId,
       content: messageContent,
       context_id: thread.context_id,
-      context_type: "booking",
+      context_type: contextType,
       contact_email: userEmail,
       contact_name: userName,
       message_type: "user",
