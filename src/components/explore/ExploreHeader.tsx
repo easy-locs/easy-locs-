@@ -273,9 +273,17 @@ function MobileUserSheet() {
           {isLandlord && (
             <>
               <Separator className="my-2" />
-              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</p>
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
               <MobileNavItem icon={Store} label="My listings" onClick={() => go("/dashboard/marketplace")} />
               <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/concierge")} />
+              <MobileNavItem icon={Building2} label="Properties" onClick={() => go("/dashboard/rental")} />
+              <MobileNavItem icon={FileText} label="Documents" onClick={() => go("/dashboard/documents")} />
+              <MobileNavItem icon={Receipt} label="Finances" onClick={() => go("/dashboard/finances")} />
+              <Separator className="my-2" />
+              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Company</p>
+              <MobileNavItem icon={Briefcase} label="My company" onClick={() => go("/dashboard/company")} />
+              <MobileNavItem icon={Users} label="Team" onClick={() => go("/dashboard/collaboration")} />
+              <MobileNavItem icon={CreditCard} label="Subscription" onClick={() => go("/dashboard/billing")} />
               <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
             </>
           )}
