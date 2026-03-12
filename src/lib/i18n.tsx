@@ -5026,7 +5026,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.edit": "Editar", "reviews.delete": "Excluir", "reviews.reply": "Resposta do proprietário",
     "reviews.write_reply": "Responder", "reviews.updated": "Avaliação atualizada", "reviews.submitted": "Avaliação enviada!",
     "reviews.stars": "estrela(s)", "nav.reviews": "Avaliações", "nav.requests": "Pedidos",
-    ...obPt, ...pagePt, ...pagePtExtra,
+    ...obPt, ...pagePt,
   },
   nl: {
     "nav.dashboard": "Dashboard", "nav.properties": "Vastgoed", "nav.tenants": "Huurders",
