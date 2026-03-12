@@ -59,8 +59,7 @@ const WorldMapSection = () => {
             className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border"
             style={{ color: "hsl(var(--gold-light))", background: "hsl(var(--accent) / 0.1)", borderColor: "hsl(var(--accent) / 0.25)" }}
           >
-            <Globe className="h-3.5 w-3.5" />
-            {t("landing.world.badge") || "110+ Countries"}
+            {t("landing.world.badge") || "190+ Countries"}
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight" style={{ color: "hsl(var(--primary-foreground))" }}>
             {t("landing.world.title") || "Manage Properties"}{" "}
