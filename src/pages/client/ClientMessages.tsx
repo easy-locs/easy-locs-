@@ -150,7 +150,40 @@ const ClientMessages = () => {
     }
   };
 
-  // Thread list view
+  const handleMediaUpload = async (file: File) => {
+    if (!user || !activeThread) return;
+    const err = validateMediaFile(file);
+    if (err) { toast.error(err); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${activeThread.org_id}/${activeThread.context_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("chat-media").upload(path, file);
+      if (error) throw error;
+      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = signed?.signedUrl || path;
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+      const { data: inserted } = await supabase.from("messages").insert({
+        org_id: activeThread.org_id,
+        sender_id: user.id,
+        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        context_id: activeThread.context_id,
+        context_type: "booking",
+        contact_email: user.email?.toLowerCase(),
+        contact_name: user.user_metadata?.full_name || user.email,
+        message_type: "user",
+        conversation_status: "waiting_provider",
+        attachment_url: url,
+      } as any).select("*").single();
+      if (inserted) setMessages(prev => prev.some(m => m.id === (inserted as any).id) ? prev : [...prev, inserted]);
+      toast.success("Media sent");
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+    setUploading(false);
+  };
+
+
   if (!activeThread) {
     return (
       <ClientLayout>
