@@ -237,8 +237,12 @@ export default function PublicRealEstateListing() {
               {/* Desktop grid */}
               <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 p-2 max-h-[520px]">
                 <div className="col-span-2 row-span-2 relative rounded-l-2xl overflow-hidden cursor-pointer group" onClick={() => setFullscreenGallery(true)}>
-                  <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                <img src={photos[0]} alt={`${listing.title} — main photo`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Watermark */}
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <span className="text-white/15 text-4xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                  </div>
                   {/* Desktop type badge on main photo */}
                   <Badge className={`absolute top-4 left-4 ${tc.bg} ${tc.color} border ${tc.border} text-sm px-4 py-1.5 font-semibold backdrop-blur-md`}>
                     {tc.label}
@@ -252,6 +256,10 @@ export default function PublicRealEstateListing() {
                     onClick={() => { setPhotoIndex(i + 1); setFullscreenGallery(true); }}
                   >
                     <img src={url} alt={`${listing.title} — photo ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    {/* Watermark */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                      <span className="text-white/10 text-xl font-black tracking-widest select-none rotate-[-15deg]">EASY-LOCS</span>
+                    </div>
                     {i === 3 && photos.length > 5 && (
                       <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center backdrop-blur-sm">
                         <span className="text-background font-bold text-xl">+{photos.length - 5}</span>
