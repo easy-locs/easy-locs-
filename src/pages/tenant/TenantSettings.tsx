@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Save, PenTool, User, MapPin, Briefcase } from "lucide-react";
+import { Loader2, Save, PenTool, User, MapPin, Briefcase, Bell } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -9,18 +9,18 @@ import { useGlobalProfile } from "@/hooks/useGlobalProfile";
 import { useI18n } from "@/lib/i18n";
 import { getProfileLabels } from "@/lib/i18n-validation";
 import { getCountryEntryOrDefault, getAllCountryEntries } from "@/lib/global-country-registry";
+import NotificationPreferences from "@/components/communication/NotificationPreferences";
 
 const TenantSettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { T, L } = useTenantProperty();
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const PL = getProfileLabels(locale);
   const { profile, loading, saving, saveProfile } = useGlobalProfile();
 
   const [form, setForm] = useState<Record<string, string>>({});
 
-  // Initialize form from profile on first load
   const getVal = (key: string) => form[key] ?? (profile as any)[key] ?? "";
   const setVal = (key: string, val: string) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -52,11 +52,20 @@ const TenantSettings = () => {
   return (
     <TenantLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">{PL.myProfile}</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-6">{t("nav.settings") || "Settings"}</h1>
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (
           <div className="space-y-6">
+            {/* Notifications & Alerts */}
+            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+              <div className="flex items-center gap-2 mb-4">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                <h2 className="font-semibold text-foreground">{t("notif.preferences_title") || "Notifications & Alerts"}</h2>
+              </div>
+              <NotificationPreferences />
+            </div>
+
             {/* Identity */}
             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50 space-y-4">
               <div className="flex items-center gap-2 mb-2">
