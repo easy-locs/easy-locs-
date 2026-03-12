@@ -24,7 +24,9 @@ export interface CountryEntry {
   legalDocumentTypes: string[];
 }
 
-const REGISTRY: CountryEntry[] = [
+import { EXTRA_COUNTRIES } from "./global-country-registry-extra";
+
+const BASE_REGISTRY: CountryEntry[] = [
   // ─── EUROPE ───
   { code: "FR", name: "France", flag: "🇫🇷", defaultLanguage: "fr", supportedLanguages: ["fr", "en"], currency: "EUR", currencySymbol: "€", locale: "fr-FR", dateFormat: "dd/MM/yyyy", timezone: "Europe/Paris", addressFormat: "european", phonePrefix: "+33", phoneFormat: "06 12 34 56 78", measurementUnit: "metric", region: "europe", taxIdLabel: "SIRET / NIF", legalDocumentTypes: ["lease-empty", "lease-furnished", "lease-commercial", "rent-receipt", "inventory", "formal-notice", "termination", "sworn-statement"] },
   { code: "BE", name: "Belgique", flag: "🇧🇪", defaultLanguage: "fr", supportedLanguages: ["fr", "nl", "de", "en"], currency: "EUR", currencySymbol: "€", locale: "fr-BE", dateFormat: "dd/MM/yyyy", timezone: "Europe/Brussels", addressFormat: "european", phonePrefix: "+32", phoneFormat: "0470 12 34 56", measurementUnit: "metric", region: "europe", taxIdLabel: "Numéro d'entreprise", legalDocumentTypes: ["lease-residential", "rent-receipt"] },
