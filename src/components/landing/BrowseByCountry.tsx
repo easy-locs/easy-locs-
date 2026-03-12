@@ -21,6 +21,7 @@ const CONTINENTS: { name: string; nameKey: string; emoji: string; countries: Cou
     countries: [
       { name: "Albania", slug: "albania", flag: "🇦🇱", cities: ["Tirana"] },
       { name: "Andorra", slug: "andorra", flag: "🇦🇩", cities: ["Andorra la Vella"] },
+      { name: "Armenia", slug: "armenia", flag: "🇦🇲", cities: ["Yerevan"] },
       { name: "Austria", slug: "austria", flag: "🇦🇹", cities: ["Vienna", "Salzburg"], star: true },
       { name: "Belarus", slug: "belarus", flag: "🇧🇾", cities: ["Minsk"] },
       { name: "Belgium", slug: "belgium", flag: "🇧🇪", cities: ["Brussels", "Antwerp"] },
