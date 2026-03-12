@@ -176,10 +176,19 @@ export class CallManager {
     await this.setupMedia(isVideo);
 
     // Update call_logs status
-    await supabase
+    const { data: activatedRow, error: activatedError } = await supabase
       .from("call_logs")
       .update({ status: "active", started_at: new Date().toISOString() } as any)
-      .eq("id", this.callId);
+      .eq("id", this.callId)
+      .select("id,status,started_at")
+      .maybeSingle();
+
+    this.debug("acceptCall DB update", {
+      updated: !!activatedRow,
+      status: activatedRow?.status || null,
+      startedAt: activatedRow?.started_at || null,
+      error: activatedError?.message || null,
+    });
 
     // Tell caller we accepted — caller will wait for our offer
     this.sendSignal({ type: "accepted", data: "{}" });
