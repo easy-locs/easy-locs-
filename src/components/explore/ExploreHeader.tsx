@@ -114,16 +114,38 @@ function DesktopUserMenu() {
           </DropdownMenuItem>
         </div>
 
-        {/* Landlord/Pro actions */}
+        {/* Landlord/Pro — business suite */}
         {isLandlord && (
           <>
             <Separator />
             <div className="py-1">
+              <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/marketplace")}>
                 <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My listings
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/concierge")}>
                 <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Bookings
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/rental")}>
+                <Building2 className="h-4 w-4 mr-3 text-muted-foreground" /> Properties
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/documents")}>
+                <FileText className="h-4 w-4 mr-3 text-muted-foreground" /> Documents
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/finances")}>
+                <Receipt className="h-4 w-4 mr-3 text-muted-foreground" /> Finances
+              </DropdownMenuItem>
+            </div>
+            <Separator />
+            <div className="py-1">
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/company")}>
+                <Briefcase className="h-4 w-4 mr-3 text-muted-foreground" /> My company
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/collaboration")}>
+                <Users className="h-4 w-4 mr-3 text-muted-foreground" /> Team
+              </DropdownMenuItem>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/billing")}>
+                <CreditCard className="h-4 w-4 mr-3 text-muted-foreground" /> Subscription
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer font-medium text-accent" onClick={() => navigate("/dashboard/create-listing")}>
                 <Plus className="h-4 w-4 mr-3" /> Post a listing
