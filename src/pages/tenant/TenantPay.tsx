@@ -300,24 +300,35 @@ const TenantPay = () => {
                       )}
                     </div>
 
-                    <button
-                      onClick={() => handlePay(call.id)}
-                      disabled={payingId === call.id}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
-                    >
-                      {payingId === call.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : method === "sepa" ? (
-                        <Banknote className="h-4 w-4" />
-                      ) : method === "bank_transfer" ? (
-                        <Building className="h-4 w-4" />
-                      ) : (
-                        <ExternalLink className="h-4 w-4" />
-                      )}
-                       {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
-                        method === "bank_transfer" ? (t("page.tenant_pay.transfer_btn") || "Transfer") :
-                        (t("page.tenant_pay.pay_btn") || "Pay")}
-                    </button>
+                    {method === "bank_transfer" ? (
+                      <button
+                        onClick={() => handleDeclareTransfer(call.id, call.month)}
+                        disabled={payingId === call.id || call.payment_status === "processing"}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                      >
+                        {call.payment_status === "processing" ? (
+                          <><CheckCircle className="h-4 w-4" /> {t("status.processing") || "Processing"}</>
+                        ) : (
+                          <><Building className="h-4 w-4" /> {t("page.tenant_pay.declare_transfer") || "J'ai effectué le virement"}</>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePay(call.id)}
+                        disabled={payingId === call.id}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 bg-gradient-gold text-accent-foreground font-semibold px-5 rounded-xl shadow-gold hover:opacity-90 transition-opacity disabled:opacity-50 text-sm shrink-0"
+                      >
+                        {payingId === call.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : method === "sepa" ? (
+                          <Banknote className="h-4 w-4" />
+                        ) : (
+                          <ExternalLink className="h-4 w-4" />
+                        )}
+                        {method === "sepa" ? (t("sepa.pay_sepa") || "Pay SEPA") :
+                          (t("page.tenant_pay.pay_btn") || "Pay")}
+                      </button>
+                    )}
                   </div>
                 </div>
 
