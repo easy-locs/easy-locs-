@@ -84,6 +84,30 @@ const TenantMessages = () => {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
+  const handleToggleTranslation = async (m: any) => {
+    const isShowingOriginal = showOriginalMap[m.id];
+    if (isShowingOriginal) {
+      setShowOriginalMap(prev => ({ ...prev, [m.id]: false }));
+      return;
+    }
+    if (!m.translated_content) {
+      setTranslatingId(m.id);
+      try {
+        const senderLocale = m.sender_locale || "en";
+        const { data: transData } = await supabase.functions.invoke("translate-message", {
+          body: { text: m.content, from_locale: senderLocale, to_locale: tenantLocale },
+        });
+        if (transData?.translated) {
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, translated_content: transData.translated } : msg));
+          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", m.id);
+        }
+      } catch (e) { console.error("Translation failed:", e); }
+      setTranslatingId(null);
+      return;
+    }
+    setShowOriginalMap(prev => ({ ...prev, [m.id]: true }));
+  };
+
   const handleFileUpload = async (file: File) => {
     if (!orgId || !tenantId || !user) return;
     setUploading(true);
