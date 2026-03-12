@@ -227,19 +227,25 @@ export class CallManager {
 
   /** End active call */
   async endCall() {
+    this._endFlowInvocations += 1;
+
     if (this._cleaned || this._ending) {
-      this.debug("endCall skipped", { cleaned: this._cleaned, ending: this._ending });
+      this.debug("endCall skipped", {
+        cleaned: this._cleaned,
+        ending: this._ending,
+        endFlowInvocations: this._endFlowInvocations,
+      });
       return;
     }
 
     this._ending = true;
-    this.debug("endCall start");
+    this.debug("endCall start", { endFlowInvocations: this._endFlowInvocations });
 
     try {
       this.sendSignal({ type: "ended", data: "{}" });
 
       const duration = this._startTime ? Math.floor((Date.now() - this._startTime) / 1000) : 0;
-      await supabase
+      const { data: endedRow, error: endedError } = await supabase
         .from("call_logs")
         .update({
           status: "ended",
@@ -248,7 +254,17 @@ export class CallManager {
           ended_by: this.role,
         } as any)
         .eq("id", this.callId)
-        .neq("status", "ended");
+        .neq("status", "ended")
+        .select("id,status,ended_at,duration_seconds")
+        .maybeSingle();
+
+      this.debug("endCall DB update", {
+        updated: !!endedRow,
+        status: endedRow?.status || null,
+        endedAt: endedRow?.ended_at || null,
+        duration: endedRow?.duration_seconds ?? duration,
+        error: endedError?.message || null,
+      });
 
       this.onStateChange({ status: "ended" });
     } catch (err) {
