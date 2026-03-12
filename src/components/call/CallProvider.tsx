@@ -45,6 +45,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingContextLabel, setIncomingContextLabel] = useState("");
   const [incomingIsVideo, setIncomingIsVideo] = useState(false);
 
+  // Keep ref in sync for use in realtime closures
+  useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
+
   // Listen for incoming calls (calls where user's org is the callee)
   useEffect(() => {
     if (!user) return;
