@@ -55,7 +55,9 @@ export default function OrbitHome() {
   return (
     <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 min-h-full">
       {/* ── Orb Section ── */}
-      <OrbitOrb contextMessage={orbMessage} />
+      <div className="animate-fade-in" style={{ animationDelay: "0ms" }}>
+        <OrbitOrb contextMessage={orbMessage} />
+      </div>
 
       {/* ── Alert Banner (top priority action) ── */}
       {engine.alerts.length > 0 && (
