@@ -134,16 +134,6 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
-        {/* Intelligence Orb — Central Brain */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, type: "spring" }}
-          className="flex justify-center mb-6"
-        >
-          <IntelligenceOrb hasActivity={!loading && stats.totalProperties > 0} />
-        </motion.div>
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
