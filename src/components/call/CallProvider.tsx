@@ -155,16 +155,26 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setIsStartingCall(true);
 
       try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        const authUser = authData?.user;
+
+        if (authError || !authUser?.id) {
+          toast.error("Session expirée. Reconnectez-vous pour lancer un appel.");
+          return;
+        }
+
         console.log("[CallProvider] startCall requested", {
           orgId: opts.orgId,
           contextType: opts.contextType || "listing",
           contextId: opts.contextId || null,
           threadId: opts.threadId || null,
+          contextUserId: user.id,
+          authUserId: authUser.id,
         });
 
         // Use idempotent server-side function to prevent duplicates
         const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
-          _caller_id: user.id,
+          _caller_id: authUser.id,
           _callee_org_id: opts.orgId,
           _thread_id: opts.threadId || null,
           _context_type: opts.contextType || "listing",
@@ -177,8 +187,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (error || !callId) {
           console.error("Failed to create call:", error);
-          const errMsg = error?.message || "Could not start call";
-          toast.error(errMsg.includes("Unauthorized") ? "You cannot call your own organization" : errMsg);
+          const errMsg = error?.message || "Impossible de démarrer l'appel";
+          if (errMsg.includes("Unauthorized")) {
+            toast.error("Autorisation refusée. Merci de vous reconnecter puis réessayer.");
+          } else {
+            toast.error(errMsg);
+          }
           return;
         }
 
