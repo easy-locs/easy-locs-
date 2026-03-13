@@ -319,10 +319,14 @@ const Settings = () => {
         <PaymentProvidersSettings />
 
         {/* Notification Preferences */}
-        <NotificationPreferences />
+        <div ref={el => { sectionRefs.current["notifications"] = el; }}>
+          <NotificationPreferences />
+        </div>
 
         {/* MFA / 2FA */}
-        <MFASettings />
+        <div ref={el => { sectionRefs.current["security"] = el; }}>
+          <MFASettings />
+        </div>
 
         {/* Pro Settings — Signal/WhatsApp style */}
         <ProSettingsSection />
