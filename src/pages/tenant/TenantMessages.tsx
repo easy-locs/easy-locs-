@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload, Languages } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { MessageCircle, Send, Loader2, Paperclip, Check, CheckCheck, Upload, Languages, Phone, Video, Shield, ArrowLeft } from "lucide-react";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCall } from "@/components/call/CallProvider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
@@ -13,6 +14,7 @@ import { getCountryConfig } from "@/lib/country-config";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { buildAppUrl } from "@/lib/app-domain";
 import { motion } from "framer-motion";
+import { toast as sonnerToast } from "sonner";
 
 const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -36,6 +38,7 @@ const TenantMessages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { tenantId, orgId, propertyCountry, L, T } = useTenantProperty();
+  const { startCall, isInCall, isStartingCall } = useCall();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMsg, setNewMsg] = useState("");
@@ -50,6 +53,44 @@ const TenantMessages = () => {
   const dateLang = (getCountryConfig(propertyCountry).locale || "fr-FR").slice(0, 2);
   const dateFnsLocale = DATE_LOCALES[dateLang] || DATE_LOCALES.fr;
   const tenantLocale = dateLang;
+
+  const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user?.id) {
+      sonnerToast.error("Session expirée. Reconnectez-vous.");
+      return null;
+    }
+    return data.user.id;
+  }, []);
+
+  // ── Call handlers ──
+  const handleAudioCall = useCallback(async () => {
+    if (!orgId || isInCall || isStartingCall) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+    await startCall({
+      orgId,
+      contextType: "tenant",
+      contextId: tenantId || undefined,
+      contextLabel: L.tenantSpace || "Tenant",
+      peerName: L.tenantSpace || "Landlord",
+      isVideo: false,
+    });
+  }, [orgId, tenantId, isInCall, isStartingCall, startCall, resolveAuthUserId, L]);
+
+  const handleVideoCall = useCallback(async () => {
+    if (!orgId || isInCall || isStartingCall) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+    await startCall({
+      orgId,
+      contextType: "tenant",
+      contextId: tenantId || undefined,
+      contextLabel: L.tenantSpace || "Tenant",
+      peerName: L.tenantSpace || "Landlord",
+      isVideo: true,
+    });
+  }, [orgId, tenantId, isInCall, isStartingCall, startCall, resolveAuthUserId, L]);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -110,6 +151,8 @@ const TenantMessages = () => {
 
   const handleFileUpload = async (file: File) => {
     if (!orgId || !tenantId || !user) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
     setUploading(true);
     try {
       const path = `${orgId}/messages/${tenantId}/${Date.now()}-${file.name}`;
@@ -121,7 +164,7 @@ const TenantMessages = () => {
       const { data: inserted } = await supabase
         .from("messages")
         .insert({
-          tenant_id: tenantId, org_id: orgId, sender_id: user.id,
+          tenant_id: tenantId, org_id: orgId, sender_id: authUserId,
           content: `📎 ${file.name}`, attachment_url: url,
           category: "general", sender_locale: tenantLocale, message_type: "user",
         } as any)
@@ -139,6 +182,8 @@ const TenantMessages = () => {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg.trim() || !user || !tenantId || !orgId) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
     const messageToSend = newMsg.trim();
     setSending(true);
     try {
@@ -156,7 +201,7 @@ const TenantMessages = () => {
       const { data: inserted, error } = await supabase
         .from("messages")
         .insert({
-          tenant_id: tenantId, org_id: orgId, sender_id: user.id,
+          tenant_id: tenantId, org_id: orgId, sender_id: authUserId,
           content: messageToSend, translated_content: translatedContent,
           category: selectedCategory, sender_locale: tenantLocale,
           message_type: "user", conversation_status: "waiting_landlord",
@@ -172,7 +217,7 @@ const TenantMessages = () => {
 
         // Audit
         await supabase.from("audit_logs").insert({
-          user_id: user.id, org_id: orgId, action: "message_sent",
+          user_id: authUserId, org_id: orgId, action: "message_sent",
           metadata_json: { tenant_id: tenantId, category: selectedCategory, direction: "tenant_to_landlord" },
         });
 
@@ -222,8 +267,41 @@ const TenantMessages = () => {
   return (
     <TenantLayout>
       <div className="max-w-3xl mx-auto flex flex-col" style={{ height: "calc(100vh - 8rem)" }}>
-        <h1 className="text-2xl font-bold text-foreground mb-1">{T.messagesTitle}</h1>
-        <p className="text-muted-foreground mb-4">{T.messagesSubtitle}</p>
+        {/* ── Header with call buttons ── */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{T.messagesTitle}</h1>
+            <p className="text-muted-foreground text-sm">{T.messagesSubtitle}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAudioCall}
+              disabled={!orgId || isInCall || isStartingCall}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-40 active:scale-95"
+              style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}
+              title="Audio call"
+            >
+              {isStartingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={handleVideoCall}
+              disabled={!orgId || isInCall || isStartingCall}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-40 active:scale-95"
+              style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}
+              title="Video call"
+            >
+              <Video className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Encrypted badge */}
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+            style={{ background: "hsl(142 70% 50% / 0.08)", color: "hsl(142 70% 50%)" }}>
+            <Shield className="h-2.5 w-2.5" /> Secure channel
+          </div>
+        </div>
 
         <div className="flex-1 bg-card rounded-xl shadow-card border border-border/50 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">

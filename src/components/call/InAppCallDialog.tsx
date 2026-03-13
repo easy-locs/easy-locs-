@@ -327,7 +327,7 @@ export default function InAppCallDialog({
 
             {/* Video controls */}
             <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-4">
-              <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
+              <button onClick={handleToggleMute} disabled={isTerminal || isEnding || status === "idle"}
                 className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
                 style={{
                   background: muted ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
@@ -336,7 +336,7 @@ export default function InAppCallDialog({
                 }}>
                 {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </button>
-              <button onClick={handleToggleVideo} disabled={status !== "active" || isEnding}
+              <button onClick={handleToggleVideo} disabled={isTerminal || isEnding || status === "idle"}
                 className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
                 style={{
                   background: !videoEnabled ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
@@ -350,7 +350,7 @@ export default function InAppCallDialog({
                 style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                 {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
               </button>
-              <button onClick={handleToggleSpeaker} disabled={status !== "active" || isEnding}
+              <button onClick={handleToggleSpeaker} disabled={isTerminal || isEnding || status === "idle"}
                 className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
                 style={{
                   background: speakerOn ? "hsl(var(--primary) / 0.2)" : "hsl(var(--background) / 0.6)",
@@ -439,7 +439,7 @@ export default function InAppCallDialog({
                   <div className="flex items-center justify-center gap-6">
                     <CtrlBtn
                       onClick={handleToggleMute}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={muted}
                       activeColor="var(--destructive)"
                       icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -447,7 +447,7 @@ export default function InAppCallDialog({
                     />
                     <CtrlBtn
                       onClick={handleToggleVideo}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={videoEnabled}
                       icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
                       text="Video"
@@ -463,7 +463,7 @@ export default function InAppCallDialog({
                     </div>
                     <CtrlBtn
                       onClick={handleToggleSpeaker}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={speakerOn}
                       icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
                       text={speakerOn ? "Speaker" : "Earpiece"}
