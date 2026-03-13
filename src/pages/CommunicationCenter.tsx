@@ -19,6 +19,7 @@ import CommContactsSection from "@/components/communication-hub/CommContactsSect
 import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
 import CommNearbySection from "@/components/communication-hub/CommNearbySection";
+import OrbitRadar from "@/components/orbit/OrbitRadar";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
