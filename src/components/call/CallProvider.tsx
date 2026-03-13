@@ -81,12 +81,35 @@ export function CallProvider({ children }: { children: ReactNode }) {
               const call = payload.new as any;
               if (!call || call.caller_id === user.id) return;
               if (call.status !== "ringing") return;
-              // Accept call if targeted at user's org OR if direct context targets this user
+              // Accept call if targeted at user's org, or directly/indirectly targeted to this user
               const isOrgCall = orgIds.length > 0 && orgIds.includes(call.callee_org_id);
-              const isDirectCall = call.context_type === "direct" && 
-                typeof call.context_id === "string" && 
+              const isDirectCall = call.context_type === "direct" &&
+                typeof call.context_id === "string" &&
                 call.context_id.includes(user.id);
-              if (!isOrgCall && !isDirectCall) return;
+
+              let isTenantTarget = false;
+              if (call.context_type === "tenant" && typeof call.context_id === "string") {
+                const { data: tenantMatch } = await supabase
+                  .from("tenants")
+                  .select("id")
+                  .eq("id", call.context_id)
+                  .eq("tenant_user_id", user.id)
+                  .maybeSingle();
+                isTenantTarget = !!tenantMatch;
+              }
+
+              let isThreadParticipant = false;
+              if (call.thread_id) {
+                const { data: threadMatch } = await supabase
+                  .from("conversation_threads")
+                  .select("id")
+                  .eq("id", call.thread_id)
+                  .contains("participant_ids", [user.id])
+                  .maybeSingle();
+                isThreadParticipant = !!threadMatch;
+              }
+
+              if (!isOrgCall && !isDirectCall && !isTenantTarget && !isThreadParticipant) return;
 
               const { data: profile } = await supabase
                 .from("profiles")
