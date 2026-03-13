@@ -113,8 +113,8 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
             <span
               className="text-[11px] font-bold rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 shrink-0"
               style={{
-                background: "hsl(var(--hud-cyan))",
-                color: "hsl(var(--hud-bg))",
+                background: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
               }}
             >
               {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
