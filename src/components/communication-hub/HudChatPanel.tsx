@@ -80,7 +80,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-
+  const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const voiceRecorder = useVoiceRecorder();
@@ -256,7 +258,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       toast.error("Please select a workspace to send messages");
       return;
     }
-    const content = newMessage.trim();
+    // Rate limiting
+    const { checkMessageRate, detectAbuse } = await import("@/lib/orbit-rate-limiter");
+    const rateCheck = checkMessageRate(user.id);
+    if (!rateCheck.allowed) {
+      toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
+      return;
+    }
+    const abuseCheck = detectAbuse(newMessage.trim());
+    if (abuseCheck.suspicious) {
+      toast.error(abuseCheck.reason || "Message blocked");
+      return;
+    }
+    // Compress before encryption
+    const { compressMessage } = await import("@/lib/orbit-message-compress");
+    const content = await compressMessage(newMessage.trim());
     setSending(true);
     try {
       let tenantLocale = "en";
@@ -739,7 +755,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           
           {/* Voice recording state */}
           {voiceRecorder.recording ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3"
+              onTouchMove={(e) => {
+                const touch = e.touches[0];
+                if (slideStartRef.current && (slideStartRef.current - touch.clientX) > 100) {
+                  voiceRecorder.cancel(); haptic("light");
+                }
+              }}>
               <button
                 onClick={() => { voiceRecorder.cancel(); haptic("light"); }}
                 className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center"
@@ -751,25 +773,49 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 <span className="text-sm font-mono tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
                   {formatVoiceDuration(voiceRecorder.duration)}
                 </span>
-                <span className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Recording...</span>
+                <span className="text-[11px] animate-pulse" style={{ color: "hsl(var(--hud-text-dim))" }}>← Slide to cancel</span>
               </div>
               <button
                 onClick={async () => {
                   haptic("medium");
                   try {
                     const result = await voiceRecorder.stop();
-                    // Upload voice as file
-                    const voiceFile = new File([result.blob], `voice-${Date.now()}.webm`, { type: result.blob.type });
-                    await handleFileUpload(voiceFile);
+                    setVoicePreview(result);
                   } catch (err: any) {
-                    if (err?.message !== "Recording too short") {
-                      toast.error("Voice recording failed");
-                    }
+                    if (err?.message !== "Recording too short") toast.error("Voice recording failed");
                   }
                 }}
                 className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform"
                 style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-                <Send className="h-5 w-5" />
+                <Check className="h-5 w-5" />
+              </button>
+            </div>
+          ) : voicePreview ? (
+            /* Voice preview before sending */
+            <div className="flex items-center gap-2">
+              <button onClick={() => { URL.revokeObjectURL(voicePreview.url); setVoicePreview(null); haptic("light"); }}
+                className="shrink-0 h-9 w-9 rounded-full flex items-center justify-center"
+                style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
+                <Ban className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(var(--hud-surface))" }}>
+                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-7 w-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
+                  <Zap className="h-3.5 w-3.5" />
+                </button>
+                <div className="flex-1 h-1 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.3)" }}>
+                  <div className="h-full rounded-full" style={{ width: "100%", background: "hsl(var(--hud-cyan))" }} />
+                </div>
+                <span className="text-xs font-mono" style={{ color: "hsl(var(--hud-text-dim))" }}>{formatVoiceDuration(voicePreview.duration)}</span>
+              </div>
+              <button onClick={async () => {
+                haptic("medium");
+                const voiceFile = new File([voicePreview.blob], `voice-${Date.now()}.webm`, { type: voicePreview.blob.type });
+                URL.revokeObjectURL(voicePreview.url);
+                setVoicePreview(null);
+                await handleFileUpload(voiceFile);
+              }} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+                <Send className="h-4 w-4" />
               </button>
             </div>
           ) : (
@@ -822,16 +868,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
                 </div>
               </div>
-              {/* Send / mic button */}
+              {/* Send / mic button — hold to record */}
               <button
-                onClick={newMessage.trim() ? handleSend : async () => {
+                onClick={newMessage.trim() ? handleSend : undefined}
+                onTouchStart={!newMessage.trim() ? (e) => {
+                  slideStartRef.current = e.touches[0].clientX;
+                  holdTimerRef.current = setTimeout(async () => {
+                    haptic("medium");
+                    try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
+                  }, 200);
+                } : undefined}
+                onTouchEnd={!newMessage.trim() ? () => {
+                  if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
+                } : undefined}
+                onMouseDown={!newMessage.trim() ? async () => {
                   haptic("medium");
-                  try {
-                    await voiceRecorder.start();
-                  } catch {
-                    toast.error("Microphone access denied");
-                  }
-                }}
+                  try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
+                } : undefined}
                 disabled={sending}
                 className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
                 style={{
@@ -900,13 +953,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               ? `📍 ${loc.label}\n${loc.address || ""}\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
               : `📍 My location\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
           
+          // Encrypt location payload
+          let storedContent = locationMsg;
+          let isLocEncrypted = false;
+          const peerId = thread.tenantId || thread.contextId || thread.id;
+          if (e2eReady && peerId) {
+            const enc = await encrypt(locationMsg, peerId);
+            if (enc) { storedContent = enc; isLocEncrypted = true; }
+          }
+
           const insertData: any = {
             org_id: orgId,
             sender_id: user?.id,
-            content: locationMsg,
+            content: storedContent,
             category: "general",
             message_type: "text",
             sender_locale: locale,
+            encrypted: isLocEncrypted,
           };
           if (thread.bookingId) insertData.booking_id = thread.bookingId;
           if (thread.tenantId) insertData.tenant_id = thread.tenantId;

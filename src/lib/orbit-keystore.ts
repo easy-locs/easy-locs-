@@ -20,9 +20,11 @@ import {
 } from "./orbit-crypto";
 
 const DB_NAME = "orbit-keystore";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_IDENTITY = "identity";
 const STORE_SESSIONS = "sessions";
+const STORE_PREKEYS = "prekeys";
+const STORE_RATCHETS = "ratchets";
 
 // ─── IndexedDB Setup ───────────────────────────────────────
 
@@ -31,12 +33,10 @@ function openDB(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_IDENTITY)) {
-        db.createObjectStore(STORE_IDENTITY);
-      }
-      if (!db.objectStoreNames.contains(STORE_SESSIONS)) {
-        db.createObjectStore(STORE_SESSIONS);
-      }
+      if (!db.objectStoreNames.contains(STORE_IDENTITY)) db.createObjectStore(STORE_IDENTITY);
+      if (!db.objectStoreNames.contains(STORE_SESSIONS)) db.createObjectStore(STORE_SESSIONS);
+      if (!db.objectStoreNames.contains(STORE_PREKEYS)) db.createObjectStore(STORE_PREKEYS);
+      if (!db.objectStoreNames.contains(STORE_RATCHETS)) db.createObjectStore(STORE_RATCHETS);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -172,12 +172,34 @@ export async function getOrDeriveSessionKey(
 export async function wipeAllKeys(): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_IDENTITY, STORE_SESSIONS], "readwrite");
+    const tx = db.transaction([STORE_IDENTITY, STORE_SESSIONS, STORE_PREKEYS, STORE_RATCHETS], "readwrite");
     tx.objectStore(STORE_IDENTITY).clear();
     tx.objectStore(STORE_SESSIONS).clear();
+    tx.objectStore(STORE_PREKEYS).clear();
+    tx.objectStore(STORE_RATCHETS).clear();
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+}
+
+// ─── PreKey Storage ───────────────────────────────────────
+
+export async function storePreKeys(userId: string, data: unknown): Promise<void> {
+  await dbPut(STORE_PREKEYS, userId, data);
+}
+
+export async function getPreKeys(userId: string): Promise<unknown | undefined> {
+  return dbGet(STORE_PREKEYS, userId);
+}
+
+// ─── Ratchet State Storage ────────────────────────────────
+
+export async function storeRatchetState(sessionId: string, state: unknown): Promise<void> {
+  await dbPut(STORE_RATCHETS, sessionId, state);
+}
+
+export async function getRatchetState(sessionId: string): Promise<unknown | undefined> {
+  return dbGet(STORE_RATCHETS, sessionId);
 }
 
 /** Check if user has identity keys on this device */
