@@ -277,11 +277,31 @@ export default function OrbitAccountSection() {
               <Lock className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
               <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>End-to-End Encryption Active</span>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">Messages, calls, and shared files are encrypted on your device before sending.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">AES-256-GCM · ECDH P-256 · Messages, calls, files are encrypted on-device before sending.</p>
           </div>
-          <MenuItem icon={Fingerprint} label="Two-Factor Authentication" desc="Add extra security" onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
-          <MenuItem icon={Key} label="Screen Lock" desc="Require biometrics or PIN" onClick={() => {}} color="hsl(var(--accent))" />
-          <MenuItem icon={QrCode} label="Safety Number" desc="Verify encryption with contacts" onClick={() => {}} color="hsl(var(--primary))" />
+
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-4">Authentication</p>
+          <MenuItem icon={Fingerprint} label="Two-Factor Authentication" desc="Add extra security to your account" onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
+          <MenuItem icon={ScanFace} label="Biometric Lock" desc="Face ID / fingerprint to open Orbit" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+          <MenuItem icon={KeyRound} label="PIN Lock" desc="4-digit PIN to access messages" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+
+          <Separator className="my-2" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Encryption</p>
+          <MenuItem icon={QrCode} label="Safety Number" desc="Verify encryption with contacts" onClick={() => toast.info("Tap a contact → Shield icon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Key} label="Encryption Keys" desc="View and export your identity keys" onClick={() => toast.info("Keys stored securely on device")} color="hsl(var(--accent))" />
+
+          <Separator className="my-2" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Message Protection</p>
+          <MenuItem icon={Lock} label="Chat Lock" desc="Lock individual conversations with PIN" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Timer} label="Disappearing Messages" desc="Auto-delete after set time" onClick={() => setSubPage("storage")} color="hsl(var(--accent))" />
+          <MenuItem icon={Ban} label="Screenshot Protection" desc="Block screenshots in private chats" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+
+          <Separator className="my-2" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Advanced</p>
+          <MenuItem icon={UserX} label="Blocked Contacts" desc="Manage blocked users" onClick={() => toast.info("No blocked contacts")} color="hsl(var(--destructive, 0 84% 60%))" />
+          <MenuItem icon={ShieldAlert} label="Security Notifications" desc="Get alerts on key changes" onClick={() => toast.info("Enabled by default")} color="hsl(var(--accent))" />
+          <MenuItem icon={Globe} label="Relay Calls" desc="Route calls through Orbit servers" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Wifi} label="Proxy" desc="Route traffic through proxy for anonymity" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
         </div>
       </div>
     );
