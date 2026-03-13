@@ -95,6 +95,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const fileInputRef = useRef<HTMLInputElement>(null);
   const voiceRecorder = useVoiceRecorder();
 
+  const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user?.id) {
+      toast.error("Session expirée. Reconnectez-vous pour envoyer un message.");
+      return null;
+    }
+    return data.user.id;
+  }, []);
+
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
     if (!orgId || !thread) return;
@@ -166,7 +175,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   }, [thread, orgId, user?.id]);
 
   const handleFileUpload = async (file: File) => {
-    if (!thread || !user) return;
+    if (!thread) return;
+
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+
     if (!orgId) {
       toast.error("Please select a workspace first");
       return;
@@ -195,7 +208,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           const { getPrivateKey } = await import("@/lib/orbit-keystore");
           const { importPublicKey, deriveSharedKey: deriveKey } = await import("@/lib/orbit-crypto");
 
-          const privateKey = await getPrivateKey(user.id);
+          const privateKey = await getPrivateKey(authUserId);
           if (privateKey) {
             const { data: peerKeyData } = await supabase
               .from("user_key_bundles" as any)
@@ -253,7 +266,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       const { error: insertError } = await supabase.from("messages").insert({
         org_id: orgId,
-        sender_id: user.id,
+        sender_id: authUserId,
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
         booking_type: thread.bookingType || null,
@@ -278,14 +291,18 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !thread || !user) return;
+    if (!newMessage.trim() || !thread) return;
+
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+
     if (!orgId) {
       toast.error("Please select a workspace to send messages");
       return;
     }
     // Rate limiting
     const { checkMessageRate, detectAbuse } = await import("@/lib/orbit-rate-limiter");
-    const rateCheck = checkMessageRate(user.id);
+    const rateCheck = checkMessageRate(authUserId);
     if (!rateCheck.allowed) {
       toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
       return;
@@ -327,7 +344,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const fakeMsg: ChatMessage = {
         id: queuedId,
         content: newMessage.trim(),
-        sender_id: user.id,
+        sender_id: authUserId,
         created_at: new Date().toISOString(),
         read: false,
         message_type: "user",
@@ -359,7 +376,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       }
 
       const { error: insertErr } = await supabase.from("messages").insert({
-        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
@@ -474,7 +491,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   };
 
   const handleSendPaymentLink = async () => {
-    if (!thread || !orgId || !user || !paymentAmount) return;
+    if (!thread || !orgId || !paymentAmount) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
     setSendingPaymentLink(true);
     try {
       const amount = parseFloat(paymentAmount);
@@ -491,7 +510,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
       await supabase.from("messages").insert({
-        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,

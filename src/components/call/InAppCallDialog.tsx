@@ -64,6 +64,12 @@ export default function InAppCallDialog({
 
   useEffect(() => {
     if (localStream && localVideoRef.current) {
+      // Keep mic active by default on new call
+      localStream.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      setMuted(false);
+
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.play().catch(() => {});
       setVideoEnabled(localStream.getVideoTracks().some(t => t.enabled));

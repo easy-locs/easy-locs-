@@ -46,12 +46,15 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
     metadata: Record<string, any>
   ): Promise<string> => {
     const id = crypto.randomUUID();
+    const { data: authData } = await supabase.auth.getUser();
+    const authUserId = authData?.user?.id || userId;
+
     await enqueueMessage({
       id,
       threadId: threadId || "",
       content,
       encrypted,
-      metadata: { ...metadata, userId, orgId },
+      metadata: { ...metadata, userId: authUserId, orgId },
       createdAt: Date.now(),
     });
     await refreshCount();
@@ -60,11 +63,14 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
 
   // Flush all pending messages to server
   const flushQueue = useCallback(async () => {
-    if (!userId || !orgId || syncingRef.current) return;
+    if (!orgId || syncingRef.current) return;
     syncingRef.current = true;
     setIsSyncing(true);
 
     try {
+      const { data: authData } = await supabase.auth.getUser();
+      const authUserId = authData?.user?.id || userId;
+
       const pending = await getPendingMessages();
       if (pending.length === 0) {
         setIsSyncing(false);
@@ -88,7 +94,7 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
           const meta = msg.metadata || {};
           const { error } = await supabase.from("messages").insert({
             org_id: meta.orgId || orgId,
-            sender_id: meta.userId || userId,
+            sender_id: meta.userId || authUserId,
             tenant_id: meta.tenantId || null,
             booking_id: meta.bookingId || null,
             booking_type: meta.bookingType || null,

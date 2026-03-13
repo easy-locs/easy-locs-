@@ -556,20 +556,32 @@ export class CallManager {
   private async setupMedia(isVideo: boolean) {
     try {
       let stream: MediaStream;
+      const audioConstraints: MediaTrackConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      };
+
       if (isVideo) {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
+            audio: audioConstraints,
             video: { facingMode: { ideal: "user" }, width: { ideal: 640 }, height: { ideal: 480 } },
           });
         } catch {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+          stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: true });
         }
       } else {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: false });
       }
 
       this.localStream = stream;
+
+      // Force mic active at call start (requested behavior)
+      this.localStream.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
+
       const audioTrack = this.localStream.getAudioTracks()[0];
       this.debug("media ready", {
         audioTracks: this.localStream.getAudioTracks().length,
