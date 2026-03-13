@@ -542,7 +542,7 @@ export default function CommNearbySection() {
               )}
               {filteredItems.length > 0 && (
                 <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold backdrop-blur-md"
-                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(142, 70%, 50%)", border: "1px solid hsl(142, 70%, 50%, 0.2)" }}>
+                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.2)" }}>
                   <MapPin className="h-3 w-3" /> {filteredItems.length} listings
                 </div>
               )}
