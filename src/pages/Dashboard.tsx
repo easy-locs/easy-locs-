@@ -180,26 +180,20 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* 3D Globe */}
-        {!loading && stats.propertiesByCountry.length > 0 && WorldMapComponent && !mapLoadFailed && (
+        {/* Orbit Smart Hub — replaces broken 3D globe */}
+        {!loading && (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
+            className="mb-6"
           >
-            <WorldMapComponent
+            <OrbitSmartHub
+              totalProperties={stats.totalProperties}
+              totalCountries={stats.totalCountries}
               propertiesByCountry={stats.propertiesByCountry}
-              userCountry={userCountry || "FR"}
             />
           </motion.div>
-        )}
-
-        {!loading && stats.propertiesByCountry.length > 0 && mapLoadFailed && (
-          <div className="mb-8 rounded-xl border border-border/50 bg-card p-4">
-            <p className="text-sm text-muted-foreground">
-              {t("page.dashboard.map_unavailable") || "World map unavailable on this device."}
-            </p>
-          </div>
         )}
 
         {/* Country Cards */}
