@@ -491,7 +491,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   };
 
   const handleSendPaymentLink = async () => {
-    if (!thread || !orgId || !user || !paymentAmount) return;
+    if (!thread || !orgId || !paymentAmount) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
     setSendingPaymentLink(true);
     try {
       const amount = parseFloat(paymentAmount);
