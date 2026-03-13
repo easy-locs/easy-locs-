@@ -47,6 +47,7 @@ const CommunicationCenter = () => {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [mobileContextOpen, setMobileContextOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<CommSection>("chats");
+  const pendingThreadRetryRef = useRef<string | null>(null);
 
   useEffect(() => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
@@ -63,8 +64,6 @@ const CommunicationCenter = () => {
       }, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
-  const pendingThreadRetryRef = useRef<string | null>(null);
 
   useEffect(() => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
