@@ -208,7 +208,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           const { getPrivateKey } = await import("@/lib/orbit-keystore");
           const { importPublicKey, deriveSharedKey: deriveKey } = await import("@/lib/orbit-crypto");
 
-          const privateKey = await getPrivateKey(user.id);
+          const privateKey = await getPrivateKey(authUserId);
           if (privateKey) {
             const { data: peerKeyData } = await supabase
               .from("user_key_bundles" as any)
