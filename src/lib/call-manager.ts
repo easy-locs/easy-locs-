@@ -592,9 +592,12 @@ export class CallManager {
     try {
       let stream: MediaStream;
       const audioConstraints: MediaTrackConstraints = {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
+        echoCancellation: { ideal: true },
+        noiseSuppression: { ideal: true },
+        autoGainControl: { ideal: true },
+        // Reduce sample rate on mobile to improve stability
+        sampleRate: { ideal: 48000 },
+        channelCount: { ideal: 1 },
       };
 
       if (isVideo) {

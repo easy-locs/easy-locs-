@@ -158,35 +158,54 @@ export default function CommContactsSection() {
 
   const handleCall = async (contact: Contact, isVideo: boolean) => {
     haptic("medium");
-    if (!user || !contact.contact_user_id) {
-      toast.error("This contact is not linked to a user account");
+    if (!user) return;
+
+    // If contact has no linked user, try to auto-link by email
+    let contactUserId = contact.contact_user_id;
+    if (!contactUserId && contact.email) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", contact.email)
+        .maybeSingle();
+      if (profile?.id) {
+        contactUserId = profile.id;
+        // Auto-link for future use
+        await supabase.from("contacts").update({ contact_user_id: profile.id } as any).eq("id", contact.id);
+        setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, contact_user_id: profile.id } : c));
+      }
+    }
+
+    if (!contactUserId) {
+      toast.error("Ce contact n'est pas lié à un compte utilisateur. Ajoutez son email pour le synchroniser.");
       return;
     }
+
     setActionLoading(`${isVideo ? "video" : "call"}-${contact.id}`);
     try {
       // Find target org
       const { data: targetMembership } = await supabase
         .from("org_members")
         .select("org_id")
-        .eq("user_id", contact.contact_user_id)
+        .eq("user_id", contactUserId)
         .limit(1)
         .single();
       
       if (!targetMembership?.org_id) {
-        toast.error("User is not reachable");
+        toast.error("Utilisateur non joignable");
         return;
       }
       
       await initiateCall({
         orgId: targetMembership.org_id,
         contextType: "direct",
-        contextId: `direct:${[user.id, contact.contact_user_id].sort().join(":")}`,
+        contextId: `direct:${[user.id, contactUserId].sort().join(":")}`,
         contextLabel: `Call with ${contact.name}`,
         peerName: contact.name,
         isVideo,
       });
     } catch {
-      toast.error("Call failed");
+      toast.error("L'appel a échoué");
     } finally {
       setActionLoading(null);
     }

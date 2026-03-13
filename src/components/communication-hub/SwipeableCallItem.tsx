@@ -1,8 +1,9 @@
 /**
  * SwipeableCallItem — Swipe-to-delete/archive on call entries.
  * Left swipe reveals delete, right swipe reveals archive.
+ * Also supports keyboard Delete key.
  */
-import { useState, useRef, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { Trash2, Archive } from "lucide-react";
 import { haptic } from "@/lib/haptics";
@@ -18,6 +19,7 @@ const THRESHOLD = 80;
 export default function SwipeableCallItem({ children, onDelete, onArchive }: Props) {
   const x = useMotionValue(0);
   const [swiped, setSwiped] = useState<"left" | "right" | null>(null);
+  const [focused, setFocused] = useState(false);
 
   // Left swipe background (delete)
   const deleteBg = useTransform(x, [-200, -THRESHOLD, 0], [1, 0.8, 0]);
@@ -37,10 +39,30 @@ export default function SwipeableCallItem({ children, onDelete, onArchive }: Pro
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      haptic("medium");
+      setSwiped("left");
+      onDelete();
+    }
+  };
+
   if (swiped) return null;
 
   return (
-    <div className="relative overflow-hidden">
+    <div
+      className="relative overflow-hidden"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={{
+        outline: focused ? "2px solid hsl(var(--hud-cyan) / 0.3)" : "none",
+        outlineOffset: -2,
+        borderRadius: 4,
+      }}
+    >
       {/* Delete background (left swipe) */}
       <motion.div
         className="absolute inset-0 flex items-center justify-end px-6"
