@@ -2,8 +2,6 @@
  * Orbit Engine — Centralized state aggregator for all platform modules.
  */
 import { create } from "zustand";
-// @ts-ignore — Supabase deep type chains cause TS2589
-import { supabase } from "@/integrations/supabase/client";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface OrbitAlert {
@@ -40,6 +38,19 @@ export interface OrbitModuleState {
   addAlert: (alert: Omit<OrbitAlert, "id" | "timestamp">) => void;
 }
 
+async function countRows(table: string, filters: Record<string, any>): Promise<number> {
+  let q = (supabase as any).from(table).select("id", { count: "exact", head: true });
+  for (const [key, value] of Object.entries(filters)) {
+    if (key.startsWith("gt:")) {
+      q = q.gt(key.slice(3), value);
+    } else {
+      q = q.eq(key, value);
+    }
+  }
+  const { count } = await q;
+  return count ?? 0;
+}
+
 export const useOrbitEngine = create<OrbitModuleState>((set) => ({
   unreadMessages: 0,
   missedCalls: 0,
@@ -73,24 +84,13 @@ export const useOrbitEngine = create<OrbitModuleState>((set) => ({
   refresh: async (userId: string, orgId?: string) => {
     set({ syncStatus: "syncing" });
     try {
-      // Fetch counts in parallel
-      const msgQ = supabase.from("messages").select("id", { count: "exact", head: true }).eq("recipient_id", userId).eq("read", false);
-      const callQ = supabase.from("call_logs").select("id", { count: "exact", head: true }).eq("status", "missed").gt("created_at", new Date(Date.now() - 7 * 86400000).toISOString());
-      const notifQ = supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("read", false);
-
-      const [msgR, callR, notifR] = await Promise.all([msgQ, callQ, notifQ]);
-      const messagesRes = msgR.count ?? 0;
-      const callsRes = callR.count ?? 0;
-      const notifRes = notifR.count ?? 0;
-
-      let listingsRes = 0;
-      let bookingsRes = 0;
-      if (orgId) {
-        const listQ = await supabase.from("public_listings").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
-        const bookQ = await supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending");
-        listingsRes = listQ.count ?? 0;
-        bookingsRes = bookQ.count ?? 0;
-      }
+      const [messagesRes, callsRes, notifRes, listingsRes, bookingsRes] = await Promise.all([
+        countRows("messages", { recipient_id: userId, read: false }),
+        countRows("call_logs", { status: "missed", "gt:created_at": new Date(Date.now() - 7 * 86400000).toISOString() }),
+        countRows("notifications", { user_id: userId, read: false }),
+        orgId ? countRows("public_listings", { org_id: orgId, active: true }) : 0,
+        orgId ? countRows("booking_requests", { org_id: orgId, status: "pending" }) : 0,
+      ]);
 
       const alerts: OrbitAlert[] = [];
       if (messagesRes > 0)
