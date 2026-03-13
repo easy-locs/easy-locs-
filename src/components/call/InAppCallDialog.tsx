@@ -336,7 +336,7 @@ export default function InAppCallDialog({
                 }}>
                 {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </button>
-              <button onClick={handleToggleVideo} disabled={status !== "active" || isEnding}
+              <button onClick={handleToggleVideo} disabled={isTerminal || isEnding || status === "idle"}
                 className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
                 style={{
                   background: !videoEnabled ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
