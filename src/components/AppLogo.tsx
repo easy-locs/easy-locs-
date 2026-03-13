@@ -22,7 +22,7 @@ const AppLogo = ({
     header: "text-xl",
     landing: "text-2xl",
     footer: "text-xl",
-    auth: "text-3xl sm:text-4xl",
+    auth: "text-xl sm:text-2xl",
   };
 
   return (
