@@ -528,6 +528,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 }}>
                 <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
               </Button>
+              {/* Safety Number verification */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                onClick={() => { haptic("light"); setShowSafetyNumber(true); }}
+                title="Verify encryption">
+                <Shield className="h-4 w-4" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
+              </Button>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {/* Disappearing messages */}
