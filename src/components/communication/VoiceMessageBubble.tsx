@@ -4,7 +4,6 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Mic } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface Props {
   url: string;
