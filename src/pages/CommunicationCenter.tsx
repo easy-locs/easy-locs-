@@ -195,7 +195,7 @@ const CommunicationCenter = () => {
               </div>
             </div>
           ) : (
-            {renderSection()}
+            renderSection()
           )}
         </div>
 
