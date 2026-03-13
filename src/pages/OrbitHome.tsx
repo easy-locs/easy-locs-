@@ -85,7 +85,7 @@ export default function OrbitHome() {
       )}
 
       {/* ── Priority Section ── */}
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "120ms" }}>
         <div className="flex items-center justify-between mb-2 px-1">
           <h2
             className="text-[11px] font-bold uppercase tracking-widest"
@@ -106,22 +106,23 @@ export default function OrbitHome() {
           )}
         </div>
         <div className="grid grid-cols-4 gap-2.5">
-          {PRIORITY_CARDS.map((card) => (
-            <OrbitQuickCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              description={card.desc}
-              counter={card.key ? (engine[card.key] as number) : undefined}
-              status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
-              to={card.to}
-            />
+          {PRIORITY_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${150 + i * 50}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {/* ── Secondary Section ── */}
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "300ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
@@ -129,16 +130,17 @@ export default function OrbitHome() {
           Modules
         </h2>
         <div className="grid grid-cols-4 gap-2.5">
-          {SECONDARY_CARDS.map((card) => (
-            <OrbitQuickCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              description={card.desc ?? undefined}
-              counter={card.key ? (engine[card.key] as number) : undefined}
-              status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
-              to={card.to}
-            />
+          {SECONDARY_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${350 + i * 40}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc ?? undefined}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
           ))}
         </div>
       </div>
