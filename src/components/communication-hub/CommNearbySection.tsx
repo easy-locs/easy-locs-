@@ -11,7 +11,7 @@ import { PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import {
   Radar, MapPin, Search, MessageCircle, Phone, Navigation,
   Briefcase, Home, ShoppingBag, ChevronDown, User, Eye, EyeOff,
-  Shield, Clock, CheckCircle2, Users,
+  Shield, Clock, CheckCircle2, Users, Map, List,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -99,6 +99,7 @@ export default function CommNearbySection() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   // Privacy settings
   const [myVisibility, setMyVisibility] = useState(false);
@@ -346,11 +347,30 @@ export default function CommNearbySection() {
           </div>
         )}
 
-        {/* Stats */}
+        {/* Stats + View Toggle */}
         <div className="flex items-center gap-3 mt-2 px-1">
-          <span className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+          <span className="text-[10px] uppercase tracking-wider font-medium flex-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
             {totalResults} found within {radius}km
           </span>
+          {/* View mode toggle */}
+          <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+            <button onClick={() => { setViewMode("list"); haptic("selection"); }}
+              className="px-2 py-1 flex items-center gap-1 text-[10px]"
+              style={{
+                background: viewMode === "list" ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.3)",
+                color: viewMode === "list" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+              }}>
+              <List className="h-3 w-3" /> List
+            </button>
+            <button onClick={() => { setViewMode("map"); haptic("selection"); }}
+              className="px-2 py-1 flex items-center gap-1 text-[10px]"
+              style={{
+                background: viewMode === "map" ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.3)",
+                color: viewMode === "map" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+              }}>
+              <Map className="h-3 w-3" /> Map
+            </button>
+          </div>
           <button onClick={() => { loadNearby(); haptic("medium"); }}
             className="text-[10px] font-medium flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
             <Radar className="h-3 w-3" /> Refresh
@@ -359,7 +379,48 @@ export default function CommNearbySection() {
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {/* Map View */}
+        {viewMode === "map" && lat && lng ? (
+          <div className="relative w-full h-full min-h-[300px]">
+            <iframe
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - (radius * 0.012)},${lat - (radius * 0.009)},${lng + (radius * 0.012)},${lat + (radius * 0.009)}&layer=mapnik&marker=${lat},${lng}`}
+              className="w-full h-full border-0"
+              title="Nearby map"
+              loading="lazy"
+              style={{ minHeight: 400 }}
+            />
+            {/* Floating results count */}
+            <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
+              {filteredUsers.length > 0 && (
+                <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold backdrop-blur-md"
+                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(var(--hud-cyan))", border: "1px solid hsl(var(--hud-cyan) / 0.2)" }}>
+                  <User className="h-3 w-3" /> {filteredUsers.length} people nearby
+                </div>
+              )}
+              {filteredItems.length > 0 && (
+                <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold backdrop-blur-md"
+                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(142, 70%, 50%)", border: "1px solid hsl(142, 70%, 50%, 0.2)" }}>
+                  <MapPin className="h-3 w-3" /> {filteredItems.length} listings
+                </div>
+              )}
+            </div>
+            {/* Floating radar pulse */}
+            {scanning && (
+              <div className="absolute bottom-4 right-4">
+                <motion.div className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)" }}>
+                  <Radar className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
+                  <motion.div className="absolute inset-0 rounded-full"
+                    style={{ border: "2px solid hsl(var(--hud-cyan))" }}
+                    initial={{ scale: 1, opacity: 0.6 }} animate={{ scale: 2, opacity: 0 }}
+                    transition={{ duration: 1.2, repeat: Infinity }} />
+                </motion.div>
+              </div>
+            )}
+          </div>
+        ) : viewMode === "list" || !lat || !lng ? (
+          <>
         {loading && totalResults === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="relative w-20 h-20 mb-4">
@@ -502,6 +563,8 @@ export default function CommNearbySection() {
             ))}
           </div>
         )}
+          </>
+        ) : null}
       </div>
 
       {/* Privacy Settings Dialog */}

@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
-import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock } from "lucide-react";
+import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock, QrCode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
+import QRContactCard from "./QRContactCard";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
@@ -52,6 +53,7 @@ export default function CommContactsSection() {
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
 
@@ -209,10 +211,16 @@ export default function CommContactsSection() {
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
-          <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
-            style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
-            <UserPlus className="h-4 w-4" /> Add
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0"
+              style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowQR(true)}>
+              <QrCode className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+              style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
+              <UserPlus className="h-4 w-4" /> Add
+            </Button>
+          </div>
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
@@ -307,6 +315,9 @@ export default function CommContactsSection() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* QR Contact Card */}
+      <QRContactCard open={showQR} onOpenChange={setShowQR} onContactAdded={loadContacts} />
     </div>
   );
 }

@@ -7,9 +7,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles,
+  Shield, Lock, Zap, Sparkles, MapPin,
 } from "lucide-react";
+import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
+import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +61,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string } | null>(null);
+  const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
+  const [disappearTTL, setDisappearTTL] = useState("off");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -455,7 +460,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               </div>
             </div>
           ) : (
-            messages.map(msg => {
+            messages.filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
               const isMe = msg.sender_id === user?.id;
               const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
               const isInboundEmail = msg.message_type === "inbound_email";
@@ -478,8 +483,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
               return (
                 <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"}`} style={{
+                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
+                  onClick={() => { /* mobile: long press handled via context */ }}>
+                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
                       : isMe
@@ -636,6 +643,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Message Context Menu */}
+      <MessageContextMenu
+        message={contextMessage}
+        onClose={() => setContextMessage(null)}
+        onDeleted={(msgId, type) => {
+          if (type === "self") {
+            setHiddenMsgIds(prev => new Set([...prev, msgId]));
+          } else {
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+          }
+        }}
+        onCopy={() => {}}
+      />
     </>
   );
 }
