@@ -8,7 +8,6 @@ import {
   ShieldCheck, CreditCard,
 } from "lucide-react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
