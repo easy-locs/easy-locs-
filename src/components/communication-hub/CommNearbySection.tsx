@@ -656,8 +656,8 @@ export default function CommNearbySection() {
                   </button>
                   <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ background: "hsl(142, 70%, 50%, 0.1)" }}>
-                    <Phone className="h-3.5 w-3.5" style={{ color: "hsl(142, 70%, 50%)" }} />
+                    style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
+                    <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
                   </button>
                 </div>
               </motion.div>
