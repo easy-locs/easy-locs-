@@ -256,7 +256,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       toast.error("Please select a workspace to send messages");
       return;
     }
-    const content = newMessage.trim();
+    // Rate limiting
+    const { checkMessageRate, detectAbuse } = await import("@/lib/orbit-rate-limiter");
+    const rateCheck = checkMessageRate(user.id);
+    if (!rateCheck.allowed) {
+      toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
+      return;
+    }
+    const abuseCheck = detectAbuse(newMessage.trim());
+    if (abuseCheck.suspicious) {
+      toast.error(abuseCheck.reason || "Message blocked");
+      return;
+    }
+    // Compress before encryption
+    const { compressMessage } = await import("@/lib/orbit-message-compress");
+    const content = await compressMessage(newMessage.trim());
     setSending(true);
     try {
       let tenantLocale = "en";
