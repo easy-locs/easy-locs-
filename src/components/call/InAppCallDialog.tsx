@@ -182,18 +182,21 @@ export default function InAppCallDialog({
   const handleToggleSpeaker = () => {
     const newState = !speakerOn;
     setSpeakerOn(newState);
-    
+
     const audioEl = remoteAudioRef.current;
     if (audioEl) {
-      audioEl.volume = newState ? 1.0 : 0.0;
-      audioEl.muted = !newState;
-      
-      // Try setSinkId for actual hardware speaker switching (Chrome/Edge)
-      if ('setSinkId' in audioEl && typeof (audioEl as any).setSinkId === 'function') {
-        // 'default' = earpiece/headphones, '' = speaker
-        // On mobile, toggling between outputs
-        (audioEl as any).setSinkId(newState ? '' : 'default').catch(() => {});
+      audioEl.volume = 1;
+      audioEl.muted = false;
+      if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+        (audioEl as any).setSinkId("default").catch(() => {});
       }
+    }
+
+    const nav = navigator as any;
+    if (nav?.audioSession && typeof nav.audioSession === "object") {
+      try {
+        nav.audioSession.type = newState ? "playback" : "play-and-record";
+      } catch {}
     }
   };
 

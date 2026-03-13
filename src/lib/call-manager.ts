@@ -555,11 +555,21 @@ export class CallManager {
 
   private async setupMedia(isVideo: boolean) {
     try {
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: isVideo ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false,
-      });
+      let stream: MediaStream;
+      if (isVideo) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: { facingMode: { ideal: "user" }, width: { ideal: 640 }, height: { ideal: 480 } },
+          });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        }
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      }
 
+      this.localStream = stream;
       const audioTrack = this.localStream.getAudioTracks()[0];
       this.debug("media ready", {
         audioTracks: this.localStream.getAudioTracks().length,
@@ -567,7 +577,7 @@ export class CallManager {
         audioEnabled: audioTrack?.enabled ?? false,
         audioMuted: audioTrack?.muted ?? false,
       });
-      this.onStateChange({ localStream: this.localStream, isVideo });
+      this.onStateChange({ localStream: this.localStream, isVideo: this.localStream.getVideoTracks().length > 0 });
     } catch (err) {
       this.debug("getUserMedia failed", { error: String(err) });
       this.onStateChange({

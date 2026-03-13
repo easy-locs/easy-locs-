@@ -184,7 +184,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
       toast.error("Camera access required to scan QR codes");
       setMode("show");
     }
-  }, [stopScanner, handleScannedData]);
+  }, [stopScanner]);
 
   const handleScannedData = useCallback(async (raw: string) => {
     if (!user?.id) return;
