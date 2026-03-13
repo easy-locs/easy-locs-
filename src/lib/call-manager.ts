@@ -640,7 +640,11 @@ export class CallManager {
     }
   }
 
+  /** Toggle speaker output — delegates to UI layer since Web Audio routing
+   *  requires HTMLAudioElement.setSinkId or AudioSession API */
   toggleSpeaker(): boolean {
+    // Actual routing is done in InAppCallDialog via remoteAudioRef
+    // This method exists for interface completeness
     return false;
   }
 

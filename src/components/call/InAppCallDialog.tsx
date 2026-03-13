@@ -165,28 +165,41 @@ export default function InAppCallDialog({
     } catch {}
   };
 
-  const handleToggleSpeaker = () => {
+  const handleToggleSpeaker = useCallback(() => {
     const newState = !speakerOn;
     setSpeakerOn(newState);
     const audioEl = remoteAudioRef.current;
-    if (audioEl) {
-      audioEl.volume = 1; audioEl.muted = false;
-      if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
-        (audioEl as any).setSinkId(newState ? "default" : "communications").catch(() => {
-          (audioEl as any).setSinkId("default").catch(() => {});
-        });
-      }
+    if (!audioEl) return;
+    
+    audioEl.volume = 1;
+    audioEl.muted = false;
+    
+    // Method 1: setSinkId (Chrome/Edge desktop — best support)
+    if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+      const sinkId = newState ? "default" : "communications";
+      (audioEl as any).setSinkId(sinkId).catch(() => {
+        // Fallback to default if "communications" is not available
+        if (!newState) (audioEl as any).setSinkId("default").catch(() => {});
+      });
     }
+    
+    // Method 2: AudioSession API (Safari/iOS — emerging standard)
     const nav = navigator as any;
     if (nav?.audioSession && typeof nav.audioSession === "object") {
-      try { nav.audioSession.type = newState ? "playback" : "play-and-record"; } catch {}
+      try {
+        nav.audioSession.type = newState ? "playback" : "play-and-record";
+      } catch {}
     }
+    
+    // Method 3: AudioContext setSinkId (newer browsers)
     try {
       const audioCtx = new AudioContext();
-      if ((audioCtx as any).setSinkId) (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      if ((audioCtx as any).setSinkId) {
+        (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      }
       audioCtx.close();
     } catch {}
-  };
+  }, [speakerOn]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const isNetworkBlocked = status === "network_blocked" || status === "failed";
