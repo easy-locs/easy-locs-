@@ -516,13 +516,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
           <ThemeSwitcher />
           <NotificationBell />
-          <Link
-            to="/dashboard/assistant"
-            className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            title="AI Assistant"
-          >
-            <BrainCircuit className="h-4 w-4" />
-          </Link>
         </header>
 
         {subscription.isTrial && (
