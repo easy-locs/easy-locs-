@@ -272,6 +272,34 @@ export default function CommContactsSection() {
   const handleAddContact = async () => {
     if (!user?.id || !newContact.name.trim()) return;
     setSaving(true);
+
+    // ── Duplicate detection ──
+    const trimName = newContact.name.trim().toLowerCase();
+    const trimEmail = newContact.email.trim().toLowerCase();
+    const trimPhone = newContact.phone.trim();
+
+    const existingDuplicate = contacts.find(c => {
+      // Exact name match
+      if (c.name.toLowerCase() === trimName) return true;
+      // Email match
+      if (trimEmail && c.email?.trim().toLowerCase() === trimEmail) return true;
+      // Phone match (normalized)
+      if (trimPhone && c.phone) {
+        const normalize = (p: string) => p.replace(/[\s\-\.\(\)]/g, "");
+        if (normalize(c.phone) === normalize(trimPhone)) return true;
+      }
+      return false;
+    });
+
+    if (existingDuplicate) {
+      setSaving(false);
+      toast.error(`Un contact similaire existe déjà : "${existingDuplicate.name}"`, {
+        description: existingDuplicate.email || existingDuplicate.phone || "",
+        duration: 5000,
+      });
+      return;
+    }
+
     const { error } = await supabase.from("contacts").insert({
       owner_id: user.id,
       org_id: orgId || null,
