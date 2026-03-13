@@ -25,6 +25,8 @@ import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator"
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
+import { useOfflineMessages } from "@/hooks/useOfflineMessages";
+import { WifiOff, Wifi, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
