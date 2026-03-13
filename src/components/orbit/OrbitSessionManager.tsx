@@ -87,12 +87,12 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
       {/* Suspicious logins alert */}
       {suspiciousLogins.length > 0 && (
         <div className="rounded-xl p-3" style={{
-          background: "hsl(var(--hud-warning, 45 100% 50%) / 0.06)",
-          border: "1px solid hsl(var(--hud-warning, 45 100% 50%) / 0.15)",
+          background: "hsl(var(--hud-warning) / 0.06)",
+          border: "1px solid hsl(var(--hud-warning) / 0.15)",
         }}>
           <div className="flex items-center gap-2 mb-2">
-            <ShieldAlert className="h-4 w-4" style={{ color: "hsl(var(--hud-warning, 45 100% 50%))" }} />
-            <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-warning, 45 100% 50%))" }}>
+            <ShieldAlert className="h-4 w-4" style={{ color: "hsl(var(--hud-warning))" }} />
+            <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-warning))" }}>
               Connexions récentes depuis un nouvel appareil
             </span>
           </div>
