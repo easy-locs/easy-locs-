@@ -582,14 +582,7 @@ export default function CommContactsSection() {
       </Dialog>
 
       {/* QR Dialog */}
-      <Dialog open={showQR} onOpenChange={setShowQR}>
-        <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
-          <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>QR Contact</DialogTitle>
-          </DialogHeader>
-          <QRContactCard onContactAdded={() => { setShowQR(false); loadContacts(); }} />
-        </DialogContent>
-      </Dialog>
+      <QRContactCard open={showQR} onOpenChange={setShowQR} onContactAdded={() => { setShowQR(false); loadContacts(); }} />
     </div>
   );
 }
