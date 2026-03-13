@@ -376,7 +376,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       }
 
       const { error: insertErr } = await supabase.from("messages").insert({
-        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
