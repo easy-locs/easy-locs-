@@ -107,26 +107,48 @@ export default function InAppCallDialog({
     setMuted(isMuted);
   }, [callManager]);
 
-  const handleToggleVideo = async () => {
-    if (!localStream || !callManager) return;
-    const videoTracks = localStream.getVideoTracks();
-    if (videoTracks.length > 0) {
-      videoTracks.forEach(t => { t.enabled = !t.enabled; });
-      setVideoEnabled(videoTracks.some(t => t.enabled));
-    } else {
-      try {
-        const videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
-        });
-        const videoTrack = videoStream.getVideoTracks()[0];
-        if (videoTrack) {
-          localStream.addTrack(videoTrack);
-          setVideoEnabled(true); setIsVideo(true);
-          callManager.addVideoTrack?.(videoTrack);
-        }
-      } catch {}
+  const handleToggleVideo = useCallback(async () => {
+    if (!callManager) return;
+    
+    // If we have video tracks, toggle them
+    if (localStream) {
+      const videoTracks = localStream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        const newEnabled = !videoTracks[0].enabled;
+        videoTracks.forEach(t => { t.enabled = newEnabled; });
+        setVideoEnabled(newEnabled);
+        return;
+      }
     }
-  };
+    
+    // No video tracks — request camera access
+    try {
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (videoTrack && localStream) {
+        localStream.addTrack(videoTrack);
+        setVideoEnabled(true);
+        setIsVideo(true);
+        callManager.addVideoTrack?.(videoTrack);
+      } else if (videoTrack) {
+        // No localStream yet — create one
+        const newStream = new MediaStream([videoTrack]);
+        setLocalStream(newStream);
+        setVideoEnabled(true);
+        setIsVideo(true);
+        callManager.addVideoTrack?.(videoTrack);
+      }
+    } catch (err) {
+      console.error("[CallUI] Camera access failed:", err);
+      // Don't silently fail — show user feedback
+      const msg = err instanceof DOMException && err.name === "NotAllowedError"
+        ? "Camera permission denied. Please allow camera access in your browser settings."
+        : "Could not access camera. Please check your device settings.";
+      setError(msg);
+    }
+  }, [callManager, localStream, facingMode]);
 
   const handleFlipCamera = async () => {
     if (!localStream) return;
