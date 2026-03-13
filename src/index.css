@@ -227,7 +227,7 @@
     color-scheme: dark;
   }
 
-  /* Orbit accent options (global) */
+  /* Orbit accent options (global) — Blue optional theme */
   :root[data-orbit-accent="blue"] {
     --primary: 210 90% 50%;
     --primary-foreground: 0 0% 100%;
@@ -247,6 +247,8 @@
     --hud-cyan: 196 100% 66%;
     --hud-cyan-dim: 200 86% 46%;
     --hud-purple: 230 90% 66%;
+    --hud-glow: 0 0 20px hsl(198 100% 56% / 0.15);
+    --hud-glow-strong: 0 0 30px hsl(198 100% 56% / 0.25);
   }
 
   .dark[data-orbit-accent="blue"] {
@@ -268,6 +270,8 @@
     --hud-cyan: 196 100% 70%;
     --hud-cyan-dim: 202 82% 52%;
     --hud-purple: 235 90% 68%;
+    --hud-glow: 0 0 20px hsl(198 100% 58% / 0.15);
+    --hud-glow-strong: 0 0 30px hsl(198 100% 58% / 0.25);
   }
 }
 
