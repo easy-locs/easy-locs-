@@ -419,9 +419,9 @@ export default function InAppCallDialog({
                   /* Post-call: show clear Close button */
                   <div className="flex flex-col items-center gap-4">
                     <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{
-                      background: status === "failed" ? "hsl(var(--destructive) / 0.08)" : "hsl(var(--muted) / 0.5)",
+                      background: statusStr === "failed" ? "hsl(var(--destructive) / 0.08)" : "hsl(var(--muted) / 0.5)",
                     }}>
-                      {status === "failed" ? <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} /> : <PhoneOff className="h-7 w-7" style={{ color: "hsl(var(--muted-foreground))" }} />}
+                      {statusStr === "failed" ? <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} /> : <PhoneOff className="h-7 w-7" style={{ color: "hsl(var(--muted-foreground))" }} />}
                     </div>
                     <button onClick={onClose}
                       className="w-full max-w-[200px] inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95"
