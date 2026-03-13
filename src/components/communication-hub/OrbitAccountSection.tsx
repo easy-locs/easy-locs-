@@ -57,6 +57,15 @@ export default function OrbitAccountSection() {
   // Storage states
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
   const [autoDeletePeriod, setAutoDeletePeriod] = useState("off");
+  
+  // Display name mode
+  type DisplayNameMode = "real" | "username" | "custom" | "anonymous" | "hidden";
+  const [displayNameMode, setDisplayNameMode] = useState<DisplayNameMode>(
+    (localStorage.getItem("orbit_display_name_mode") as DisplayNameMode) || "real"
+  );
+  const [customDisplayName, setCustomDisplayName] = useState(
+    localStorage.getItem("orbit_custom_display_name") || ""
+  );
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
