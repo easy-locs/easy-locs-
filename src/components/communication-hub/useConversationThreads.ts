@@ -246,10 +246,11 @@ export function useConversationThreads() {
 
       // ── 7. Conversation threads table (direct, listing, business, team) ──
       try {
+        // Query threads owned by this org OR where current user is a participant (cross-org direct threads)
         const { data: convThreads } = await supabase
           .from("conversation_threads")
           .select("*")
-          .eq("org_id", orgId)
+          .or(`org_id.eq.${orgId}${user?.id ? `,participant_ids.cs.{${user.id}}` : ""}`)
           .order("last_message_at", { ascending: false })
           .limit(200);
 
