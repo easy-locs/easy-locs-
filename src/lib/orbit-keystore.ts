@@ -79,6 +79,7 @@ interface StoredIdentity {
   privateKeyJwk: JsonWebKey;
   publicKeyBase64: string;
   createdAt: number;
+  curve?: string;
 }
 
 /**
