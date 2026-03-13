@@ -24,6 +24,7 @@ import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
 import SmartSuggestions from "@/components/explore/SmartSuggestions";
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import ExploreBreadcrumbs from "@/components/explore/ExploreBreadcrumbs";
+import ExploreAdvancedFilters, { type AdvancedFilters, defaultAdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
