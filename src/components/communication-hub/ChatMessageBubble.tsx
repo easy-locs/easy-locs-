@@ -177,7 +177,7 @@ function ChatMessageBubble({
           <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
