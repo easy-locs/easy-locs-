@@ -5,30 +5,37 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
-const ICE_SERVERS: RTCIceServer[] = [
+/** Fallback STUN-only config (no TURN relay) */
+const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
-  {
-    urls: "turn:a.relay.metered.ca:80",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:80?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:443",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turns:a.relay.metered.ca:443?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
 ];
+
+/** Cached ICE servers fetched from backend */
+let _cachedIceServers: RTCIceServer[] | null = null;
+let _cacheExpiry = 0;
+
+/** Fetch TURN credentials securely from backend edge function */
+async function getIceServers(): Promise<RTCIceServer[]> {
+  // Return cached if still valid (5 min TTL)
+  if (_cachedIceServers && Date.now() < _cacheExpiry) {
+    return _cachedIceServers;
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+    if (error || !data?.iceServers) {
+      console.warn("[CallManager] Failed to fetch TURN credentials, using STUN-only fallback", error);
+      return FALLBACK_ICE_SERVERS;
+    }
+    _cachedIceServers = data.iceServers;
+    _cacheExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+    return _cachedIceServers;
+  } catch (err) {
+    console.warn("[CallManager] TURN fetch error, using STUN-only fallback", err);
+    return FALLBACK_ICE_SERVERS;
+  }
+}
 
 const ICE_TIMEOUT_MS = 15_000;
 const STREAM_TIMEOUT_MS = 25_000;
@@ -195,7 +202,7 @@ export class CallManager {
     this.sendSignal({ type: "accepted", data: "{}" });
 
     // Callee creates the offer
-    this.createPeerConnection();
+    await this.createPeerConnection();
     const offer = await this.pc!.createOffer();
     await this.pc!.setLocalDescription(offer);
     this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
@@ -290,12 +297,12 @@ export class CallManager {
       if (signal.type === "accepted") {
         // Caller received acceptance — prepare PC and wait for callee's offer
         this.onStateChange({ status: "connecting" });
-        this.createPeerConnection();
+        await this.createPeerConnection();
         this.startIceTimeout();
         this.startElapsedTimer();
       } else if (signal.type === "offer") {
         // Caller receives the offer from callee
-        if (!this.pc) this.createPeerConnection();
+        if (!this.pc) await this.createPeerConnection();
         const offer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
 
@@ -363,13 +370,14 @@ export class CallManager {
     }
   }
 
-  private createPeerConnection() {
+  private async createPeerConnection() {
     if (this.pc) {
       try { this.pc.close(); } catch {}
     }
 
-    this.debug("createPeerConnection", { transport: "all" });
-    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "all" });
+    const iceServers = await getIceServers();
+    this.debug("createPeerConnection", { transport: "all", servers: iceServers.length });
+    this.pc = new RTCPeerConnection({ iceServers, iceTransportPolicy: "all" });
     this.remoteStream = new MediaStream();
     this.iceConnected = false;
     this._pendingCandidates = [];
@@ -522,7 +530,8 @@ export class CallManager {
       const oldPc = this.pc;
       try { oldPc.close(); } catch {}
 
-      this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "relay" });
+      const iceServers = await getIceServers();
+      this.pc = new RTCPeerConnection({ iceServers, iceTransportPolicy: "relay" });
       this.remoteStream = new MediaStream();
       this._pendingCandidates = [];
       this.onStateChange({ remoteStream: this.remoteStream, usingRelay: true });
