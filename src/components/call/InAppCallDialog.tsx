@@ -181,12 +181,27 @@ export default function InAppCallDialog({
     audioEl.volume = 1;
     audioEl.muted = false;
     
-    // Method 1: setSinkId (Chrome/Edge desktop — best support)
+    // Method 1: setSinkId (Chrome/Edge — best desktop support)
     if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+      // "default" = speaker/loudspeaker, "communications" = earpiece
       const sinkId = newState ? "default" : "communications";
       (audioEl as any).setSinkId(sinkId).catch(() => {
-        // Fallback to default if "communications" is not available
-        if (!newState) (audioEl as any).setSinkId("default").catch(() => {});
+        // If "communications" isn't available, try enumerating devices
+        navigator.mediaDevices?.enumerateDevices?.().then(devices => {
+          const earpiece = devices.find(d =>
+            d.kind === "audiooutput" &&
+            (d.label.toLowerCase().includes("earpiece") ||
+             d.label.toLowerCase().includes("écouteur") ||
+             d.label.toLowerCase().includes("receiver"))
+          );
+          const speaker = devices.find(d =>
+            d.kind === "audiooutput" &&
+            (d.label.toLowerCase().includes("speaker") ||
+             d.label.toLowerCase().includes("haut-parleur"))
+          );
+          const target = newState ? (speaker || { deviceId: "default" }) : (earpiece || { deviceId: "default" });
+          (audioEl as any).setSinkId(target.deviceId).catch(() => {});
+        }).catch(() => {});
       });
     }
     
@@ -198,13 +213,13 @@ export default function InAppCallDialog({
       } catch {}
     }
     
-    // Method 3: AudioContext setSinkId (newer browsers)
+    // Method 3: WebKit audio routing (iOS Safari specific)
     try {
-      const audioCtx = new AudioContext();
-      if ((audioCtx as any).setSinkId) {
-        (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      if ((window as any).webkit?.messageHandlers?.audioSession) {
+        (window as any).webkit.messageHandlers.audioSession.postMessage({
+          type: newState ? "speaker" : "receiver",
+        });
       }
-      audioCtx.close();
     } catch {}
   }, [speakerOn]);
 
