@@ -390,6 +390,76 @@ export default function CommNearbySection() {
               loading="lazy"
               style={{ minHeight: 400 }}
             />
+            {/* Radar sweep overlay */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="relative" style={{ width: "70%", paddingBottom: "70%" }}>
+                {/* Concentric rings */}
+                {[0.3, 0.6, 1].map((scale, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      inset: `${(1 - scale) * 50}%`,
+                      border: `1px solid hsl(var(--hud-cyan) / ${0.08 + i * 0.04})`,
+                    }}
+                  />
+                ))}
+                {/* Sweep line */}
+                <motion.div
+                  className="absolute rounded-full"
+                  style={{
+                    inset: 0,
+                    background: `conic-gradient(from 0deg, transparent 0deg, hsl(var(--hud-cyan) / 0.08) 30deg, transparent 60deg)`,
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                />
+                {/* Center dot */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full" style={{
+                  background: "hsl(var(--hud-cyan))",
+                  boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.5)",
+                }} />
+                {/* Nearby dots (fake positions from results) */}
+                {filteredUsers.slice(0, 8).map((u, idx) => {
+                  const angle = (idx / Math.max(filteredUsers.length, 1)) * Math.PI * 2;
+                  const dist = 20 + (u.distance_km / radius) * 25;
+                  return (
+                    <motion.div
+                      key={u.user_id}
+                      className="absolute w-2 h-2 rounded-full"
+                      style={{
+                        background: "hsl(var(--hud-success))",
+                        boxShadow: "0 0 6px hsl(var(--hud-success) / 0.5)",
+                        top: `${50 - Math.cos(angle) * dist}%`,
+                        left: `${50 + Math.sin(angle) * dist}%`,
+                      }}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: idx * 0.1, duration: 0.3 }}
+                    />
+                  );
+                })}
+                {filteredItems.slice(0, 8).map((item, idx) => {
+                  const angle = (idx / Math.max(filteredItems.length, 1)) * Math.PI * 2 + Math.PI / 4;
+                  const dist = 15 + Math.random() * 30;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      className="absolute w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background: getCategoryColor(item.category),
+                        boxShadow: `0 0 4px ${getCategoryColor(item.category)}`,
+                        top: `${50 - Math.cos(angle) * dist}%`,
+                        left: `${50 + Math.sin(angle) * dist}%`,
+                      }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.3 + idx * 0.08, duration: 0.2 }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
             {/* Floating results count */}
             <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
               {filteredUsers.length > 0 && (
@@ -405,19 +475,23 @@ export default function CommNearbySection() {
                 </div>
               )}
             </div>
-            {/* Floating radar pulse */}
-            {scanning && (
-              <div className="absolute bottom-4 right-4">
-                <motion.div className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)" }}>
-                  <Radar className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
-                  <motion.div className="absolute inset-0 rounded-full"
-                    style={{ border: "2px solid hsl(var(--hud-cyan))" }}
-                    initial={{ scale: 1, opacity: 0.6 }} animate={{ scale: 2, opacity: 0 }}
-                    transition={{ duration: 1.2, repeat: Infinity }} />
-                </motion.div>
-              </div>
-            )}
+            {/* Floating scan button */}
+            <div className="absolute bottom-4 right-4">
+              <motion.button
+                onClick={() => { loadNearby(); haptic("medium"); }}
+                className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md"
+                style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)", boxShadow: "0 4px 20px hsl(0 0% 0% / 0.3)" }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Radar className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </motion.button>
+              {scanning && (
+                <motion.div className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{ border: "2px solid hsl(var(--hud-cyan))" }}
+                  initial={{ scale: 1, opacity: 0.6 }} animate={{ scale: 2.5, opacity: 0 }}
+                  transition={{ duration: 1.2, repeat: Infinity }} />
+              )}
+            </div>
           </div>
         ) : viewMode === "list" || !lat || !lng ? (
           <>
