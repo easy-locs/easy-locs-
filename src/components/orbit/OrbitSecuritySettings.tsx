@@ -101,6 +101,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
   };
 
   return (
+    <div className="flex-1 overflow-y-auto p-4" style={{ background: "hsl(var(--hud-bg))" }}>
     <div className="space-y-1 max-w-lg mx-auto pb-24">
       {/* ═══ Header ═══ */}
       <div className="flex items-center gap-3 pb-4">
