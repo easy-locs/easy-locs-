@@ -225,7 +225,7 @@ export default function OrbitAccountSection() {
               <p className="text-sm font-medium text-foreground">This Device</p>
               <p className="text-[11px] text-muted-foreground">Active now</p>
             </div>
-            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <div className="w-2 h-2 rounded-full bg-primary" />
           </div>
           <p className="text-xs text-muted-foreground text-center py-4">
             No other devices connected
