@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
 import ServiceFormCategorySelector from "./ServiceFormCategorySelector";
+import ServiceFormAvailabilityCalendar from "./ServiceFormAvailabilityCalendar";
 import { UserCircle } from "lucide-react";
 
 export interface ServiceFormData {
