@@ -24,6 +24,7 @@ import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
 import SmartSuggestions from "@/components/explore/SmartSuggestions";
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import ExploreBreadcrumbs from "@/components/explore/ExploreBreadcrumbs";
+import ExploreAdvancedFilters, { type AdvancedFilters, defaultAdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
@@ -71,6 +72,7 @@ export default function Explore() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [geoApplied, setGeoApplied] = useState(false);
   const geocodingRef = useRef(false);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
 
   // Geo-detection passive
   useEffect(() => {
@@ -236,6 +238,13 @@ export default function Explore() {
     return false;
   }, [activeGroup, activeSubcategory]);
 
+  const matchAdvanced = useCallback((item: any) => {
+    const price = item.price || item.price_per_night || 0;
+    if (advancedFilters.priceMin > 0 && price < advancedFilters.priceMin) return false;
+    if (advancedFilters.priceMax < 50000 && price > advancedFilters.priceMax) return false;
+    return true;
+  }, [advancedFilters]);
+
   const unfilteredItems = useMemo(() => {
     const items: Array<any & { _type: string }> = [];
     seasonal.filter(l => matchText(l) && matchLocation(l)).forEach(l => items.push({ ...l, _type: "seasonal" }));
@@ -244,7 +253,7 @@ export default function Explore() {
     return items;
   }, [seasonal, realEstate, services, matchText, matchLocation]);
 
-  const allItems = useMemo(() => unfilteredItems.filter(matchCategory), [unfilteredItems, matchCategory]);
+  const allItems = useMemo(() => unfilteredItems.filter(matchCategory).filter(matchAdvanced), [unfilteredItems, matchCategory, matchAdvanced]);
 
   // Count items per group for category bar badges
   const groupCounts = useMemo(() => {
@@ -414,6 +423,13 @@ export default function Explore() {
           onClearLocation={() => setLocationQuery("")}
         />
 
+        {/* Advanced Filters */}
+        <ExploreAdvancedFilters
+          filters={advancedFilters}
+          onChange={setAdvancedFilters}
+          onReset={() => setAdvancedFilters(defaultAdvancedFilters)}
+          activeGroup={activeGroup}
+        />
         {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
