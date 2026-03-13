@@ -295,7 +295,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchOrgId, fetchUserType]);
 
-  // Auto-refresh interval now handled by useSubscriptionLoader
+  // Keep session alive — refresh every 10 minutes to prevent early logout
+  useEffect(() => {
+    const interval = setInterval(() => {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (s) supabase.auth.refreshSession();
+      });
+    }, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const emailVerified = !!user?.email_confirmed_at;
 
