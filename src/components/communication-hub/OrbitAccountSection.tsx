@@ -1,25 +1,27 @@
 /**
  * OrbitAccountSection — "YOU" section inside Orbit hub.
- * Signal/WhatsApp-level personal account control panel.
- * Fully synchronized with OrbitSecuritySettings.
+ * Signal/WhatsApp-level personal account control panel with profile editing.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
-  User, Shield, Lock, Eye, Fingerprint, Smartphone, Monitor,
-  Copy, Check, QrCode, ChevronRight, Settings, Key, LogOut,
-  Bell, MapPin, Globe, ShieldCheck, Clock, Database, HardDrive,
-  MessageSquare, Camera, Palette, HelpCircle, Info, Heart
+  User, Shield, Lock, Eye, Fingerprint, Smartphone,
+  Copy, Check, QrCode, ChevronRight, Key, LogOut,
+  Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
+import { supabase } from "@/integrations/supabase/client";
 
-type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "appearance";
+type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile";
 
 export default function OrbitAccountSection() {
   const { user, signOut } = useAuth();
@@ -28,7 +30,14 @@ export default function OrbitAccountSection() {
   const [copied, setCopied] = useState(false);
   const [subPage, setSubPage] = useState<SubPage>("main");
 
-  // Privacy states (synced)
+  // Profile edit states
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.user_metadata?.display_name || "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || "");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Privacy states
   const [readReceipts, setReadReceipts] = useState(true);
   const [onlineStatus, setOnlineStatus] = useState(true);
   const [typingIndicators, setTypingIndicators] = useState(true);
@@ -51,6 +60,7 @@ export default function OrbitAccountSection() {
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
   const displayEmail = user?.email || "—";
+  const initials = (displayName || displayEmail).substring(0, 2).toUpperCase();
 
   const copyId = useCallback(() => {
     navigator.clipboard.writeText(userId);
@@ -61,6 +71,70 @@ export default function OrbitAccountSection() {
   }, [userId]);
 
   const goBack = () => setSubPage("main");
+
+  // Upload avatar photo
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Photo must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `avatars/${user.id}/avatar.${ext}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("org-files")
+        .upload(path, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("org-files")
+        .getPublicUrl(path);
+      
+      setAvatarUrl(publicUrl);
+      toast.success("Photo uploaded!");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Save profile changes
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          full_name: displayName,
+          display_name: displayName,
+          avatar_url: avatarUrl,
+        }
+      });
+      if (error) throw error;
+
+      // Also update profiles table if it exists
+      await supabase.from("profiles").update({
+        full_name: displayName,
+        avatar_url: avatarUrl,
+      }).eq("id", user.id);
+
+      haptic("medium");
+      toast.success("Profile updated!");
+      setSubPage("main");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // ── Sub-page header ──
   const SubHeader = ({ title, icon: Icon }: { title: string; icon: any }) => (
@@ -84,35 +158,97 @@ export default function OrbitAccountSection() {
     </div>
   );
 
+  // ═══ Edit Profile sub-page ═══
+  if (subPage === "edit-profile") {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Edit Profile" icon={User} />
+        <div className="flex flex-col items-center mt-6 mb-6">
+          {/* Avatar with camera button */}
+          <div className="relative">
+            <Avatar className="w-24 h-24 border-2 border-primary/20">
+              <AvatarImage src={avatarUrl} alt="Profile" />
+              <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-lg hover:opacity-90 transition-opacity"
+            >
+              {uploading ? (
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">Tap camera to change photo</p>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Display Name</label>
+            <Input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Your name"
+              className="bg-muted/30"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
+            <Input value={displayEmail} disabled className="bg-muted/30 opacity-60" />
+            <p className="text-[10px] text-muted-foreground mt-1">Email cannot be changed here</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Orbit ID</label>
+            <div className="flex items-center gap-2">
+              <Input value={`EL-${shortId}`} disabled className="bg-muted/30 opacity-60 font-mono" />
+              <Button variant="outline" size="icon" onClick={copyId} className="shrink-0">
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleSaveProfile}
+            disabled={saving}
+            className="w-full mt-4"
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // ═══ Privacy sub-page ═══
   if (subPage === "privacy") {
     return (
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Privacy" icon={Eye} />
         <div className="space-y-1 mt-4">
-          <Row label="Last Seen" desc="Show when you were last online">
-            <Switch checked={lastSeen} onCheckedChange={setLastSeen} />
-          </Row>
-          <Row label="Online Status" desc="Show when you're currently online">
-            <Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} />
-          </Row>
-          <Row label="Profile Photo" desc="Who can see your profile photo">
-            <Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} />
-          </Row>
-          <Row label="Read Receipts" desc="Others see when you've read their messages">
-            <Switch checked={readReceipts} onCheckedChange={setReadReceipts} />
-          </Row>
-          <Row label="Typing Indicators" desc="Show when you're typing a message">
-            <Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} />
-          </Row>
-          <Row label="Link Previews" desc="Generate previews for sent links">
-            <Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} />
-          </Row>
+          <Row label="Last Seen" desc="Show when you were last online"><Switch checked={lastSeen} onCheckedChange={setLastSeen} /></Row>
+          <Row label="Online Status" desc="Show when you're currently online"><Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} /></Row>
+          <Row label="Profile Photo" desc="Who can see your profile photo"><Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} /></Row>
+          <Row label="Read Receipts" desc="Others see when you've read their messages"><Switch checked={readReceipts} onCheckedChange={setReadReceipts} /></Row>
+          <Row label="Typing Indicators" desc="Show when you're typing a message"><Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} /></Row>
+          <Row label="Link Previews" desc="Generate previews for sent links"><Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} /></Row>
         </div>
         <Separator className="my-4" />
-        <p className="text-[10px] text-muted-foreground/50 text-center">
-          Changes apply to all conversations
-        </p>
+        <p className="text-[10px] text-muted-foreground/50 text-center">Changes apply to all conversations</p>
       </div>
     );
   }
@@ -123,28 +259,16 @@ export default function OrbitAccountSection() {
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Security" icon={Shield} />
         <div className="mt-4 space-y-4">
-          {/* E2E Banner */}
-          <div className="rounded-xl p-4" style={{
-            background: "hsl(var(--primary) / 0.05)",
-            border: "1px solid hsl(var(--primary) / 0.15)",
-          }}>
+          <div className="rounded-xl p-4" style={{ background: "hsl(var(--primary) / 0.05)", border: "1px solid hsl(var(--primary) / 0.15)" }}>
             <div className="flex items-center gap-2 mb-2">
               <Lock className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
-              <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
-                End-to-End Encryption Active
-              </span>
+              <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>End-to-End Encryption Active</span>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Messages, calls, and shared files are encrypted on your device before sending.
-            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">Messages, calls, and shared files are encrypted on your device before sending.</p>
           </div>
-
-          <MenuItem icon={Fingerprint} label="Two-Factor Authentication" desc="Add extra security to your account"
-            onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
-          <MenuItem icon={Key} label="Screen Lock" desc="Require biometrics or PIN to open Orbit"
-            onClick={() => {}} color="hsl(var(--accent))" />
-          <MenuItem icon={QrCode} label="Safety Number" desc="Verify encryption with contacts"
-            onClick={() => {}} color="hsl(var(--primary))" />
+          <MenuItem icon={Fingerprint} label="Two-Factor Authentication" desc="Add extra security" onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
+          <MenuItem icon={Key} label="Screen Lock" desc="Require biometrics or PIN" onClick={() => {}} color="hsl(var(--accent))" />
+          <MenuItem icon={QrCode} label="Safety Number" desc="Verify encryption with contacts" onClick={() => {}} color="hsl(var(--primary))" />
         </div>
       </div>
     );
@@ -156,25 +280,13 @@ export default function OrbitAccountSection() {
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Notifications" icon={Bell} />
         <div className="space-y-1 mt-4">
-          <Row label="Message Notifications" desc="Get notified for new messages">
-            <Switch checked={notifMessages} onCheckedChange={setNotifMessages} />
-          </Row>
-          <Row label="Show Preview" desc="Display message content in notification">
-            <Switch checked={notifPreview} onCheckedChange={setNotifPreview} />
-          </Row>
-          <Row label="Sound" desc="Play sound for notifications">
-            <Switch checked={notifSound} onCheckedChange={setNotifSound} />
-          </Row>
-          <Row label="Vibration" desc="Vibrate for notifications">
-            <Switch checked={notifVibrate} onCheckedChange={setNotifVibrate} />
-          </Row>
+          <Row label="Message Notifications" desc="Get notified for new messages"><Switch checked={notifMessages} onCheckedChange={setNotifMessages} /></Row>
+          <Row label="Show Preview" desc="Display message content"><Switch checked={notifPreview} onCheckedChange={setNotifPreview} /></Row>
+          <Row label="Sound" desc="Play sound for notifications"><Switch checked={notifSound} onCheckedChange={setNotifSound} /></Row>
+          <Row label="Vibration" desc="Vibrate for notifications"><Switch checked={notifVibrate} onCheckedChange={setNotifVibrate} /></Row>
           <Separator className="my-3" />
-          <Row label="Group Notifications" desc="Get notified for group messages">
-            <Switch checked={notifGroups} onCheckedChange={setNotifGroups} />
-          </Row>
-          <Row label="Call Notifications" desc="Ring for incoming calls">
-            <Switch checked={notifCalls} onCheckedChange={setNotifCalls} />
-          </Row>
+          <Row label="Group Notifications" desc="Get notified for group messages"><Switch checked={notifGroups} onCheckedChange={setNotifGroups} /></Row>
+          <Row label="Call Notifications" desc="Ring for incoming calls"><Switch checked={notifCalls} onCheckedChange={setNotifCalls} /></Row>
         </div>
       </div>
     );
@@ -186,26 +298,18 @@ export default function OrbitAccountSection() {
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Storage & Data" icon={Database} />
         <div className="space-y-1 mt-4">
-          <Row label="Auto-Download Media" desc="Download photos and videos automatically">
-            <Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} />
-          </Row>
+          <Row label="Auto-Download Media" desc="Download photos and videos automatically"><Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} /></Row>
           <Separator className="my-3" />
           <p className="text-xs font-medium text-foreground mb-2">Disappearing Messages</p>
           <div className="grid grid-cols-4 gap-2">
             {["off", "24h", "7d", "30d"].map(v => (
               <button key={v} onClick={() => setAutoDeletePeriod(v)}
-                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
-                  autoDeletePeriod === v
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}>
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${autoDeletePeriod === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 {v === "off" ? "Off" : v}
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
-            New messages will auto-delete after the selected period
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-2">New messages will auto-delete after the selected period</p>
         </div>
       </div>
     );
@@ -227,9 +331,7 @@ export default function OrbitAccountSection() {
             </div>
             <div className="w-2 h-2 rounded-full bg-primary" />
           </div>
-          <p className="text-xs text-muted-foreground text-center py-4">
-            No other devices connected
-          </p>
+          <p className="text-xs text-muted-foreground text-center py-4">No other devices connected</p>
         </div>
       </div>
     );
@@ -241,17 +343,21 @@ export default function OrbitAccountSection() {
       {/* Profile header */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center py-8 px-4">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3 relative"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--accent) / 0.2), hsl(var(--primary) / 0.15))",
-            border: "2px solid hsl(var(--accent) / 0.3)",
-          }}>
-          <User className="h-8 w-8" style={{ color: "hsl(var(--accent))" }} />
+        <div className="relative">
+          <Avatar className="w-20 h-20 border-2 border-accent/30">
+            <AvatarImage src={avatarUrl} alt="Profile" />
+            <AvatarFallback className="text-2xl font-bold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           <div className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-2"
             style={{ background: "hsl(var(--primary))", borderColor: "hsl(var(--background))" }} />
         </div>
 
-        <p className="text-base font-semibold text-foreground">{displayEmail}</p>
+        <p className="text-base font-semibold text-foreground mt-3">
+          {displayName || displayEmail}
+        </p>
+        {displayName && <p className="text-xs text-muted-foreground">{displayEmail}</p>}
         <div className="flex items-center gap-1.5 mt-1">
           <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full"
             style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
@@ -264,17 +370,15 @@ export default function OrbitAccountSection() {
 
         <div className="flex items-center gap-1.5 mt-3">
           <ShieldCheck className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
-          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>
-            End-to-End Encrypted
-          </span>
+          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--primary))" }}>End-to-End Encrypted</span>
         </div>
       </motion.div>
 
       <Separator className="mx-4" />
 
-      {/* Menu items — Signal/WhatsApp style */}
+      {/* Menu items */}
       <div className="px-3 py-3 space-y-0.5">
-        <MenuItem icon={User} label="My Profile" desc="Name, phone, photo" onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
+        <MenuItem icon={Pencil} label="Edit Profile" desc="Name, photo, identity" onClick={() => setSubPage("edit-profile")} color="hsl(var(--primary))" />
         <MenuItem icon={QrCode} label="Account ID" desc={`EL-${shortId}`} onClick={copyId} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
