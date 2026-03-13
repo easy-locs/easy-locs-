@@ -483,6 +483,7 @@ export default function OrbitRadar() {
           </div>
         </div>
       </div>
+      )}
 
       {/* ═══ Results List ═══ */}
       <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3">
