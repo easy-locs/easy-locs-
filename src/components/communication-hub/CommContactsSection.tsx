@@ -50,12 +50,14 @@ function getInitials(name: string): string {
 export default function CommContactsSection() {
   const { user, orgId } = useAuth();
   const navigate = useNavigate();
+  const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
 
