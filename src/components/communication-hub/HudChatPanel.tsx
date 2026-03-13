@@ -95,6 +95,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const fileInputRef = useRef<HTMLInputElement>(null);
   const voiceRecorder = useVoiceRecorder();
 
+  const resolveAuthUserId = useCallback(async (): Promise<string | null> => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user?.id) {
+      toast.error("Session expirée. Reconnectez-vous pour envoyer un message.");
+      return null;
+    }
+    return data.user.id;
+  }, []);
+
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
     if (!orgId || !thread) return;
