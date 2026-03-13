@@ -241,6 +241,20 @@ export function useOrbitDashboard(): DashboardData {
       });
     }
 
+    // ── Missed calls ──
+    if ((s.missedCalls ?? 0) > 0) {
+      const n = s.missedCalls!;
+      actions.push({
+        id: "missed-calls",
+        icon: "📞",
+        label: `${n} appel${n > 1 ? "s" : ""} manqué${n > 1 ? "s" : ""}`,
+        description: "Rappeler ou consulter l'historique",
+        link: "/dashboard/communication?section=calls",
+        priority: 4,
+        type: "urgent",
+      });
+    }
+
     // ── Today's events ──
     if (isLandlord && (s.todayCheckIns ?? 0) > 0) {
       const n = s.todayCheckIns!;
