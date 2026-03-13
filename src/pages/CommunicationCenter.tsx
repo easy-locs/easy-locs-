@@ -128,11 +128,15 @@ const CommunicationCenter = () => {
       case "nearby": return <CommNearbySection />;
       case "meetings":
       case "files":
-      case "settings":
         return <CommPlaceholderSection section={activeSection} />;
+      case "settings":
+        return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
       default: return null;
     }
   };
+
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return (
     <DashboardLayout>
