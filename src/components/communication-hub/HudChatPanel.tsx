@@ -429,6 +429,41 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Call buttons */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                disabled={isInCall || isStartingCall}
+                onClick={() => {
+                  haptic("medium");
+                  startCall({
+                    orgId: thread.orgId || orgId || "",
+                    threadId: thread.threadId,
+                    contextType: thread.conversationType || "listing",
+                    contextId: thread.contextId,
+                    contextLabel: thread.name,
+                    peerName: thread.name || "Contact",
+                    isVideo: false,
+                  });
+                }}>
+                <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                disabled={isInCall || isStartingCall}
+                onClick={() => {
+                  haptic("medium");
+                  startCall({
+                    orgId: thread.orgId || orgId || "",
+                    threadId: thread.threadId,
+                    contextType: thread.conversationType || "listing",
+                    contextId: thread.contextId,
+                    contextLabel: thread.name,
+                    peerName: thread.name || "Contact",
+                    isVideo: true,
+                  });
+                }}>
+                <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </Button>
+            </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <Select value={convStatus} onValueChange={updateConversationStatus}>
                 <SelectTrigger className="h-8 w-auto text-xs gap-1" style={{
