@@ -10,6 +10,7 @@ import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
+import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
@@ -212,6 +213,7 @@ const App = () => (
           <CallProvider>
            <OrbitSessionGuard />
            <RealtimeMessageToast />
+           <UpdateNotification />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>

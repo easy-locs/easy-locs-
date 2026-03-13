@@ -697,54 +697,59 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         )}
 
         {/* ══ Composer ══ */}
-        <div className="p-2.5 sm:p-3 flex gap-1.5 sm:gap-2 items-center safe-area-pb" style={{
+        {/* ══ Composer ══ */}
+        <div className="px-3 py-2 sm:px-4 sm:py-2.5 safe-area-pb" style={{
           borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
-          background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.5), hsl(var(--hud-bg)))",
+          background: "hsl(var(--hud-surface) / 0.3)",
         }}>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-10 h-10 px-1.5 shrink-0" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
-              <span className="text-sm">{getCategoryIcon(selectedCategory)}</span>
-            </SelectTrigger>
-            <SelectContent>
-              {MESSAGE_CATEGORIES.map(c => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
-            </SelectContent>
-          </Select>
-          <div className="flex-1 min-w-0">
-            <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a secure message..." className="h-10 text-sm"
-              style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }}
-            />
-          </div>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-            title="Attach file or photo">
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
-          </Button>
-          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]"
-            title="Send photo from camera"
-            onClick={() => {
-              const inp = document.createElement("input");
-              inp.type = "file";
-              inp.accept = "image/*";
-              inp.capture = "environment";
-              inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
-              inp.click();
-            }}>
-            <Camera className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
-          </Button>
-          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
-            <MapPin className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
-          </Button>
-          <div className="hidden sm:block">
-            <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+          {/* Attachment row */}
+          <div className="flex items-center gap-1 mb-1.5">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-8 h-8 px-1 shrink-0 rounded-lg" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.12)" }}>
+                <span className="text-xs">{getCategoryIcon(selectedCategory)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                {MESSAGE_CATEGORIES.map(c => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
+              </SelectContent>
+            </Select>
+            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+              title="Attach file">
+              {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+            </Button>
+            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]"
+              title="Camera"
+              onClick={() => {
+                const inp = document.createElement("input");
+                inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
+                inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
+                inp.click();
+              }}>
+              <Camera className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
+            </Button>
+            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
+              <MapPin className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
+            </Button>
+            <div className="hidden sm:block ml-auto">
+              <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+            </div>
           </div>
-          <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10 px-3.5" style={{
-            background: newMessage.trim() ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-surface))",
-            border: `1px solid ${newMessage.trim() ? "hsl(var(--hud-cyan) / 0.4)" : "hsl(var(--hud-border) / 0.15)"}`,
-            color: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
-          }}>
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
+          {/* Input + Send row */}
+          <div className="flex gap-2 items-center">
+            <div className="flex-1 min-w-0">
+              <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a message…" className="h-10 text-sm rounded-xl"
+                style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }}
+              />
+            </div>
+            <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10 w-10 rounded-xl p-0" style={{
+              background: newMessage.trim() ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface))",
+              border: `1px solid ${newMessage.trim() ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.12)"}`,
+              color: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+            }}>
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </div>
 

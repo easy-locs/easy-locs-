@@ -1,6 +1,6 @@
 /**
  * OrbitSmartHub — Orbit command center with dynamic rotating menu.
- * Centralizes all communication exchanges inside Orbit.
+ * Uses HUD cyan tokens for the dark premium aesthetic.
  */
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -54,155 +54,176 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
   const ORBIT_SIZE = 272;
 
   return (
-    <div className="rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm p-4 sm:p-6 overflow-hidden">
-      <div className="relative mx-auto" style={{ width: ORBIT_SIZE, height: ORBIT_SIZE }}>
-        {/* Background rings */}
-        <motion.div
-          className="absolute rounded-full border"
-          style={{
-            width: ORBIT_RADIUS * 2 + 46,
-            height: ORBIT_RADIUS * 2 + 46,
-            top: CENTER - ORBIT_RADIUS - 23,
-            left: CENTER - ORBIT_RADIUS - 23,
-            borderColor: "hsl(var(--primary) / 0.25)",
-          }}
-          animate={reduceMotion ? undefined : { rotate: 360 }}
-          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-        />
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "hsl(var(--hud-bg))",
+        border: "1px solid hsl(var(--hud-border) / 0.15)",
+      }}
+    >
+      <div className="p-4 sm:p-6">
+        <div className="relative mx-auto" style={{ width: ORBIT_SIZE, height: ORBIT_SIZE }}>
+          {/* Background rings */}
+          <motion.div
+            className="absolute rounded-full"
+            style={{
+              width: ORBIT_RADIUS * 2 + 46,
+              height: ORBIT_RADIUS * 2 + 46,
+              top: CENTER - ORBIT_RADIUS - 23,
+              left: CENTER - ORBIT_RADIUS - 23,
+              border: "1px solid hsl(var(--hud-cyan) / 0.15)",
+            }}
+            animate={reduceMotion ? undefined : { rotate: 360 }}
+            transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
+          />
 
-        <div
-          className="absolute rounded-full border"
-          style={{
-            width: ORBIT_RADIUS * 2,
-            height: ORBIT_RADIUS * 2,
-            top: CENTER - ORBIT_RADIUS,
-            left: CENTER - ORBIT_RADIUS,
-            borderColor: "hsl(var(--primary) / 0.18)",
-          }}
-        />
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: ORBIT_RADIUS * 2,
+              height: ORBIT_RADIUS * 2,
+              top: CENTER - ORBIT_RADIUS,
+              left: CENTER - ORBIT_RADIUS,
+              border: "1px solid hsl(var(--hud-cyan) / 0.1)",
+            }}
+          />
 
-        <motion.div
-          className="absolute rounded-full"
-          style={{
-            width: ORBIT_RADIUS * 2 - 10,
-            height: ORBIT_RADIUS * 2 - 10,
-            top: CENTER - ORBIT_RADIUS + 5,
-            left: CENTER - ORBIT_RADIUS + 5,
-            background:
-              "conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.1) 16%, transparent 32%)",
-          }}
-          animate={reduceMotion ? undefined : { rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        />
+          <motion.div
+            className="absolute rounded-full"
+            style={{
+              width: ORBIT_RADIUS * 2 - 10,
+              height: ORBIT_RADIUS * 2 - 10,
+              top: CENTER - ORBIT_RADIUS + 5,
+              left: CENTER - ORBIT_RADIUS + 5,
+              background:
+                "conic-gradient(from 0deg, transparent 0%, hsl(var(--hud-cyan) / 0.08) 16%, transparent 32%)",
+            }}
+            animate={reduceMotion ? undefined : { rotate: 360 }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          />
 
-        {/* Rotating dynamic menu */}
-        <motion.div
-          className="absolute inset-0"
-          animate={reduceMotion ? undefined : { rotate: 360 }}
-          transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
-        >
-          {ACTIONS.map((action) => {
-            const rad = (action.angle * Math.PI) / 180;
-            const x = CENTER + ORBIT_RADIUS * Math.cos(rad) - 23;
-            const y = CENTER + ORBIT_RADIUS * Math.sin(rad) - 23;
+          {/* Rotating dynamic menu */}
+          <motion.div
+            className="absolute inset-0"
+            animate={reduceMotion ? undefined : { rotate: 360 }}
+            transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+          >
+            {ACTIONS.map((action) => {
+              const rad = (action.angle * Math.PI) / 180;
+              const x = CENTER + ORBIT_RADIUS * Math.cos(rad) - 23;
+              const y = CENTER + ORBIT_RADIUS * Math.sin(rad) - 23;
 
-            return (
-              <motion.button
-                key={action.label}
-                className="absolute w-[46px] h-[46px] rounded-2xl flex items-center justify-center border transition-all cursor-pointer group"
-                style={{
-                  top: y,
-                  left: x,
-                  borderColor: "hsl(var(--primary) / 0.35)",
-                  background: "hsl(var(--card) / 0.92)",
-                  boxShadow: "0 0 16px hsl(var(--primary) / 0.16)",
-                }}
-                whileHover={{ scale: 1.08, borderColor: "hsl(var(--primary) / 0.72)" }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  haptic("light");
-                  navigate(action.path);
-                }}
-                title={action.label}
-              >
-                <motion.div
-                  className="flex flex-col items-center"
-                  animate={reduceMotion ? undefined : { rotate: -360 }}
-                  transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+              return (
+                <motion.button
+                  key={action.label}
+                  className="absolute w-[46px] h-[46px] rounded-2xl flex items-center justify-center transition-all cursor-pointer group"
+                  style={{
+                    top: y,
+                    left: x,
+                    border: "1px solid hsl(var(--hud-cyan) / 0.25)",
+                    background: "hsl(var(--hud-surface) / 0.9)",
+                    boxShadow: "0 0 16px hsl(var(--hud-cyan) / 0.1)",
+                  }}
+                  whileHover={{ scale: 1.08, borderColor: "hsl(var(--hud-cyan) / 0.6)" }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => {
+                    haptic("light");
+                    navigate(action.path);
+                  }}
+                  title={action.label}
                 >
-                  <action.icon className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
-                  <span className="absolute -bottom-[18px] text-[8px] font-semibold tracking-wide text-muted-foreground group-hover:text-primary whitespace-nowrap transition-colors">
-                    {action.label}
-                  </span>
-                </motion.div>
-              </motion.button>
+                  <motion.div
+                    className="flex flex-col items-center"
+                    animate={reduceMotion ? undefined : { rotate: -360 }}
+                    transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+                  >
+                    <action.icon className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+                    <span
+                      className="absolute -bottom-[18px] text-[8px] font-semibold tracking-wide whitespace-nowrap transition-colors"
+                      style={{ color: "hsl(var(--hud-text-dim))" }}
+                    >
+                      {action.label}
+                    </span>
+                  </motion.div>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {/* Center core */}
+          <div
+            className="absolute flex flex-col items-center justify-center rounded-full"
+            style={{
+              width: 124,
+              height: 124,
+              top: CENTER - 62,
+              left: CENTER - 62,
+              border: "1px solid hsl(var(--hud-cyan) / 0.2)",
+              background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.12) 0%, transparent 72%)",
+              boxShadow: "0 0 28px hsl(var(--hud-cyan) / 0.15)",
+            }}
+          >
+            <div className="flex items-center gap-1 mb-0.5">
+              <Building className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-xl font-bold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
+                {totalProperties}
+              </span>
+            </div>
+            <span className="text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              {t("common.properties") || "Properties"}
+            </span>
+            <div className="flex items-center gap-1 mt-1.5">
+              <MapPin className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }} />
+              <span className="text-xs font-semibold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
+                {totalCountries}
+              </span>
+              <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {t("page.dashboard.countries_short") || "countries"}
+              </span>
+            </div>
+          </div>
+
+          {/* orbit nodes */}
+          {[20, 74, 128, 182, 236, 290, 344].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const px = CENTER + ORBIT_RADIUS * Math.cos(rad) - 2;
+            const py = CENTER + ORBIT_RADIUS * Math.sin(rad) - 2;
+            return (
+              <motion.div
+                key={angle}
+                className="absolute w-1.5 h-1.5 rounded-full"
+                style={{ top: py, left: px, background: "hsl(var(--hud-cyan) / 0.5)" }}
+                animate={{ opacity: [0.2, 0.9, 0.2] }}
+                transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.4 }}
+              />
             );
           })}
-        </motion.div>
-
-        {/* Center core */}
-        <div
-          className="absolute flex flex-col items-center justify-center rounded-full border"
-          style={{
-            width: 124,
-            height: 124,
-            top: CENTER - 62,
-            left: CENTER - 62,
-            borderColor: "hsl(var(--primary) / 0.35)",
-            background: "radial-gradient(circle, hsl(var(--primary) / 0.16) 0%, transparent 72%)",
-            boxShadow: "0 0 28px hsl(var(--primary) / 0.25)",
-          }}
-        >
-          <div className="flex items-center gap-1 mb-0.5">
-            <Building className="h-3.5 w-3.5 text-primary" />
-            <span className="text-xl font-bold text-foreground tabular-nums">{totalProperties}</span>
-          </div>
-          <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
-            {t("common.properties") || "Properties"}
-          </span>
-          <div className="flex items-center gap-1 mt-1.5">
-            <MapPin className="h-3 w-3 text-primary/80" />
-            <span className="text-xs font-semibold text-foreground tabular-nums">{totalCountries}</span>
-            <span className="text-[9px] text-muted-foreground">
-              {t("page.dashboard.countries_short") || "countries"}
-            </span>
-          </div>
         </div>
-
-        {/* orbit nodes */}
-        {[20, 74, 128, 182, 236, 290, 344].map((angle, i) => {
-          const rad = (angle * Math.PI) / 180;
-          const px = CENTER + ORBIT_RADIUS * Math.cos(rad) - 2;
-          const py = CENTER + ORBIT_RADIUS * Math.sin(rad) - 2;
-          return (
-            <motion.div
-              key={angle}
-              className="absolute w-1.5 h-1.5 rounded-full"
-              style={{ top: py, left: px, background: "hsl(var(--primary) / 0.7)" }}
-              animate={{ opacity: [0.2, 0.9, 0.2] }}
-              transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.4 }}
-            />
-          );
-        })}
       </div>
 
       {/* Country chips */}
       {propertiesByCountry.length > 0 && (
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
+        <div
+          className="px-4 sm:px-6 pb-4 sm:pb-6 flex flex-wrap justify-center gap-2"
+        >
           {propertiesByCountry.slice(0, 5).map((c) => (
             <motion.button
               key={c.code}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-muted/30 transition-all text-xs cursor-pointer hover:bg-primary/5"
-              style={{ borderColor: "hsl(var(--border) / 0.5)" }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer"
+              style={{
+                background: "hsl(var(--hud-surface))",
+                border: "1px solid hsl(var(--hud-border) / 0.1)",
+                color: "hsl(var(--hud-text))",
+              }}
               onClick={() => {
                 haptic("light");
                 navigate(`/dashboard/country/${c.code.toLowerCase()}`);
               }}
             >
               <span className="text-sm">{c.flag}</span>
-              <span className="font-medium text-foreground">{c.count}</span>
+              <span className="font-medium">{c.count}</span>
             </motion.button>
           ))}
         </div>
