@@ -1,11 +1,14 @@
 /**
  * QRContactCard — Generate & scan personal QR codes to add contacts quickly.
- * Uses real QR code generation (qrcode lib) and BarcodeDetector API for scanning.
+ * Uses real QR code generation (qrcode lib) and multiple scanning strategies:
+ * 1. BarcodeDetector API (Chrome/Edge/Android)
+ * 2. Canvas frame capture + manual URL input fallback (Safari/iOS)
  */
 import { useState, useCallback, useRef, useEffect } from "react";
-import { QrCode, ScanLine, Copy, Share2, Check, X, Camera } from "lucide-react";
+import { QrCode, ScanLine, Copy, Share2, Check, X, Camera, Link2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -23,12 +26,19 @@ function encodeContactData(data: { userId: string; name: string; email?: string;
   return JSON.stringify({ t: "el-contact", v: 1, ...data });
 }
 
+/** Check if BarcodeDetector is available */
+function hasBarcodeDetector(): boolean {
+  return typeof window !== "undefined" && "BarcodeDetector" in window;
+}
+
 export default function QRContactCard({ open, onOpenChange, onContactAdded }: Props) {
   const { user, orgId } = useAuth();
   const [mode, setMode] = useState<"show" | "scan">("show");
   const [copied, setCopied] = useState(false);
   const [adding, setAdding] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [manualLink, setManualLink] = useState("");
+  const [showManualInput, setShowManualInput] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -41,17 +51,18 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     orgId: orgId || undefined,
   }) : "";
 
+  const shareUrl = myData ? `${window.location.origin}/add-contact?data=${btoa(myData)}` : "";
+
   // Generate real QR code
   useEffect(() => {
-    if (!myData || !open) return;
-    const shareUrl = `${window.location.origin}/add-contact?data=${btoa(myData)}`;
+    if (!shareUrl || !open) return;
     QRCodeLib.toDataURL(shareUrl, {
       width: 220,
       margin: 2,
       color: { dark: "#0a0a0f", light: "#ffffff" },
       errorCorrectionLevel: "M",
     }).then(url => setQrDataUrl(url)).catch(() => {});
-  }, [myData, open]);
+  }, [shareUrl, open]);
 
   // Cleanup camera on unmount/close
   useEffect(() => {
@@ -60,6 +71,15 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     }
     return () => stopScanner();
   }, [open, mode]);
+
+  // Reset state when opening
+  useEffect(() => {
+    if (open) {
+      setMode("show");
+      setManualLink("");
+      setShowManualInput(false);
+    }
+  }, [open]);
 
   const stopScanner = useCallback(() => {
     if (scanIntervalRef.current) {
@@ -73,16 +93,14 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
   }, []);
 
   const handleCopy = useCallback(() => {
-    const shareUrl = `${window.location.origin}/add-contact?data=${btoa(myData)}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     haptic("success");
     toast.success("Contact link copied!");
     setTimeout(() => setCopied(false), 2000);
-  }, [myData]);
+  }, [shareUrl]);
 
   const handleShare = useCallback(async () => {
-    const shareUrl = `${window.location.origin}/add-contact?data=${btoa(myData)}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: "Add me as a contact", url: shareUrl });
@@ -91,10 +109,11 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     } else {
       handleCopy();
     }
-  }, [myData, handleCopy]);
+  }, [shareUrl, handleCopy]);
 
   const startScanner = useCallback(async () => {
     setMode("scan");
+    setShowManualInput(false);
     haptic("medium");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -106,9 +125,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
         await videoRef.current.play();
       }
 
-      // Use BarcodeDetector if available, else fallback to manual URL input
-      const hasBarcodeDetector = "BarcodeDetector" in window;
-      if (hasBarcodeDetector) {
+      if (hasBarcodeDetector()) {
         const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
         scanIntervalRef.current = setInterval(async () => {
           if (!videoRef.current || videoRef.current.readyState < 2) return;
@@ -123,8 +140,11 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
           } catch {}
         }, 300);
       } else {
-        // Fallback: use canvas + manual detection attempt
-        toast.info("QR scanner active. If auto-detect fails, paste the contact link.");
+        // No BarcodeDetector — show manual link input after 3 seconds
+        setTimeout(() => {
+          setShowManualInput(true);
+        }, 2000);
+        toast.info("Auto-scan not available on this browser. Use 'Paste Link' below.");
       }
     } catch {
       toast.error("Camera access required to scan QR codes");
@@ -177,11 +197,18 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
       }
       onOpenChange(false);
     } catch {
-      toast.error("Invalid contact QR code");
+      toast.error("Invalid contact QR code or link");
     }
     setAdding(false);
     setMode("show");
   }, [user?.id, orgId, onContactAdded, onOpenChange]);
+
+  const handleManualLinkSubmit = () => {
+    if (!manualLink.trim()) return;
+    stopScanner();
+    handleScannedData(manualLink.trim());
+    setManualLink("");
+  };
 
   const userName = (user as any)?.user_metadata?.full_name || user?.email || "User";
 
@@ -284,14 +311,47 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
               )}
             </div>
 
+            {/* Manual link input fallback */}
+            {showManualInput && (
+              <div className="w-full mb-3 space-y-2">
+                <p className="text-[11px] text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                  Or paste a contact link:
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={manualLink}
+                    onChange={e => setManualLink(e.target.value)}
+                    placeholder="Paste contact link..."
+                    className="flex-1 h-9 text-xs border-0"
+                    style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
+                    onKeyDown={e => { if (e.key === "Enter") handleManualLinkSubmit(); }}
+                  />
+                  <Button size="sm" className="h-9 gap-1" onClick={handleManualLinkSubmit}
+                    disabled={!manualLink.trim() || adding}
+                    style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+                    <Link2 className="h-3.5 w-3.5" /> Add
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <p className="text-xs text-center mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              Point camera at a contact QR code
+              {hasBarcodeDetector() ? "Point camera at a contact QR code" : "Camera active — paste the contact link below"}
             </p>
 
-            <Button variant="outline" className="w-full gap-1.5" onClick={() => { stopScanner(); setMode("show"); }}
-              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
-              <X className="h-3.5 w-3.5" /> Back to my code
-            </Button>
+            <div className="flex gap-2 w-full">
+              {!showManualInput && (
+                <Button variant="outline" className="flex-1 gap-1.5 text-xs" onClick={() => setShowManualInput(true)}
+                  style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
+                  <Link2 className="h-3.5 w-3.5" /> Paste Link
+                </Button>
+              )}
+              <Button variant="outline" className={`${showManualInput ? "w-full" : "flex-1"} gap-1.5 text-xs`}
+                onClick={() => { stopScanner(); setMode("show"); }}
+                style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
+                <X className="h-3.5 w-3.5" /> Back
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
