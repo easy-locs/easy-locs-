@@ -102,11 +102,10 @@ export default function HudConversationCard({ thread, isActive, index, onClick }
         {/* Main row: avatar + name */}
         <div className="flex items-start gap-2.5">
           <div
-            className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ring-1"
+            className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
             style={{
               background: "hsl(var(--hud-surface-2))",
-              borderColor: "hsl(var(--hud-border) / 0.15)",
-              ringColor: "hsl(var(--hud-border) / 0.15)",
+              border: "1px solid hsl(var(--hud-border) / 0.15)",
             }}
           >
             <User className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan-dim))" }} />
