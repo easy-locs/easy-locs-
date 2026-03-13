@@ -187,12 +187,25 @@ export default function OrbitAccountSection() {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="user"
               className="hidden"
               onChange={handleAvatarUpload}
             />
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">Tap camera to change photo</p>
+          <div className="flex items-center gap-2 mt-2">
+            <button onClick={() => fileInputRef.current?.click()} className="text-[11px] font-medium px-3 py-1 rounded-full border border-border/30 flex items-center gap-1.5 hover:bg-muted/30 transition-colors" style={{ color: "hsl(var(--primary))" }}>
+              <Image className="h-3 w-3" /> Gallery
+            </button>
+            <button onClick={() => {
+              const inp = document.createElement("input");
+              inp.type = "file";
+              inp.accept = "image/*";
+              inp.capture = "user";
+              inp.onchange = () => { const f = inp.files?.[0]; if (f) { const ev = { target: { files: [f] } } as any; handleAvatarUpload(ev); } };
+              inp.click();
+            }} className="text-[11px] font-medium px-3 py-1 rounded-full border border-border/30 flex items-center gap-1.5 hover:bg-muted/30 transition-colors" style={{ color: "hsl(var(--primary))" }}>
+              <Camera className="h-3 w-3" /> Camera
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
