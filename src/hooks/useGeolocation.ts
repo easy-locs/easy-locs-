@@ -1,8 +1,9 @@
 /**
  * useGeolocation — Reactive browser geolocation hook.
- * Returns lat, lng, loading, error. Updates on permission grant.
+ * Auto-requests location on mount based on app preferences.
  */
 import { useState, useEffect, useCallback } from "react";
+import { getAppPreferences } from "@/components/settings/AppPreferencesSection";
 
 interface GeoState {
   lat: number | null;
@@ -44,9 +45,12 @@ export function useGeolocation() {
     );
   }, []);
 
-  // Auto-request on mount
+  // Auto-request on mount if preference is enabled
   useEffect(() => {
-    requestLocation();
+    const prefs = getAppPreferences();
+    if (prefs.autoLocation) {
+      requestLocation();
+    }
   }, [requestLocation]);
 
   return { ...state, requestLocation };
