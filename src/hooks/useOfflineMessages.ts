@@ -68,6 +68,9 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
     setIsSyncing(true);
 
     try {
+      const { data: authData } = await supabase.auth.getUser();
+      const authUserId = authData?.user?.id || userId;
+
       const pending = await getPendingMessages();
       if (pending.length === 0) {
         setIsSyncing(false);
@@ -91,7 +94,7 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
           const meta = msg.metadata || {};
           const { error } = await supabase.from("messages").insert({
             org_id: meta.orgId || orgId,
-            sender_id: meta.userId || userId,
+            sender_id: meta.userId || authUserId,
             tenant_id: meta.tenantId || null,
             booking_id: meta.bookingId || null,
             booking_type: meta.bookingType || null,
