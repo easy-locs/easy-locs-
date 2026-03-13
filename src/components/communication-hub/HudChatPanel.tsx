@@ -23,6 +23,7 @@ import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
+import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
