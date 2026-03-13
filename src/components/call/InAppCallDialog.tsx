@@ -251,20 +251,18 @@ export default function InAppCallDialog({
                 {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
               </button>
 
-              {/* Speaker (only on supported devices) */}
-              {speakerSupported && (
-                <button
-                  onClick={handleToggleSpeaker}
-                  disabled={status !== "active" || isEnding}
-                  className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
-                    speakerOff
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-muted text-foreground hover:bg-muted/80"
-                  } disabled:opacity-40`}
-                >
-                  {speakerOff ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                </button>
-              )}
+              {/* Speaker */}
+              <button
+                onClick={handleToggleSpeaker}
+                disabled={status !== "active" || isEnding}
+                className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                  speakerOff
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-muted text-foreground hover:bg-muted/80"
+                } disabled:opacity-40`}
+              >
+                {speakerOff ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </button>
             </div>
 
             {/* Labels */}
