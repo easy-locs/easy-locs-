@@ -135,8 +135,7 @@ const CommunicationCenter = () => {
     }
   };
 
-  const { user } = useAuth();
-  const userId = user?.id;
+
 
   return (
     <DashboardLayout>
