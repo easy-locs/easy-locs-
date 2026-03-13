@@ -133,9 +133,9 @@ export default function CommCallsSection() {
   const missedCount = calls.filter(c => c.status === "missed").length;
 
   const getCallIcon = (call: CallLog) => {
-    if (call.status === "missed") return <PhoneMissed className="h-4 w-4" style={{ color: "hsl(0, 70%, 60%)" }} />;
+    if (call.status === "missed") return <PhoneMissed className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />;
     if (call.caller_id === user?.id) return <PhoneOutgoing className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />;
-    return <PhoneIncoming className="h-4 w-4" style={{ color: "hsl(142, 70%, 50%)" }} />;
+    return <PhoneIncoming className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />;
   };
 
   /** Build display label: "OrgName · ContextLabel" or fallback */
