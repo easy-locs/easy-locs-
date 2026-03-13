@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
