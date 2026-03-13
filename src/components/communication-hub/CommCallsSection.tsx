@@ -248,57 +248,64 @@ export default function CommCallsSection() {
               const primaryLabel = labels[0];
               const secondaryLabel = labels.length > 1 ? labels[1] : null;
 
-              return (
-                <button
-                  key={call.id}
-                  type="button"
-                  onClick={() => void handleRedial(call)}
-                  disabled={isInCall || isStartingCall}
-                  className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left disabled:opacity-60"
-                  style={{ background: "transparent" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--hud-surface) / 0.3)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                >
-                  {/* Single unified icon */}
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: call.status === "missed"
-                        ? "hsl(var(--hud-danger) / 0.08)"
-                        : "hsl(var(--hud-surface))",
-                    }}
-                  >
-                    {getCallIcon(call)}
-                  </div>
+              const handleDeleteCall = async () => {
+                await supabase.from("call_logs").delete().eq("id", call.id);
+                setCalls(prev => prev.filter(c => c.id !== call.id));
+                toast.success("Call deleted");
+              };
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <span
-                      className="text-sm font-medium truncate block"
+              return (
+                <SwipeableCallItem key={call.id} onDelete={handleDeleteCall}>
+                  <button
+                    type="button"
+                    onClick={() => void handleRedial(call)}
+                    disabled={isInCall || isStartingCall}
+                    className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left disabled:opacity-60"
+                    style={{ background: "hsl(var(--hud-bg))" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--hud-surface) / 0.3)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "hsl(var(--hud-bg))")}
+                  >
+                    {/* Single unified icon */}
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                       style={{
-                        color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
+                        background: call.status === "missed"
+                          ? "hsl(var(--hud-danger) / 0.08)"
+                          : "hsl(var(--hud-surface))",
                       }}
                     >
-                      {primaryLabel}
-                    </span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {secondaryLabel && (
-                        <span className="text-[11px] truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                          {secondaryLabel}
-                        </span>
-                      )}
-                      {secondaryLabel && <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
-                      <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                        {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
-                      </span>
+                      {getCallIcon(call)}
                     </div>
-                  </div>
 
-                  {/* Time */}
-                  <span className="text-[11px] tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                    {formatCallTime(call.created_at)}
-                  </span>
-                </button>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className="text-sm font-medium truncate block"
+                        style={{
+                          color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
+                        }}
+                      >
+                        {primaryLabel}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {secondaryLabel && (
+                          <span className="text-[11px] truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                            {secondaryLabel}
+                          </span>
+                        )}
+                        {secondaryLabel && <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
+                        <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                          {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Time */}
+                    <span className="text-[11px] tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                      {formatCallTime(call.created_at)}
+                    </span>
+                  </button>
+                </SwipeableCallItem>
               );
             })}
           </div>
