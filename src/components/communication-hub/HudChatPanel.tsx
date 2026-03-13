@@ -7,8 +7,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles,
+  Shield, Lock, Zap, Sparkles, MapPin,
 } from "lucide-react";
+import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
