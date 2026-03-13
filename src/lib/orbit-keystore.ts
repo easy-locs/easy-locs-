@@ -33,12 +33,10 @@ function openDB(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_IDENTITY)) {
-        db.createObjectStore(STORE_IDENTITY);
-      }
-      if (!db.objectStoreNames.contains(STORE_SESSIONS)) {
-        db.createObjectStore(STORE_SESSIONS);
-      }
+      if (!db.objectStoreNames.contains(STORE_IDENTITY)) db.createObjectStore(STORE_IDENTITY);
+      if (!db.objectStoreNames.contains(STORE_SESSIONS)) db.createObjectStore(STORE_SESSIONS);
+      if (!db.objectStoreNames.contains(STORE_PREKEYS)) db.createObjectStore(STORE_PREKEYS);
+      if (!db.objectStoreNames.contains(STORE_RATCHETS)) db.createObjectStore(STORE_RATCHETS);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
