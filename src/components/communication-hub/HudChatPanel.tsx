@@ -1019,6 +1019,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           }
         }}
         onCopy={() => {}}
+        onEdited={(msgId, newContent) => {
+          setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m));
+        }}
       />
 
       {/* Location Picker */}
