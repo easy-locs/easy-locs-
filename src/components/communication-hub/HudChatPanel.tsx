@@ -1,0 +1,635 @@
+/**
+ * HudChatPanel — Futuristic command center chat interface.
+ * Wraps existing ChatPanel logic with dark glass HUD visuals.
+ * Re-exports the original ChatPanel but overrides styling.
+ */
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
+  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
+  Shield, Lock, Zap, Sparkles,
+} from "lucide-react";
+import AIGenerateButton from "@/components/ai/AIGenerateButton";
+import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
+import { getCountryConfig } from "@/lib/country-config";
+import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import { buildAppUrl } from "@/lib/app-domain";
+import { motion } from "framer-motion";
+import type { ConversationThread, ChatMessage } from "./types";
+import { MESSAGE_CATEGORIES, CONV_STATUSES, CONV_TYPE_CONFIG, SOURCE_MODULE_CONFIG, STATUS_COLORS, STATUS_LABELS } from "./types";
+
+const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
+const escapeEmailHtml = (v: string) =>
+  v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const normalizeEmail = (e: string | null | undefined) => (e || "").trim().toLowerCase();
+const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+interface Props {
+  thread: ConversationThread | null;
+  onBack: () => void;
+  onToggleContext: () => void;
+  showContext: boolean;
+  onThreadUpdate: (threadId: string, updates: Partial<ConversationThread>) => void;
+}
+
+export default function HudChatPanel({ thread, onBack, onToggleContext, showContext, onThreadUpdate }: Props) {
+  const { user, orgId } = useAuth();
+  const { t, locale } = useI18n();
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("general");
+  const [convStatus, setConvStatus] = useState("active");
+  const [uploading, setUploading] = useState(false);
+  const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
+  const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
+  const [typingIndicator, setTypingIndicator] = useState(false);
+  const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDescription, setPaymentDescription] = useState("");
+  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ══ All business logic identical to ChatPanel.tsx ══
+  const loadMessages = useCallback(async () => {
+    if (!orgId || !thread) return;
+    let query = supabase.from("messages").select("*").eq("org_id", orgId).order("created_at", { ascending: true });
+    if (thread.contextType === "guest_session" && thread.contextId) query = query.eq("guest_session_id", thread.contextId);
+    else if (thread.conversationType === "listing" && thread.leadId) query = query.eq("context_type", "real_estate_lead").eq("context_id", thread.leadId);
+    else if (thread.conversationType === "direct" && thread.contextId) query = query.eq("context_id", thread.contextId);
+    else if (thread.bookingId) query = query.eq("booking_id", thread.bookingId);
+    else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
+    const { data } = await query;
+    if (data) {
+      setMessages(data as ChatMessage[]);
+      const lastMsg = data[data.length - 1] as any;
+      if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
+      const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
+      if (unreadIds.length > 0) {
+        await supabase.from("messages").update({ read: true }).in("id", unreadIds);
+        onThreadUpdate(thread.id, { unreadCount: 0 });
+      }
+    }
+  }, [orgId, thread, user, onThreadUpdate]);
+
+  useEffect(() => { loadMessages(); }, [loadMessages]);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
+
+  useEffect(() => {
+    if (!orgId || !thread) return;
+    const channel = supabase.channel(`chat-${thread.id}`).on("postgres_changes", {
+      event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+    }, (payload) => {
+      const newMsg = payload.new as ChatMessage;
+      const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
+      if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
+        setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+        if (newMsg.sender_id !== user?.id) supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
+      }
+    }).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, thread, user]);
+
+  useEffect(() => {
+    if (!thread || !orgId) return;
+    const channel = supabase.channel(`typing-${thread.id}`);
+    channel.on("presence", { event: "sync" }, () => {
+      const state = channel.presenceState();
+      const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
+      setTypingIndicator(others.length > 0);
+    }).subscribe(async (status) => {
+      if (status === "SUBSCRIBED") await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
+    });
+    return () => { supabase.removeChannel(channel); };
+  }, [thread, orgId, user?.id]);
+
+  const handleFileUpload = async (file: File) => {
+    if (!orgId || !thread || !user) return;
+    setUploading(true);
+    try {
+      const { validateMediaFile } = await import("@/lib/media-utils");
+      const validationErr = validateMediaFile(file);
+      if (validationErr) { toast.error(validationErr); setUploading(false); return; }
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: signedData } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = signedData?.signedUrl || path;
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
+        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
+        category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
+      toast.success("File sent");
+    } catch (e: any) { toast.error("Error: " + e.message); }
+    setUploading(false);
+  };
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !thread || !orgId || !user) return;
+    const content = newMessage.trim();
+    setSending(true);
+    try {
+      let tenantLocale = "en";
+      if (thread.tenantId) {
+        const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", thread.tenantId).maybeSingle();
+        if (tData?.preferred_locale) tenantLocale = tData.preferred_locale;
+        else tenantLocale = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
+      } else tenantLocale = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
+
+      let translatedContent: string | null = null;
+      if (locale !== tenantLocale) {
+        try {
+          const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: content, from_locale: locale, to_locale: tenantLocale } });
+          if (transData?.translated) translatedContent = transData.translated;
+        } catch (e) { console.error("Translation failed:", e); }
+      }
+
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
+        content, translated_content: translatedContent,
+        category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
+        sender_locale: locale, read: false, message_type: "user",
+        property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
+      setNewMessage("");
+      setConvStatus("waiting_tenant");
+
+      const recipientEmail = normalizeEmail(thread.email);
+      if (recipientEmail && isValidEmail(recipientEmail)) {
+        try {
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              event_type: "marketplace_notification", recipient_email: recipientEmail, recipient_name: thread.name,
+              data: {
+                subject: `📩 New message [REF:${thread.bookingId || thread.tenantId || thread.id}]`,
+                message: escapeEmailHtml(translatedContent || content),
+                service_title: thread.serviceTitle || thread.propertyLabel || "",
+                booking_id: thread.bookingId || "", cta_url: buildAppUrl("/"), cta_label: "Reply", org_id: orgId,
+              }, locale: tenantLocale,
+            },
+          });
+        } catch (e) { console.error("Email failed:", e); }
+      }
+
+      if (thread.conversationType === "property" && thread.tenantId) {
+        const { data: tenant } = await supabase.from("tenants").select("tenant_user_id").eq("id", thread.tenantId).single();
+        if (tenant?.tenant_user_id) {
+          await supabase.from("notifications").insert({
+            user_id: tenant.tenant_user_id, org_id: orgId, type: "message",
+            title: "📩 New message from your landlord", message: content.slice(0, 200), link: "/tenant/messages",
+          });
+        }
+      }
+    } finally { setSending(false); }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const handleTranslateMessage = async (msg: ChatMessage) => {
+    if (translatingMsgId) return;
+    if (showOriginal[msg.id]) { setShowOriginal(prev => ({ ...prev, [msg.id]: false })); return; }
+    if (!msg.translated_content) {
+      setTranslatingMsgId(msg.id);
+      try {
+        const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: msg.content, from_locale: msg.sender_locale || "en", to_locale: locale } });
+        if (transData?.translated) {
+          setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
+          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
+        }
+      } catch (e) { toast.error("Translation failed"); }
+      setTranslatingMsgId(null);
+      return;
+    }
+    setShowOriginal(prev => ({ ...prev, [msg.id]: true }));
+  };
+
+  const handleBookingAction = async (action: "confirm" | "cancel" | "complete") => {
+    if (!thread?.bookingId || !orgId || !user) return;
+    const statusMap = { confirm: "confirmed", cancel: "cancelled", complete: "completed" };
+    const newStatus = statusMap[action];
+    try {
+      if (thread.bookingType === "marketplace") await supabase.from("marketplace_bookings").update({ status: newStatus }).eq("id", thread.bookingId);
+      else if (thread.bookingType === "concierge") {
+        const updates: any = { status: newStatus };
+        if (action === "confirm") updates.confirmed_at = new Date().toISOString();
+        if (action === "cancel") updates.cancelled_at = new Date().toISOString();
+        if (action === "complete") updates.completed_at = new Date().toISOString();
+        await supabase.from("concierge_orders").update(updates).eq("id", thread.bookingId);
+      } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
+
+      const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: SYSTEM_SENDER_ID, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId, booking_type: thread.bookingType, content: actionLabels[action],
+        category: "booking", message_type: "system", read: false,
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
+      onThreadUpdate(thread.id, { bookingStatus: newStatus });
+      toast.success(actionLabels[action]);
+
+      const email = normalizeEmail(thread.email);
+      if (email && isValidEmail(email)) {
+        const clientLang = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: action === "confirm" ? "marketplace_booking_confirmed" : action === "cancel" ? "marketplace_booking_cancelled" : "marketplace_booking_completed",
+            recipient_email: email, recipient_name: thread.name,
+            data: { subject: actionLabels[action], message: actionLabels[action], service_title: thread.serviceTitle || thread.propertyLabel || "", booking_id: thread.bookingId || "", cta_url: buildAppUrl("/"), cta_label: "View", org_id: orgId },
+            locale: clientLang,
+          },
+        });
+      }
+    } catch (e: any) { toast.error("Error: " + e.message); }
+  };
+
+  const handleSendPaymentLink = async () => {
+    if (!thread || !orgId || !user || !paymentAmount) return;
+    setSendingPaymentLink(true);
+    try {
+      const amount = parseFloat(paymentAmount);
+      if (isNaN(amount) || amount <= 0) throw new Error("Invalid amount");
+      let paymentUrl = "";
+      try {
+        const { data, error } = await supabase.functions.invoke("create-concierge-payment", {
+          body: { order_id: thread.bookingId || thread.id, service_id: thread.contextId, amount, currency: thread.currency || "eur", guest_email: thread.email || "", guest_name: thread.name || "", service_title: thread.serviceTitle || paymentDescription || "", origin: window.location.origin },
+        });
+        if (error) throw error;
+        paymentUrl = data?.url || "";
+      } catch (e) { console.error("Stripe failed:", e); }
+      const msgContent = paymentUrl
+        ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
+        : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        content: msgContent, category: "payment", message_type: "user", read: false,
+        context_type: thread.contextType, context_id: thread.contextId,
+      });
+      setPaymentLinkDialog(false); setPaymentAmount(""); setPaymentDescription("");
+      toast.success("Payment link sent");
+    } catch (e: any) { toast.error(e.message); }
+    setSendingPaymentLink(false);
+  };
+
+  const updateConversationStatus = async (status: string) => {
+    if (!thread || !orgId) return;
+    setConvStatus(status);
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg) await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
+    toast.success(`Status: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
+  };
+
+  const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
+
+  // ══ EMPTY STATE ══
+  if (!thread) {
+    return (
+      <div className="flex-1 flex items-center justify-center" style={{ background: "hsl(var(--hud-bg))" }}>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-md px-6">
+          {/* Orb-inspired empty state */}
+          <div className="relative w-28 h-28 mx-auto mb-8">
+            <div className="absolute inset-0 rounded-full" style={{
+              background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.15) 0%, transparent 70%)",
+            }} />
+            <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{
+              background: "hsl(var(--hud-surface))",
+              border: "1px solid hsl(var(--hud-border) / 0.2)",
+              boxShadow: "var(--hud-glow), inset 0 0 20px hsl(var(--hud-cyan) / 0.05)",
+            }}>
+              <Shield className="h-8 w-8" style={{ color: "hsl(var(--hud-cyan) / 0.6)" }} />
+            </div>
+            {/* Orbiting dot */}
+            <motion.div
+              className="absolute w-2 h-2 rounded-full"
+              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", top: 0, left: "50%", marginLeft: -4 }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              //@ts-ignore
+              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }}
+            />
+          </div>
+
+          <h3 className="text-lg font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>
+            Command Center
+          </h3>
+          <p className="text-sm mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            Secure business communication hub
+          </p>
+          <div className="flex items-center justify-center gap-2 mt-3 mb-6">
+            <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+            <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>
+              End-to-end encrypted channel
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { icon: "💬", label: "Chat" },
+              { icon: "📞", label: "Calls" },
+              { icon: "📁", label: "Files" },
+              { icon: "💳", label: "Payments" },
+              { icon: "🤝", label: "Deals" },
+              { icon: "🏠", label: "Properties" },
+            ].map(p => (
+              <div key={p.label} className="px-3 py-2.5 rounded-lg text-center" style={{
+                background: "hsl(var(--hud-surface))",
+                border: "1px solid hsl(var(--hud-border) / 0.1)",
+              }}>
+                <span className="text-base">{p.icon}</span>
+                <p className="text-[10px] font-medium mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{p.label}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const config = CONV_TYPE_CONFIG[thread.conversationType];
+  const moduleConfig = SOURCE_MODULE_CONFIG[thread.sourceModule];
+
+  return (
+    <>
+      <div className="flex-1 flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
+        {/* ══ Header ══ */}
+        <div className="px-3 py-2.5" style={{
+          borderBottom: "1px solid hsl(var(--hud-border) / 0.1)",
+          background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.8), hsl(var(--hud-bg)))",
+        }}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9 hover:bg-[hsl(var(--hud-surface))]">
+                <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
+              </Button>
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{
+                background: "hsl(var(--hud-surface-2))",
+                border: "1px solid hsl(var(--hud-border) / 0.2)",
+                boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.1)",
+              }}>
+                <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
+                  {thread.propertyCountry && <span className="text-sm shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
+                  <Shield className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{
+                    borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-cyan-dim))",
+                    background: "hsl(var(--hud-surface) / 0.5)",
+                  }}>
+                    {moduleConfig.emoji} {moduleConfig.label}
+                  </Badge>
+                  {thread.bookingStatus && (
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                      {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
+                    </Badge>
+                  )}
+                  {thread.totalPrice != null && thread.totalPrice > 0 && (
+                    <span className="text-[10px] font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
+                      {thread.totalPrice.toFixed(2)} {(thread.currency || "EUR").toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Select value={convStatus} onValueChange={updateConversationStatus}>
+                <SelectTrigger className="h-8 w-auto text-xs gap-1" style={{
+                  background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)",
+                  color: "hsl(var(--hud-text))",
+                }}>
+                  <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
+                  <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
+                </SelectTrigger>
+                <SelectContent>
+                  {CONV_STATUSES.map(s => (<SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]" onClick={onToggleContext}>
+                <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} style={{ color: "hsl(var(--hud-text))" }} />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* ══ Messages ══ */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{
+                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)",
+                }}>
+                  <MessageCircle className="h-6 w-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+                </div>
+                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation below</p>
+              </div>
+            </div>
+          ) : (
+            messages.map(msg => {
+              const isMe = msg.sender_id === user?.id;
+              const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+              const isInboundEmail = msg.message_type === "inbound_email";
+              const isPayment = msg.content.startsWith("💳");
+
+              if (isSystem) {
+                return (
+                  <div key={msg.id} className="flex justify-center">
+                    <div className="text-xs px-4 py-2 rounded-full max-w-[80%] text-center break-words" style={{
+                      background: "hsl(var(--hud-surface) / 0.6)",
+                      color: "hsl(var(--hud-text-dim))",
+                      border: "1px solid hsl(var(--hud-border) / 0.08)",
+                    }}>
+                      {msg.content}
+                      <span className="ml-2 opacity-60">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 ${isMe ? "rounded-br-md" : "rounded-bl-md"}`} style={{
+                    background: isPayment
+                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
+                      : isMe
+                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(210 80% 40% / 0.2))"
+                        : "hsl(var(--hud-surface-2))",
+                    border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.1)"}`,
+                    color: "hsl(var(--hud-text))",
+                  }}>
+                    {isInboundEmail && (
+                      <span className="text-[10px] font-medium mb-0.5 block flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                        <Mail className="h-2.5 w-2.5" /> Email reply
+                      </span>
+                    )}
+                    {msg.category !== "general" && !isInboundEmail && (
+                      <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
+                    )}
+                    {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
+                    <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                      {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
+                    </p>
+                    {!isMe && msg.translated_content && !showOriginal[msg.id] && (
+                      <p className="text-xs mt-1.5 pt-1.5 opacity-40 italic whitespace-pre-wrap break-words" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.1)" }}>
+                        {msg.content.length > 120 ? msg.content.slice(0, 120) + "…" : msg.content}
+                      </p>
+                    )}
+                    {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
+                      <button onClick={() => handleTranslateMessage(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                        {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
+                        {showOriginal[msg.id] ? "Show translation" : msg.translated_content ? "Show original" : "Translate"}
+                      </button>
+                    )}
+                    <div className="flex items-center justify-end gap-1 mt-1 opacity-50">
+                      <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
+                      {isMe && (
+                        <span className="text-[10px]" style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
+                          {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+          {typingIndicator && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
+                <div className="flex gap-1">
+                  {[0, 150, 300].map(d => (
+                    <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ══ Action bar ══ */}
+        {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
+          <div className="px-3 py-2" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.3)" }}>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-semibold uppercase tracking-wider mr-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Actions</span>
+              <Button size="sm" variant="outline" className="text-xs h-7 gap-1.5 rounded-lg" style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Payment
+              </Button>
+              {thread.bookingStatus === "pending" && (
+                <Button size="sm" className="text-xs h-7 gap-1.5 rounded-lg" style={{ background: "hsl(var(--hud-success) / 0.2)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.3)" }} onClick={() => handleBookingAction("confirm")}>
+                  <CalendarCheck className="h-3 w-3" /> Confirm
+                </Button>
+              )}
+              {thread.bookingStatus === "confirmed" && (
+                <Button size="sm" variant="outline" className="text-xs h-7 gap-1.5 rounded-lg" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
+                  <CalendarCheck className="h-3 w-3" /> Complete
+                </Button>
+              )}
+              {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
+                <Button size="sm" variant="ghost" className="text-xs h-7 gap-1.5 rounded-lg" style={{ color: "hsl(var(--hud-danger))" }} onClick={() => handleBookingAction("cancel")}>
+                  <Ban className="h-3 w-3" /> Cancel
+                </Button>
+              )}
+              {thread.email && (
+                <Button size="sm" variant="ghost" className="text-xs h-7 gap-1.5 rounded-lg ml-auto" style={{ color: "hsl(var(--hud-text-dim))" }} asChild>
+                  <a href={`mailto:${thread.email}`}><Mail className="h-3 w-3" /> Email</a>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══ Composer ══ */}
+        <div className="p-2.5 sm:p-3 flex gap-1.5 sm:gap-2 items-center safe-area-pb" style={{
+          borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
+          background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.5), hsl(var(--hud-bg)))",
+        }}>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-10 h-10 px-1.5 shrink-0" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
+              <span className="text-sm">{getCategoryIcon(selectedCategory)}</span>
+            </SelectTrigger>
+            <SelectContent>
+              {MESSAGE_CATEGORIES.map(c => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
+            </SelectContent>
+          </Select>
+          <div className="flex-1 min-w-0">
+            <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a secure message..." className="h-10 text-sm"
+              style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }}
+            />
+          </div>
+          <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
+            onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+          </Button>
+          <div className="hidden sm:block">
+            <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+          </div>
+          <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10 px-3.5" style={{
+            background: newMessage.trim() ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-surface))",
+            border: `1px solid ${newMessage.trim() ? "hsl(var(--hud-cyan) / 0.4)" : "hsl(var(--hud-border) / 0.15)"}`,
+            color: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+          }}>
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Payment dialog */}
+      <Dialog open={paymentLinkDialog} onOpenChange={setPaymentLinkDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>💳 Send Payment Link</DialogTitle>
+            <DialogDescription>Create and send a payment request to {thread.name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Amount ({(thread.currency || "EUR").toUpperCase()})</label>
+              <Input type="number" step="0.01" min="0.50" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} placeholder="100.00" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Description</label>
+              <Input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} placeholder="Service payment..." />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentLinkDialog(false)}>Cancel</Button>
+            <Button onClick={handleSendPaymentLink} disabled={sendingPaymentLink || !paymentAmount}>
+              {sendingPaymentLink ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+              Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
