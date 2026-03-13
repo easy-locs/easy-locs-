@@ -6,10 +6,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
-  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
+  Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
   Shield, Lock, Zap, Sparkles, MapPin,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
+import ChatLocationPicker from "./ChatLocationPicker";
+import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
