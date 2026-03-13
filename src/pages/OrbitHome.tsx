@@ -6,9 +6,9 @@ import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
-  Bell, Shield, Lock, FileDown, BarChart3, Palette,
-  ChevronRight, Home, CalendarCheck, ShoppingBag, Building2,
-  TrendingUp, ClipboardList,
+  Bell, Shield, Lock, FileDown, Palette,
+  ChevronRight, CalendarCheck, ShoppingBag, Building2,
+  TrendingUp,
 } from "lucide-react";
 
 /* ── Priority modules (top row) ── */
