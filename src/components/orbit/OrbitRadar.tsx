@@ -298,6 +298,12 @@ export default function OrbitRadar() {
             className="pl-7 h-7 text-[11px] border-0 rounded-lg"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
+        {/* Radar / Map toggle */}
+        <button onClick={() => { setViewMode(viewMode === "radar" ? "map" : "radar"); haptic("light"); }}
+          className="h-7 px-2 rounded-lg flex items-center justify-center gap-1 shrink-0 text-[9px] font-semibold"
+          style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-cyan))" }}>
+          {viewMode === "radar" ? <><MapPin className="h-3 w-3" /> Map</> : <><Radar className="h-3 w-3" /> Radar</>}
+        </button>
         <button onClick={() => { setShowFilters(!showFilters); haptic("light"); }}
           className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
           style={{ background: "hsl(var(--hud-surface))", color: showFilters ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
