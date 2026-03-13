@@ -211,10 +211,16 @@ export default function CommContactsSection() {
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
-          <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
-            style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
-            <UserPlus className="h-4 w-4" /> Add
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0"
+              style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowQR(true)}>
+              <QrCode className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+              style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
+              <UserPlus className="h-4 w-4" /> Add
+            </Button>
+          </div>
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
