@@ -89,29 +89,16 @@ export default function HudConversationList({ threads, loading, selectedThread, 
         </div>
 
         {/* Filter pills */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {FILTERS.map(f => {
-            const isActive = activeFilter === f.value;
-            const count = filterCounts[f.value] || 0;
-            return (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                className="text-[11px] font-medium whitespace-nowrap px-3 py-1.5 rounded-full transition-all shrink-0"
-                style={{
-                  background: isActive ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.6)",
-                  color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
-                  border: isActive ? "1px solid hsl(var(--hud-cyan) / 0.2)" : "1px solid transparent",
-                }}
-              >
-                {f.label}
-                {count > 0 && f.value !== "all" && (
-                  <span className="ml-1 opacity-50">{count}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <ScrollableFilterBar
+          options={FILTERS.map(f => ({
+            id: f.value,
+            label: f.label,
+            count: filterCounts[f.value] || 0,
+          }))}
+          value={activeFilter}
+          onChange={setActiveFilter}
+          showCounts
+        />
       </div>
 
       {/* Thread list */}

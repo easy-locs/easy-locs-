@@ -219,19 +219,11 @@ export default function CommContactsSection() {
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..."
             className="pl-9 h-9 text-sm border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {CATEGORY_TABS.map(tab => (
-            <button key={tab.id} onClick={() => { haptic("selection"); setCategory(tab.id); }}
-              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
-              style={{
-                background: category === tab.id ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.5)",
-                color: category === tab.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
-                border: `1px solid ${category === tab.id ? "hsl(var(--hud-cyan) / 0.2)" : "transparent"}`,
-              }}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <ScrollableFilterBar
+          options={CATEGORY_TABS.map(t => ({ id: t.id, label: t.label, icon: t.icon }))}
+          value={category}
+          onChange={setCategory}
+        />
       </div>
 
       {/* Contact list */}
