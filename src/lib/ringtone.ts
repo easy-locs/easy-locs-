@@ -1,7 +1,9 @@
 /**
  * Premium synthetic ringtone generator using Web Audio API.
  * No external audio files needed — generates elegant tones programmatically.
+ * Integrates with haptic feedback for native-feeling call alerts.
  */
+import { haptic } from "./haptics";
 
 type RingtoneType = "audio" | "video";
 
