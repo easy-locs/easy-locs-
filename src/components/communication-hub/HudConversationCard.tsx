@@ -86,24 +86,30 @@ export default function HudConversationCard({ thread, isActive, index, onClick }
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 mt-0.5">
+        <div className="flex items-start justify-between gap-2 mt-0.5">
           <div className="flex-1 min-w-0">
             {/* Subtle context tag */}
             {moduleConfig && (
               <span
-                className="text-[10px] font-medium uppercase tracking-wide mr-1.5"
+                className="text-[10px] font-medium uppercase tracking-wide block mb-0.5"
                 style={{ color: "hsl(var(--hud-cyan) / 0.5)" }}
               >
                 {moduleConfig.label}
+                {thread.propertyLabel && ` · ${thread.propertyLabel}`}
               </span>
             )}
             {thread.lastMessage ? (
               <p
-                className={`text-[13px] leading-relaxed truncate ${hasUnread ? "font-medium" : ""}`}
+                className={`text-[13px] leading-[1.4] ${hasUnread ? "font-medium" : ""}`}
                 style={{
                   color: hasUnread
                     ? "hsl(var(--hud-text) / 0.8)"
                     : "hsl(var(--hud-text-dim) / 0.45)",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical" as any,
+                  overflow: "hidden",
+                  wordBreak: "break-word",
                 }}
               >
                 {thread.lastMessage}
