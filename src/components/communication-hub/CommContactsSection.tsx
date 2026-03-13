@@ -587,7 +587,7 @@ export default function CommContactsSection() {
           <DialogHeader>
             <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>QR Contact</DialogTitle>
           </DialogHeader>
-          <QRContactCard onContactScanned={() => { setShowQR(false); loadContacts(); }} />
+          <QRContactCard onContactAdded={() => { setShowQR(false); loadContacts(); }} />
         </DialogContent>
       </Dialog>
     </div>
