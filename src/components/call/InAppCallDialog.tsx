@@ -92,9 +92,13 @@ export default function InAppCallDialog({
 
   useEffect(() => {
     if (open) {
-      setStatus("idle"); setMuted(false); setSpeakerOn(true); setVideoEnabled(false);
+      setStatus("idle"); setMuted(false); setVideoEnabled(false);
       setElapsed(0); setUsingRelay(false); setError(null);
       setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
+      // Audio calls default to earpiece (speakerOn=false), video calls to speaker (speakerOn=true)
+      // isVideo state isn't set yet at open time, so we default to earpiece
+      // and auto-switch to speaker when video is detected
+      setSpeakerOn(false);
     }
   }, [open]);
 

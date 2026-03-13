@@ -1063,7 +1063,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+            // For "everyone" and "moderation" — update in-memory state to show deleted bubble
+            setRawMessages(prev => prev.map(m => m.id === msgId ? { 
+              ...m, 
+              content: "🚫 This message was deleted", 
+              message_type: "system",
+              attachment_url: null,
+              audio_url: undefined,
+              audio_duration_seconds: undefined,
+              deleted_for_all: true,
+            } as any : m));
           }
         }}
         onCopy={() => {}}
