@@ -2,8 +2,10 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
+import { useOrbitDashboard } from "@/hooks/useOrbitDashboard";
 import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
+import OrbitSmartActions from "@/components/orbit/OrbitSmartActions";
 import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
   Bell, Shield, Lock, FileDown, Palette,
@@ -41,6 +43,7 @@ const SECONDARY_CARDS = [
 export default function OrbitHome() {
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
+  const { smartActions, loading: dashLoading } = useOrbitDashboard();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -102,8 +105,13 @@ export default function OrbitHome() {
         </div>
       )}
 
+      {/* ── Smart Actions (Phase 5) ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <OrbitSmartActions actions={smartActions} loading={dashLoading} />
+      </div>
+
       {/* ── Priority Section ── */}
-      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "120ms" }}>
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "160ms" }}>
         <div className="flex items-center justify-between mb-2 px-1">
           <h2
             className="text-[11px] font-bold uppercase tracking-widest"
