@@ -25,6 +25,8 @@ import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator"
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
+import { useOfflineMessages } from "@/hooks/useOfflineMessages";
+import { WifiOff, Wifi, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +62,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { t, locale } = useI18n();
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
+  const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
+  const [pendingOffline, setPendingOffline] = useState<any[]>([]);
 
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
   const { messages: messages, isDecrypting } = useDecryptedMessages(rawMessages, decrypt, user?.id);
@@ -92,6 +96,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
     if (!orgId || !thread) return;
+
+    // If offline, load from cache
+    if (!offline.isOnline) {
+      const cached = await offline.getCachedMessages();
+      if (cached.length > 0) setRawMessages(cached as ChatMessage[]);
+      // Also load pending offline messages for display
+      const pending = await offline.getThreadPending();
+      setPendingOffline(pending);
+      return;
+    }
+
     let query = supabase.from("messages").select("*").eq("org_id", orgId).order("created_at", { ascending: true });
     if (thread.contextType === "guest_session" && thread.contextId) query = query.eq("guest_session_id", thread.contextId);
     else if (thread.conversationType === "listing" && thread.leadId) query = query.eq("context_type", "real_estate_lead").eq("context_id", thread.leadId);
@@ -101,6 +116,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     const { data } = await query;
     if (data) {
       setRawMessages(data as ChatMessage[]);
+      // Cache for offline reading
+      offline.cacheMessages(data);
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
@@ -109,9 +126,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         onThreadUpdate(thread.id, { unreadCount: 0 });
       }
     }
-  }, [orgId, thread, user, onThreadUpdate]);
+    // Clear pending display
+    setPendingOffline([]);
+  }, [orgId, thread, user, onThreadUpdate, offline]);
 
   useEffect(() => { loadMessages(); }, [loadMessages]);
+  // Re-load when coming back online
+  useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
   useEffect(() => {
@@ -275,6 +296,49 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     // Compress before encryption
     const { compressMessage } = await import("@/lib/orbit-message-compress");
     const content = await compressMessage(newMessage.trim());
+
+    // E2E Encryption
+    let storedContent = content;
+    let isEncrypted = false;
+    const peerId = thread.tenantId || thread.contextId || thread.id;
+    if (e2eReady && peerId) {
+      const encrypted = await encrypt(content, peerId);
+      if (encrypted) { storedContent = encrypted; isEncrypted = true; }
+    }
+
+    // ── OFFLINE MODE: queue message locally ──
+    if (!offline.isOnline) {
+      const queuedId = await offline.queueMessage(storedContent, isEncrypted, {
+        tenantId: thread.tenantId,
+        bookingId: thread.bookingId,
+        bookingType: thread.bookingType,
+        contactName: thread.conversationType !== "property" ? thread.name : undefined,
+        contactEmail: thread.conversationType !== "property" ? thread.email : undefined,
+        category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
+        senderLocale: locale,
+        propertyId: thread.propertyId,
+        contextType: thread.contextType,
+        contextId: thread.contextId,
+        threadDbId: thread.threadId,
+      });
+      // Show as pending in UI
+      const fakeMsg: ChatMessage = {
+        id: queuedId,
+        content: newMessage.trim(),
+        sender_id: user.id,
+        created_at: new Date().toISOString(),
+        read: false,
+        message_type: "user",
+        category: selectedCategory,
+      } as any;
+      setRawMessages(prev => [...prev, fakeMsg]);
+      setPendingOffline(prev => [...prev, { id: queuedId }]);
+      setNewMessage("");
+      toast("📡 Queued — will send when back online", { duration: 2000 });
+      return;
+    }
+
+    // ── ONLINE MODE: send normally ──
     setSending(true);
     try {
       let tenantLocale = "en";
@@ -290,15 +354,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: content, from_locale: locale, to_locale: tenantLocale } });
           if (transData?.translated) translatedContent = transData.translated;
         } catch (e) { console.error("Translation failed:", e); }
-      }
-
-      // E2E Encryption: encrypt content if peer key is available
-      let storedContent = content;
-      let isEncrypted = false;
-      const peerId = thread.tenantId || thread.contextId || thread.id;
-      if (e2eReady && peerId) {
-        const encrypted = await encrypt(content, peerId);
-        if (encrypted) { storedContent = encrypted; isEncrypted = true; }
       }
 
       const { error: insertErr } = await supabase.from("messages").insert({
@@ -619,6 +674,39 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         </div>
 
+        {/* ══ Offline Banner ══ */}
+        {!offline.isOnline && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            className="flex items-center gap-2 px-4 py-2"
+            style={{ background: "hsl(var(--hud-warning) / 0.15)", borderBottom: "1px solid hsl(var(--hud-warning) / 0.3)" }}
+          >
+            <WifiOff className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
+            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
+              Offline — messages will be sent when you reconnect
+            </span>
+            {offline.queueCount > 0 && (
+              <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>
+                {offline.queueCount} queued
+              </Badge>
+            )}
+          </motion.div>
+        )}
+        {offline.isSyncing && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            className="flex items-center gap-2 px-4 py-1.5"
+            style={{ background: "hsl(var(--hud-success) / 0.1)", borderBottom: "1px solid hsl(var(--hud-success) / 0.2)" }}
+          >
+            <CloudUpload className="h-3.5 w-3.5 animate-pulse shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
+            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>
+              Syncing queued messages...
+            </span>
+          </motion.div>
+        )}
+
         {/* ══ Messages ══ */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
@@ -700,7 +788,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     )}
                     <div className="flex items-center justify-end gap-1.5 mt-1.5 opacity-50">
                       <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
-                      {isMe && (
+                      {isMe && pendingOffline.some(p => p.id === msg.id) ? (
+                        <span className="flex items-center gap-0.5" style={{ color: "hsl(var(--hud-warning))" }}>
+                          <WifiOff className="h-2.5 w-2.5" />
+                          <span className="text-[9px]">queued</span>
+                        </span>
+                      ) : isMe && (
                         <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
                           {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                         </span>
