@@ -83,6 +83,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const voiceRecorder = useVoiceRecorder();
 
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
