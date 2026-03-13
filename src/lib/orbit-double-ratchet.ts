@@ -341,13 +341,13 @@ async function decryptWithKey(messageKey: Uint8Array, message: RatchetMessage): 
   const aad = new TextEncoder().encode(`orbit-v3-${message.ts}-${message.h.n}`);
 
   const aesKey = await crypto.subtle.importKey(
-    "raw", messageKey, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["decrypt"]
+    "raw", messageKey.buffer as ArrayBuffer, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["decrypt"]
   );
 
   const plaintext = await crypto.subtle.decrypt(
-    { name: AES_ALGO, iv, tagLength: TAG_LENGTH, additionalData: aad },
+    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH, additionalData: aad.buffer as ArrayBuffer },
     aesKey,
-    ct
+    ct.buffer as ArrayBuffer
   );
 
   return new TextDecoder().decode(plaintext);

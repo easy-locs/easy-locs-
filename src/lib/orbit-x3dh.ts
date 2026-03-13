@@ -78,13 +78,12 @@ export async function generateSigningKeyPair(): Promise<CryptoKeyPair> {
 }
 
 async function signData(privateKey: CryptoKey, data: ArrayBuffer): Promise<string> {
-  // Re-import as ECDSA for signing
   const sig = await crypto.subtle.sign(
     { name: "ECDSA", hash: "SHA-512" },
     privateKey,
     data
   );
-  return bufferToBase64(new Uint8Array(sig));
+  return bufferToBase64(new Uint8Array(sig as ArrayBuffer));
 }
 
 async function verifySignature(publicKey: CryptoKey, signature: string, data: ArrayBuffer): Promise<boolean> {

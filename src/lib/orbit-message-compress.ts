@@ -60,7 +60,7 @@ export async function decompressMessage(data: string): Promise<string> {
     const compressed = base64ToBuffer(data.slice(COMPRESS_MARKER.length));
     const ds = new DecompressionStream("deflate-raw");
     const writer = ds.writable.getWriter();
-    writer.write(compressed);
+    writer.write(compressed.buffer as ArrayBuffer);
     writer.close();
 
     const reader = ds.readable.getReader();
