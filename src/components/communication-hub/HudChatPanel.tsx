@@ -441,7 +441,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         </div>
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -463,8 +463,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
               if (isSystem) {
                 return (
-                  <div key={msg.id} className="flex justify-center">
-                    <div className="text-xs px-4 py-2 rounded-full max-w-[80%] text-center break-words" style={{
+                  <div key={msg.id} className="flex justify-center my-2">
+                    <div className="text-xs px-4 py-2 rounded-full max-w-[85%] text-center break-words" style={{
                       background: "hsl(var(--hud-surface) / 0.6)",
                       color: "hsl(var(--hud-text-dim))",
                       border: "1px solid hsl(var(--hud-border) / 0.08)",
@@ -477,43 +477,49 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               }
 
               return (
-                <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 ${isMe ? "rounded-br-md" : "rounded-bl-md"}`} style={{
+                <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"}`} style={{
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
                       : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(210 80% 40% / 0.2))"
+                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(210 80% 40% / 0.15))"
                         : "hsl(var(--hud-surface-2))",
-                    border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.1)"}`,
+                    border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
                     color: "hsl(var(--hud-text))",
                   }}>
+                    {!isMe && (
+                      <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                        {msg.contact_name || thread?.name || "Client"}
+                      </p>
+                    )}
                     {isInboundEmail && (
-                      <span className="text-[10px] font-medium mb-0.5 block flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                      <span className="text-[10px] font-medium mb-1 block flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                         <Mail className="h-2.5 w-2.5" /> Email reply
                       </span>
                     )}
                     {msg.category !== "general" && !isInboundEmail && (
-                      <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
+                      <span className="text-[10px] opacity-70 mb-1 block">{getCategoryIcon(msg.category)}</span>
                     )}
                     {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
-                    <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                    <p className="text-[14px] leading-[1.55] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
                       {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
                     </p>
                     {!isMe && msg.translated_content && !showOriginal[msg.id] && (
-                      <p className="text-xs mt-1.5 pt-1.5 opacity-40 italic whitespace-pre-wrap break-words" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.1)" }}>
+                      <p className="text-xs mt-2 pt-2 opacity-40 italic whitespace-pre-wrap break-words" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.1)" }}>
                         {msg.content.length > 120 ? msg.content.slice(0, 120) + "…" : msg.content}
                       </p>
                     )}
                     {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
-                      <button onClick={() => handleTranslateMessage(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                      <button onClick={() => handleTranslateMessage(msg)} className="mt-1.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80" style={{ color: "hsl(var(--hud-text-dim))" }}>
                         {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
                         {showOriginal[msg.id] ? "Show translation" : msg.translated_content ? "Show original" : "Translate"}
                       </button>
                     )}
-                    <div className="flex items-center justify-end gap-1 mt-1 opacity-50">
+                    <div className="flex items-center justify-end gap-1.5 mt-1.5 opacity-50">
                       <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
                       {isMe && (
-                        <span className="text-[10px]" style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
+                        <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
                           {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                         </span>
                       )}
@@ -525,8 +531,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           )}
           {typingIndicator && (
             <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
-                <div className="flex gap-1">
+              <div className="rounded-2xl rounded-bl-sm px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
+                <div className="flex gap-1.5">
                   {[0, 150, 300].map(d => (
                     <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />
                   ))}

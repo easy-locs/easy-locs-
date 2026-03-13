@@ -553,8 +553,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <main className="app-main flex-1 p-3 sm:p-6 pb-24 lg:pb-6 overflow-x-hidden">{children}</main>
       </div>
 
-      {/* Hub floating button — mobile */}
-      <HubQuickAccess variant="floating" />
 
       {/* Mobile bottom navigation */}
       <MobileBottomNav onMenuOpen={() => setSidebarOpen(true)} />
