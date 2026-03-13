@@ -217,7 +217,7 @@ export async function ratchetEncrypt(
   const aad = new TextEncoder().encode(`orbit-v3-${timestamp}-${header.n}`);
 
   const aesKey = await crypto.subtle.importKey(
-    "raw", messageKey, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["encrypt"]
+    "raw", messageKey.buffer as ArrayBuffer, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["encrypt"]
   );
 
   const encoded = new TextEncoder().encode(plaintext);
