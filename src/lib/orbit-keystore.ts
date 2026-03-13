@@ -20,9 +20,11 @@ import {
 } from "./orbit-crypto";
 
 const DB_NAME = "orbit-keystore";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_IDENTITY = "identity";
 const STORE_SESSIONS = "sessions";
+const STORE_PREKEYS = "prekeys";
+const STORE_RATCHETS = "ratchets";
 
 // ─── IndexedDB Setup ───────────────────────────────────────
 
