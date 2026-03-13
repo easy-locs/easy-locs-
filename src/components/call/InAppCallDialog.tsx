@@ -202,11 +202,10 @@ export default function InAppCallDialog({
   }, [speakerOn]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  const statusStr = status as string;
   const isNetworkBlocked = statusStr === "network_blocked" || statusStr === "failed";
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
-
-  const statusStr = status as string;
   const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(statusStr);
 
   // Auto-close after call ends
