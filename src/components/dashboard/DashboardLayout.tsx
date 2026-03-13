@@ -146,7 +146,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 8. Settings
+    // 8. Settings & AI
     {
       key: "settings",
       title: t("nav.settings") || "Settings",
@@ -154,6 +154,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
+        { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
       ],
     },
   ];
