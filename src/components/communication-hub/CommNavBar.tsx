@@ -2,7 +2,7 @@
  * CommNavBar — Orbit navigation system.
  * Clean bottom tabs (mobile) / slim sidebar (desktop).
  */
-import { MessageCircle, Phone, Users, CreditCard, Radar, UserCircle } from "lucide-react";
+import { MessageCircle, Phone, Users, Radar, UserCircle, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 
 export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "nearby" | "meetings" | "files" | "settings" | "you";
