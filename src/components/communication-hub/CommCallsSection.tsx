@@ -89,14 +89,13 @@ export default function CommCallsSection() {
 
   useEffect(() => { loadCalls(); }, [loadCalls]);
 
-  const handleRedial = useCallback(async (call: CallLog, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRedial = useCallback(async (call: CallLog) => {
     if (isInCall || isStartingCall) {
       toast.info("Call already in progress");
       return;
     }
-    haptic("medium");
 
+    haptic("medium");
     const peerName = call.org_name || call.context_label || "Contact";
 
     await startCall({
