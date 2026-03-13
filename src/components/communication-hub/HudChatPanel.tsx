@@ -452,7 +452,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 onClick={() => {
                   haptic("medium");
                   startCall({
-                    orgId: thread.orgId || orgId || "",
+                    orgId: orgId || "",
                     threadId: thread.threadId,
                     contextType: thread.conversationType || "listing",
                     contextId: thread.contextId,
