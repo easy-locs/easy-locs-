@@ -600,14 +600,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                   onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
                   onClick={() => { /* mobile: long press handled via context */ }}>
-                  <div className={`max-w-[85%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none overflow-hidden`} style={{
+                  <div className={`max-w-[80%] sm:max-w-[68%] rounded-2xl px-3.5 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
                     background: isPayment
-                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
+                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-purple) / 0.08))"
                       : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-cyan) / 0.06))"
+                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.14), hsl(var(--hud-cyan) / 0.06))"
                         : "hsl(var(--hud-surface-2))",
                     border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
                     color: "hsl(var(--hud-text))",
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
                   }}>
                     {!isMe && (
                       <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
