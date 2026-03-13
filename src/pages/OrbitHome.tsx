@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useOrbitDashboard } from "@/hooks/useOrbitDashboard";
+import { useOrbitCallSync } from "@/hooks/useOrbitCallSync";
 import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import OrbitSmartActions from "@/components/orbit/OrbitSmartActions";
+import OrbitPermissionsDiag from "@/components/orbit/OrbitPermissionsDiag";
 import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
   Bell, Shield, Lock, FileDown, Palette,
