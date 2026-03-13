@@ -193,7 +193,7 @@ const App = () => (
            <OrbitPresenceGuard />
            <RealtimeMessageToast />
            <UpdateNotification />
-          <RouteAwareAssistant />
+          
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
