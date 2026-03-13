@@ -389,14 +389,44 @@ export default function CommContactsSection() {
     }
   };
 
-  const handleInvite = (contact: ResolvedContact) => {
-    // Copy invite link to clipboard
+  const handleInvite = async (contact: ResolvedContact) => {
+    haptic("medium");
     const inviteUrl = `${window.location.origin}/auth`;
-    navigator.clipboard.writeText(inviteUrl).then(() => {
-      toast.success(`Lien d'invitation copié ! Envoyez-le à ${contact.name}.`);
-    }).catch(() => {
-      toast.info(`Invitez ${contact.name} à rejoindre l'app : ${inviteUrl}`);
-    });
+
+    // If contact has email, send real invitation via edge function
+    if (contact.email?.trim()) {
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            event_type: "marketplace_notification",
+            recipient_email: contact.email.trim(),
+            data: {
+              subject: `${user?.email || "Un utilisateur"} vous invite sur Easy-Locs`,
+              message: `Bonjour ${contact.name},\n\nVous avez été invité(e) à rejoindre Easy-Locs pour communiquer directement via l'application.\n\nCréez votre compte gratuit pour échanger des messages et passer des appels sécurisés.`,
+              cta_url: inviteUrl,
+              cta_label: "Créer mon compte",
+            },
+            locale: "fr",
+          },
+        });
+        toast.success(`Invitation envoyée par email à ${contact.name}`);
+
+        // Update last_contacted_at
+        await supabase.from("contacts").update({ last_contacted_at: new Date().toISOString() } as any).eq("id", contact.id);
+      } catch {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(inviteUrl).then(() => {
+          toast.success(`Lien copié ! Envoyez-le à ${contact.name}.`);
+        });
+      }
+    } else {
+      // No email — copy link
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        toast.success(`Lien d'invitation copié ! Envoyez-le à ${contact.name}.`);
+      }).catch(() => {
+        toast.info(`Invitez ${contact.name} : ${inviteUrl}`);
+      });
+    }
   };
 
   // ── State badge helper ──
