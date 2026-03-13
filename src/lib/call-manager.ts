@@ -5,30 +5,37 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
-const ICE_SERVERS: RTCIceServer[] = [
+/** Fallback STUN-only config (no TURN relay) */
+const FALLBACK_ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
-  {
-    urls: "turn:a.relay.metered.ca:80",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:80?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:443",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turns:a.relay.metered.ca:443?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
 ];
+
+/** Cached ICE servers fetched from backend */
+let _cachedIceServers: RTCIceServer[] | null = null;
+let _cacheExpiry = 0;
+
+/** Fetch TURN credentials securely from backend edge function */
+async function getIceServers(): Promise<RTCIceServer[]> {
+  // Return cached if still valid (5 min TTL)
+  if (_cachedIceServers && Date.now() < _cacheExpiry) {
+    return _cachedIceServers;
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+    if (error || !data?.iceServers) {
+      console.warn("[CallManager] Failed to fetch TURN credentials, using STUN-only fallback", error);
+      return FALLBACK_ICE_SERVERS;
+    }
+    _cachedIceServers = data.iceServers;
+    _cacheExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+    return _cachedIceServers;
+  } catch (err) {
+    console.warn("[CallManager] TURN fetch error, using STUN-only fallback", err);
+    return FALLBACK_ICE_SERVERS;
+  }
+}
 
 const ICE_TIMEOUT_MS = 15_000;
 const STREAM_TIMEOUT_MS = 25_000;
