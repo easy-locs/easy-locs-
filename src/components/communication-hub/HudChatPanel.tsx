@@ -868,16 +868,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
                 </div>
               </div>
-              {/* Send / mic button */}
+              {/* Send / mic button — hold to record */}
               <button
-                onClick={newMessage.trim() ? handleSend : async () => {
+                onClick={newMessage.trim() ? handleSend : undefined}
+                onTouchStart={!newMessage.trim() ? (e) => {
+                  slideStartRef.current = e.touches[0].clientX;
+                  holdTimerRef.current = setTimeout(async () => {
+                    haptic("medium");
+                    try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
+                  }, 200);
+                } : undefined}
+                onTouchEnd={!newMessage.trim() ? () => {
+                  if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
+                } : undefined}
+                onMouseDown={!newMessage.trim() ? async () => {
                   haptic("medium");
-                  try {
-                    await voiceRecorder.start();
-                  } catch {
-                    toast.error("Microphone access denied");
-                  }
-                }}
+                  try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
+                } : undefined}
                 disabled={sending}
                 className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
                 style={{
