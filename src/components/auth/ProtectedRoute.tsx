@@ -47,6 +47,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
   const isClientRoute = location.pathname.startsWith("/client");
+  const isAppRoute = location.pathname.startsWith("/app");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
@@ -80,13 +81,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix))
     || location.pathname === "/dashboard";
 
-  // Client role: can access /client/*, free publishing routes, and onboarding
-  if (activeRole === "client" && !isClientRoute && !isOnboarding && !isFreePath) {
+  // Client role: can access /client/*, /app/*, free publishing routes, and onboarding
+  if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath) {
     return <Navigate to="/client" replace />;
   }
 
-  // Tenant role users should only access /tenant/* routes
-  if (activeRole === "tenant" && !isTenantRoute && !isOnboarding) {
+  // Tenant role users should only access /tenant/* or /app/* routes
+  if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding) {
     return <Navigate to="/tenant" replace />;
   }
 

@@ -95,6 +95,10 @@ const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
+
+// Orbit App Shell & Home
+const OrbitAppShell = lazy(() => import("./components/orbit/OrbitAppShell"));
+const OrbitHome = lazy(() => import("./pages/OrbitHome"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
 const PropertyDetailHub = lazy(() => import("./pages/PropertyDetailHub"));
 const CreateListing = lazy(() => import("./pages/CreateListing"));
@@ -345,6 +349,11 @@ const App = () => (
               <Route path="/client/documents" element={<ProtectedRoute><ClientDocuments /></ProtectedRoute>} />
               <Route path="/client/payments" element={<ProtectedRoute><ClientPayments /></ProtectedRoute>} />
               <Route path="/client/settings" element={<ProtectedRoute><ClientSettings /></ProtectedRoute>} />
+
+              {/* ══════ ORBIT APP ══════ */}
+              <Route path="/app" element={<ProtectedRoute><OrbitAppShell /></ProtectedRoute>}>
+                <Route path="orbit" element={<OrbitHome />} />
+              </Route>
 
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
