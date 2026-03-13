@@ -706,7 +706,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+            setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
           }
         }}
         onCopy={() => {}}
