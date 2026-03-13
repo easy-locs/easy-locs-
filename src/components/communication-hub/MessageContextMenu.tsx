@@ -149,7 +149,7 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
             </Button>
             <Button size="sm" disabled={deleting} onClick={() => confirmDelete && handleDelete(confirmDelete)}
               style={{ 
-                background: confirmDelete === "everyone" ? "hsl(0, 70%, 50%)" : "hsl(var(--hud-cyan))", 
+                background: confirmDelete === "everyone" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-cyan))", 
                 color: "white" 
               }}>
               {deleting ? "Deleting..." : "Delete"}

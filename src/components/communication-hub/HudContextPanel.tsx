@@ -240,7 +240,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                   )}
                   {propertyCtx.documents.length > 0 && (
                     <HudCard>
-                      <SectionTitle icon={FileText} label="Documents" color="hsl(210, 80%, 60%)" />
+                      <SectionTitle icon={FileText} label="Documents" color="hsl(var(--hud-cyan))" />
                       {propertyCtx.documents.map(d => (
                         <div key={d.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{d.title}</span>
