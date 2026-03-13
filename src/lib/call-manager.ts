@@ -202,7 +202,7 @@ export class CallManager {
     this.sendSignal({ type: "accepted", data: "{}" });
 
     // Callee creates the offer
-    this.createPeerConnection();
+    await this.createPeerConnection();
     const offer = await this.pc!.createOffer();
     await this.pc!.setLocalDescription(offer);
     this.sendSignal({ type: "offer", data: JSON.stringify(offer) });
