@@ -97,6 +97,16 @@ const Settings = () => {
     setUploading(false);
   };
 
+  // Deep-link: scroll to section from ?section= param
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section && sectionRefs.current[section]) {
+      setTimeout(() => {
+        sectionRefs.current[section]?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, [searchParams]);
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6">
