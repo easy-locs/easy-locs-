@@ -23,10 +23,6 @@ type CountryStat = {
   tenants: number;
 };
 
-type WorldMapProps = {
-  propertiesByCountry: CountryStat[];
-  userCountry: string;
-};
 
 const Dashboard = () => {
   const { orgId, userCountry } = useAuth();
@@ -40,19 +36,6 @@ const Dashboard = () => {
     propertiesByCountry: [] as CountryStat[],
   });
   const [loading, setLoading] = useState(true);
-  const [WorldMapComponent, setWorldMapComponent] = useState<ComponentType<WorldMapProps> | null>(null);
-  const [mapLoadFailed, setMapLoadFailed] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    import("@/components/dashboard/WorldPropertyMap")
-      .then((mod) => { if (active) setWorldMapComponent(() => mod.default); })
-      .catch((err) => { 
-        console.warn("[Dashboard] WorldPropertyMap load failed:", err);
-        if (active) setMapLoadFailed(true); 
-      });
-    return () => { active = false; };
-  }, []);
 
   useEffect(() => {
     if (!orgId) {
