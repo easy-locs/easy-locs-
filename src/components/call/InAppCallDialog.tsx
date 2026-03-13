@@ -51,11 +51,10 @@ export default function InAppCallDialog({
     // Always attach audio to dedicated audio element
     if (hasAudio && remoteAudioRef.current) {
       const audioEl = remoteAudioRef.current;
-      // Create audio-only stream to avoid video interference
       const audioStream = new MediaStream(remoteStream.getAudioTracks());
       audioEl.srcObject = audioStream;
-      audioEl.volume = speakerOn ? 1.0 : 0.0;
-      audioEl.muted = !speakerOn;
+      audioEl.volume = 1;
+      audioEl.muted = false;
       const p = audioEl.play();
       if (p) p.catch(() => {
         const retry = () => { audioEl.play().catch(() => {}); document.removeEventListener("touchstart", retry); document.removeEventListener("click", retry); };
@@ -69,7 +68,7 @@ export default function InAppCallDialog({
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play().catch(() => {});
     }
-  }, [remoteStream, speakerOn]);
+  }, [remoteStream]);
 
   // Attach local stream for self-view
   useEffect(() => {
@@ -183,18 +182,21 @@ export default function InAppCallDialog({
   const handleToggleSpeaker = () => {
     const newState = !speakerOn;
     setSpeakerOn(newState);
-    
+
     const audioEl = remoteAudioRef.current;
     if (audioEl) {
-      audioEl.volume = newState ? 1.0 : 0.0;
-      audioEl.muted = !newState;
-      
-      // Try setSinkId for actual hardware speaker switching (Chrome/Edge)
-      if ('setSinkId' in audioEl && typeof (audioEl as any).setSinkId === 'function') {
-        // 'default' = earpiece/headphones, '' = speaker
-        // On mobile, toggling between outputs
-        (audioEl as any).setSinkId(newState ? '' : 'default').catch(() => {});
+      audioEl.volume = 1;
+      audioEl.muted = false;
+      if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+        (audioEl as any).setSinkId("default").catch(() => {});
       }
+    }
+
+    const nav = navigator as any;
+    if (nav?.audioSession && typeof nav.audioSession === "object") {
+      try {
+        nav.audioSession.type = newState ? "playback" : "play-and-record";
+      } catch {}
     }
   };
 

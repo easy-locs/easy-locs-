@@ -26,6 +26,23 @@ function encodeContactData(data: { userId: string; name: string; email?: string;
   return JSON.stringify({ t: "el-contact", v: 1, ...data });
 }
 
+function toBase64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary);
+}
+
+function fromBase64Utf8(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 /** Check if BarcodeDetector is available */
 function hasBarcodeDetector(): boolean {
   return typeof window !== "undefined" && "BarcodeDetector" in window;
@@ -51,7 +68,9 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     orgId: orgId || undefined,
   }) : "";
 
-  const shareUrl = myData ? `${window.location.origin}/add-contact?data=${btoa(myData)}` : "";
+  const shareUrl = myData && typeof window !== "undefined"
+    ? `${window.location.origin}/add-contact?data=${toBase64Utf8(myData)}`
+    : "";
 
   // Generate real QR code
   useEffect(() => {
@@ -117,7 +136,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     haptic("medium");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 640 } },
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -140,12 +159,27 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
           } catch {}
         }, 300);
       } else {
-        // No BarcodeDetector — show manual link input after 3 seconds
-        setTimeout(() => {
-          setShowManualInput(true);
-        }, 2000);
-        toast.info("Auto-scan not available on this browser. Use 'Paste Link' below.");
+        const { default: jsQR } = await import("jsqr");
+        scanIntervalRef.current = setInterval(() => {
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+          if (!video || !canvas || video.readyState < 2) return;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (!ctx) return;
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 640;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const result = jsQR(image.data, image.width, image.height, { inversionAttempts: "dontInvert" });
+          if (result?.data) {
+            haptic("success");
+            stopScanner();
+            handleScannedData(result.data);
+          }
+        }, 350);
       }
+
+      setTimeout(() => setShowManualInput(true), 2200);
     } catch {
       toast.error("Camera access required to scan QR codes");
       setMode("show");
@@ -156,16 +190,18 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     if (!user?.id) return;
     setAdding(true);
     try {
-      // Handle URL format: extract base64 data param
+      // Handle URL/base64/json formats robustly
       let contactData: string;
-      if (raw.includes("/add-contact?data=")) {
-        const url = new URL(raw);
+      const trimmed = raw.trim();
+      if (trimmed.includes("/add-contact?data=") || /^https?:\/\//i.test(trimmed)) {
+        const url = new URL(trimmed);
         const b64 = url.searchParams.get("data");
         if (!b64) throw new Error("No data in URL");
-        contactData = atob(b64);
+        contactData = fromBase64Utf8(b64);
+      } else if (trimmed.startsWith("{")) {
+        contactData = trimmed;
       } else {
-        // Try direct JSON
-        contactData = raw;
+        contactData = fromBase64Utf8(trimmed);
       }
 
       const parsed = JSON.parse(contactData);
