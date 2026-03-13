@@ -65,7 +65,9 @@ export function useDecryptedMessages(
         try {
           const peerId = msg.sender_id === userId ? userId : msg.sender_id;
           const plain = await decrypt(msg.content, peerId);
-          const finalContent = plain || "🔒 [Encrypted message]";
+          let finalContent = plain || "🔒 [Encrypted message]";
+          // Decompress if compressed
+          finalContent = await decompressMessage(finalContent);
           cacheRef.current.set(msg.id, finalContent);
           results.push({ ...msg, content: finalContent });
         } catch {
