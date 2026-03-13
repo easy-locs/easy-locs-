@@ -89,6 +89,7 @@ export default function OrbitRadar() {
   const [activeTypes, setActiveTypes] = useState(new Set(["user", "listing", "service", "activity"]));
   const [invisibleMode, setInvisibleMode] = useState(false);
   const [approxLocation, setApproxLocation] = useState(false);
+  const [viewMode, setViewMode] = useState<"radar" | "map">("radar");
 
   const config = MODES[mode];
 
