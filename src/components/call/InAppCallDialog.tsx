@@ -266,18 +266,16 @@ export default function InAppCallDialog({
             </div>
 
             {/* Labels */}
-            <div className={`flex items-center justify-center mt-2 ${speakerSupported ? "gap-6" : "gap-12"}`}>
+            <div className="flex items-center justify-center mt-2 gap-6">
               <span className="text-[10px] text-muted-foreground w-14 text-center">
                 {muted ? "Unmute" : "Mute"}
               </span>
               <span className="text-[10px] text-destructive w-16 text-center font-medium">
                 End
               </span>
-              {speakerSupported && (
-                <span className="text-[10px] text-muted-foreground w-14 text-center">
-                  Speaker
-                </span>
-              )}
+              <span className="text-[10px] text-muted-foreground w-14 text-center">
+                {speakerOff ? "Speaker On" : "Speaker Off"}
+              </span>
             </div>
           </div>
         )}
