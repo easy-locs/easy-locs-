@@ -4,7 +4,7 @@
  * Non-encrypted messages pass through unchanged.
  */
 import { useState, useEffect, useRef } from "react";
-
+import { decompressMessage } from "@/lib/orbit-message-compress";
 interface DecryptableMessage {
   id: string;
   content: string;
