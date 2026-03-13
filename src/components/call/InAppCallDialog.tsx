@@ -83,7 +83,11 @@ export default function InAppCallDialog({
     if (state.error !== undefined) setError(state.error);
     if (state.remoteStream !== undefined) setRemoteStream(state.remoteStream);
     if (state.localStream !== undefined) setLocalStream(state.localStream);
-    if (state.isVideo !== undefined) setIsVideo(state.isVideo);
+    if (state.isVideo !== undefined) {
+      setIsVideo(state.isVideo);
+      // Auto-switch to speaker for video calls
+      if (state.isVideo) setSpeakerOn(true);
+    }
   }, []);
 
   useEffect(() => {
