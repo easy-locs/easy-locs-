@@ -128,10 +128,23 @@ const CreateListing = () => {
 
   const [form, setForm] = useState<ListingForm>({ ...defaultForm, country: userCountry || "FR" });
   const [saving, setSaving] = useState(false);
+  const [geoLat, setGeoLat] = useState<number | null>(null);
+  const [geoLng, setGeoLng] = useState<number | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     basics: true, pricing: true, details: false, communication: false,
     security: false, payment: false,
   });
+
+  // Auto-capture geolocation for Nearby discovery
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { setGeoLat(pos.coords.latitude); setGeoLng(pos.coords.longitude); },
+        () => {},
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      );
+    }
+  }, []);
 
   const set = (patch: Partial<ListingForm>) => setForm(prev => ({ ...prev, ...patch }));
   const toggleSection = (k: string) => setOpenSections(prev => ({ ...prev, [k]: !prev[k] }));
