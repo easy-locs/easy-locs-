@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
+// date-fns format imported below with ChatMessageBubble
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryConfig } from "@/lib/country-config";
@@ -42,6 +42,8 @@ import { buildAppUrl } from "@/lib/app-domain";
 import { motion } from "framer-motion";
 import type { ConversationThread, ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES, CONV_STATUSES, CONV_TYPE_CONFIG, SOURCE_MODULE_CONFIG, STATUS_COLORS, STATUS_LABELS } from "./types";
+import ChatMessageBubble, { DateSeparator } from "./ChatMessageBubble";
+import { format, isToday, isYesterday } from "date-fns";
 
 const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 const escapeEmailHtml = (v: string) =>
@@ -593,63 +595,68 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   return (
     <>
       <div className="flex-1 flex flex-col min-w-0" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* ══ Header — compact for mobile ══ */}
-        <div className="px-2 sm:px-3 py-2" style={{
-          borderBottom: "1px solid hsl(var(--hud-border) / 0.1)",
-          background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.8), hsl(var(--hud-bg)))",
+        {/* ══ Header — clean, full-width ══ */}
+        <div className="px-3 sm:px-4 py-2.5 shrink-0" style={{
+          borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
+          background: "hsl(var(--hud-surface) / 0.5)",
+          backdropFilter: "blur(12px)",
         }}>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9 rounded-full hover:bg-[hsl(var(--hud-surface-2))]">
               <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
             </Button>
             {/* Avatar */}
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{
-              background: "hsl(var(--hud-surface-2))",
-              border: "1px solid hsl(var(--hud-border) / 0.2)",
+            <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{
+              background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(var(--hud-cyan) / 0.05))",
+              border: "1.5px solid hsl(var(--hud-cyan) / 0.2)",
             }}>
-              <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                {(thread.name || "?")[0].toUpperCase()}
+              </span>
             </div>
-            {/* Name + badges */}
+            {/* Name + context */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <p className="text-[13px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
                 {thread.propertyCountry && <span className="text-xs shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
               </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-[9px] px-1 py-0 rounded" style={{
-                  background: "hsl(var(--hud-surface) / 0.5)",
-                  color: "hsl(var(--hud-cyan-dim))",
-                }}>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   {moduleConfig.emoji} {moduleConfig.label}
                 </span>
                 {thread.bookingStatus && (
-                  <span className={`text-[9px] px-1 py-0 rounded font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                     {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                   </span>
                 )}
+                <span className="inline-flex items-center gap-0.5 text-[9px]" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
+                  <Lock className="h-2 w-2" /> E2E
+                </span>
               </div>
             </div>
-            {/* Action buttons — consolidated */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+            {/* Call + actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
                 disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(false)}>
-                <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                onClick={() => handleStartCall(false)}
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+              >
+                <Phone className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-success))" }} />
+              </button>
+              <button
                 disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(true)}>
-                <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
-              </Button>
-              {/* More menu — contains status, disappearing, context, safety */}
+                onClick={() => handleStartCall(true)}
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+              >
+                <Video className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+                  <button className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
-                  {/* Status */}
                   {CONV_STATUSES.map(s => (
                     <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
                       className={convStatus === s.value ? "font-semibold" : ""}>
@@ -659,7 +666,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                    Security Info
+                    Security
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
                     <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
@@ -708,106 +715,55 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         )}
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{
-                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)",
+              <div className="text-center px-6">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
+                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)",
                 }}>
-                  <MessageCircle className="h-6 w-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+                  <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }} />
                 </div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation below</p>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
               </div>
             </div>
           ) : (
-            (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
-              const isMe = msg.sender_id === user?.id;
-              const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
-              const isInboundEmail = msg.message_type === "inbound_email";
-              const isPayment = msg.content.startsWith("💳");
-
-              if (isSystem) {
+            (() => {
+              const filtered = (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id));
+              let lastDateStr = "";
+              return filtered.map((msg) => {
+                const msgDate = new Date(msg.created_at);
+                const dateStr = format(msgDate, "yyyy-MM-dd");
+                const showDateSep = dateStr !== lastDateStr;
+                lastDateStr = dateStr;
+                const dateLabel = isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy");
+                const isMe = msg.sender_id === user?.id;
                 return (
-                  <div key={msg.id} className="flex justify-center my-2">
-                    <div className="text-xs px-4 py-2 rounded-full max-w-[85%] text-center break-words" style={{
-                      background: "hsl(var(--hud-surface) / 0.6)",
-                      color: "hsl(var(--hud-text-dim))",
-                      border: "1px solid hsl(var(--hud-border) / 0.08)",
-                    }}>
-                      {msg.content}
-                      <span className="ml-2 opacity-60">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
+                  <div key={msg.id}>
+                    {showDateSep && <DateSeparator date={dateLabel} />}
+                    <div className="mb-1.5">
+                      <ChatMessageBubble
+                        msg={msg}
+                        isMe={isMe}
+                        threadName={thread?.name}
+                        locale={locale}
+                        showOriginal={!!showOriginal[msg.id]}
+                        translatingMsgId={translatingMsgId}
+                        isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
+                        onTranslate={handleTranslateMessage}
+                        onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at })}
+                        getCategoryIcon={getCategoryIcon}
+                      />
                     </div>
                   </div>
                 );
-              }
-
-              return (
-                <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}>
-                  <div className={`max-w-[82%] sm:max-w-[68%] rounded-2xl px-3 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
-                    background: isPayment
-                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-purple) / 0.08))"
-                      : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.14), hsl(var(--hud-cyan) / 0.06))"
-                        : "hsl(var(--hud-surface-2))",
-                    border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
-                    color: "hsl(var(--hud-text))",
-                    wordBreak: "break-word",
-                    overflowWrap: "anywhere",
-                  }}>
-                    {!isMe && (
-                      <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                        {msg.contact_name || thread?.name || "Client"}
-                      </p>
-                    )}
-                    {isInboundEmail && (
-                      <span className="text-[10px] font-medium mb-1 block flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
-                        <Mail className="h-2.5 w-2.5" /> Email reply
-                      </span>
-                    )}
-                    {msg.category !== "general" && !isInboundEmail && (
-                      <span className="text-[10px] opacity-70 mb-1 block">{getCategoryIcon(msg.category)}</span>
-                    )}
-                    {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
-                    <p className="text-[13.5px] leading-[1.5] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                      {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
-                    </p>
-                    {!isMe && msg.translated_content && !showOriginal[msg.id] && (
-                      <p className="text-xs mt-2 pt-2 opacity-40 italic whitespace-pre-wrap break-words" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-                        {msg.content.length > 120 ? msg.content.slice(0, 120) + "…" : msg.content}
-                      </p>
-                    )}
-                    {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
-                      <button onClick={() => handleTranslateMessage(msg)} className="mt-1.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                        {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
-                        {showOriginal[msg.id] ? "Show translation" : msg.translated_content ? "Show original" : "Translate"}
-                      </button>
-                    )}
-                    <div className="flex items-center justify-end gap-1.5 mt-1.5 opacity-50">
-                      <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
-                      {isMe && pendingOffline.some(p => p.id === msg.id) ? (
-                        <span className="flex items-center gap-0.5" style={{ color: "hsl(var(--hud-warning))" }}>
-                          <WifiOff className="h-2.5 w-2.5" />
-                          <span className="text-[9px]">queued</span>
-                        </span>
-                      ) : isMe && (
-                        <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
-                          {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                        </span>
-                      )}
-                      <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })
+              });
+            })()
           )}
           {typingIndicator && (
-            <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-sm px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
+            <div className="flex justify-start mt-1">
+              <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
                 <div className="flex gap-1.5">
                   {[0, 150, 300].map(d => (
                     <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />
@@ -820,24 +776,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
         {/* ══ Action bar ══ */}
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
-          <div className="px-2 sm:px-3 py-1.5" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.3)" }}>
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] font-semibold uppercase tracking-wider mr-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>Actions</span>
-              <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
-                <CreditCard className="h-3 w-3" /> Pay
+          <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Payment
               </Button>
               {thread.bookingStatus === "pending" && (
-                <Button size="sm" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ background: "hsl(var(--hud-success) / 0.2)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.3)" }} onClick={() => handleBookingAction("confirm")}>
+                <Button size="sm" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> Confirm
                 </Button>
               )}
               {thread.bookingStatus === "confirmed" && (
-                <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
-                  <CalendarCheck className="h-3 w-3" /> Done
+                <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
+                  <CalendarCheck className="h-3 w-3" /> Complete
                 </Button>
               )}
               {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
-                <Button size="sm" variant="ghost" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ color: "hsl(var(--hud-danger))" }} onClick={() => handleBookingAction("cancel")}>
+                <Button size="sm" variant="ghost" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
                   <Ban className="h-3 w-3" /> Cancel
                 </Button>
               )}
@@ -845,10 +800,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         )}
 
-        {/* ══ WhatsApp-style Composer ══ */}
-        <div className="px-2 sm:px-3 py-2 safe-area-pb" style={{
-          borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
-          background: "hsl(var(--hud-surface) / 0.3)",
+        {/* ══ Composer ══ */}
+        <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{
+          borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+          background: "hsl(var(--hud-surface) / 0.4)",
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
