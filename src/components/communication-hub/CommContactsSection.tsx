@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
-import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock, QrCode } from "lucide-react";
+import { Search, UserPlus, MessageCircle, Phone, Video, Star, Users, Briefcase, Heart, Clock, QrCode, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
+import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { useCall } from "@/components/call/CallProvider";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
