@@ -129,7 +129,7 @@ export default function CommPaymentsSection() {
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="h-3 w-3" style={{ color: "hsl(45, 90%, 55%)" }} />
+              <Clock className="h-3 w-3" style={{ color: "hsl(var(--hud-warning))" }} />
               <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Pending</span>
             </div>
             <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>
