@@ -246,6 +246,8 @@ const CreateListing = () => {
         requires_id_document: form.verification_types.length > 0,
         active: true,
         status: 'published',
+        lat: geoLat,
+        lng: geoLng,
       } as any);
 
       if (error) throw error;
