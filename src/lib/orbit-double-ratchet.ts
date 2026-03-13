@@ -123,23 +123,23 @@ async function kdfChainKey(
   chainKey: Uint8Array
 ): Promise<{ newChainKey: Uint8Array; messageKey: Uint8Array }> {
   // Chain key → next chain key
-  const ckMaterial = await crypto.subtle.importKey("raw", chainKey, "HKDF", false, ["deriveBits"]);
+  const ckMaterial = await crypto.subtle.importKey("raw", chainKey.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
   const ckDerived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: CHAIN_KEY_INFO },
+      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: CHAIN_KEY_INFO.buffer as ArrayBuffer },
       ckMaterial,
       256
-    )
+    ) as ArrayBuffer
   );
 
   // Chain key → message key
-  const mkMaterial = await crypto.subtle.importKey("raw", chainKey, "HKDF", false, ["deriveBits"]);
+  const mkMaterial = await crypto.subtle.importKey("raw", chainKey.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
   const mkDerived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: MSG_KEY_INFO },
+      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: MSG_KEY_INFO.buffer as ArrayBuffer },
       mkMaterial,
       256
-    )
+    ) as ArrayBuffer
   );
 
   return { newChainKey: ckDerived, messageKey: mkDerived };
