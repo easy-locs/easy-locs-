@@ -244,14 +244,14 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Advanced / Danger Zone ═══ */}
-        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger, 0 80% 60%))">
+        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger))">
           <div className="space-y-2">
             <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
               onClick={handleWipeKeys}
               style={{
-                borderColor: "hsl(var(--hud-danger, 0 80% 60%) / 0.3)",
-                color: "hsl(var(--hud-danger, 0 80% 60%))",
-                background: "hsl(var(--hud-danger, 0 80% 60%) / 0.05)",
+                borderColor: "hsl(var(--hud-danger) / 0.3)",
+                color: "hsl(var(--hud-danger))",
+                background: "hsl(var(--hud-danger) / 0.05)",
               }}>
               <Trash2 className="h-3.5 w-3.5" />
               Supprimer les clés de chiffrement
