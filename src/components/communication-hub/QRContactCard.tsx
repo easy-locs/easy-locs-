@@ -26,6 +26,23 @@ function encodeContactData(data: { userId: string; name: string; email?: string;
   return JSON.stringify({ t: "el-contact", v: 1, ...data });
 }
 
+function toBase64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary);
+}
+
+function fromBase64Utf8(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 /** Check if BarcodeDetector is available */
 function hasBarcodeDetector(): boolean {
   return typeof window !== "undefined" && "BarcodeDetector" in window;
@@ -51,7 +68,9 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     orgId: orgId || undefined,
   }) : "";
 
-  const shareUrl = myData ? `${window.location.origin}/add-contact?data=${btoa(myData)}` : "";
+  const shareUrl = myData && typeof window !== "undefined"
+    ? `${window.location.origin}/add-contact?data=${toBase64Utf8(myData)}`
+    : "";
 
   // Generate real QR code
   useEffect(() => {
