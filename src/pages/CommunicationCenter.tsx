@@ -19,6 +19,7 @@ import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
 import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
+import CommNearbySection from "@/components/communication-hub/CommNearbySection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
@@ -27,7 +28,7 @@ import { useConversationThreads } from "@/components/communication-hub/useConver
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
 
-const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "meetings", "files", "settings"];
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings"];
 
 const CommunicationCenter = () => {
   const { orgId } = useAuth();
@@ -127,6 +128,7 @@ const CommunicationCenter = () => {
       case "contacts": return <CommContactsSection />;
       case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
+      case "nearby": return <CommNearbySection />;
       case "meetings":
       case "files":
       case "settings":

@@ -10,19 +10,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, Phone, FolderOpen, Users,
-  Handshake, CreditCard, Shield, Sparkles,
+  Handshake, CreditCard, Shield, Radar,
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 const MENU_ITEMS = [
   { icon: MessageSquare, label: "Chats", path: "/dashboard/communication?section=chats" },
   { icon: Phone, label: "Calls", path: "/dashboard/communication?section=calls" },
-  { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },
+  { icon: Radar, label: "Nearby", path: "/dashboard/communication?section=nearby" },
   { icon: Users, label: "Contacts", path: "/dashboard/communication?section=contacts" },
   { icon: Handshake, label: "Deals", path: "/dashboard/marketplace" },
   { icon: CreditCard, label: "Payments", path: "/dashboard/communication?section=payments" },
   { icon: Shield, label: "Security", path: "/dashboard/settings" },
-  { icon: Sparkles, label: "AI", path: "/dashboard/ai-quality" },
+  { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },
 ];
 
 const NODES = [

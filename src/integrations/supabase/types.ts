@@ -2777,8 +2777,10 @@ export type Database = {
           duration_minutes: number | null
           features: Json | null
           id: string
+          lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
+          lng: number | null
           location: string | null
           max_capacity: number | null
           model: string | null
@@ -2831,8 +2833,10 @@ export type Database = {
           duration_minutes?: number | null
           features?: Json | null
           id?: string
+          lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
+          lng?: number | null
           location?: string | null
           max_capacity?: number | null
           model?: string | null
@@ -2885,8 +2889,10 @@ export type Database = {
           duration_minutes?: number | null
           features?: Json | null
           id?: string
+          lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
+          lng?: number | null
           location?: string | null
           max_capacity?: number | null
           model?: string | null
@@ -5399,6 +5405,10 @@ export type Database = {
           custom_status: string | null
           device_type: string | null
           last_seen_at: string
+          lat: number | null
+          lng: number | null
+          location_label: string | null
+          location_shared: boolean
           status: string
           updated_at: string
           user_id: string
@@ -5407,6 +5417,10 @@ export type Database = {
           custom_status?: string | null
           device_type?: string | null
           last_seen_at?: string
+          lat?: number | null
+          lng?: number | null
+          location_label?: string | null
+          location_shared?: boolean
           status?: string
           updated_at?: string
           user_id: string
@@ -5415,6 +5429,10 @@ export type Database = {
           custom_status?: string | null
           device_type?: string | null
           last_seen_at?: string
+          lat?: number | null
+          lng?: number | null
+          location_label?: string | null
+          location_shared?: boolean
           status?: string
           updated_at?: string
           user_id?: string
@@ -6196,6 +6214,31 @@ export type Database = {
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
+      }
+      search_nearby_items: {
+        Args: {
+          _category?: string
+          _item_type?: string
+          _lat: number
+          _lng: number
+          _radius_km?: number
+        }
+        Returns: {
+          category: string
+          city: string
+          country: string
+          currency: string
+          distance_km: number
+          item_id: string
+          item_type: string
+          lat: number
+          lng: number
+          photo_url: string
+          price: number
+          provider_name: string
+          status: string
+          title: string
+        }[]
       }
       validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
     }
