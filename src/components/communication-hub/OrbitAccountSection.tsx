@@ -6,7 +6,8 @@ import { useState, useCallback, useRef } from "react";
 import {
   User, Shield, Lock, Eye, Fingerprint, Smartphone,
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
-  Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil
+  Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
+  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
