@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import RealtimeMessageToast from "@/components/communication/RealtimeMessageToast";
+import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
