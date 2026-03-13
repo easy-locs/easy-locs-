@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
+import ProSettingsSection from "@/components/settings/ProSettingsSection";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -309,6 +310,9 @@ const Settings = () => {
 
         {/* MFA / 2FA */}
         <MFASettings />
+
+        {/* Pro Settings — Signal/WhatsApp style */}
+        <ProSettingsSection />
 
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Settings, User, ArrowUpCircle, Lock, Save, Loader2, Phone, Mail, MapPin, Globe, MessageCircle } from "lucide-react";
 import AppPreferencesSection from "@/components/settings/AppPreferencesSection";
+import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
@@ -210,6 +211,9 @@ const ClientSettings = () => {
 
         {/* App Preferences — Location, Notifications, Privacy */}
         <AppPreferencesSection />
+
+        {/* Pro Settings — Signal/WhatsApp style */}
+        <ProSettingsSection />
 
         {/* Pro features locked */}
         <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 opacity-75">
