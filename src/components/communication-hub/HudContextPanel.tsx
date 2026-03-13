@@ -233,7 +233,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.interventions.map(i => (
                         <div key={i.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{i.title}</span>
-                          <Badge variant="outline" className={`text-[9px] px-1 py-0 ${i.priority === "urgent" ? "text-red-400" : ""}`}>{i.status}</Badge>
+                          <Badge variant="outline" className="text-[9px] px-1 py-0" style={i.priority === "urgent" ? { color: "hsl(var(--hud-danger))" } : {}}>{i.status}</Badge>
                         </div>
                       ))}
                     </HudCard>
