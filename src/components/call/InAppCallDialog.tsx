@@ -206,7 +206,8 @@ export default function InAppCallDialog({
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
 
-  const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(status);
+  const statusStr = status as string;
+  const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(statusStr);
 
   // Auto-close after call ends
   useEffect(() => {
