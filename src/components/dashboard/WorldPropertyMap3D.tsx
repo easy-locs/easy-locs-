@@ -82,13 +82,7 @@ function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
   onSelect: (code: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  // Use a fallback procedural material if texture fails to load
-  let texture: THREE.Texture | null = null;
-  try {
-    texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
-  } catch {
-    // texture stays null — we'll use a color fallback
-  }
+  const texture = useLoader(TextureLoader, "/textures/earth-map.jpg");
 
   useFrame((_, delta) => {
     if (groupRef.current) {
