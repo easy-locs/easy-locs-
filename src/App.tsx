@@ -196,6 +196,9 @@ const RouteAwareAssistant = () => {
   );
 };
 
+/** Registers device session + suspicious login detection */
+const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
+
 const App = () => (
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
