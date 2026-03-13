@@ -80,7 +80,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-
+  const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const voiceRecorder = useVoiceRecorder();
