@@ -142,6 +142,9 @@ function ChatMessageBubble({
 
         {/* Footer: time + status — inline right-aligned */}
         <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
+          {(msg as any).edited_at && (
+            <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
+          )}
           <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
           {isMe && isPendingOffline ? (
             <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
