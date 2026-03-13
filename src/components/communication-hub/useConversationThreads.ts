@@ -349,12 +349,48 @@ export function useConversationThreads() {
       }
 
       // ── Load unread counts & last messages ──
-      const { data: allMsgs } = await supabase
-        .from("messages")
-        .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id, thread_id, guest_session_id")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(1000);
+      // Fetch org messages + direct messages where current user is sender/receiver
+      const directContextIds = Array.from(threadMap.values())
+        .filter(t => t.conversationType === "direct" && t.contextId)
+        .map(t => t.contextId!);
+
+      const msgQueries = [
+        supabase
+          .from("messages")
+          .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id, thread_id, guest_session_id")
+          .eq("org_id", orgId)
+          .order("created_at", { ascending: false })
+          .limit(1000),
+      ];
+
+      // Also fetch direct messages that may be in a different org
+      if (directContextIds.length > 0) {
+        msgQueries.push(
+          supabase
+            .from("messages")
+            .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id, thread_id, guest_session_id")
+            .eq("context_type", "direct")
+            .in("context_id", directContextIds)
+            .order("created_at", { ascending: false })
+            .limit(500)
+        );
+      }
+
+      const msgResults = await Promise.all(msgQueries);
+      // Merge and deduplicate by combining both result sets
+      const seenMsgIds = new Set<string>();
+      const allMsgs: typeof msgResults[0]["data"] = [];
+      for (const res of msgResults) {
+        if (res.data) {
+          for (const m of res.data) {
+            const key = `${m.context_id}-${m.created_at}-${m.sender_id}`;
+            if (!seenMsgIds.has(key)) {
+              seenMsgIds.add(key);
+              allMsgs.push(m);
+            }
+          }
+        }
+      }
 
       if (allMsgs) {
         for (const m of allMsgs) {
