@@ -226,7 +226,27 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
             </div>
           </div>
 
-          {/* Payment */}
+          {/* Contact Method */}
+          <div>
+            <Label>Contact Method</Label>
+            <Select value={form.contact_method || "message"} onValueChange={(v) => update("contact_method", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="message">💬 In-App Message</SelectItem>
+                <SelectItem value="phone">📞 Phone</SelectItem>
+                <SelectItem value="email">📧 Email</SelectItem>
+                <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Availability Calendar */}
+          <ServiceFormAvailabilityCalendar
+            timeSlots={(form.time_slots || {}) as Record<string, string[]>}
+            blockedDates={(form.blocked_dates || []) as string[]}
+            onTimeSlotsChange={(slots) => update("time_slots", slots)}
+            onBlockedDatesChange={(dates) => update("blocked_dates", dates)}
+          />
           <div className="space-y-3 border-t border-border pt-4">
             <p className="text-sm font-medium text-foreground">Payment Links (override provider defaults)</p>
             <div>
