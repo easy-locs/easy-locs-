@@ -641,7 +641,7 @@ export default function CommNearbySection() {
                     </span>
                     {u.professional_category && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                        style={{ background: "hsl(45, 90%, 55%, 0.1)", color: "hsl(45, 90%, 55%)" }}>
+                        style={{ background: "hsl(var(--hud-warning) / 0.1)", color: "hsl(var(--hud-warning))" }}>
                         {u.professional_category}
                       </span>
                     )}
