@@ -248,7 +248,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-bold relative overflow-hidden"
+                  className="block w-full text-center py-2.5 rounded-xl text-sm font-bold relative overflow-hidden"
                   style={{
                     background: "var(--gradient-gold)",
                     color: "hsl(var(--accent-foreground))",
