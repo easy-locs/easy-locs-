@@ -776,24 +776,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
         {/* ══ Action bar ══ */}
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
-          <div className="px-2 sm:px-3 py-1.5" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.3)" }}>
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] font-semibold uppercase tracking-wider mr-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>Actions</span>
-              <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
-                <CreditCard className="h-3 w-3" /> Pay
+          <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Payment
               </Button>
               {thread.bookingStatus === "pending" && (
-                <Button size="sm" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ background: "hsl(var(--hud-success) / 0.2)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.3)" }} onClick={() => handleBookingAction("confirm")}>
+                <Button size="sm" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> Confirm
                 </Button>
               )}
               {thread.bookingStatus === "confirmed" && (
-                <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
-                  <CalendarCheck className="h-3 w-3" /> Done
+                <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
+                  <CalendarCheck className="h-3 w-3" /> Complete
                 </Button>
               )}
               {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
-                <Button size="sm" variant="ghost" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ color: "hsl(var(--hud-danger))" }} onClick={() => handleBookingAction("cancel")}>
+                <Button size="sm" variant="ghost" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
                   <Ban className="h-3 w-3" /> Cancel
                 </Button>
               )}
@@ -801,10 +800,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         )}
 
-        {/* ══ WhatsApp-style Composer ══ */}
-        <div className="px-2 sm:px-3 py-2 safe-area-pb" style={{
-          borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
-          background: "hsl(var(--hud-surface) / 0.3)",
+        {/* ══ Composer ══ */}
+        <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{
+          borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+          background: "hsl(var(--hud-surface) / 0.4)",
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />

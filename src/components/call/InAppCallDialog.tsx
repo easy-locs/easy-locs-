@@ -241,7 +241,7 @@ export default function InAppCallDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleEndCall()}>
-      <DialogContent className={`p-0 overflow-hidden bg-background/95 backdrop-blur-xl border-border ${showVideoUI ? "sm:max-w-lg" : "sm:max-w-sm"}`}>
+      <DialogContent className={`p-0 overflow-hidden border-0 ${showVideoUI ? "sm:max-w-lg max-h-[100dvh]" : "sm:max-w-sm"}`} style={{ background: "hsl(var(--background))", borderRadius: showVideoUI ? 0 : undefined }}>
         {/* Hidden audio element for remote stream */}
         <audio ref={remoteAudioRef} autoPlay playsInline />
 

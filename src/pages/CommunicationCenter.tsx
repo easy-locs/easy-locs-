@@ -145,10 +145,17 @@ const CommunicationCenter = () => {
   return (
     <DashboardLayout>
       <div
-        className="flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6"
+        className="flex flex-col overflow-hidden"
         style={{
-          height: isMobile ? "100dvh" : "calc(100vh - 4rem)",
+          height: isMobile ? "100dvh" : "100vh",
+          width: "100%",
+          position: isMobile ? "fixed" : "relative",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           background: "hsl(var(--background))",
+          zIndex: isMobile ? 50 : undefined,
         }}
       >
         {/* Orbit header */}
