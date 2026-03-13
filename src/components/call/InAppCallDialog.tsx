@@ -96,7 +96,8 @@ export default function InAppCallDialog({
     if (isEnding) return;
     setIsEnding(true);
     try {
-      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(status)) await callManager?.endCall();
+      const s = status as string;
+      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(s)) await callManager?.endCall();
       onClose();
     } finally { setIsEnding(false); }
   };
@@ -202,9 +203,18 @@ export default function InAppCallDialog({
   }, [speakerOn]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const isNetworkBlocked = status === "network_blocked" || status === "failed";
+  const statusStr = status as string;
+  const isNetworkBlocked = statusStr === "network_blocked" || statusStr === "failed";
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
+  const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(statusStr);
+
+  // Auto-close after call ends
+  useEffect(() => {
+    if (!isTerminal || !open) return;
+    const timer = setTimeout(() => { onClose(); }, 3000);
+    return () => clearTimeout(timer);
+  }, [isTerminal, open, onClose]);
 
   const statusLabel: Record<string, string> = {
     idle: "", ringing: "Ringing…", connecting: "Connecting…",
@@ -405,39 +415,55 @@ export default function InAppCallDialog({
               </div>
             ) : (
               <div className="px-8 pb-12 pt-4 w-full">
-                <div className="flex items-center justify-center gap-6">
-                  <CtrlBtn
-                    onClick={handleToggleMute}
-                    disabled={status !== "active" || isEnding}
-                    active={muted}
-                    activeColor="var(--destructive)"
-                    icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                    text={muted ? "Unmute" : "Mute"}
-                  />
-                  <CtrlBtn
-                    onClick={handleToggleVideo}
-                    disabled={status !== "active" || isEnding}
-                    active={videoEnabled}
-                    icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                    text="Video"
-                  />
-                  {/* End call — large red button */}
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button onClick={handleEndCall} disabled={isEnding}
-                      className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60 transition-transform active:scale-95"
-                      style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
-                      {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
+                {isTerminal ? (
+                  /* Post-call: show clear Close button */
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{
+                      background: statusStr === "failed" ? "hsl(var(--destructive) / 0.08)" : "hsl(var(--muted) / 0.5)",
+                    }}>
+                      {statusStr === "failed" ? <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} /> : <PhoneOff className="h-7 w-7" style={{ color: "hsl(var(--muted-foreground))" }} />}
+                    </div>
+                    <button onClick={onClose}
+                      className="w-full max-w-[200px] inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95"
+                      style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", background: "hsl(var(--muted) / 0.3)" }}>
+                      Close
                     </button>
-                    <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>End</span>
                   </div>
-                  <CtrlBtn
-                    onClick={handleToggleSpeaker}
-                    disabled={status !== "active" || isEnding}
-                    active={speakerOn}
-                    icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                    text={speakerOn ? "Speaker" : "Earpiece"}
-                  />
-                </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-6">
+                    <CtrlBtn
+                      onClick={handleToggleMute}
+                      disabled={status !== "active" || isEnding}
+                      active={muted}
+                      activeColor="var(--destructive)"
+                      icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                      text={muted ? "Unmute" : "Mute"}
+                    />
+                    <CtrlBtn
+                      onClick={handleToggleVideo}
+                      disabled={status !== "active" || isEnding}
+                      active={videoEnabled}
+                      icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                      text="Video"
+                    />
+                    {/* End call — large red button */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <button onClick={handleEndCall} disabled={isEnding}
+                        className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60 transition-transform active:scale-95"
+                        style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
+                        {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
+                      </button>
+                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>End</span>
+                    </div>
+                    <CtrlBtn
+                      onClick={handleToggleSpeaker}
+                      disabled={status !== "active" || isEnding}
+                      active={speakerOn}
+                      icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                      text={speakerOn ? "Speaker" : "Earpiece"}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
