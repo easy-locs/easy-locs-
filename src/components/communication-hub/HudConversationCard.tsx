@@ -80,8 +80,14 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         {/* Row 2: Context tag (if applicable) */}
         {contextLabel && (
           <span
-            className="text-[12px] font-medium truncate block"
-            style={{ color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))" }}
+            className="text-[12px] font-medium block"
+            title={contextLabel}
+            style={{
+              color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
           >
             <span className="mr-1">{typeConfig?.emoji}</span>
             {contextLabel}
@@ -92,18 +98,30 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         <div className="flex items-center justify-between gap-2 mt-px">
           {thread.lastMessage ? (
             <p
-              className="text-[13px] truncate flex-1 min-w-0"
+              className="text-[13px] flex-1 min-w-0"
+              title={thread.lastMessage}
               style={{
                 color: hasUnread
                   ? "hsl(var(--foreground) / 0.7)"
                   : "hsl(var(--muted-foreground) / 0.7)",
                 fontWeight: hasUnread ? 500 : 400,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {thread.lastMessage}
             </p>
           ) : (
-            <p className="text-[13px] italic truncate flex-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+            <p
+              className="text-[13px] italic flex-1"
+              style={{
+                color: "hsl(var(--muted-foreground) / 0.4)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               No messages yet
             </p>
           )}

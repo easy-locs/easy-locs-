@@ -165,7 +165,7 @@ const Navbar = () => {
           </Link>
           <Link
             to="/signup"
-            className="text-[10px] sm:text-xs font-bold px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg transition-all relative overflow-hidden whitespace-nowrap shrink-0"
+            className="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-lg transition-all relative overflow-hidden whitespace-nowrap shrink-0 min-h-[30px] sm:min-h-[34px] inline-flex items-center"
             style={{
               background: "var(--gradient-gold)",
               color: "hsl(var(--accent-foreground))",
@@ -248,7 +248,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-bold relative overflow-hidden"
+                  className="block w-full text-center py-2.5 rounded-xl text-sm font-bold relative overflow-hidden"
                   style={{
                     background: "var(--gradient-gold)",
                     color: "hsl(var(--accent-foreground))",
