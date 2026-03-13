@@ -2,6 +2,8 @@
  * Orbit Engine — Centralized state aggregator for all platform modules.
  */
 import { create } from "zustand";
+// @ts-ignore — Supabase deep type chains cause TS2589
+import { supabase } from "@/integrations/supabase/client";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface OrbitAlert {
