@@ -128,6 +128,7 @@ const CommunicationCenter = () => {
       case "contacts": return <CommContactsSection />;
       case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
+      case "nearby": return <CommNearbySection />;
       case "meetings":
       case "files":
       case "settings":
