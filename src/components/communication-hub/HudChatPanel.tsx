@@ -18,7 +18,9 @@ import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
+import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
+import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +56,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
+  const { messages: messages, isDecrypting } = useDecryptedMessages(rawMessages, decrypt, user?.id);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("general");
@@ -86,7 +89,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
-      setMessages(data as ChatMessage[]);
+      setRawMessages(data as ChatMessage[]);
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
@@ -108,7 +111,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const newMsg = payload.new as ChatMessage;
       const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
       if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
-        setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+        setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
         if (newMsg.sender_id !== user?.id) supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
       }
     }).subscribe();
@@ -176,17 +179,27 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         } catch (e) { console.error("Translation failed:", e); }
       }
 
+      // E2E Encryption: encrypt content if peer key is available
+      let storedContent = content;
+      let isEncrypted = false;
+      const peerId = thread.tenantId || thread.contextId || thread.id;
+      if (e2eReady && peerId) {
+        const encrypted = await encrypt(content, peerId);
+        if (encrypted) { storedContent = encrypted; isEncrypted = true; }
+      }
+
       await supabase.from("messages").insert({
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content, translated_content: translatedContent,
+        content: storedContent, translated_content: translatedContent,
         category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
         sender_locale: locale, read: false, message_type: "user",
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+        encrypted: isEncrypted,
+      } as any);
       setNewMessage("");
       setConvStatus("waiting_tenant");
 
@@ -231,7 +244,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       try {
         const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: msg.content, from_locale: msg.sender_locale || "en", to_locale: locale } });
         if (transData?.translated) {
-          setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
+          setRawMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
           await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
         }
       } catch (e) { toast.error("Translation failed"); }
@@ -508,7 +521,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               </div>
             </div>
           ) : (
-            messages.filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
+            (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
               const isMe = msg.sender_id === user?.id;
               const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
               const isInboundEmail = msg.message_type === "inbound_email";
@@ -703,7 +716,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+            setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
           }
         }}
         onCopy={() => {}}
