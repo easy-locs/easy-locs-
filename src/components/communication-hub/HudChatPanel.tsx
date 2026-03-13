@@ -181,10 +181,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       // E2E Encryption: encrypt content if peer key is available
       let storedContent = content;
+      let isEncrypted = false;
       const peerId = thread.tenantId || thread.contextId || thread.id;
       if (e2eReady && peerId) {
         const encrypted = await encrypt(content, peerId);
-        if (encrypted) storedContent = encrypted;
+        if (encrypted) { storedContent = encrypted; isEncrypted = true; }
       }
 
       await supabase.from("messages").insert({
@@ -197,7 +198,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         sender_locale: locale, read: false, message_type: "user",
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+        encrypted: isEncrypted,
+      } as any);
       setNewMessage("");
       setConvStatus("waiting_tenant");
 
