@@ -10,6 +10,9 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const { pathname } = useLocation();
   const { t } = useI18n();
 
+  // Hide main nav inside the communication app to avoid stacked nav layers
+  if (pathname.startsWith("/dashboard/communication")) return null;
+
   const items = [
     { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Home", path: "/dashboard" },
     { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },

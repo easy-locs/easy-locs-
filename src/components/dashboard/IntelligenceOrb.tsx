@@ -28,6 +28,12 @@ const NODES = [
   { ring: 3, angle: 20 }, { ring: 3, angle: 120 }, { ring: 3, angle: 220 }, { ring: 3, angle: 340 },
 ];
 
+// Data flow particles along network lines
+const DATA_PARTICLES = [
+  { nodeIdx: 0, delay: 0 }, { nodeIdx: 3, delay: 1.2 }, { nodeIdx: 6, delay: 2.5 },
+  { nodeIdx: 8, delay: 3.8 }, { nodeIdx: 5, delay: 0.7 },
+];
+
 interface Props {
   hasActivity?: boolean;
   className?: string;
@@ -50,7 +56,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
   const rings = [48, 72, 100, 128];
   const menuRadius = 120;
 
-  // Scan speed varies with activity
   const scanDuration = hasActivity ? 3 : 6;
   const secondaryScanDuration = hasActivity ? 8 : 16;
 
@@ -74,68 +79,116 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
             <feGaussianBlur stdDeviation="8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
-          <radialGradient id="coreGrad" cx="45%" cy="40%">
-            <stop offset="0%" stopColor="hsl(195, 100%, 60%)" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="hsl(210, 100%, 50%)" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="hsl(240, 80%, 40%)" stopOpacity="0.05" />
+          <filter id="deepGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+
+          {/* Core gradient — deeper, richer */}
+          <radialGradient id="coreGrad" cx="42%" cy="38%">
+            <stop offset="0%" stopColor="hsl(195, 100%, 65%)" stopOpacity="0.7" />
+            <stop offset="35%" stopColor="hsl(210, 100%, 55%)" stopOpacity="0.4" />
+            <stop offset="70%" stopColor="hsl(240, 80%, 45%)" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="hsl(260, 70%, 30%)" stopOpacity="0.05" />
           </radialGradient>
+
+          {/* Outer ambient glow */}
+          <radialGradient id="ambientGlow" cx="50%" cy="50%">
+            <stop offset="0%" stopColor="hsl(195, 100%, 60%)" stopOpacity="0.08" />
+            <stop offset="60%" stopColor="hsl(210, 100%, 50%)" stopOpacity="0.03" />
+            <stop offset="100%" stopColor="hsl(240, 80%, 40%)" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Scanner gradient */}
           <linearGradient id="scanGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0" />
-            <stop offset="70%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="hsl(180, 100%, 70%)" stopOpacity="0.4" />
+            <stop offset="70%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="hsl(180, 100%, 70%)" stopOpacity="0.35" />
           </linearGradient>
+
+          {/* Data particle gradient */}
+          <radialGradient id="particleGlow">
+            <stop offset="0%" stopColor="hsl(180, 100%, 80%)" stopOpacity="1" />
+            <stop offset="100%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
-        <circle cx={cx} cy={cy} r={130} fill="hsl(210, 100%, 50%)" opacity="0.03" filter="url(#softGlow)" />
+        {/* ── Ambient background glow ── */}
+        <circle cx={cx} cy={cy} r={150} fill="url(#ambientGlow)" filter="url(#deepGlow)" />
 
+        {/* ── Concentric rings with varied styling ── */}
         {rings.map((r, i) => (
           <circle key={`ring-${i}`} cx={cx} cy={cy} r={r} fill="none"
-            stroke="hsl(195, 100%, 55%)" strokeWidth={i === 0 ? 1.2 : 0.6}
-            opacity={0.15 + (i === 0 ? 0.15 : 0)} strokeDasharray={i > 1 ? "3 6" : "none"}
+            stroke="hsl(195, 100%, 55%)"
+            strokeWidth={i === 0 ? 1.4 : i === 1 ? 0.8 : 0.5}
+            opacity={i === 0 ? 0.3 : i === 1 ? 0.2 : 0.12}
+            strokeDasharray={i > 1 ? "3 6" : "none"}
           />
         ))}
 
+        {/* ── Subtle tick marks on outer ring ── */}
+        {Array.from({ length: 36 }, (_, i) => {
+          const angle = (i * 10 * Math.PI) / 180;
+          const inner = 125;
+          const outer = i % 3 === 0 ? 132 : 129;
+          return (
+            <line key={`tick-${i}`}
+              x1={cx + Math.cos(angle) * inner} y1={cy + Math.sin(angle) * inner}
+              x2={cx + Math.cos(angle) * outer} y2={cy + Math.sin(angle) * outer}
+              stroke="hsl(195, 100%, 55%)" strokeWidth="0.4"
+              opacity={i % 3 === 0 ? 0.25 : 0.1}
+            />
+          );
+        })}
+
+        {/* ── Crosshair lines ── */}
         {[0, 45, 90, 135].map((angle) => {
           const rad = (angle * Math.PI) / 180;
           return (
             <line key={`xhair-${angle}`}
               x1={cx + Math.cos(rad) * 30} y1={cy + Math.sin(rad) * 30}
               x2={cx + Math.cos(rad) * 128} y2={cy + Math.sin(rad) * 128}
-              stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.12"
+              stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.1"
             />
           );
         })}
 
-        {/* ── Primary scanning beam — TRUE CIRCULAR via CSS animation on <g> ── */}
+        {/* ── Primary scanning beam ── */}
         <g filter="url(#neonGlow)">
           <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
             <animateTransform
-              attributeName="transform"
-              type="rotate"
-              from={`0 ${cx} ${cy}`}
-              to={`360 ${cx} ${cy}`}
-              dur={`${scanDuration}s`}
-              repeatCount="indefinite"
+              attributeName="transform" type="rotate"
+              from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`}
+              dur={`${scanDuration}s`} repeatCount="indefinite"
             />
             <path
               d={`M ${cx} ${cy} L ${cx + 128} ${cy} A 128 128 0 0 1 ${cx + 128 * Math.cos(Math.PI / 6)} ${cy + 128 * Math.sin(Math.PI / 6)} Z`}
-              fill="url(#scanGrad)" opacity="0.5"
+              fill="url(#scanGrad)" opacity="0.45"
             />
           </g>
         </g>
 
-        {/* ── Secondary scanner line — counter-rotating ── */}
+        {/* ── Secondary scanner line ── */}
         <g>
           <animateTransform
-            attributeName="transform"
-            type="rotate"
-            from={`360 ${cx} ${cy}`}
-            to={`0 ${cx} ${cy}`}
-            dur={`${secondaryScanDuration}s`}
-            repeatCount="indefinite"
+            attributeName="transform" type="rotate"
+            from={`360 ${cx} ${cy}`} to={`0 ${cx} ${cy}`}
+            dur={`${secondaryScanDuration}s`} repeatCount="indefinite"
           />
           <line x1={cx} y1={cy} x2={cx + 128} y2={cy}
-            stroke="hsl(270, 80%, 65%)" strokeWidth="0.8" opacity="0.25" filter="url(#neonGlow)"
+            stroke="hsl(270, 80%, 65%)" strokeWidth="0.7" opacity="0.2" filter="url(#neonGlow)"
+          />
+        </g>
+
+        {/* ── Tertiary thin scanner — adds depth ── */}
+        <g opacity="0.15">
+          <animateTransform
+            attributeName="transform" type="rotate"
+            from={`180 ${cx} ${cy}`} to={`540 ${cx} ${cy}`}
+            dur={`${scanDuration * 2.5}s`} repeatCount="indefinite"
+          />
+          <line x1={cx} y1={cy} x2={cx + 100} y2={cy}
+            stroke="hsl(195, 100%, 70%)" strokeWidth="0.4" strokeDasharray="2 8"
           />
         </g>
 
@@ -147,7 +200,9 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           const ny = cy + Math.sin(rad) * r;
           return (
             <g key={`node-${i}`}>
-              <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.08" />
+              <line x1={cx} y1={cy} x2={nx} y2={ny}
+                stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.06"
+              />
               <circle cx={nx} cy={ny} r={2} fill="hsl(180, 100%, 65%)" filter="url(#neonGlow)">
                 <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
                 <animate attributeName="r" values="1.5;2.5;1.5" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
@@ -156,19 +211,43 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
-        {/* ── Orbiting dot — true circle via animateMotion ── */}
+        {/* ── Data flow particles along network lines ── */}
+        {DATA_PARTICLES.map((dp, i) => {
+          const node = NODES[dp.nodeIdx];
+          const r = rings[node.ring];
+          const rad = (node.angle * Math.PI) / 180;
+          const nx = cx + Math.cos(rad) * r;
+          const ny = cy + Math.sin(rad) * r;
+          return (
+            <circle key={`dp-${i}`} r="1.5" fill="hsl(180, 100%, 80%)" opacity="0">
+              <animate attributeName="cx" values={`${cx};${nx};${cx}`} dur="3s" begin={`${dp.delay}s`} repeatCount="indefinite" />
+              <animate attributeName="cy" values={`${cy};${ny};${cy}`} dur="3s" begin={`${dp.delay}s`} repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0;0.7;0" dur="3s" begin={`${dp.delay}s`} repeatCount="indefinite" />
+            </circle>
+          );
+        })}
+
+        {/* ── Orbiting dot — primary — true circle ── */}
         <circle r="3" fill="hsl(180, 100%, 70%)" filter="url(#neonGlow)" opacity="0.8">
           <animateMotion
-            dur={hasActivity ? "4s" : "8s"}
-            repeatCount="indefinite"
+            dur={hasActivity ? "4s" : "8s"} repeatCount="indefinite"
             path={`M ${cx + 100} ${cy} A 100 100 0 1 1 ${cx + 100 - 0.01} ${cy}`}
           />
         </circle>
+
+        {/* ── Orbiting dot — secondary ── */}
         <circle r="2" fill="hsl(270, 80%, 70%)" filter="url(#neonGlow)" opacity="0.6">
           <animateMotion
-            dur={hasActivity ? "5s" : "12s"}
-            repeatCount="indefinite"
+            dur={hasActivity ? "5s" : "12s"} repeatCount="indefinite"
             path={`M ${cx} ${cy - 72} A 72 72 0 1 1 ${cx - 0.01} ${cy - 72}`}
+          />
+        </circle>
+
+        {/* ── Orbiting dot — tertiary, inner ring ── */}
+        <circle r="1.5" fill="hsl(195, 100%, 75%)" filter="url(#neonGlow)" opacity="0.5">
+          <animateMotion
+            dur={hasActivity ? "3s" : "6s"} repeatCount="indefinite"
+            path={`M ${cx + 48} ${cy} A 48 48 0 1 0 ${cx + 48 - 0.01} ${cy}`}
           />
         </circle>
 
@@ -177,20 +256,25 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           <>
             <circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(180, 100%, 60%)" strokeWidth="1.5" opacity="0">
               <animate attributeName="r" values="30;140" dur="2.5s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.6;0" dur="2.5s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.5;0" dur="2.5s" repeatCount="indefinite" />
             </circle>
             <circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(270, 80%, 65%)" strokeWidth="1" opacity="0">
               <animate attributeName="r" values="40;120" dur="2.5s" repeatCount="indefinite" begin="1s" />
-              <animate attributeName="opacity" values="0.4;0" dur="2.5s" repeatCount="indefinite" begin="1s" />
+              <animate attributeName="opacity" values="0.35;0" dur="2.5s" repeatCount="indefinite" begin="1s" />
             </circle>
           </>
         )}
 
-        {/* ── Core ── */}
+        {/* ── Core — layered for depth ── */}
+        <circle cx={cx} cy={cy} r={coreSize / 2 + 4} fill="none" stroke="hsl(210, 100%, 50%)" strokeWidth="0.4" opacity="0.15" />
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="url(#coreGrad)" filter="url(#neonGlow)" />
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="none" stroke="hsl(195, 100%, 60%)" strokeWidth="1.2" opacity="0.5" />
-        <circle cx={cx} cy={cy} r={coreSize / 2 - 6} fill="none" stroke="hsl(180, 100%, 65%)" strokeWidth="0.6" opacity="0.3" />
-        <ellipse cx={cx - 8} cy={cy - 10} rx={10} ry={5} fill="white" opacity="0.08" />
+        <circle cx={cx} cy={cy} r={coreSize / 2 - 6} fill="none" stroke="hsl(180, 100%, 65%)" strokeWidth="0.6" opacity="0.25" />
+        <circle cx={cx} cy={cy} r={coreSize / 2 - 14} fill="none" stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.15" />
+
+        {/* Core specular highlight */}
+        <ellipse cx={cx - 8} cy={cy - 10} rx={10} ry={5} fill="white" opacity="0.07" />
+        <ellipse cx={cx + 4} cy={cy + 8} rx={6} ry={3} fill="hsl(270, 80%, 70%)" opacity="0.04" />
 
         {/* ── Menu connection lines ── */}
         <AnimatePresence>

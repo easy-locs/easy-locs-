@@ -93,7 +93,7 @@ const CommunicationCenter = () => {
   return (
     <DashboardLayout>
       {/* Full-screen communication container — no page margins */}
-      <div className="h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-5rem)] flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-24 lg:-mb-6">
+      <div className="h-[calc(100dvh-3.5rem)] lg:h-[calc(100vh-5rem)] flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6">
         {/* ═══ Compact HUD Header ═══ */}
         <motion.div
           initial={{ opacity: 0, y: -4 }}
