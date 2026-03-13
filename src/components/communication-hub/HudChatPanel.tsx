@@ -49,6 +49,7 @@ interface Props {
 export default function HudChatPanel({ thread, onBack, onToggleContext, showContext, onThreadUpdate }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
+  const { startCall, isInCall, isStartingCall } = useCall();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -66,6 +67,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
