@@ -151,7 +151,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                 </div>
                 {!isCurrent && (
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRevoke(session.id)}
-                    style={{ color: "hsl(var(--hud-danger, 0 80% 60%))" }}>
+                    style={{ color: "hsl(var(--hud-danger))" }}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
