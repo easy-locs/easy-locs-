@@ -50,7 +50,6 @@ const CommunicationCenter = () => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
 
-  // Read ?section= param from orb navigation
   useEffect(() => {
     const sectionParam = searchParams.get("section");
     if (sectionParam && VALID_SECTIONS.includes(sectionParam as CommSection)) {
@@ -63,7 +62,6 @@ const CommunicationCenter = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Deep-link
   useEffect(() => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
     if (!threadParam || loading || threads.length === 0) return;
@@ -140,12 +138,10 @@ const CommunicationCenter = () => {
     }
   };
 
-
-
   return (
     <DashboardLayout>
       <div
-        className="flex flex-col overflow-hidden"
+        className="flex flex-col"
         style={{
           height: isMobile ? "100dvh" : "100vh",
           width: "100%",
@@ -156,16 +152,16 @@ const CommunicationCenter = () => {
           bottom: 0,
           background: "hsl(var(--background))",
           zIndex: isMobile ? 50 : undefined,
+          overflow: "hidden",
         }}
       >
-        {/* Orbit header */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        {/* Orbit header — compact, edge-to-edge */}
+        <div
           className="flex items-center px-4 shrink-0"
           style={{
-            height: isMobile ? 52 : 44,
-            borderBottom: "1px solid hsl(var(--border) / 0.15)",
+            height: isMobile ? 48 : 44,
+            borderBottom: "1px solid hsl(var(--border) / 0.1)",
+            background: "hsl(var(--background))",
           }}
         >
           {isMobile && selectedThread ? (
@@ -174,16 +170,16 @@ const CommunicationCenter = () => {
             </h1>
           ) : (
             <div className="flex items-center gap-2 flex-1">
-              <h1 className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>
+              <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
                 Orbit
               </h1>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium"
-                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+                style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
                 <Lock className="h-2.5 w-2.5" /> E2E
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {showChatArea && !selectedThread && (
               <Button
                 size="sm" variant="ghost"
@@ -196,7 +192,7 @@ const CommunicationCenter = () => {
             )}
             {stats.unread > 0 && !selectedThread && (
               <div
-                className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px]"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]"
                 style={{ background: "hsl(var(--primary) / 0.08)" }}
               >
                 <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
@@ -206,9 +202,9 @@ const CommunicationCenter = () => {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Main content */}
+        {/* Main content — fills remaining space */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {!isMobile && (
             <CommNavBar active={activeSection} onChange={handleSectionChange} isMobile={false} unreadCount={stats.unread} />
@@ -239,7 +235,9 @@ const CommunicationCenter = () => {
               </div>
             </div>
           ) : (
-            renderSection()
+            <div className="flex-1 overflow-y-auto">
+              {renderSection()}
+            </div>
           )}
         </div>
 
@@ -253,7 +251,7 @@ const CommunicationCenter = () => {
       {isMobile && selectedThread && orgId && (
         <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
           <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))" }}>
-            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.15)" }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
               <SheetTitle className="text-sm" style={{ color: "hsl(var(--foreground))" }}>
                 {selectedThread.name}
               </SheetTitle>
