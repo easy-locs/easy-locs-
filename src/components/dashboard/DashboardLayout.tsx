@@ -9,6 +9,7 @@ import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+import HubQuickAccess from "@/components/communication-hub/HubQuickAccess";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
