@@ -163,21 +163,21 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
               boxShadow: "0 0 28px hsl(var(--hud-cyan) / 0.15)",
             }}
           >
-            <div className="flex items-center gap-1 mb-0.5">
-              <Building className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-              <span className="text-xl font-bold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
+            <div className="flex items-center justify-center gap-1.5 mb-0.5">
+              <Building className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-xl font-bold tabular-nums leading-none" style={{ color: "hsl(var(--hud-text))" }}>
                 {totalProperties}
               </span>
             </div>
-            <span className="text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <span className="text-[9px] uppercase tracking-wider leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {t("common.properties") || "Properties"}
             </span>
-            <div className="flex items-center gap-1 mt-1.5">
-              <MapPin className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }} />
-              <span className="text-xs font-semibold tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
+            <div className="flex items-center justify-center gap-1 mt-2">
+              <MapPin className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }} />
+              <span className="text-sm font-bold tabular-nums leading-none" style={{ color: "hsl(var(--hud-text))" }}>
                 {totalCountries}
               </span>
-              <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <span className="text-[9px] leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {t("page.dashboard.countries_short") || "countries"}
               </span>
             </div>

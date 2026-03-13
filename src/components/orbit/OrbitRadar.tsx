@@ -334,7 +334,7 @@ export default function OrbitRadar() {
       {/* ═══ Radar Visualization ═══ */}
       <div className="flex-shrink-0 flex items-center justify-center px-4 py-2">
         <div className="relative" style={{ width: size, height: size, maxWidth: "100%" }}>
-          <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full">
+          <svg viewBox={`-10 -10 ${size + 20} ${size + 20}`} className="w-full h-full" style={{ overflow: "visible" }}>
             <defs>
               <filter id="rGlow"><feGaussianBlur stdDeviation="2.5" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
               <linearGradient id="sweepG" x1="0" y1="0" x2="1" y2="0">
