@@ -953,13 +953,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               ? `📍 ${loc.label}\n${loc.address || ""}\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
               : `📍 My location\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
           
+          // Encrypt location payload
+          let storedContent = locationMsg;
+          let isLocEncrypted = false;
+          const peerId = thread.tenantId || thread.contextId || thread.id;
+          if (e2eReady && peerId) {
+            const enc = await encrypt(locationMsg, peerId);
+            if (enc) { storedContent = enc; isLocEncrypted = true; }
+          }
+
           const insertData: any = {
             org_id: orgId,
             sender_id: user?.id,
-            content: locationMsg,
+            content: storedContent,
             category: "general",
             message_type: "text",
             sender_locale: locale,
+            encrypted: isLocEncrypted,
           };
           if (thread.bookingId) insertData.booking_id = thread.bookingId;
           if (thread.tenantId) insertData.tenant_id = thread.tenantId;
