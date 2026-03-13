@@ -135,6 +135,15 @@ export function useOrbitDashboard(): DashboardData {
         ).then((v) => ["unreadNotifs", v] as [string, number])
       );
 
+      // Missed calls (last 7 days)
+      queries.push(
+        safeCount("call_logs", (q: any) => {
+          let query = q.eq("status", "missed").gt("created_at", weekAgo).neq("caller_id", user!.id);
+          if (orgId) query = query.eq("callee_org_id", orgId);
+          return query;
+        }).then((v) => ["missedCalls", v] as [string, number])
+      );
+
       const results = await Promise.all(queries);
       if (!cancelled) {
         const map: Record<string, number> = {};
@@ -229,6 +238,20 @@ export function useOrbitDashboard(): DashboardData {
         link: "/dashboard/rental?tab=interventions",
         priority: 6,
         type: "info",
+      });
+    }
+
+    // ── Missed calls ──
+    if ((s.missedCalls ?? 0) > 0) {
+      const n = s.missedCalls!;
+      actions.push({
+        id: "missed-calls",
+        icon: "📞",
+        label: `${n} appel${n > 1 ? "s" : ""} manqué${n > 1 ? "s" : ""}`,
+        description: "Rappeler ou consulter l'historique",
+        link: "/dashboard/communication?section=calls",
+        priority: 4,
+        type: "urgent",
       });
     }
 

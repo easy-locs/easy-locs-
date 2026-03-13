@@ -85,6 +85,7 @@ export class CallManager {
   private _ending = false;
   private _endFlowInvocations = 0;
   private _cleanupInvocations = 0;
+  private _reconnectAttempts = 0;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
@@ -424,20 +425,45 @@ export class CallManager {
 
       if (state === "connected") {
         this.iceConnected = true;
+        this._reconnectAttempts = 0;
         this.clearTimeouts();
         this.onStateChange({ status: "active" });
-      } else if (state === "failed" || state === "disconnected") {
-        if (!this.iceConnected) {
+      } else if (state === "disconnected") {
+        // Try ICE restart before giving up
+        if (this.iceConnected && this._reconnectAttempts < 3) {
+          this._reconnectAttempts++;
+          this.debug("ICE disconnected — attempting restart", { attempt: this._reconnectAttempts });
+          this.onStateChange({ error: "Reconnexion en cours…" });
+          this.attemptIceRestart();
+        } else if (!this.iceConnected) {
           this.onStateChange({
             status: "network_blocked",
             error: "Call could not connect. Your network may restrict internet calls.",
           });
+          this.cleanup("connection-failed");
+        }
+        // If reconnect attempts exhausted, wait for 'failed' state
+      } else if (state === "failed") {
+        if (this.iceConnected && this._reconnectAttempts < 3) {
+          this._reconnectAttempts++;
+          this.debug("ICE failed — final restart attempt", { attempt: this._reconnectAttempts });
+          this.attemptIceRestart();
         } else {
           this.onStateChange({ status: "failed", error: "Connection lost" });
+          this.cleanup("connection-failed");
         }
-        this.cleanup("connection-failed");
       }
     };
+  }
+
+  private attemptIceRestart() {
+    if (!this.pc) return;
+    this.debug("attemptIceRestart");
+    try {
+      this.pc.restartIce();
+    } catch (err) {
+      this.debug("restartIce failed", { error: String(err) });
+    }
   }
 
   private async detectRelay() {
