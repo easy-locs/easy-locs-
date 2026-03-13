@@ -169,14 +169,75 @@ function OrbitBottomNav() {
 export default function OrbitAppShell() {
   const { user, orgId } = useAuth();
   const { refresh } = useOrbitEngine();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debounced refresh to avoid duplicate calls from multiple realtime events
+  const debouncedRefresh = useCallback(() => {
+    if (!user?.id) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      refresh(user.id, orgId || undefined);
+    }, 1500);
+  }, [user?.id, orgId, refresh]);
+
+  // Polling fallback — 60s (reduced from 30s thanks to realtime)
   useEffect(() => {
     if (!user?.id) return;
     refresh(user.id, orgId || undefined);
-    const interval = setInterval(() => refresh(user.id, orgId || undefined), 30_000);
+    const interval = setInterval(() => refresh(user.id, orgId || undefined), 60_000);
     return () => clearInterval(interval);
   }, [user?.id, orgId]);
 
+  // Realtime subscriptions for instant signal updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channels: ReturnType<typeof supabase.channel>[] = [];
+
+    // Messages — instant unread count
+    const msgChannel = supabase
+      .channel("orbit-messages")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "messages",
+      }, debouncedRefresh)
+      .subscribe();
+    channels.push(msgChannel);
+
+    // Notifications — instant badge
+    const notifChannel = supabase
+      .channel("orbit-notifications")
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "notifications",
+        filter: `user_id=eq.${user.id}`,
+      }, debouncedRefresh)
+      .subscribe();
+    channels.push(notifChannel);
+
+    // Booking requests — instant alert
+    if (orgId) {
+      const bookingChannel = supabase
+        .channel("orbit-bookings")
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "booking_requests",
+          filter: `org_id=eq.${orgId}`,
+        }, debouncedRefresh)
+        .subscribe();
+      channels.push(bookingChannel);
+    }
+
+    return () => {
+      channels.forEach((ch) => supabase.removeChannel(ch));
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [user?.id, orgId, debouncedRefresh]);
+
+  // Network status listener
   useEffect(() => {
     const { setNetworkStatus } = useOrbitEngine.getState();
     const onOnline = () => setNetworkStatus("online");

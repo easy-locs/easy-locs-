@@ -61,25 +61,27 @@ export default function OrbitHome() {
 
       {/* ── Alert Banner (top priority action) ── */}
       {engine.alerts.length > 0 && (
-        <button
-          onClick={() => engine.alerts[0]?.link && navigate(engine.alerts[0].link)}
-          className="w-full max-w-md rounded-2xl px-4 py-3 flex items-center gap-3 transition-all active:scale-[0.98]"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))",
-            border: "1px solid hsl(var(--hud-cyan) / 0.2)",
-          }}
-        >
-          <span className="text-xl shrink-0">{engine.alerts[0].icon}</span>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-              {engine.alerts[0].title}
-            </p>
-            <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
-              {engine.alerts[0].message}
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
-        </button>
+        <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "80ms" }}>
+          <button
+            onClick={() => engine.alerts[0]?.link && navigate(engine.alerts[0].link)}
+            className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 transition-all active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))",
+              border: "1px solid hsl(var(--hud-cyan) / 0.2)",
+            }}
+          >
+            <span className="text-xl shrink-0">{engine.alerts[0].icon}</span>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+                {engine.alerts[0].title}
+              </p>
+              <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {engine.alerts[0].message}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </button>
+        </div>
       )}
 
       {/* ── Priority Section ── */}
