@@ -595,63 +595,68 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   return (
     <>
       <div className="flex-1 flex flex-col min-w-0" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* ══ Header — compact for mobile ══ */}
-        <div className="px-2 sm:px-3 py-2" style={{
-          borderBottom: "1px solid hsl(var(--hud-border) / 0.1)",
-          background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.8), hsl(var(--hud-bg)))",
+        {/* ══ Header — clean, full-width ══ */}
+        <div className="px-3 sm:px-4 py-2.5 shrink-0" style={{
+          borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
+          background: "hsl(var(--hud-surface) / 0.5)",
+          backdropFilter: "blur(12px)",
         }}>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9 rounded-full hover:bg-[hsl(var(--hud-surface-2))]">
               <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
             </Button>
             {/* Avatar */}
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{
-              background: "hsl(var(--hud-surface-2))",
-              border: "1px solid hsl(var(--hud-border) / 0.2)",
+            <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{
+              background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(var(--hud-cyan) / 0.05))",
+              border: "1.5px solid hsl(var(--hud-cyan) / 0.2)",
             }}>
-              <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                {(thread.name || "?")[0].toUpperCase()}
+              </span>
             </div>
-            {/* Name + badges */}
+            {/* Name + context */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <p className="text-[13px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
                 {thread.propertyCountry && <span className="text-xs shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
               </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="text-[9px] px-1 py-0 rounded" style={{
-                  background: "hsl(var(--hud-surface) / 0.5)",
-                  color: "hsl(var(--hud-cyan-dim))",
-                }}>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   {moduleConfig.emoji} {moduleConfig.label}
                 </span>
                 {thread.bookingStatus && (
-                  <span className={`text-[9px] px-1 py-0 rounded font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                     {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                   </span>
                 )}
+                <span className="inline-flex items-center gap-0.5 text-[9px]" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
+                  <Lock className="h-2 w-2" /> E2E
+                </span>
               </div>
             </div>
-            {/* Action buttons — consolidated */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+            {/* Call + actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
                 disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(false)}>
-                <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                onClick={() => handleStartCall(false)}
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+              >
+                <Phone className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-success))" }} />
+              </button>
+              <button
                 disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(true)}>
-                <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
-              </Button>
-              {/* More menu — contains status, disappearing, context, safety */}
+                onClick={() => handleStartCall(true)}
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+              >
+                <Video className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+                  <button className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
-                  {/* Status */}
                   {CONV_STATUSES.map(s => (
                     <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
                       className={convStatus === s.value ? "font-semibold" : ""}>
@@ -661,7 +666,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                    Security Info
+                    Security
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
                     <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
