@@ -699,6 +699,36 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         }}
         onCopy={() => {}}
       />
+
+      {/* Location Picker */}
+      <ChatLocationPicker
+        open={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSend={async (loc) => {
+          if (!orgId || !thread) return;
+          const locationMsg = loc.type === "live"
+            ? `📡 Live location shared for ${loc.duration}min\n📍 https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
+            : loc.type === "place"
+              ? `📍 ${loc.label}\n${loc.address || ""}\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
+              : `📍 My location\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
+          
+          const insertData: any = {
+            org_id: orgId,
+            sender_id: user?.id,
+            content: locationMsg,
+            category: "general",
+            message_type: "text",
+            sender_locale: locale,
+          };
+          if (thread.bookingId) insertData.booking_id = thread.bookingId;
+          if (thread.tenantId) insertData.tenant_id = thread.tenantId;
+          if (thread.contextType) insertData.context_type = thread.contextType;
+          if (thread.contextId) insertData.context_id = thread.contextId;
+          
+          await supabase.from("messages").insert(insertData);
+          loadMessages();
+        }}
+      />
     </>
   );
 }
