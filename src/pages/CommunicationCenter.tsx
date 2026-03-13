@@ -14,6 +14,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
 import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
+import CommCallsSection from "@/components/communication-hub/CommCallsSection";
+import CommContactsSection from "@/components/communication-hub/CommContactsSection";
+import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
@@ -89,6 +92,20 @@ const CommunicationCenter = () => {
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
   const showChatArea = activeSection === "chats";
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "calls": return <CommCallsSection />;
+      case "contacts": return <CommContactsSection />;
+      case "payments": return <CommPaymentsSection />;
+      case "groups":
+      case "meetings":
+      case "files":
+      case "settings":
+        return <CommPlaceholderSection section={activeSection} />;
+      default: return null;
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -178,7 +195,7 @@ const CommunicationCenter = () => {
               </div>
             </div>
           ) : (
-            <CommPlaceholderSection section={activeSection} />
+            renderSection()
           )}
         </div>
 
