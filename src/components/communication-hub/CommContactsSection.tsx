@@ -53,6 +53,7 @@ export default function CommContactsSection() {
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
 
