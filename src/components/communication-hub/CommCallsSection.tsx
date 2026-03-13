@@ -7,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
 import {
-  Phone, PhoneIncoming, PhoneMissed, PhoneOutgoing,
-  Video, Search, ArrowDownLeft, ArrowUpRight,
+  Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -90,14 +89,13 @@ export default function CommCallsSection() {
 
   useEffect(() => { loadCalls(); }, [loadCalls]);
 
-  const handleRedial = useCallback(async (call: CallLog, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRedial = useCallback(async (call: CallLog) => {
     if (isInCall || isStartingCall) {
       toast.info("Call already in progress");
       return;
     }
-    haptic("medium");
 
+    haptic("medium");
     const peerName = call.org_name || call.context_label || "Contact";
 
     await startCall({
@@ -250,9 +248,12 @@ export default function CommCallsSection() {
               const secondaryLabel = labels.length > 1 ? labels[1] : null;
 
               return (
-                <div
+                <button
                   key={call.id}
-                  className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left"
+                  type="button"
+                  onClick={() => void handleRedial(call)}
+                  disabled={isInCall || isStartingCall}
+                  className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left disabled:opacity-60"
                   style={{ background: "transparent" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--hud-surface) / 0.3)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -292,22 +293,11 @@ export default function CommCallsSection() {
                     </div>
                   </div>
 
-                  {/* Time + redial */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                      {formatCallTime(call.created_at)}
-                    </span>
-                    <button
-                      onClick={(e) => handleRedial(call, e)}
-                      disabled={isInCall || isStartingCall}
-                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-40"
-                      style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}
-                      title="Redial"
-                    >
-                      <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-                    </button>
-                  </div>
-                </div>
+                  {/* Time */}
+                  <span className="text-[11px] tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    {formatCallTime(call.created_at)}
+                  </span>
+                </button>
               );
             })}
           </div>
