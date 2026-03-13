@@ -23,6 +23,7 @@ import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
+import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +80,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
+  const [showSecurityPanel, setShowSecurityPanel] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -599,8 +601,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
+                    Security Info
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
+                    <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
                     Safety Number
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onToggleContext}>
@@ -987,6 +993,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         peerName={thread?.name || "Contact"}
         open={showSafetyNumber}
         onOpenChange={setShowSafetyNumber}
+      />
+
+      {/* Security Panel */}
+      <OrbitSecurityPanel
+        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
+        peerName={thread?.name || "Contact"}
+        open={showSecurityPanel}
+        onOpenChange={setShowSecurityPanel}
       />
     </>
   );
