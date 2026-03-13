@@ -76,6 +76,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showSafetyNumber, setShowSafetyNumber] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
