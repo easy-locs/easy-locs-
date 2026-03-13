@@ -315,6 +315,9 @@ export default function CommContactsSection() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* QR Contact Card */}
+      <QRContactCard open={showQR} onOpenChange={setShowQR} onContactAdded={loadContacts} />
     </div>
   );
 }
