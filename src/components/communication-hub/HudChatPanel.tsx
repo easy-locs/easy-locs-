@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles, MapPin,
+  Shield, Lock, Zap, Sparkles, MapPin, Camera,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import ChatLocationPicker from "./ChatLocationPicker";
@@ -560,7 +560,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         </div>
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -600,7 +600,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                   onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
                   onClick={() => { /* mobile: long press handled via context */ }}>
-                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
+                  <div className={`max-w-[85%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none overflow-hidden`} style={{
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
                       : isMe
@@ -716,8 +716,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+            title="Attach file or photo">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+          </Button>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]"
+            title="Send photo from camera"
+            onClick={() => {
+              const inp = document.createElement("input");
+              inp.type = "file";
+              inp.accept = "image/*";
+              inp.capture = "environment";
+              inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
+              inp.click();
+            }}>
+            <Camera className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
           <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
             <MapPin className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
