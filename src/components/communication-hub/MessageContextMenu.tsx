@@ -1,11 +1,12 @@
 /**
  * MessageContextMenu — Long-press / right-click context menu for messages.
- * Supports: delete for me, delete for everyone, copy, reply.
+ * Supports: edit, delete for me, delete for everyone, copy, reply.
  */
 import { useState } from "react";
-import { Trash2, Copy, Reply, Clock, Timer, Eye, EyeOff } from "lucide-react";
+import { Trash2, Copy, Edit3, EyeOff, Timer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
@@ -23,6 +24,7 @@ interface Props {
   onClose: () => void;
   onDeleted: (msgId: string, type: "self" | "everyone") => void;
   onCopy: (content: string) => void;
+  onEdited?: (msgId: string, newContent: string) => void;
 }
 
 const DISAPPEAR_OPTIONS = [
@@ -34,21 +36,26 @@ const DISAPPEAR_OPTIONS = [
   { value: "7d", label: "7 days", seconds: 604800 },
 ];
 
-export default function MessageContextMenu({ message, onClose, onDeleted, onCopy }: Props) {
+export default function MessageContextMenu({ message, onClose, onDeleted, onCopy, onEdited }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<"self" | "everyone" | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [saving, setSaving] = useState(false);
 
   if (!message) return null;
 
   const canDeleteForEveryone = message.isMe && 
-    (Date.now() - new Date(message.createdAt).getTime()) < 60 * 60 * 1000; // 60 min window
+    (Date.now() - new Date(message.createdAt).getTime()) < 60 * 60 * 1000;
+
+  const canEdit = message.isMe &&
+    (Date.now() - new Date(message.createdAt).getTime()) < 15 * 60 * 1000; // 15 min edit window
 
   const handleDelete = async (type: "self" | "everyone") => {
     setDeleting(true);
     haptic("medium");
 
     if (type === "everyone") {
-      // Replace content with system placeholder
       const { error } = await supabase.from("messages")
         .update({ 
           content: "🚫 This message was deleted",
@@ -64,7 +71,6 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
       }
       toast.success("Message deleted for everyone");
     } else {
-      // Delete for self: mark as hidden (we use a soft approach - add to a local hidden list)
       toast.success("Message hidden");
     }
 
@@ -82,10 +88,78 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
     onClose();
   };
 
+  const handleStartEdit = () => {
+    setEditText(message.content);
+    setEditMode(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editText.trim() || editText === message.content) {
+      setEditMode(false);
+      return;
+    }
+    setSaving(true);
+    haptic("medium");
+
+    const { error } = await supabase.from("messages")
+      .update({
+        content: editText.trim(),
+        edited_at: new Date().toISOString(),
+        edit_history: [{ content: message.content, edited_at: new Date().toISOString() }],
+      } as any)
+      .eq("id", message.msgId);
+
+    if (error) {
+      toast.error("Failed to edit message");
+      setSaving(false);
+      return;
+    }
+
+    toast.success("Message edited");
+    onEdited?.(message.msgId, editText.trim());
+    setSaving(false);
+    setEditMode(false);
+    onClose();
+  };
+
   return (
     <>
+      {/* Edit dialog */}
+      <Dialog open={editMode} onOpenChange={(v) => { if (!v) setEditMode(false); }}>
+        <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
+          <DialogHeader>
+            <DialogTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>Edit message</DialogTitle>
+            <DialogDescription className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+              You can edit within 15 minutes of sending.
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            className="w-full min-h-[80px] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2"
+            style={{
+              background: "hsl(var(--hud-surface))",
+              color: "hsl(var(--hud-text))",
+              borderColor: "hsl(var(--hud-border) / 0.15)",
+              border: "1px solid",
+            }}
+            autoFocus
+          />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setEditMode(false)}
+              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
+              Cancel
+            </Button>
+            <Button size="sm" disabled financial={saving} onClick={handleSaveEdit}
+              style={{ background: "hsl(var(--hud-cyan))", color: "white" }}>
+              {saving ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Action sheet */}
-      <Dialog open={!!message && !confirmDelete} onOpenChange={() => onClose()}>
+      <Dialog open={!!message && !confirmDelete && !editMode} onOpenChange={() => onClose()}>
         <DialogContent className="max-w-xs p-0 overflow-hidden" style={{ 
           background: "hsl(var(--hud-bg))", 
           borderColor: "hsl(var(--hud-border) / 0.15)",
@@ -109,6 +183,15 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
               <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
               Copy text
             </button>
+
+            {canEdit && (
+              <button onClick={handleStartEdit}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
+                style={{ color: "hsl(var(--hud-cyan))" }}>
+                <Edit3 className="h-4 w-4" />
+                Edit message
+              </button>
+            )}
 
             <button onClick={() => setConfirmDelete("self")}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
