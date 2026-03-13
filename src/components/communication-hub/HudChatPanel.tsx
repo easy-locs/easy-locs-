@@ -80,6 +80,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
+  const [showSecurityPanel, setShowSecurityPanel] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
