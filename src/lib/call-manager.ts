@@ -456,6 +456,16 @@ export class CallManager {
     };
   }
 
+  private attemptIceRestart() {
+    if (!this.pc) return;
+    this.debug("attemptIceRestart");
+    try {
+      this.pc.restartIce();
+    } catch (err) {
+      this.debug("restartIce failed", { error: String(err) });
+    }
+  }
+
   private async detectRelay() {
     if (!this.pc) return;
     try {

@@ -46,6 +46,7 @@ export default function OrbitHome() {
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
   const { smartActions, loading: dashLoading } = useOrbitDashboard();
+  useOrbitCallSync();
   const navigate = useNavigate();
 
   useEffect(() => {
