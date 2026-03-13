@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
+import { format as fmtDate } from "date-fns";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryConfig } from "@/lib/country-config";
