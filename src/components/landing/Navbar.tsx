@@ -165,11 +165,11 @@ const Navbar = () => {
           </Link>
           <Link
             to="/signup"
-            className="text-[11px] sm:text-sm font-bold px-2.5 sm:px-5 py-1.5 sm:py-2 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0 max-w-[120px] sm:max-w-none truncate"
+            className="text-[10px] sm:text-xs font-bold px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg transition-all relative overflow-hidden whitespace-nowrap shrink-0"
             style={{
               background: "var(--gradient-gold)",
               color: "hsl(var(--accent-foreground))",
-              boxShadow: "0 0 16px hsl(var(--accent) / 0.2)",
+              boxShadow: "0 0 12px hsl(var(--accent) / 0.15)",
             }}
           >
             <span className="relative z-10 sm:hidden">{t("landing.nav.signup") || "Sign Up"}</span>
