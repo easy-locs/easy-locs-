@@ -1,10 +1,10 @@
 /**
- * CommContactsSection — Real contacts from contacts table + org members.
- * Categories: All, Clients, Team, Professionals, Favorites, Recent
+ * CommContactsSection — Real contacts with presence indicators and operational actions.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
@@ -44,6 +45,7 @@ function getInitials(name: string): string {
 
 export default function CommContactsSection() {
   const { user, orgId } = useAuth();
+  const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<ContactCategory>("all");
@@ -51,6 +53,10 @@ export default function CommContactsSection() {
   const [showAdd, setShowAdd] = useState(false);
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
+
+  // Get presence for contacts that have user IDs
+  const contactUserIds = contacts.filter(c => c.contact_user_id).map(c => c.contact_user_id!);
+  const presenceMap = usePresenceStatus(contactUserIds);
 
   const loadContacts = useCallback(async () => {
     if (!user?.id) return;
@@ -76,15 +82,12 @@ export default function CommContactsSection() {
     }
     return true;
   }).sort((a, b) => {
-    if (category === "recent") {
-      return new Date(b.last_contacted_at || 0).getTime() - new Date(a.last_contacted_at || 0).getTime();
-    }
+    if (category === "recent") return new Date(b.last_contacted_at || 0).getTime() - new Date(a.last_contacted_at || 0).getTime();
     if (category === "favorite") return (b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0);
     return a.name.localeCompare(b.name);
   });
 
-  // Group by first letter for "all" view
-  const grouped = category === "all" || category === "favorite" ? 
+  const grouped = category === "all" || category === "favorite" ?
     filtered.reduce((acc, c) => {
       const letter = c.name[0]?.toUpperCase() || "#";
       if (!acc[letter]) acc[letter] = [];
@@ -120,77 +123,84 @@ export default function CommContactsSection() {
     await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
   };
 
-  const renderContact = (contact: Contact) => (
-    <div
-      key={contact.id}
-      className="flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors"
-    >
-      {/* Avatar */}
-      <div
-        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-        style={{
-          background: contact.avatar_url ? `url(${contact.avatar_url}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
-          color: "hsl(var(--hud-cyan))",
-        }}
-      >
-        {!contact.avatar_url && getInitials(contact.name)}
-      </div>
+  const startChat = (contact: Contact) => {
+    haptic("medium");
+    navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(contact.name)}`);
+  };
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
-            {contact.name}
-          </span>
-          {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(45, 90%, 55%)" }} />}
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {contact.company && (
-            <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {contact.company}
-            </span>
-          )}
-          <span
-            className="text-[10px] px-1.5 py-0.5 rounded-full"
+  const startCall = (contact: Contact) => {
+    haptic("medium");
+    navigate(`/dashboard/communication?section=calls`);
+  };
+
+  const renderContact = (contact: Contact) => {
+    const presence = contact.contact_user_id ? presenceMap[contact.contact_user_id] : null;
+    return (
+      <div key={contact.id}
+        className="flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors">
+        {/* Avatar with presence */}
+        <div className="relative shrink-0">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold"
             style={{
-              background: "hsl(var(--hud-surface))",
-              color: "hsl(var(--hud-text-dim) / 0.5)",
-            }}
-          >
-            {contact.category}
-          </span>
+              background: contact.avatar_url ? `url(${contact.avatar_url}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
+              color: "hsl(var(--hud-cyan))",
+            }}>
+            {!contact.avatar_url && getInitials(contact.name)}
+          </div>
+          {presence && (
+            <div className="absolute -bottom-0.5 -right-0.5">
+              <PresenceDot status={presence.status} size={10} />
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+              {contact.name}
+            </span>
+            {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(45, 90%, 55%)" }} />}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            {presence && presence.status !== "offline" && (
+              <span className="text-[10px] font-medium" style={{ color: presenceColor(presence.status) }}>
+                {presenceLabel(presence.status)}
+              </span>
+            )}
+            {contact.company && (
+              <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                {contact.company}
+              </span>
+            )}
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {contact.category}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={() => toggleFavorite(contact)} className="w-8 h-8 rounded-full flex items-center justify-center">
+            <Star className="h-4 w-4"
+              fill={contact.is_favorite ? "hsl(45, 90%, 55%)" : "none"}
+              style={{ color: contact.is_favorite ? "hsl(45, 90%, 55%)" : "hsl(var(--hud-text-dim) / 0.2)" }} />
+          </button>
+          <button onClick={() => startChat(contact)}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}>
+            <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </button>
+          <button onClick={() => startCall(contact)}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}>
+            <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </button>
         </div>
       </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          onClick={() => toggleFavorite(contact)}
-          className="w-8 h-8 rounded-full flex items-center justify-center"
-        >
-          <Star
-            className="h-4 w-4"
-            fill={contact.is_favorite ? "hsl(45, 90%, 55%)" : "none"}
-            style={{ color: contact.is_favorite ? "hsl(45, 90%, 55%)" : "hsl(var(--hud-text-dim) / 0.2)" }}
-          />
-        </button>
-        <button
-          onClick={() => haptic("light")}
-          className="w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}
-        >
-          <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-        </button>
-        <button
-          onClick={() => haptic("light")}
-          className="w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}
-        >
-          <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
@@ -198,43 +208,25 @@ export default function CommContactsSection() {
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 gap-1.5 text-xs"
-            style={{ color: "hsl(var(--hud-cyan))" }}
-            onClick={() => setShowAdd(true)}
-          >
-            <UserPlus className="h-4 w-4" />
-            Add
+          <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+            style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
+            <UserPlus className="h-4 w-4" /> Add
           </Button>
         </div>
-
-        {/* Search */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search contacts..."
-            className="pl-9 h-9 text-sm border-0"
-            style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-          />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..."
+            className="pl-9 h-9 text-sm border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
-
-        {/* Category tabs */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {CATEGORY_TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => { haptic("selection"); setCategory(tab.id); }}
+            <button key={tab.id} onClick={() => { haptic("selection"); setCategory(tab.id); }}
               className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
               style={{
                 background: category === tab.id ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.5)",
                 color: category === tab.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
                 border: `1px solid ${category === tab.id ? "hsl(var(--hud-cyan) / 0.2)" : "transparent"}`,
-              }}
-            >
+              }}>
               {tab.label}
             </button>
           ))}
@@ -253,15 +245,9 @@ export default function CommContactsSection() {
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               {search ? "No contacts found" : "No contacts yet"}
             </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3 gap-1.5"
-              style={{ color: "hsl(var(--hud-cyan))" }}
-              onClick={() => setShowAdd(true)}
-            >
-              <UserPlus className="h-4 w-4" />
-              Add your first contact
+            <Button size="sm" variant="ghost" className="mt-3 gap-1.5" style={{ color: "hsl(var(--hud-cyan))" }}
+              onClick={() => setShowAdd(true)}>
+              <UserPlus className="h-4 w-4" /> Add your first contact
             </Button>
           </div>
         ) : grouped ? (
@@ -289,39 +275,23 @@ export default function CommContactsSection() {
           <div className="space-y-3">
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Name *</Label>
-              <Input
-                value={newContact.name}
-                onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))}
-                className="mt-1 border-0"
-                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-              />
+              <Input value={newContact.name} onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))}
+                className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Email</Label>
-              <Input
-                value={newContact.email}
-                onChange={e => setNewContact(p => ({ ...p, email: e.target.value }))}
-                className="mt-1 border-0"
-                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-              />
+              <Input value={newContact.email} onChange={e => setNewContact(p => ({ ...p, email: e.target.value }))}
+                className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Phone</Label>
-              <Input
-                value={newContact.phone}
-                onChange={e => setNewContact(p => ({ ...p, phone: e.target.value }))}
-                className="mt-1 border-0"
-                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-              />
+              <Input value={newContact.phone} onChange={e => setNewContact(p => ({ ...p, phone: e.target.value }))}
+                className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Company</Label>
-              <Input
-                value={newContact.company}
-                onChange={e => setNewContact(p => ({ ...p, company: e.target.value }))}
-                className="mt-1 border-0"
-                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-              />
+              <Input value={newContact.company} onChange={e => setNewContact(p => ({ ...p, company: e.target.value }))}
+                className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Category</Label>
@@ -337,12 +307,8 @@ export default function CommContactsSection() {
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              className="w-full"
-              disabled={!newContact.name.trim() || saving}
-              onClick={handleAddContact}
-              style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
-            >
+            <Button className="w-full" disabled={!newContact.name.trim() || saving} onClick={handleAddContact}
+              style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
               {saving ? "Adding..." : "Add Contact"}
             </Button>
           </div>
@@ -350,4 +316,15 @@ export default function CommContactsSection() {
       </Dialog>
     </div>
   );
+}
+
+function presenceColor(status: string): string {
+  const colors: Record<string, string> = {
+    online: "hsl(142, 70%, 50%)",
+    away: "hsl(45, 90%, 55%)",
+    busy: "hsl(0, 70%, 60%)",
+    in_call: "hsl(270, 80%, 65%)",
+    dnd: "hsl(0, 70%, 50%)",
+  };
+  return colors[status] || "hsl(var(--hud-text-dim) / 0.4)";
 }
