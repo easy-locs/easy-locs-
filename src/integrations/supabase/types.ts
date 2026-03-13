@@ -2986,8 +2986,12 @@ export type Database = {
           context_type: string | null
           conversation_status: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           deleted_for_all: boolean | null
           deleted_for_sender: boolean | null
+          deleted_for_user_ids: string[] | null
+          deletion_reason: string | null
           delivered: boolean | null
           disappear_at: string | null
           edit_history: Json | null
@@ -3028,8 +3032,12 @@ export type Database = {
           context_type?: string | null
           conversation_status?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
+          deleted_for_user_ids?: string[] | null
+          deletion_reason?: string | null
           delivered?: boolean | null
           disappear_at?: string | null
           edit_history?: Json | null
@@ -3070,8 +3078,12 @@ export type Database = {
           context_type?: string | null
           conversation_status?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
+          deleted_for_user_ids?: string[] | null
+          deletion_reason?: string | null
           delivered?: boolean | null
           disappear_at?: string | null
           edit_history?: Json | null
