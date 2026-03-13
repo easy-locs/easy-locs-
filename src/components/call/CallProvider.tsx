@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
 import { logCallEventToThread } from "@/lib/call-thread-logger";
+import { toast } from "sonner";
 import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
 
