@@ -392,7 +392,7 @@ export function useConversationThreads() {
         }
       }
 
-      if (allMsgs) {
+      if (allMsgs.length > 0) {
         for (const m of allMsgs) {
           let key: string | null = null;
 
