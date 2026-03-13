@@ -350,6 +350,11 @@ const App = () => (
               <Route path="/client/payments" element={<ProtectedRoute><ClientPayments /></ProtectedRoute>} />
               <Route path="/client/settings" element={<ProtectedRoute><ClientSettings /></ProtectedRoute>} />
 
+              {/* ══════ ORBIT APP ══════ */}
+              <Route path="/app" element={<ProtectedRoute><OrbitAppShell /></ProtectedRoute>}>
+                <Route path="orbit" element={<OrbitHome />} />
+              </Route>
+
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
