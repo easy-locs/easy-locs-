@@ -1,6 +1,7 @@
 /**
  * OrbitAppShell — Persistent shell for /app/* routes.
  * Includes header, bottom nav, and main content area.
+ * Phase 3: Realtime subscriptions for instant signal updates.
  */
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,8 +17,9 @@ import {
   Search,
 } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Orbit", path: "/app/orbit", badge: null as string | null },

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";

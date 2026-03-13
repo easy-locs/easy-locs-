@@ -23,11 +23,11 @@ const SECONDARY_CARDS = [
   { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
-  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?section=privacy" },
+  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings?section=security" },
+  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings?section=data" },
+  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings?section=data" },
+  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings?section=branding" },
 ];
 
 export default function OrbitHome() {
