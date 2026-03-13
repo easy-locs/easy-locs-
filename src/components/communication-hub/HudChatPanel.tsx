@@ -716,8 +716,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+            title="Attach file or photo">
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+          </Button>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]"
+            title="Send photo from camera"
+            onClick={() => {
+              const inp = document.createElement("input");
+              inp.type = "file";
+              inp.accept = "image/*";
+              inp.capture = "environment";
+              inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
+              inp.click();
+            }}>
+            <Camera className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
           <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
             <MapPin className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
