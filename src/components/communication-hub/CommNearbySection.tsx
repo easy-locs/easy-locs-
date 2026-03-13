@@ -231,6 +231,10 @@ export default function CommNearbySection() {
 
   // ═══ No location state ═══
   if (!lat || !lng) {
+    // Auto-request location when entering Nearby
+    if (!geoLoading && !geoError) {
+      requestLocation();
+    }
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-6" style={{ background: "hsl(var(--hud-bg))" }}>
         <div className="relative w-32 h-32 mb-6">
