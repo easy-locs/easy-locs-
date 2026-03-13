@@ -643,6 +643,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
           </Button>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
+            <MapPin className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+          </Button>
           <div className="hidden sm:block">
             <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
           </div>
