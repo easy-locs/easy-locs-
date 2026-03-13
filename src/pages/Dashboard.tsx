@@ -5,7 +5,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import IntelligenceOrb from "@/components/dashboard/IntelligenceOrb";
 import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
