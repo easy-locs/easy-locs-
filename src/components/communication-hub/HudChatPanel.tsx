@@ -179,12 +179,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         } catch (e) { console.error("Translation failed:", e); }
       }
 
+      // E2E Encryption: encrypt content if peer key is available
+      let storedContent = content;
+      const peerId = thread.tenantId || thread.contextId || thread.id;
+      if (e2eReady && peerId) {
+        const encrypted = await encrypt(content, peerId);
+        if (encrypted) storedContent = encrypted;
+      }
+
       await supabase.from("messages").insert({
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content, translated_content: translatedContent,
+        content: storedContent, translated_content: translatedContent,
         category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
         sender_locale: locale, read: false, message_type: "user",
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
