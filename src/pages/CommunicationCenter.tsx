@@ -64,9 +64,11 @@ const CommunicationCenter = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  const pendingThreadRetryRef = useRef<string | null>(null);
+
   useEffect(() => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
-    if (!threadParam || loading || threads.length === 0) return;
+    if (!threadParam || loading) return;
     const found = threads.find(t =>
       t.id === `booking-${threadParam}` || t.id === threadParam ||
       t.bookingId === threadParam || t.dealId === threadParam ||
@@ -74,8 +76,18 @@ const CommunicationCenter = () => {
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
       t.leadId === threadParam || t.contextId === threadParam
     );
-    if (found) { setSelectedThread(found); setActiveSection("chats"); setSearchParams({}, { replace: true }); }
-  }, [threads, loading, searchParams, setSearchParams]);
+    if (found) {
+      setSelectedThread(found);
+      setActiveSection("chats");
+      setSearchParams({}, { replace: true });
+      pendingThreadRetryRef.current = null;
+    } else if (threads.length > 0 && pendingThreadRetryRef.current !== threadParam) {
+      // Thread not found — might be freshly created, reload once
+      pendingThreadRetryRef.current = threadParam;
+      const timer = setTimeout(() => loadThreads(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [threads, loading, searchParams, setSearchParams, loadThreads]);
 
   useEffect(() => {
     const searchQ = searchParams.get("search");
