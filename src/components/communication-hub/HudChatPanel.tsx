@@ -291,14 +291,18 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !thread || !user) return;
+    if (!newMessage.trim() || !thread) return;
+
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+
     if (!orgId) {
       toast.error("Please select a workspace to send messages");
       return;
     }
     // Rate limiting
     const { checkMessageRate, detectAbuse } = await import("@/lib/orbit-rate-limiter");
-    const rateCheck = checkMessageRate(user.id);
+    const rateCheck = checkMessageRate(authUserId);
     if (!rateCheck.allowed) {
       toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
       return;
