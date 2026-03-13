@@ -643,6 +643,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Message Context Menu */}
+      <MessageContextMenu
+        message={contextMessage}
+        onClose={() => setContextMessage(null)}
+        onDeleted={(msgId, type) => {
+          if (type === "self") {
+            setHiddenMsgIds(prev => new Set([...prev, msgId]));
+          } else {
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+          }
+        }}
+        onCopy={() => {}}
+      />
     </>
   );
 }
