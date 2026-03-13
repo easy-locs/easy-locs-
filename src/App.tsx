@@ -210,7 +210,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CallProvider>
-          <RealtimeMessageToast />
+           <OrbitSessionGuard />
+           <RealtimeMessageToast />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
