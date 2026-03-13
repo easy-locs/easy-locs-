@@ -23,6 +23,7 @@ import { haptic } from "@/lib/haptics";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 
 interface NearbyItem {
   item_id: string;
@@ -315,22 +316,11 @@ export default function CommNearbySection() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {TYPE_FILTERS.map(f => {
-            const Icon = f.icon;
-            return (
-              <button key={f.id} onClick={() => { haptic("selection"); setTypeFilter(f.id); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
-                style={{
-                  background: typeFilter === f.id ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.5)",
-                  color: typeFilter === f.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
-                  border: `1px solid ${typeFilter === f.id ? "hsl(var(--hud-cyan) / 0.2)" : "transparent"}`,
-                }}>
-                <Icon className="h-3 w-3" /> {f.label}
-              </button>
-            );
-          })}
-        </div>
+        <ScrollableFilterBar<NearbyFilter>
+          options={TYPE_FILTERS.map(f => ({ id: f.id, label: f.label, icon: f.icon }))}
+          value={typeFilter}
+          onChange={setTypeFilter}
+        />
 
         {/* Quick toggles */}
         {(typeFilter === "professionals" || typeFilter === "people" || typeFilter === "all") && (
