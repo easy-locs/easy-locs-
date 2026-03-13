@@ -696,6 +696,9 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Ensure no horizontal overflow on mobile */
