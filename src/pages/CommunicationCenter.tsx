@@ -133,6 +133,8 @@ const CommunicationCenter = () => {
         return <CommPlaceholderSection section={activeSection} />;
       case "settings":
         return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
+      case "you":
+        return <OrbitAccountSection />;
       default: return null;
     }
   };
