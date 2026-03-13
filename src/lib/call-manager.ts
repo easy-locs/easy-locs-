@@ -530,7 +530,8 @@ export class CallManager {
       const oldPc = this.pc;
       try { oldPc.close(); } catch {}
 
-      this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "relay" });
+      const iceServers = await getIceServers();
+      this.pc = new RTCPeerConnection({ iceServers, iceTransportPolicy: "relay" });
       this.remoteStream = new MediaStream();
       this._pendingCandidates = [];
       this.onStateChange({ remoteStream: this.remoteStream, usingRelay: true });
