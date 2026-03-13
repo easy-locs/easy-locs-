@@ -1,15 +1,13 @@
 /**
- * InAppCallDialog — Full in-app call UI (caller & callee).
- * Supports audio AND video calls with camera feed display.
- * Mobile-first design with bottom-sheet feel.
- * Safari: handles audio.play() promise + playsInline.
+ * InAppCallDialog — Premium call UI (caller & callee).
+ * Audio + video calls with camera feed, speaker/earpiece toggle.
+ * Mobile-first, Signal/WhatsApp-grade design.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import {
   PhoneOff, Mic, MicOff, Volume2, VolumeX, VideoIcon, VideoOff,
-  Loader2, Shield, MessageSquare, WifiOff, User, CameraIcon, RotateCcw,
+  Loader2, Shield, MessageSquare, WifiOff, User, RotateCcw,
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
 
@@ -41,14 +39,10 @@ export default function InAppCallDialog({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
-  // Attach remote stream - separate audio and video handling
   useEffect(() => {
     if (!remoteStream) return;
-
     const hasVideo = remoteStream.getVideoTracks().length > 0;
     const hasAudio = remoteStream.getAudioTracks().length > 0;
-
-    // Always attach audio to dedicated audio element
     if (hasAudio && remoteAudioRef.current) {
       const audioEl = remoteAudioRef.current;
       const audioStream = new MediaStream(remoteStream.getAudioTracks());
@@ -62,15 +56,12 @@ export default function InAppCallDialog({
         document.addEventListener("click", retry, { once: true });
       });
     }
-
-    // Attach video if tracks exist
     if (hasVideo && remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play().catch(() => {});
     }
   }, [remoteStream]);
 
-  // Attach local stream for self-view
   useEffect(() => {
     if (localStream && localVideoRef.current) {
       localVideoRef.current.srcObject = localStream;
@@ -90,26 +81,14 @@ export default function InAppCallDialog({
   }, []);
 
   useEffect(() => {
-    if (callManager) {
-      callManager.onStateChange = handleStateChange;
-    }
+    if (callManager) callManager.onStateChange = handleStateChange;
   }, [callManager, handleStateChange]);
 
-  // Reset state when dialog opens
   useEffect(() => {
     if (open) {
-      setStatus("idle");
-      setMuted(false);
-      setSpeakerOn(true);
-      setVideoEnabled(false);
-      setElapsed(0);
-      setUsingRelay(false);
-      setError(null);
-      setRemoteStream(null);
-      setLocalStream(null);
-      setIsVideo(false);
-      setIsEnding(false);
-      setFacingMode("user");
+      setStatus("idle"); setMuted(false); setSpeakerOn(true); setVideoEnabled(false);
+      setElapsed(0); setUsingRelay(false); setError(null);
+      setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
     }
   }, [open]);
 
@@ -117,29 +96,20 @@ export default function InAppCallDialog({
     if (isEnding) return;
     setIsEnding(true);
     try {
-      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(status)) {
-        await callManager?.endCall();
-      }
+      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(status)) await callManager?.endCall();
       onClose();
-    } finally {
-      setIsEnding(false);
-    }
+    } finally { setIsEnding(false); }
   };
 
-  const handleToggleMute = () => {
-    const isMuted = callManager?.toggleMute();
-    setMuted(!!isMuted);
-  };
+  const handleToggleMute = () => { const isMuted = callManager?.toggleMute(); setMuted(!!isMuted); };
 
   const handleToggleVideo = async () => {
     if (!localStream || !callManager) return;
     const videoTracks = localStream.getVideoTracks();
     if (videoTracks.length > 0) {
-      // Toggle existing video tracks
       videoTracks.forEach(t => { t.enabled = !t.enabled; });
       setVideoEnabled(videoTracks.some(t => t.enabled));
     } else {
-      // No video track yet - add one dynamically
       try {
         const videoStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
@@ -147,14 +117,10 @@ export default function InAppCallDialog({
         const videoTrack = videoStream.getVideoTracks()[0];
         if (videoTrack) {
           localStream.addTrack(videoTrack);
-          setVideoEnabled(true);
-          setIsVideo(true);
-          // Notify CallManager to add track to peer connection
+          setVideoEnabled(true); setIsVideo(true);
           callManager.addVideoTrack?.(videoTrack);
         }
-      } catch {
-        // Camera access denied
-      }
+      } catch {}
     }
   };
 
@@ -168,231 +134,270 @@ export default function InAppCallDialog({
       });
       const newTrack = videoStream.getVideoTracks()[0];
       const oldTrack = localStream.getVideoTracks()[0];
-      if (oldTrack) {
-        localStream.removeTrack(oldTrack);
-        oldTrack.stop();
-      }
-      if (newTrack) {
-        localStream.addTrack(newTrack);
-        callManager?.replaceVideoTrack?.(newTrack);
-      }
+      if (oldTrack) { localStream.removeTrack(oldTrack); oldTrack.stop(); }
+      if (newTrack) { localStream.addTrack(newTrack); callManager?.replaceVideoTrack?.(newTrack); }
     } catch {}
   };
 
   const handleToggleSpeaker = () => {
     const newState = !speakerOn;
     setSpeakerOn(newState);
-
     const audioEl = remoteAudioRef.current;
     if (audioEl) {
-      audioEl.volume = 1;
-      audioEl.muted = false;
-      // Switch audio output: "communications" = earpiece, "default" = speaker
+      audioEl.volume = 1; audioEl.muted = false;
       if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
         (audioEl as any).setSinkId(newState ? "default" : "communications").catch(() => {
-          // Fallback: try default if communications not available
           (audioEl as any).setSinkId("default").catch(() => {});
         });
       }
     }
-
-    // iOS audioSession API
     const nav = navigator as any;
     if (nav?.audioSession && typeof nav.audioSession === "object") {
-      try {
-        // "playback" routes to speaker, "play-and-record" routes to earpiece
-        nav.audioSession.type = newState ? "playback" : "play-and-record";
-      } catch {}
+      try { nav.audioSession.type = newState ? "playback" : "play-and-record"; } catch {}
     }
-
-    // Android WebView: try AudioContext routing hint
     try {
       const audioCtx = new AudioContext();
-      if ((audioCtx as any).setSinkId) {
-        (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
-      }
+      if ((audioCtx as any).setSinkId) (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
       audioCtx.close();
     } catch {}
   };
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, "0")}`;
-  };
-
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const isNetworkBlocked = status === "network_blocked" || status === "failed";
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
 
-  const statusConfig: Record<string, { label: string; icon?: React.ReactNode }> = {
-    idle: { label: "" },
-    ringing: { label: "Ringing...", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-    connecting: { label: "Connecting...", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-    active: { label: formatTime(elapsed) },
-    ended: { label: "Call ended" },
-    declined: { label: "Call declined" },
-    missed: { label: "No answer" },
-    failed: { label: "Call failed" },
-    network_blocked: { label: "Network restricted" },
+  const statusLabel: Record<string, string> = {
+    idle: "", ringing: "Ringing…", connecting: "Connecting…",
+    active: fmt(elapsed), ended: "Call ended", declined: "Call declined",
+    missed: "No answer", failed: "Call failed", network_blocked: "Network restricted",
   };
+  const isLoading = status === "ringing" || status === "connecting";
+  const label = statusLabel[status] || "";
 
-  const current = statusConfig[status] || statusConfig.idle;
+  /** Reusable control button */
+  const CtrlBtn = ({ onClick, disabled, active, activeColor, icon, text }: {
+    onClick: () => void; disabled?: boolean; active?: boolean;
+    activeColor?: string; icon: React.ReactNode; text: string;
+  }) => (
+    <div className="flex flex-col items-center gap-1.5">
+      <button
+        onClick={onClick} disabled={disabled}
+        className="w-14 h-14 rounded-full flex items-center justify-center transition-all disabled:opacity-40"
+        style={{
+          background: active
+            ? `hsl(${activeColor || "var(--primary)"} / 0.15)`
+            : "hsl(var(--muted))",
+          color: active
+            ? `hsl(${activeColor || "var(--primary)"})`
+            : "hsl(var(--foreground))",
+        }}
+      >
+        {icon}
+      </button>
+      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>{text}</span>
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleEndCall()}>
-      <DialogContent className={`p-0 overflow-hidden border-0 ${showVideoUI ? "sm:max-w-lg max-h-[100dvh]" : "sm:max-w-sm"}`} style={{ background: "hsl(var(--background))", borderRadius: showVideoUI ? 0 : undefined }}>
-        {/* Hidden audio element for remote stream */}
+      <DialogContent
+        className="p-0 overflow-hidden border-0"
+        style={{
+          background: "hsl(var(--background))",
+          borderRadius: showVideoUI ? 0 : 20,
+          maxWidth: showVideoUI ? "100%" : 380,
+          maxHeight: "100dvh",
+        }}
+      >
         <audio ref={remoteAudioRef} autoPlay playsInline />
 
         {showVideoUI ? (
-          /* ═══ VIDEO CALL LAYOUT ═══ */
-          <div className="relative" style={{ minHeight: 400 }}>
-            {/* Remote video (fullscreen) */}
-            <video ref={remoteVideoRef} autoPlay playsInline
-              className="w-full h-full object-cover bg-black"
-              style={{ minHeight: 400 }}
-            />
+          /* ═══ VIDEO CALL ═══ */
+          <div className="relative" style={{ minHeight: 420 }}>
+            <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" style={{ minHeight: 420, background: "hsl(var(--background))" }} />
             {!hasRemoteVideo && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background">
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "hsl(var(--background))" }}>
                 <div className="text-center">
-                  <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <User className="h-10 w-10 text-primary/60" />
+                  <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-4" style={{
+                    background: "hsl(var(--primary) / 0.06)",
+                    border: "2px solid hsl(var(--primary) / 0.12)",
+                  }}>
+                    <span className="text-4xl font-bold" style={{ color: "hsl(var(--primary) / 0.5)" }}>
+                      {(peerName || "?")[0].toUpperCase()}
+                    </span>
                   </div>
-                  <p className="text-lg font-semibold text-foreground">{peerName}</p>
-                  <div className="flex items-center justify-center gap-1.5 mt-2 text-sm text-muted-foreground">
-                    {current.icon}
-                    <span className={status === "active" ? "font-mono font-medium text-foreground" : ""}>{current.label}</span>
-                  </div>
+                  <p className="text-lg font-semibold" style={{ color: "hsl(var(--foreground))" }}>{peerName}</p>
+                  <p className="text-sm mt-1.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    {isLoading && <Loader2 className="h-3 w-3 animate-spin inline mr-1" />}
+                    <span className={status === "active" ? "font-mono font-semibold" : ""}>{label}</span>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Local self-view (picture-in-picture) */}
+            {/* Self-view PIP */}
             {videoEnabled && (
-              <div className="absolute top-4 right-4 w-28 h-40 rounded-xl overflow-hidden shadow-lg border border-border/50">
+              <div className="absolute top-4 right-4 w-28 h-40 rounded-2xl overflow-hidden shadow-xl" style={{ border: "2px solid hsl(var(--border) / 0.3)" }}>
                 <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover mirror-video" />
-                {/* Flip camera button */}
                 <button onClick={handleFlipCamera}
-                  className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-                  <RotateCcw className="h-3 w-3 text-white" />
+                  className="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(4px)" }}>
+                  <RotateCcw className="h-3.5 w-3.5" style={{ color: "hsl(var(--foreground))" }} />
                 </button>
               </div>
             )}
 
-            {/* Status overlay */}
-            <div className="absolute top-4 left-4 flex items-center gap-2">
-              {usingRelay && status === "active" && (
-                <Badge variant="outline" className="gap-1 text-[10px] text-amber-600 border-amber-300 bg-background/80 backdrop-blur-sm">Relay</Badge>
-              )}
-              <Badge variant="outline" className="gap-1 text-[10px] bg-background/80 backdrop-blur-sm">
-                <Shield className="h-2.5 w-2.5 text-green-500" /> Encrypted
-              </Badge>
+            {/* Top badges */}
+            <div className="absolute top-4 left-4 flex items-center gap-1.5">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{
+                background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
+                color: "hsl(142 70% 50%)",
+              }}>
+                <Shield className="h-2.5 w-2.5" /> Encrypted
+              </div>
               {status === "active" && (
-                <Badge variant="outline" className="text-[10px] font-mono bg-background/80 backdrop-blur-sm">{formatTime(elapsed)}</Badge>
+                <div className="px-2 py-1 rounded-full text-[10px] font-mono font-semibold" style={{
+                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
+                  color: "hsl(var(--foreground))",
+                }}>{fmt(elapsed)}</div>
+              )}
+              {usingRelay && status === "active" && (
+                <div className="px-2 py-1 rounded-full text-[10px] font-medium" style={{
+                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
+                  color: "hsl(38 90% 55%)",
+                }}>Relay</div>
               )}
             </div>
 
-            {/* Controls */}
-            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-3">
+            {/* Video controls */}
+            <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-4">
               <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
-                className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md ${muted ? "bg-destructive/80 text-white" : "bg-background/70 text-foreground"} disabled:opacity-40`}>
+                className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
+                style={{
+                  background: muted ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
+                  backdropFilter: "blur(8px)",
+                  color: muted ? "hsl(var(--destructive-foreground))" : "hsl(var(--foreground))",
+                }}>
                 {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </button>
               <button onClick={handleToggleVideo} disabled={status !== "active" || isEnding}
-                className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md ${!videoEnabled ? "bg-destructive/80 text-white" : "bg-background/70 text-foreground"} disabled:opacity-40`}>
+                className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
+                style={{
+                  background: !videoEnabled ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
+                  backdropFilter: "blur(8px)",
+                  color: !videoEnabled ? "hsl(var(--destructive-foreground))" : "hsl(var(--foreground))",
+                }}>
                 {videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
               </button>
               <button onClick={handleEndCall} disabled={isEnding}
-                className="w-14 h-14 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-lg disabled:opacity-60">
+                className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60"
+                style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                 {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
               </button>
               <button onClick={handleToggleSpeaker} disabled={status !== "active" || isEnding}
-                className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md ${!speakerOn ? "bg-destructive/80 text-white" : "bg-background/70 text-foreground"} disabled:opacity-40`}>
+                className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
+                style={{
+                  background: speakerOn ? "hsl(var(--primary) / 0.2)" : "hsl(var(--background) / 0.6)",
+                  backdropFilter: "blur(8px)",
+                  color: speakerOn ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+                }}>
                 {speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
               </button>
             </div>
           </div>
         ) : (
-          /* ═══ AUDIO CALL LAYOUT ═══ */
+          /* ═══ AUDIO CALL ═══ */
           <div className="flex flex-col items-center">
-            <div className="pt-10 pb-6 px-6 text-center w-full">
-              <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-5" style={{
-                background: "hsl(var(--primary) / 0.08)",
-                border: "2px solid hsl(var(--primary) / 0.15)",
+            <div className="pt-12 pb-6 px-8 text-center w-full">
+              {/* Avatar */}
+              <div className="mx-auto w-28 h-28 rounded-full flex items-center justify-center mb-6" style={{
+                background: "hsl(var(--primary) / 0.06)",
+                border: "3px solid hsl(var(--primary) / 0.12)",
+                boxShadow: status === "active" ? "0 0 0 8px hsl(var(--primary) / 0.04)" : undefined,
               }}>
-                <span className="text-3xl font-bold" style={{ color: "hsl(var(--primary) / 0.6)" }}>
+                <span className="text-4xl font-bold" style={{ color: "hsl(var(--primary) / 0.5)" }}>
                   {(peerName || "?")[0].toUpperCase()}
                 </span>
               </div>
-              <p className="text-xl font-semibold text-foreground">{peerName}</p>
-              {contextLabel && <p className="text-xs text-muted-foreground mt-1 truncate">{contextLabel}</p>}
-              <div className="flex items-center justify-center gap-2 mt-3">
+
+              <p className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>{peerName}</p>
+              {contextLabel && <p className="text-xs mt-1 truncate" style={{ color: "hsl(var(--muted-foreground))" }}>{contextLabel}</p>}
+
+              {/* Encrypted badge */}
+              <div className="flex items-center justify-center gap-1.5 mt-3">
+                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium" style={{
+                  background: "hsl(142 70% 50% / 0.08)", color: "hsl(142 70% 50%)",
+                }}>
+                  <Shield className="h-2.5 w-2.5" /> Encrypted
+                </div>
                 {usingRelay && status === "active" && (
-                  <Badge variant="outline" className="gap-1 text-[10px] text-amber-600 border-amber-300">Relay</Badge>
+                  <div className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium" style={{
+                    background: "hsl(38 90% 55% / 0.08)", color: "hsl(38 90% 55%)",
+                  }}>Relay</div>
                 )}
-                <Badge variant="outline" className="gap-1 text-[10px]">
-                  <Shield className="h-2.5 w-2.5" style={{ color: "hsl(142 80% 50%)" }} /> Encrypted
-                </Badge>
               </div>
-              <div className="mt-4 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
-                {current.icon}
-                <span className={status === "active" ? "font-mono text-foreground font-semibold text-lg" : ""}>{current.label}</span>
+
+              {/* Status */}
+              <div className="mt-5 flex items-center justify-center gap-1.5">
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--muted-foreground))" }} />}
+                <span className={`text-sm ${status === "active" ? "font-mono font-bold text-lg" : ""}`} style={{
+                  color: status === "active" ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                }}>{label}</span>
               </div>
             </div>
 
-            {isNetworkBlocked && (
-              <div className="px-6 pb-8 text-center space-y-3 w-full">
-                <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <WifiOff className="h-6 w-6 text-destructive" />
+            {isNetworkBlocked ? (
+              <div className="px-8 pb-10 text-center space-y-3 w-full">
+                <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
+                  <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} />
                 </div>
-                <p className="text-xs text-muted-foreground">{error || "Your network may restrict internet calls."}</p>
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Your network may restrict internet calls."}</p>
                 {onFallbackChat && (
-                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
+                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                     onClick={() => { handleEndCall(); onFallbackChat(); }} disabled={isEnding}>
                     <MessageSquare className="h-4 w-4" /> Switch to chat
                   </button>
                 )}
-                <button className="w-full inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                <button className="w-full inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
+                  style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                   onClick={handleEndCall} disabled={isEnding}>Close</button>
               </div>
-            )}
-
-            {!isNetworkBlocked && (
-              <div className="px-6 pb-10 pt-4 w-full">
-                <div className="flex items-center justify-center gap-5">
-                  {/* Mute */}
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${muted ? "bg-destructive/15 text-destructive" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
-                      {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                    </button>
-                    <span className="text-[10px] text-muted-foreground">{muted ? "Unmute" : "Mute"}</span>
-                  </div>
-                  {/* Video */}
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button onClick={handleToggleVideo} disabled={status !== "active" || isEnding}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all bg-muted text-foreground hover:bg-muted/80 disabled:opacity-40`}>
-                      {videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                    </button>
-                    <span className="text-[10px] text-muted-foreground">Video</span>
-                  </div>
-                  {/* End */}
+            ) : (
+              <div className="px-8 pb-12 pt-4 w-full">
+                <div className="flex items-center justify-center gap-6">
+                  <CtrlBtn
+                    onClick={handleToggleMute}
+                    disabled={status !== "active" || isEnding}
+                    active={muted}
+                    activeColor="var(--destructive)"
+                    icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                    text={muted ? "Unmute" : "Mute"}
+                  />
+                  <CtrlBtn
+                    onClick={handleToggleVideo}
+                    disabled={status !== "active" || isEnding}
+                    active={videoEnabled}
+                    icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                    text="Video"
+                  />
+                  {/* End call — large red button */}
                   <div className="flex flex-col items-center gap-1.5">
                     <button onClick={handleEndCall} disabled={isEnding}
-                      className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg disabled:opacity-60">
+                      className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60 transition-transform active:scale-95"
+                      style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                       {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
                     </button>
-                    <span className="text-[10px] text-destructive font-medium">End</span>
+                    <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>End</span>
                   </div>
-                  {/* Speaker/Earpiece */}
-                  <div className="flex flex-col items-center gap-1.5">
-                    <button onClick={handleToggleSpeaker} disabled={status !== "active" || isEnding}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${speakerOn ? "bg-primary/15 text-primary" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
-                      {speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                    </button>
-                    <span className="text-[10px] text-muted-foreground">{speakerOn ? "Speaker" : "Earpiece"}</span>
-                  </div>
+                  <CtrlBtn
+                    onClick={handleToggleSpeaker}
+                    disabled={status !== "active" || isEnding}
+                    active={speakerOn}
+                    icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                    text={speakerOn ? "Speaker" : "Earpiece"}
+                  />
                 </div>
               </div>
             )}

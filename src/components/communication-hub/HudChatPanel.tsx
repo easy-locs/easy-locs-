@@ -732,30 +732,36 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             (() => {
               const filtered = (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id));
               let lastDateStr = "";
-              return filtered.map((msg) => {
+              return filtered.map((msg, idx) => {
                 const msgDate = new Date(msg.created_at);
                 const dateStr = format(msgDate, "yyyy-MM-dd");
                 const showDateSep = dateStr !== lastDateStr;
                 lastDateStr = dateStr;
                 const dateLabel = isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy");
                 const isMe = msg.sender_id === user?.id;
+                const prevMsg = idx > 0 ? filtered[idx - 1] : null;
+                const isConsecutive = prevMsg
+                  && prevMsg.sender_id === msg.sender_id
+                  && !showDateSep
+                  && prevMsg.message_type !== "system"
+                  && msg.message_type !== "system"
+                  && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) < 120000;
                 return (
                   <div key={msg.id}>
                     {showDateSep && <DateSeparator date={dateLabel} />}
-                    <div className="mb-1.5">
-                      <ChatMessageBubble
-                        msg={msg}
-                        isMe={isMe}
-                        threadName={thread?.name}
-                        locale={locale}
-                        showOriginal={!!showOriginal[msg.id]}
-                        translatingMsgId={translatingMsgId}
-                        isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
-                        onTranslate={handleTranslateMessage}
-                        onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at })}
-                        getCategoryIcon={getCategoryIcon}
-                      />
-                    </div>
+                    <ChatMessageBubble
+                      msg={msg}
+                      isMe={isMe}
+                      isConsecutive={!!isConsecutive}
+                      threadName={thread?.name}
+                      locale={locale}
+                      showOriginal={!!showOriginal[msg.id]}
+                      translatingMsgId={translatingMsgId}
+                      isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
+                      onTranslate={handleTranslateMessage}
+                      onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at })}
+                      getCategoryIcon={getCategoryIcon}
+                    />
                   </div>
                 );
               });
