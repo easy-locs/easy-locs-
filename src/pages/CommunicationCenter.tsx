@@ -1,16 +1,10 @@
 /**
- * CommunicationCenter — Unified Communication Hub.
- * 
- * Architecture: 3-layer composition
- * Layer 1: ConversationList — conversation sidebar with type filters
- * Layer 2: ChatPanel — main interaction area (messages, files, calls)
- * Layer 3: ContextPanel — dynamic context (booking, deal, property, listing)
- * 
- * Supports 7 conversation types: direct, business, listing, booking, deal, property, team
+ * CommunicationCenter — Futuristic Command Center Communication Hub.
+ * Dark glass HUD aesthetic with 3-layer architecture.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { MessageCircle, FileText, CreditCard, Wrench, Plus, PanelRightOpen } from "lucide-react";
+import { Shield, Plus, Lock, Zap, Radio } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -18,9 +12,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-import ConversationList from "@/components/communication-hub/ConversationList";
-import ChatPanel from "@/components/communication-hub/ChatPanel";
-import ContextPanel from "@/components/communication-hub/ContextPanel";
+import HudConversationList from "@/components/communication-hub/HudConversationList";
+import HudChatPanel from "@/components/communication-hub/HudChatPanel";
+import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
@@ -38,16 +32,14 @@ const CommunicationCenter = () => {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [mobileContextOpen, setMobileContextOpen] = useState(false);
 
-  // Request notification permission
   useEffect(() => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
 
-  // Deep-link from notifications: ?thread=booking-xxx or ?booking=xxx or ?deal=xxx
+  // Deep-link
   useEffect(() => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
     if (!threadParam || loading || threads.length === 0) return;
-
     const found = threads.find(t =>
       t.id === `booking-${threadParam}` || t.id === threadParam ||
       t.bookingId === threadParam || t.dealId === threadParam ||
@@ -55,13 +47,9 @@ const CommunicationCenter = () => {
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
       t.leadId === threadParam
     );
-    if (found) {
-      setSelectedThread(found);
-      setSearchParams({}, { replace: true });
-    }
+    if (found) { setSelectedThread(found); setSearchParams({}, { replace: true }); }
   }, [threads, loading, searchParams, setSearchParams]);
 
-  // Deep-link search param
   useEffect(() => {
     const searchQ = searchParams.get("search");
     if (!searchQ || loading || threads.length === 0) return;
@@ -69,15 +57,11 @@ const CommunicationCenter = () => {
       t.name.toLowerCase().includes(searchQ.toLowerCase()) ||
       t.email?.toLowerCase().includes(searchQ.toLowerCase())
     );
-    if (found) {
-      setSelectedThread(found);
-      setSearchParams({}, { replace: true });
-    }
+    if (found) { setSelectedThread(found); setSearchParams({}, { replace: true }); }
   }, [threads, loading, searchParams, setSearchParams]);
 
   const handleSelectThread = useCallback((thread: ConversationThread) => {
     setSelectedThread(thread);
-    // Auto-show context on desktop for contextual threads
     if (!isMobile && ["booking", "property", "listing", "deal"].includes(thread.conversationType)) {
       setShowContext(true);
     }
@@ -90,60 +74,86 @@ const CommunicationCenter = () => {
   }, []);
 
   const handleToggleContext = useCallback(() => {
-    if (isMobile) {
-      setMobileContextOpen(prev => !prev);
-    } else {
-      setShowContext(prev => !prev);
-    }
+    if (isMobile) setMobileContextOpen(prev => !prev);
+    else setShowContext(prev => !prev);
   }, [isMobile]);
 
   const handleThreadUpdate = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
     updateThreadLocally(threadId, updates);
-    if (selectedThread?.id === threadId) {
-      setSelectedThread(prev => prev ? { ...prev, ...updates } : null);
-    }
+    if (selectedThread?.id === threadId) setSelectedThread(prev => prev ? { ...prev, ...updates } : null);
   }, [updateThreadLocally, selectedThread?.id]);
 
-  const handleNewThreadCreated = useCallback((contextId: string) => {
-    loadThreads();
-  }, [loadThreads]);
+  const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
   return (
     <DashboardLayout>
       <div className="h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-        {/* Header */}
+        {/* ═══ HUD Header ═══ */}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-3 px-1">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shrink-0">
-                <MessageCircle className="h-4 w-4 text-accent-foreground" />
+          <div className="flex-1 min-w-0 flex items-center gap-3">
+            <div
+              className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{
+                background: "hsl(var(--hud-surface))",
+                border: "1px solid hsl(var(--hud-border) / 0.25)",
+                boxShadow: "var(--hud-glow)",
+              }}
+            >
+              <Radio className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-bold flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
+                Command Center
+                <Shield className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+              </h1>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
+                  <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
+                    Secure • Live
+                  </span>
+                </div>
+                <Lock className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
               </div>
-              <span className="truncate">{t("page.communication.title") || "Communication Hub"}</span>
-            </h1>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto scrollbar-hide">
-            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs rounded-lg" onClick={() => setShowNewConversation(true)}>
+          <div className="flex items-center gap-1.5 flex-nowrap">
+            <Button
+              size="sm" variant="outline"
+              className="h-8 gap-1.5 text-xs rounded-lg"
+              style={{
+                background: "hsl(var(--hud-surface))",
+                borderColor: "hsl(var(--hud-border) / 0.2)",
+                color: "hsl(var(--hud-cyan))",
+              }}
+              onClick={() => setShowNewConversation(true)}
+            >
               <Plus className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">New</span>
             </Button>
-            {[
-              { icon: MessageCircle, value: stats.unread, color: "text-accent", bg: "bg-accent/8" },
-              { icon: FileText, value: stats.pending_docs, color: "text-blue-500", bg: "bg-blue-500/8" },
-              { icon: CreditCard, value: stats.overdue, color: "text-destructive", bg: "bg-destructive/8" },
-              { icon: Wrench, value: stats.maintenance, color: "text-amber-500", bg: "bg-amber-500/8" },
-            ].filter(s => s.value > 0).map((s, i) => (
-              <div key={i} className={`flex items-center gap-1.5 px-2.5 py-1.5 ${s.bg} rounded-lg text-xs`}>
-                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
-                <span className="font-bold text-foreground tabular-nums">{s.value}</span>
+            {stats.unread > 0 && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs" style={{
+                background: "hsl(var(--hud-cyan) / 0.1)",
+                border: "1px solid hsl(var(--hud-cyan) / 0.2)",
+              }}>
+                <Zap className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+                <span className="font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>{stats.unread}</span>
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
 
-        {/* 3-Layer Layout */}
-        <div className="flex-1 flex gap-0 min-h-0 bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
-          {/* Layer 1: Conversation List — hide on mobile when a thread is selected */}
-          <ConversationList
+        {/* ═══ 3-Layer Layout ═══ */}
+        <div
+          className="flex-1 flex gap-0 min-h-0 rounded-xl overflow-hidden"
+          style={{
+            background: "hsl(var(--hud-bg))",
+            border: "1px solid hsl(var(--hud-border) / 0.1)",
+            boxShadow: "0 0 40px hsl(var(--hud-cyan) / 0.03), inset 0 0 80px hsl(var(--hud-cyan) / 0.01)",
+          }}
+        >
+          {/* Layer 1: Conversation List */}
+          <HudConversationList
             threads={threads}
             loading={loading}
             selectedThread={selectedThread}
@@ -151,52 +161,39 @@ const CommunicationCenter = () => {
             visible={!selectedThread || !isMobile}
           />
 
-          {/* Layer 2 + 3: Chat + Context — hide on mobile when no thread selected */}
+          {/* Layer 2 + 3 */}
           <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
             <div className="flex-1 flex min-h-0">
-              <ChatPanel
+              <HudChatPanel
                 thread={selectedThread}
                 onBack={handleBack}
                 onToggleContext={handleToggleContext}
                 showContext={showContext || mobileContextOpen}
                 onThreadUpdate={handleThreadUpdate}
               />
-
-              {/* Layer 3: Context Panel — desktop only inline */}
               {showContext && selectedThread && orgId && !isMobile && (
-                <ContextPanel
-                  thread={selectedThread}
-                  orgId={orgId}
-                />
+                <HudContextPanel thread={selectedThread} orgId={orgId} />
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Context Panel — as a Sheet */}
+      {/* Mobile Context Sheet */}
       {isMobile && selectedThread && orgId && (
         <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
-          <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl">
-            <SheetHeader className="px-4 py-3 border-b border-border/50">
-              <SheetTitle className="text-sm">Context — {selectedThread.name}</SheetTitle>
+          <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--hud-bg))" }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.1)" }}>
+              <SheetTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>Intelligence — {selectedThread.name}</SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">
-              <ContextPanel
-                thread={selectedThread}
-                orgId={orgId}
-              />
+              <HudContextPanel thread={selectedThread} orgId={orgId} />
             </div>
           </SheetContent>
         </Sheet>
       )}
 
-      {/* New conversation dialog */}
-      <NewConversationDialog
-        open={showNewConversation}
-        onOpenChange={setShowNewConversation}
-        onThreadCreated={handleNewThreadCreated}
-      />
+      <NewConversationDialog open={showNewConversation} onOpenChange={setShowNewConversation} onThreadCreated={handleNewThreadCreated} />
     </DashboardLayout>
   );
 };
