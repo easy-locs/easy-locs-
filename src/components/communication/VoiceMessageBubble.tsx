@@ -79,15 +79,21 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
     if (animRef.current) cancelAnimationFrame(animRef.current);
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const seekFromPosition = (clientX: number) => {
     const audio = audioRef.current;
     const container = waveContainerRef.current;
     if (!audio || !container || !audio.duration) return;
     const rect = container.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     audio.currentTime = x * audio.duration;
     setProgress(x * 100);
     setCurrentTime(audio.currentTime);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => seekFromPosition(e.clientX);
+  const handleTouchSeek = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    seekFromPosition(e.touches[0].clientX);
   };
 
   const formatDur = (s: number) => {
