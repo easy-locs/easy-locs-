@@ -111,7 +111,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const newMsg = payload.new as ChatMessage;
       const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
       if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
-        setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+        setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
         if (newMsg.sender_id !== user?.id) supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
       }
     }).subscribe();
