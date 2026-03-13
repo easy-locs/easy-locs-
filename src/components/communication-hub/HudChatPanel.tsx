@@ -459,7 +459,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               </div>
             </div>
           ) : (
-            messages.map(msg => {
+            messages.filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
               const isMe = msg.sender_id === user?.id;
               const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
               const isInboundEmail = msg.message_type === "inbound_email";
