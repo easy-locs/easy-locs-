@@ -8,7 +8,6 @@ import {
   ShieldCheck, CreditCard,
 } from "lucide-react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
@@ -61,10 +60,7 @@ function ChatMessageBubble({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15 }}
+    <div
       className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
       style={{ marginTop: isConsecutive ? 2 : 8 }}
       onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
@@ -179,7 +175,7 @@ function ChatMessageBubble({
           <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
