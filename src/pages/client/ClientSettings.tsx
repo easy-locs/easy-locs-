@@ -212,6 +212,9 @@ const ClientSettings = () => {
         {/* App Preferences — Location, Notifications, Privacy */}
         <AppPreferencesSection />
 
+        {/* Pro Settings — Signal/WhatsApp style */}
+        <ProSettingsSection />
+
         {/* Pro features locked */}
         <div className="bg-card rounded-xl p-5 shadow-card border border-border/50 opacity-75">
           <div className="flex items-center gap-3 mb-4">
