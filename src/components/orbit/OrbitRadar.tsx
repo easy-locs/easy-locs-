@@ -172,6 +172,7 @@ export default function OrbitRadar() {
     setTimeout(() => setScanning(false), 1500);
   }, [lat, lng, mode, config.radius, activeTypes, user?.id]);
 
+  // Reload on position change or mode change
   useEffect(() => {
     if (!lat || !lng) return;
     loadSignals();
@@ -179,10 +180,41 @@ export default function OrbitRadar() {
     return () => clearInterval(poll);
   }, [loadSignals, lat, lng]);
 
+  // Realtime: re-scan when marketplace or user_presence changes
+  useEffect(() => {
+    if (!lat || !lng) return;
+    const channel = supabase
+      .channel("radar-live-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "marketplace_services" }, () => {
+        loadSignals();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_presence" }, () => {
+        loadSignals();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [lat, lng, loadSignals]);
+
   // Auto-request location
   useEffect(() => {
     if (!lat && !lng && !geoLoading && !geoError) requestLocation();
   }, [lat, lng, geoLoading, geoError, requestLocation]);
+
+  // Update own presence with live GPS
+  useEffect(() => {
+    if (!lat || !lng || !user?.id || invisibleMode) return;
+    const updateLoc = () => {
+      supabase.from("user_presence").update({
+        lat: approxLocation ? Math.round(lat * 100) / 100 : lat,
+        lng: approxLocation ? Math.round(lng * 100) / 100 : lng,
+        location_sharing: true,
+        visible_on_nearby: !invisibleMode,
+      } as any).eq("user_id", user.id).then(() => {});
+    };
+    updateLoc();
+    const interval = setInterval(updateLoc, 30000);
+    return () => clearInterval(interval);
+  }, [lat, lng, user?.id, invisibleMode, approxLocation]);
 
   // Filter
   const filtered = signals.filter(s => {

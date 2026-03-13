@@ -292,6 +292,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
   const handleSend = async () => {
     if (!newMessage.trim() || !thread) return;
+    const msgText = newMessage.trim();
 
     const authUserId = await resolveAuthUserId();
     if (!authUserId) return;
@@ -307,14 +308,29 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
       return;
     }
-    const abuseCheck = detectAbuse(newMessage.trim());
+    const abuseCheck = detectAbuse(msgText);
     if (abuseCheck.suspicious) {
       toast.error(abuseCheck.reason || "Message blocked");
       return;
     }
+
+    // ── OPTIMISTIC INSERT: show message instantly ──
+    const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const optimisticMsg: ChatMessage = {
+      id: optimisticId,
+      content: msgText,
+      sender_id: authUserId,
+      created_at: new Date().toISOString(),
+      read: false,
+      message_type: "user",
+      category: selectedCategory,
+    } as any;
+    setRawMessages(prev => [...prev, optimisticMsg]);
+    setNewMessage("");
+
     // Compress before encryption
     const { compressMessage } = await import("@/lib/orbit-message-compress");
-    const content = await compressMessage(newMessage.trim());
+    const content = await compressMessage(msgText);
 
     // E2E Encryption
     let storedContent = content;
@@ -340,24 +356,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         contextId: thread.contextId,
         threadDbId: thread.threadId,
       });
-      // Show as pending in UI
-      const fakeMsg: ChatMessage = {
-        id: queuedId,
-        content: newMessage.trim(),
-        sender_id: authUserId,
-        created_at: new Date().toISOString(),
-        read: false,
-        message_type: "user",
-        category: selectedCategory,
-      } as any;
-      setRawMessages(prev => [...prev, fakeMsg]);
+      // Replace optimistic with queued
+      setRawMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, id: queuedId } as any : m));
       setPendingOffline(prev => [...prev, { id: queuedId }]);
-      setNewMessage("");
       toast("📡 Queued — will send when back online", { duration: 2000 });
       return;
     }
 
-    // ── ONLINE MODE: send normally ──
+    // ── ONLINE MODE: send in background (already shown optimistically) ──
     setSending(true);
     try {
       let tenantLocale = "en";
@@ -390,11 +396,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
+        // Remove optimistic message on failure
+        setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
         toast.error("Failed to send message: " + insertErr.message);
+        setNewMessage(msgText); // Restore message for retry
         return;
       }
 
-      setNewMessage("");
+      // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
 
       const recipientEmail = normalizeEmail(thread.email);
