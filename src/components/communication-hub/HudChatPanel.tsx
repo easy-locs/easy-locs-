@@ -175,7 +175,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   }, [thread, orgId, user?.id]);
 
   const handleFileUpload = async (file: File) => {
-    if (!thread || !user) return;
+    if (!thread) return;
+
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+
     if (!orgId) {
       toast.error("Please select a workspace first");
       return;
