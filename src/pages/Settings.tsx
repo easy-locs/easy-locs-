@@ -12,6 +12,7 @@ import AddressAutocomplete, { type AddressResult } from "@/components/ui/Address
 import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
+import ProSettingsSection from "@/components/settings/ProSettingsSection";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
