@@ -138,23 +138,69 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const { validateMediaFile } = await import("@/lib/media-utils");
       const validationErr = validateMediaFile(file);
       if (validationErr) { toast.error(validationErr); setUploading(false); return; }
-      const ext = file.name.split(".").pop() || "bin";
-      const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, file);
+
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+      let uploadFile: File | Blob = file;
+      let uploadExt = file.name.split(".").pop() || "bin";
+      let fileMetaJson: Record<string, string> | null = null;
+
+      // E2E: encrypt file before upload if encryption is ready
+      const peerId = thread.tenantId || thread.contextId || thread.id;
+      if (e2eReady && peerId) {
+        try {
+          const { encryptFileForUpload, buildEncryptedFileRef } = await import("@/lib/orbit-file-encryption");
+          const { getSharedKey } = await import("@/hooks/useOrbitEncryption").then(() => ({ getSharedKey: null }));
+          // Use the encrypt hook's internal key derivation via a direct crypto approach
+          const { getPrivateKey } = await import("@/lib/orbit-keystore");
+          const { importPublicKey, deriveSharedKey: deriveKey } = await import("@/lib/orbit-crypto");
+
+          const privateKey = await getPrivateKey(user.id);
+          if (privateKey) {
+            // Fetch peer public key
+            const { data: peerKeyData } = await supabase
+              .from("user_key_bundles" as any)
+              .select("identity_public_key")
+              .eq("user_id", peerId)
+              .maybeSingle();
+            const peerPubBase64 = (peerKeyData as any)?.identity_public_key;
+            if (peerPubBase64) {
+              const peerPubKey = await importPublicKey(peerPubBase64);
+              const sharedKey = await deriveKey(privateKey, peerPubKey);
+              const { encryptedBlob, iv, originalName, originalType } = await encryptFileForUpload(file, sharedKey);
+              uploadFile = encryptedBlob;
+              uploadExt = "enc";
+              fileMetaJson = { iv, originalName, originalType };
+            }
+          }
+        } catch (err) {
+          console.warn("[Orbit] File encryption failed, uploading unencrypted:", err);
+        }
+      }
+
+      const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${uploadExt}`;
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, uploadFile);
       if (uploadErr) throw uploadErr;
       const { data: signedData } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signedData?.signedUrl || path;
-      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+
+      // Build content — if encrypted, embed file metadata
+      let content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
+      if (fileMetaJson) {
+        const { buildEncryptedFileRef } = await import("@/lib/orbit-file-encryption");
+        content = buildEncryptedFileRef({ url, iv: fileMetaJson.iv, originalName: fileMetaJson.originalName, originalType: fileMetaJson.originalType });
+      }
+
       await supabase.from("messages").insert({
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
-        category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
+        content,
+        category: "general", attachment_url: fileMetaJson ? undefined : url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
-      toast.success("File sent");
+        encrypted: !!fileMetaJson,
+      } as any);
+      toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
   };
