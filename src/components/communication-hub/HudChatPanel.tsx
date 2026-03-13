@@ -736,68 +736,114 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          {/* Single row composer — WhatsApp style */}
-          <div className="flex items-end gap-1.5">
-            {/* Attachment + input container */}
-            <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1" style={{
-              background: "hsl(var(--hud-surface))",
-              border: "1px solid hsl(var(--hud-border) / 0.12)",
-            }}>
-              {/* Attach button (opens dropdown) */}
-              <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
-                <DropdownMenuTrigger asChild>
-                  <button className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="w-44" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
-                  <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>
-                    <Paperclip className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-cyan))" }} /> File
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    setShowAttachMenu(false);
-                    const inp = document.createElement("input");
-                    inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
-                    inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
-                    inp.click();
-                  }}>
-                    <Camera className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-success))" }} /> Camera
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); setShowLocationPicker(true); }}>
-                    <MapPin className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Location
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
-                    <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {/* Text input */}
-              <input
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Message…"
-                className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2"
-                style={{ color: "hsl(var(--hud-text))" }}
-              />
-              {/* AI button (desktop only) */}
-              <div className="hidden sm:block shrink-0">
-                <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+          
+          {/* Voice recording state */}
+          {voiceRecorder.recording ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { voiceRecorder.cancel(); haptic("light"); }}
+                className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center"
+                style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
+                <Ban className="h-4 w-4" />
+              </button>
+              <div className="flex-1 flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-danger))" }} />
+                <span className="text-sm font-mono tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
+                  {formatVoiceDuration(voiceRecorder.duration)}
+                </span>
+                <span className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Recording...</span>
               </div>
+              <button
+                onClick={async () => {
+                  haptic("medium");
+                  try {
+                    const result = await voiceRecorder.stop();
+                    // Upload voice as file
+                    const voiceFile = new File([result.blob], `voice-${Date.now()}.webm`, { type: result.blob.type });
+                    await handleFileUpload(voiceFile);
+                  } catch (err: any) {
+                    if (err?.message !== "Recording too short") {
+                      toast.error("Voice recording failed");
+                    }
+                  }
+                }}
+                className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+                <Send className="h-5 w-5" />
+              </button>
             </div>
-            {/* Send / mic button */}
-            <button
-              onClick={handleSend}
-              disabled={sending || !newMessage.trim()}
-              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-colors"
-              style={{
-                background: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-surface))",
-                color: newMessage.trim() ? "hsl(var(--hud-bg))" : "hsl(var(--hud-text-dim))",
-                border: newMessage.trim() ? "none" : "1px solid hsl(var(--hud-border) / 0.12)",
+          ) : (
+            /* Normal composer */
+            <div className="flex items-end gap-1.5">
+              {/* Attachment + input container */}
+              <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1" style={{
+                background: "hsl(var(--hud-surface))",
+                border: "1px solid hsl(var(--hud-border) / 0.12)",
               }}>
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : newMessage.trim() ? <Send className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </button>
-          </div>
+                {/* Attach button (opens dropdown) */}
+                <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" side="top" className="w-44" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
+                    <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>
+                      <Paperclip className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-cyan))" }} /> File
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      setShowAttachMenu(false);
+                      const inp = document.createElement("input");
+                      inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
+                      inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
+                      inp.click();
+                    }}>
+                      <Camera className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-success))" }} /> Camera
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); setShowLocationPicker(true); }}>
+                      <MapPin className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Location
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
+                      <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {/* Text input */}
+                <input
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message…"
+                  className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2"
+                  style={{ color: "hsl(var(--hud-text))" }}
+                />
+                {/* AI button (desktop only) */}
+                <div className="hidden sm:block shrink-0">
+                  <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+                </div>
+              </div>
+              {/* Send / mic button */}
+              <button
+                onClick={newMessage.trim() ? handleSend : async () => {
+                  haptic("medium");
+                  try {
+                    await voiceRecorder.start();
+                  } catch {
+                    toast.error("Microphone access denied");
+                  }
+                }}
+                disabled={sending}
+                className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+                style={{
+                  background: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-surface))",
+                  color: newMessage.trim() ? "hsl(var(--hud-bg))" : "hsl(var(--hud-text-dim))",
+                  border: newMessage.trim() ? "none" : "1px solid hsl(var(--hud-border) / 0.12)",
+                  WebkitTapHighlightColor: "transparent",
+                }}>
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : newMessage.trim() ? <Send className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
