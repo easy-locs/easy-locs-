@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Orbit", path: "/app/orbit" },
@@ -28,9 +28,10 @@ const NAV_ITEMS = [
 ] as const;
 
 function OrbitHeader() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const { pendingNotifications, networkStatus, syncStatus } = useOrbitEngine();
   const navigate = useNavigate();
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Orbit";
 
   return (
     <header
@@ -40,9 +41,7 @@ function OrbitHeader() {
         borderColor: "hsl(var(--hud-border) / 0.15)",
       }}
     >
-      {/* Avatar */}
       <Avatar className="w-8 h-8 shrink-0">
-        <AvatarImage src={profile?.avatar_url} />
         <AvatarFallback
           className="text-xs font-bold"
           style={{
@@ -50,22 +49,19 @@ function OrbitHeader() {
             color: "hsl(var(--hud-cyan))",
           }}
         >
-          {(profile?.full_name || "U")[0]}
+          {displayName[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
-      {/* Name */}
       <span
         className="font-semibold text-sm truncate"
         style={{ color: "hsl(var(--hud-text))" }}
       >
-        {profile?.full_name || "Orbit"}
+        {displayName}
       </span>
 
-      {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Search */}
       <button
         className="p-2 rounded-lg transition-colors"
         style={{ color: "hsl(var(--hud-text-dim))" }}
@@ -74,16 +70,10 @@ function OrbitHeader() {
         <Search className="w-5 h-5" />
       </button>
 
-      {/* Network status */}
       <span style={{ color: networkStatus === "online" ? "hsl(var(--hud-success))" : "hsl(var(--hud-danger))" }}>
-        {networkStatus === "online" ? (
-          <Wifi className="w-4 h-4" />
-        ) : (
-          <WifiOff className="w-4 h-4" />
-        )}
+        {networkStatus === "online" ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
       </span>
 
-      {/* Sync dot */}
       <span
         className="w-2 h-2 rounded-full"
         style={{
@@ -96,7 +86,6 @@ function OrbitHeader() {
         }}
       />
 
-      {/* Notifications */}
       <button
         className="relative p-2 rounded-lg transition-colors"
         style={{ color: "hsl(var(--hud-text-dim))" }}
@@ -176,19 +165,16 @@ function OrbitBottomNav() {
 }
 
 export default function OrbitAppShell() {
-  const { user, profile } = useAuth();
+  const { user, orgId } = useAuth();
   const { refresh } = useOrbitEngine();
 
-  // Initial + periodic refresh
   useEffect(() => {
     if (!user?.id) return;
-    const orgId = (profile as any)?.org_id;
-    refresh(user.id, orgId);
-    const interval = setInterval(() => refresh(user.id, orgId), 30_000);
+    refresh(user.id, orgId || undefined);
+    const interval = setInterval(() => refresh(user.id, orgId || undefined), 30_000);
     return () => clearInterval(interval);
-  }, [user?.id, (profile as any)?.org_id]);
+  }, [user?.id, orgId]);
 
-  // Network status detection
   useEffect(() => {
     const { setNetworkStatus } = useOrbitEngine.getState();
     const onOnline = () => setNetworkStatus("online");
