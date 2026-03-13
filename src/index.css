@@ -158,19 +158,19 @@
     --page-padding-x: 1rem;
     --page-padding-x-sm: 1.5rem;
 
-    /* ── HUD / Command Center tokens ── */
+    /* ── HUD / Command Center tokens (Gold default) ── */
     --hud-bg: 220 50% 6%;
     --hud-surface: 220 45% 10%;
     --hud-surface-2: 220 40% 14%;
-    --hud-border: 195 100% 55%;
-    --hud-cyan: 180 100% 65%;
-    --hud-cyan-dim: 195 80% 40%;
-    --hud-purple: 270 80% 65%;
+    --hud-border: 38 65% 56%;
+    --hud-cyan: 38 70% 60%;
+    --hud-cyan-dim: 38 55% 42%;
+    --hud-purple: 28 80% 50%;
     --hud-glass: 220 50% 8%;
-    --hud-glow: 0 0 20px hsl(195 100% 55% / 0.15);
-    --hud-glow-strong: 0 0 30px hsl(195 100% 55% / 0.25);
-    --hud-text: 210 30% 88%;
-    --hud-text-dim: 210 15% 55%;
+    --hud-glow: 0 0 20px hsl(38 65% 56% / 0.15);
+    --hud-glow-strong: 0 0 30px hsl(38 65% 56% / 0.25);
+    --hud-text: 40 20% 90%;
+    --hud-text-dim: 220 15% 55%;
     --hud-success: 152 80% 50%;
     --hud-warning: 38 90% 55%;
     --hud-danger: 0 80% 55%;
