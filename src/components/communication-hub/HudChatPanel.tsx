@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles, MapPin, Camera,
+  Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import ChatLocationPicker from "./ChatLocationPicker";
@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -77,6 +78,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showSafetyNumber, setShowSafetyNumber] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,7 +139,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const handleFileUpload = async (file: File) => {
     if (!thread || !user) return;
     if (!orgId) {
-      toast.error("Workspace unavailable for file upload");
+      toast.error("Please select a workspace first");
       return;
     }
 
@@ -193,7 +195,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       for (const bucket of buckets) {
         const { error: uploadErr } = await supabase.storage.from(bucket).upload(path, uploadFile, { upsert: false });
-        if (uploadErr) continue;
+        if (uploadErr) {
+          console.warn(`[Orbit] Upload to ${bucket} failed:`, uploadErr.message);
+          continue;
+        }
 
         const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
         finalUrl = signedData?.signedUrl || null;
@@ -202,7 +207,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       }
 
       if (!uploaded || !finalUrl) {
-        throw new Error("Upload failed on all configured buckets");
+        throw new Error("File upload failed. Please try again.");
       }
 
       // Build content — if encrypted, embed file metadata
@@ -238,13 +243,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       if (insertError) throw insertError;
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
     } catch (e: any) {
-      toast.error("Upload error: " + (e?.message || "unknown"));
+      toast.error(e?.message || "Upload failed");
     }
     setUploading(false);
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !thread || !orgId || !user) return;
+    if (!newMessage.trim() || !thread || !user) return;
+    if (!orgId) {
+      toast.error("Please select a workspace to send messages");
+      return;
+    }
     const content = newMessage.trim();
     setSending(true);
     try {
@@ -272,7 +281,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         if (encrypted) { storedContent = encrypted; isEncrypted = true; }
       }
 
-      await supabase.from("messages").insert({
+      const { error: insertErr } = await supabase.from("messages").insert({
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
@@ -284,6 +293,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
       } as any);
+
+      if (insertErr) {
+        console.error("[Orbit] Message insert failed:", insertErr);
+        toast.error("Failed to send message: " + insertErr.message);
+        return;
+      }
+
       setNewMessage("");
       setConvStatus("waiting_tenant");
 
@@ -313,6 +329,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           });
         }
       }
+    } catch (e: any) {
+      toast.error("Send failed: " + (e?.message || "unknown error"));
     } finally { setSending(false); }
   };
 
@@ -416,12 +434,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
+  const handleStartCall = (isVideo: boolean) => {
+    if (!orgId) {
+      toast.error("Please select a workspace first");
+      return;
+    }
+    haptic("medium");
+    startCall({
+      orgId,
+      threadId: thread?.threadId,
+      contextType: thread?.conversationType || "listing",
+      contextId: thread?.contextId,
+      contextLabel: thread?.name,
+      peerName: thread?.name || "Contact",
+      isVideo,
+    });
+  };
+
   // ══ EMPTY STATE ══
   if (!thread) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ background: "hsl(var(--hud-bg))" }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-md px-6">
-          {/* Orb-inspired empty state */}
           <div className="relative w-28 h-28 mx-auto mb-8">
             <div className="absolute inset-0 rounded-full" style={{
               background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.15) 0%, transparent 70%)",
@@ -433,7 +467,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             }}>
               <Shield className="h-8 w-8" style={{ color: "hsl(var(--hud-cyan) / 0.6)" }} />
             </div>
-            {/* Orbiting dot */}
             <motion.div
               className="absolute w-2 h-2 rounded-full"
               style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }}
@@ -483,113 +516,80 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
   return (
     <>
-      <div className="flex-1 flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* ══ Header ══ */}
-        <div className="px-3 py-2.5" style={{
+      <div className="flex-1 flex flex-col min-w-0" style={{ background: "hsl(var(--hud-bg))" }}>
+        {/* ══ Header — compact for mobile ══ */}
+        <div className="px-2 sm:px-3 py-2" style={{
           borderBottom: "1px solid hsl(var(--hud-border) / 0.1)",
           background: "linear-gradient(180deg, hsl(var(--hud-surface) / 0.8), hsl(var(--hud-bg)))",
         }}>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0">
-              <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9 hover:bg-[hsl(var(--hud-surface))]">
-                <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
-              </Button>
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{
-                background: "hsl(var(--hud-surface-2))",
-                border: "1px solid hsl(var(--hud-border) / 0.2)",
-                boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.1)",
-              }}>
-                <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+              <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
+            </Button>
+            {/* Avatar */}
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{
+              background: "hsl(var(--hud-surface-2))",
+              border: "1px solid hsl(var(--hud-border) / 0.2)",
+            }}>
+              <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+            </div>
+            {/* Name + badges */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[13px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
+                {thread.propertyCountry && <span className="text-xs shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
-                  {thread.propertyCountry && <span className="text-sm shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
-                  <OrbitPrivacyBadge compact />
-                </div>
-                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{
-                    borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-cyan-dim))",
-                    background: "hsl(var(--hud-surface) / 0.5)",
-                  }}>
-                    {moduleConfig.emoji} {moduleConfig.label}
-                  </Badge>
-                  {thread.bookingStatus && (
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
-                      {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
-                    </Badge>
-                  )}
-                  {thread.totalPrice != null && thread.totalPrice > 0 && (
-                    <span className="text-[10px] font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
-                      {thread.totalPrice.toFixed(2)} {(thread.currency || "EUR").toUpperCase()}
-                    </span>
-                  )}
-                </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-[9px] px-1 py-0 rounded" style={{
+                  background: "hsl(var(--hud-surface) / 0.5)",
+                  color: "hsl(var(--hud-cyan-dim))",
+                }}>
+                  {moduleConfig.emoji} {moduleConfig.label}
+                </span>
+                {thread.bookingStatus && (
+                  <span className={`text-[9px] px-1 py-0 rounded font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                    {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              {/* Call buttons */}
+            {/* Action buttons — consolidated */}
+            <div className="flex items-center gap-0.5 shrink-0">
               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
                 disabled={isInCall || isStartingCall}
-                onClick={() => {
-                  haptic("medium");
-                  startCall({
-                    orgId: orgId || "",
-                    threadId: thread.threadId,
-                    contextType: thread.conversationType || "listing",
-                    contextId: thread.contextId,
-                    contextLabel: thread.name,
-                    peerName: thread.name || "Contact",
-                    isVideo: false,
-                  });
-                }}>
+                onClick={() => handleStartCall(false)}>
                 <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
                 disabled={isInCall || isStartingCall}
-                onClick={() => {
-                  haptic("medium");
-                  startCall({
-                    orgId: orgId || "",
-                    threadId: thread.threadId,
-                    contextType: thread.conversationType || "listing",
-                    contextId: thread.contextId,
-                    contextLabel: thread.name,
-                    peerName: thread.name || "Contact",
-                    isVideo: true,
-                  });
-                }}>
+                onClick={() => handleStartCall(true)}>
                 <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
               </Button>
-              {/* Safety Number verification */}
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
-                onClick={() => { haptic("light"); setShowSafetyNumber(true); }}
-                title="Verify encryption">
-                <Shield className="h-4 w-4" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
-              </Button>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              {/* Disappearing messages */}
-              <DisappearingMessagesToggle
-                threadId={thread?.id || ""}
-                currentTTL={disappearTTL}
-                onChange={setDisappearTTL}
-              />
-              <Select value={convStatus} onValueChange={updateConversationStatus}>
-                <SelectTrigger className="h-8 w-auto text-xs gap-1" style={{
-                  background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)",
-                  color: "hsl(var(--hud-text))",
-                }}>
-                  <span>{CONV_STATUSES.find(s => s.value === convStatus)?.icon}</span>
-                  <span className="hidden sm:inline">{CONV_STATUSES.find(s => s.value === convStatus)?.label}</span>
-                </SelectTrigger>
-                <SelectContent>
-                  {CONV_STATUSES.map(s => (<SelectItem key={s.value} value={s.value}>{s.icon} {s.label}</SelectItem>))}
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]" onClick={onToggleContext}>
-                <ChevronRight className={`h-4 w-4 transition-transform ${showContext ? "rotate-180" : ""}`} style={{ color: "hsl(var(--hud-text))" }} />
-              </Button>
+              {/* More menu — contains status, disappearing, context, safety */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]">
+                    <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
+                  {/* Status */}
+                  {CONV_STATUSES.map(s => (
+                    <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
+                      className={convStatus === s.value ? "font-semibold" : ""}>
+                      {s.icon} {s.label}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
+                    <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
+                    Safety Number
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onToggleContext}>
+                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> Details
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -633,9 +633,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               return (
                 <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
-                  onClick={() => { /* mobile: long press handled via context */ }}>
-                  <div className={`max-w-[80%] sm:max-w-[68%] rounded-2xl px-3.5 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
+                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}>
+                  <div className={`max-w-[82%] sm:max-w-[68%] rounded-2xl px-3 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-purple) / 0.08))"
                       : isMe
@@ -703,89 +702,99 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
         {/* ══ Action bar ══ */}
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
-          <div className="px-3 py-2" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.3)" }}>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] font-semibold uppercase tracking-wider mr-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Actions</span>
-              <Button size="sm" variant="outline" className="text-xs h-7 gap-1.5 rounded-lg" style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
-                <CreditCard className="h-3 w-3" /> Payment
+          <div className="px-2 sm:px-3 py-1.5" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.3)" }}>
+            <div className="flex items-center gap-1 flex-wrap">
+              <span className="text-[9px] font-semibold uppercase tracking-wider mr-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>Actions</span>
+              <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Pay
               </Button>
               {thread.bookingStatus === "pending" && (
-                <Button size="sm" className="text-xs h-7 gap-1.5 rounded-lg" style={{ background: "hsl(var(--hud-success) / 0.2)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.3)" }} onClick={() => handleBookingAction("confirm")}>
+                <Button size="sm" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ background: "hsl(var(--hud-success) / 0.2)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.3)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> Confirm
                 </Button>
               )}
               {thread.bookingStatus === "confirmed" && (
-                <Button size="sm" variant="outline" className="text-xs h-7 gap-1.5 rounded-lg" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
-                  <CalendarCheck className="h-3 w-3" /> Complete
+                <Button size="sm" variant="outline" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
+                  <CalendarCheck className="h-3 w-3" /> Done
                 </Button>
               )}
               {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
-                <Button size="sm" variant="ghost" className="text-xs h-7 gap-1.5 rounded-lg" style={{ color: "hsl(var(--hud-danger))" }} onClick={() => handleBookingAction("cancel")}>
+                <Button size="sm" variant="ghost" className="text-[11px] h-6 gap-1 rounded-lg px-2" style={{ color: "hsl(var(--hud-danger))" }} onClick={() => handleBookingAction("cancel")}>
                   <Ban className="h-3 w-3" /> Cancel
-                </Button>
-              )}
-              {thread.email && (
-                <Button size="sm" variant="ghost" className="text-xs h-7 gap-1.5 rounded-lg ml-auto" style={{ color: "hsl(var(--hud-text-dim))" }} asChild>
-                  <a href={`mailto:${thread.email}`}><Mail className="h-3 w-3" /> Email</a>
                 </Button>
               )}
             </div>
           </div>
         )}
 
-        {/* ══ Composer ══ */}
-        {/* ══ Composer ══ */}
-        <div className="px-3 py-2 sm:px-4 sm:py-2.5 safe-area-pb" style={{
+        {/* ══ WhatsApp-style Composer ══ */}
+        <div className="px-2 sm:px-3 py-2 safe-area-pb" style={{
           borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
           background: "hsl(var(--hud-surface) / 0.3)",
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
             onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          {/* Attachment row */}
-          <div className="flex items-center gap-1 mb-1.5">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-8 h-8 px-1 shrink-0 rounded-lg" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.12)" }}>
-                <span className="text-xs">{getCategoryIcon(selectedCategory)}</span>
-              </SelectTrigger>
-              <SelectContent>
-                {MESSAGE_CATEGORIES.map(c => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-              title="Attach file">
-              {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />}
-            </Button>
-            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]"
-              title="Camera"
-              onClick={() => {
-                const inp = document.createElement("input");
-                inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
-                inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
-                inp.click();
-              }}>
-              <Camera className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
-            </Button>
-            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
-              <MapPin className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
-            </Button>
-            <div className="hidden sm:block ml-auto">
-              <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
-            </div>
-          </div>
-          {/* Input + Send row */}
-          <div className="flex gap-2 items-center">
-            <div className="flex-1 min-w-0">
-              <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a message…" className="h-10 text-sm rounded-xl"
-                style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }}
-              />
-            </div>
-            <Button onClick={handleSend} disabled={sending || !newMessage.trim()} className="shrink-0 h-10 w-10 rounded-xl p-0" style={{
-              background: newMessage.trim() ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface))",
-              border: `1px solid ${newMessage.trim() ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.12)"}`,
-              color: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+          {/* Single row composer — WhatsApp style */}
+          <div className="flex items-end gap-1.5">
+            {/* Attachment + input container */}
+            <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1" style={{
+              background: "hsl(var(--hud-surface))",
+              border: "1px solid hsl(var(--hud-border) / 0.12)",
             }}>
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
+              {/* Attach button (opens dropdown) */}
+              <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
+                <DropdownMenuTrigger asChild>
+                  <button className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="top" className="w-44" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
+                  <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>
+                    <Paperclip className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-cyan))" }} /> File
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    setShowAttachMenu(false);
+                    const inp = document.createElement("input");
+                    inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
+                    inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
+                    inp.click();
+                  }}>
+                    <Camera className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-success))" }} /> Camera
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); setShowLocationPicker(true); }}>
+                    <MapPin className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Location
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
+                    <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Text input */}
+              <input
+                value={newMessage}
+                onChange={e => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Message…"
+                className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2"
+                style={{ color: "hsl(var(--hud-text))" }}
+              />
+              {/* AI button (desktop only) */}
+              <div className="hidden sm:block shrink-0">
+                <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+              </div>
+            </div>
+            {/* Send / mic button */}
+            <button
+              onClick={handleSend}
+              disabled={sending || !newMessage.trim()}
+              className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-colors"
+              style={{
+                background: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-surface))",
+                color: newMessage.trim() ? "hsl(var(--hud-bg))" : "hsl(var(--hud-text-dim))",
+                border: newMessage.trim() ? "none" : "1px solid hsl(var(--hud-border) / 0.12)",
+              }}>
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : newMessage.trim() ? <Send className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
           </div>
         </div>
       </div>
