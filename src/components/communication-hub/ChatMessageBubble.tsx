@@ -60,12 +60,11 @@ function ChatMessageBubble({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15 }}
+    <div
       className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
       style={{ marginTop: isConsecutive ? 2 : 8 }}
+      onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
+    >
       onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
     >
       <div
