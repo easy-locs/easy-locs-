@@ -184,6 +184,7 @@ const RouteAwareAssistant = () => {
     pathname === "/" ||
     pathname === "/guest" ||
     pathname.startsWith("/r/") ||
+    pathname.startsWith("/dashboard/communication") ||
     seoPublicPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (hideAssistant) return null;
