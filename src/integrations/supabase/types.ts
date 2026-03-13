@@ -2989,6 +2989,7 @@ export type Database = {
           deleted_for_all: boolean | null
           deleted_for_sender: boolean | null
           delivered: boolean | null
+          encrypted: boolean | null
           forwarded_from: string | null
           guest_session_id: string | null
           id: string
@@ -3027,6 +3028,7 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          encrypted?: boolean | null
           forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
@@ -3065,6 +3067,7 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          encrypted?: boolean | null
           forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
@@ -6335,6 +6338,8 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      purge_expired_sessions: { Args: never; Returns: undefined }
+      purge_old_login_events: { Args: never; Returns: undefined }
       search_nearby_items: {
         Args: {
           _category?: string
