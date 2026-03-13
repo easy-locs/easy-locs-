@@ -120,7 +120,7 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
             {canDeleteForEveryone && (
               <button onClick={() => setConfirmDelete("everyone")}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
-                style={{ color: "hsl(0, 70%, 60%)" }}>
+                style={{ color: "hsl(var(--hud-danger))" }}>
                 <Trash2 className="h-4 w-4" />
                 Delete for everyone
               </button>
@@ -149,7 +149,7 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
             </Button>
             <Button size="sm" disabled={deleting} onClick={() => confirmDelete && handleDelete(confirmDelete)}
               style={{ 
-                background: confirmDelete === "everyone" ? "hsl(0, 70%, 50%)" : "hsl(var(--hud-cyan))", 
+                background: confirmDelete === "everyone" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-cyan))", 
                 color: "white" 
               }}>
               {deleting ? "Deleting..." : "Delete"}

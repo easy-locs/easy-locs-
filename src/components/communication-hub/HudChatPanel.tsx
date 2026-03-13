@@ -604,7 +604,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
                       : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(210 80% 40% / 0.15))"
+                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-cyan) / 0.06))"
                         : "hsl(var(--hud-surface-2))",
                     border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
                     color: "hsl(var(--hud-text))",

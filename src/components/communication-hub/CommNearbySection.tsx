@@ -542,7 +542,7 @@ export default function CommNearbySection() {
               )}
               {filteredItems.length > 0 && (
                 <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold backdrop-blur-md"
-                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(142, 70%, 50%)", border: "1px solid hsl(142, 70%, 50%, 0.2)" }}>
+                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.2)" }}>
                   <MapPin className="h-3 w-3" /> {filteredItems.length} listings
                 </div>
               )}
@@ -641,7 +641,7 @@ export default function CommNearbySection() {
                     </span>
                     {u.professional_category && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                        style={{ background: "hsl(45, 90%, 55%, 0.1)", color: "hsl(45, 90%, 55%)" }}>
+                        style={{ background: "hsl(var(--hud-warning) / 0.1)", color: "hsl(var(--hud-warning))" }}>
                         {u.professional_category}
                       </span>
                     )}
@@ -656,8 +656,8 @@ export default function CommNearbySection() {
                   </button>
                   <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ background: "hsl(142, 70%, 50%, 0.1)" }}>
-                    <Phone className="h-3.5 w-3.5" style={{ color: "hsl(142, 70%, 50%)" }} />
+                    style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
+                    <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
                   </button>
                 </div>
               </motion.div>
@@ -711,8 +711,8 @@ export default function CommNearbySection() {
                       <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                     </button>
                     <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(142, 70%, 50%, 0.1)" }}>
-                      <Phone className="h-3.5 w-3.5" style={{ color: "hsl(142, 70%, 50%)" }} />
+                      className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
+                      <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
                     </button>
                   </div>
                 </div>
@@ -769,11 +769,11 @@ export default function CommNearbySection() {
 
 function presenceColor(status: string): string {
   const colors: Record<string, string> = {
-    online: "hsl(142, 70%, 50%)",
-    away: "hsl(45, 90%, 55%)",
-    busy: "hsl(0, 70%, 60%)",
-    in_call: "hsl(270, 80%, 65%)",
-    dnd: "hsl(0, 70%, 50%)",
+    online: "hsl(var(--hud-success))",
+    away: "hsl(var(--hud-warning))",
+    busy: "hsl(var(--hud-danger))",
+    in_call: "hsl(var(--hud-purple))",
+    dnd: "hsl(var(--hud-danger))",
     offline: "hsl(var(--hud-text-dim) / 0.4)",
   };
   return colors[status] || colors.offline;

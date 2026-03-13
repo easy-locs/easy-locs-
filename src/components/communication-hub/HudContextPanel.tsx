@@ -205,7 +205,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                         <div key={lease.id} className="text-xs space-y-0.5 mb-2 last:mb-0">
                           <div className="flex items-center justify-between">
                             <span className="font-medium" style={{ color: "hsl(var(--hud-text))" }}>{lease.lease_type}</span>
-                            <Badge variant="outline" className={`text-[9px] px-1 py-0 ${lease.status === "active" ? "bg-emerald-500/10 text-emerald-500" : ""}`}>{lease.status}</Badge>
+                            <Badge variant="outline" className="text-[9px] px-1 py-0" style={lease.status === "active" ? { background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" } : {}}>{lease.status}</Badge>
                           </div>
                           <p style={{ color: "hsl(var(--hud-text-dim))" }}>{lease.start_date} → {lease.end_date || "∞"}</p>
                           <p className="font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>{lease.rent_amount}€ + {lease.charges_amount || 0}€</p>
@@ -233,14 +233,14 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.interventions.map(i => (
                         <div key={i.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{i.title}</span>
-                          <Badge variant="outline" className={`text-[9px] px-1 py-0 ${i.priority === "urgent" ? "text-red-400" : ""}`}>{i.status}</Badge>
+                          <Badge variant="outline" className="text-[9px] px-1 py-0" style={i.priority === "urgent" ? { color: "hsl(var(--hud-danger))" } : {}}>{i.status}</Badge>
                         </div>
                       ))}
                     </HudCard>
                   )}
                   {propertyCtx.documents.length > 0 && (
                     <HudCard>
-                      <SectionTitle icon={FileText} label="Documents" color="hsl(210, 80%, 60%)" />
+                      <SectionTitle icon={FileText} label="Documents" color="hsl(var(--hud-cyan))" />
                       {propertyCtx.documents.map(d => (
                         <div key={d.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{d.title}</span>
