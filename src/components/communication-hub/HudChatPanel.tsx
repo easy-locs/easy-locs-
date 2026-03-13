@@ -560,7 +560,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         </div>
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
