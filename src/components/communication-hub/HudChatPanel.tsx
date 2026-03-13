@@ -88,7 +88,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
-      setMessages(data as ChatMessage[]);
+      setRawMessages(data as ChatMessage[]);
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
