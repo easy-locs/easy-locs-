@@ -63,7 +63,7 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
 
   // Flush all pending messages to server
   const flushQueue = useCallback(async () => {
-    if (!userId || !orgId || syncingRef.current) return;
+    if (!orgId || syncingRef.current) return;
     syncingRef.current = true;
     setIsSyncing(true);
 
