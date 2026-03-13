@@ -15,6 +15,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
+import QRContactCard from "./QRContactCard";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
