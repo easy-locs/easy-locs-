@@ -20,6 +20,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
 import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
+import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
+import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +76,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showSafetyNumber, setShowSafetyNumber] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -138,23 +141,69 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const { validateMediaFile } = await import("@/lib/media-utils");
       const validationErr = validateMediaFile(file);
       if (validationErr) { toast.error(validationErr); setUploading(false); return; }
-      const ext = file.name.split(".").pop() || "bin";
-      const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, file);
+
+      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+      let uploadFile: File | Blob = file;
+      let uploadExt = file.name.split(".").pop() || "bin";
+      let fileMetaJson: Record<string, string> | null = null;
+
+      // E2E: encrypt file before upload if encryption is ready
+      const peerId = thread.tenantId || thread.contextId || thread.id;
+      if (e2eReady && peerId) {
+        try {
+          const { encryptFileForUpload, buildEncryptedFileRef } = await import("@/lib/orbit-file-encryption");
+          const { getSharedKey } = await import("@/hooks/useOrbitEncryption").then(() => ({ getSharedKey: null }));
+          // Use the encrypt hook's internal key derivation via a direct crypto approach
+          const { getPrivateKey } = await import("@/lib/orbit-keystore");
+          const { importPublicKey, deriveSharedKey: deriveKey } = await import("@/lib/orbit-crypto");
+
+          const privateKey = await getPrivateKey(user.id);
+          if (privateKey) {
+            // Fetch peer public key
+            const { data: peerKeyData } = await supabase
+              .from("user_key_bundles" as any)
+              .select("identity_public_key")
+              .eq("user_id", peerId)
+              .maybeSingle();
+            const peerPubBase64 = (peerKeyData as any)?.identity_public_key;
+            if (peerPubBase64) {
+              const peerPubKey = await importPublicKey(peerPubBase64);
+              const sharedKey = await deriveKey(privateKey, peerPubKey);
+              const { encryptedBlob, iv, originalName, originalType } = await encryptFileForUpload(file, sharedKey);
+              uploadFile = encryptedBlob;
+              uploadExt = "enc";
+              fileMetaJson = { iv, originalName, originalType };
+            }
+          }
+        } catch (err) {
+          console.warn("[Orbit] File encryption failed, uploading unencrypted:", err);
+        }
+      }
+
+      const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${uploadExt}`;
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, uploadFile);
       if (uploadErr) throw uploadErr;
       const { data: signedData } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
       const url = signedData?.signedUrl || path;
-      const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+
+      // Build content — if encrypted, embed file metadata
+      let content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
+      if (fileMetaJson) {
+        const { buildEncryptedFileRef } = await import("@/lib/orbit-file-encryption");
+        content = buildEncryptedFileRef({ url, iv: fileMetaJson.iv, originalName: fileMetaJson.originalName, originalType: fileMetaJson.originalType });
+      }
+
       await supabase.from("messages").insert({
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
         contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
-        category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
+        content,
+        category: "general", attachment_url: fileMetaJson ? undefined : url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
-      toast.success("File sent");
+        encrypted: !!fileMetaJson,
+      } as any);
+      toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
   };
@@ -479,6 +528,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 }}>
                 <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
               </Button>
+              {/* Safety Number verification */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                onClick={() => { haptic("light"); setShowSafetyNumber(true); }}
+                title="Verify encryption">
+                <Shield className="h-4 w-4" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
+              </Button>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {/* Disappearing messages */}
@@ -591,6 +646,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                           {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                         </span>
                       )}
+                      <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
                     </div>
                   </div>
                 </motion.div>
@@ -750,6 +806,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           await supabase.from("messages").insert(insertData);
           loadMessages();
         }}
+      />
+
+      {/* Safety Number Verification */}
+      <OrbitSafetyNumber
+        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
+        peerName={thread?.name || "Contact"}
+        open={showSafetyNumber}
+        onOpenChange={setShowSafetyNumber}
       />
     </>
   );
