@@ -28,7 +28,7 @@ import { useConversationThreads } from "@/components/communication-hub/useConver
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
 
-const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "meetings", "files", "settings"];
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings"];
 
 const CommunicationCenter = () => {
   const { orgId } = useAuth();
