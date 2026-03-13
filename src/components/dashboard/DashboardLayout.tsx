@@ -113,15 +113,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 5. Orbit
-    {
-      key: "communication",
-      title: "Orbit",
-      icon: MessageCircle,
-      items: [
-        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: cPath("/dashboard/communication") },
-      ],
-    },
+    // 5. Orbit — no sidebar entry, accessed via Hub button in header + mobile bottom nav
 
     // 6. Documents
     {
