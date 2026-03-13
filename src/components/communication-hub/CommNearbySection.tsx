@@ -76,10 +76,10 @@ function formatDistance(km: number): string {
 function getTypeColor(type: string): string {
   switch (type) {
     case "service": return "hsl(var(--hud-cyan))";
-    case "real_estate": return "hsl(142, 70%, 50%)";
-    case "concierge": return "hsl(270, 80%, 65%)";
-    case "professional": return "hsl(45, 90%, 55%)";
-    case "person": return "hsl(195, 80%, 60%)";
+    case "real_estate": return "hsl(var(--hud-success))";
+    case "concierge": return "hsl(var(--hud-purple))";
+    case "professional": return "hsl(var(--hud-warning))";
+    case "person": return "hsl(var(--hud-cyan))";
     default: return "hsl(var(--hud-cyan))";
   }
 }
