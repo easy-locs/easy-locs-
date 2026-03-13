@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
-import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock, QrCode } from "lucide-react";
+import { Search, UserPlus, MessageCircle, Phone, Video, Star, Users, Briefcase, Heart, Clock, QrCode, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
+import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { useCall } from "@/components/call/CallProvider";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
@@ -48,12 +50,14 @@ function getInitials(name: string): string {
 export default function CommContactsSection() {
   const { user, orgId } = useAuth();
   const navigate = useNavigate();
+  const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
 
@@ -126,24 +130,84 @@ export default function CommContactsSection() {
     await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
   };
 
-  const startChat = (contact: Contact) => {
+  const startChat = async (contact: Contact) => {
     haptic("medium");
-    navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(contact.name)}`);
+    if (!user) return;
+    setActionLoading(`msg-${contact.id}`);
+    try {
+      const targetUserId = contact.contact_user_id;
+      if (targetUserId) {
+        const thread = await getOrCreateDirectThread({
+          currentUserId: user.id,
+          targetUserId,
+          targetName: contact.name,
+        });
+        if (thread) {
+          navigate(`/dashboard/communication?thread=${thread.contextId}`);
+          return;
+        }
+      }
+      // Fallback: search by name
+      navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(contact.name)}`);
+    } catch {
+      toast.error("Could not open conversation");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const startCall = (contact: Contact) => {
+  const handleCall = async (contact: Contact, isVideo: boolean) => {
     haptic("medium");
-    navigate(`/dashboard/communication?section=calls`);
+    if (!user || !contact.contact_user_id) {
+      toast.error("This contact is not linked to a user account");
+      return;
+    }
+    setActionLoading(`${isVideo ? "video" : "call"}-${contact.id}`);
+    try {
+      // Find target org
+      const { data: targetMembership } = await supabase
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", contact.contact_user_id)
+        .limit(1)
+        .single();
+      
+      if (!targetMembership?.org_id) {
+        toast.error("User is not reachable");
+        return;
+      }
+      
+      await initiateCall({
+        orgId: targetMembership.org_id,
+        contextType: "direct",
+        contextId: `direct:${[user.id, contact.contact_user_id].sort().join(":")}`,
+        contextLabel: `Call with ${contact.name}`,
+        peerName: contact.name,
+        isVideo,
+      });
+    } catch {
+      toast.error("Call failed");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const renderContact = (contact: Contact) => {
     const presence = contact.contact_user_id ? presenceMap[contact.contact_user_id] : null;
+    const isMsgLoading = actionLoading === `msg-${contact.id}`;
+    const isCallLoading = actionLoading === `call-${contact.id}`;
+    const isVideoLoading = actionLoading === `video-${contact.id}`;
+    const anyLoading = !!actionLoading;
+
     return (
       <div key={contact.id}
-        className="flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors">
+        className="flex items-center gap-3 px-3 py-2.5 active:bg-[hsl(var(--hud-surface)/0.5)] transition-colors cursor-pointer"
+        onClick={() => startChat(contact)}
+        style={{ WebkitTapHighlightColor: "transparent" }}
+      >
         {/* Avatar with presence */}
         <div className="relative shrink-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold"
+          <div className="w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold"
             style={{
               background: contact.avatar_url ? `url(${contact.avatar_url}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
               color: "hsl(var(--hud-cyan))",
@@ -160,7 +224,7 @@ export default function CommContactsSection() {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+            <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
               {contact.name}
             </span>
             {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
@@ -176,29 +240,35 @@ export default function CommContactsSection() {
                 {contact.company}
               </span>
             )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-              style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {contact.category}
-            </span>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => toggleFavorite(contact)} className="w-8 h-8 rounded-full flex items-center justify-center">
+        {/* Actions — 44px min touch targets */}
+        <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+          <button onClick={() => toggleFavorite(contact)}
+            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ WebkitTapHighlightColor: "transparent" }}>
             <Star className="h-4 w-4"
               fill={contact.is_favorite ? "hsl(var(--hud-warning))" : "none"}
               style={{ color: contact.is_favorite ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.2)" }} />
           </button>
-          <button onClick={() => startChat(contact)}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}>
-            <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+          <button onClick={() => startChat(contact)} disabled={anyLoading}
+            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            {isMsgLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+              : <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
           </button>
-          <button onClick={() => startCall(contact)}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}>
-            <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+          <button onClick={() => handleCall(contact, false)} disabled={anyLoading || isStartingCall}
+            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            {isCallLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+              : <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
+          </button>
+          <button onClick={() => handleCall(contact, true)} disabled={anyLoading || isStartingCall}
+            className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+              : <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
           </button>
         </div>
       </div>
