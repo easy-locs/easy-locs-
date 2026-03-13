@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const NAV_ITEMS = [
   { icon: Home, label: "Orbit", path: "/app/orbit", badge: null as string | null },
   { icon: MessageCircle, label: "Messages", path: "/dashboard/communication", badge: "messages" },
-  { icon: Phone, label: "Appels", path: "/dashboard/communication?tab=calls", badge: "calls" },
+  { icon: Phone, label: "Appels", path: "/dashboard/communication?section=calls", badge: "calls" },
   { icon: Store, label: "Annonces", path: "/dashboard/marketplace", badge: null },
   { icon: User, label: "Profil", path: "/dashboard/settings", badge: null },
 ] as const;

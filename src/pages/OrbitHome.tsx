@@ -13,21 +13,21 @@ import {
 /* ── Priority modules (top row, larger) ── */
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
-  { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?tab=calls" },
-  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings?tab=notifications" },
+  { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
+  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings" },
   { icon: Store, label: "Annonces", desc: "Marketplace", key: "activeListings" as const, to: "/dashboard/marketplace" },
 ];
 
 /* ── Secondary modules ── */
 const SECONDARY_CARDS = [
-  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?tab=contacts" },
-  { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?tab=radar" },
+  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
+  { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
-  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?tab=privacy" },
-  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings?tab=devices" },
-  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings?tab=backup" },
-  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings?tab=data" },
-  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings?tab=appearance" },
+  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings" },
 ];
 
 export default function OrbitHome() {
