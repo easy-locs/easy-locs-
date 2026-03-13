@@ -807,6 +807,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           loadMessages();
         }}
       />
+
+      {/* Safety Number Verification */}
+      <OrbitSafetyNumber
+        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
+        peerName={thread?.name || "Contact"}
+        open={showSafetyNumber}
+        onOpenChange={setShowSafetyNumber}
+      />
     </>
   );
 }
