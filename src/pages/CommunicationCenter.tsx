@@ -14,6 +14,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
 import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
+import CommCallsSection from "@/components/communication-hub/CommCallsSection";
+import CommContactsSection from "@/components/communication-hub/CommContactsSection";
+import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";

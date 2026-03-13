@@ -2,17 +2,17 @@
  * CommNavBar — Lightweight internal communication navigation.
  * Clean, native-feeling bottom tabs (mobile) / slim sidebar (desktop).
  */
-import { MessageCircle, Phone, Users, UsersRound, Video } from "lucide-react";
+import { MessageCircle, Phone, Users, CreditCard, UsersRound } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type CommSection = "chats" | "calls" | "contacts" | "groups" | "meetings" | "files" | "settings";
+export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "meetings" | "files" | "settings";
 
 const TABS: { id: CommSection; icon: typeof MessageCircle; label: string }[] = [
   { id: "chats", icon: MessageCircle, label: "Chats" },
   { id: "calls", icon: Phone, label: "Calls" },
   { id: "contacts", icon: Users, label: "Contacts" },
+  { id: "payments", icon: CreditCard, label: "Pay" },
   { id: "groups", icon: UsersRound, label: "Groups" },
-  { id: "meetings", icon: Video, label: "Meet" },
 ];
 
 interface Props {
