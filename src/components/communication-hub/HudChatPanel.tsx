@@ -319,7 +319,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         propertyId: thread.propertyId,
         contextType: thread.contextType,
         contextId: thread.contextId,
-        threadDbId: thread.threadDbId,
+        threadDbId: thread.threadId,
       });
       // Show as pending in UI
       const fakeMsg: ChatMessage = {
