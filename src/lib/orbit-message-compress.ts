@@ -19,7 +19,7 @@ export async function compressMessage(plaintext: string): Promise<string> {
     const encoded = new TextEncoder().encode(plaintext);
     const cs = new CompressionStream("deflate-raw");
     const writer = cs.writable.getWriter();
-    writer.write(encoded);
+    writer.write(encoded.buffer as ArrayBuffer);
     writer.close();
 
     const reader = cs.readable.getReader();
