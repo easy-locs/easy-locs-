@@ -404,6 +404,16 @@ export default function Explore() {
 
       {/* ═══════ RESULTS ═══════ */}
       <main className="max-w-[1400px] mx-auto px-4 py-6">
+        {/* Breadcrumbs */}
+        <ExploreBreadcrumbs
+          activeGroup={activeGroup}
+          activeSubcategory={activeSubcategory}
+          locationQuery={locationQuery}
+          onGroupChange={setActiveGroup}
+          onSubcategoryChange={setActiveSubcategory}
+          onClearLocation={() => setLocationQuery("")}
+        />
+
         {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
