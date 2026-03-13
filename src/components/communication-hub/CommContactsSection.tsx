@@ -163,7 +163,7 @@ export default function CommContactsSection() {
             <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
               {contact.name}
             </span>
-            {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(45, 90%, 55%)" }} />}
+            {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {presence && presence.status !== "offline" && (
@@ -187,8 +187,8 @@ export default function CommContactsSection() {
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => toggleFavorite(contact)} className="w-8 h-8 rounded-full flex items-center justify-center">
             <Star className="h-4 w-4"
-              fill={contact.is_favorite ? "hsl(45, 90%, 55%)" : "none"}
-              style={{ color: contact.is_favorite ? "hsl(45, 90%, 55%)" : "hsl(var(--hud-text-dim) / 0.2)" }} />
+              fill={contact.is_favorite ? "hsl(var(--hud-warning))" : "none"}
+              style={{ color: contact.is_favorite ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.2)" }} />
           </button>
           <button onClick={() => startChat(contact)}
             className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -324,11 +324,11 @@ export default function CommContactsSection() {
 
 function presenceColor(status: string): string {
   const colors: Record<string, string> = {
-    online: "hsl(142, 70%, 50%)",
-    away: "hsl(45, 90%, 55%)",
-    busy: "hsl(0, 70%, 60%)",
-    in_call: "hsl(270, 80%, 65%)",
-    dnd: "hsl(0, 70%, 50%)",
+    online: "hsl(var(--hud-success))",
+    away: "hsl(var(--hud-warning))",
+    busy: "hsl(var(--hud-danger))",
+    in_call: "hsl(var(--hud-purple))",
+    dnd: "hsl(var(--hud-danger))",
   };
   return colors[status] || "hsl(var(--hud-text-dim) / 0.4)";
 }

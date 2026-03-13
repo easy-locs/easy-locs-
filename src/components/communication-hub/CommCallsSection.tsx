@@ -133,9 +133,9 @@ export default function CommCallsSection() {
   const missedCount = calls.filter(c => c.status === "missed").length;
 
   const getCallIcon = (call: CallLog) => {
-    if (call.status === "missed") return <PhoneMissed className="h-4 w-4" style={{ color: "hsl(0, 70%, 60%)" }} />;
+    if (call.status === "missed") return <PhoneMissed className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />;
     if (call.caller_id === user?.id) return <PhoneOutgoing className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />;
-    return <PhoneIncoming className="h-4 w-4" style={{ color: "hsl(142, 70%, 50%)" }} />;
+    return <PhoneIncoming className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />;
   };
 
   /** Build display label: "OrgName · ContextLabel" or fallback */
@@ -183,7 +183,7 @@ export default function CommCallsSection() {
             >
               {f.label}
               {f.id === "missed" && missedCount > 0 && (
-                <span className="ml-1 text-[10px] font-bold" style={{ color: "hsl(0, 70%, 60%)" }}>
+                <span className="ml-1 text-[10px] font-bold" style={{ color: "hsl(var(--hud-danger))" }}>
                   {missedCount}
                 </span>
               )}
@@ -225,7 +225,7 @@ export default function CommCallsSection() {
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                     style={{
                       background: call.status === "missed"
-                        ? "hsl(0, 70%, 60%, 0.1)"
+                        ? "hsl(var(--hud-danger) / 0.1)"
                         : "hsl(var(--hud-surface))",
                     }}
                   >
@@ -238,7 +238,7 @@ export default function CommCallsSection() {
                       <span
                         className="text-sm font-medium truncate"
                         style={{
-                          color: call.status === "missed" ? "hsl(0, 70%, 60%)" : "hsl(var(--hud-text))",
+                          color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
                         }}
                       >
                         {primaryLabel}

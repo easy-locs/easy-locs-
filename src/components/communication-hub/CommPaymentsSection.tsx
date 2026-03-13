@@ -33,10 +33,10 @@ interface PaymentRequest {
 }
 
 const STATUS_CONFIG: Record<string, { icon: typeof Clock; color: string; label: string }> = {
-  pending: { icon: Clock, color: "hsl(45, 90%, 55%)", label: "Pending" },
-  paid: { icon: CheckCircle2, color: "hsl(142, 70%, 50%)", label: "Paid" },
-  failed: { icon: XCircle, color: "hsl(0, 70%, 60%)", label: "Failed" },
-  refunded: { icon: RefreshCw, color: "hsl(220, 70%, 60%)", label: "Refunded" },
+  pending: { icon: Clock, color: "hsl(var(--hud-warning))", label: "Pending" },
+  paid: { icon: CheckCircle2, color: "hsl(var(--hud-success))", label: "Paid" },
+  failed: { icon: XCircle, color: "hsl(var(--hud-danger))", label: "Failed" },
+  refunded: { icon: RefreshCw, color: "hsl(var(--hud-cyan))", label: "Refunded" },
   cancelled: { icon: XCircle, color: "hsl(var(--hud-text-dim) / 0.4)", label: "Cancelled" },
 };
 
@@ -129,7 +129,7 @@ export default function CommPaymentsSection() {
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="h-3 w-3" style={{ color: "hsl(45, 90%, 55%)" }} />
+              <Clock className="h-3 w-3" style={{ color: "hsl(var(--hud-warning))" }} />
               <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Pending</span>
             </div>
             <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>
@@ -138,7 +138,7 @@ export default function CommPaymentsSection() {
           </div>
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1.5 mb-1">
-              <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(142, 70%, 50%)" }} />
+              <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(var(--hud-success))" }} />
               <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Received</span>
             </div>
             <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>

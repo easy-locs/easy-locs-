@@ -76,10 +76,10 @@ function formatDistance(km: number): string {
 function getTypeColor(type: string): string {
   switch (type) {
     case "service": return "hsl(var(--hud-cyan))";
-    case "real_estate": return "hsl(142, 70%, 50%)";
-    case "concierge": return "hsl(270, 80%, 65%)";
-    case "professional": return "hsl(45, 90%, 55%)";
-    case "person": return "hsl(195, 80%, 60%)";
+    case "real_estate": return "hsl(var(--hud-success))";
+    case "concierge": return "hsl(var(--hud-purple))";
+    case "professional": return "hsl(var(--hud-warning))";
+    case "person": return "hsl(var(--hud-cyan))";
     default: return "hsl(var(--hud-cyan))";
   }
 }
@@ -340,9 +340,9 @@ export default function CommNearbySection() {
             <button onClick={() => { setAvailableOnly(!availableOnly); haptic("light"); }}
               className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full"
               style={{
-                background: availableOnly ? "hsl(142, 70%, 50%, 0.12)" : "transparent",
-                color: availableOnly ? "hsl(142, 70%, 50%)" : "hsl(var(--hud-text-dim) / 0.5)",
-                border: `1px solid ${availableOnly ? "hsl(142, 70%, 50%, 0.2)" : "hsl(var(--hud-border) / 0.1)"}`,
+                background: availableOnly ? "hsl(var(--hud-success) / 0.12)" : "transparent",
+                color: availableOnly ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.5)",
+                border: `1px solid ${availableOnly ? "hsl(var(--hud-success) / 0.2)" : "hsl(var(--hud-border) / 0.1)"}`,
               }}>
               <Clock className="h-2.5 w-2.5" /> Available now
             </button>
@@ -449,9 +449,9 @@ export default function CommNearbySection() {
                       <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
                         style={{
                           background: u.avatar_url ? `url(${u.avatar_url}) center/cover` : "hsl(var(--hud-surface))",
-                          border: `2px solid ${u.status === "online" ? "hsl(142, 70%, 50%)" : "hsl(var(--hud-border) / 0.4)"}`,
+                          border: `2px solid ${u.status === "online" ? "hsl(var(--hud-success))" : "hsl(var(--hud-border) / 0.4)"}`,
                           boxShadow: u.status === "online" 
-                            ? "0 0 12px hsl(142, 70%, 50%, 0.3), 0 2px 8px hsl(0 0% 0% / 0.3)"
+                            ? "0 0 12px hsl(var(--hud-success) / 0.3), 0 2px 8px hsl(0 0% 0% / 0.3)"
                             : "0 2px 8px hsl(0 0% 0% / 0.3)",
                         }}>
                         {!u.avatar_url && <User className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
@@ -459,7 +459,7 @@ export default function CommNearbySection() {
                       {/* Online pulse */}
                       {u.status === "online" && (
                         <motion.div className="absolute -inset-1 rounded-full"
-                          style={{ border: "1.5px solid hsl(142, 70%, 50%, 0.4)" }}
+                          style={{ border: "1.5px solid hsl(var(--hud-success) / 0.4)" }}
                           animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
                           transition={{ duration: 2, repeat: Infinity }}
                         />
