@@ -1,6 +1,7 @@
 /**
  * CommunicationCenter — True full-screen messaging app experience.
  * Zero margins, full viewport, native feel.
+ * Reads ?section= param from orb navigation for correct tab activation.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -17,6 +18,7 @@ import CommPlaceholderSection from "@/components/communication-hub/CommPlacehold
 import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
 import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
+import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
@@ -24,6 +26,8 @@ import NewConversationDialog from "@/components/communication-hub/NewConversatio
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
+
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "meetings", "files", "settings"];
 
 const CommunicationCenter = () => {
   const { orgId } = useAuth();
@@ -41,6 +45,20 @@ const CommunicationCenter = () => {
   useEffect(() => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
+
+  // ═══ Read ?section= param from orb navigation ═══
+  useEffect(() => {
+    const sectionParam = searchParams.get("section");
+    if (sectionParam && VALID_SECTIONS.includes(sectionParam as CommSection)) {
+      setActiveSection(sectionParam as CommSection);
+      // Clean up the param so back navigation works cleanly
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete("section");
+        return next;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Deep-link
   useEffect(() => {
@@ -91,6 +109,16 @@ const CommunicationCenter = () => {
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
+  // Section change handler — syncs nav state
+  const handleSectionChange = useCallback((section: CommSection) => {
+    setActiveSection(section);
+    // Reset thread selection when switching away from chats
+    if (section !== "chats") {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+  }, []);
+
   const showChatArea = activeSection === "chats";
 
   const renderSection = () => {
@@ -98,7 +126,7 @@ const CommunicationCenter = () => {
       case "calls": return <CommCallsSection />;
       case "contacts": return <CommContactsSection />;
       case "payments": return <CommPaymentsSection />;
-      case "groups":
+      case "groups": return <CommGroupsSection />;
       case "meetings":
       case "files":
       case "settings":
@@ -109,7 +137,6 @@ const CommunicationCenter = () => {
 
   return (
     <DashboardLayout>
-      {/* Full-screen communication — zero margins */}
       <div
         className="flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6"
         style={{
@@ -117,7 +144,7 @@ const CommunicationCenter = () => {
           background: "hsl(var(--hud-bg))",
         }}
       >
-        {/* ═══ Minimal header — mobile: ultra-compact ═══ */}
+        {/* ═══ Minimal header ═══ */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -147,9 +174,7 @@ const CommunicationCenter = () => {
             {stats.unread > 0 && !selectedThread && (
               <div
                 className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px]"
-                style={{
-                  background: "hsl(var(--hud-cyan) / 0.08)",
-                }}
+                style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}
               >
                 <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
                 <span className="font-semibold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
@@ -162,14 +187,12 @@ const CommunicationCenter = () => {
 
         {/* ═══ Main content ═══ */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {/* Desktop nav strip */}
           {!isMobile && (
-            <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={false} unreadCount={stats.unread} />
+            <CommNavBar active={activeSection} onChange={handleSectionChange} isMobile={false} unreadCount={stats.unread} />
           )}
 
           {showChatArea ? (
             <div className="flex-1 flex min-h-0 min-w-0">
-              {/* Conversation list */}
               <HudConversationList
                 threads={threads}
                 loading={loading}
@@ -177,8 +200,6 @@ const CommunicationCenter = () => {
                 onSelectThread={handleSelectThread}
                 visible={!selectedThread || !isMobile}
               />
-
-              {/* Chat + context */}
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
                 <div className="flex-1 flex min-h-0">
                   <HudChatPanel
@@ -201,7 +222,7 @@ const CommunicationCenter = () => {
 
         {/* Mobile bottom nav */}
         {isMobile && (
-          <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={true} unreadCount={stats.unread} />
+          <CommNavBar active={activeSection} onChange={handleSectionChange} isMobile={true} unreadCount={stats.unread} />
         )}
       </div>
 

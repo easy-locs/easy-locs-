@@ -2,6 +2,8 @@
  * IntelligenceOrb — Futuristic HUD-style central brain.
  * True circular orbiting animation, scanning beams, glowing nodes.
  * Radial menu: Chats, Calls, Files, Contacts, Deals, Payments, Security, AI
+ * 
+ * All orb buttons now route correctly with section query params.
  */
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,16 +12,17 @@ import {
   MessageSquare, Phone, FolderOpen, Users,
   Handshake, CreditCard, Shield, Sparkles,
 } from "lucide-react";
+import { haptic } from "@/lib/haptics";
 
 const MENU_ITEMS = [
-  { icon: MessageSquare, label: "Chats", path: "/dashboard/communication" },
-  { icon: Phone, label: "Calls", path: "/dashboard/communication" },
-  { icon: FolderOpen, label: "Files", path: "/dashboard/communication" },
-  { icon: Users, label: "Contacts", path: "/dashboard/communication" },
+  { icon: MessageSquare, label: "Chats", path: "/dashboard/communication?section=chats" },
+  { icon: Phone, label: "Calls", path: "/dashboard/communication?section=calls" },
+  { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },
+  { icon: Users, label: "Contacts", path: "/dashboard/communication?section=contacts" },
   { icon: Handshake, label: "Deals", path: "/dashboard/marketplace" },
-  { icon: CreditCard, label: "Payments", path: "/dashboard/billing" },
+  { icon: CreditCard, label: "Payments", path: "/dashboard/communication?section=payments" },
   { icon: Shield, label: "Security", path: "/dashboard/settings" },
-  { icon: Sparkles, label: "AI", path: "/dashboard/assistant" },
+  { icon: Sparkles, label: "AI", path: "/dashboard/ai-quality" },
 ];
 
 const NODES = [
@@ -28,7 +31,6 @@ const NODES = [
   { ring: 3, angle: 20 }, { ring: 3, angle: 120 }, { ring: 3, angle: 220 }, { ring: 3, angle: 340 },
 ];
 
-// Data flow particles along network lines
 const DATA_PARTICLES = [
   { nodeIdx: 0, delay: 0 }, { nodeIdx: 3, delay: 1.2 }, { nodeIdx: 6, delay: 2.5 },
   { nodeIdx: 8, delay: 3.8 }, { nodeIdx: 5, delay: 0.7 },
@@ -43,9 +45,17 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const toggle = useCallback(() => setOpen((o) => !o), []);
+  const toggle = useCallback(() => {
+    haptic("light");
+    setOpen((o) => !o);
+  }, []);
+  
   const handleSelect = useCallback(
-    (path: string) => { setOpen(false); navigate(path); },
+    (path: string) => {
+      haptic("medium");
+      setOpen(false);
+      navigate(path);
+    },
     [navigate],
   );
 
@@ -83,40 +93,30 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
             <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
-
-          {/* Core gradient — deeper, richer */}
           <radialGradient id="coreGrad" cx="42%" cy="38%">
             <stop offset="0%" stopColor="hsl(195, 100%, 65%)" stopOpacity="0.7" />
             <stop offset="35%" stopColor="hsl(210, 100%, 55%)" stopOpacity="0.4" />
             <stop offset="70%" stopColor="hsl(240, 80%, 45%)" stopOpacity="0.15" />
             <stop offset="100%" stopColor="hsl(260, 70%, 30%)" stopOpacity="0.05" />
           </radialGradient>
-
-          {/* Outer ambient glow */}
           <radialGradient id="ambientGlow" cx="50%" cy="50%">
             <stop offset="0%" stopColor="hsl(195, 100%, 60%)" stopOpacity="0.08" />
             <stop offset="60%" stopColor="hsl(210, 100%, 50%)" stopOpacity="0.03" />
             <stop offset="100%" stopColor="hsl(240, 80%, 40%)" stopOpacity="0" />
           </radialGradient>
-
-          {/* Scanner gradient */}
           <linearGradient id="scanGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0" />
             <stop offset="70%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0.12" />
             <stop offset="100%" stopColor="hsl(180, 100%, 70%)" stopOpacity="0.35" />
           </linearGradient>
-
-          {/* Data particle gradient */}
           <radialGradient id="particleGlow">
             <stop offset="0%" stopColor="hsl(180, 100%, 80%)" stopOpacity="1" />
             <stop offset="100%" stopColor="hsl(180, 100%, 60%)" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        {/* ── Ambient background glow ── */}
         <circle cx={cx} cy={cy} r={150} fill="url(#ambientGlow)" filter="url(#deepGlow)" />
 
-        {/* ── Concentric rings with varied styling ── */}
         {rings.map((r, i) => (
           <circle key={`ring-${i}`} cx={cx} cy={cy} r={r} fill="none"
             stroke="hsl(195, 100%, 55%)"
@@ -126,7 +126,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           />
         ))}
 
-        {/* ── Subtle tick marks on outer ring ── */}
         {Array.from({ length: 36 }, (_, i) => {
           const angle = (i * 10 * Math.PI) / 180;
           const inner = 125;
@@ -141,7 +140,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
-        {/* ── Crosshair lines ── */}
         {[0, 45, 90, 135].map((angle) => {
           const rad = (angle * Math.PI) / 180;
           return (
@@ -153,7 +151,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
-        {/* ── Primary scanning beam ── */}
         <g filter="url(#neonGlow)">
           <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
             <animateTransform
@@ -168,7 +165,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           </g>
         </g>
 
-        {/* ── Secondary scanner line ── */}
         <g>
           <animateTransform
             attributeName="transform" type="rotate"
@@ -180,7 +176,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           />
         </g>
 
-        {/* ── Tertiary thin scanner — adds depth ── */}
         <g opacity="0.15">
           <animateTransform
             attributeName="transform" type="rotate"
@@ -192,7 +187,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           />
         </g>
 
-        {/* ── Network nodes ── */}
         {NODES.map((node, i) => {
           const r = rings[node.ring];
           const rad = (node.angle * Math.PI) / 180;
@@ -211,7 +205,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
-        {/* ── Data flow particles along network lines ── */}
         {DATA_PARTICLES.map((dp, i) => {
           const node = NODES[dp.nodeIdx];
           const r = rings[node.ring];
@@ -227,23 +220,18 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
-        {/* ── Orbiting dot — primary — true circle ── */}
         <circle r="3" fill="hsl(180, 100%, 70%)" filter="url(#neonGlow)" opacity="0.8">
           <animateMotion
             dur={hasActivity ? "4s" : "8s"} repeatCount="indefinite"
             path={`M ${cx + 100} ${cy} A 100 100 0 1 1 ${cx + 100 - 0.01} ${cy}`}
           />
         </circle>
-
-        {/* ── Orbiting dot — secondary ── */}
         <circle r="2" fill="hsl(270, 80%, 70%)" filter="url(#neonGlow)" opacity="0.6">
           <animateMotion
             dur={hasActivity ? "5s" : "12s"} repeatCount="indefinite"
             path={`M ${cx} ${cy - 72} A 72 72 0 1 1 ${cx - 0.01} ${cy - 72}`}
           />
         </circle>
-
-        {/* ── Orbiting dot — tertiary, inner ring ── */}
         <circle r="1.5" fill="hsl(195, 100%, 75%)" filter="url(#neonGlow)" opacity="0.5">
           <animateMotion
             dur={hasActivity ? "3s" : "6s"} repeatCount="indefinite"
@@ -251,7 +239,6 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           />
         </circle>
 
-        {/* ── Activity pulse rings ── */}
         {hasActivity && (
           <>
             <circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(180, 100%, 60%)" strokeWidth="1.5" opacity="0">
@@ -265,18 +252,14 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           </>
         )}
 
-        {/* ── Core — layered for depth ── */}
         <circle cx={cx} cy={cy} r={coreSize / 2 + 4} fill="none" stroke="hsl(210, 100%, 50%)" strokeWidth="0.4" opacity="0.15" />
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="url(#coreGrad)" filter="url(#neonGlow)" />
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="none" stroke="hsl(195, 100%, 60%)" strokeWidth="1.2" opacity="0.5" />
         <circle cx={cx} cy={cy} r={coreSize / 2 - 6} fill="none" stroke="hsl(180, 100%, 65%)" strokeWidth="0.6" opacity="0.25" />
         <circle cx={cx} cy={cy} r={coreSize / 2 - 14} fill="none" stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.15" />
-
-        {/* Core specular highlight */}
         <ellipse cx={cx - 8} cy={cy - 10} rx={10} ry={5} fill="white" opacity="0.07" />
         <ellipse cx={cx + 4} cy={cy + 8} rx={6} ry={3} fill="hsl(270, 80%, 70%)" opacity="0.04" />
 
-        {/* ── Menu connection lines ── */}
         <AnimatePresence>
           {open && MENU_ITEMS.map((_, i) => {
             const angle = (i / MENU_ITEMS.length) * Math.PI * 2 - Math.PI / 2;
