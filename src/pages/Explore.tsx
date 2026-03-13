@@ -23,6 +23,7 @@ import { ExploreSEOFooter } from "@/components/explore/ExploreSEOFooter";
 import { ExploreEmptyState } from "@/components/explore/ExploreEmptyState";
 import SmartSuggestions from "@/components/explore/SmartSuggestions";
 import ExploreHeader from "@/components/explore/ExploreHeader";
+import ExploreBreadcrumbs from "@/components/explore/ExploreBreadcrumbs";
 
 /* ─────────── Types ─────────── */
 interface RealEstateListing {
