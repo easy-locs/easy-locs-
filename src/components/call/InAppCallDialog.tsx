@@ -9,7 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   PhoneOff, Mic, MicOff, Volume2, VolumeX, VideoIcon, VideoOff,
-  Loader2, Shield, MessageSquare, WifiOff, User, CameraIcon,
+  Loader2, Shield, MessageSquare, WifiOff, User, CameraIcon, RotateCcw,
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
 
@@ -36,20 +36,26 @@ export default function InAppCallDialog({
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [isVideo, setIsVideo] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
-  // Attach remote stream
+  // Attach remote stream - separate audio and video handling
   useEffect(() => {
     if (!remoteStream) return;
-    
+
     const hasVideo = remoteStream.getVideoTracks().length > 0;
-    
-    // Always attach to audio element for audio
-    const audioEl = remoteAudioRef.current;
-    if (audioEl) {
-      audioEl.srcObject = remoteStream;
+    const hasAudio = remoteStream.getAudioTracks().length > 0;
+
+    // Always attach audio to dedicated audio element
+    if (hasAudio && remoteAudioRef.current) {
+      const audioEl = remoteAudioRef.current;
+      // Create audio-only stream to avoid video interference
+      const audioStream = new MediaStream(remoteStream.getAudioTracks());
+      audioEl.srcObject = audioStream;
+      audioEl.volume = speakerOn ? 1.0 : 0.0;
+      audioEl.muted = !speakerOn;
       const p = audioEl.play();
       if (p) p.catch(() => {
         const retry = () => { audioEl.play().catch(() => {}); document.removeEventListener("touchstart", retry); document.removeEventListener("click", retry); };
@@ -57,13 +63,13 @@ export default function InAppCallDialog({
         document.addEventListener("click", retry, { once: true });
       });
     }
-    
-    // Attach to video element if video tracks exist
+
+    // Attach video if tracks exist
     if (hasVideo && remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play().catch(() => {});
     }
-  }, [remoteStream]);
+  }, [remoteStream, speakerOn]);
 
   // Attach local stream for self-view
   useEffect(() => {
@@ -104,6 +110,7 @@ export default function InAppCallDialog({
       setLocalStream(null);
       setIsVideo(false);
       setIsEnding(false);
+      setFacingMode("user");
     }
   }, [open]);
 
@@ -125,23 +132,70 @@ export default function InAppCallDialog({
     setMuted(!!isMuted);
   };
 
-  const handleToggleVideo = () => {
-    if (!localStream) return;
+  const handleToggleVideo = async () => {
+    if (!localStream || !callManager) return;
     const videoTracks = localStream.getVideoTracks();
-    videoTracks.forEach(t => { t.enabled = !t.enabled; });
-    setVideoEnabled(videoTracks.some(t => t.enabled));
+    if (videoTracks.length > 0) {
+      // Toggle existing video tracks
+      videoTracks.forEach(t => { t.enabled = !t.enabled; });
+      setVideoEnabled(videoTracks.some(t => t.enabled));
+    } else {
+      // No video track yet - add one dynamically
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
+        });
+        const videoTrack = videoStream.getVideoTracks()[0];
+        if (videoTrack) {
+          localStream.addTrack(videoTrack);
+          setVideoEnabled(true);
+          setIsVideo(true);
+          // Notify CallManager to add track to peer connection
+          callManager.addVideoTrack?.(videoTrack);
+        }
+      } catch {
+        // Camera access denied
+      }
+    }
+  };
+
+  const handleFlipCamera = async () => {
+    if (!localStream) return;
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacing);
+    try {
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newFacing, width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      const newTrack = videoStream.getVideoTracks()[0];
+      const oldTrack = localStream.getVideoTracks()[0];
+      if (oldTrack) {
+        localStream.removeTrack(oldTrack);
+        oldTrack.stop();
+      }
+      if (newTrack) {
+        localStream.addTrack(newTrack);
+        callManager?.replaceVideoTrack?.(newTrack);
+      }
+    } catch {}
   };
 
   const handleToggleSpeaker = () => {
-    const audioEl = remoteAudioRef.current;
-    if (!audioEl) return;
-    
-    // Toggle muted state on audio element
     const newState = !speakerOn;
-    audioEl.muted = !newState;
-    // Also try volume control
-    audioEl.volume = newState ? 1.0 : 0.0;
     setSpeakerOn(newState);
+    
+    const audioEl = remoteAudioRef.current;
+    if (audioEl) {
+      audioEl.volume = newState ? 1.0 : 0.0;
+      audioEl.muted = !newState;
+      
+      // Try setSinkId for actual hardware speaker switching (Chrome/Edge)
+      if ('setSinkId' in audioEl && typeof (audioEl as any).setSinkId === 'function') {
+        // 'default' = earpiece/headphones, '' = speaker
+        // On mobile, toggling between outputs
+        (audioEl as any).setSinkId(newState ? '' : 'default').catch(() => {});
+      }
+    }
   };
 
   const formatTime = (s: number) => {
@@ -152,7 +206,7 @@ export default function InAppCallDialog({
 
   const isNetworkBlocked = status === "network_blocked" || status === "failed";
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
-  const showVideoUI = isVideo || hasRemoteVideo;
+  const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
 
   const statusConfig: Record<string, { label: string; icon?: React.ReactNode }> = {
     idle: { label: "" },
@@ -200,7 +254,12 @@ export default function InAppCallDialog({
             {/* Local self-view (picture-in-picture) */}
             {videoEnabled && (
               <div className="absolute top-4 right-4 w-28 h-40 rounded-xl overflow-hidden shadow-lg border border-border/50">
-                <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover mirror-video" />
+                {/* Flip camera button */}
+                <button onClick={handleFlipCamera}
+                  className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                  <RotateCcw className="h-3 w-3 text-white" />
+                </button>
               </div>
             )}
 
@@ -218,7 +277,7 @@ export default function InAppCallDialog({
             </div>
 
             {/* Controls */}
-            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-4">
+            <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-3">
               <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
                 className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md ${muted ? "bg-destructive/80 text-white" : "bg-background/70 text-foreground"} disabled:opacity-40`}>
                 {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -296,7 +355,7 @@ export default function InAppCallDialog({
                 <div className="flex items-center justify-center mt-2 gap-6">
                   <span className="text-[10px] text-muted-foreground w-14 text-center">{muted ? "Unmute" : "Mute"}</span>
                   <span className="text-[10px] text-destructive w-16 text-center font-medium">End</span>
-                  <span className="text-[10px] text-muted-foreground w-14 text-center">{speakerOn ? "Speaker" : "Speaker Off"}</span>
+                  <span className="text-[10px] text-muted-foreground w-14 text-center">{speakerOn ? "Speaker" : "Earpiece"}</span>
                 </div>
               </div>
             )}

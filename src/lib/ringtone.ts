@@ -2,6 +2,8 @@
  * Premium synthetic ringtone generator using Web Audio API.
  * No external audio files needed — generates elegant tones programmatically.
  * Integrates with haptic feedback for native-feeling call alerts.
+ * 
+ * CRITICAL: Handles Safari/iOS AudioContext suspension and autoplay policy.
  */
 import { haptic } from "./haptics";
 
@@ -12,43 +14,92 @@ let activeOscillators: OscillatorNode[] = [];
 let activeGains: GainNode[] = [];
 let ringtoneInterval: ReturnType<typeof setInterval> | null = null;
 let vibrationInterval: ReturnType<typeof setInterval> | null = null;
+let userGestureUnlocked = false;
 
 function getAudioContext(): AudioContext {
   if (!audioCtx || audioCtx.state === "closed") {
-    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtxClass) throw new Error("Web Audio API not supported");
+    audioCtx = new AudioCtxClass();
   }
+  // Resume suspended context (required by Safari/Chrome autoplay policy)
   if (audioCtx.state === "suspended") {
     audioCtx.resume().catch(() => {});
   }
   return audioCtx;
 }
 
+/** Unlock AudioContext on first user gesture — call this early in app lifecycle */
+export function unlockAudioContext() {
+  if (userGestureUnlocked) return;
+  
+  const unlock = () => {
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === "suspended") {
+        ctx.resume().then(() => {
+          userGestureUnlocked = true;
+        }).catch(() => {});
+      } else {
+        userGestureUnlocked = true;
+      }
+      // Create and immediately discard a silent oscillator to fully unlock
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.001);
+    } catch {}
+    
+    document.removeEventListener("touchstart", unlock);
+    document.removeEventListener("touchend", unlock);
+    document.removeEventListener("click", unlock);
+    document.removeEventListener("keydown", unlock);
+  };
+  
+  document.addEventListener("touchstart", unlock, { once: false, passive: true });
+  document.addEventListener("touchend", unlock, { once: false, passive: true });
+  document.addEventListener("click", unlock, { once: false, passive: true });
+  document.addEventListener("keydown", unlock, { once: false, passive: true });
+}
+
+// Auto-setup the unlock listener
+if (typeof window !== "undefined") {
+  unlockAudioContext();
+}
+
 /** Play a single tone burst */
 function playTone(ctx: AudioContext, freq: number, duration: number, startTime: number, volume = 0.15) {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-  osc.type = "sine";
-  osc.frequency.value = freq;
+    osc.type = "sine";
+    osc.frequency.value = freq;
 
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(volume, startTime + 0.05);
-  gain.gain.setValueAtTime(volume, startTime + duration - 0.1);
-  gain.gain.linearRampToValueAtTime(0, startTime + duration);
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.05);
+    gain.gain.setValueAtTime(volume, startTime + duration - 0.1);
+    gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
-  osc.connect(gain);
-  gain.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
 
-  osc.start(startTime);
-  osc.stop(startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
 
-  activeOscillators.push(osc);
-  activeGains.push(gain);
+    activeOscillators.push(osc);
+    activeGains.push(gain);
 
-  osc.onended = () => {
-    activeOscillators = activeOscillators.filter(o => o !== osc);
-    activeGains = activeGains.filter(g => g !== gain);
-  };
+    osc.onended = () => {
+      activeOscillators = activeOscillators.filter(o => o !== osc);
+      activeGains = activeGains.filter(g => g !== gain);
+    };
+  } catch (e) {
+    console.warn("[ringtone] playTone failed:", e);
+  }
 }
 
 /** Premium chord pattern for audio calls — warm, modern two-tone melody */
@@ -76,6 +127,22 @@ function playVideoRingPattern(ctx: AudioContext) {
   playTone(ctx, 739.99, 0.3, now + 0.95, 0.06);   // F#5
 }
 
+/** Play a notification sound — short, non-intrusive */
+export function playNotificationSound() {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    // Two quick ascending tones
+    playTone(ctx, 800, 0.12, now, 0.08);
+    playTone(ctx, 1200, 0.15, now + 0.1, 0.06);
+  } catch {
+    // Silent fail — user may not have interacted yet
+  }
+}
+
 /** Start vibration pattern if supported */
 function startVibration() {
   if (!("vibrate" in navigator)) return;
@@ -92,7 +159,7 @@ export function startRingtone(type: RingtoneType = "audio") {
 
   try {
     const ctx = getAudioContext();
-    // Ensure AudioContext is resumed (required after user gesture on many browsers)
+    // Force resume for Safari
     if (ctx.state === "suspended") {
       ctx.resume().catch(() => {});
     }
@@ -105,14 +172,20 @@ export function startRingtone(type: RingtoneType = "audio") {
     // Repeat every 2.5s for audio, 2s for video
     const interval = type === "video" ? 2000 : 2500;
     ringtoneInterval = setInterval(() => {
-      playPattern(ctx);
-      haptic("medium");
+      try {
+        // Re-check context state each interval (Safari can re-suspend)
+        if (ctx.state === "suspended") ctx.resume().catch(() => {});
+        playPattern(ctx);
+        haptic("medium");
+      } catch {}
     }, interval);
 
     // Start vibration
     startVibration();
   } catch (e) {
     console.warn("Ringtone failed:", e);
+    // Fallback: at least vibrate
+    startVibration();
   }
 }
 

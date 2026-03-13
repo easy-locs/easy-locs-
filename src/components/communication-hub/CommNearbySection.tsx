@@ -391,88 +391,149 @@ export default function CommNearbySection() {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto min-h-0">
-        {/* Map View */}
+        {/* Map View — Interactive Deliveroo/Snap-style */}
         {viewMode === "map" && lat && lng ? (
-          <div className="relative w-full h-full min-h-[300px]">
+          <div className="relative w-full h-full min-h-[400px]" style={{ background: "hsl(var(--hud-bg))" }}>
+            {/* Base map tile */}
             <iframe
               src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - (radius * 0.012)},${lat - (radius * 0.009)},${lng + (radius * 0.012)},${lat + (radius * 0.009)}&layer=mapnik&marker=${lat},${lng}`}
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 absolute inset-0"
               title="Nearby map"
               loading="lazy"
-              style={{ minHeight: 400 }}
+              style={{ minHeight: 400, filter: "saturate(0.8) contrast(1.05)" }}
             />
-            {/* Radar sweep overlay */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="relative" style={{ width: "70%", paddingBottom: "70%" }}>
-                {/* Concentric rings */}
-                {[0.3, 0.6, 1].map((scale, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute rounded-full"
-                    style={{
-                      inset: `${(1 - scale) * 50}%`,
-                      border: `1px solid hsl(var(--hud-cyan) / ${0.08 + i * 0.04})`,
-                    }}
+            
+            {/* Interactive overlay with actual positioned markers */}
+            <div className="absolute inset-0 pointer-events-none">
+              {/* User position marker (center) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <div className="relative">
+                  <div className="w-5 h-5 rounded-full" style={{
+                    background: "hsl(var(--hud-cyan))",
+                    boxShadow: "0 0 20px hsl(var(--hud-cyan) / 0.6), 0 0 40px hsl(var(--hud-cyan) / 0.3)",
+                    border: "3px solid white",
+                  }} />
+                  {/* Accuracy ring */}
+                  <motion.div className="absolute -inset-4 rounded-full"
+                    style={{ background: "hsl(var(--hud-cyan) / 0.08)", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.2, 0.5] }}
+                    transition={{ duration: 3, repeat: Infinity }}
                   />
-                ))}
-                {/* Sweep line */}
-                <motion.div
-                  className="absolute rounded-full"
-                  style={{
-                    inset: 0,
-                    background: `conic-gradient(from 0deg, transparent 0deg, hsl(var(--hud-cyan) / 0.08) 30deg, transparent 60deg)`,
-                  }}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                />
-                {/* Center dot */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full" style={{
-                  background: "hsl(var(--hud-cyan))",
-                  boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.5)",
-                }} />
-                {/* Nearby dots (fake positions from results) */}
-                {filteredUsers.slice(0, 8).map((u, idx) => {
-                  const angle = (idx / Math.max(filteredUsers.length, 1)) * Math.PI * 2;
-                  const dist = 20 + (u.distance_km / radius) * 25;
-                  return (
-                    <motion.div
-                      key={u.user_id}
-                      className="absolute w-2 h-2 rounded-full"
-                      style={{
-                        background: "hsl(var(--hud-success))",
-                        boxShadow: "0 0 6px hsl(var(--hud-success) / 0.5)",
-                        top: `${50 - Math.cos(angle) * dist}%`,
-                        left: `${50 + Math.sin(angle) * dist}%`,
-                      }}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: idx * 0.1, duration: 0.3 }}
-                    />
-                  );
-                })}
-                {filteredItems.slice(0, 8).map((item, idx) => {
-                  const angle = (idx / Math.max(filteredItems.length, 1)) * Math.PI * 2 + Math.PI / 4;
-                  const dist = 15 + (item.distance_km / radius) * 25;
-                  return (
-                    <motion.div
-                      key={item.item_id}
-                      className="absolute w-1.5 h-1.5 rounded-full"
-                      style={{
-                        background: getTypeColor(item.item_type),
-                        boxShadow: `0 0 4px ${getTypeColor(item.item_type)}`,
-                        top: `${50 - Math.cos(angle) * dist}%`,
-                        left: `${50 + Math.sin(angle) * dist}%`,
-                      }}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.3 + idx * 0.08, duration: 0.2 }}
-                    />
-                  );
-                })}
+                </div>
               </div>
+
+              {/* Nearby user markers — positioned by bearing & distance */}
+              {filteredUsers.slice(0, 12).map((u, idx) => {
+                const bearingAngle = (idx / Math.max(filteredUsers.length, 1)) * Math.PI * 2;
+                const normalizedDist = Math.min(u.distance_km / radius, 0.9);
+                const offsetX = Math.sin(bearingAngle) * normalizedDist * 40;
+                const offsetY = -Math.cos(bearingAngle) * normalizedDist * 35;
+                
+                return (
+                  <motion.div
+                    key={u.user_id}
+                    className="absolute pointer-events-auto cursor-pointer z-10"
+                    style={{
+                      top: `calc(50% + ${offsetY}%)`,
+                      left: `calc(50% + ${offsetX}%)`,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: idx * 0.08, type: "spring", stiffness: 300, damping: 20 }}
+                    onClick={() => handleContact(u.display_name || "user")}
+                    title={`${u.display_name || "User"} — ${formatDistance(u.distance_km)}`}
+                  >
+                    <div className="relative">
+                      {/* Avatar circle */}
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+                        style={{
+                          background: u.avatar_url ? `url(${u.avatar_url}) center/cover` : "hsl(var(--hud-surface))",
+                          border: `2px solid ${u.status === "online" ? "hsl(142, 70%, 50%)" : "hsl(var(--hud-border) / 0.4)"}`,
+                          boxShadow: u.status === "online" 
+                            ? "0 0 12px hsl(142, 70%, 50%, 0.3), 0 2px 8px hsl(0 0% 0% / 0.3)"
+                            : "0 2px 8px hsl(0 0% 0% / 0.3)",
+                        }}>
+                        {!u.avatar_url && <User className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
+                      </div>
+                      {/* Online pulse */}
+                      {u.status === "online" && (
+                        <motion.div className="absolute -inset-1 rounded-full"
+                          style={{ border: "1.5px solid hsl(142, 70%, 50%, 0.4)" }}
+                          animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                      {/* Distance label */}
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded-full text-[8px] font-bold"
+                        style={{
+                          background: "hsl(var(--hud-bg) / 0.9)",
+                          color: "hsl(var(--hud-cyan))",
+                          border: "1px solid hsl(var(--hud-cyan) / 0.3)",
+                          backdropFilter: "blur(4px)",
+                        }}>
+                        {formatDistance(u.distance_km)}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+              {/* Nearby item markers */}
+              {filteredItems.slice(0, 12).map((item, idx) => {
+                const bearingAngle = (idx / Math.max(filteredItems.length, 1)) * Math.PI * 2 + Math.PI / 6;
+                const normalizedDist = Math.min(item.distance_km / radius, 0.9);
+                const offsetX = Math.sin(bearingAngle) * normalizedDist * 38;
+                const offsetY = -Math.cos(bearingAngle) * normalizedDist * 33;
+                const color = getTypeColor(item.item_type);
+                
+                return (
+                  <motion.div
+                    key={item.item_id}
+                    className="absolute pointer-events-auto cursor-pointer z-10"
+                    style={{
+                      top: `calc(50% + ${offsetY}%)`,
+                      left: `calc(50% + ${offsetX}%)`,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2 + idx * 0.06, type: "spring", stiffness: 300, damping: 20 }}
+                    onClick={() => handleContact(item.provider_name || item.title)}
+                    title={`${item.title} — ${formatDistance(item.distance_km)}`}
+                  >
+                    <div className="relative">
+                      {/* Pin shape */}
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg"
+                        style={{
+                          background: `${color}20`,
+                          border: `2px solid ${color}60`,
+                          boxShadow: `0 0 10px ${color}30, 0 2px 8px hsl(0 0% 0% / 0.3)`,
+                        }}>
+                        {item.item_type === "real_estate" ? <Home className="h-3.5 w-3.5" style={{ color }} /> :
+                         item.item_type === "concierge" ? <ShoppingBag className="h-3.5 w-3.5" style={{ color }} /> :
+                         <Briefcase className="h-3.5 w-3.5" style={{ color }} />}
+                      </div>
+                      {/* Price tag */}
+                      {item.price > 0 && (
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-0.5 rounded-full text-[7px] font-bold"
+                          style={{
+                            background: "hsl(var(--hud-bg) / 0.9)",
+                            color,
+                            border: `1px solid ${color}40`,
+                            backdropFilter: "blur(4px)",
+                          }}>
+                          {item.price > 1000 ? `${(item.price/1000).toFixed(0)}k` : item.price} {item.currency}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
-            {/* Floating results count */}
-            <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
+
+            {/* Top stats overlay */}
+            <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5 z-20">
               {filteredUsers.length > 0 && (
                 <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold backdrop-blur-md"
                   style={{ background: "hsl(var(--hud-bg) / 0.85)", color: "hsl(var(--hud-cyan))", border: "1px solid hsl(var(--hud-cyan) / 0.2)" }}>
@@ -486,11 +547,12 @@ export default function CommNearbySection() {
                 </div>
               )}
             </div>
+
             {/* Floating scan button */}
-            <div className="absolute bottom-4 right-4">
+            <div className="absolute bottom-4 right-4 z-20">
               <motion.button
                 onClick={() => { loadNearby(); haptic("medium"); }}
-                className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md"
+                className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md pointer-events-auto"
                 style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)", boxShadow: "0 4px 20px hsl(0 0% 0% / 0.3)" }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -502,6 +564,16 @@ export default function CommNearbySection() {
                   initial={{ scale: 1, opacity: 0.6 }} animate={{ scale: 2.5, opacity: 0 }}
                   transition={{ duration: 1.2, repeat: Infinity }} />
               )}
+            </div>
+
+            {/* Recenter button */}
+            <div className="absolute bottom-4 left-4 z-20">
+              <button
+                onClick={() => { requestLocation(); haptic("light"); }}
+                className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md pointer-events-auto"
+                style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-border) / 0.2)" }}>
+                <Navigation className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </button>
             </div>
           </div>
         ) : viewMode === "list" || !lat || !lng ? (

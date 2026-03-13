@@ -391,6 +391,8 @@ export class CallManager {
       this.debug("remote track received", {
         streamTracks: event.streams[0]?.getTracks().length || 0,
         remoteTracks: this.remoteStream?.getTracks().length || 0,
+        hasVideo: this.remoteStream?.getVideoTracks().length || 0,
+        hasAudio: this.remoteStream?.getAudioTracks().length || 0,
       });
       this.clearTimeouts();
       this.onStateChange({ remoteStream: this.remoteStream, status: "active" });
@@ -548,7 +550,6 @@ export class CallManager {
       this.debug("relay retry offer sent");
     } catch (err) {
       this.debug("relay retry failed", { error: String(err) });
-      // Stream timeout will handle final fallback
     }
   }
 
@@ -556,7 +557,7 @@ export class CallManager {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: isVideo,
+        video: isVideo ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false,
       });
 
       const audioTrack = this.localStream.getAudioTracks()[0];
@@ -566,12 +567,14 @@ export class CallManager {
         audioEnabled: audioTrack?.enabled ?? false,
         audioMuted: audioTrack?.muted ?? false,
       });
-      this.onStateChange({ localStream: this.localStream });
+      this.onStateChange({ localStream: this.localStream, isVideo });
     } catch (err) {
       this.debug("getUserMedia failed", { error: String(err) });
       this.onStateChange({
         status: "failed",
-        error: "Microphone access denied. Please allow microphone access to make calls.",
+        error: isVideo
+          ? "Camera/microphone access denied. Please allow access to make video calls."
+          : "Microphone access denied. Please allow microphone access to make calls.",
       });
       throw new Error("Media permission denied");
     }
@@ -596,6 +599,28 @@ export class CallManager {
       return !track.enabled;
     }
     return false;
+  }
+
+  /** Add a video track dynamically during an audio call */
+  addVideoTrack(track: MediaStreamTrack) {
+    if (!this.pc || !this.localStream) return;
+    this.pc.addTrack(track, this.localStream);
+    this._isVideo = true;
+    this.debug("addVideoTrack", { trackId: track.id });
+  }
+
+  /** Replace the current video track (e.g., camera flip) */
+  replaceVideoTrack(newTrack: MediaStreamTrack) {
+    if (!this.pc) return;
+    const senders = this.pc.getSenders();
+    const videoSender = senders.find(s => s.track?.kind === "video");
+    if (videoSender) {
+      videoSender.replaceTrack(newTrack).catch(() => {});
+      this.debug("replaceVideoTrack", { trackId: newTrack.id });
+    } else {
+      // No existing video sender, add new one
+      this.addVideoTrack(newTrack);
+    }
   }
 
   toggleSpeaker(): boolean {
