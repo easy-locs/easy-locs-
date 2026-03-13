@@ -201,31 +201,32 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
         </div>
       </div>
 
-      {/* Country chips */}
+      {/* Country chips — horizontal scroll */}
       {propertiesByCountry.length > 0 && (
-        <div
-          className="px-4 sm:px-6 pb-4 sm:pb-6 flex flex-wrap justify-center gap-2"
-        >
-          {propertiesByCountry.slice(0, 5).map((c) => (
-            <motion.button
-              key={c.code}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer"
-              style={{
-                background: "hsl(var(--hud-surface))",
-                border: "1px solid hsl(var(--hud-border) / 0.1)",
-                color: "hsl(var(--hud-text))",
-              }}
-              onClick={() => {
-                haptic("light");
-                navigate(`/dashboard/country/${c.code.toLowerCase()}`);
-              }}
-            >
-              <span className="text-sm">{c.flag}</span>
-              <span className="font-medium">{c.count}</span>
-            </motion.button>
-          ))}
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none scroll-smooth -mx-1 px-1 pb-1">
+            {propertiesByCountry.map((c) => (
+              <motion.button
+                key={c.code}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer"
+                style={{
+                  background: "hsl(var(--hud-surface))",
+                  border: "1px solid hsl(var(--hud-border) / 0.1)",
+                  color: "hsl(var(--hud-text))",
+                }}
+                onClick={() => {
+                  haptic("light");
+                  navigate(`/dashboard/country/${c.code.toLowerCase()}`);
+                }}
+              >
+                <span className="text-sm">{c.flag}</span>
+                <span className="font-medium whitespace-nowrap">{c.name}</span>
+                <span className="opacity-60">{c.count}</span>
+              </motion.button>
+            ))}
+          </div>
         </div>
       )}
     </div>
