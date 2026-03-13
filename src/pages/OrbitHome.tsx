@@ -149,11 +149,10 @@ export default function OrbitHome() {
             Activité
           </h2>
           <div
-            className="rounded-2xl overflow-hidden divide-y"
+            className="rounded-2xl overflow-hidden"
             style={{
               background: "hsl(var(--hud-surface))",
               border: "1px solid hsl(var(--hud-border) / 0.12)",
-              divideColor: "hsl(var(--hud-border) / 0.08)",
             }}
           >
             {activityItems.slice(0, 4).map((item) => (
