@@ -430,6 +430,7 @@ export default function Explore() {
           onReset={() => setAdvancedFilters(defaultAdvancedFilters)}
           activeGroup={activeGroup}
         />
+        {hasFilters && (
           <ExploreFiltersStrip
             searchQuery={searchQuery}
             locationQuery={locationQuery}
