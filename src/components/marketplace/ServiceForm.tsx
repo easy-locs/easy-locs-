@@ -82,6 +82,9 @@ const emptyService: ServiceFormData = {
   source_contact_phone: "",
   source_contact_email: "",
   source_contact_notes: "",
+  time_slots: {},
+  blocked_dates: [],
+  contact_method: "message",
 };
 
 export default function ServiceForm({ open, onOpenChange, onSave, initialData, isPending, providerCountry, providerCity, orgId, allowVideo = false }: Props) {
