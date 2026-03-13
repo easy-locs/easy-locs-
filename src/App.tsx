@@ -16,14 +16,6 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 const Explore = lazy(() => import("./pages/Explore"));
-const FloatingAIAssistant = lazy(async () => {
-  try {
-    return await import("@/components/ai/FloatingAIAssistant");
-  } catch (error) {
-    console.warn("[App] FloatingAIAssistant load failed:", error);
-    return { default: () => null };
-  }
-});
 import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
@@ -181,22 +173,6 @@ const seoPublicPrefixes = [
   "/explore", "/properties",
 ];
 
-const RouteAwareAssistant = () => {
-  const { pathname } = useLocation();
-  const hideAssistant =
-    pathname === "/" ||
-    pathname === "/guest" ||
-    pathname.startsWith("/r/") ||
-    pathname.startsWith("/dashboard/communication") ||
-    seoPublicPrefixes.some((prefix) => pathname.startsWith(prefix));
-
-  if (hideAssistant) return null;
-  return (
-    <Suspense fallback={null}>
-      <FloatingAIAssistant />
-    </Suspense>
-  );
-};
 
 /** Registers device session + suspicious login detection */
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
@@ -217,7 +193,7 @@ const App = () => (
            <OrbitPresenceGuard />
            <RealtimeMessageToast />
            <UpdateNotification />
-          <RouteAwareAssistant />
+          
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}

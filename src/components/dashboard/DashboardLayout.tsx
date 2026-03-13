@@ -461,7 +461,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="h-12 sm:h-14 border-b border-border bg-card/95 backdrop-blur-sm flex items-center px-2 sm:px-6 gap-1.5 sm:gap-3 sticky top-0 z-30" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+        <header className="min-h-12 sm:min-h-14 border-b border-border bg-card/95 backdrop-blur-sm flex items-center px-2 sm:px-6 gap-1.5 sm:gap-3 sticky top-0 z-30" style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "max(0px, env(safe-area-inset-top, 0px))" }}>
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground w-11 h-11 flex items-center justify-center -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
