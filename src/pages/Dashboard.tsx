@@ -1,4 +1,4 @@
-import { useState, useEffect, type ComponentType } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, Building, Users, MapPin, Plus, TrendingUp,
@@ -6,6 +6,7 @@ import {
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import IntelligenceOrb from "@/components/dashboard/IntelligenceOrb";
+import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
