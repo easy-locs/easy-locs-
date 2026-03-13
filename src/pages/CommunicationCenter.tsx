@@ -1,10 +1,10 @@
 /**
- * CommunicationCenter — Full-screen app-like Communication Hub.
- * Feels like a dedicated messaging app inside the platform.
+ * CommunicationCenter — True full-screen messaging app experience.
+ * Zero margins, full viewport, native feel.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Shield, Plus, Zap, Radio } from "lucide-react";
+import { Plus, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -92,127 +92,110 @@ const CommunicationCenter = () => {
 
   return (
     <DashboardLayout>
-      {/* Full-screen communication container — no page margins */}
-      <div className="h-[calc(100dvh-3.5rem)] lg:h-[calc(100vh-5rem)] flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6">
-        {/* ═══ Compact HUD Header ═══ */}
+      {/* Full-screen communication — zero margins */}
+      <div
+        className="flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6"
+        style={{
+          height: isMobile ? "100dvh" : "calc(100vh - 4rem)",
+          background: "hsl(var(--hud-bg))",
+        }}
+      >
+        {/* ═══ Minimal header — mobile: ultra-compact ═══ */}
         <motion.div
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 shrink-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center px-4 shrink-0"
           style={{
-            background: "hsl(var(--hud-bg))",
-            borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
+            height: isMobile ? 48 : 44,
+            borderBottom: "1px solid hsl(var(--hud-border) / 0.06)",
           }}
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
-              style={{
-                background: "hsl(var(--hud-surface))",
-                border: "1px solid hsl(var(--hud-border) / 0.2)",
-                boxShadow: "var(--hud-glow)",
-              }}
-            >
-              <Radio className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(var(--hud-text))" }}>
-                Command Center
-                <Shield className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-              </h1>
-              <div className="flex items-center gap-1">
-                <div className="h-1 w-1 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
-                <span className="text-[7px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
-                  Secure • Live
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1" />
-          <div className="flex items-center gap-1.5">
-            {showChatArea && (
+          <h1
+            className="text-sm font-semibold flex-1"
+            style={{ color: "hsl(var(--hud-text))" }}
+          >
+            {isMobile && selectedThread ? selectedThread.name : "Messages"}
+          </h1>
+          <div className="flex items-center gap-2">
+            {showChatArea && !selectedThread && (
               <Button
-                size="sm" variant="outline"
-                className="h-6 gap-1 text-[10px] rounded-lg"
-                style={{
-                  background: "hsl(var(--hud-surface))",
-                  borderColor: "hsl(var(--hud-border) / 0.2)",
-                  color: "hsl(var(--hud-cyan))",
-                }}
+                size="sm" variant="ghost"
+                className="h-8 w-8 p-0 rounded-full"
+                style={{ color: "hsl(var(--hud-cyan))" }}
                 onClick={() => setShowNewConversation(true)}
               >
-                <Plus className="h-3 w-3" />
-                <span className="hidden sm:inline">New</span>
+                <Plus className="h-5 w-5" />
               </Button>
             )}
-            {stats.unread > 0 && (
-              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]" style={{
-                background: "hsl(var(--hud-cyan) / 0.1)",
-                border: "1px solid hsl(var(--hud-cyan) / 0.2)",
-              }}>
-                <Zap className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-                <span className="font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>{stats.unread}</span>
+            {stats.unread > 0 && !selectedThread && (
+              <div
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px]"
+                style={{
+                  background: "hsl(var(--hud-cyan) / 0.08)",
+                }}
+              >
+                <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
+                <span className="font-semibold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
+                  {stats.unread}
+                </span>
               </div>
             )}
           </div>
         </motion.div>
 
-        {/* ═══ Main content area ═══ */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
-          {/* Desktop: horizontal layout with nav strip */}
-          {/* Mobile: content area + bottom nav */}
-          <div className="flex-1 flex min-h-0">
-            {/* Desktop nav strip */}
-            {!isMobile && (
-              <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={false} unreadCount={stats.unread} />
-            )}
+        {/* ═══ Main content ═══ */}
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {/* Desktop nav strip */}
+          {!isMobile && (
+            <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={false} unreadCount={stats.unread} />
+          )}
 
-            {/* Section content */}
-            {showChatArea ? (
-              <div className="flex-1 flex min-h-0 min-w-0">
-                {/* Layer 1: Conversation List */}
-                <HudConversationList
-                  threads={threads}
-                  loading={loading}
-                  selectedThread={selectedThread}
-                  onSelectThread={handleSelectThread}
-                  visible={!selectedThread || !isMobile}
-                />
+          {showChatArea ? (
+            <div className="flex-1 flex min-h-0 min-w-0">
+              {/* Conversation list */}
+              <HudConversationList
+                threads={threads}
+                loading={loading}
+                selectedThread={selectedThread}
+                onSelectThread={handleSelectThread}
+                visible={!selectedThread || !isMobile}
+              />
 
-                {/* Layer 2 + 3 */}
-                <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
-                  <div className="flex-1 flex min-h-0">
-                    <HudChatPanel
-                      thread={selectedThread}
-                      onBack={handleBack}
-                      onToggleContext={handleToggleContext}
-                      showContext={showContext || mobileContextOpen}
-                      onThreadUpdate={handleThreadUpdate}
-                    />
-                    {showContext && selectedThread && orgId && !isMobile && (
-                      <HudContextPanel thread={selectedThread} orgId={orgId} />
-                    )}
-                  </div>
+              {/* Chat + context */}
+              <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
+                <div className="flex-1 flex min-h-0">
+                  <HudChatPanel
+                    thread={selectedThread}
+                    onBack={handleBack}
+                    onToggleContext={handleToggleContext}
+                    showContext={showContext || mobileContextOpen}
+                    onThreadUpdate={handleThreadUpdate}
+                  />
+                  {showContext && selectedThread && orgId && !isMobile && (
+                    <HudContextPanel thread={selectedThread} orgId={orgId} />
+                  )}
                 </div>
               </div>
-            ) : (
-              <CommPlaceholderSection section={activeSection} />
-            )}
-          </div>
-
-          {/* Mobile bottom nav */}
-          {isMobile && (
-            <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={true} unreadCount={stats.unread} />
+            </div>
+          ) : (
+            <CommPlaceholderSection section={activeSection} />
           )}
         </div>
+
+        {/* Mobile bottom nav */}
+        {isMobile && (
+          <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={true} unreadCount={stats.unread} />
+        )}
       </div>
 
       {/* Mobile Context Sheet */}
       {isMobile && selectedThread && orgId && (
         <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
           <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--hud-bg))" }}>
-            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-              <SheetTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>Intelligence — {selectedThread.name}</SheetTitle>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+              <SheetTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>
+                {selectedThread.name}
+              </SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">
               <HudContextPanel thread={selectedThread} orgId={orgId} />
