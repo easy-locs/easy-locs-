@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
+import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
