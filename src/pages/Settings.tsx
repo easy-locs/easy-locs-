@@ -328,6 +328,18 @@ const Settings = () => {
           <MFASettings />
         </div>
 
+        {/* Active Sessions / Devices */}
+        <div ref={el => { sectionRefs.current["sessions"] = el; }} className="ui-card">
+          <div className="flex items-center gap-3 mb-5">
+            <Smartphone className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">{t("page.settings.sessions_title") || "Active Sessions"}</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">{t("page.settings.sessions_desc") || "Manage your connected devices and revoke access to other sessions."}</p>
+          {user && (
+            <OrbitSessionManager userId={user.id} />
+          )}
+        </div>
+
         {/* Pro Settings — Signal/WhatsApp style */}
         <ProSettingsSection />
 
