@@ -1,7 +1,6 @@
 /**
- * CommunicationCenter — True full-screen messaging app experience.
- * Zero margins, full viewport, native feel.
- * Reads ?section= param from orb navigation for correct tab activation.
+ * CommunicationCenter — Orbit Communication System.
+ * Full-screen messaging experience integrated with Easy-Locs platform.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -47,12 +46,11 @@ const CommunicationCenter = () => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
   }, []);
 
-  // ═══ Read ?section= param from orb navigation ═══
+  // Read ?section= param from orb navigation
   useEffect(() => {
     const sectionParam = searchParams.get("section");
     if (sectionParam && VALID_SECTIONS.includes(sectionParam as CommSection)) {
       setActiveSection(sectionParam as CommSection);
-      // Clean up the param so back navigation works cleanly
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
         next.delete("section");
@@ -110,10 +108,8 @@ const CommunicationCenter = () => {
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
-  // Section change handler — syncs nav state
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
-    // Reset thread selection when switching away from chats
     if (section !== "chats") {
       setSelectedThread(null);
       setShowContext(false);
@@ -143,31 +139,34 @@ const CommunicationCenter = () => {
         className="flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-3 sm:-mb-6 -mt-3 sm:-mt-6"
         style={{
           height: isMobile ? "100dvh" : "calc(100vh - 4rem)",
-          background: "hsl(var(--hud-bg))",
+          background: "hsl(var(--background))",
         }}
       >
-        {/* ═══ Minimal header ═══ */}
+        {/* Orbit header */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex items-center px-4 shrink-0"
           style={{
-            height: isMobile ? 48 : 44,
-            borderBottom: "1px solid hsl(var(--hud-border) / 0.06)",
+            height: isMobile ? 52 : 44,
+            borderBottom: "1px solid hsl(var(--border) / 0.15)",
           }}
         >
-          <h1
-            className="text-sm font-semibold flex-1"
-            style={{ color: "hsl(var(--hud-text))" }}
-          >
-            {isMobile && selectedThread ? selectedThread.name : "Messages"}
-          </h1>
+          {isMobile && selectedThread ? (
+            <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
+              {selectedThread.name}
+            </h1>
+          ) : (
+            <h1 className="text-xl font-bold flex-1" style={{ color: "hsl(var(--foreground))" }}>
+              Orbit
+            </h1>
+          )}
           <div className="flex items-center gap-2">
             {showChatArea && !selectedThread && (
               <Button
                 size="sm" variant="ghost"
                 className="h-8 w-8 p-0 rounded-full"
-                style={{ color: "hsl(var(--hud-cyan))" }}
+                style={{ color: "hsl(var(--primary))" }}
                 onClick={() => setShowNewConversation(true)}
               >
                 <Plus className="h-5 w-5" />
@@ -176,10 +175,10 @@ const CommunicationCenter = () => {
             {stats.unread > 0 && !selectedThread && (
               <div
                 className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px]"
-                style={{ background: "hsl(var(--hud-cyan) / 0.08)" }}
+                style={{ background: "hsl(var(--primary) / 0.08)" }}
               >
-                <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
-                <span className="font-semibold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
+                <Zap className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
+                <span className="font-semibold tabular-nums" style={{ color: "hsl(var(--primary))" }}>
                   {stats.unread}
                 </span>
               </div>
@@ -187,7 +186,7 @@ const CommunicationCenter = () => {
           </div>
         </motion.div>
 
-        {/* ═══ Main content ═══ */}
+        {/* Main content */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {!isMobile && (
             <CommNavBar active={activeSection} onChange={handleSectionChange} isMobile={false} unreadCount={stats.unread} />
@@ -231,9 +230,9 @@ const CommunicationCenter = () => {
       {/* Mobile Context Sheet */}
       {isMobile && selectedThread && orgId && (
         <Sheet open={mobileContextOpen} onOpenChange={setMobileContextOpen}>
-          <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--hud-bg))" }}>
-            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <SheetTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>
+          <SheetContent side="bottom" className="h-[80dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))" }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.15)" }}>
+              <SheetTitle className="text-sm" style={{ color: "hsl(var(--foreground))" }}>
                 {selectedThread.name}
               </SheetTitle>
             </SheetHeader>

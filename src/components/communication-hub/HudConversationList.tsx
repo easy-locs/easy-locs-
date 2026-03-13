@@ -1,12 +1,11 @@
 /**
- * HudConversationList — Airy, native-feeling conversation sidebar.
- * Clean search, pill filters, spacious thread list.
+ * HudConversationList — WhatsApp-style conversation sidebar.
+ * Large "Orbit" title, search bar, dense thread list, maximum screen usage.
  */
 import { useState, useMemo } from "react";
 import { Search, Loader2, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion } from "framer-motion";
 import type { ConversationThread } from "./types";
 import HudConversationCard from "./HudConversationCard";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
@@ -62,25 +61,16 @@ export default function HudConversationList({ threads, loading, selectedThread, 
         borderColor: "hsl(var(--hud-border) / 0.06)",
       }}
     >
-      {/* Search + stats */}
-      <div className="px-4 pt-4 pb-2 space-y-3">
-        <div className="hidden md:flex items-baseline justify-between">
-          <h2 className="text-base font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
-            Messages
-          </h2>
-          <span className="text-[11px] tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-            {threads.reduce((a, t) => a + t.unreadCount, 0)} unread
-          </span>
-        </div>
-
+      {/* Header + Search */}
+      <div className="px-4 pt-4 pb-2 space-y-2.5">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search…"
-            className="pl-10 h-10 text-sm rounded-xl border-none"
+            placeholder="Search conversations…"
+            className="pl-10 h-9 text-sm rounded-xl border-none"
             style={{
               background: "hsl(var(--hud-surface))",
               color: "hsl(var(--hud-text))",
@@ -106,18 +96,18 @@ export default function HudConversationList({ threads, loading, selectedThread, 
         {loading ? (
           <div className="py-16 text-center">
             <Loader2 className="h-6 w-6 animate-spin mx-auto" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
-            <p className="text-xs mt-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Loading…</p>
+            <p className="text-xs mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>Loading…</p>
           </div>
         ) : filteredThreads.length === 0 ? (
           <div className="py-16 text-center px-6">
-            <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-            <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text) / 0.7)" }}>No conversations</p>
-            <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.15)" }} />
+            <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>No conversations</p>
+            <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
               Messages will appear here
             </p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.05)" }}>
+          <div className="divide-y" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
             {filteredThreads.map((thread, i) => (
               <HudConversationCard
                 key={thread.id}

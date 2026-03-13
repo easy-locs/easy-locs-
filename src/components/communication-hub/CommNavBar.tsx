@@ -1,9 +1,8 @@
 /**
- * CommNavBar — Internal communication navigation.
- * Clean, native-feeling bottom tabs (mobile) / slim sidebar (desktop).
- * Includes Groups + Nearby tabs.
+ * CommNavBar — Orbit navigation system.
+ * Clean bottom tabs (mobile) / slim sidebar (desktop).
  */
-import { MessageCircle, Phone, Users, CreditCard, UsersRound, Radar } from "lucide-react";
+import { MessageCircle, Phone, Users, CreditCard, Radar } from "lucide-react";
 import { motion } from "framer-motion";
 
 export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "nearby" | "meetings" | "files" | "settings";
@@ -30,7 +29,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
         className="flex items-end justify-around shrink-0"
         style={{
           background: "hsl(var(--hud-bg))",
-          borderTop: "1px solid hsl(var(--hud-border) / 0.06)",
+          borderTop: "1px solid hsl(var(--border) / 0.15)",
           paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
           paddingTop: 6,
         }}
@@ -46,9 +45,9 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             >
               {isActive && (
                 <motion.div
-                  layoutId="comm-tab-active"
+                  layoutId="orbit-tab-active"
                   className="absolute -top-[6px] left-3 right-3 h-[2px] rounded-full"
-                  style={{ background: "hsl(var(--hud-cyan))" }}
+                  style={{ background: "hsl(var(--primary))" }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -58,16 +57,16 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                   strokeWidth={isActive ? 2.2 : 1.5}
                   style={{
                     color: isActive
-                      ? "hsl(var(--hud-cyan))"
-                      : "hsl(var(--hud-text-dim) / 0.4)",
+                      ? "hsl(var(--primary))"
+                      : "hsl(var(--muted-foreground) / 0.5)",
                   }}
                 />
                 {tab.id === "chats" && unreadCount > 0 && (
                   <span
                     className="absolute -top-1 -right-2.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold px-1"
                     style={{
-                      background: "hsl(var(--hud-cyan))",
-                      color: "hsl(var(--hud-bg))",
+                      background: "hsl(25 95% 53%)",
+                      color: "white",
                     }}
                   >
                     {unreadCount > 99 ? "99+" : unreadCount}
@@ -78,8 +77,8 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 className="text-[10px] leading-none"
                 style={{
                   color: isActive
-                    ? "hsl(var(--hud-cyan))"
-                    : "hsl(var(--hud-text-dim) / 0.35)",
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground) / 0.45)",
                   fontWeight: isActive ? 600 : 400,
                 }}
               >
@@ -99,7 +98,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
       style={{
         width: 52,
         background: "hsl(var(--hud-surface) / 0.4)",
-        borderRight: "1px solid hsl(var(--hud-border) / 0.06)",
+        borderRight: "1px solid hsl(var(--border) / 0.15)",
       }}
     >
       {TABS.map((tab) => {
@@ -111,15 +110,15 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             onClick={() => onChange(tab.id)}
             className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
             style={{
-              background: isActive ? "hsl(var(--hud-cyan) / 0.08)" : "transparent",
+              background: isActive ? "hsl(var(--primary) / 0.08)" : "transparent",
             }}
             title={tab.label}
           >
             {isActive && (
               <motion.div
-                layoutId="comm-desk-indicator"
+                layoutId="orbit-desk-indicator"
                 className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full"
-                style={{ background: "hsl(var(--hud-cyan))" }}
+                style={{ background: "hsl(var(--primary))" }}
               />
             )}
             <Icon
@@ -127,16 +126,16 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
               strokeWidth={isActive ? 2 : 1.5}
               style={{
                 color: isActive
-                  ? "hsl(var(--hud-cyan))"
-                  : "hsl(var(--hud-text-dim) / 0.4)",
+                  ? "hsl(var(--primary))"
+                  : "hsl(var(--muted-foreground) / 0.4)",
               }}
             />
             {tab.id === "chats" && unreadCount > 0 && (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold px-0.5"
                 style={{
-                  background: "hsl(var(--hud-cyan))",
-                  color: "hsl(var(--hud-bg))",
+                  background: "hsl(25 95% 53%)",
+                  color: "white",
                 }}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}
