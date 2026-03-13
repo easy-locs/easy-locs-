@@ -195,7 +195,7 @@ const CommunicationCenter = () => {
               </div>
             </div>
           ) : (
-            <CommPlaceholderSection section={activeSection} />
+            {renderSection()}
           )}
         </div>
 
