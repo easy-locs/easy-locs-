@@ -601,8 +601,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
+                    Security Info
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
+                    <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
                     Safety Number
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onToggleContext}>
