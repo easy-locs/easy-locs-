@@ -89,6 +89,21 @@ export const useOrbitEngine = create<OrbitModuleState>((set) => ({
   addAlert: (alert) =>
     set((state) => ({
       alerts: [
+        ...state.alerts.filter((a) => a.id !== (alert as any).id),
+        { ...alert, id: (alert as any).id || crypto.randomUUID(), timestamp: Date.now() },
+      ].slice(-20),
+    })),
+  lastSyncAt: null,
+  alerts: [],
+
+  setNetworkStatus: (s) => set({ networkStatus: s }),
+
+  dismissAlert: (id) =>
+    set((state) => ({ alerts: state.alerts.filter((a) => a.id !== id) })),
+
+  addAlert: (alert) =>
+    set((state) => ({
+      alerts: [
         ...state.alerts,
         { ...alert, id: crypto.randomUUID(), timestamp: Date.now() },
       ].slice(-20),
