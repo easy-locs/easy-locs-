@@ -111,12 +111,28 @@ export default function InAppCallDialog({
     setMuted(!!isMuted);
   };
 
-  const handleToggleSpeaker = () => {
-    if (!speakerSupported) return;
+  const handleToggleSpeaker = async () => {
+    const el = remoteAudioRef.current;
+    if (!el) return;
+    
+    // Try setSinkId for real speaker output switching (Chrome/Edge)
+    if ("setSinkId" in el && speakerSupported) {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const speakers = devices.filter(d => d.kind === "audiooutput");
+        if (speakers.length > 1) {
+          const currentSink = (el as any).sinkId || "";
+          const next = speakers.find(s => s.deviceId !== currentSink) || speakers[0];
+          await (el as any).setSinkId(next.deviceId);
+          setSpeakerOff(prev => !prev);
+          return;
+        }
+      } catch { /* fall through to mute toggle */ }
+    }
+    
+    // Fallback: toggle audio mute
     setSpeakerOff((prev) => {
-      if (remoteAudioRef.current) {
-        remoteAudioRef.current.muted = !prev;
-      }
+      if (el) el.muted = !prev;
       return !prev;
     });
   };
