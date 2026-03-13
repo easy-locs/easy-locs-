@@ -93,6 +93,20 @@ const CommunicationCenter = () => {
 
   const showChatArea = activeSection === "chats";
 
+  const renderSection = () => {
+    switch (activeSection) {
+      case "calls": return <CommCallsSection />;
+      case "contacts": return <CommContactsSection />;
+      case "payments": return <CommPaymentsSection />;
+      case "groups":
+      case "meetings":
+      case "files":
+      case "settings":
+        return <CommPlaceholderSection section={activeSection} />;
+      default: return null;
+    }
+  };
+
   return (
     <DashboardLayout>
       {/* Full-screen communication — zero margins */}
