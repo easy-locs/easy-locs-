@@ -1,6 +1,7 @@
 /**
- * CommNavBar — Lightweight internal communication navigation.
+ * CommNavBar — Internal communication navigation.
  * Clean, native-feeling bottom tabs (mobile) / slim sidebar (desktop).
+ * Now includes Groups tab.
  */
 import { MessageCircle, Phone, Users, CreditCard, UsersRound } from "lucide-react";
 import { motion } from "framer-motion";
