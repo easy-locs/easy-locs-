@@ -187,8 +187,8 @@ export default function CommContactsSection() {
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => toggleFavorite(contact)} className="w-8 h-8 rounded-full flex items-center justify-center">
             <Star className="h-4 w-4"
-              fill={contact.is_favorite ? "hsl(45, 90%, 55%)" : "none"}
-              style={{ color: contact.is_favorite ? "hsl(45, 90%, 55%)" : "hsl(var(--hud-text-dim) / 0.2)" }} />
+              fill={contact.is_favorite ? "hsl(var(--hud-warning))" : "none"}
+              style={{ color: contact.is_favorite ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.2)" }} />
           </button>
           <button onClick={() => startChat(contact)}
             className="w-8 h-8 rounded-full flex items-center justify-center"

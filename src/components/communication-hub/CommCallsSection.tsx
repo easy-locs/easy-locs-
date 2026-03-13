@@ -238,7 +238,7 @@ export default function CommCallsSection() {
                       <span
                         className="text-sm font-medium truncate"
                         style={{
-                          color: call.status === "missed" ? "hsl(0, 70%, 60%)" : "hsl(var(--hud-text))",
+                          color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
                         }}
                       >
                         {primaryLabel}

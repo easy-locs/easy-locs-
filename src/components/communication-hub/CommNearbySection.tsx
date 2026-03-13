@@ -340,9 +340,9 @@ export default function CommNearbySection() {
             <button onClick={() => { setAvailableOnly(!availableOnly); haptic("light"); }}
               className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full"
               style={{
-                background: availableOnly ? "hsl(142, 70%, 50%, 0.12)" : "transparent",
-                color: availableOnly ? "hsl(142, 70%, 50%)" : "hsl(var(--hud-text-dim) / 0.5)",
-                border: `1px solid ${availableOnly ? "hsl(142, 70%, 50%, 0.2)" : "hsl(var(--hud-border) / 0.1)"}`,
+                background: availableOnly ? "hsl(var(--hud-success) / 0.12)" : "transparent",
+                color: availableOnly ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.5)",
+                border: `1px solid ${availableOnly ? "hsl(var(--hud-success) / 0.2)" : "hsl(var(--hud-border) / 0.1)"}`,
               }}>
               <Clock className="h-2.5 w-2.5" /> Available now
             </button>

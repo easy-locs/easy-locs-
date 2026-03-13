@@ -138,7 +138,7 @@ export default function CommPaymentsSection() {
           </div>
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1.5 mb-1">
-              <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(142, 70%, 50%)" }} />
+              <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(var(--hud-success))" }} />
               <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Received</span>
             </div>
             <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>

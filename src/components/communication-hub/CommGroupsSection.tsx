@@ -404,7 +404,7 @@ export default function CommGroupsSection() {
                 size="sm"
                 variant="ghost"
                 className="gap-1.5"
-                style={{ color: "hsl(0, 70%, 60%)" }}
+                style={{ color: "hsl(var(--hud-danger))" }}
                 onClick={leaveGroup}
               >
                 <LogOut className="h-3.5 w-3.5" /> Leave
