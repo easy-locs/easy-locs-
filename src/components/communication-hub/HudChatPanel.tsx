@@ -715,106 +715,55 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         )}
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{
-                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)",
+              <div className="text-center px-6">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
+                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)",
                 }}>
-                  <MessageCircle className="h-6 w-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+                  <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }} />
                 </div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation below</p>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
               </div>
             </div>
           ) : (
-            (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id)).map(msg => {
-              const isMe = msg.sender_id === user?.id;
-              const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
-              const isInboundEmail = msg.message_type === "inbound_email";
-              const isPayment = msg.content.startsWith("💳");
-
-              if (isSystem) {
+            (() => {
+              const filtered = (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id));
+              let lastDateStr = "";
+              return filtered.map((msg) => {
+                const msgDate = new Date(msg.created_at);
+                const dateStr = format(msgDate, "yyyy-MM-dd");
+                const showDateSep = dateStr !== lastDateStr;
+                lastDateStr = dateStr;
+                const dateLabel = isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy");
+                const isMe = msg.sender_id === user?.id;
                 return (
-                  <div key={msg.id} className="flex justify-center my-2">
-                    <div className="text-xs px-4 py-2 rounded-full max-w-[85%] text-center break-words" style={{
-                      background: "hsl(var(--hud-surface) / 0.6)",
-                      color: "hsl(var(--hud-text-dim))",
-                      border: "1px solid hsl(var(--hud-border) / 0.08)",
-                    }}>
-                      {msg.content}
-                      <span className="ml-2 opacity-60">{format(new Date(msg.created_at), "dd/MM HH:mm")}</span>
+                  <div key={msg.id}>
+                    {showDateSep && <DateSeparator date={dateLabel} />}
+                    <div className="mb-1.5">
+                      <ChatMessageBubble
+                        msg={msg}
+                        isMe={isMe}
+                        threadName={thread?.name}
+                        locale={locale}
+                        showOriginal={!!showOriginal[msg.id]}
+                        translatingMsgId={translatingMsgId}
+                        isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
+                        onTranslate={handleTranslateMessage}
+                        onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at })}
+                        getCategoryIcon={getCategoryIcon}
+                      />
                     </div>
                   </div>
                 );
-              }
-
-              return (
-                <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}>
-                  <div className={`max-w-[82%] sm:max-w-[68%] rounded-2xl px-3 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
-                    background: isPayment
-                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-purple) / 0.08))"
-                      : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.14), hsl(var(--hud-cyan) / 0.06))"
-                        : "hsl(var(--hud-surface-2))",
-                    border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
-                    color: "hsl(var(--hud-text))",
-                    wordBreak: "break-word",
-                    overflowWrap: "anywhere",
-                  }}>
-                    {!isMe && (
-                      <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                        {msg.contact_name || thread?.name || "Client"}
-                      </p>
-                    )}
-                    {isInboundEmail && (
-                      <span className="text-[10px] font-medium mb-1 block flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan))" }}>
-                        <Mail className="h-2.5 w-2.5" /> Email reply
-                      </span>
-                    )}
-                    {msg.category !== "general" && !isInboundEmail && (
-                      <span className="text-[10px] opacity-70 mb-1 block">{getCategoryIcon(msg.category)}</span>
-                    )}
-                    {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
-                    <p className="text-[13.5px] leading-[1.5] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                      {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
-                    </p>
-                    {!isMe && msg.translated_content && !showOriginal[msg.id] && (
-                      <p className="text-xs mt-2 pt-2 opacity-40 italic whitespace-pre-wrap break-words" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-                        {msg.content.length > 120 ? msg.content.slice(0, 120) + "…" : msg.content}
-                      </p>
-                    )}
-                    {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
-                      <button onClick={() => handleTranslateMessage(msg)} className="mt-1.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                        {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
-                        {showOriginal[msg.id] ? "Show translation" : msg.translated_content ? "Show original" : "Translate"}
-                      </button>
-                    )}
-                    <div className="flex items-center justify-end gap-1.5 mt-1.5 opacity-50">
-                      <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
-                      {isMe && pendingOffline.some(p => p.id === msg.id) ? (
-                        <span className="flex items-center gap-0.5" style={{ color: "hsl(var(--hud-warning))" }}>
-                          <WifiOff className="h-2.5 w-2.5" />
-                          <span className="text-[9px]">queued</span>
-                        </span>
-                      ) : isMe && (
-                        <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
-                          {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                        </span>
-                      )}
-                      <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })
+              });
+            })()
           )}
           {typingIndicator && (
-            <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-sm px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
+            <div className="flex justify-start mt-1">
+              <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
                 <div className="flex gap-1.5">
                   {[0, 150, 300].map(d => (
                     <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />
