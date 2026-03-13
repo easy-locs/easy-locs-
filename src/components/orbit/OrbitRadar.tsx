@@ -4,7 +4,7 @@
  * Real data integration via search_nearby_items RPC + user_presence.
  * Privacy-first: invisible mode, approximate location, contact controls.
  */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Radar, MapPin, Navigation, Briefcase, Globe2, Building2,
