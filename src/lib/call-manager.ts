@@ -370,13 +370,14 @@ export class CallManager {
     }
   }
 
-  private createPeerConnection() {
+  private async createPeerConnection() {
     if (this.pc) {
       try { this.pc.close(); } catch {}
     }
 
-    this.debug("createPeerConnection", { transport: "all" });
-    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceTransportPolicy: "all" });
+    const iceServers = await getIceServers();
+    this.debug("createPeerConnection", { transport: "all", servers: iceServers.length });
+    this.pc = new RTCPeerConnection({ iceServers, iceTransportPolicy: "all" });
     this.remoteStream = new MediaStream();
     this.iceConnected = false;
     this._pendingCandidates = [];
