@@ -114,7 +114,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
           </span>
           {sessions.length > 1 && (
             <Button variant="ghost" size="sm" className="text-[11px] h-7 px-2 gap-1" onClick={handleRevokeAll}
-              style={{ color: "hsl(var(--hud-danger, 0 80% 60%))" }}>
+              style={{ color: "hsl(var(--hud-danger))" }}>
               <LogOut className="h-3 w-3" /> Tout déconnecter
             </Button>
           )}
