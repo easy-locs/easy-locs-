@@ -311,6 +311,9 @@ const Settings = () => {
         {/* MFA / 2FA */}
         <MFASettings />
 
+        {/* Pro Settings — Signal/WhatsApp style */}
+        <ProSettingsSection />
+
         <div className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <PenTool className="h-5 w-5 text-muted-foreground" />
