@@ -213,6 +213,7 @@ const App = () => (
           <CallProvider>
            <OrbitSessionGuard />
            <RealtimeMessageToast />
+           <UpdateNotification />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>
