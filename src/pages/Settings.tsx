@@ -14,6 +14,7 @@ import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
+import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
