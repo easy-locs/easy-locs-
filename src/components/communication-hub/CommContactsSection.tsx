@@ -1,25 +1,31 @@
 /**
- * CommContactsSection — Real contacts with presence indicators and operational actions.
+ * CommContactsSection — Full pipeline: Contact → Message → Call
+ * Each contact has a resolved state: internal | external | unresolved
+ * Actions are enabled/disabled based on state.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
-import { Search, UserPlus, MessageCircle, Phone, Video, Star, Users, Briefcase, Heart, Clock, QrCode, Loader2 } from "lucide-react";
+import { Search, UserPlus, MessageCircle, Phone, Video, Star, Users, Briefcase, Heart, Clock, QrCode, Loader2, UserX, Send, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import ScrollableFilterBar, { type FilterOption } from "@/components/ui/ScrollableFilterBar";
+import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { useCall } from "@/components/call/CallProvider";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
+
+/** Contact state after resolution */
+type ContactAppState = "internal" | "external" | "unresolved";
 
 interface Contact {
   id: string;
@@ -34,6 +40,14 @@ interface Contact {
   contact_user_id: string | null;
 }
 
+/** Resolved contact with capabilities */
+interface ResolvedContact extends Contact {
+  appState: ContactAppState;
+  canMessage: boolean;
+  canCall: boolean;
+  targetOrgId: string | null;
+}
+
 const CATEGORY_TABS: { id: ContactCategory; label: string; icon: typeof Users }[] = [
   { id: "all", label: "All", icon: Users },
   { id: "client", label: "Clients", icon: Users },
@@ -45,6 +59,16 @@ const CATEGORY_TABS: { id: ContactCategory; label: string; icon: typeof Users }[
 
 function getInitials(name: string): string {
   return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+}
+
+function presenceColor(status: string): string {
+  switch (status) {
+    case "online": return "hsl(var(--hud-success))";
+    case "busy":
+    case "in_call": return "hsl(var(--hud-error))";
+    case "away": return "hsl(var(--hud-warning))";
+    default: return "hsl(var(--hud-text-dim) / 0.4)";
+  }
 }
 
 export default function CommContactsSection() {
@@ -61,33 +85,64 @@ export default function CommContactsSection() {
   const [newContact, setNewContact] = useState({ name: "", email: "", phone: "", company: "", category: "client" });
   const [saving, setSaving] = useState(false);
 
-  // Get presence for contacts that have user IDs
-  const contactUserIds = contacts.filter((c) => c.contact_user_id).map((c) => c.contact_user_id!);
+  // Org membership cache for resolved contacts
+  const [orgMembershipMap, setOrgMembershipMap] = useState<Record<string, string>>({});
+
+  const contactUserIds = contacts.filter(c => c.contact_user_id).map(c => c.contact_user_id!);
   const presenceMap = usePresenceStatus(contactUserIds);
 
-  const ensureLinkedContactUserId = useCallback(async (contact: Contact): Promise<string | null> => {
-    if (contact.contact_user_id) return contact.contact_user_id;
-    const email = contact.email?.trim();
-    if (!email) return null;
+  // ── Batch auto-link: resolve all unlinked contacts on load ──
+  const batchAutoLink = useCallback(async (rawContacts: Contact[]) => {
+    const unlinked = rawContacts.filter(c => !c.contact_user_id && c.email?.trim());
+    if (unlinked.length === 0) return rawContacts;
 
-    const { data: profile } = await supabase
+    const emails = unlinked.map(c => c.email!.trim().toLowerCase());
+    const { data: profiles } = await supabase
       .from("profiles")
-      .select("id")
-      .ilike("email", email)
-      .maybeSingle();
+      .select("id, email")
+      .in("email", emails);
 
-    if (!profile?.id) return null;
+    if (!profiles || profiles.length === 0) return rawContacts;
 
-    await supabase
-      .from("contacts")
-      .update({ contact_user_id: profile.id } as any)
-      .eq("id", contact.id);
+    const emailToProfileId = new Map<string, string>();
+    profiles.forEach(p => {
+      if (p.email) emailToProfileId.set(p.email.toLowerCase(), p.id);
+    });
 
-    setContacts((prev) =>
-      prev.map((c) => (c.id === contact.id ? { ...c, contact_user_id: profile.id } : c))
-    );
+    const updates: { contactId: string; profileId: string }[] = [];
+    const updated = rawContacts.map(c => {
+      if (c.contact_user_id) return c;
+      const email = c.email?.trim().toLowerCase();
+      if (!email) return c;
+      const profileId = emailToProfileId.get(email);
+      if (!profileId) return c;
+      updates.push({ contactId: c.id, profileId });
+      return { ...c, contact_user_id: profileId };
+    });
 
-    return profile.id;
+    // Persist links in background (don't await)
+    for (const u of updates) {
+      supabase.from("contacts").update({ contact_user_id: u.profileId } as any).eq("id", u.contactId).then(() => {});
+    }
+
+    return updated;
+  }, []);
+
+  // ── Batch resolve org memberships for internal contacts ──
+  const batchResolveOrgs = useCallback(async (resolvedContacts: Contact[]) => {
+    const userIds = resolvedContacts.filter(c => c.contact_user_id).map(c => c.contact_user_id!);
+    if (userIds.length === 0) return;
+
+    const { data: memberships } = await supabase
+      .from("org_members")
+      .select("user_id, org_id")
+      .in("user_id", userIds);
+
+    if (!memberships) return;
+
+    const map: Record<string, string> = {};
+    memberships.forEach(m => { map[m.user_id] = m.org_id; });
+    setOrgMembershipMap(map);
   }, []);
 
   const loadContacts = useCallback(async () => {
@@ -98,34 +153,50 @@ export default function CommContactsSection() {
       .select("*")
       .eq("owner_id", user.id)
       .order("name");
-    setContacts((data as Contact[]) || []);
+    const raw = (data as Contact[]) || [];
+    const linked = await batchAutoLink(raw);
+    setContacts(linked);
+    await batchResolveOrgs(linked);
     setLoading(false);
-  }, [user?.id]);
+  }, [user?.id, batchAutoLink, batchResolveOrgs]);
 
-  useEffect(() => {
-    loadContacts();
-  }, [loadContacts]);
+  useEffect(() => { loadContacts(); }, [loadContacts]);
 
   useEffect(() => {
     if (!user?.id) return;
-
     const channel = supabase
       .channel(`contacts-sync-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "contacts", filter: `owner_id=eq.${user.id}` },
-        () => {
-          loadContacts();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "contacts", filter: `owner_id=eq.${user.id}` }, () => loadContacts())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user?.id, loadContacts]);
 
-  const filtered = contacts.filter(c => {
+  // ── Resolve contact capabilities ──
+  const resolvedContacts: ResolvedContact[] = useMemo(() => {
+    return contacts.map(c => {
+      const hasUserId = !!c.contact_user_id;
+      const targetOrgId = hasUserId ? (orgMembershipMap[c.contact_user_id!] || null) : null;
+
+      let appState: ContactAppState;
+      if (hasUserId) {
+        appState = "internal";
+      } else if (c.email || c.phone) {
+        appState = "external";
+      } else {
+        appState = "unresolved";
+      }
+
+      return {
+        ...c,
+        appState,
+        canMessage: hasUserId,
+        canCall: hasUserId && !!targetOrgId,
+        targetOrgId,
+      };
+    });
+  }, [contacts, orgMembershipMap]);
+
+  const filtered = resolvedContacts.filter(c => {
     if (category === "favorite" && !c.is_favorite) return false;
     if (category === "recent" && !c.last_contacted_at) return false;
     if (["client", "team", "professional"].includes(category) && c.category !== category) return false;
@@ -146,8 +217,9 @@ export default function CommContactsSection() {
       if (!acc[letter]) acc[letter] = [];
       acc[letter].push(c);
       return acc;
-    }, {} as Record<string, Contact[]>) : null;
+    }, {} as Record<string, ResolvedContact[]>) : null;
 
+  // ── Actions ──
   const handleAddContact = async () => {
     if (!user?.id || !newContact.name.trim()) return;
     setSaving(true);
@@ -169,70 +241,67 @@ export default function CommContactsSection() {
     loadContacts();
   };
 
-  const toggleFavorite = async (contact: Contact) => {
+  const toggleFavorite = async (contact: ResolvedContact) => {
     haptic("light");
     const newVal = !contact.is_favorite;
     setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: newVal } : c));
     await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
   };
 
-  const startChat = async (contact: Contact) => {
+  const startChat = async (contact: ResolvedContact) => {
     haptic("medium");
     if (!user) return;
+
+    if (!contact.canMessage) {
+      if (contact.appState === "external") {
+        toast("Ce contact n'a pas de compte dans l'application. Invitez-le !", {
+          action: { label: "Inviter", onClick: () => handleInvite(contact) },
+        });
+      } else {
+        toast.error("Ajoutez un email à ce contact pour le synchroniser.");
+      }
+      return;
+    }
+
     setActionLoading(`msg-${contact.id}`);
     try {
-      const targetUserId = await ensureLinkedContactUserId(contact);
-      if (targetUserId) {
-        const thread = await getOrCreateDirectThread({
-          currentUserId: user.id,
-          targetUserId,
-          targetName: contact.name,
-        });
-        if (thread) {
-          navigate(`/dashboard/communication?thread=${thread.contextId}`);
-          return;
-        }
+      const thread = await getOrCreateDirectThread({
+        currentUserId: user.id,
+        targetUserId: contact.contact_user_id!,
+        targetName: contact.name,
+      });
+      if (thread) {
+        navigate(`/dashboard/communication?thread=${thread.contextId}`);
+      } else {
+        toast.error("Impossible d'ouvrir la conversation");
       }
-      // Fallback: search by name
-      navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(contact.name)}`);
     } catch {
-      toast.error("Could not open conversation");
+      toast.error("Erreur lors de l'ouverture de la conversation");
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleCall = async (contact: Contact, isVideo: boolean) => {
+  const handleCall = async (contact: ResolvedContact, isVideo: boolean) => {
     haptic("medium");
     if (!user) return;
 
-    const contactUserId = await ensureLinkedContactUserId(contact);
-
-    if (!contactUserId) {
-      toast.error("Ce contact n'est pas lié à un compte utilisateur. Ajoutez son email pour le synchroniser.");
+    if (!contact.canCall) {
+      if (!contact.contact_user_id) {
+        toast("Ce contact n'est pas joignable pour les appels. Ajoutez son email.", { icon: "📞" });
+      } else {
+        toast("Ce contact n'est pas encore associé à une organisation.", { icon: "📞" });
+      }
       return;
     }
 
     setActionLoading(`${isVideo ? "video" : "call"}-${contact.id}`);
     try {
-      // Find target org
-      const { data: targetMembership } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", contactUserId)
-        .limit(1)
-        .single();
-
-      if (!targetMembership?.org_id) {
-        toast.error("Utilisateur non joignable");
-        return;
-      }
-
       await initiateCall({
-        orgId: targetMembership.org_id,
+        orgId: contact.targetOrgId!,
         contextType: "direct",
-        contextId: `direct:${[user.id, contactUserId].sort().join(":")}`,
-        contextLabel: `Call with ${contact.name}`,
+        contextId: `direct:${[user.id, contact.contact_user_id!].sort().join(":")}`,
+        contextLabel: `Appel avec ${contact.name}`,
         peerName: contact.name,
         isVideo,
       });
@@ -243,7 +312,44 @@ export default function CommContactsSection() {
     }
   };
 
-  const renderContact = (contact: Contact) => {
+  const handleInvite = (contact: ResolvedContact) => {
+    // Copy invite link to clipboard
+    const inviteUrl = `${window.location.origin}/auth`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      toast.success(`Lien d'invitation copié ! Envoyez-le à ${contact.name}.`);
+    }).catch(() => {
+      toast.info(`Invitez ${contact.name} à rejoindre l'app : ${inviteUrl}`);
+    });
+  };
+
+  // ── State badge helper ──
+  const getStateBadge = (contact: ResolvedContact) => {
+    switch (contact.appState) {
+      case "internal":
+        return (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" }}>
+            App
+          </span>
+        );
+      case "external":
+        return (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--hud-warning) / 0.1)", color: "hsl(var(--hud-warning))" }}>
+            Externe
+          </span>
+        );
+      case "unresolved":
+        return (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--hud-error) / 0.1)", color: "hsl(var(--hud-error))" }}>
+            Incomplet
+          </span>
+        );
+    }
+  };
+
+  const renderContact = (contact: ResolvedContact) => {
     const presence = contact.contact_user_id ? presenceMap[contact.contact_user_id] : null;
     const isMsgLoading = actionLoading === `msg-${contact.id}`;
     const isCallLoading = actionLoading === `call-${contact.id}`;
@@ -262,6 +368,7 @@ export default function CommContactsSection() {
             style={{
               background: contact.avatar_url ? `url(${contact.avatar_url}) center/cover` : "hsl(var(--hud-cyan) / 0.1)",
               color: "hsl(var(--hud-cyan))",
+              opacity: contact.appState === "unresolved" ? 0.5 : 1,
             }}>
             {!contact.avatar_url && getInitials(contact.name)}
           </div>
@@ -279,6 +386,7 @@ export default function CommContactsSection() {
               {contact.name}
             </span>
             {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
+            {getStateBadge(contact)}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {presence && presence.status !== "offline" && (
@@ -291,10 +399,15 @@ export default function CommContactsSection() {
                 {contact.company}
               </span>
             )}
+            {contact.email && !contact.contact_user_id && (
+              <span className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                {contact.email}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Actions — 44px min touch targets */}
+        {/* Actions */}
         <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
           <button onClick={() => toggleFavorite(contact)}
             className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
@@ -303,24 +416,52 @@ export default function CommContactsSection() {
               fill={contact.is_favorite ? "hsl(var(--hud-warning))" : "none"}
               style={{ color: contact.is_favorite ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.2)" }} />
           </button>
+
+          {/* Message button — always visible, contextual behavior */}
           <button onClick={() => startChat(contact)} disabled={anyLoading}
             className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            style={{
+              background: contact.canMessage ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
+              WebkitTapHighlightColor: "transparent",
+            }}>
             {isMsgLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
+              : contact.canMessage
+                ? <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+                : <Send className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
-          <button onClick={() => handleCall(contact, false)} disabled={anyLoading || isStartingCall}
+
+          {/* Call button */}
+          <button onClick={() => handleCall(contact, false)} disabled={anyLoading || isStartingCall || !contact.canCall}
             className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            style={{
+              background: contact.canCall ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
+              WebkitTapHighlightColor: "transparent",
+              opacity: contact.canCall ? 1 : 0.4,
+            }}>
             {isCallLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
+              : <Phone className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
-          <button onClick={() => handleCall(contact, true)} disabled={anyLoading || isStartingCall}
+
+          {/* Video button */}
+          <button onClick={() => handleCall(contact, true)} disabled={anyLoading || isStartingCall || !contact.canCall}
             className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: "hsl(var(--hud-cyan) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+            style={{
+              background: contact.canCall ? "hsl(var(--hud-cyan) / 0.08)" : "hsl(var(--hud-text-dim) / 0.04)",
+              WebkitTapHighlightColor: "transparent",
+              opacity: contact.canCall ? 1 : 0.4,
+            }}>
             {isVideoLoading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
-              : <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
+              : <Video className="h-4 w-4" style={{ color: contact.canCall ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />}
           </button>
+
+          {/* Invite button for external contacts */}
+          {contact.appState === "external" && (
+            <button onClick={() => handleInvite(contact)}
+              className="w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ background: "hsl(var(--hud-warning) / 0.08)", WebkitTapHighlightColor: "transparent" }}>
+              <UserPlus className="h-4 w-4" style={{ color: "hsl(var(--hud-warning))" }} />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -425,31 +566,30 @@ export default function CommContactsSection() {
                   <SelectItem value="client">Client</SelectItem>
                   <SelectItem value="team">Team</SelectItem>
                   <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="personal">Personal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <Button className="w-full" disabled={!newContact.name.trim() || saving} onClick={handleAddContact}
+            <p className="text-[11px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <Info className="h-3 w-3" /> L'email permet la synchronisation automatique avec les utilisateurs de l'app.
+            </p>
+            <Button onClick={handleAddContact} disabled={saving || !newContact.name.trim()} className="w-full gap-2"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-              {saving ? "Adding..." : "Add Contact"}
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Add Contact
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* QR Contact Card */}
-      <QRContactCard open={showQR} onOpenChange={setShowQR} onContactAdded={loadContacts} />
+      {/* QR Dialog */}
+      <Dialog open={showQR} onOpenChange={setShowQR}>
+        <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>QR Contact</DialogTitle>
+          </DialogHeader>
+          <QRContactCard onContactScanned={() => { setShowQR(false); loadContacts(); }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
-
-function presenceColor(status: string): string {
-  const colors: Record<string, string> = {
-    online: "hsl(var(--hud-success))",
-    away: "hsl(var(--hud-warning))",
-    busy: "hsl(var(--hud-danger))",
-    in_call: "hsl(var(--hud-purple))",
-    dnd: "hsl(var(--hud-danger))",
-  };
-  return colors[status] || "hsl(var(--hud-text-dim) / 0.4)";
 }
