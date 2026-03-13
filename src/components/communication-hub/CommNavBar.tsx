@@ -11,7 +11,7 @@ const TABS: { id: CommSection; icon: typeof MessageCircle; label: string }[] = [
   { id: "chats", icon: MessageCircle, label: "Chats" },
   { id: "calls", icon: Phone, label: "Calls" },
   { id: "nearby", icon: Radar, label: "Nearby" },
-  { id: "contacts", icon: Users, label: "Contacts" },
+  { id: "settings", icon: Settings, label: "Settings" },
   { id: "you", icon: UserCircle, label: "You" },
 ];
 
