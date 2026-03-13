@@ -198,7 +198,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         const manager = new CallManager({
           callId: callId as string,
-          userId: user.id,
+          userId: authUser.id,
           role: "caller",
           onStateChange: (state) => setCallState((prev) => ({ ...prev, ...state })),
         });
