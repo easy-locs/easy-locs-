@@ -14,6 +14,7 @@ import ChatLocationPicker from "./ChatLocationPicker";
 import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
+import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
