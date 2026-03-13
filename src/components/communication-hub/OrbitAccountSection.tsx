@@ -120,10 +120,9 @@ export default function OrbitAccountSection() {
       });
       if (error) throw error;
 
-      // Also update profiles table if it exists
+      // Also update profiles table
       await supabase.from("profiles").update({
-        full_name: displayName,
-        avatar_url: avatarUrl,
+        name: displayName,
       }).eq("id", user.id);
 
       haptic("medium");
