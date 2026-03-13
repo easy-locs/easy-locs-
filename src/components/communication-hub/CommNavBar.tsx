@@ -134,8 +134,8 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold px-0.5"
                 style={{
-                  background: "hsl(25 95% 53%)",
-                  color: "white",
+                  background: "hsl(var(--destructive))",
+                  color: "hsl(var(--destructive-foreground))",
                 }}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}

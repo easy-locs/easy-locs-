@@ -107,7 +107,7 @@ export default function HudConversationList({ threads, loading, selectedThread, 
             </p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "hsl(var(--border) / 0.5)" }}>
+          <div className="divide-y" style={{ borderColor: "hsl(var(--border) / 0.06)" }}>
             {filteredThreads.map((thread, i) => (
               <HudConversationCard
                 key={thread.id}

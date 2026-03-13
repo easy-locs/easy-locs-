@@ -154,10 +154,12 @@ export function initMonitoring() {
   // Fetch/XHR error interceptor
   const origFetch = window.fetch;
   window.fetch = async (...args) => {
+    const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
+    // Skip monitoring for audit_logs requests to prevent infinite loops
+    const isAuditReq = url.includes("/audit_logs");
     try {
       const res = await origFetch(...args);
-      if (res.status >= 500) {
-        const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
+      if (res.status >= 500 && !isAuditReq) {
         pushEvent({
           type: "error",
           source: "network",
@@ -167,13 +169,14 @@ export function initMonitoring() {
       }
       return res;
     } catch (err: any) {
-      const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
-      pushEvent({
-        type: "error",
-        source: "network",
-        message: `Network failure: ${err.message}`,
-        metadata: { url: url.split("?")[0] },
-      });
+      if (!isAuditReq) {
+        pushEvent({
+          type: "error",
+          source: "network",
+          message: `Network failure: ${err.message}`,
+          metadata: { url: url.split("?")[0] },
+        });
+      }
       throw err;
     }
   };
