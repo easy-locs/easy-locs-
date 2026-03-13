@@ -4795,6 +4795,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.paid": "Paid", "common.unpaid": "Unpaid", "common.active": "Active",
     "common.terminated": "Terminated", "common.all": "All", "common.month": "Month", "common.year": "Year",
     "common.continue": "Continue", "common.skip": "Skip", "common.finish": "Finish",
+    "common.properties": "Properties", "common.property": "Property",
+    "page.dashboard.countries_short": "countries",
     "onboarding.title": "Setting up your workspace",
     "onboarding.step0": "Plan & Country", "onboarding.step1": "Owner Profile",
     "onboarding.step2": "Add Property", "onboarding.step3": "OTA Connection",
