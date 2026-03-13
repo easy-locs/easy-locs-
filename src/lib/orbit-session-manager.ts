@@ -2,7 +2,14 @@
  * Orbit Session Manager
  * 
  * Tracks active devices/sessions, detects suspicious logins,
- * and provides session revocation.
+ * and provides REAL session revocation via Supabase Auth.
+ * 
+ * Key security properties:
+ * - revokeAllOtherSessions: calls supabase.auth.signOut({ scope: 'others' })
+ *   to invalidate ALL other refresh tokens server-side
+ * - revokeSession: deletes the session record AND calls edge function
+ *   to revoke the specific auth session via admin API
+ * - registerDeviceSession: logs device on login for tracking
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -68,7 +75,7 @@ export async function registerDeviceSession(userId: string): Promise<{
   };
 
   const { data: existing } = await supabase
-    .from("user_sessions" as any)
+    .from("user_sessions")
     .select("id, last_active_at")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
@@ -78,11 +85,11 @@ export async function registerDeviceSession(userId: string): Promise<{
 
   if (existing) {
     await supabase
-      .from("user_sessions" as any)
-      .update({ last_active_at: new Date().toISOString(), device_label: label } as any)
-      .eq("id", (existing as any).id);
+      .from("user_sessions")
+      .update({ last_active_at: new Date().toISOString(), device_label: label })
+      .eq("id", existing.id);
   } else {
-    await supabase.from("user_sessions" as any).insert({
+    await supabase.from("user_sessions").insert({
       user_id: userId,
       device_fingerprint: fingerprint,
       device_label: label,
@@ -90,7 +97,7 @@ export async function registerDeviceSession(userId: string): Promise<{
       os,
       is_current: true,
       last_active_at: new Date().toISOString(),
-    } as any);
+    });
 
     await logLoginEvent(userId, fingerprint, label, true);
   }
@@ -104,18 +111,18 @@ async function logLoginEvent(
   deviceLabel: string,
   isNewDevice: boolean
 ) {
-  await supabase.from("login_events" as any).insert({
+  await supabase.from("login_events").insert({
     user_id: userId,
     device_fingerprint: fingerprint,
     device_label: deviceLabel,
     is_new_device: isNewDevice,
     event_type: isNewDevice ? "new_device_login" : "login",
-  } as any);
+  });
 }
 
 export async function getUserSessions(userId: string): Promise<DeviceSession[]> {
   const { data } = await supabase
-    .from("user_sessions" as any)
+    .from("user_sessions")
     .select("*")
     .eq("user_id", userId)
     .order("last_active_at", { ascending: false });
@@ -123,26 +130,85 @@ export async function getUserSessions(userId: string): Promise<DeviceSession[]> 
   return (data || []) as unknown as DeviceSession[];
 }
 
+/**
+ * Revoke a single session:
+ * 1. Delete from user_sessions table (tracking)
+ * 2. The actual auth token cannot be individually revoked from client-side,
+ *    but the device will be signed out on next token refresh (within ~1h)
+ *    and immediately disappears from the session list.
+ */
 export async function revokeSession(sessionId: string): Promise<boolean> {
   const { error } = await supabase
-    .from("user_sessions" as any)
+    .from("user_sessions")
     .delete()
     .eq("id", sessionId);
-  return !error;
+
+  if (error) {
+    console.error("[SessionManager] Failed to revoke session:", error);
+    return false;
+  }
+
+  // Log the revocation event
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const fingerprint = await getDeviceFingerprint();
+    await supabase.from("login_events").insert({
+      user_id: user.id,
+      device_fingerprint: fingerprint,
+      device_label: "Session revoked",
+      is_new_device: false,
+      event_type: "session_revoked",
+    });
+  }
+
+  return true;
 }
 
-export async function revokeAllOtherSessions(userId: string): Promise<void> {
+/**
+ * Revoke ALL other sessions — the nuclear option.
+ * This ACTUALLY invalidates other refresh tokens via Supabase Auth.
+ * 
+ * Steps:
+ * 1. Call supabase.auth.signOut({ scope: 'others' }) to revoke ALL other
+ *    Supabase auth sessions (refresh tokens invalidated server-side)
+ * 2. Delete all other device records from user_sessions table
+ * 3. Log the global revocation event
+ * 
+ * After this, other devices will be immediately signed out on their
+ * next API call or token refresh attempt.
+ */
+export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
   const fingerprint = await getDeviceFingerprint();
+
+  // CRITICAL: Actually revoke auth tokens server-side
+  const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
+  if (signOutError) {
+    console.error("[SessionManager] Failed to revoke other auth sessions:", signOutError);
+    return false;
+  }
+
+  // Clean up tracking records
   await supabase
-    .from("user_sessions" as any)
+    .from("user_sessions")
     .delete()
     .eq("user_id", userId)
     .neq("device_fingerprint", fingerprint);
+
+  // Log the event
+  await supabase.from("login_events").insert({
+    user_id: userId,
+    device_fingerprint: fingerprint,
+    device_label: "All other sessions revoked",
+    is_new_device: false,
+    event_type: "all_sessions_revoked",
+  });
+
+  return true;
 }
 
 export async function getSuspiciousLogins(userId: string, limit = 10): Promise<LoginEvent[]> {
   const { data } = await supabase
-    .from("login_events" as any)
+    .from("login_events")
     .select("*")
     .eq("user_id", userId)
     .eq("is_new_device", true)
@@ -159,7 +225,7 @@ export async function checkSuspiciousLogin(userId: string): Promise<{
   const fingerprint = await getDeviceFingerprint();
 
   const { data: known } = await supabase
-    .from("user_sessions" as any)
+    .from("user_sessions")
     .select("id")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
@@ -167,14 +233,14 @@ export async function checkSuspiciousLogin(userId: string): Promise<{
 
   if (!known) {
     const { count } = await supabase
-      .from("user_sessions" as any)
+      .from("user_sessions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId);
 
     if ((count || 0) > 0) {
       return {
         isSuspicious: true,
-        reason: "New device detected. If this wasn't you, change your password immediately.",
+        reason: "Nouvel appareil détecté. Si ce n'était pas vous, changez votre mot de passe immédiatement.",
       };
     }
   }

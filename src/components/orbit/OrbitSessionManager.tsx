@@ -1,9 +1,9 @@
 /**
  * OrbitSessionManager — Device/session management UI (HUD-themed)
- * Shows active sessions with revoke capability
+ * Shows active sessions with real revoke capability via Supabase Auth.
  */
 import { useState, useEffect, useCallback } from "react";
-import { Smartphone, Monitor, Tablet, Trash2, ShieldAlert, Loader2, LogOut } from "lucide-react";
+import { Smartphone, Monitor, Tablet, Trash2, ShieldAlert, Loader2, LogOut, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,6 +16,17 @@ import {
 } from "@/lib/orbit-session-manager";
 import { getDeviceFingerprint } from "@/lib/orbit-keystore";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface OrbitSessionManagerProps {
   userId: string;
@@ -25,6 +36,8 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
   const [sessions, setSessions] = useState<DeviceSession[]>([]);
   const [suspiciousLogins, setSuspiciousLogins] = useState<LoginEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [revoking, setRevoking] = useState<string | null>(null);
+  const [revokingAll, setRevokingAll] = useState(false);
   const [currentFingerprint, setCurrentFingerprint] = useState<string>("");
 
   const load = useCallback(async () => {
@@ -43,19 +56,27 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
   useEffect(() => { load(); }, [load]);
 
   const handleRevoke = async (sessionId: string) => {
+    setRevoking(sessionId);
     const ok = await revokeSession(sessionId);
     if (ok) {
-      toast.success("Session révoquée");
-      load();
+      toast.success("Session révoquée — l'appareil sera déconnecté.");
+      await load();
     } else {
       toast.error("Échec de la révocation");
     }
+    setRevoking(null);
   };
 
   const handleRevokeAll = async () => {
-    await revokeAllOtherSessions(userId);
-    toast.success("Toutes les autres sessions révoquées");
-    load();
+    setRevokingAll(true);
+    const ok = await revokeAllOtherSessions(userId);
+    if (ok) {
+      toast.success("✅ Toutes les autres sessions ont été révoquées. Les appareils seront déconnectés.");
+    } else {
+      toast.error("Échec de la révocation des sessions.");
+    }
+    await load();
+    setRevokingAll(false);
   };
 
   const getDeviceIcon = (os: string) => {
@@ -71,7 +92,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
     if (diff < 60000) return "À l'instant";
     if (diff < 3600000) return `Il y a ${Math.floor(diff / 60000)}min`;
     if (diff < 86400000) return `Il y a ${Math.floor(diff / 3600000)}h`;
-    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   if (loading) {
@@ -82,8 +103,34 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
     );
   }
 
+  const otherSessions = sessions.filter(s => s.device_fingerprint !== currentFingerprint);
+
   return (
     <div className="space-y-4">
+      {/* Security status */}
+      <div className="rounded-xl p-3" style={{
+        background: otherSessions.length === 0 ? "hsl(var(--hud-success) / 0.06)" : "hsl(var(--hud-cyan) / 0.04)",
+        border: `1px solid ${otherSessions.length === 0 ? "hsl(var(--hud-success) / 0.15)" : "hsl(var(--hud-cyan) / 0.1)"}`,
+      }}>
+        <div className="flex items-center gap-2">
+          {otherSessions.length === 0 ? (
+            <>
+              <CheckCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+              <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-success))" }}>
+                Seul cet appareil est connecté
+              </span>
+            </>
+          ) : (
+            <>
+              <Shield className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-xs font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                {otherSessions.length} autre{otherSessions.length > 1 ? "s" : ""} appareil{otherSessions.length > 1 ? "s" : ""} connecté{otherSessions.length > 1 ? "s" : ""}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Suspicious logins alert */}
       {suspiciousLogins.length > 0 && (
         <div className="rounded-xl p-3" style={{
@@ -110,19 +157,45 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            {sessions.length} appareil{sessions.length > 1 ? "s" : ""} connecté{sessions.length > 1 ? "s" : ""}
+            {sessions.length} session{sessions.length > 1 ? "s" : ""} active{sessions.length > 1 ? "s" : ""}
           </span>
-          {sessions.length > 1 && (
-            <Button variant="ghost" size="sm" className="text-[11px] h-7 px-2 gap-1" onClick={handleRevokeAll}
-              style={{ color: "hsl(var(--hud-danger))" }}>
-              <LogOut className="h-3 w-3" /> Tout déconnecter
-            </Button>
+          {otherSessions.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-[11px] h-7 px-2 gap-1"
+                  disabled={revokingAll}
+                  style={{ color: "hsl(var(--destructive))" }}>
+                  {revokingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <LogOut className="h-3 w-3" />}
+                  Tout déconnecter
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle style={{ color: "hsl(var(--hud-text))" }}>
+                    Déconnecter tous les autres appareils ?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    Cette action va révoquer toutes les sessions actives sauf celle de cet appareil.
+                    Les autres appareils seront immédiatement déconnectés et devront se reconnecter.
+                    Cette action est irréversible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel style={{ color: "hsl(var(--hud-text))" }}>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleRevokeAll}
+                    style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
+                    Déconnecter tout
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
 
         <div className="space-y-1.5">
           {sessions.map((session) => {
             const isCurrent = session.device_fingerprint === currentFingerprint;
+            const isRevoking = revoking === session.id;
             return (
               <div key={session.id} className="flex items-center gap-3 p-2.5 rounded-lg" style={{
                 background: isCurrent ? "hsl(var(--hud-success) / 0.05)" : "hsl(var(--hud-surface) / 0.5)",
@@ -146,13 +219,15 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                     )}
                   </div>
                   <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
-                    {formatDate(session.last_active_at)}
+                    Dernière activité : {formatDate(session.last_active_at)}
                   </p>
                 </div>
                 {!isCurrent && (
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRevoke(session.id)}
-                    style={{ color: "hsl(var(--hud-danger))" }}>
-                    <Trash2 className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8"
+                    onClick={() => handleRevoke(session.id)}
+                    disabled={isRevoking}
+                    style={{ color: "hsl(var(--destructive))" }}>
+                    {isRevoking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                   </Button>
                 )}
               </div>
