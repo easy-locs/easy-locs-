@@ -1,7 +1,9 @@
 /**
  * Premium synthetic ringtone generator using Web Audio API.
  * No external audio files needed — generates elegant tones programmatically.
+ * Integrates with haptic feedback for native-feeling call alerts.
  */
+import { haptic } from "./haptics";
 
 type RingtoneType = "audio" | "video";
 
@@ -94,10 +96,14 @@ export function startRingtone(type: RingtoneType = "audio") {
 
     // Play immediately
     playPattern(ctx);
+    haptic("heavy");
 
     // Repeat every 2.5s for audio, 2s for video
     const interval = type === "video" ? 2000 : 2500;
-    ringtoneInterval = setInterval(() => playPattern(ctx), interval);
+    ringtoneInterval = setInterval(() => {
+      playPattern(ctx);
+      haptic("medium");
+    }, interval);
 
     // Start vibration
     startVibration();

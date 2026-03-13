@@ -1,15 +1,13 @@
 /**
- * HudConversationList — Command Center conversation sidebar.
- * Dark glass, premium filters, smart search with trust signals.
+ * HudConversationList — Airy, native-feeling conversation sidebar.
+ * Clean search, pill filters, spacious thread list.
  */
 import { useState, useMemo } from "react";
-import { Search, Shield, Loader2, MessageCircle, SlidersHorizontal } from "lucide-react";
+import { Search, Loader2, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import type { ConversationThread } from "./types";
-import { CONVERSATION_FILTERS } from "./types";
 import HudConversationCard from "./HudConversationCard";
 
 interface Props {
@@ -20,14 +18,13 @@ interface Props {
   visible: boolean;
 }
 
-const HUD_FILTERS = [
-  { value: "all", label: "All", icon: "◉" },
-  { value: "direct", label: "Direct", icon: "◈" },
-  { value: "property", label: "Property", icon: "◇" },
-  { value: "booking", label: "Bookings", icon: "◆" },
-  { value: "listing", label: "Listings", icon: "▣" },
-  { value: "deal", label: "Deals", icon: "⬡" },
-  { value: "business", label: "Business", icon: "▤" },
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "direct", label: "Direct" },
+  { value: "booking", label: "Bookings" },
+  { value: "property", label: "Property" },
+  { value: "listing", label: "Listings" },
+  { value: "deal", label: "Deals" },
 ];
 
 export default function HudConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
@@ -61,48 +58,28 @@ export default function HudConversationList({ threads, loading, selectedThread, 
       className="w-full md:w-80 lg:w-[22rem] flex flex-col border-e"
       style={{
         background: "hsl(var(--hud-bg))",
-        borderColor: "hsl(var(--hud-border) / 0.1)",
+        borderColor: "hsl(var(--hud-border) / 0.06)",
       }}
     >
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center"
-              style={{
-                background: "hsl(var(--hud-surface))",
-                boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.15)",
-                border: "1px solid hsl(var(--hud-border) / 0.2)",
-              }}
-            >
-              <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-                Conversations
-              </h2>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                {threads.length} threads • {threads.reduce((a, t) => a + t.unreadCount, 0)} unread
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.6)" }} />
-            <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
-              Secure
-            </span>
-          </div>
+      {/* Search + stats */}
+      <div className="px-4 pt-4 pb-2 space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-base font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+            Messages
+          </h2>
+          <span className="text-[11px] tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            {threads.reduce((a, t) => a + t.unreadCount, 0)} unread
+          </span>
         </div>
 
         {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search conversations..."
-            className="pl-9 h-9 text-sm border-[hsl(var(--hud-border)/0.15)] focus:border-[hsl(var(--hud-border)/0.4)] focus:ring-[hsl(var(--hud-cyan)/0.1)]"
+            placeholder="Search…"
+            className="pl-10 h-10 text-sm rounded-xl border-none"
             style={{
               background: "hsl(var(--hud-surface))",
               color: "hsl(var(--hud-text))",
@@ -110,55 +87,49 @@ export default function HudConversationList({ threads, loading, selectedThread, 
           />
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-1 flex-wrap">
-          {HUD_FILTERS.map(f => {
+        {/* Filter pills */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {FILTERS.map(f => {
             const isActive = activeFilter === f.value;
             const count = filterCounts[f.value] || 0;
             return (
-              <Button
+              <button
                 key={f.value}
-                size="sm"
-                variant="ghost"
                 onClick={() => setActiveFilter(f.value)}
-                className="text-[10px] h-6 px-2 gap-1 rounded-md transition-all"
+                className="text-[11px] font-medium whitespace-nowrap px-3 py-1.5 rounded-full transition-all shrink-0"
                 style={{
-                  background: isActive ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
-                  color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
-                  border: isActive ? "1px solid hsl(var(--hud-border) / 0.3)" : "1px solid transparent",
+                  background: isActive ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.6)",
+                  color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
+                  border: isActive ? "1px solid hsl(var(--hud-cyan) / 0.2)" : "1px solid transparent",
                 }}
               >
                 {f.label}
-                {count > 0 && <span className="opacity-50 text-[9px]">{count}</span>}
-              </Button>
+                {count > 0 && f.value !== "all" && (
+                  <span className="ml-1 opacity-50">{count}</span>
+                )}
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Separator */}
-      <div className="mx-4 h-px" style={{ background: "linear-gradient(to right, transparent, hsl(var(--hud-border) / 0.15), transparent)" }} />
-
       {/* Thread list */}
       <ScrollArea className="flex-1">
         {loading ? (
-          <div className="p-8 text-center">
-            <Loader2 className="h-6 w-6 animate-spin mx-auto" style={{ color: "hsl(var(--hud-cyan))" }} />
-            <p className="text-xs mt-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Syncing channels…</p>
+          <div className="py-16 text-center">
+            <Loader2 className="h-6 w-6 animate-spin mx-auto" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
+            <p className="text-xs mt-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Loading…</p>
           </div>
         ) : filteredThreads.length === 0 ? (
-          <div className="p-8 text-center">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}
-            >
-              <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-            </div>
-            <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No conversations</p>
-            <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Messages will appear when clients interact.</p>
+          <div className="py-16 text-center px-6">
+            <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
+            <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text) / 0.7)" }}>No conversations</p>
+            <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+              Messages will appear here
+            </p>
           </div>
         ) : (
-          <div className="p-2 space-y-1">
+          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.05)" }}>
             {filteredThreads.map((thread, i) => (
               <HudConversationCard
                 key={thread.id}
@@ -171,22 +142,6 @@ export default function HudConversationList({ threads, loading, selectedThread, 
           </div>
         )}
       </ScrollArea>
-
-      {/* Bottom status bar */}
-      <div
-        className="px-4 py-2 flex items-center justify-between"
-        style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-bg))" }}
-      >
-        <div className="flex items-center gap-1.5">
-          <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
-          <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            Live sync active
-          </span>
-        </div>
-        <span className="text-[9px] tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-          {filteredThreads.length} / {threads.length}
-        </span>
-      </div>
     </div>
   );
 }

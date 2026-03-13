@@ -1,8 +1,8 @@
 /**
- * CommNavBar — Internal communication module navigation.
- * App-like bottom tab bar on mobile, compact sidebar strip on desktop.
+ * CommNavBar — Lightweight internal communication navigation.
+ * Clean, native-feeling bottom tabs (mobile) / slim sidebar (desktop).
  */
-import { MessageCircle, Phone, Users, UsersRound, Video, FolderOpen, Settings } from "lucide-react";
+import { MessageCircle, Phone, Users, UsersRound, Video } from "lucide-react";
 import { motion } from "framer-motion";
 
 export type CommSection = "chats" | "calls" | "contacts" | "groups" | "meetings" | "files" | "settings";
@@ -12,9 +12,7 @@ const TABS: { id: CommSection; icon: typeof MessageCircle; label: string }[] = [
   { id: "calls", icon: Phone, label: "Calls" },
   { id: "contacts", icon: Users, label: "Contacts" },
   { id: "groups", icon: UsersRound, label: "Groups" },
-  { id: "meetings", icon: Video, label: "Meetings" },
-  { id: "files", icon: FolderOpen, label: "Files" },
-  { id: "settings", icon: Settings, label: "Settings" },
+  { id: "meetings", icon: Video, label: "Meet" },
 ];
 
 interface Props {
@@ -28,38 +26,44 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
   if (isMobile) {
     return (
       <nav
-        className="flex items-center justify-around shrink-0 safe-area-pb"
+        className="flex items-end justify-around shrink-0"
         style={{
-          background: "hsl(var(--hud-surface) / 0.95)",
-          borderTop: "1px solid hsl(var(--hud-border) / 0.1)",
-          backdropFilter: "blur(12px)",
-          height: 56,
+          background: "hsl(var(--hud-bg))",
+          borderTop: "1px solid hsl(var(--hud-border) / 0.06)",
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
+          paddingTop: 6,
         }}
       >
-        {TABS.slice(0, 5).map((tab) => {
+        {TABS.map((tab) => {
           const isActive = active === tab.id;
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className="flex flex-col items-center gap-0.5 relative px-3 py-1"
+              className="flex flex-col items-center gap-1 relative min-w-[48px] py-1"
             >
               {isActive && (
                 <motion.div
-                  layoutId="comm-tab-indicator"
-                  className="absolute -top-px left-2 right-2 h-0.5 rounded-full"
+                  layoutId="comm-tab-active"
+                  className="absolute -top-[6px] left-3 right-3 h-[2px] rounded-full"
                   style={{ background: "hsl(var(--hud-cyan))" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
               <div className="relative">
                 <Icon
-                  className="h-5 w-5"
-                  style={{ color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}
+                  className="h-[22px] w-[22px]"
+                  strokeWidth={isActive ? 2.2 : 1.5}
+                  style={{
+                    color: isActive
+                      ? "hsl(var(--hud-cyan))"
+                      : "hsl(var(--hud-text-dim) / 0.4)",
+                  }}
                 />
                 {tab.id === "chats" && unreadCount > 0 && (
                   <span
-                    className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold px-1"
+                    className="absolute -top-1 -right-2.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold px-1"
                     style={{
                       background: "hsl(var(--hud-cyan))",
                       color: "hsl(var(--hud-bg))",
@@ -70,8 +74,13 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 )}
               </div>
               <span
-                className="text-[9px] font-medium"
-                style={{ color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }}
+                className="text-[10px] leading-none"
+                style={{
+                  color: isActive
+                    ? "hsl(var(--hud-cyan))"
+                    : "hsl(var(--hud-text-dim) / 0.35)",
+                  fontWeight: isActive ? 600 : 400,
+                }}
               >
                 {tab.label}
               </span>
@@ -82,14 +91,14 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
     );
   }
 
-  // Desktop: vertical icon strip
+  // Desktop: slim vertical strip
   return (
     <nav
-      className="flex flex-col items-center py-3 gap-1 shrink-0"
+      className="flex flex-col items-center py-4 gap-1.5 shrink-0"
       style={{
-        width: 56,
-        background: "hsl(var(--hud-surface) / 0.6)",
-        borderRight: "1px solid hsl(var(--hud-border) / 0.08)",
+        width: 52,
+        background: "hsl(var(--hud-surface) / 0.4)",
+        borderRight: "1px solid hsl(var(--hud-border) / 0.06)",
       }}
     >
       {TABS.map((tab) => {
@@ -99,16 +108,27 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
             style={{
-              background: isActive ? "hsl(var(--hud-cyan) / 0.1)" : "transparent",
-              border: isActive ? "1px solid hsl(var(--hud-cyan) / 0.2)" : "1px solid transparent",
+              background: isActive ? "hsl(var(--hud-cyan) / 0.08)" : "transparent",
             }}
             title={tab.label}
           >
+            {isActive && (
+              <motion.div
+                layoutId="comm-desk-indicator"
+                className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full"
+                style={{ background: "hsl(var(--hud-cyan))" }}
+              />
+            )}
             <Icon
-              className="h-4 w-4"
-              style={{ color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}
+              className="h-[18px] w-[18px]"
+              strokeWidth={isActive ? 2 : 1.5}
+              style={{
+                color: isActive
+                  ? "hsl(var(--hud-cyan))"
+                  : "hsl(var(--hud-text-dim) / 0.4)",
+              }}
             />
             {tab.id === "chats" && unreadCount > 0 && (
               <span
