@@ -202,7 +202,7 @@ export default function InAppCallDialog({
   }, [speakerOn]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-  const isNetworkBlocked = status === "network_blocked" || status === "failed";
+  const isNetworkBlocked = statusStr === "network_blocked" || statusStr === "failed";
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
 
