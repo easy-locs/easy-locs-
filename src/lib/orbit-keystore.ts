@@ -172,12 +172,34 @@ export async function getOrDeriveSessionKey(
 export async function wipeAllKeys(): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_IDENTITY, STORE_SESSIONS], "readwrite");
+    const tx = db.transaction([STORE_IDENTITY, STORE_SESSIONS, STORE_PREKEYS, STORE_RATCHETS], "readwrite");
     tx.objectStore(STORE_IDENTITY).clear();
     tx.objectStore(STORE_SESSIONS).clear();
+    tx.objectStore(STORE_PREKEYS).clear();
+    tx.objectStore(STORE_RATCHETS).clear();
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+}
+
+// ─── PreKey Storage ───────────────────────────────────────
+
+export async function storePreKeys(userId: string, data: unknown): Promise<void> {
+  await dbPut(STORE_PREKEYS, userId, data);
+}
+
+export async function getPreKeys(userId: string): Promise<unknown | undefined> {
+  return dbGet(STORE_PREKEYS, userId);
+}
+
+// ─── Ratchet State Storage ────────────────────────────────
+
+export async function storeRatchetState(sessionId: string, state: unknown): Promise<void> {
+  await dbPut(STORE_RATCHETS, sessionId, state);
+}
+
+export async function getRatchetState(sessionId: string): Promise<unknown | undefined> {
+  return dbGet(STORE_RATCHETS, sessionId);
 }
 
 /** Check if user has identity keys on this device */
