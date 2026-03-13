@@ -439,7 +439,7 @@ export default function InAppCallDialog({
                   <div className="flex items-center justify-center gap-6">
                     <CtrlBtn
                       onClick={handleToggleMute}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={muted}
                       activeColor="var(--destructive)"
                       icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -447,7 +447,7 @@ export default function InAppCallDialog({
                     />
                     <CtrlBtn
                       onClick={handleToggleVideo}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={videoEnabled}
                       icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
                       text="Video"
