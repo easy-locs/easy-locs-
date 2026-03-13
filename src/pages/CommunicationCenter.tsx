@@ -31,7 +31,8 @@ import { useAuth } from "@/contexts/AuthContext";
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings"];
 
 const CommunicationCenter = () => {
-  const { orgId } = useAuth();
+  const { orgId, user } = useAuth();
+  const userId = user?.id;
   const { t } = useI18n();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
