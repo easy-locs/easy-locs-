@@ -23,6 +23,7 @@ import HudConversationList from "@/components/communication-hub/HudConversationL
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
+import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
