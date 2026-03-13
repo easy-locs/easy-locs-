@@ -6,8 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MARKETPLACE_CATEGORIES } from "./MarketplaceCategories";
 import ServicePhotoManager from "@/components/concierge/ServicePhotoManager";
+import ServiceFormCategorySelector from "./ServiceFormCategorySelector";
 import { UserCircle } from "lucide-react";
 
 export interface ServiceFormData {
@@ -129,17 +129,10 @@ export default function ServiceForm({ open, onOpenChange, onSave, initialData, i
             />
           )}
 
-          <div>
-            <Label>Category</Label>
-            <Select value={form.category} onValueChange={(v) => update("category", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {MARKETPLACE_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ServiceFormCategorySelector
+            category={form.category}
+            onCategoryChange={(v) => update("category", v)}
+          />
 
           <div className="grid grid-cols-3 gap-3">
             <div>
