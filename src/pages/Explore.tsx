@@ -72,6 +72,7 @@ export default function Explore() {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [geoApplied, setGeoApplied] = useState(false);
   const geocodingRef = useRef(false);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
 
   // Geo-detection passive
   useEffect(() => {
