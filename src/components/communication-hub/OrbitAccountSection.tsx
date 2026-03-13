@@ -86,16 +86,16 @@ export default function OrbitAccountSection() {
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `avatars/${user.id}/avatar.${ext}`;
+      const path = `${user.id}/avatar.${ext}`;
       
       const { error: uploadError } = await supabase.storage
-        .from("org-files")
+        .from("avatars")
         .upload(path, file, { upsert: true });
       
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from("org-files")
+        .from("avatars")
         .getPublicUrl(path);
       
       setAvatarUrl(publicUrl);
