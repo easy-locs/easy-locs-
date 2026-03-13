@@ -5,7 +5,7 @@
 import { memo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
-  ShieldCheck, CreditCard,
+  ShieldCheck, CreditCard, EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
