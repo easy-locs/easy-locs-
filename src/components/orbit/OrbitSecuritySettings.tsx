@@ -1,11 +1,13 @@
 /**
- * OrbitSecuritySettings — Privacy & security settings panel for Orbit
- * Includes session management, 2FA toggle, privacy controls
+ * OrbitSecuritySettings — Signal-inspired Privacy & Security settings
+ * Full settings interface with proper sections, i18n-ready labels,
+ * and HUD-themed styling matching the Orbit design system.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Shield, Fingerprint, Eye, EyeOff, Clock,
-  Lock, KeyRound, Smartphone,
+  Shield, ShieldCheck, Fingerprint, Eye, EyeOff, Clock, Lock, KeyRound,
+  Smartphone, Bell, BellOff, MessageSquareOff, UserX, Image, Trash2,
+  ChevronRight, Globe, Database, HardDrive,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -14,19 +16,66 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import OrbitSessionManager from "./OrbitSessionManager";
 import OrbitPrivacyBadge from "./OrbitPrivacyBadge";
+import { wipeAllKeys, hasIdentityKeys } from "@/lib/orbit-keystore";
 
 interface OrbitSecuritySettingsProps {
   userId: string;
 }
 
+// ─── Section Component ────────────────────────────────────
+function SettingSection({ icon: Icon, title, children, iconColor }: {
+  icon: any; title: string; children: React.ReactNode; iconColor?: string;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
+          background: "hsl(var(--hud-surface))",
+          border: "1px solid hsl(var(--hud-border) / 0.1)",
+        }}>
+          <Icon className="h-4 w-4" style={{ color: iconColor || "hsl(var(--hud-cyan))" }} />
+        </div>
+        <h3 className="text-sm font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{title}</h3>
+      </div>
+      <div className="ps-[42px] space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function SettingRow({ label, description, children }: {
+  label: string; description?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      <div className="min-w-0">
+        <p className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>{label}</p>
+        {description && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{description}</p>}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
 export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsProps) {
+  const { t } = useI18n();
   const [readReceipts, setReadReceipts] = useState(true);
   const [onlineStatus, setOnlineStatus] = useState(true);
+  const [typingIndicators, setTypingIndicators] = useState(true);
+  const [linkPreviews, setLinkPreviews] = useState(true);
   const [autoDeletePeriod, setAutoDeletePeriod] = useState("off");
   const [enrolling2FA, setEnrolling2FA] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [hasKeys, setHasKeys] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [messagePreview, setMessagePreview] = useState(true);
+  const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
+
+  useEffect(() => {
+    hasIdentityKeys(userId).then(setHasKeys);
+  }, [userId]);
 
   const handle2FAEnroll = async () => {
     setEnrolling2FA(true);
@@ -35,121 +84,193 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
       if (error) throw error;
       if (data?.totp?.qr_code) {
         setQrCode(data.totp.qr_code);
-        toast.info("Scan the QR code with your authenticator app");
+        toast.info("Scannez le QR code avec votre app d'authentification");
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to set up 2FA");
+      toast.error(err.message || "Échec de la configuration 2FA");
     } finally {
       setEnrolling2FA(false);
     }
   };
 
+  const handleWipeKeys = async () => {
+    if (!confirm("⚠️ Supprimer toutes les clés de chiffrement de cet appareil ? Vous ne pourrez plus déchiffrer les anciens messages chiffrés.")) return;
+    await wipeAllKeys();
+    setHasKeys(false);
+    toast.success("Clés de chiffrement supprimées de cet appareil");
+  };
+
   return (
-    <div className="space-y-8 max-w-lg">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center">
-          <Shield className="h-5 w-5 text-emerald-600" />
+    <div className="space-y-1 max-w-lg mx-auto pb-24">
+      {/* ═══ Header ═══ */}
+      <div className="flex items-center gap-3 pb-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+          background: "linear-gradient(135deg, hsl(var(--hud-success) / 0.15), hsl(var(--hud-cyan) / 0.1))",
+          border: "1px solid hsl(var(--hud-success) / 0.2)",
+        }}>
+          <ShieldCheck className="h-6 w-6" style={{ color: "hsl(var(--hud-success))" }} />
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Orbit Privacy & Security</h2>
-          <p className="text-xs text-muted-foreground">Signal-inspired privacy standard</p>
+        <div className="flex-1">
+          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+            Orbit Privacy
+          </h2>
+          <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            Signal-inspired privacy standard
+          </p>
         </div>
         <OrbitPrivacyBadge encrypted />
       </div>
 
-      {/* E2E Status */}
-      <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Lock className="h-4 w-4 text-emerald-600" />
-          <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-400">
-            End-to-End Encryption Active
+      {/* ═══ E2E Status Banner ═══ */}
+      <div className="rounded-xl p-4 mb-2" style={{
+        background: "linear-gradient(135deg, hsl(var(--hud-success) / 0.08), hsl(var(--hud-cyan) / 0.05))",
+        border: "1px solid hsl(var(--hud-success) / 0.15)",
+      }}>
+        <div className="flex items-center gap-2.5 mb-2">
+          <Lock className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+          <span className="text-sm font-semibold" style={{ color: "hsl(var(--hud-success))" }}>
+            Chiffrement de bout en bout actif
           </span>
         </div>
-        <p className="text-xs text-emerald-700 dark:text-emerald-300">
-          Messages, calls, and shared media are encrypted on your device before being sent.
-          The server cannot read your content.
+        <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          Les messages, appels et fichiers partagés sont chiffrés sur votre appareil avant l'envoi. Le serveur ne peut pas lire vos contenus.
         </p>
-      </div>
-
-      <Separator />
-
-      {/* Two-Factor Authentication */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Fingerprint className="h-4 w-4 text-foreground" />
-          <h3 className="text-sm font-semibold text-foreground">Two-Factor Authentication</h3>
-        </div>
-        {qrCode ? (
-          <div className="text-center space-y-3">
-            <img src={qrCode} alt="2FA QR Code" className="mx-auto w-48 h-48 rounded-lg" />
-            <p className="text-xs text-muted-foreground">
-              Scan with Google Authenticator, Authy, or any TOTP app
-            </p>
-            <Button size="sm" variant="outline" onClick={() => setQrCode(null)}>
-              Done
-            </Button>
+        {hasKeys && (
+          <div className="flex items-center gap-2 mt-3">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
+            <span className="text-[11px]" style={{ color: "hsl(var(--hud-success) / 0.7)" }}>
+              Clés d'identité présentes sur cet appareil
+            </span>
           </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handle2FAEnroll}
-            disabled={enrolling2FA}
-            className="gap-2"
-          >
-            <KeyRound className="h-4 w-4" />
-            {enrolling2FA ? "Setting up..." : "Enable 2FA"}
-          </Button>
         )}
       </div>
 
-      <Separator />
-
-      {/* Privacy Controls */}
-      <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3">Privacy Controls</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {readReceipts ? <Eye className="h-4 w-4 text-muted-foreground" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-              <Label className="text-sm">Read receipts</Label>
+      <div className="space-y-6 pt-2">
+        {/* ═══ Two-Factor Authentication ═══ */}
+        <SettingSection icon={Fingerprint} title="Authentification à deux facteurs" iconColor="hsl(var(--hud-purple))">
+          {qrCode ? (
+            <div className="text-center space-y-3 py-2">
+              <div className="inline-block p-2 rounded-xl bg-white">
+                <img src={qrCode} alt="2FA QR Code" className="w-44 h-44 rounded-lg" />
+              </div>
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                Scannez avec Google Authenticator, Authy ou toute app TOTP
+              </p>
+              <Button size="sm" variant="outline" onClick={() => setQrCode(null)}
+                style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
+                Terminé
+              </Button>
             </div>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handle2FAEnroll} disabled={enrolling2FA} className="gap-2"
+              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }}>
+              <KeyRound className="h-4 w-4" />
+              {enrolling2FA ? "Configuration..." : "Activer la 2FA"}
+            </Button>
+          )}
+        </SettingSection>
+
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Privacy Controls ═══ */}
+        <SettingSection icon={Eye} title="Confidentialité" iconColor="hsl(var(--hud-cyan))">
+          <SettingRow label="Accusés de lecture" description="Les autres voient quand vous avez lu leurs messages">
             <Switch checked={readReceipts} onCheckedChange={setReadReceipts} />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4 text-muted-foreground" />
-              <Label className="text-sm">Show online status</Label>
-            </div>
+          </SettingRow>
+          <SettingRow label="Statut en ligne" description="Montrer quand vous êtes en ligne">
             <Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} />
-          </div>
+          </SettingRow>
+          <SettingRow label="Indicateur de saisie" description="Montrer quand vous écrivez un message">
+            <Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} />
+          </SettingRow>
+          <SettingRow label="Aperçu des liens" description="Générer un aperçu pour les liens envoyés">
+            <Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} />
+          </SettingRow>
+        </SettingSection>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <Label className="text-sm">Auto-delete messages</Label>
-            </div>
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Disappearing Messages ═══ */}
+        <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning, 45 100% 50%))">
+          <SettingRow label="Suppression automatique" description="Tous les nouveaux messages seront supprimés après ce délai">
             <Select value={autoDeletePeriod} onValueChange={setAutoDeletePeriod}>
-              <SelectTrigger className="w-28 h-8 text-xs">
+              <SelectTrigger className="w-28 h-8 text-xs" style={{
+                background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))",
+              }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="off">Off</SelectItem>
-                <SelectItem value="24h">24 hours</SelectItem>
-                <SelectItem value="7d">7 days</SelectItem>
-                <SelectItem value="30d">30 days</SelectItem>
+                <SelectItem value="off">Désactivé</SelectItem>
+                <SelectItem value="30s">30 secondes</SelectItem>
+                <SelectItem value="5m">5 minutes</SelectItem>
+                <SelectItem value="1h">1 heure</SelectItem>
+                <SelectItem value="24h">24 heures</SelectItem>
+                <SelectItem value="7d">7 jours</SelectItem>
+                <SelectItem value="30d">30 jours</SelectItem>
               </SelectContent>
             </Select>
+          </SettingRow>
+        </SettingSection>
+
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Notifications ═══ */}
+        <SettingSection icon={Bell} title="Notifications" iconColor="hsl(var(--hud-cyan))">
+          <SettingRow label="Notifications" description="Recevoir des notifications pour les nouveaux messages">
+            <Switch checked={notifications} onCheckedChange={setNotifications} />
+          </SettingRow>
+          <SettingRow label="Aperçu du message" description="Afficher le contenu dans la notification">
+            <Switch checked={messagePreview} onCheckedChange={setMessagePreview} />
+          </SettingRow>
+        </SettingSection>
+
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Storage & Data ═══ */}
+        <SettingSection icon={Database} title="Stockage et données" iconColor="hsl(var(--hud-text-dim))">
+          <SettingRow label="Téléchargement auto des médias" description="Télécharger automatiquement photos et vidéos">
+            <Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} />
+          </SettingRow>
+        </SettingSection>
+
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Session Management ═══ */}
+        <SettingSection icon={Smartphone} title="Appareils connectés" iconColor="hsl(var(--hud-cyan))">
+          <OrbitSessionManager userId={userId} />
+        </SettingSection>
+
+        <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
+
+        {/* ═══ Advanced / Danger Zone ═══ */}
+        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger, 0 80% 60%))">
+          <div className="space-y-2">
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
+              onClick={handleWipeKeys}
+              style={{
+                borderColor: "hsl(var(--hud-danger, 0 80% 60%) / 0.3)",
+                color: "hsl(var(--hud-danger, 0 80% 60%))",
+                background: "hsl(var(--hud-danger, 0 80% 60%) / 0.05)",
+              }}>
+              <Trash2 className="h-3.5 w-3.5" />
+              Supprimer les clés de chiffrement
+            </Button>
+            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              Supprime les clés E2E de cet appareil. Les messages déjà chiffrés ne pourront plus être déchiffrés sur cet appareil.
+            </p>
           </div>
-        </div>
+        </SettingSection>
       </div>
 
-      <Separator />
-
-      {/* Session Management */}
-      <OrbitSessionManager userId={userId} />
+      {/* ═══ Footer ═══ */}
+      <div className="pt-6 text-center">
+        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+          Orbit v1.0 — Signal-inspired privacy architecture
+        </p>
+        <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }}>
+          ECDH P-256 · AES-256-GCM · HKDF-SHA256
+        </p>
+      </div>
     </div>
   );
 }
