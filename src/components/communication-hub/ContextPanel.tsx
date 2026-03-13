@@ -118,8 +118,8 @@ export default function ContextPanel({ thread, orgId }: Props) {
     loadBookingContext();
   }, [thread.conversationType, thread.bookingId, thread.bookingType, orgId]);
 
-  // Determine if deal room panel should show
-  const showDealRoom = !!(thread.dealId || thread.conversationType === "deal" || thread.conversationType === "listing");
+  // Determine if deal room panel should show — only when a deal actually exists
+  const showDealRoom = !!(thread.dealId || thread.conversationType === "deal");
 
   return (
     <div className="w-72 lg:w-80 border-s border-border/50 flex flex-col overflow-hidden bg-muted/5">

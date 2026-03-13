@@ -9,6 +9,7 @@ import AppLogo from "@/components/AppLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+import HubQuickAccess from "@/components/communication-hub/HubQuickAccess";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
   Wallet, Wrench, CheckSquare, MessageCircle,
@@ -487,6 +488,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </Link>
 
           <div className="flex-1" />
+          {/* Hub quick access — desktop topbar */}
+          <HubQuickAccess variant="topbar" />
           {/* Language selector */}
           <div className="relative">
             <button
@@ -549,6 +552,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
         <main className="app-main flex-1 p-3 sm:p-6 pb-24 lg:pb-6 overflow-x-hidden">{children}</main>
       </div>
+
+      {/* Hub floating button — mobile */}
+      <HubQuickAccess variant="floating" />
 
       {/* Mobile bottom navigation */}
       <MobileBottomNav onMenuOpen={() => setSidebarOpen(true)} />
