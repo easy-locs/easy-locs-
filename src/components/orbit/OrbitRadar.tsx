@@ -348,7 +348,50 @@ export default function OrbitRadar() {
         )}
       </AnimatePresence>
 
-      {/* ═══ Radar Visualization ═══ */}
+      {/* ═══ Visualization: Radar or Map ═══ */}
+      {viewMode === "map" ? (
+        <div className="flex-shrink-0 px-3 py-2" style={{ height: 320 }}>
+          <div className="rounded-xl overflow-hidden h-full" style={{ border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+            <NearbyLeafletMap
+              lat={lat!}
+              lng={lng!}
+              radius={config.radius}
+              users={filtered.filter(s => s.type === "user").map(s => ({
+                user_id: s.id,
+                display_name: s.title,
+                avatar_url: s.photo || null,
+                status: s.online ? "online" : "offline",
+                lat: s.lat,
+                lng: s.lng,
+                distance_km: s.distance_km,
+                professional_category: s.category || null,
+              }))}
+              items={filtered.filter(s => s.type !== "user").map(s => ({
+                item_id: s.id,
+                item_type: s.type === "listing" ? "real_estate" : s.type === "service" ? "concierge" : "activity",
+                title: s.title,
+                lat: s.lat,
+                lng: s.lng,
+                distance_km: s.distance_km,
+                price: s.price || 0,
+                currency: s.currency || "EUR",
+                provider_name: s.subtitle || null,
+              }))}
+              onRefresh={loadSignals}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-1 px-1">
+            <span className="text-[8px] font-mono uppercase tracking-wider" style={{ color: "hsl(var(--hud-cyan) / 0.4)" }}>
+              {config.label} · {filtered.length} signals
+            </span>
+            <button onClick={() => { loadSignals(); haptic("medium"); }}
+              className="text-[8px] font-mono uppercase flex items-center gap-0.5 px-1.5 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--hud-cyan) / 0.08)", color: "hsl(var(--hud-cyan))" }}>
+              <RefreshCw className={`h-2 w-2 ${scanning ? "animate-spin" : ""}`} /> Scan
+            </button>
+          </div>
+        </div>
+      ) : (
       <div className="flex-shrink-0 flex items-center justify-center px-4 py-2">
         <div className="relative" style={{ width: size, height: size, maxWidth: "100%" }}>
           <svg viewBox={`-10 -10 ${size + 20} ${size + 20}`} className="w-full h-full" style={{ overflow: "visible" }}>
