@@ -96,7 +96,8 @@ export default function InAppCallDialog({
     if (isEnding) return;
     setIsEnding(true);
     try {
-      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(status)) await callManager?.endCall();
+      const s = status as string;
+      if (!["ended", "declined", "missed", "failed", "network_blocked"].includes(s)) await callManager?.endCall();
       onClose();
     } finally { setIsEnding(false); }
   };
