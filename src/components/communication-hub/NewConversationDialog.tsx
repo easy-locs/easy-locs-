@@ -1,12 +1,12 @@
 /**
  * NewConversationDialog — Create a new direct conversation from the hub.
  * Searches users by name/email and creates a direct thread.
+ * HUD-themed styling consistent with Orbit design system.
  */
 import { useState } from "react";
 import { Search, MessageCircle, Loader2, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
@@ -64,64 +64,88 @@ export default function NewConversationDialog({ open, onOpenChange, onThreadCrea
         onOpenChange(false);
         setQuery("");
         setResults([]);
-        toast.success(`Conversation with ${target.name || target.email} opened`);
+        toast.success(`Conversation avec ${target.name || target.email} ouverte`);
       } else {
-        toast.error("Could not create conversation");
+        toast.error("Impossible de créer la conversation");
       }
     } catch (e: any) {
-      toast.error(e.message || "Error creating conversation");
+      toast.error(e.message || "Erreur lors de la création");
     }
     setCreating(null);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-accent" />
-            New Conversation
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden" style={{
+        background: "hsl(var(--hud-bg))",
+        borderColor: "hsl(var(--hud-border) / 0.15)",
+        borderRadius: 16,
+      }}>
+        <DialogHeader className="px-5 pt-5 pb-2">
+          <DialogTitle className="flex items-center gap-2 text-sm" style={{ color: "hsl(var(--hud-text))" }}>
+            <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+            Nouvelle conversation
           </DialogTitle>
-          <DialogDescription>Search for a user to start a direct conversation</DialogDescription>
+          <DialogDescription className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+            Recherchez un utilisateur pour démarrer une conversation directe
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="px-5 pb-5 space-y-3">
           <div className="relative">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
             <Input
               value={query}
               onChange={e => handleSearch(e.target.value)}
-              placeholder="Search by name or email..."
-              className="ps-9"
+              placeholder="Nom ou email..."
+              className="ps-9 h-10"
+              style={{
+                background: "hsl(var(--hud-surface))",
+                borderColor: "hsl(var(--hud-border) / 0.15)",
+                color: "hsl(var(--hud-text))",
+              }}
               autoFocus
             />
           </div>
-          <div className="max-h-64 overflow-y-auto space-y-1">
+          <div className="max-h-64 overflow-y-auto space-y-0.5">
             {searching && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
               </div>
             )}
             {!searching && results.length === 0 && query.length >= 2 && (
-              <p className="text-center text-sm text-muted-foreground py-4">No users found</p>
+              <p className="text-center text-xs py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                Aucun utilisateur trouvé
+              </p>
             )}
             {results.map(u => (
               <button
                 key={u.id}
                 onClick={() => handleStartConversation(u)}
                 disabled={creating === u.id}
-                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-colors text-left"
+                style={{ color: "hsl(var(--hud-text))" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--hud-surface) / 0.6)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                <div className="h-9 w-9 rounded-full bg-accent/10 flex items-center justify-center shrink-0 text-sm font-bold text-accent">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold" style={{
+                  background: "hsl(var(--hud-surface-2))",
+                  border: "1px solid hsl(var(--hud-border) / 0.15)",
+                  color: "hsl(var(--hud-cyan))",
+                }}>
                   {(u.name || u.email || "?")[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{u.name || "User"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                    {u.name || "User"}
+                  </p>
+                  <p className="text-xs truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    {u.email}
+                  </p>
                 </div>
                 {creating === u.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                  <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
                 ) : (
-                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <Plus className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
                 )}
               </button>
             ))}
