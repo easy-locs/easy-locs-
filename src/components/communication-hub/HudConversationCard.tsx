@@ -29,9 +29,10 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-4 py-[10px] transition-colors active:bg-muted/30"
+      className="w-full text-left flex items-center gap-3 px-4 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995]"
       style={{
-        background: isActive ? "hsl(var(--hud-cyan) / 0.04)" : "transparent",
+        background: isActive ? "hsl(var(--primary) / 0.04)" : "transparent",
+        borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent",
       }}
     >
       {/* Avatar */}
@@ -67,7 +68,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
               className="text-[12px] tabular-nums shrink-0"
               style={{
                 color: hasUnread
-                  ? "hsl(var(--hud-cyan))"
+                  ? "hsl(var(--primary))"
                   : "hsl(var(--muted-foreground))",
               }}
             >
@@ -112,8 +113,8 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
             <span
               className="text-[11px] font-bold rounded-full h-5 min-w-5 flex items-center justify-center px-1.5 shrink-0"
               style={{
-                background: "hsl(var(--hud-cyan))",
-                color: "hsl(var(--hud-bg))",
+                background: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
               }}
             >
               {thread.unreadCount > 99 ? "99+" : thread.unreadCount}

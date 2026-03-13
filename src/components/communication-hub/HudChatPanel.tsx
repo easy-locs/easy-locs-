@@ -401,11 +401,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             {/* Orbiting dot */}
             <motion.div
               className="absolute w-2 h-2 rounded-full"
-              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", top: 0, left: "50%", marginLeft: -4 }}
+              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }}
               animate={{ rotate: 360 }}
               transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              //@ts-ignore
-              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }}
             />
           </div>
 

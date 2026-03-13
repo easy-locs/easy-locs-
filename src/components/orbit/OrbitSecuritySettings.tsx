@@ -101,6 +101,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
   };
 
   return (
+    <div className="flex-1 overflow-y-auto p-4" style={{ background: "hsl(var(--hud-bg))" }}>
     <div className="space-y-1 max-w-lg mx-auto pb-24">
       {/* ═══ Header ═══ */}
       <div className="flex items-center gap-3 pb-4">
@@ -191,7 +192,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Disappearing Messages ═══ */}
-        <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning, 45 100% 50%))">
+        <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning))">
           <SettingRow label="Suppression automatique" description="Tous les nouveaux messages seront supprimés après ce délai">
             <Select value={autoDeletePeriod} onValueChange={setAutoDeletePeriod}>
               <SelectTrigger className="w-28 h-8 text-xs" style={{
@@ -243,14 +244,14 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Advanced / Danger Zone ═══ */}
-        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger, 0 80% 60%))">
+        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger))">
           <div className="space-y-2">
             <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
               onClick={handleWipeKeys}
               style={{
-                borderColor: "hsl(var(--hud-danger, 0 80% 60%) / 0.3)",
-                color: "hsl(var(--hud-danger, 0 80% 60%))",
-                background: "hsl(var(--hud-danger, 0 80% 60%) / 0.05)",
+                borderColor: "hsl(var(--hud-danger) / 0.3)",
+                color: "hsl(var(--hud-danger))",
+                background: "hsl(var(--hud-danger) / 0.05)",
               }}>
               <Trash2 className="h-3.5 w-3.5" />
               Supprimer les clés de chiffrement
@@ -271,6 +272,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
           ECDH P-256 · AES-256-GCM · HKDF-SHA256
         </p>
       </div>
+    </div>
     </div>
   );
 }

@@ -64,18 +64,29 @@ export function clearEvents() {
   notify();
 }
 
+// Flag to prevent recursive error logging (audit_logs insert → network fail → pushEvent → insert → ...)
+let _persistingAudit = false;
+
 async function persistToAuditLog(evt: MonitoringEvent) {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
-  await supabase.from("audit_logs").insert([{
-    action: `monitoring:${evt.type}`,
-    user_id: session.user.id,
-    metadata_json: {
-      source: evt.source,
-      message: evt.message,
-      metadata: evt.metadata,
-    } as any,
-  }]);
+  if (_persistingAudit) return; // break recursion
+  _persistingAudit = true;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await supabase.from("audit_logs").insert([{
+      action: `monitoring:${evt.type}`,
+      user_id: session.user.id,
+      metadata_json: {
+        source: evt.source,
+        message: evt.message,
+        metadata: evt.metadata,
+      } as any,
+    }]);
+  } catch {
+    // Silent fail — never re-trigger monitoring for audit persistence
+  } finally {
+    _persistingAudit = false;
+  }
 }
 
 // ── Global Error Handlers ──────────────────────────────────────────
@@ -143,10 +154,12 @@ export function initMonitoring() {
   // Fetch/XHR error interceptor
   const origFetch = window.fetch;
   window.fetch = async (...args) => {
+    const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
+    // Skip monitoring for audit_logs requests to prevent infinite loops
+    const isAuditReq = url.includes("/audit_logs");
     try {
       const res = await origFetch(...args);
-      if (res.status >= 500) {
-        const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
+      if (res.status >= 500 && !isAuditReq) {
         pushEvent({
           type: "error",
           source: "network",
@@ -156,13 +169,14 @@ export function initMonitoring() {
       }
       return res;
     } catch (err: any) {
-      const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
-      pushEvent({
-        type: "error",
-        source: "network",
-        message: `Network failure: ${err.message}`,
-        metadata: { url: url.split("?")[0] },
-      });
+      if (!isAuditReq) {
+        pushEvent({
+          type: "error",
+          source: "network",
+          message: `Network failure: ${err.message}`,
+          metadata: { url: url.split("?")[0] },
+        });
+      }
       throw err;
     }
   };
