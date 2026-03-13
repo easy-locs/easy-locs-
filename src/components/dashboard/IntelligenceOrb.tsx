@@ -1,6 +1,6 @@
 /**
  * IntelligenceOrb — Futuristic HUD-style central brain.
- * Concentric radar rings, scanning beam, glowing nodes, neon aesthetic.
+ * True circular orbiting animation, scanning beams, glowing nodes.
  * Radial menu: Chats, Calls, Files, Contacts, Deals, Payments, Security, AI
  */
 import { useState, useCallback } from "react";
@@ -49,6 +49,10 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
   const cy = viewBox / 2;
   const rings = [48, 72, 100, 128];
   const menuRadius = 120;
+
+  // Scan speed varies with activity
+  const scanDuration = hasActivity ? 3 : 6;
+  const secondaryScanDuration = hasActivity ? 8 : 16;
 
   return (
     <div
@@ -102,27 +106,40 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           );
         })}
 
+        {/* ── Primary scanning beam — TRUE CIRCULAR via CSS animation on <g> ── */}
         <g filter="url(#neonGlow)">
-          <motion.g animate={{ rotate: 360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            style={{ originX: `${cx}px`, originY: `${cy}px`, transformOrigin: `${cx}px ${cy}px` }}
-          >
+          <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from={`0 ${cx} ${cy}`}
+              to={`360 ${cx} ${cy}`}
+              dur={`${scanDuration}s`}
+              repeatCount="indefinite"
+            />
             <path
               d={`M ${cx} ${cy} L ${cx + 128} ${cy} A 128 128 0 0 1 ${cx + 128 * Math.cos(Math.PI / 6)} ${cy + 128 * Math.sin(Math.PI / 6)} Z`}
               fill="url(#scanGrad)" opacity="0.5"
             />
-          </motion.g>
+          </g>
         </g>
 
-        <motion.g animate={{ rotate: -360 }}
-          transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-          style={{ originX: `${cx}px`, originY: `${cy}px`, transformOrigin: `${cx}px ${cy}px` }}
-        >
+        {/* ── Secondary scanner line — counter-rotating ── */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from={`360 ${cx} ${cy}`}
+            to={`0 ${cx} ${cy}`}
+            dur={`${secondaryScanDuration}s`}
+            repeatCount="indefinite"
+          />
           <line x1={cx} y1={cy} x2={cx + 128} y2={cy}
             stroke="hsl(270, 80%, 65%)" strokeWidth="0.8" opacity="0.25" filter="url(#neonGlow)"
           />
-        </motion.g>
+        </g>
 
+        {/* ── Network nodes ── */}
         {NODES.map((node, i) => {
           const r = rings[node.ring];
           const rad = (node.angle * Math.PI) / 180;
@@ -131,32 +148,51 @@ export default function IntelligenceOrb({ hasActivity = false, className = "" }:
           return (
             <g key={`node-${i}`}>
               <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="hsl(195, 100%, 55%)" strokeWidth="0.3" opacity="0.08" />
-              <motion.circle cx={nx} cy={ny} r={2} fill="hsl(180, 100%, 65%)" filter="url(#neonGlow)"
-                animate={{ opacity: [0.3, 0.9, 0.3], r: [1.5, 2.5, 1.5] }}
-                transition={{ duration: 2 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}
-              />
+              <circle cx={nx} cy={ny} r={2} fill="hsl(180, 100%, 65%)" filter="url(#neonGlow)">
+                <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
+                <animate attributeName="r" values="1.5;2.5;1.5" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
+              </circle>
             </g>
           );
         })}
 
+        {/* ── Orbiting dot — true circle via animateMotion ── */}
+        <circle r="3" fill="hsl(180, 100%, 70%)" filter="url(#neonGlow)" opacity="0.8">
+          <animateMotion
+            dur={hasActivity ? "4s" : "8s"}
+            repeatCount="indefinite"
+            path={`M ${cx + 100} ${cy} A 100 100 0 1 1 ${cx + 100 - 0.01} ${cy}`}
+          />
+        </circle>
+        <circle r="2" fill="hsl(270, 80%, 70%)" filter="url(#neonGlow)" opacity="0.6">
+          <animateMotion
+            dur={hasActivity ? "5s" : "12s"}
+            repeatCount="indefinite"
+            path={`M ${cx} ${cy - 72} A 72 72 0 1 1 ${cx - 0.01} ${cy - 72}`}
+          />
+        </circle>
+
+        {/* ── Activity pulse rings ── */}
         {hasActivity && (
           <>
-            <motion.circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(180, 100%, 60%)" strokeWidth="1.5"
-              initial={{ r: 30, opacity: 0.6 }} animate={{ r: 140, opacity: 0 }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
-            />
-            <motion.circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(270, 80%, 65%)" strokeWidth="1"
-              initial={{ r: 40, opacity: 0.4 }} animate={{ r: 120, opacity: 0 }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1 }}
-            />
+            <circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(180, 100%, 60%)" strokeWidth="1.5" opacity="0">
+              <animate attributeName="r" values="30;140" dur="2.5s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.6;0" dur="2.5s" repeatCount="indefinite" />
+            </circle>
+            <circle cx={cx} cy={cy} r={48} fill="none" stroke="hsl(270, 80%, 65%)" strokeWidth="1" opacity="0">
+              <animate attributeName="r" values="40;120" dur="2.5s" repeatCount="indefinite" begin="1s" />
+              <animate attributeName="opacity" values="0.4;0" dur="2.5s" repeatCount="indefinite" begin="1s" />
+            </circle>
           </>
         )}
 
+        {/* ── Core ── */}
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="url(#coreGrad)" filter="url(#neonGlow)" />
         <circle cx={cx} cy={cy} r={coreSize / 2} fill="none" stroke="hsl(195, 100%, 60%)" strokeWidth="1.2" opacity="0.5" />
         <circle cx={cx} cy={cy} r={coreSize / 2 - 6} fill="none" stroke="hsl(180, 100%, 65%)" strokeWidth="0.6" opacity="0.3" />
         <ellipse cx={cx - 8} cy={cy - 10} rx={10} ry={5} fill="white" opacity="0.08" />
 
+        {/* ── Menu connection lines ── */}
         <AnimatePresence>
           {open && MENU_ITEMS.map((_, i) => {
             const angle = (i / MENU_ITEMS.length) * Math.PI * 2 - Math.PI / 2;

@@ -1,10 +1,10 @@
 /**
- * CommunicationCenter — Futuristic Command Center Communication Hub.
- * Full-height messenger experience with 3-layer architecture.
+ * CommunicationCenter — Full-screen app-like Communication Hub.
+ * Feels like a dedicated messaging app inside the platform.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Shield, Plus, Lock, Zap, Radio } from "lucide-react";
+import { Shield, Plus, Zap, Radio } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -12,6 +12,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
+import CommNavBar, { type CommSection } from "@/components/communication-hub/CommNavBar";
+import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
@@ -31,6 +33,7 @@ const CommunicationCenter = () => {
   const [showContext, setShowContext] = useState(false);
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [mobileContextOpen, setMobileContextOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<CommSection>("chats");
 
   useEffect(() => {
     import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
@@ -47,7 +50,7 @@ const CommunicationCenter = () => {
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
       t.leadId === threadParam
     );
-    if (found) { setSelectedThread(found); setSearchParams({}, { replace: true }); }
+    if (found) { setSelectedThread(found); setActiveSection("chats"); setSearchParams({}, { replace: true }); }
   }, [threads, loading, searchParams, setSearchParams]);
 
   useEffect(() => {
@@ -57,7 +60,7 @@ const CommunicationCenter = () => {
       t.name.toLowerCase().includes(searchQ.toLowerCase()) ||
       t.email?.toLowerCase().includes(searchQ.toLowerCase())
     );
-    if (found) { setSelectedThread(found); setSearchParams({}, { replace: true }); }
+    if (found) { setSelectedThread(found); setActiveSection("chats"); setSearchParams({}, { replace: true }); }
   }, [threads, loading, searchParams, setSearchParams]);
 
   const handleSelectThread = useCallback((thread: ConversationThread) => {
@@ -85,14 +88,17 @@ const CommunicationCenter = () => {
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
+  const showChatArea = activeSection === "chats";
+
   return (
     <DashboardLayout>
+      {/* Full-screen communication container — no page margins */}
       <div className="h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-5rem)] flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-24 lg:-mb-6">
         {/* ═══ Compact HUD Header ═══ */}
         <motion.div
-          initial={{ opacity: 0, y: -6 }}
+          initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2"
+          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 shrink-0"
           style={{
             background: "hsl(var(--hud-bg))",
             borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
@@ -100,7 +106,7 @@ const CommunicationCenter = () => {
         >
           <div className="flex items-center gap-2 min-w-0">
             <div
-              className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
               style={{
                 background: "hsl(var(--hud-surface))",
                 border: "1px solid hsl(var(--hud-border) / 0.2)",
@@ -110,13 +116,13 @@ const CommunicationCenter = () => {
               <Radio className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "hsl(var(--hud-text))" }}>
+              <h1 className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(var(--hud-text))" }}>
                 Command Center
-                <Shield className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                <Shield className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
               </h1>
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
-                <span className="text-[8px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
+              <div className="flex items-center gap-1">
+                <div className="h-1 w-1 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
+                <span className="text-[7px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
                   Secure • Live
                 </span>
               </div>
@@ -124,62 +130,80 @@ const CommunicationCenter = () => {
           </div>
           <div className="flex-1" />
           <div className="flex items-center gap-1.5">
-            <Button
-              size="sm" variant="outline"
-              className="h-7 gap-1 text-[11px] rounded-lg"
-              style={{
-                background: "hsl(var(--hud-surface))",
-                borderColor: "hsl(var(--hud-border) / 0.2)",
-                color: "hsl(var(--hud-cyan))",
-              }}
-              onClick={() => setShowNewConversation(true)}
-            >
-              <Plus className="h-3 w-3" />
-              <span className="hidden sm:inline">New</span>
-            </Button>
+            {showChatArea && (
+              <Button
+                size="sm" variant="outline"
+                className="h-6 gap-1 text-[10px] rounded-lg"
+                style={{
+                  background: "hsl(var(--hud-surface))",
+                  borderColor: "hsl(var(--hud-border) / 0.2)",
+                  color: "hsl(var(--hud-cyan))",
+                }}
+                onClick={() => setShowNewConversation(true)}
+              >
+                <Plus className="h-3 w-3" />
+                <span className="hidden sm:inline">New</span>
+              </Button>
+            )}
             {stats.unread > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px]" style={{
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]" style={{
                 background: "hsl(var(--hud-cyan) / 0.1)",
                 border: "1px solid hsl(var(--hud-cyan) / 0.2)",
               }}>
-                <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
+                <Zap className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                 <span className="font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>{stats.unread}</span>
               </div>
             )}
           </div>
         </motion.div>
 
-        {/* ═══ 3-Layer Layout — full remaining height ═══ */}
-        <div
-          className="flex-1 flex gap-0 min-h-0 overflow-hidden"
-          style={{
-            background: "hsl(var(--hud-bg))",
-          }}
-        >
-          {/* Layer 1: Conversation List */}
-          <HudConversationList
-            threads={threads}
-            loading={loading}
-            selectedThread={selectedThread}
-            onSelectThread={handleSelectThread}
-            visible={!selectedThread || !isMobile}
-          />
+        {/* ═══ Main content area ═══ */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
+          {/* Desktop: horizontal layout with nav strip */}
+          {/* Mobile: content area + bottom nav */}
+          <div className="flex-1 flex min-h-0">
+            {/* Desktop nav strip */}
+            {!isMobile && (
+              <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={false} unreadCount={stats.unread} />
+            )}
 
-          {/* Layer 2 + 3 */}
-          <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
-            <div className="flex-1 flex min-h-0">
-              <HudChatPanel
-                thread={selectedThread}
-                onBack={handleBack}
-                onToggleContext={handleToggleContext}
-                showContext={showContext || mobileContextOpen}
-                onThreadUpdate={handleThreadUpdate}
-              />
-              {showContext && selectedThread && orgId && !isMobile && (
-                <HudContextPanel thread={selectedThread} orgId={orgId} />
-              )}
-            </div>
+            {/* Section content */}
+            {showChatArea ? (
+              <div className="flex-1 flex min-h-0 min-w-0">
+                {/* Layer 1: Conversation List */}
+                <HudConversationList
+                  threads={threads}
+                  loading={loading}
+                  selectedThread={selectedThread}
+                  onSelectThread={handleSelectThread}
+                  visible={!selectedThread || !isMobile}
+                />
+
+                {/* Layer 2 + 3 */}
+                <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
+                  <div className="flex-1 flex min-h-0">
+                    <HudChatPanel
+                      thread={selectedThread}
+                      onBack={handleBack}
+                      onToggleContext={handleToggleContext}
+                      showContext={showContext || mobileContextOpen}
+                      onThreadUpdate={handleThreadUpdate}
+                    />
+                    {showContext && selectedThread && orgId && !isMobile && (
+                      <HudContextPanel thread={selectedThread} orgId={orgId} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <CommPlaceholderSection section={activeSection} />
+            )}
           </div>
+
+          {/* Mobile bottom nav */}
+          {isMobile && (
+            <CommNavBar active={activeSection} onChange={setActiveSection} isMobile={true} unreadCount={stats.unread} />
+          )}
         </div>
       </div>
 
