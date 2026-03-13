@@ -482,8 +482,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
               return (
                 <motion.div key={msg.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"}`} style={{
+                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                  onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
+                  onClick={() => { /* mobile: long press handled via context */ }}>
+                  <div className={`max-w-[88%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
                     background: isPayment
                       ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
                       : isMe
