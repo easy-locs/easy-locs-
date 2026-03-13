@@ -1,14 +1,16 @@
 /**
- * ChatMessageBubble — Premium WhatsApp-grade message bubble.
- * Handles sent/received/system/payment/email message types with proper visual hierarchy.
+ * ChatMessageBubble — Premium Signal-grade message bubble.
+ * Handles text, voice, media, payment, email, system messages with unified HUD design.
  */
 import { memo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
+  ShieldCheck, CreditCard,
 } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
+import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import type { ChatMessage } from "./types";
@@ -38,6 +40,7 @@ function ChatMessageBubble({
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = msg.content?.startsWith("💳");
+  const isVoice = !!(msg as any).audio_url;
 
   if (isSystem) {
     return (
@@ -45,8 +48,9 @@ function ChatMessageBubble({
         <div
           className="text-[11px] px-4 py-1.5 rounded-full max-w-[85%] text-center break-words font-medium"
           style={{
-            background: "hsl(var(--muted) / 0.6)",
-            color: "hsl(var(--muted-foreground))",
+            background: "hsl(var(--hud-surface) / 0.6)",
+            color: "hsl(var(--hud-text-dim))",
+            border: "1px solid hsl(var(--hud-border) / 0.06)",
           }}
         >
           {msg.content}
@@ -68,21 +72,21 @@ function ChatMessageBubble({
       <div
         className="relative max-w-[78%] sm:max-w-[60%]"
         style={{
-          padding: "8px 12px 4px",
+          padding: isVoice ? "6px 10px 4px" : "8px 12px 4px",
           borderRadius: isMe
             ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
             : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
           background: isPayment
-            ? "linear-gradient(135deg, hsl(45 80% 60% / 0.1), hsl(35 70% 50% / 0.06))"
+            ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-cyan) / 0.03))"
             : isMe
-              ? "hsl(var(--primary) / 0.1)"
-              : "hsl(var(--muted) / 0.5)",
+              ? "hsl(var(--hud-cyan) / 0.08)"
+              : "hsl(var(--hud-surface))",
           border: `1px solid ${
             isPayment
-              ? "hsl(45 80% 60% / 0.15)"
+              ? "hsl(var(--hud-cyan) / 0.12)"
               : isMe
-                ? "hsl(var(--primary) / 0.08)"
-                : "hsl(var(--border) / 0.08)"
+                ? "hsl(var(--hud-cyan) / 0.06)"
+                : "hsl(var(--hud-border) / 0.06)"
           }`,
           wordBreak: "break-word",
           overflowWrap: "anywhere",
@@ -90,7 +94,7 @@ function ChatMessageBubble({
       >
         {/* Sender name for received messages (first in group only) */}
         {!isMe && !isConsecutive && (
-          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--primary) / 0.8)" }}>
+          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
             {msg.contact_name || threadName || "Contact"}
           </p>
         )}
@@ -98,15 +102,25 @@ function ChatMessageBubble({
         {/* Email indicator */}
         {isInboundEmail && (
           <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
-            color: "hsl(var(--primary))",
-            background: "hsl(var(--primary) / 0.08)",
+            color: "hsl(var(--hud-cyan))",
+            background: "hsl(var(--hud-cyan) / 0.08)",
           }}>
             <Mail className="h-2.5 w-2.5" /> Email
           </span>
         )}
 
+        {/* Payment badge */}
+        {isPayment && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+            color: "hsl(var(--hud-cyan))",
+            background: "hsl(var(--hud-cyan) / 0.08)",
+          }}>
+            <CreditCard className="h-2.5 w-2.5" /> Payment
+          </span>
+        )}
+
         {/* Category badge */}
-        {msg.category !== "general" && !isInboundEmail && (
+        {msg.category !== "general" && !isInboundEmail && !isPayment && (
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
         )}
 
@@ -117,39 +131,48 @@ function ChatMessageBubble({
           </div>
         )}
 
-        {/* Message content */}
-        <p className="text-[13.5px] leading-[1.45] whitespace-pre-wrap" style={{
-          color: isMe ? "hsl(var(--foreground))" : "hsl(var(--foreground))",
-          overflowWrap: "anywhere",
-        }}>
-          {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
-        </p>
+        {/* Voice message */}
+        {isVoice ? (
+          <VoiceMessageBubble
+            url={(msg as any).audio_url}
+            durationSeconds={(msg as any).audio_duration_seconds || 0}
+            isMe={isMe}
+          />
+        ) : (
+          /* Message content */
+          <p className="text-[13.5px] leading-[1.45] whitespace-pre-wrap" style={{
+            color: "hsl(var(--foreground))",
+            overflowWrap: "anywhere",
+          }}>
+            {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
+          </p>
+        )}
 
         {/* Original text preview for translated messages */}
-        {!isMe && msg.translated_content && !showOriginal && (
-          <p className="text-[11px] mt-1.5 pt-1.5 opacity-30 italic whitespace-pre-wrap" style={{ borderTop: "1px solid hsl(var(--border) / 0.1)" }}>
+        {!isMe && msg.translated_content && !showOriginal && !isVoice && (
+          <p className="text-[11px] mt-1.5 pt-1.5 opacity-30 italic whitespace-pre-wrap" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             {msg.content.length > 100 ? msg.content.slice(0, 100) + "…" : msg.content}
           </p>
         )}
 
         {/* Translate button */}
-        {!isMe && msg.sender_locale && msg.sender_locale !== locale && (
-          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--muted-foreground))" }}>
+        {!isMe && msg.sender_locale && msg.sender_locale !== locale && !isVoice && (
+          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--hud-text-dim))" }}>
             {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
             {showOriginal ? "Translation" : msg.translated_content ? "Original" : "Translate"}
           </button>
         )}
 
-        {/* Footer: time + status — inline right-aligned */}
+        {/* Footer: time + status */}
         <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
           {(msg as any).edited_at && (
             <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
           )}
           <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
           {isMe && isPendingOffline ? (
-            <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--destructive) / 0.6)" }} />
+            <WifiOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-danger) / 0.6)" }} />
           ) : isMe && (
-            <span style={{ color: msg.read ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.35)" }}>
+            <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.35)" }}>
               {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
             </span>
           )}
@@ -163,7 +186,7 @@ function ChatMessageBubble({
 export default memo(ChatMessageBubble);
 
 /**
- * DateSeparator — WhatsApp-style date divider between message groups.
+ * DateSeparator — Premium date divider between message groups.
  */
 export function DateSeparator({ date }: { date: string }) {
   return (
@@ -171,8 +194,9 @@ export function DateSeparator({ date }: { date: string }) {
       <div
         className="px-4 py-1 rounded-full text-[11px] font-semibold tracking-wide"
         style={{
-          background: "hsl(var(--muted) / 0.6)",
-          color: "hsl(var(--muted-foreground))",
+          background: "hsl(var(--hud-surface) / 0.6)",
+          color: "hsl(var(--hud-text-dim))",
+          border: "1px solid hsl(var(--hud-border) / 0.04)",
           boxShadow: "0 1px 3px hsl(var(--foreground) / 0.04)",
         }}
       >

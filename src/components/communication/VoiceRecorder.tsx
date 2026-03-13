@@ -1,11 +1,14 @@
 /**
- * VoiceRecorder — Press-and-hold voice message recorder with cancel gesture.
+ * VoiceRecorder — Premium hold-to-record voice recorder with slide-to-cancel.
  * Records audio via MediaRecorder API, uploads to chat-media bucket.
+ * Signal-grade UX with animated waveform during recording.
  */
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Mic, X, Send, Loader2 } from "lucide-react";
+import { Mic, X, Send, Loader2, Square } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { haptic } from "@/lib/haptics";
 
 interface Props {
   orgId: string;
@@ -21,22 +24,52 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
   const [duration, setDuration] = useState(0);
   const [cancelled, setCancelled] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [waveAmplitude, setWaveAmplitude] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const startXRef = useRef(0);
-  const currentXRef = useRef(0);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animFrameRef = useRef<number>();
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
+  }, []);
+
+  const updateAmplitude = useCallback(() => {
+    if (!analyserRef.current) return;
+    const data = new Uint8Array(analyserRef.current.fftSize);
+    analyserRef.current.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    setWaveAmplitude(Math.min(1, rms * 4));
+    animFrameRef.current = requestAnimationFrame(updateAmplitude);
   }, []);
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Safari doesn't support audio/webm; try webm first, then mp4, then default
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+
+      // Audio analysis for visual feedback
+      try {
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        analyserRef.current = analyser;
+        updateAmplitude();
+      } catch {}
+
       const mimeOpts: MediaRecorderOptions = {};
       if (typeof MediaRecorder.isTypeSupported === "function") {
         if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
@@ -46,30 +79,34 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
           mimeOpts.mimeType = "audio/mp4";
         }
-        // else: let browser pick default
       }
       const recorder = new MediaRecorder(stream, mimeOpts);
       chunksRef.current = [];
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
       recorder.start(100);
       recorderRef.current = recorder;
       setRecording(true);
       setCancelled(false);
       setDuration(0);
+      haptic("medium");
       timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
     } catch (e: any) {
       toast.error(e?.name === "NotAllowedError" ? "Microphone access denied" : "Microphone unavailable");
     }
-  }, []);
+  }, [updateAmplitude]);
 
   const stopAndSend = useCallback(async () => {
     if (!recorderRef.current || cancelled) return;
     const recorder = recorderRef.current;
-    
+
     return new Promise<void>((resolve) => {
       recorder.onstop = async () => {
         if (timerRef.current) clearInterval(timerRef.current);
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
         recorder.stream.getTracks().forEach(t => t.stop());
+        analyserRef.current = null;
 
         if (chunksRef.current.length === 0 || duration < 1) {
           setRecording(false);
@@ -78,6 +115,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
         }
 
         setUploading(true);
+        haptic("light");
         try {
           const mime = recorderRef.current?.mimeType || "audio/webm";
           const ext = mime.includes("mp4") ? "m4a" : mime.includes("webm") ? "webm" : "ogg";
@@ -116,6 +154,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
   const cancelRecording = useCallback(() => {
     setCancelled(true);
+    haptic("light");
     if (recorderRef.current && recorderRef.current.state !== "inactive") {
       recorderRef.current.onstop = () => {
         recorderRef.current?.stream.getTracks().forEach(t => t.stop());
@@ -123,63 +162,119 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
       recorderRef.current.stop();
     }
     if (timerRef.current) clearInterval(timerRef.current);
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    analyserRef.current = null;
     setRecording(false);
     chunksRef.current = [];
   }, []);
 
-  // Swipe-to-cancel on touch
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
   };
   const handleTouchMove = (e: React.TouchEvent) => {
-    currentXRef.current = e.touches[0].clientX;
-    if (startXRef.current - currentXRef.current > 100) {
+    if (startXRef.current - e.touches[0].clientX > 100) {
       cancelRecording();
     }
   };
 
   if (uploading) {
     return (
-      <div className="p-2.5">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      <div className="flex items-center gap-2 px-3 py-2">
+        <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} />
+        <span className="text-xs font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          Sending…
+        </span>
       </div>
     );
   }
 
   if (recording) {
     return (
-      <div
-        className="flex items-center gap-3 flex-1 px-3"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-      >
-        {/* Cancel */}
-        <button onClick={cancelRecording} className="p-2.5 min-w-[44px] min-h-[44px] text-destructive hover:bg-destructive/10 rounded-full transition-colors flex items-center justify-center">
-          <X className="h-4 w-4" />
-        </button>
-
-        {/* Recording indicator */}
-        <div className="flex-1 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-          <span className="text-xs text-destructive font-medium font-mono tabular-nums">{formatDur(duration)}</span>
-          <span className="text-[10px] text-muted-foreground">← Slide to cancel</span>
-        </div>
-
-        {/* Send */}
-        <button
-          onClick={stopAndSend}
-          className="p-2.5 min-w-[44px] min-h-[44px] rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center justify-center"
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          className="flex items-center gap-3 flex-1 px-3"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
         >
-          <Send className="h-4 w-4" />
-        </button>
-      </div>
+          {/* Cancel */}
+          <button
+            onClick={cancelRecording}
+            className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{
+              background: "hsl(var(--hud-danger) / 0.12)",
+              color: "hsl(var(--hud-danger))",
+            }}
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          {/* Recording indicator with live amplitude */}
+          <div className="flex-1 flex items-center gap-2.5 min-w-0">
+            <motion.div
+              className="h-3 w-3 rounded-full shrink-0"
+              style={{ background: "hsl(var(--hud-danger))" }}
+              animate={{ opacity: [1, 0.3, 1], scale: [1, 1 + waveAmplitude * 0.5, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+            />
+            <span
+              className="text-sm font-mono tabular-nums font-semibold"
+              style={{ color: "hsl(var(--hud-text))" }}
+            >
+              {formatDur(duration)}
+            </span>
+
+            {/* Mini waveform visualization */}
+            <div className="flex items-center gap-[2px] flex-1 h-5">
+              {Array.from({ length: 20 }, (_, i) => (
+                <motion.div
+                  key={i}
+                  className="rounded-full"
+                  style={{
+                    width: 2,
+                    background: "hsl(var(--hud-danger) / 0.5)",
+                  }}
+                  animate={{
+                    height: [3, 3 + waveAmplitude * 16 * Math.abs(Math.sin(i * 0.8 + Date.now() * 0.003)), 3],
+                  }}
+                  transition={{ duration: 0.3, delay: i * 0.02 }}
+                />
+              ))}
+            </div>
+
+            <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              ← Slide
+            </span>
+          </div>
+
+          {/* Send */}
+          <button
+            onClick={stopAndSend}
+            className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{
+              background: "hsl(var(--hud-cyan))",
+              color: "hsl(var(--hud-bg))",
+              boxShadow: "0 2px 12px hsl(var(--hud-cyan) / 0.3)",
+            }}
+          >
+            <Send className="h-5 w-5" />
+          </button>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
   return (
     <button
       onClick={startRecording}
-      className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+      className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+      style={{
+        background: "hsl(var(--hud-surface))",
+        color: "hsl(var(--hud-text-dim))",
+        border: "1px solid hsl(var(--hud-border) / 0.12)",
+      }}
       title="Tap to record"
     >
       <Mic className="h-4 w-4" />
