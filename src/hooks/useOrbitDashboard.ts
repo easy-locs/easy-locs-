@@ -135,6 +135,15 @@ export function useOrbitDashboard(): DashboardData {
         ).then((v) => ["unreadNotifs", v] as [string, number])
       );
 
+      // Missed calls (last 7 days)
+      queries.push(
+        safeCount("call_logs", (q: any) => {
+          let query = q.eq("status", "missed").gt("created_at", weekAgo).neq("caller_id", user!.id);
+          if (orgId) query = query.eq("callee_org_id", orgId);
+          return query;
+        }).then((v) => ["missedCalls", v] as [string, number])
+      );
+
       const results = await Promise.all(queries);
       if (!cancelled) {
         const map: Record<string, number> = {};
