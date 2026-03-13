@@ -72,7 +72,7 @@ const CommunicationCenter = () => {
       t.bookingId === threadParam || t.dealId === threadParam ||
       t.id === `deal-${threadParam}` || t.id === `tenant-${threadParam}` ||
       t.tenantId === threadParam || t.id === `lead-${threadParam}` ||
-      t.leadId === threadParam
+      t.leadId === threadParam || t.contextId === threadParam
     );
     if (found) { setSelectedThread(found); setActiveSection("chats"); setSearchParams({}, { replace: true }); }
   }, [threads, loading, searchParams, setSearchParams]);

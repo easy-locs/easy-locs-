@@ -898,13 +898,52 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               </div>
               <button onClick={async () => {
                 haptic("medium");
-                const voiceFile = new File([voicePreview.blob], `voice-${Date.now()}.webm`, { type: voicePreview.blob.type });
+                if (!thread || !orgId) return;
+                const authUserId = await resolveAuthUserId();
+                if (!authUserId) return;
+                setUploading(true);
+                try {
+                  const blob = voicePreview.blob;
+                  const dur = voicePreview.duration;
+                  const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
+                  const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
+                  const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, blob);
+                  if (uploadErr) {
+                    // Fallback to other buckets
+                    const { error: uploadErr2 } = await supabase.storage.from("property-photos").upload(path, blob);
+                    if (uploadErr2) throw new Error("Voice upload failed");
+                  }
+                  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+                  const audioUrl = signed?.signedUrl || path;
+
+                  await supabase.from("messages").insert({
+                    org_id: orgId,
+                    sender_id: authUserId,
+                    tenant_id: thread.tenantId || null,
+                    booking_id: thread.bookingId || null,
+                    booking_type: thread.bookingType || null,
+                    contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+                    contact_email: thread.conversationType !== "property" ? thread.email : undefined,
+                    content: `🎤 Voice message (${formatVoiceDuration(dur)})`,
+                    category: "general",
+                    audio_url: audioUrl,
+                    audio_duration_seconds: dur,
+                    message_type: "user",
+                    sender_locale: locale,
+                    context_type: thread.contextType,
+                    context_id: thread.contextId,
+                  } as any);
+
+                  toast.success("Voice message sent");
+                } catch (e: any) {
+                  toast.error(e?.message || "Failed to send voice message");
+                }
                 URL.revokeObjectURL(voicePreview.url);
                 setVoicePreview(null);
-                await handleFileUpload(voiceFile);
+                setUploading(false);
               }} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
                 style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-                <Send className="h-4 w-4" />
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           ) : (

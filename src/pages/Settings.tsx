@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog, Smartphone } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,7 @@ import CountrySelect from "@/components/ui/CountrySelect";
 import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSettings";
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
+import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -326,6 +327,18 @@ const Settings = () => {
         {/* MFA / 2FA */}
         <div ref={el => { sectionRefs.current["security"] = el; }}>
           <MFASettings />
+        </div>
+
+        {/* Active Sessions / Devices */}
+        <div ref={el => { sectionRefs.current["sessions"] = el; }} className="ui-card">
+          <div className="flex items-center gap-3 mb-5">
+            <Smartphone className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">{t("page.settings.sessions_title") || "Active Sessions"}</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">{t("page.settings.sessions_desc") || "Manage your connected devices and revoke access to other sessions."}</p>
+          {user && (
+            <OrbitSessionManager userId={user.id} />
+          )}
         </div>
 
         {/* Pro Settings — Signal/WhatsApp style */}
