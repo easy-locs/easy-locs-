@@ -6,10 +6,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
-  Mail, CreditCard, CalendarCheck, Ban, Phone, ChevronRight, MessageCircle,
+  Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
   Shield, Lock, Zap, Sparkles, MapPin,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
+import ChatLocationPicker from "./ChatLocationPicker";
+import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
@@ -47,6 +49,7 @@ interface Props {
 export default function HudChatPanel({ thread, onBack, onToggleContext, showContext, onThreadUpdate }: Props) {
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
+  const { startCall, isInCall, isStartingCall } = useCall();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -64,6 +67,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -425,6 +429,41 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Call buttons */}
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                disabled={isInCall || isStartingCall}
+                onClick={() => {
+                  haptic("medium");
+                  startCall({
+                    orgId: orgId || "",
+                    threadId: thread.threadId,
+                    contextType: thread.conversationType || "listing",
+                    contextId: thread.contextId,
+                    contextLabel: thread.name,
+                    peerName: thread.name || "Contact",
+                    isVideo: false,
+                  });
+                }}>
+                <Phone className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[hsl(var(--hud-surface))]"
+                disabled={isInCall || isStartingCall}
+                onClick={() => {
+                  haptic("medium");
+                  startCall({
+                    orgId: orgId || "",
+                    threadId: thread.threadId,
+                    contextType: thread.conversationType || "listing",
+                    contextId: thread.contextId,
+                    contextLabel: thread.name,
+                    peerName: thread.name || "Contact",
+                    isVideo: true,
+                  });
+                }}>
+                <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              </Button>
+            </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <Select value={convStatus} onValueChange={updateConversationStatus}>
                 <SelectTrigger className="h-8 w-auto text-xs gap-1" style={{
@@ -604,6 +643,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
           </Button>
+          <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10 hover:bg-[hsl(var(--hud-surface))]" onClick={() => { haptic("light"); setShowLocationPicker(true); }}>
+            <MapPin className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+          </Button>
           <div className="hidden sm:block">
             <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
           </div>
@@ -656,6 +698,36 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           }
         }}
         onCopy={() => {}}
+      />
+
+      {/* Location Picker */}
+      <ChatLocationPicker
+        open={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSend={async (loc) => {
+          if (!orgId || !thread) return;
+          const locationMsg = loc.type === "live"
+            ? `📡 Live location shared for ${loc.duration}min\n📍 https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
+            : loc.type === "place"
+              ? `📍 ${loc.label}\n${loc.address || ""}\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
+              : `📍 My location\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
+          
+          const insertData: any = {
+            org_id: orgId,
+            sender_id: user?.id,
+            content: locationMsg,
+            category: "general",
+            message_type: "text",
+            sender_locale: locale,
+          };
+          if (thread.bookingId) insertData.booking_id = thread.bookingId;
+          if (thread.tenantId) insertData.tenant_id = thread.tenantId;
+          if (thread.contextType) insertData.context_type = thread.contextType;
+          if (thread.contextId) insertData.context_id = thread.contextId;
+          
+          await supabase.from("messages").insert(insertData);
+          loadMessages();
+        }}
       />
     </>
   );
