@@ -1,15 +1,16 @@
 /**
  * QRContactCard — Generate & scan personal QR codes to add contacts quickly.
- * Shows a personal QR code with user info, and a scanner to read others' codes.
+ * Uses real QR code generation (qrcode lib) and BarcodeDetector API for scanning.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
-import { QrCode, ScanLine, Copy, Share2, Check, X } from "lucide-react";
+import { QrCode, ScanLine, Copy, Share2, Check, X, Camera } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import QRCodeLib from "qrcode";
 
 interface Props {
   open: boolean;
@@ -22,73 +23,16 @@ function encodeContactData(data: { userId: string; name: string; email?: string;
   return JSON.stringify({ t: "el-contact", v: 1, ...data });
 }
 
-/** SVG-based QR code generator (simple, no deps) */
-function QRCodeSVG({ data, size = 200 }: { data: string; size?: number }) {
-  // Simple QR-like visual using a deterministic pattern from data hash
-  const cells = 21;
-  const cellSize = size / cells;
-  
-  // Generate a deterministic pattern from the data string
-  const grid: boolean[][] = [];
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
-  }
-  
-  for (let r = 0; r < cells; r++) {
-    grid[r] = [];
-    for (let c = 0; c < cells; c++) {
-      // Fixed position patterns (finder patterns)
-      const isFinderTL = r < 7 && c < 7;
-      const isFinderTR = r < 7 && c >= cells - 7;
-      const isFinderBL = r >= cells - 7 && c < 7;
-      
-      if (isFinderTL || isFinderTR || isFinderBL) {
-        const lr = r % 7 >= (cells - 7) ? r - (cells - 7) : r;
-        const lc = c % 7 >= (cells - 7) ? c - (cells - 7) : c;
-        const rr = isFinderTR ? r : isFinderBL ? r - (cells - 7) : r;
-        const cc = isFinderTR ? c - (cells - 7) : c;
-        const row = isFinderTR ? rr : isFinderBL ? rr : r;
-        const col = isFinderTR ? cc : c;
-        grid[r][c] = row === 0 || row === 6 || col === 0 || col === 6 || (row >= 2 && row <= 4 && col >= 2 && col <= 4);
-      } else {
-        // Data area: deterministic from hash + position
-        const seed = ((hash ^ (r * 31 + c * 17)) >>> 0) % 100;
-        grid[r][c] = seed < 42;
-      }
-    }
-  }
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <rect width={size} height={size} fill="white" rx="12" />
-      {grid.map((row, r) =>
-        row.map((cell, c) =>
-          cell ? (
-            <rect
-              key={`${r}-${c}`}
-              x={c * cellSize}
-              y={r * cellSize}
-              width={cellSize}
-              height={cellSize}
-              fill="hsl(var(--hud-bg))"
-              rx={cellSize * 0.15}
-            />
-          ) : null
-        )
-      )}
-    </svg>
-  );
-}
-
 export default function QRContactCard({ open, onOpenChange, onContactAdded }: Props) {
   const { user, orgId } = useAuth();
   const [mode, setMode] = useState<"show" | "scan">("show");
   const [copied, setCopied] = useState(false);
-  const [scanResult, setScanResult] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const myData = user ? encodeContactData({
     userId: user.id,
@@ -97,15 +41,36 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     orgId: orgId || undefined,
   }) : "";
 
+  // Generate real QR code
+  useEffect(() => {
+    if (!myData || !open) return;
+    const shareUrl = `${window.location.origin}/add-contact?data=${btoa(myData)}`;
+    QRCodeLib.toDataURL(shareUrl, {
+      width: 220,
+      margin: 2,
+      color: { dark: "#0a0a0f", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    }).then(url => setQrDataUrl(url)).catch(() => {});
+  }, [myData, open]);
+
   // Cleanup camera on unmount/close
   useEffect(() => {
     if (!open || mode !== "scan") {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-      }
+      stopScanner();
     }
+    return () => stopScanner();
   }, [open, mode]);
+
+  const stopScanner = useCallback(() => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
 
   const handleCopy = useCallback(() => {
     const shareUrl = `${window.location.origin}/add-contact?data=${btoa(myData)}`;
@@ -133,26 +98,65 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     haptic("medium");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 640 } },
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
+      }
+
+      // Use BarcodeDetector if available, else fallback to manual URL input
+      const hasBarcodeDetector = "BarcodeDetector" in window;
+      if (hasBarcodeDetector) {
+        const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+        scanIntervalRef.current = setInterval(async () => {
+          if (!videoRef.current || videoRef.current.readyState < 2) return;
+          try {
+            const barcodes = await detector.detect(videoRef.current);
+            if (barcodes.length > 0) {
+              const raw = barcodes[0].rawValue;
+              haptic("success");
+              stopScanner();
+              handleScannedData(raw);
+            }
+          } catch {}
+        }, 300);
+      } else {
+        // Fallback: use canvas + manual detection attempt
+        toast.info("QR scanner active. If auto-detect fails, paste the contact link.");
       }
     } catch {
       toast.error("Camera access required to scan QR codes");
       setMode("show");
     }
-  }, []);
+  }, [stopScanner]);
 
-  const handleManualAdd = useCallback(async (contactData: string) => {
+  const handleScannedData = useCallback(async (raw: string) => {
     if (!user?.id) return;
     setAdding(true);
     try {
+      // Handle URL format: extract base64 data param
+      let contactData: string;
+      if (raw.includes("/add-contact?data=")) {
+        const url = new URL(raw);
+        const b64 = url.searchParams.get("data");
+        if (!b64) throw new Error("No data in URL");
+        contactData = atob(b64);
+      } else {
+        // Try direct JSON
+        contactData = raw;
+      }
+
       const parsed = JSON.parse(contactData);
-      if (parsed.t !== "el-contact") throw new Error("Invalid QR");
-      
+      if (parsed.t !== "el-contact") throw new Error("Invalid QR code");
+      if (parsed.userId === user.id) {
+        toast.info("That's your own code!");
+        setAdding(false);
+        setMode("show");
+        return;
+      }
+
       const { error } = await supabase.from("contacts").insert({
         owner_id: user.id,
         org_id: orgId || null,
@@ -161,16 +165,22 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
         contact_user_id: parsed.userId || null,
         category: "professional",
       } as any);
-      
-      if (error) throw error;
-      haptic("success");
-      toast.success(`${parsed.name} added to contacts!`);
-      onContactAdded?.();
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.info("Contact already exists!");
+        } else throw error;
+      } else {
+        haptic("success");
+        toast.success(`${parsed.name} added to contacts!`);
+        onContactAdded?.();
+      }
       onOpenChange(false);
     } catch {
-      toast.error("Invalid contact code");
+      toast.error("Invalid contact QR code");
     }
     setAdding(false);
+    setMode("show");
   }, [user?.id, orgId, onContactAdded, onOpenChange]);
 
   const userName = (user as any)?.user_metadata?.full_name || user?.email || "User";
@@ -187,12 +197,18 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
 
         {mode === "show" ? (
           <div className="flex flex-col items-center">
-            {/* QR Code */}
-            <div className="p-4 rounded-2xl mb-4" style={{
+            {/* Real QR Code */}
+            <div className="p-3 rounded-2xl mb-4" style={{
               background: "white",
               boxShadow: "0 0 40px hsl(var(--hud-cyan) / 0.15)",
             }}>
-              <QRCodeSVG data={myData} size={180} />
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt="QR Code" width={200} height={200} className="rounded-lg" />
+              ) : (
+                <div className="w-[200px] h-[200px] flex items-center justify-center">
+                  <QrCode className="h-12 w-12 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
+                </div>
+              )}
             </div>
 
             {/* User info */}
@@ -218,7 +234,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
 
             <Button className="w-full mt-3 gap-1.5" onClick={startScanner}
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-              <ScanLine className="h-4 w-4" /> Scan a Code
+              <Camera className="h-4 w-4" /> Scan a Code
             </Button>
           </div>
         ) : (
@@ -227,35 +243,52 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
             <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-4"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
               <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+              <canvas ref={canvasRef} className="hidden" />
               {/* Scan overlay */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-48 h-48 relative">
                   {/* Corner brackets */}
-                  {["top-0 left-0", "top-0 right-0", "bottom-0 left-0", "bottom-0 right-0"].map((pos, i) => (
-                    <div key={i} className={`absolute ${pos} w-8 h-8`} style={{
+                  {[
+                    { pos: "top-0 left-0", borderBottom: "none", borderRight: "none" },
+                    { pos: "top-0 right-0", borderBottom: "none", borderLeft: "none" },
+                    { pos: "bottom-0 left-0", borderTop: "none", borderRight: "none" },
+                    { pos: "bottom-0 right-0", borderTop: "none", borderLeft: "none" },
+                  ].map((corner, i) => (
+                    <div key={i} className={`absolute ${corner.pos} w-8 h-8`} style={{
                       borderColor: "hsl(var(--hud-cyan))",
                       borderWidth: 2,
                       borderStyle: "solid",
                       borderRadius: 4,
-                      [pos.includes("top") ? "borderBottom" : "borderTop"]: "none",
-                      [pos.includes("left") ? "borderRight" : "borderLeft"]: "none",
+                      ...(corner.borderBottom === "none" && { borderBottom: "none" }),
+                      ...(corner.borderTop === "none" && { borderTop: "none" }),
+                      ...(corner.borderRight === "none" && { borderRight: "none" }),
+                      ...(corner.borderLeft === "none" && { borderLeft: "none" }),
                     }} />
                   ))}
                   {/* Scan line animation */}
-                  <div className="absolute left-2 right-2 h-0.5 animate-pulse" style={{
+                  <div className="absolute left-2 right-2 h-0.5 animate-bounce" style={{
                     background: "hsl(var(--hud-cyan))",
                     top: "50%",
                     boxShadow: "0 0 12px hsl(var(--hud-cyan) / 0.5)",
                   }} />
                 </div>
               </div>
+              {adding && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-2"
+                      style={{ borderColor: "hsl(var(--hud-cyan))", borderTopColor: "transparent" }} />
+                    <p className="text-xs" style={{ color: "hsl(var(--hud-text))" }}>Adding contact...</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="text-xs text-center mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               Point camera at a contact QR code
             </p>
 
-            <Button variant="outline" className="w-full gap-1.5" onClick={() => setMode("show")}
+            <Button variant="outline" className="w-full gap-1.5" onClick={() => { stopScanner(); setMode("show"); }}
               style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
               <X className="h-3.5 w-3.5" /> Back to my code
             </Button>

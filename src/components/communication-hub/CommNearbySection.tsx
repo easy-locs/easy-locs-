@@ -182,8 +182,15 @@ export default function CommNearbySection() {
     setTimeout(() => setScanning(false), 1200);
   }, [lat, lng, radius, typeFilter, user?.id]);
 
+  // Auto-load and poll for live updates (Deliveroo-style)
   useEffect(() => {
-    if (lat && lng) loadNearby();
+    if (!lat || !lng) return;
+    loadNearby();
+    // Poll every 10s for live feel
+    const pollInterval = setInterval(() => {
+      loadNearby();
+    }, 10000);
+    return () => clearInterval(pollInterval);
   }, [lat, lng, loadNearby]);
 
   // Haversine formula

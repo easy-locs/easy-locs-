@@ -92,6 +92,10 @@ export function startRingtone(type: RingtoneType = "audio") {
 
   try {
     const ctx = getAudioContext();
+    // Ensure AudioContext is resumed (required after user gesture on many browsers)
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
     const playPattern = type === "video" ? playVideoRingPattern : playAudioRingPattern;
 
     // Play immediately
