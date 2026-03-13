@@ -190,16 +190,18 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     if (!user?.id) return;
     setAdding(true);
     try {
-      // Handle URL format: extract base64 data param
+      // Handle URL/base64/json formats robustly
       let contactData: string;
-      if (raw.includes("/add-contact?data=")) {
-        const url = new URL(raw);
+      const trimmed = raw.trim();
+      if (trimmed.includes("/add-contact?data=") || /^https?:\/\//i.test(trimmed)) {
+        const url = new URL(trimmed);
         const b64 = url.searchParams.get("data");
         if (!b64) throw new Error("No data in URL");
-        contactData = atob(b64);
+        contactData = fromBase64Utf8(b64);
+      } else if (trimmed.startsWith("{")) {
+        contactData = trimmed;
       } else {
-        // Try direct JSON
-        contactData = raw;
+        contactData = fromBase64Utf8(trimmed);
       }
 
       const parsed = JSON.parse(contactData);
