@@ -177,6 +177,8 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (error || !callId) {
           console.error("Failed to create call:", error);
+          const errMsg = error?.message || "Could not start call";
+          toast.error(errMsg.includes("Unauthorized") ? "You cannot call your own organization" : errMsg);
           return;
         }
 
