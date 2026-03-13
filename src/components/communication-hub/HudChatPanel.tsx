@@ -640,6 +640,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                           {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                         </span>
                       )}
+                      <OrbitEncryptedIndicator content={msg.content} encrypted={(msg as any).encrypted} />
                     </div>
                   </div>
                 </motion.div>
