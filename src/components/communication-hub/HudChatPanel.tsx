@@ -396,11 +396,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
+        // Remove optimistic message on failure
+        setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
         toast.error("Failed to send message: " + insertErr.message);
+        setNewMessage(msgText); // Restore message for retry
         return;
       }
 
-      setNewMessage("");
+      // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
 
       const recipientEmail = normalizeEmail(thread.email);
