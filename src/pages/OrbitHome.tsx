@@ -49,9 +49,15 @@ export default function OrbitHome() {
   useOrbitCallSync();
   const navigate = useNavigate();
 
+  // Initial load + periodic refresh every 60s
   useEffect(() => {
-    if (user?.id) engine.refresh(user.id, orgId || undefined);
-  }, [user?.id]);
+    if (!user?.id) return;
+    engine.refresh(user.id, orgId || undefined);
+    const interval = setInterval(() => {
+      engine.refresh(user.id, orgId || undefined);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [user?.id, orgId]);
 
   // Smart contextual message for the Orb
   const orbMessage = useMemo(() => {
