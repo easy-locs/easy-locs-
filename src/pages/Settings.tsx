@@ -360,7 +360,7 @@ const Settings = () => {
         </div>
 
         {/* White-label Branding */}
-        <div className="ui-card">
+        <div ref={el => { sectionRefs.current["branding"] = el; }} className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.branding_title") || "White-label / Branding"}</h2>
