@@ -383,7 +383,7 @@ export default function CommGroupsSection() {
                   </div>
                   {isAdmin && m.user_id !== user?.id && (
                     <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-full hover:bg-[hsl(var(--hud-surface)/0.5)]">
-                      <Trash2 className="h-3.5 w-3.5" style={{ color: "hsl(0, 70%, 60%)" }} />
+                      <Trash2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-danger))" }} />
                     </button>
                   )}
                 </div>
