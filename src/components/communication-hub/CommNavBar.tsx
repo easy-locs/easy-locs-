@@ -1,19 +1,19 @@
 /**
  * CommNavBar — Internal communication navigation.
  * Clean, native-feeling bottom tabs (mobile) / slim sidebar (desktop).
- * Now includes Groups tab.
+ * Includes Groups + Nearby tabs.
  */
-import { MessageCircle, Phone, Users, CreditCard, UsersRound } from "lucide-react";
+import { MessageCircle, Phone, Users, CreditCard, UsersRound, Radar } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "meetings" | "files" | "settings";
+export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "nearby" | "meetings" | "files" | "settings";
 
 const TABS: { id: CommSection; icon: typeof MessageCircle; label: string }[] = [
   { id: "chats", icon: MessageCircle, label: "Chats" },
   { id: "calls", icon: Phone, label: "Calls" },
+  { id: "nearby", icon: Radar, label: "Nearby" },
   { id: "contacts", icon: Users, label: "Contacts" },
   { id: "payments", icon: CreditCard, label: "Pay" },
-  { id: "groups", icon: UsersRound, label: "Groups" },
 ];
 
 interface Props {
