@@ -11,7 +11,7 @@ import { PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import {
   Radar, MapPin, Search, MessageCircle, Phone, Navigation,
   Briefcase, Home, ShoppingBag, ChevronDown, User, Eye, EyeOff,
-  Shield, Clock, CheckCircle2, Users,
+  Shield, Clock, CheckCircle2, Users, Map, List,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
