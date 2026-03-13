@@ -24,11 +24,12 @@ import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
 import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
+import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
 
-const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings"];
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings", "you"];
 
 const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
@@ -132,6 +133,8 @@ const CommunicationCenter = () => {
         return <CommPlaceholderSection section={activeSection} />;
       case "settings":
         return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
+      case "you":
+        return <OrbitAccountSection />;
       default: return null;
     }
   };
