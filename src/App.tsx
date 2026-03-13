@@ -173,22 +173,6 @@ const seoPublicPrefixes = [
   "/explore", "/properties",
 ];
 
-const RouteAwareAssistant = () => {
-  const { pathname } = useLocation();
-  const hideAssistant =
-    pathname === "/" ||
-    pathname === "/guest" ||
-    pathname.startsWith("/r/") ||
-    pathname.startsWith("/dashboard/communication") ||
-    seoPublicPrefixes.some((prefix) => pathname.startsWith(prefix));
-
-  if (hideAssistant) return null;
-  return (
-    <Suspense fallback={null}>
-      <FloatingAIAssistant />
-    </Suspense>
-  );
-};
 
 /** Registers device session + suspicious login detection */
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
