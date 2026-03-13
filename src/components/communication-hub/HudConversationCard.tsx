@@ -68,7 +68,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
               className="text-[12px] tabular-nums shrink-0"
               style={{
                 color: hasUnread
-                  ? "hsl(var(--hud-cyan))"
+                  ? "hsl(var(--primary))"
                   : "hsl(var(--muted-foreground))",
               }}
             >
