@@ -79,6 +79,7 @@ interface StoredIdentity {
   privateKeyJwk: JsonWebKey;
   publicKeyBase64: string;
   createdAt: number;
+  curve?: string;
 }
 
 /**
@@ -94,7 +95,7 @@ export async function getOrCreateIdentityKeys(userId: string): Promise<{
     return { publicKeyBase64: existing.publicKeyBase64, isNew: false };
   }
 
-  // Generate new identity key pair
+  // Generate new identity key pair (P-521)
   const keyPair = await generateIdentityKeyPair();
   const publicKeyBase64 = await exportPublicKey(keyPair.publicKey);
   const privateKeyJwk = await exportPrivateKey(keyPair.privateKey);
@@ -103,6 +104,7 @@ export async function getOrCreateIdentityKeys(userId: string): Promise<{
     privateKeyJwk,
     publicKeyBase64,
     createdAt: Date.now(),
+    curve: "P-521",
   } satisfies StoredIdentity);
 
   return { publicKeyBase64, isNew: true };
