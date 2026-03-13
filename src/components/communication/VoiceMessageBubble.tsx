@@ -4,7 +4,6 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Mic } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface Props {
   url: string;
@@ -80,15 +79,21 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
     if (animRef.current) cancelAnimationFrame(animRef.current);
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const seekFromPosition = (clientX: number) => {
     const audio = audioRef.current;
     const container = waveContainerRef.current;
     if (!audio || !container || !audio.duration) return;
     const rect = container.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     audio.currentTime = x * audio.duration;
     setProgress(x * 100);
     setCurrentTime(audio.currentTime);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => seekFromPosition(e.clientX);
+  const handleTouchSeek = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    seekFromPosition(e.touches[0].clientX);
   };
 
   const formatDur = (s: number) => {
@@ -101,12 +106,7 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
   const isSending = status === "sending";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2 }}
-      className="flex items-center gap-3 py-1 min-w-[220px] max-w-[320px]"
-    >
+    <div className="flex items-center gap-3 py-1 min-w-[220px] max-w-[320px] animate-scale-in">
       <audio
         ref={audioRef}
         src={url}
@@ -148,14 +148,14 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
           ref={waveContainerRef}
           className="flex items-end gap-[2px] h-7 cursor-pointer"
           onClick={handleSeek}
+          onTouchStart={handleTouchSeek}
         >
           {waveform.map((h, i) => {
             const barProgress = (i / bars) * 100;
             const filled = barProgress <= progress;
-            const isActive = playing && Math.abs(barProgress - progress) < (100 / bars);
 
             return (
-              <motion.div
+              <div
                 key={i}
                 className="rounded-full transition-colors duration-100"
                 style={{
@@ -168,8 +168,6 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
                       ? "hsl(var(--hud-cyan) / 0.2)"
                       : "hsl(var(--hud-text-dim) / 0.25)",
                 }}
-                animate={isActive ? { scaleY: [1, 1.3, 1] } : {}}
-                transition={{ duration: 0.3 }}
               />
             );
           })}
@@ -200,6 +198,6 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
