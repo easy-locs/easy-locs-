@@ -364,13 +364,13 @@ export function useConversationThreads() {
             else if (m.context_type === "tenant") key = `tenant-${m.context_id}`;
             else if (m.context_type === "direct") {
               for (const [k, t] of threadMap) {
-                if (t.conversationType === "direct" && (t.contextId === m.context_id || t.threadId === m.context_id)) {
+                if (t.conversationType === "direct" && (t.contextId === m.context_id || t.threadId === m.thread_id)) {
                   key = k; break;
                 }
               }
             }
             else if (m.context_type === "guest_session") key = `guest-${m.context_id}`;
-            else key = `booking-${m.context_id}`;
+            else if (["marketplace_booking", "concierge_booking", "seasonal_booking", "booking"].includes(m.context_type)) key = `booking-${m.context_id}`;
           } else if (m.guest_session_id) {
             key = `guest-${m.guest_session_id}`;
           } else if (m.booking_id) {
