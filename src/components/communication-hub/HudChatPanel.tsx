@@ -788,7 +788,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     )}
                     <div className="flex items-center justify-end gap-1.5 mt-1.5 opacity-50">
                       <p className="text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</p>
-                      {isMe && (
+                      {isMe && pendingOffline.some(p => p.id === msg.id) ? (
+                        <span className="flex items-center gap-0.5" style={{ color: "hsl(var(--hud-warning))" }}>
+                          <WifiOff className="h-2.5 w-2.5" />
+                          <span className="text-[9px]">queued</span>
+                        </span>
+                      ) : isMe && (
                         <span style={{ color: msg.read ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))" }}>
                           {msg.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                         </span>
