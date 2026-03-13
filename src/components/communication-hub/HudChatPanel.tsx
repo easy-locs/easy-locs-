@@ -467,7 +467,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             <div className="flex items-center gap-1 shrink-0">
               {/* Disappearing messages */}
               <DisappearingMessagesToggle
-                value={disappearTTL}
+                threadId={thread?.id || ""}
+                currentTTL={disappearTTL}
                 onChange={setDisappearTTL}
               />
               <Select value={convStatus} onValueChange={updateConversationStatus}>
