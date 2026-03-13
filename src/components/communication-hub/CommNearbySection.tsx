@@ -316,7 +316,7 @@ export default function CommNearbySection() {
         </div>
 
         {/* Filters */}
-        <ScrollableFilterBar
+        <ScrollableFilterBar<NearbyFilter>
           options={TYPE_FILTERS.map(f => ({ id: f.id, label: f.label, icon: f.icon }))}
           value={typeFilter}
           onChange={setTypeFilter}
