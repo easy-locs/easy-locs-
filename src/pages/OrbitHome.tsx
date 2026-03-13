@@ -241,6 +241,11 @@ export default function OrbitHome() {
         </div>
       </div>
 
+      {/* ── Permissions Diagnostic ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "520ms" }}>
+        <OrbitPermissionsDiag />
+      </div>
+
       {/* ── System Status Bar ── */}
       <div
         className="w-full max-w-md flex items-center justify-center gap-5 py-3 px-4 rounded-2xl mt-1 animate-fade-in"
