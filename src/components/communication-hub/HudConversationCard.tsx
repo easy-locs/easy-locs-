@@ -80,8 +80,14 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         {/* Row 2: Context tag (if applicable) */}
         {contextLabel && (
           <span
-            className="text-[12px] font-medium truncate block"
-            style={{ color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))" }}
+            className="text-[12px] font-medium block"
+            title={contextLabel}
+            style={{
+              color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
           >
             <span className="mr-1">{typeConfig?.emoji}</span>
             {contextLabel}
