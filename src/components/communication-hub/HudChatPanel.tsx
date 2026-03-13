@@ -344,7 +344,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const fakeMsg: ChatMessage = {
         id: queuedId,
         content: newMessage.trim(),
-        sender_id: user.id,
+        sender_id: authUserId,
         created_at: new Date().toISOString(),
         read: false,
         message_type: "user",
