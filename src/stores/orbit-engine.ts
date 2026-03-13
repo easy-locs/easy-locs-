@@ -84,9 +84,25 @@ export const useOrbitEngine = create<OrbitModuleState>((set) => ({
   refresh: async (userId: string, orgId?: string) => {
     set({ syncStatus: "syncing" });
     try {
+      // messages: count unread where user is NOT the sender (no recipient_id column)
+      const messagesQuery = (supabase as any)
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("read", false)
+        .neq("sender_id", userId);
+      if (orgId) messagesQuery.eq("org_id", orgId);
+
+      // call_logs: missed calls where user's org was called (callee_org_id)
+      const callsQuery = (supabase as any)
+        .from("call_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "missed")
+        .gt("created_at", new Date(Date.now() - 7 * 86400000).toISOString());
+      if (orgId) callsQuery.eq("callee_org_id", orgId);
+
       const [messagesRes, callsRes, notifRes, listingsRes, bookingsRes] = await Promise.all([
-        countRows("messages", { recipient_id: userId, read: false }),
-        countRows("call_logs", { status: "missed", "gt:created_at": new Date(Date.now() - 7 * 86400000).toISOString() }),
+        messagesQuery.then((r: any) => r.count ?? 0),
+        callsQuery.then((r: any) => r.count ?? 0),
         countRows("notifications", { user_id: userId, read: false }),
         orgId ? countRows("public_listings", { org_id: orgId, active: true }) : 0,
         orgId ? countRows("booking_requests", { org_id: orgId, status: "pending" }) : 0,
