@@ -994,6 +994,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         open={showSafetyNumber}
         onOpenChange={setShowSafetyNumber}
       />
+
+      {/* Security Panel */}
+      <OrbitSecurityPanel
+        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
+        peerName={thread?.name || "Contact"}
+        open={showSecurityPanel}
+        onOpenChange={setShowSecurityPanel}
+      />
     </>
   );
 }
