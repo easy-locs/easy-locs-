@@ -377,7 +377,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   };
 
   const handleBookingAction = async (action: "confirm" | "cancel" | "complete") => {
-    if (!thread?.bookingId || !orgId || !user) return;
+    if (!orgId || !user) { toast.error("Workspace required"); return; }
+    if (!thread?.bookingId) { toast.error("No booking linked to this conversation"); return; }
     const statusMap = { confirm: "confirmed", cancel: "cancelled", complete: "completed" };
     const newStatus = statusMap[action];
     try {
@@ -412,7 +413,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           },
         });
       }
-    } catch (e: any) { toast.error("Error: " + e.message); }
+    } catch (e: any) { toast.error("Error: " + (e?.message || "Unknown error")); }
   };
 
   const handleSendPaymentLink = async () => {
