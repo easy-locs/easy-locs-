@@ -57,6 +57,15 @@ export default function OrbitAccountSection() {
   // Storage states
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
   const [autoDeletePeriod, setAutoDeletePeriod] = useState("off");
+  
+  // Display name mode
+  type DisplayNameMode = "real" | "username" | "custom" | "anonymous" | "hidden";
+  const [displayNameMode, setDisplayNameMode] = useState<DisplayNameMode>(
+    (localStorage.getItem("orbit_display_name_mode") as DisplayNameMode) || "real"
+  );
+  const [customDisplayName, setCustomDisplayName] = useState(
+    localStorage.getItem("orbit_custom_display_name") || ""
+  );
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
@@ -252,7 +261,60 @@ export default function OrbitAccountSection() {
     return (
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Privacy" icon={Eye} />
-        <div className="space-y-1 mt-4">
+        
+        {/* Display Name Control */}
+        <div className="mt-4 mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Display Name</p>
+          <p className="text-[11px] text-muted-foreground mb-3">Choose what name others see when you call or message them</p>
+          <div className="grid grid-cols-1 gap-1.5">
+            {[
+              { value: "real", label: "Real Name", desc: "Show your full profile name" },
+              { value: "username", label: "Username", desc: "Show your Orbit username (EL-ID)" },
+              { value: "custom", label: "Custom Name", desc: "Set a custom display name" },
+              { value: "anonymous", label: "Anonymous", desc: 'Show as "Private contact"' },
+              { value: "hidden", label: "Hidden", desc: "Only show avatar, no name" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setDisplayNameMode(opt.value as any);
+                  haptic("selection");
+                  // Persist to localStorage
+                  localStorage.setItem("orbit_display_name_mode", opt.value);
+                }}
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-left transition-colors"
+                style={{
+                  background: displayNameMode === opt.value ? "hsl(var(--primary) / 0.08)" : "transparent",
+                  border: `1px solid ${displayNameMode === opt.value ? "hsl(var(--primary) / 0.2)" : "hsl(var(--border) / 0.1)"}`,
+                }}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${displayNameMode === opt.value ? "border-primary" : "border-muted-foreground/30"}`}>
+                  {displayNameMode === opt.value && <div className="w-2 h-2 rounded-full bg-primary" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          {displayNameMode === "custom" && (
+            <div className="mt-2">
+              <Input
+                value={customDisplayName}
+                onChange={e => {
+                  setCustomDisplayName(e.target.value);
+                  localStorage.setItem("orbit_custom_display_name", e.target.value);
+                }}
+                placeholder="Enter custom name..."
+                className="bg-muted/30 text-sm"
+              />
+            </div>
+          )}
+        </div>
+        
+        <Separator className="my-3" />
+        <div className="space-y-1">
           <Row label="Last Seen" desc="Show when you were last online"><Switch checked={lastSeen} onCheckedChange={setLastSeen} /></Row>
           <Row label="Online Status" desc="Show when you're currently online"><Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} /></Row>
           <Row label="Profile Photo" desc="Who can see your profile photo"><Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} /></Row>

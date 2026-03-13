@@ -101,28 +101,54 @@ export default function InAppCallDialog({
     } finally { setIsEnding(false); }
   };
 
-  const handleToggleMute = () => { const isMuted = callManager?.toggleMute(); setMuted(!!isMuted); };
+  const handleToggleMute = useCallback(() => {
+    if (!callManager) return;
+    const isMuted = callManager.toggleMute();
+    setMuted(isMuted);
+  }, [callManager]);
 
-  const handleToggleVideo = async () => {
-    if (!localStream || !callManager) return;
-    const videoTracks = localStream.getVideoTracks();
-    if (videoTracks.length > 0) {
-      videoTracks.forEach(t => { t.enabled = !t.enabled; });
-      setVideoEnabled(videoTracks.some(t => t.enabled));
-    } else {
-      try {
-        const videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
-        });
-        const videoTrack = videoStream.getVideoTracks()[0];
-        if (videoTrack) {
-          localStream.addTrack(videoTrack);
-          setVideoEnabled(true); setIsVideo(true);
-          callManager.addVideoTrack?.(videoTrack);
-        }
-      } catch {}
+  const handleToggleVideo = useCallback(async () => {
+    if (!callManager) return;
+    
+    // If we have video tracks, toggle them
+    if (localStream) {
+      const videoTracks = localStream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        const newEnabled = !videoTracks[0].enabled;
+        videoTracks.forEach(t => { t.enabled = newEnabled; });
+        setVideoEnabled(newEnabled);
+        return;
+      }
     }
-  };
+    
+    // No video tracks — request camera access
+    try {
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (videoTrack && localStream) {
+        localStream.addTrack(videoTrack);
+        setVideoEnabled(true);
+        setIsVideo(true);
+        callManager.addVideoTrack?.(videoTrack);
+      } else if (videoTrack) {
+        // No localStream yet — create one
+        const newStream = new MediaStream([videoTrack]);
+        setLocalStream(newStream);
+        setVideoEnabled(true);
+        setIsVideo(true);
+        callManager.addVideoTrack?.(videoTrack);
+      }
+    } catch (err) {
+      console.error("[CallUI] Camera access failed:", err);
+      // Don't silently fail — show user feedback
+      const msg = err instanceof DOMException && err.name === "NotAllowedError"
+        ? "Camera permission denied. Please allow camera access in your browser settings."
+        : "Could not access camera. Please check your device settings.";
+      setError(msg);
+    }
+  }, [callManager, localStream, facingMode]);
 
   const handleFlipCamera = async () => {
     if (!localStream) return;
@@ -139,28 +165,41 @@ export default function InAppCallDialog({
     } catch {}
   };
 
-  const handleToggleSpeaker = () => {
+  const handleToggleSpeaker = useCallback(() => {
     const newState = !speakerOn;
     setSpeakerOn(newState);
     const audioEl = remoteAudioRef.current;
-    if (audioEl) {
-      audioEl.volume = 1; audioEl.muted = false;
-      if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
-        (audioEl as any).setSinkId(newState ? "default" : "communications").catch(() => {
-          (audioEl as any).setSinkId("default").catch(() => {});
-        });
-      }
+    if (!audioEl) return;
+    
+    audioEl.volume = 1;
+    audioEl.muted = false;
+    
+    // Method 1: setSinkId (Chrome/Edge desktop — best support)
+    if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+      const sinkId = newState ? "default" : "communications";
+      (audioEl as any).setSinkId(sinkId).catch(() => {
+        // Fallback to default if "communications" is not available
+        if (!newState) (audioEl as any).setSinkId("default").catch(() => {});
+      });
     }
+    
+    // Method 2: AudioSession API (Safari/iOS — emerging standard)
     const nav = navigator as any;
     if (nav?.audioSession && typeof nav.audioSession === "object") {
-      try { nav.audioSession.type = newState ? "playback" : "play-and-record"; } catch {}
+      try {
+        nav.audioSession.type = newState ? "playback" : "play-and-record";
+      } catch {}
     }
+    
+    // Method 3: AudioContext setSinkId (newer browsers)
     try {
       const audioCtx = new AudioContext();
-      if ((audioCtx as any).setSinkId) (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      if ((audioCtx as any).setSinkId) {
+        (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      }
       audioCtx.close();
     } catch {}
-  };
+  }, [speakerOn]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const isNetworkBlocked = status === "network_blocked" || status === "failed";
