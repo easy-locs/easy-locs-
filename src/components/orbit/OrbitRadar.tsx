@@ -1,15 +1,16 @@
 /**
- * OrbitRadar — Global discovery engine with 4 radar modes.
- * Satellite-style scanning UI with real-time markers.
- * Modes: Local, City, Global, Business
+ * OrbitRadar — Signature global discovery engine.
+ * Tactical satellite-inspired UI with 4 scan modes.
+ * Real data integration via search_nearby_items RPC + user_presence.
+ * Privacy-first: invisible mode, approximate location, contact controls.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Radar, MapPin, Navigation, Briefcase, Globe2, Building2,
   MessageCircle, Phone, Eye, ExternalLink, X, Search,
-  Filter, ChevronDown, EyeOff, Crosshair, Zap,
-  User, Home, ShoppingBag, CheckCircle2,
+  Filter, EyeOff, Crosshair, Zap, Video,
+  User, Home, ShoppingBag, CheckCircle2, RefreshCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,15 +20,15 @@ import { haptic } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 // ─── Types ─────────────────────────────────────────────────
 
 type RadarMode = "local" | "city" | "global" | "business";
 
-interface RadarMarker {
+interface RadarSignal {
   id: string;
   type: "user" | "listing" | "service" | "activity";
   title: string;
@@ -44,65 +45,32 @@ interface RadarMarker {
   online?: boolean;
 }
 
-interface RadarConfig {
+interface ModeConfig {
   label: string;
   icon: typeof Radar;
-  description: string;
-  minRadius: number;
-  maxRadius: number;
-  defaultRadius: number;
+  radius: number;
+  desc: string;
 }
 
-const RADAR_MODES: Record<RadarMode, RadarConfig> = {
-  local: {
-    label: "Local",
-    icon: Crosshair,
-    description: "100m – 10km around you",
-    minRadius: 0.1,
-    maxRadius: 10,
-    defaultRadius: 5,
-  },
-  city: {
-    label: "City",
-    icon: Building2,
-    description: "Full city scan",
-    minRadius: 10,
-    maxRadius: 50,
-    defaultRadius: 25,
-  },
-  global: {
-    label: "Global",
-    icon: Globe2,
-    description: "Worldwide activity clusters",
-    minRadius: 50,
-    maxRadius: 20000,
-    defaultRadius: 500,
-  },
-  business: {
-    label: "Business",
-    icon: Briefcase,
-    description: "Professionals available now",
-    minRadius: 0.1,
-    maxRadius: 50,
-    defaultRadius: 10,
-  },
+const MODES: Record<RadarMode, ModeConfig> = {
+  local:    { label: "Local",    icon: Crosshair,  radius: 10,   desc: "100m – 10km" },
+  city:     { label: "City",     icon: Building2,   radius: 50,   desc: "City-wide" },
+  global:   { label: "Global",   icon: Globe2,      radius: 500,  desc: "Worldwide" },
+  business: { label: "Business", icon: Briefcase,   radius: 25,   desc: "Pros now" },
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  user: "hsl(var(--hud-cyan))",
-  listing: "hsl(var(--hud-success))",
-  service: "hsl(var(--hud-purple))",
-  activity: "hsl(var(--hud-warning))",
+const SIGNAL_COLORS: Record<string, string> = {
+  user:     "var(--hud-cyan)",
+  listing:  "var(--hud-success)",
+  service:  "var(--hud-purple)",
+  activity: "var(--hud-warning)",
 };
 
-const TYPE_ICONS: Record<string, typeof User> = {
-  user: User,
-  listing: Home,
-  service: ShoppingBag,
-  activity: Zap,
+const SIGNAL_ICONS: Record<string, typeof User> = {
+  user: User, listing: Home, service: ShoppingBag, activity: Zap,
 };
 
-// ─── Component ─────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────
 
 export default function OrbitRadar() {
   const { user } = useAuth();
@@ -110,41 +78,38 @@ export default function OrbitRadar() {
   const { lat, lng, loading: geoLoading, error: geoError, requestLocation } = useGeolocation();
 
   const [mode, setMode] = useState<RadarMode>("local");
-  const [markers, setMarkers] = useState<RadarMarker[]>([]);
+  const [signals, setSignals] = useState<RadarSignal[]>([]);
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
-  const [selectedMarker, setSelectedMarker] = useState<RadarMarker | null>(null);
+  const [selected, setSelected] = useState<RadarSignal | null>(null);
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [typeFilters, setTypeFilters] = useState<Set<string>>(new Set(["user", "listing", "service", "activity"]));
+  const [activeTypes, setActiveTypes] = useState(new Set(["user", "listing", "service", "activity"]));
   const [invisibleMode, setInvisibleMode] = useState(false);
   const [approxLocation, setApproxLocation] = useState(false);
-  const sweepAngleRef = useRef(0);
-  const radarRef = useRef<HTMLDivElement>(null);
 
-  const config = RADAR_MODES[mode];
+  const config = MODES[mode];
 
-  // ─── Load markers ───────────────────────────────────────
+  // ─── Data Loading ───────────────────────────────────────
 
-  const loadMarkers = useCallback(async () => {
+  const loadSignals = useCallback(async () => {
     if (!lat || !lng) return;
     setLoading(true);
     setScanning(true);
 
-    const radius = config.defaultRadius;
-    const allMarkers: RadarMarker[] = [];
+    const radius = config.radius;
+    const all: RadarSignal[] = [];
 
     try {
-      // Load nearby items (listings/services)
-      if (typeFilters.has("listing") || typeFilters.has("service")) {
+      // Items (listings + services) via RPC
+      if (activeTypes.has("listing") || activeTypes.has("service")) {
         const { data: items } = await supabase.rpc("search_nearby_items", {
-          _lat: lat, _lng: lng, _radius_km: radius,
-          _item_type: null,
+          _lat: lat, _lng: lng, _radius_km: radius, _item_type: null,
         });
         if (items) {
           (items as any[]).forEach(item => {
-            allMarkers.push({
+            all.push({
               id: item.item_id,
               type: item.item_type === "real_estate" ? "listing" : "service",
               title: item.title,
@@ -152,18 +117,16 @@ export default function OrbitRadar() {
               photo: item.photo_url,
               lat: item.lat, lng: item.lng,
               distance_km: item.distance_km,
-              price: item.price,
-              currency: item.currency,
-              category: item.category,
-              status: item.status,
+              price: item.price, currency: item.currency,
+              category: item.category, status: item.status,
             });
           });
         }
       }
 
-      // Load nearby users
-      if (typeFilters.has("user")) {
-        const query = supabase
+      // Users via presence table
+      if (activeTypes.has("user")) {
+        const q = supabase
           .from("user_presence")
           .select("user_id, display_name, avatar_url, status, professional_category, verified, lat, lng")
           .eq("visible_on_nearby", true)
@@ -172,19 +135,17 @@ export default function OrbitRadar() {
           .not("lng", "is", null)
           .neq("user_id", user?.id || "");
 
-        // Business mode: only professionals
         if (mode === "business") {
-          query.not("professional_category", "is", null);
+          q.not("professional_category", "is", null);
         }
 
-        const { data: users } = await query;
+        const { data: users } = await q;
         if (users) {
           (users as any[]).forEach(u => {
             const dist = haversine(lat, lng, u.lat, u.lng);
             if (dist <= radius) {
-              allMarkers.push({
-                id: u.user_id,
-                type: "user",
+              all.push({
+                id: u.user_id, type: "user",
                 title: u.display_name || "User",
                 subtitle: u.professional_category || undefined,
                 photo: u.avatar_url,
@@ -199,104 +160,118 @@ export default function OrbitRadar() {
         }
       }
 
-      allMarkers.sort((a, b) => a.distance_km - b.distance_km);
-      setMarkers(allMarkers);
+      all.sort((a, b) => a.distance_km - b.distance_km);
+      setSignals(all);
     } catch (err) {
-      console.error("[Radar] Load failed:", err);
+      console.error("[Radar] Scan failed:", err);
     }
 
     setLoading(false);
     setTimeout(() => setScanning(false), 1500);
-  }, [lat, lng, mode, config.defaultRadius, typeFilters, user?.id]);
+  }, [lat, lng, mode, config.radius, activeTypes, user?.id]);
 
   useEffect(() => {
     if (!lat || !lng) return;
-    loadMarkers();
-    const poll = setInterval(loadMarkers, 15000);
+    loadSignals();
+    const poll = setInterval(loadSignals, 15000);
     return () => clearInterval(poll);
-  }, [loadMarkers, lat, lng]);
+  }, [loadSignals, lat, lng]);
 
   // Auto-request location
   useEffect(() => {
     if (!lat && !lng && !geoLoading && !geoError) requestLocation();
   }, [lat, lng, geoLoading, geoError, requestLocation]);
 
-  // Filter markers
-  const filtered = markers.filter(m => {
-    if (!typeFilters.has(m.type)) return false;
+  // Filter
+  const filtered = signals.filter(s => {
+    if (!activeTypes.has(s.type)) return false;
     if (search) {
       const q = search.toLowerCase();
-      return m.title.toLowerCase().includes(q) ||
-        (m.subtitle || "").toLowerCase().includes(q) ||
-        (m.category || "").toLowerCase().includes(q);
+      return s.title.toLowerCase().includes(q) || (s.subtitle || "").toLowerCase().includes(q) || (s.category || "").toLowerCase().includes(q);
     }
     return true;
   });
 
-  // SVG radar dimensions
-  const size = 320;
+  // ─── Radar SVG Layout ──────────────────────────────────
+
+  const size = 300;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = 140;
+  const maxR = 130;
 
-  // Convert marker to SVG position
-  const markerToSvg = (marker: RadarMarker) => {
-    const normalizedDist = Math.min(marker.distance_km / config.defaultRadius, 1);
-    const r = normalizedDist * maxR;
-    // Use actual bearing for position
-    const bearing = getBearing(lat!, lng!, marker.lat, marker.lng);
+  const signalToPos = (s: RadarSignal) => {
+    const norm = Math.min(s.distance_km / config.radius, 1);
+    const r = norm * maxR;
+    const bearing = getBearing(lat!, lng!, s.lat, s.lng);
     const rad = (bearing - 90) * Math.PI / 180;
-    return {
-      x: cx + Math.cos(rad) * r,
-      y: cy + Math.sin(rad) * r,
-    };
+    return { x: cx + Math.cos(rad) * r, y: cy + Math.sin(rad) * r };
   };
 
-  // ─── No location state ───────────────────────────────────
+  // ─── No Location ──────────────────────────────────────
 
   if (!lat || !lng) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-6" style={{ background: "hsl(var(--hud-bg))" }}>
-        <RadarScannerEmpty loading={geoLoading} />
+        <div className="relative w-36 h-36 mb-4">
+          <svg viewBox="0 0 160 160" className="w-full h-full">
+            {[60, 45, 30, 15].map((r, i) => (
+              <circle key={i} cx="80" cy="80" r={r} fill="none"
+                stroke="hsl(var(--hud-cyan))" strokeWidth="0.5"
+                opacity={0.06 + i * 0.03} strokeDasharray={i < 2 ? "2 6" : "none"} />
+            ))}
+            <circle cx="80" cy="80" r="3" fill="hsl(var(--hud-cyan))" opacity="0.6">
+              <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" />
+            </circle>
+            {geoLoading && (
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 80 80" to="360 80 80" dur="2s" repeatCount="indefinite" />
+                <line x1="80" y1="80" x2="140" y2="80" stroke="hsl(var(--hud-cyan))" strokeWidth="1" opacity="0.25" />
+                <path d="M 80 80 L 140 80 A 60 60 0 0 1 131.96 110 Z" fill="hsl(var(--hud-cyan))" opacity="0.05" />
+              </g>
+            )}
+          </svg>
+        </div>
         {geoError ? (
           <>
-            <p className="text-sm font-medium mt-4 mb-1" style={{ color: "hsl(var(--hud-text))" }}>Location Required</p>
-            <p className="text-xs text-center mb-4" style={{ color: "hsl(var(--hud-text-dim))" }}>{geoError}</p>
-            <Button size="sm" onClick={requestLocation} className="gap-1.5" style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+            <p className="text-sm font-semibold mb-1" style={{ color: "hsl(var(--hud-text))" }}>Location Required</p>
+            <p className="text-[11px] text-center mb-4 max-w-[240px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{geoError}</p>
+            <Button size="sm" onClick={requestLocation} className="gap-1.5"
+              style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
               <Navigation className="h-3.5 w-3.5" /> Enable Location
             </Button>
           </>
         ) : (
-          <p className="text-sm mt-4" style={{ color: "hsl(var(--hud-text-dim))" }}>Acquiring position…</p>
+          <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Acquiring position…</p>
         )}
       </div>
     );
   }
 
+  // ─── Main Render ──────────────────────────────────────
+
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
+
       {/* ═══ Mode Selector ═══ */}
-      <div className="px-4 pt-3 pb-1 shrink-0">
-        <div className="flex items-center gap-1.5 rounded-xl p-1" style={{
+      <div className="px-3 pt-3 pb-1 shrink-0">
+        <div className="flex gap-1 rounded-xl p-1" style={{
           background: "hsl(var(--hud-surface))",
-          border: "1px solid hsl(var(--hud-border) / 0.1)",
+          border: "1px solid hsl(var(--hud-border) / 0.08)",
         }}>
-          {(Object.keys(RADAR_MODES) as RadarMode[]).map(m => {
-            const cfg = RADAR_MODES[m];
+          {(Object.keys(MODES) as RadarMode[]).map(m => {
+            const cfg = MODES[m];
             const Icon = cfg.icon;
             const active = mode === m;
             return (
-              <button
-                key={m}
+              <button key={m}
                 onClick={() => { setMode(m); haptic("selection"); }}
-                className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all"
+                className="flex-1 flex flex-col items-center py-2 rounded-lg transition-all"
                 style={{
-                  background: active ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
-                  color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
-                }}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{cfg.label}</span>
+                  background: active ? "hsl(var(--hud-cyan) / 0.1)" : "transparent",
+                  color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
+                }}>
+                <Icon className="h-4 w-4 mb-0.5" />
+                <span className="text-[10px] font-semibold">{cfg.label}</span>
               </button>
             );
           })}
@@ -304,58 +279,47 @@ export default function OrbitRadar() {
       </div>
 
       {/* ═══ Controls ═══ */}
-      <div className="px-4 py-2 flex items-center gap-2 shrink-0">
+      <div className="px-3 py-1.5 flex items-center gap-1.5 shrink-0">
         <div className="flex-1 relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search radar…"
-            className="pl-8 h-8 text-xs border-0"
-            style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-          />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+            className="pl-7 h-7 text-[11px] border-0 rounded-lg"
+            style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
         <button onClick={() => { setShowFilters(!showFilters); haptic("light"); }}
-          className="h-8 w-8 rounded-lg flex items-center justify-center"
-          style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim))" }}>
-          <Filter className="h-3.5 w-3.5" />
+          className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: "hsl(var(--hud-surface))", color: showFilters ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+          <Filter className="h-3 w-3" />
         </button>
         <button onClick={() => { setShowPrivacy(true); haptic("light"); }}
-          className="h-8 w-8 rounded-lg flex items-center justify-center"
-          style={{ background: "hsl(var(--hud-surface))", color: invisibleMode ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim))" }}>
-          {invisibleMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: "hsl(var(--hud-surface))", color: invisibleMode ? "hsl(var(--hud-warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+          {invisibleMode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
         </button>
       </div>
 
       {/* Filter chips */}
       <AnimatePresence>
         {showFilters && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden px-4 pb-2"
-          >
-            <div className="flex flex-wrap gap-1.5">
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden px-3 pb-1">
+            <div className="flex flex-wrap gap-1">
               {(["user", "listing", "service", "activity"] as const).map(t => {
-                const Icon = TYPE_ICONS[t];
-                const active = typeFilters.has(t);
+                const Icon = SIGNAL_ICONS[t];
+                const active = activeTypes.has(t);
+                const col = `hsl(${SIGNAL_COLORS[t]})`;
                 return (
-                  <button
-                    key={t}
+                  <button key={t}
                     onClick={() => {
-                      const next = new Set(typeFilters);
+                      const next = new Set(activeTypes);
                       if (active) next.delete(t); else next.add(t);
-                      setTypeFilters(next);
-                      haptic("light");
+                      setActiveTypes(next); haptic("light");
                     }}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all"
                     style={{
-                      background: active ? `${TYPE_COLORS[t]}15` : "hsl(var(--hud-surface))",
-                      color: active ? TYPE_COLORS[t] : "hsl(var(--hud-text-dim) / 0.5)",
-                      border: `1px solid ${active ? `${TYPE_COLORS[t]}30` : "hsl(var(--hud-border) / 0.1)"}`,
-                    }}
-                  >
+                      background: active ? `${col}15` : "hsl(var(--hud-surface))",
+                      color: active ? col : "hsl(var(--hud-text-dim) / 0.4)",
+                      border: `1px solid ${active ? `${col}30` : "hsl(var(--hud-border) / 0.08)"}`,
+                    }}>
                     <Icon className="h-2.5 w-2.5" />
                     {t.charAt(0).toUpperCase() + t.slice(1)}s
                   </button>
@@ -367,133 +331,112 @@ export default function OrbitRadar() {
       </AnimatePresence>
 
       {/* ═══ Radar Visualization ═══ */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-0" ref={radarRef}>
+      <div className="flex-shrink-0 flex items-center justify-center px-4 py-2">
         <div className="relative" style={{ width: size, height: size, maxWidth: "100%" }}>
           <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full">
             <defs>
-              <filter id="radarGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-              <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+              <filter id="rGlow"><feGaussianBlur stdDeviation="2.5" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+              <linearGradient id="sweepG" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="hsl(var(--hud-cyan))" stopOpacity="0" />
-                <stop offset="70%" stopColor="hsl(var(--hud-cyan))" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="hsl(var(--hud-cyan))" stopOpacity="0.2" />
+                <stop offset="60%" stopColor="hsl(var(--hud-cyan))" stopOpacity="0.04" />
+                <stop offset="100%" stopColor="hsl(var(--hud-cyan))" stopOpacity="0.15" />
               </linearGradient>
             </defs>
 
             {/* Range rings */}
-            {[0.25, 0.5, 0.75, 1].map((frac, i) => (
-              <circle key={i} cx={cx} cy={cy} r={maxR * frac} fill="none"
-                stroke="hsl(var(--hud-cyan))" strokeWidth="0.5"
-                opacity={0.08 + i * 0.03} strokeDasharray={i < 2 ? "2 6" : "none"} />
+            {[0.25, 0.5, 0.75, 1].map((f, i) => (
+              <circle key={i} cx={cx} cy={cy} r={maxR * f} fill="none"
+                stroke="hsl(var(--hud-cyan))" strokeWidth="0.4"
+                opacity={0.06 + i * 0.02} strokeDasharray={i < 2 ? "1.5 5" : "none"} />
             ))}
 
             {/* Crosshairs */}
-            {[0, 90].map(angle => {
-              const rad = (angle * Math.PI) / 180;
-              return (
-                <line key={angle}
-                  x1={cx - Math.cos(rad) * maxR} y1={cy - Math.sin(rad) * maxR}
-                  x2={cx + Math.cos(rad) * maxR} y2={cy + Math.sin(rad) * maxR}
-                  stroke="hsl(var(--hud-cyan))" strokeWidth="0.3" opacity="0.08"
-                />
-              );
+            {[0, 90].map(a => {
+              const rad = (a * Math.PI) / 180;
+              return <line key={a} x1={cx - Math.cos(rad) * maxR} y1={cy - Math.sin(rad) * maxR}
+                x2={cx + Math.cos(rad) * maxR} y2={cy + Math.sin(rad) * maxR}
+                stroke="hsl(var(--hud-cyan))" strokeWidth="0.25" opacity="0.06" />;
             })}
 
-            {/* Rotating sweep */}
-            <g filter="url(#radarGlow)">
+            {/* Sweep */}
+            <g filter="url(#rGlow)">
               <g style={{ transformOrigin: `${cx}px ${cy}px` }}>
-                <animateTransform
-                  attributeName="transform" type="rotate"
+                <animateTransform attributeName="transform" type="rotate"
                   from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`}
-                  dur={scanning ? "2s" : "4s"} repeatCount="indefinite"
-                />
-                <path
-                  d={`M ${cx} ${cy} L ${cx + maxR} ${cy} A ${maxR} ${maxR} 0 0 1 ${cx + maxR * Math.cos(Math.PI / 6)} ${cy + maxR * Math.sin(Math.PI / 6)} Z`}
-                  fill="url(#sweepGrad)" opacity="0.6"
-                />
+                  dur={scanning ? "1.8s" : "4s"} repeatCount="indefinite" />
+                <path d={`M ${cx} ${cy} L ${cx + maxR} ${cy} A ${maxR} ${maxR} 0 0 1 ${cx + maxR * Math.cos(Math.PI / 6)} ${cy + maxR * Math.sin(Math.PI / 6)} Z`}
+                  fill="url(#sweepG)" opacity="0.7" />
                 <line x1={cx} y1={cy} x2={cx + maxR} y2={cy}
-                  stroke="hsl(var(--hud-cyan))" strokeWidth="1" opacity="0.3" />
+                  stroke="hsl(var(--hud-cyan))" strokeWidth="0.8" opacity="0.2" />
               </g>
             </g>
 
-            {/* Center dot (you) */}
-            <circle cx={cx} cy={cy} r="4" fill="hsl(var(--hud-cyan))" filter="url(#radarGlow)">
-              <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
+            {/* Center (you) */}
+            <circle cx={cx} cy={cy} r="3.5" fill="hsl(var(--hud-cyan))" filter="url(#rGlow)">
+              <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" />
             </circle>
-            <circle cx={cx} cy={cy} r="8" fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.3">
-              <animate attributeName="r" values="8;16;8" dur="3s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.3;0;0.3" dur="3s" repeatCount="indefinite" />
+            <circle cx={cx} cy={cy} r="7" fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.4" opacity="0.25">
+              <animate attributeName="r" values="7;14;7" dur="3s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.25;0;0.25" dur="3s" repeatCount="indefinite" />
             </circle>
 
-            {/* Markers */}
-            {filtered.slice(0, 50).map(marker => {
-              const pos = markerToSvg(marker);
-              const color = TYPE_COLORS[marker.type];
-              const markerR = marker.type === "user" ? 5 : 4;
+            {/* Signal markers */}
+            {filtered.slice(0, 40).map((s, idx) => {
+              const pos = signalToPos(s);
+              const col = `hsl(${SIGNAL_COLORS[s.type]})`;
+              const r = s.type === "user" ? 4.5 : 3.5;
               return (
-                <g key={marker.id} className="cursor-pointer" onClick={() => { setSelectedMarker(marker); haptic("light"); }}>
-                  {/* Pulse */}
-                  <circle cx={pos.x} cy={pos.y} r={markerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0">
-                    <animate attributeName="r" values={`${markerR};${markerR + 6};${markerR}`} dur="2.5s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite" />
+                <g key={s.id} className="cursor-pointer" onClick={() => { setSelected(s); haptic("light"); }}>
+                  <circle cx={pos.x} cy={pos.y} r={r} fill="none" stroke={col} strokeWidth="0.4" opacity="0">
+                    <animate attributeName="r" values={`${r};${r + 5};${r}`} dur={`${2 + idx * 0.1}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.3;0;0.3" dur={`${2 + idx * 0.1}s`} repeatCount="indefinite" />
                   </circle>
-                  {/* Marker dot */}
-                  <circle cx={pos.x} cy={pos.y} r={markerR} fill={color} opacity="0.9" filter="url(#radarGlow)">
-                    <animate attributeName="opacity" values="0.7;1;0.7" dur={`${1.5 + Math.random()}s`} repeatCount="indefinite" />
-                  </circle>
-                  {/* Online indicator for users */}
-                  {marker.online && (
-                    <circle cx={pos.x + markerR - 1} cy={pos.y - markerR + 1} r="2"
-                      fill="hsl(var(--hud-success))" stroke="hsl(var(--hud-bg))" strokeWidth="0.5" />
+                  <circle cx={pos.x} cy={pos.y} r={r} fill={col} opacity="0.85" filter="url(#rGlow)" />
+                  {s.online && (
+                    <circle cx={pos.x + r - 1} cy={pos.y - r + 1} r="1.5"
+                      fill="hsl(var(--hud-success))" stroke="hsl(var(--hud-bg))" strokeWidth="0.4" />
                   )}
                 </g>
               );
             })}
 
             {/* Range labels */}
-            <text x={cx + 4} y={cy - maxR * 0.25 + 3} fill="hsl(var(--hud-text-dim))" opacity="0.3" fontSize="7" fontFamily="monospace">
-              {(config.defaultRadius * 0.25).toFixed(config.defaultRadius < 1 ? 1 : 0)}km
-            </text>
-            <text x={cx + 4} y={cy - maxR * 0.5 + 3} fill="hsl(var(--hud-text-dim))" opacity="0.3" fontSize="7" fontFamily="monospace">
-              {(config.defaultRadius * 0.5).toFixed(config.defaultRadius < 1 ? 1 : 0)}km
-            </text>
-            <text x={cx + 4} y={cy - maxR + 3} fill="hsl(var(--hud-text-dim))" opacity="0.3" fontSize="7" fontFamily="monospace">
-              {config.defaultRadius}km
-            </text>
+            {[0.5, 1].map(f => (
+              <text key={f} x={cx + 3} y={cy - maxR * f + 3}
+                fill="hsl(var(--hud-text-dim))" opacity="0.2" fontSize="6" fontFamily="monospace">
+                {(config.radius * f).toFixed(config.radius < 1 ? 1 : 0)}km
+              </text>
+            ))}
           </svg>
 
           {/* Stats overlay */}
-          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-            <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }}>
-              {config.label} • {filtered.length} signals
+          <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
+            <span className="text-[8px] font-mono uppercase tracking-wider" style={{ color: "hsl(var(--hud-cyan) / 0.4)" }}>
+              {config.label} · {filtered.length} signals
             </span>
-            <button onClick={() => { loadMarkers(); haptic("medium"); }}
-              className="text-[9px] font-mono uppercase flex items-center gap-1 px-2 py-0.5 rounded-full"
-              style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
-              <Radar className="h-2.5 w-2.5" /> Scan
+            <button onClick={() => { loadSignals(); haptic("medium"); }}
+              className="text-[8px] font-mono uppercase flex items-center gap-0.5 px-1.5 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--hud-cyan) / 0.08)", color: "hsl(var(--hud-cyan))" }}>
+              <RefreshCw className={`h-2 w-2 ${scanning ? "animate-spin" : ""}`} /> Scan
             </button>
           </div>
         </div>
       </div>
 
       {/* ═══ Results List ═══ */}
-      <div className="shrink-0 max-h-[30vh] overflow-y-auto px-4 pb-4">
-        <div className="space-y-1.5">
-          {filtered.slice(0, 20).map(marker => (
-            <MarkerListItem
-              key={marker.id}
-              marker={marker}
-              onSelect={() => { setSelectedMarker(marker); haptic("light"); }}
+      <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3">
+        <div className="space-y-1">
+          {filtered.slice(0, 30).map(s => (
+            <SignalRow key={s.id} signal={s}
+              onSelect={() => { setSelected(s); haptic("light"); }}
               onMessage={() => {
                 haptic("medium");
-                navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(marker.title)}`);
+                navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(s.title)}`);
               }}
             />
           ))}
           {filtered.length === 0 && !loading && (
-            <p className="text-center text-xs py-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            <p className="text-center text-[11px] py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
               No signals in range
             </p>
           )}
@@ -502,25 +445,24 @@ export default function OrbitRadar() {
 
       {/* ═══ Preview Card ═══ */}
       <AnimatePresence>
-        {selectedMarker && (
-          <MarkerPreviewCard
-            marker={selectedMarker}
-            onClose={() => setSelectedMarker(null)}
+        {selected && (
+          <SignalPreview signal={selected}
+            onClose={() => setSelected(null)}
             onMessage={() => {
               haptic("medium");
-              navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(selectedMarker.title)}`);
-              setSelectedMarker(null);
+              navigate(`/dashboard/communication?section=chats&search=${encodeURIComponent(selected.title)}`);
+              setSelected(null);
             }}
             onCall={() => {
               haptic("medium");
               navigate(`/dashboard/communication?section=calls`);
-              setSelectedMarker(null);
+              setSelected(null);
             }}
             onOpen={() => {
               haptic("medium");
-              if (selectedMarker.type === "listing") navigate(`/dashboard/marketplace`);
-              else if (selectedMarker.type === "service") navigate(`/dashboard/marketplace`);
-              setSelectedMarker(null);
+              if (selected.type === "listing" || selected.type === "service") navigate(`/explore`);
+              else navigate(`/dashboard/communication?section=contacts`);
+              setSelected(null);
             }}
           />
         )}
@@ -528,29 +470,16 @@ export default function OrbitRadar() {
 
       {/* ═══ Privacy Dialog ═══ */}
       <Dialog open={showPrivacy} onOpenChange={setShowPrivacy}>
-        <DialogContent className="max-w-sm" style={{
-          background: "hsl(var(--hud-bg))",
-          border: "1px solid hsl(var(--hud-border) / 0.2)",
-        }}>
+        <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
-              <Eye className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
-              Radar Privacy
+              <Eye className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} /> Radar Privacy
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <PrivacyToggle
-              label="Invisible Mode"
-              description="Others cannot see you on radar"
-              checked={invisibleMode}
-              onChange={(v) => { setInvisibleMode(v); haptic("light"); }}
-            />
-            <PrivacyToggle
-              label="Approximate Location"
-              description="Share city-level position only"
-              checked={approxLocation}
-              onChange={(v) => { setApproxLocation(v); haptic("light"); }}
-            />
+            <PrivacyRow label="Invisible Mode" desc="Hide from all radar scans" checked={invisibleMode} onChange={v => { setInvisibleMode(v); haptic("light"); }} />
+            <PrivacyRow label="Approximate Location" desc="Share city-level only" checked={approxLocation} onChange={v => { setApproxLocation(v); haptic("light"); }} />
+            <PrivacyRow label="Business Visible" desc="Appear on Business radar" checked={!invisibleMode} onChange={v => { setInvisibleMode(!v); haptic("light"); }} />
           </div>
         </DialogContent>
       </Dialog>
@@ -560,190 +489,121 @@ export default function OrbitRadar() {
 
 // ─── Sub Components ────────────────────────────────────────
 
-function RadarScannerEmpty({ loading }: { loading: boolean }) {
-  const size = 160;
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = 60;
+function SignalRow({ signal: s, onSelect, onMessage }: { signal: RadarSignal; onSelect: () => void; onMessage: () => void }) {
+  const Icon = SIGNAL_ICONS[s.type];
+  const col = `hsl(${SIGNAL_COLORS[s.type]})`;
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.12" />
-      <circle cx={cx} cy={cy} r={r * 0.66} fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.1" />
-      <circle cx={cx} cy={cy} r={r * 0.33} fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.08" />
-      <circle cx={cx} cy={cy} r="3" fill="hsl(var(--hud-cyan))" opacity="0.6" />
-      {loading && (
-        <g>
-          <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`} dur="2s" repeatCount="indefinite" />
-          <line x1={cx} y1={cy} x2={cx + r} y2={cy} stroke="hsl(var(--hud-cyan))" strokeWidth="1" opacity="0.3" />
-          <path d={`M ${cx} ${cy} L ${cx + r} ${cy} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(Math.PI / 6)} ${cy + r * Math.sin(Math.PI / 6)} Z`}
-            fill="hsl(var(--hud-cyan))" opacity="0.06" />
-        </g>
-      )}
-    </svg>
-  );
-}
-
-function MarkerListItem({ marker, onSelect, onMessage }: {
-  marker: RadarMarker;
-  onSelect: () => void;
-  onMessage: () => void;
-}) {
-  const Icon = TYPE_ICONS[marker.type];
-  const color = TYPE_COLORS[marker.type];
-
-  return (
-    <button
-      onClick={onSelect}
+    <button onClick={onSelect}
       className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-colors hover:bg-[hsl(var(--hud-surface)/0.5)]"
-      style={{ background: "hsl(var(--hud-surface) / 0.2)" }}
-    >
-      {marker.photo ? (
-        <img src={marker.photo} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
+      style={{ background: "hsl(var(--hud-surface) / 0.15)" }}>
+      {s.photo ? (
+        <img src={s.photo} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
       ) : (
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{
-          background: `${color}15`,
-          border: `1px solid ${color}25`,
-        }}>
-          <Icon className="h-4 w-4" style={{ color }} />
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: `${col}10`, border: `1px solid ${col}20` }}>
+          <Icon className="h-4 w-4" style={{ color: col }} />
         </div>
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1">
-          <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{marker.title}</p>
-          {marker.verified && <CheckCircle2 className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />}
-          {marker.online && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
+          <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{s.title}</p>
+          {s.verified && <CheckCircle2 className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />}
+          {s.online && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-            {formatDist(marker.distance_km)}
-          </span>
-          {marker.price && (
-            <span className="text-[10px] font-medium" style={{ color }}>
-              {marker.price > 1000 ? `${(marker.price / 1000).toFixed(0)}k` : marker.price} {marker.currency}
+          <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{fmtDist(s.distance_km)}</span>
+          {s.price != null && (
+            <span className="text-[9px] font-medium" style={{ color: col }}>
+              {s.price > 1000 ? `${(s.price / 1000).toFixed(0)}k` : s.price} {s.currency}
             </span>
           )}
+          {s.category && <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{s.category}</span>}
         </div>
       </div>
       <button onClick={e => { e.stopPropagation(); onMessage(); }}
         className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+        style={{ background: "hsl(var(--hud-cyan) / 0.08)", color: "hsl(var(--hud-cyan))" }}>
         <MessageCircle className="h-3 w-3" />
       </button>
     </button>
   );
 }
 
-function MarkerPreviewCard({ marker, onClose, onMessage, onCall, onOpen }: {
-  marker: RadarMarker;
-  onClose: () => void;
-  onMessage: () => void;
-  onCall: () => void;
-  onOpen: () => void;
+function SignalPreview({ signal: s, onClose, onMessage, onCall, onOpen }: {
+  signal: RadarSignal; onClose: () => void; onMessage: () => void; onCall: () => void; onOpen: () => void;
 }) {
-  const Icon = TYPE_ICONS[marker.type];
-  const color = TYPE_COLORS[marker.type];
+  const Icon = SIGNAL_ICONS[s.type];
+  const col = `hsl(${SIGNAL_COLORS[s.type]})`;
 
   return (
-    <motion.div
-      className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 safe-area-pb"
+    <motion.div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-5 safe-area-pb"
       initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-    >
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}>
       <div className="rounded-2xl overflow-hidden" style={{
         background: "hsl(var(--hud-surface))",
-        border: "1px solid hsl(var(--hud-border) / 0.2)",
-        boxShadow: "0 -8px 40px hsl(0 0% 0% / 0.4)",
+        border: "1px solid hsl(var(--hud-border) / 0.15)",
+        boxShadow: "0 -6px 30px hsl(0 0% 0% / 0.4)",
       }}>
         {/* Header */}
-        <div className="p-4 flex items-start gap-3">
-          {marker.photo ? (
-            <img src={marker.photo} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
+        <div className="p-3 flex items-start gap-3">
+          {s.photo ? (
+            <img src={s.photo} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
           ) : (
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{
-              background: `${color}12`,
-              border: `1px solid ${color}25`,
-            }}>
-              <Icon className="h-6 w-6" style={{ color }} />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: `${col}10`, border: `1px solid ${col}20` }}>
+              <Icon className="h-5 w-5" style={{ color: col }} />
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{marker.title}</h3>
-              {marker.verified && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />}
+              <h3 className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{s.title}</h3>
+              {s.verified && <CheckCircle2 className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />}
+              {s.online && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
             </div>
-            {marker.subtitle && (
-              <p className="text-xs mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>{marker.subtitle}</p>
-            )}
+            {s.subtitle && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>{s.subtitle}</p>}
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0" style={{
-                borderColor: `${color}30`,
-                color,
-              }}>
-                {marker.type}
+              <Badge variant="outline" className="text-[8px] px-1 py-0 h-4" style={{ borderColor: `${col}25`, color: col }}>
+                {s.type}
               </Badge>
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                {formatDist(marker.distance_km)}
-              </span>
-              {marker.price && (
-                <span className="text-xs font-semibold" style={{ color }}>
-                  {marker.price.toLocaleString()} {marker.currency}
-                </span>
-              )}
+              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{fmtDist(s.distance_km)}</span>
+              {s.price != null && <span className="text-[11px] font-semibold" style={{ color: col }}>{s.price.toLocaleString()} {s.currency}</span>}
             </div>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
+          <button onClick={onClose} className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
             style={{ background: "hsl(var(--hud-surface-2))" }}>
-            <X className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
+            <X className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </button>
         </div>
 
         {/* Actions */}
-        <div className="px-4 pb-4 flex gap-2">
-          <ActionButton icon={MessageCircle} label="Message" onClick={onMessage} color="hsl(var(--hud-cyan))" />
-          <ActionButton icon={Phone} label="Call" onClick={onCall} color="hsl(var(--hud-success))" />
-          {(marker.type === "listing" || marker.type === "service") && (
-            <ActionButton icon={ExternalLink} label="Open" onClick={onOpen} color="hsl(var(--hud-purple))" />
-          )}
+        <div className="px-3 pb-3 flex gap-1.5">
+          <ActionBtn icon={MessageCircle} label="Message" onClick={onMessage} color="hsl(var(--hud-cyan))" />
+          <ActionBtn icon={Phone} label="Call" onClick={onCall} color="hsl(var(--hud-success))" />
+          <ActionBtn icon={ExternalLink} label="Open" onClick={onOpen} color="hsl(var(--hud-purple))" />
         </div>
       </div>
     </motion.div>
   );
 }
 
-function ActionButton({ icon: Icon, label, onClick, color }: {
-  icon: typeof MessageCircle;
-  label: string;
-  onClick: () => void;
-  color: string;
-}) {
+function ActionBtn({ icon: Icon, label, onClick, color }: { icon: typeof MessageCircle; label: string; onClick: () => void; color: string }) {
   return (
-    <button
-      onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium active:scale-95 transition-transform"
-      style={{
-        background: `${color}12`,
-        color,
-        border: `1px solid ${color}20`,
-      }}
-    >
+    <button onClick={onClick}
+      className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-[11px] font-medium active:scale-95 transition-transform"
+      style={{ background: `${color}10`, color, border: `1px solid ${color}18` }}>
       <Icon className="h-3.5 w-3.5" />
       {label}
     </button>
   );
 }
 
-function PrivacyToggle({ label, description, checked, onChange }: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
+function PrivacyRow({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
       <div>
         <p className="text-xs font-medium" style={{ color: "hsl(var(--hud-text))" }}>{label}</p>
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{description}</p>
+        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{desc}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
@@ -768,7 +628,7 @@ function getBearing(lat1: number, lng1: number, lat2: number, lng2: number): num
   return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
 }
 
-function formatDist(km: number): string {
+function fmtDist(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)}m`;
   return `${km.toFixed(1)}km`;
 }
