@@ -1,12 +1,12 @@
 /**
  * MessageContextMenu — Long-press / right-click context menu for messages.
- * Supports: edit, delete for me, delete for everyone, copy, reply.
+ * Supports: edit, delete for me, delete for everyone, moderation delete, copy.
+ * Governance: author can delete own msg, admin/owner can moderate.
  */
 import { useState } from "react";
-import { Trash2, Copy, Edit3, EyeOff, Timer } from "lucide-react";
+import { Trash2, Copy, Edit3, EyeOff, Timer, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
@@ -17,12 +17,20 @@ interface MessageAction {
   content: string;
   isMe: boolean;
   createdAt: string;
+  /** Whether current user has admin/owner role in this org */
+  canModerate?: boolean;
+  /** Sender ID of the message */
+  senderId?: string;
+  /** Whether message has attachment */
+  hasAttachment?: boolean;
+  /** Whether message is a voice message */
+  hasAudio?: boolean;
 }
 
 interface Props {
   message: MessageAction | null;
   onClose: () => void;
-  onDeleted: (msgId: string, type: "self" | "everyone") => void;
+  onDeleted: (msgId: string, type: "self" | "everyone" | "moderation") => void;
   onCopy: (content: string) => void;
   onEdited?: (msgId: string, newContent: string) => void;
 }
@@ -37,7 +45,7 @@ const DISAPPEAR_OPTIONS = [
 ];
 
 export default function MessageContextMenu({ message, onClose, onDeleted, onCopy, onEdited }: Props) {
-  const [confirmDelete, setConfirmDelete] = useState<"self" | "everyone" | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<"self" | "everyone" | "moderation" | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState("");
@@ -48,33 +56,68 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
   const canDeleteForEveryone = message.isMe && 
     (Date.now() - new Date(message.createdAt).getTime()) < 60 * 60 * 1000;
 
-  const canEdit = message.isMe &&
-    (Date.now() - new Date(message.createdAt).getTime()) < 15 * 60 * 1000; // 15 min edit window
+  const canModerate = !message.isMe && !!message.canModerate;
 
-  const handleDelete = async (type: "self" | "everyone") => {
+  const canEdit = message.isMe &&
+    (Date.now() - new Date(message.createdAt).getTime()) < 15 * 60 * 1000;
+
+  const handleDelete = async (type: "self" | "everyone" | "moderation") => {
     setDeleting(true);
     haptic("medium");
 
-    if (type === "everyone") {
-      const { error } = await supabase.from("messages")
-        .update({ 
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const currentUserId = user?.id;
+
+      if (type === "everyone" || type === "moderation") {
+        // Soft delete for everyone: clear content, mark as deleted, preserve audit
+        const updatePayload: Record<string, any> = {
+          deleted_for_all: true,
+          deleted_at: new Date().toISOString(),
+          deleted_by: currentUserId,
+          deletion_reason: type === "moderation" ? "moderation" : "user_action",
+          // Neutralize content but keep original for audit
           content: "🚫 This message was deleted",
           message_type: "system",
+          // Neutralize media
           attachment_url: null,
-        } as any)
-        .eq("id", message.msgId);
-      
-      if (error) {
-        toast.error("Failed to delete message");
-        setDeleting(false);
-        return;
-      }
-      toast.success("Message deleted for everyone");
-    } else {
-      toast.success("Message hidden");
-    }
+          attachment_urls: null,
+          audio_url: null,
+          audio_duration_seconds: null,
+          // Clear translations
+          translated_content: null,
+        };
 
-    onDeleted(message.msgId, type);
+        const { error } = await supabase.from("messages")
+          .update(updatePayload as any)
+          .eq("id", message.msgId);
+
+        if (error) {
+          toast.error("Failed to delete message");
+          setDeleting(false);
+          return;
+        }
+        toast.success(type === "moderation" ? "Message removed by moderation" : "Message deleted for everyone");
+      } else {
+        // Delete for self: add user to deleted_for_user_ids array + flag sender
+        if (message.isMe) {
+          await supabase.from("messages")
+            .update({
+              deleted_for_sender: true,
+              deleted_at: new Date().toISOString(),
+              deleted_by: currentUserId,
+              deletion_reason: "self_hide",
+            } as any)
+            .eq("id", message.msgId);
+        }
+        // Also track in local state via onDeleted callback
+        toast.success("Message hidden from your view");
+      }
+
+      onDeleted(message.msgId, type);
+    } catch {
+      toast.error("Failed to delete message");
+    }
     setDeleting(false);
     setConfirmDelete(null);
     onClose();
@@ -120,6 +163,18 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
     setSaving(false);
     setEditMode(false);
     onClose();
+  };
+
+  const deleteTypeLabel = {
+    self: "Delete for you?",
+    everyone: "Delete for everyone?",
+    moderation: "Remove as moderator?",
+  };
+
+  const deleteTypeDesc = {
+    self: "This message will only be hidden from your view.",
+    everyone: "This message will be removed for all participants. Attachments and voice messages will be neutralized. This cannot be undone.",
+    moderation: "This message will be removed for all participants as a moderation action. This action is logged for audit.",
   };
 
   return (
@@ -171,20 +226,22 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
             background: "hsl(var(--hud-surface) / 0.3)",
           }}>
             <p className="text-xs line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>
-              {message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content}
+              {message.hasAudio ? "🎤 Voice message" : message.hasAttachment ? "📎 Attachment" : message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content}
             </p>
           </div>
 
           {/* Actions */}
           <div className="py-1">
-            <button onClick={handleCopy}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
-              style={{ color: "hsl(var(--hud-text))" }}>
-              <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
-              Copy text
-            </button>
+            {!message.hasAudio && (
+              <button onClick={handleCopy}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
+                style={{ color: "hsl(var(--hud-text))" }}>
+                <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+                Copy text
+              </button>
+            )}
 
-            {canEdit && (
+            {canEdit && !message.hasAudio && (
               <button onClick={handleStartEdit}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
                 style={{ color: "hsl(var(--hud-cyan))" }}>
@@ -208,6 +265,15 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
                 Delete for everyone
               </button>
             )}
+
+            {canModerate && (
+              <button onClick={() => setConfirmDelete("moderation")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(var(--hud-surface)/0.3)]"
+                style={{ color: "hsl(var(--hud-danger))" }}>
+                <ShieldAlert className="h-4 w-4" />
+                Remove (moderation)
+              </button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -217,12 +283,10 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
         <DialogContent className="max-w-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
             <DialogTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>
-              {confirmDelete === "everyone" ? "Delete for everyone?" : "Delete for you?"}
+              {confirmDelete ? deleteTypeLabel[confirmDelete] : ""}
             </DialogTitle>
             <DialogDescription className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
-              {confirmDelete === "everyone"
-                ? "This message will be removed for all participants. This cannot be undone."
-                : "This message will only be hidden from your view."}
+              {confirmDelete ? deleteTypeDesc[confirmDelete] : ""}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
@@ -232,7 +296,7 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
             </Button>
             <Button size="sm" disabled={deleting} onClick={() => confirmDelete && handleDelete(confirmDelete)}
               style={{ 
-                background: confirmDelete === "everyone" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-cyan))", 
+                background: confirmDelete === "self" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-danger))", 
                 color: "white" 
               }}>
               {deleting ? "Deleting..." : "Delete"}
