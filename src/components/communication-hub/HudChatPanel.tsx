@@ -296,6 +296,49 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     // Compress before encryption
     const { compressMessage } = await import("@/lib/orbit-message-compress");
     const content = await compressMessage(newMessage.trim());
+
+    // E2E Encryption
+    let storedContent = content;
+    let isEncrypted = false;
+    const peerId = thread.tenantId || thread.contextId || thread.id;
+    if (e2eReady && peerId) {
+      const encrypted = await encrypt(content, peerId);
+      if (encrypted) { storedContent = encrypted; isEncrypted = true; }
+    }
+
+    // ── OFFLINE MODE: queue message locally ──
+    if (!offline.isOnline) {
+      const queuedId = await offline.queueMessage(storedContent, isEncrypted, {
+        tenantId: thread.tenantId,
+        bookingId: thread.bookingId,
+        bookingType: thread.bookingType,
+        contactName: thread.conversationType !== "property" ? thread.name : undefined,
+        contactEmail: thread.conversationType !== "property" ? thread.email : undefined,
+        category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
+        senderLocale: locale,
+        propertyId: thread.propertyId,
+        contextType: thread.contextType,
+        contextId: thread.contextId,
+        threadDbId: thread.threadDbId,
+      });
+      // Show as pending in UI
+      const fakeMsg: ChatMessage = {
+        id: queuedId,
+        content: newMessage.trim(),
+        sender_id: user.id,
+        created_at: new Date().toISOString(),
+        read: false,
+        message_type: "user",
+        category: selectedCategory,
+      } as any;
+      setRawMessages(prev => [...prev, fakeMsg]);
+      setPendingOffline(prev => [...prev, { id: queuedId }]);
+      setNewMessage("");
+      toast("📡 Queued — will send when back online", { duration: 2000 });
+      return;
+    }
+
+    // ── ONLINE MODE: send normally ──
     setSending(true);
     try {
       let tenantLocale = "en";
@@ -311,15 +354,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: content, from_locale: locale, to_locale: tenantLocale } });
           if (transData?.translated) translatedContent = transData.translated;
         } catch (e) { console.error("Translation failed:", e); }
-      }
-
-      // E2E Encryption: encrypt content if peer key is available
-      let storedContent = content;
-      let isEncrypted = false;
-      const peerId = thread.tenantId || thread.contextId || thread.id;
-      if (e2eReady && peerId) {
-        const encrypted = await encrypt(content, peerId);
-        if (encrypted) { storedContent = encrypted; isEncrypted = true; }
       }
 
       const { error: insertErr } = await supabase.from("messages").insert({
