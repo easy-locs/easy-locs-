@@ -254,7 +254,7 @@ export default function OrbitRadar() {
 
       {/* ═══ Mode Selector ═══ */}
       <div className="px-3 pt-3 pb-1 shrink-0">
-        <div className="flex gap-1 rounded-xl p-1" style={{
+        <div className="flex gap-1 rounded-xl p-1 overflow-x-auto scrollbar-none" style={{
           background: "hsl(var(--hud-surface))",
           border: "1px solid hsl(var(--hud-border) / 0.08)",
         }}>
@@ -265,13 +265,14 @@ export default function OrbitRadar() {
             return (
               <button key={m}
                 onClick={() => { setMode(m); haptic("selection"); }}
-                className="flex-1 flex flex-col items-center py-2 rounded-lg transition-all"
+                className="flex-1 flex flex-col items-center py-2 px-2 rounded-lg transition-all min-w-[60px] shrink-0"
                 style={{
                   background: active ? "hsl(var(--hud-cyan) / 0.1)" : "transparent",
                   color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
                 }}>
-                <Icon className="h-4 w-4 mb-0.5" />
-                <span className="text-[10px] font-semibold">{cfg.label}</span>
+                <Icon className="h-4 w-4 mb-0.5 shrink-0" />
+                <span className="text-[10px] font-semibold whitespace-nowrap leading-tight">{cfg.label}</span>
+                <span className="text-[7px] whitespace-nowrap leading-tight mt-0.5 opacity-60">{cfg.desc}</span>
               </button>
             );
           })}
@@ -333,7 +334,7 @@ export default function OrbitRadar() {
       {/* ═══ Radar Visualization ═══ */}
       <div className="flex-shrink-0 flex items-center justify-center px-4 py-2">
         <div className="relative" style={{ width: size, height: size, maxWidth: "100%" }}>
-          <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full">
+          <svg viewBox={`-10 -10 ${size + 20} ${size + 20}`} className="w-full h-full" style={{ overflow: "visible" }}>
             <defs>
               <filter id="rGlow"><feGaussianBlur stdDeviation="2.5" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
               <linearGradient id="sweepG" x1="0" y1="0" x2="1" y2="0">
