@@ -206,6 +206,15 @@ export default function InAppCallDialog({
   const hasRemoteVideo = remoteStream?.getVideoTracks().some(t => t.enabled) || false;
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
 
+  const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(status);
+
+  // Auto-close after call ends
+  useEffect(() => {
+    if (!isTerminal || !open) return;
+    const timer = setTimeout(() => { onClose(); }, 3000);
+    return () => clearTimeout(timer);
+  }, [isTerminal, open, onClose]);
+
   const statusLabel: Record<string, string> = {
     idle: "", ringing: "Ringing…", connecting: "Connecting…",
     active: fmt(elapsed), ended: "Call ended", declined: "Call declined",
