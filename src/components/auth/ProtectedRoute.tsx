@@ -47,6 +47,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
   const isClientRoute = location.pathname.startsWith("/client");
+  const isAppRoute = location.pathname.startsWith("/app");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
