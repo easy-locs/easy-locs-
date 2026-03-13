@@ -105,8 +105,13 @@ export default function OrbitHome() {
         </div>
       )}
 
+      {/* ── Smart Actions (Phase 5) ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <OrbitSmartActions actions={smartActions} loading={dashLoading} />
+      </div>
+
       {/* ── Priority Section ── */}
-      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "120ms" }}>
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "160ms" }}>
         <div className="flex items-center justify-between mb-2 px-1">
           <h2
             className="text-[11px] font-bold uppercase tracking-widest"
