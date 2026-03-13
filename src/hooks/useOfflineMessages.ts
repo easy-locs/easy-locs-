@@ -46,12 +46,15 @@ export function useOfflineMessages({ userId, orgId, threadId }: UseOfflineMessag
     metadata: Record<string, any>
   ): Promise<string> => {
     const id = crypto.randomUUID();
+    const { data: authData } = await supabase.auth.getUser();
+    const authUserId = authData?.user?.id || userId;
+
     await enqueueMessage({
       id,
       threadId: threadId || "",
       content,
       encrypted,
-      metadata: { ...metadata, userId, orgId },
+      metadata: { ...metadata, userId: authUserId, orgId },
       createdAt: Date.now(),
     });
     await refreshCount();
