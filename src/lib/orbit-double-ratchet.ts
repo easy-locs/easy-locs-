@@ -91,7 +91,7 @@ async function dh(keyPair: CryptoKeyPair, peerPublic: CryptoKey): Promise<Uint8A
     keyPair.privateKey,
     528
   );
-  return new Uint8Array(bits);
+  return new Uint8Array(bits as ArrayBuffer);
 }
 
 async function kdfRootKey(
