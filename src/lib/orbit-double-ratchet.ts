@@ -102,13 +102,13 @@ async function kdfRootKey(
   ikm.set(rootKey, 0);
   ikm.set(dhOutput, rootKey.length);
 
-  const hkdfKey = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  const hkdfKey = await crypto.subtle.importKey("raw", ikm.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
   const derived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: RATCHET_INFO },
+      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: RATCHET_INFO.buffer as ArrayBuffer },
       hkdfKey,
       512
-    )
+    ) as ArrayBuffer
   );
 
   return {
