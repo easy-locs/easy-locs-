@@ -95,6 +95,10 @@ const Collaboration = lazy(() => import("./pages/Collaboration"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const AuditTrail = lazy(() => import("./pages/AuditTrail"));
 const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
+
+// Orbit App Shell & Home
+const OrbitAppShell = lazy(() => import("./components/orbit/OrbitAppShell"));
+const OrbitHome = lazy(() => import("./pages/OrbitHome"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
 const PropertyDetailHub = lazy(() => import("./pages/PropertyDetailHub"));
 const CreateListing = lazy(() => import("./pages/CreateListing"));
