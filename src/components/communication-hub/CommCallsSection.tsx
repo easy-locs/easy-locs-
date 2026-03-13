@@ -1,12 +1,15 @@
 /**
- * CommCallsSection — Real call history with functional redial.
- * Shows org name, listing/context label, and allows re-calling.
+ * CommCallsSection — Call history with single direction icon per entry.
+ * Uses HUD tokens. Functional redial.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
-import { Phone, PhoneIncoming, PhoneMissed, PhoneOutgoing, Video, Search } from "lucide-react";
+import {
+  Phone, PhoneIncoming, PhoneMissed, PhoneOutgoing,
+  Video, Search, ArrowDownLeft, ArrowUpRight,
+} from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
@@ -26,7 +29,6 @@ interface CallLog {
   context_type: string;
   context_id: string | null;
   thread_id: string | null;
-  // Joined
   org_name?: string;
 }
 
@@ -57,7 +59,6 @@ export default function CommCallsSection() {
     if (!user?.id) return;
     setLoading(true);
 
-    // Fetch call logs
     const { data: callData } = await supabase
       .from("call_logs")
       .select("id, caller_id, callee_org_id, status, is_video, duration_seconds, created_at, context_label, context_type, context_id, thread_id")
@@ -70,7 +71,6 @@ export default function CommCallsSection() {
       return;
     }
 
-    // Get unique org IDs to fetch names
     const orgIds = [...new Set(callData.map(c => c.callee_org_id))];
     const { data: orgs } = await supabase
       .from("orgs")
@@ -93,7 +93,7 @@ export default function CommCallsSection() {
   const handleRedial = useCallback(async (call: CallLog, e: React.MouseEvent) => {
     e.stopPropagation();
     if (isInCall || isStartingCall) {
-      toast.info("Appel déjà en cours");
+      toast.info("Call already in progress");
       return;
     }
     haptic("medium");
@@ -126,32 +126,66 @@ export default function CommCallsSection() {
   const filters: { id: CallFilter; label: string }[] = [
     { id: "all", label: "All" },
     { id: "missed", label: "Missed" },
-    { id: "incoming", label: "Incoming" },
-    { id: "outgoing", label: "Outgoing" },
+    { id: "incoming", label: "In" },
+    { id: "outgoing", label: "Out" },
   ];
 
   const missedCount = calls.filter(c => c.status === "missed").length;
 
+  /** Single unified call icon with direction arrow overlay */
   const getCallIcon = (call: CallLog) => {
-    if (call.status === "missed") return <PhoneMissed className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />;
-    if (call.caller_id === user?.id) return <PhoneOutgoing className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />;
-    return <PhoneIncoming className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />;
+    const isOutgoing = call.caller_id === user?.id;
+    const isMissed = call.status === "missed";
+    const isVideoCall = call.is_video;
+
+    // Choose color
+    const color = isMissed
+      ? "hsl(var(--hud-danger))"
+      : isOutgoing
+        ? "hsl(var(--hud-cyan))"
+        : "hsl(var(--hud-success))";
+
+    // Single icon: Phone or Video
+    const MainIcon = isVideoCall ? Video : Phone;
+
+    // Direction arrow overlay
+    const ArrowIcon = isMissed
+      ? PhoneMissed
+      : isOutgoing
+        ? ArrowUpRight
+        : ArrowDownLeft;
+
+    return (
+      <div className="relative">
+        <MainIcon className="h-4.5 w-4.5" style={{ color, width: 18, height: 18 }} />
+        <div
+          className="absolute -bottom-0.5 -right-0.5 rounded-full flex items-center justify-center"
+          style={{
+            width: 12,
+            height: 12,
+            background: "hsl(var(--hud-bg))",
+            border: `1.5px solid ${color}`,
+          }}
+        >
+          <ArrowIcon style={{ width: 7, height: 7, color }} />
+        </div>
+      </div>
+    );
   };
 
-  /** Build display label: "OrgName · ContextLabel" or fallback */
   const getDisplayLabel = (call: CallLog) => {
     const parts: string[] = [];
     if (call.org_name) parts.push(call.org_name);
     if (call.context_label && call.context_label !== call.org_name) parts.push(call.context_label);
     if (parts.length > 0) return parts;
-    return [call.caller_id === user?.id ? "Appel sortant" : "Appel entrant"];
+    return [call.caller_id === user?.id ? "Outgoing call" : "Incoming call"];
   };
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>Appels</h2>
+        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>Calls</h2>
 
         {/* Search */}
         <div className="relative mb-3">
@@ -159,7 +193,7 @@ export default function CommCallsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Rechercher..."
+            placeholder="Search..."
             className="pl-9 h-9 text-sm border-0"
             style={{
               background: "hsl(var(--hud-surface))",
@@ -202,10 +236,10 @@ export default function CommCallsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Phone className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {filter === "missed" ? "Aucun appel manqué" : "Aucun appel"}
+              {filter === "missed" ? "No missed calls" : "No calls yet"}
             </p>
             <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
-              Lancez un appel depuis une conversation
+              Start a call from any conversation
             </p>
           </div>
         ) : (
@@ -218,14 +252,17 @@ export default function CommCallsSection() {
               return (
                 <div
                   key={call.id}
-                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-3 transition-colors text-left"
+                  style={{ background: "transparent" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--hud-surface) / 0.3)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
-                  {/* Call direction icon */}
+                  {/* Single unified icon */}
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                     style={{
                       background: call.status === "missed"
-                        ? "hsl(var(--hud-danger) / 0.1)"
+                        ? "hsl(var(--hud-danger) / 0.08)"
                         : "hsl(var(--hud-surface))",
                     }}
                   >
@@ -234,26 +271,21 @@ export default function CommCallsSection() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="text-sm font-medium truncate"
-                        style={{
-                          color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
-                        }}
-                      >
-                        {primaryLabel}
-                      </span>
-                      {call.is_video && <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    <span
+                      className="text-sm font-medium truncate block"
+                      style={{
+                        color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text))",
+                      }}
+                    >
+                      {primaryLabel}
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-0.5">
                       {secondaryLabel && (
                         <span className="text-[11px] truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
                           {secondaryLabel}
                         </span>
                       )}
-                      {secondaryLabel && (call.status === "ended" ? call.duration_seconds : true) && (
-                        <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>
-                      )}
+                      {secondaryLabel && <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
                       <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                         {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
                       </span>
@@ -262,7 +294,7 @@ export default function CommCallsSection() {
 
                   {/* Time + redial */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-[11px] tabular-nums" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {formatCallTime(call.created_at)}
                     </span>
                     <button
@@ -270,7 +302,7 @@ export default function CommCallsSection() {
                       disabled={isInCall || isStartingCall}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-40"
                       style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}
-                      title="Rappeler"
+                      title="Redial"
                     >
                       <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                     </button>
