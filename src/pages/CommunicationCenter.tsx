@@ -85,6 +85,10 @@ const CommunicationCenter = () => {
       pendingThreadRetryRef.current = threadParam;
       const timer = setTimeout(() => loadThreads(), 800);
       return () => clearTimeout(timer);
+    } else if (threads.length > 0 && pendingThreadRetryRef.current === threadParam) {
+      // Retry already done, thread still not found — clear params to avoid stuck state
+      setSearchParams({}, { replace: true });
+      pendingThreadRetryRef.current = null;
     }
   }, [threads, loading, searchParams, setSearchParams, loadThreads]);
 
