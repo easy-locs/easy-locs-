@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import NearbyLeafletMap from "@/components/communication-hub/NearbyLeafletMap";
 
 // ─── Types ─────────────────────────────────────────────────
 
