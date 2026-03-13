@@ -102,7 +102,7 @@ const Login = () => {
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4">
+    <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4 relative">
       <SEOHead title="Login — Easy-Locs" description="Sign in to your Easy-Locs account." noindex />
       <AuthBrand />
 
@@ -159,7 +159,7 @@ const Login = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm relative overflow-hidden"
+              className="w-full flex items-center justify-center gap-2 font-bold py-2.5 sm:py-3 rounded-xl transition-all disabled:opacity-50 text-sm relative overflow-hidden"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.submit")}
@@ -184,7 +184,7 @@ const Login = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm"
+              className="w-full flex items-center justify-center gap-2 font-bold py-2.5 sm:py-3 rounded-xl transition-all disabled:opacity-50 text-sm"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.send_code")}
@@ -214,7 +214,7 @@ const Login = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 text-sm"
+              className="w-full flex items-center justify-center gap-2 font-bold py-2.5 sm:py-3 rounded-xl transition-all disabled:opacity-50 text-sm"
               style={{ background: "var(--gradient-gold)", color: "hsl(var(--accent-foreground))", boxShadow: "var(--shadow-gold)" }}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.login.verify")}

@@ -22,13 +22,13 @@ const AppLogo = ({
     header: "text-xl",
     landing: "text-2xl",
     footer: "text-xl",
-    auth: "text-3xl sm:text-4xl",
+    auth: "text-xl sm:text-2xl",
   };
 
   return (
     <Link
       to={href}
-      className={`flex items-center gap-2 shrink-0 select-none group ${variant === "auth" ? "max-w-[280px]" : "max-w-[140px]"} ${className}`}
+      className={`flex items-center gap-2 shrink-0 select-none group ${variant === "auth" ? "max-w-[200px]" : "max-w-[140px]"} ${className}`}
     >
       <div className="flex items-baseline gap-0.5">
         <span
