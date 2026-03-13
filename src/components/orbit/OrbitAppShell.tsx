@@ -126,9 +126,9 @@ function OrbitBottomNav() {
         height: "calc(56px + env(safe-area-inset-bottom, 8px))",
       }}
     >
-      {NAV_ITEMS.map(({ icon: Icon, label, path }) => {
+      {NAV_ITEMS.map(({ icon: Icon, label, path, badge }) => {
         const isActive = location.pathname === path || (label === "Orbit" && location.pathname.startsWith("/app"));
-        const counter = getCounter(label);
+        const counter = getCounter(badge);
         return (
           <button
             key={label}
