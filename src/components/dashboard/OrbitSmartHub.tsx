@@ -204,16 +204,17 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
       {/* Country chips — horizontal scroll */}
       {propertiesByCountry.length > 0 && (
         <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none scroll-smooth -mx-1 px-1 pb-1">
-            {propertiesByCountry.map((c) => (
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none scroll-smooth -mx-1 px-1 pb-1" style={{ WebkitOverflowScrolling: "touch" }}>
+            {propertiesByCountry.map((c, i) => (
               <motion.button
                 key={c.code}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer"
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all text-xs cursor-pointer"
                 style={{
                   background: "hsl(var(--hud-surface))",
-                  border: "1px solid hsl(var(--hud-border) / 0.1)",
+                  border: "1px solid hsl(var(--hud-border) / 0.12)",
                   color: "hsl(var(--hud-text))",
                 }}
                 onClick={() => {
@@ -221,9 +222,14 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                   navigate(`/dashboard/country/${c.code.toLowerCase()}`);
                 }}
               >
-                <span className="text-sm">{c.flag}</span>
+                <span className="text-base leading-none">{c.flag}</span>
                 <span className="font-medium whitespace-nowrap">{c.name}</span>
-                <span className="opacity-60">{c.count}</span>
+                <span
+                  className="font-bold tabular-nums whitespace-nowrap"
+                  style={{ color: "hsl(var(--hud-cyan))", minWidth: "1.2em", textAlign: "right" }}
+                >
+                  {c.count}
+                </span>
               </motion.button>
             ))}
           </div>
