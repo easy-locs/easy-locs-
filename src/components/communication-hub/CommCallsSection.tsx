@@ -1,6 +1,6 @@
 /**
  * CommCallsSection — Call history with single direction icon per entry.
- * Uses HUD tokens. Functional redial.
+ * Uses HUD tokens. Functional redial. Swipe-to-delete.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import SwipeableCallItem from "./SwipeableCallItem";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
