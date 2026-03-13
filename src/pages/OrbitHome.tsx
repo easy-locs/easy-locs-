@@ -43,6 +43,7 @@ const SECONDARY_CARDS = [
 export default function OrbitHome() {
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
+  const { smartActions, loading: dashLoading } = useOrbitDashboard();
   const navigate = useNavigate();
 
   useEffect(() => {
