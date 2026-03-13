@@ -163,7 +163,7 @@ export default function CommContactsSection() {
             <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
               {contact.name}
             </span>
-            {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(45, 90%, 55%)" }} />}
+            {contact.is_favorite && <Star className="h-3 w-3 fill-current shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {presence && presence.status !== "offline" && (
