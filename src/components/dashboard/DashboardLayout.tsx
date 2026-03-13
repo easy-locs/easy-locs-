@@ -488,6 +488,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </Link>
 
           <div className="flex-1" />
+          {/* Hub quick access — desktop topbar */}
+          <HubQuickAccess variant="topbar" />
           {/* Language selector */}
           <div className="relative">
             <button
