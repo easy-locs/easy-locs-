@@ -187,17 +187,32 @@ export default function InAppCallDialog({
     if (audioEl) {
       audioEl.volume = 1;
       audioEl.muted = false;
+      // Switch audio output: "communications" = earpiece, "default" = speaker
       if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
-        (audioEl as any).setSinkId("default").catch(() => {});
+        (audioEl as any).setSinkId(newState ? "default" : "communications").catch(() => {
+          // Fallback: try default if communications not available
+          (audioEl as any).setSinkId("default").catch(() => {});
+        });
       }
     }
 
+    // iOS audioSession API
     const nav = navigator as any;
     if (nav?.audioSession && typeof nav.audioSession === "object") {
       try {
+        // "playback" routes to speaker, "play-and-record" routes to earpiece
         nav.audioSession.type = newState ? "playback" : "play-and-record";
       } catch {}
     }
+
+    // Android WebView: try AudioContext routing hint
+    try {
+      const audioCtx = new AudioContext();
+      if ((audioCtx as any).setSinkId) {
+        (audioCtx as any).setSinkId(newState ? "" : "communications").catch(() => {});
+      }
+      audioCtx.close();
+    } catch {}
   };
 
   const formatTime = (s: number) => {

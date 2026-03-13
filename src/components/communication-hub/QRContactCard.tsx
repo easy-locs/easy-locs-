@@ -382,7 +382,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
             )}
 
             <p className="text-xs text-center mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {hasBarcodeDetector() ? "Point camera at a contact QR code" : "Camera active — paste the contact link below"}
+              {hasBarcodeDetector() ? "Point camera at a contact QR code" : "Scanning for QR codes... You can also paste a link below"}
             </p>
 
             <div className="flex gap-2 w-full">
