@@ -449,9 +449,9 @@ export default function CommNearbySection() {
                       <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
                         style={{
                           background: u.avatar_url ? `url(${u.avatar_url}) center/cover` : "hsl(var(--hud-surface))",
-                          border: `2px solid ${u.status === "online" ? "hsl(142, 70%, 50%)" : "hsl(var(--hud-border) / 0.4)"}`,
+                          border: `2px solid ${u.status === "online" ? "hsl(var(--hud-success))" : "hsl(var(--hud-border) / 0.4)"}`,
                           boxShadow: u.status === "online" 
-                            ? "0 0 12px hsl(142, 70%, 50%, 0.3), 0 2px 8px hsl(0 0% 0% / 0.3)"
+                            ? "0 0 12px hsl(var(--hud-success) / 0.3), 0 2px 8px hsl(0 0% 0% / 0.3)"
                             : "0 2px 8px hsl(0 0% 0% / 0.3)",
                         }}>
                         {!u.avatar_url && <User className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />}
