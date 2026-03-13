@@ -560,7 +560,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         </div>
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-4" style={{ background: "hsl(var(--hud-bg))" }}>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -600,14 +600,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                   onContextMenu={e => { e.preventDefault(); haptic("medium"); setContextMessage({ msgId: msg.id, content: msg.content, isMe, createdAt: msg.created_at }); }}
                   onClick={() => { /* mobile: long press handled via context */ }}>
-                  <div className={`max-w-[85%] sm:max-w-[72%] rounded-2xl px-4 py-3 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none overflow-hidden`} style={{
+                  <div className={`max-w-[80%] sm:max-w-[68%] rounded-2xl px-3.5 py-2.5 ${isMe ? "rounded-br-sm" : "rounded-bl-sm"} select-none`} style={{
                     background: isPayment
-                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--hud-purple) / 0.08))"
+                      ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-purple) / 0.08))"
                       : isMe
-                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.12), hsl(var(--hud-cyan) / 0.06))"
+                        ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.14), hsl(var(--hud-cyan) / 0.06))"
                         : "hsl(var(--hud-surface-2))",
                     border: `1px solid ${isPayment ? "hsl(var(--hud-cyan) / 0.2)" : isMe ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.1)"}`,
                     color: "hsl(var(--hud-text))",
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
                   }}>
                     {!isMe && (
                       <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
@@ -623,7 +625,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       <span className="text-[10px] opacity-70 mb-1 block">{getCategoryIcon(msg.category)}</span>
                     )}
                     {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
-                    <p className="text-[14px] leading-[1.55] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                    <p className="text-[13.5px] leading-[1.5] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
                       {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
                     </p>
                     {!isMe && msg.translated_content && !showOriginal[msg.id] && (
