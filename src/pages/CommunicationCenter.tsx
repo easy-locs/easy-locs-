@@ -162,9 +162,15 @@ const CommunicationCenter = () => {
               {selectedThread.name}
             </h1>
           ) : (
-            <h1 className="text-xl font-bold flex-1" style={{ color: "hsl(var(--foreground))" }}>
-              Orbit
-            </h1>
+            <div className="flex items-center gap-2 flex-1">
+              <h1 className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                Orbit
+              </h1>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                <Lock className="h-2.5 w-2.5" /> E2E
+              </span>
+            </div>
           )}
           <div className="flex items-center gap-2">
             {showChatArea && !selectedThread && (
