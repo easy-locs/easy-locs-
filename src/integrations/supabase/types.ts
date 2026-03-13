@@ -1018,6 +1018,68 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          avatar_url: string | null
+          category: string
+          company: string | null
+          contact_user_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_favorite: boolean
+          last_contacted_at: string | null
+          name: string
+          notes: string | null
+          org_id: string | null
+          owner_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          category?: string
+          company?: string | null
+          contact_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_favorite?: boolean
+          last_contacted_at?: string | null
+          name: string
+          notes?: string | null
+          org_id?: string | null
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string
+          company?: string | null
+          contact_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_favorite?: boolean
+          last_contacted_at?: string | null
+          name?: string
+          notes?: string | null
+          org_id?: string | null
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_preferences: {
         Row: {
           archived: boolean | null
@@ -3388,6 +3450,74 @@ export type Database = {
           },
         ]
       }
+      payment_requests: {
+        Row: {
+          amount: number
+          context_id: string | null
+          context_type: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          org_id: string
+          paid_at: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          sender_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_payment_link: string | null
+          thread_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          org_id: string
+          paid_at?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          sender_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_payment_link?: string | null
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          org_id?: string
+          paid_at?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          sender_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_payment_link?: string | null
+          thread_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pricing_rules: {
         Row: {
           active: boolean | null
@@ -5155,6 +5285,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_presence: {
+        Row: {
+          custom_status: string | null
+          device_type: string | null
+          last_seen_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          custom_status?: string | null
+          device_type?: string | null
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          custom_status?: string | null
+          device_type?: string | null
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_reports: {
         Row: {
