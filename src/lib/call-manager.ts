@@ -591,14 +591,21 @@ export class CallManager {
   }
 
   toggleMute(): boolean {
-    if (!this.localStream) return false;
-    const track = this.localStream.getAudioTracks()[0];
-    if (track) {
-      track.enabled = !track.enabled;
-      this.debug("toggleMute", { enabled: track.enabled });
-      return !track.enabled;
+    if (!this.localStream) {
+      this.debug("toggleMute: no local stream");
+      return false;
     }
-    return false;
+    const tracks = this.localStream.getAudioTracks();
+    if (tracks.length === 0) {
+      this.debug("toggleMute: no audio tracks");
+      return false;
+    }
+    // Toggle ALL audio tracks to handle multi-track scenarios
+    const newEnabled = !tracks[0].enabled;
+    tracks.forEach(track => { track.enabled = newEnabled; });
+    const isMuted = !newEnabled;
+    this.debug("toggleMute", { enabled: newEnabled, isMuted, trackCount: tracks.length });
+    return isMuted;
   }
 
   toggleVideo(): boolean {
