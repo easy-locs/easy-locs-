@@ -110,9 +110,9 @@ function OrbitBottomNav() {
   const location = useLocation();
   const { unreadMessages, missedCalls } = useOrbitEngine();
 
-  const getCounter = (label: string) => {
-    if (label === "Messages") return unreadMessages;
-    if (label === "Calls") return missedCalls;
+  const getCounter = (badge: string | null) => {
+    if (badge === "messages") return unreadMessages;
+    if (badge === "calls") return missedCalls;
     return 0;
   };
 
