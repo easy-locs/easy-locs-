@@ -225,7 +225,7 @@ export default function CommCallsSection() {
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                     style={{
                       background: call.status === "missed"
-                        ? "hsl(0, 70%, 60%, 0.1)"
+                        ? "hsl(var(--hud-danger) / 0.1)"
                         : "hsl(var(--hud-surface))",
                     }}
                   >
