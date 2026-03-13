@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
