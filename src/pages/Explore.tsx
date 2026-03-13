@@ -423,7 +423,13 @@ export default function Explore() {
           onClearLocation={() => setLocationQuery("")}
         />
 
-        {hasFilters && (
+        {/* Advanced Filters */}
+        <ExploreAdvancedFilters
+          filters={advancedFilters}
+          onChange={setAdvancedFilters}
+          onReset={() => setAdvancedFilters(defaultAdvancedFilters)}
+          activeGroup={activeGroup}
+        />
           <ExploreFiltersStrip
             searchQuery={searchQuery}
             locationQuery={locationQuery}
