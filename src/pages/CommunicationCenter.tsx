@@ -1,6 +1,6 @@
 /**
  * CommunicationCenter — Futuristic Command Center Communication Hub.
- * Dark glass HUD aesthetic with 3-layer architecture.
+ * Full-height messenger experience with 3-layer architecture.
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -87,40 +87,46 @@ const CommunicationCenter = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-        {/* ═══ HUD Header ═══ */}
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-3 px-1">
-          <div className="flex-1 min-w-0 flex items-center gap-3">
+      <div className="h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-5rem)] flex flex-col overflow-hidden -mx-3 sm:-mx-6 -mb-24 lg:-mb-6">
+        {/* ═══ Compact HUD Header ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 px-3 sm:px-4 py-2"
+          style={{
+            background: "hsl(var(--hud-bg))",
+            borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
+          }}
+        >
+          <div className="flex items-center gap-2 min-w-0">
             <div
-              className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+              className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
               style={{
                 background: "hsl(var(--hud-surface))",
-                border: "1px solid hsl(var(--hud-border) / 0.25)",
+                border: "1px solid hsl(var(--hud-border) / 0.2)",
                 boxShadow: "var(--hud-glow)",
               }}
             >
-              <Radio className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <Radio className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
             </div>
-            <div>
-              <h1 className="text-base sm:text-lg font-bold flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "hsl(var(--hud-text))" }}>
                 Command Center
-                <Shield className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                <Shield className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
               </h1>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
-                  <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
-                    Secure • Live
-                  </span>
-                </div>
-                <Lock className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+              <div className="flex items-center gap-1.5">
+                <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
+                <span className="text-[8px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
+                  Secure • Live
+                </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-nowrap">
+          <div className="flex-1" />
+          <div className="flex items-center gap-1.5">
             <Button
               size="sm" variant="outline"
-              className="h-8 gap-1.5 text-xs rounded-lg"
+              className="h-7 gap-1 text-[11px] rounded-lg"
               style={{
                 background: "hsl(var(--hud-surface))",
                 borderColor: "hsl(var(--hud-border) / 0.2)",
@@ -128,28 +134,26 @@ const CommunicationCenter = () => {
               }}
               onClick={() => setShowNewConversation(true)}
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               <span className="hidden sm:inline">New</span>
             </Button>
             {stats.unread > 0 && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs" style={{
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px]" style={{
                 background: "hsl(var(--hud-cyan) / 0.1)",
                 border: "1px solid hsl(var(--hud-cyan) / 0.2)",
               }}>
-                <Zap className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
+                <Zap className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
                 <span className="font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>{stats.unread}</span>
               </div>
             )}
           </div>
         </motion.div>
 
-        {/* ═══ 3-Layer Layout ═══ */}
+        {/* ═══ 3-Layer Layout — full remaining height ═══ */}
         <div
-          className="flex-1 flex gap-0 min-h-0 rounded-xl overflow-hidden"
+          className="flex-1 flex gap-0 min-h-0 overflow-hidden"
           style={{
             background: "hsl(var(--hud-bg))",
-            border: "1px solid hsl(var(--hud-border) / 0.1)",
-            boxShadow: "0 0 40px hsl(var(--hud-cyan) / 0.03), inset 0 0 80px hsl(var(--hud-cyan) / 0.01)",
           }}
         >
           {/* Layer 1: Conversation List */}
