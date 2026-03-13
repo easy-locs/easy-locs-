@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
@@ -18,6 +19,8 @@ const Settings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const [searchParams] = useSearchParams();
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
   const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "", brand_name: "", brand_primary_color: "", brand_accent_color: "" });
   const [saving, setSaving] = useState(false);
@@ -93,6 +96,16 @@ const Settings = () => {
     }
     setUploading(false);
   };
+
+  // Deep-link: scroll to section from ?section= param
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section && sectionRefs.current[section]) {
+      setTimeout(() => {
+        sectionRefs.current[section]?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, [searchParams]);
 
   return (
     <DashboardLayout>
@@ -306,10 +319,14 @@ const Settings = () => {
         <PaymentProvidersSettings />
 
         {/* Notification Preferences */}
-        <NotificationPreferences />
+        <div ref={el => { sectionRefs.current["notifications"] = el; }}>
+          <NotificationPreferences />
+        </div>
 
         {/* MFA / 2FA */}
-        <MFASettings />
+        <div ref={el => { sectionRefs.current["security"] = el; }}>
+          <MFASettings />
+        </div>
 
         {/* Pro Settings — Signal/WhatsApp style */}
         <ProSettingsSection />
@@ -331,7 +348,7 @@ const Settings = () => {
         </div>
 
         {/* Data Import */}
-        <div className="ui-card">
+        <div ref={el => { sectionRefs.current["data"] = el; }} className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.import_title")}</h2>
@@ -343,7 +360,7 @@ const Settings = () => {
         </div>
 
         {/* White-label Branding */}
-        <div className="ui-card">
+        <div ref={el => { sectionRefs.current["branding"] = el; }} className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Palette className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.branding_title") || "White-label / Branding"}</h2>
@@ -412,7 +429,7 @@ const Settings = () => {
         </div>
 
         {/* GDPR */}
-        <div className="ui-card">
+        <div ref={el => { sectionRefs.current["privacy"] = el; }} className="ui-card">
           <div className="flex items-center gap-3 mb-5">
             <Shield className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">{t("page.settings.gdpr_title")}</h2>

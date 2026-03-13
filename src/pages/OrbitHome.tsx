@@ -23,11 +23,11 @@ const SECONDARY_CARDS = [
   { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
-  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings" },
-  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings" },
+  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?section=privacy" },
+  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings?section=security" },
+  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings?section=data" },
+  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings?section=data" },
+  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings?section=branding" },
 ];
 
 export default function OrbitHome() {
@@ -53,35 +53,39 @@ export default function OrbitHome() {
   const totalUrgent = engine.unreadMessages + engine.missedCalls + engine.pendingBookings + engine.newLeads;
 
   return (
-    <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 animate-fade-in min-h-full">
+    <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 min-h-full">
       {/* ── Orb Section ── */}
-      <OrbitOrb contextMessage={orbMessage} />
+      <div className="animate-fade-in" style={{ animationDelay: "0ms" }}>
+        <OrbitOrb contextMessage={orbMessage} />
+      </div>
 
       {/* ── Alert Banner (top priority action) ── */}
       {engine.alerts.length > 0 && (
-        <button
-          onClick={() => engine.alerts[0]?.link && navigate(engine.alerts[0].link)}
-          className="w-full max-w-md rounded-2xl px-4 py-3 flex items-center gap-3 transition-all active:scale-[0.98]"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))",
-            border: "1px solid hsl(var(--hud-cyan) / 0.2)",
-          }}
-        >
-          <span className="text-xl shrink-0">{engine.alerts[0].icon}</span>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-              {engine.alerts[0].title}
-            </p>
-            <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
-              {engine.alerts[0].message}
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
-        </button>
+        <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "80ms" }}>
+          <button
+            onClick={() => engine.alerts[0]?.link && navigate(engine.alerts[0].link)}
+            className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 transition-all active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))",
+              border: "1px solid hsl(var(--hud-cyan) / 0.2)",
+            }}
+          >
+            <span className="text-xl shrink-0">{engine.alerts[0].icon}</span>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+                {engine.alerts[0].title}
+              </p>
+              <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {engine.alerts[0].message}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </button>
+        </div>
       )}
 
       {/* ── Priority Section ── */}
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "120ms" }}>
         <div className="flex items-center justify-between mb-2 px-1">
           <h2
             className="text-[11px] font-bold uppercase tracking-widest"
@@ -102,22 +106,23 @@ export default function OrbitHome() {
           )}
         </div>
         <div className="grid grid-cols-4 gap-2.5">
-          {PRIORITY_CARDS.map((card) => (
-            <OrbitQuickCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              description={card.desc}
-              counter={card.key ? (engine[card.key] as number) : undefined}
-              status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
-              to={card.to}
-            />
+          {PRIORITY_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${150 + i * 50}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {/* ── Secondary Section ── */}
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "300ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
@@ -125,24 +130,26 @@ export default function OrbitHome() {
           Modules
         </h2>
         <div className="grid grid-cols-4 gap-2.5">
-          {SECONDARY_CARDS.map((card) => (
-            <OrbitQuickCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              description={card.desc ?? undefined}
-              counter={card.key ? (engine[card.key] as number) : undefined}
-              status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
-              to={card.to}
-            />
+          {SECONDARY_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${350 + i * 40}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc ?? undefined}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {/* ── System Status Bar ── */}
       <div
-        className="w-full max-w-md flex items-center justify-center gap-5 py-3 px-4 rounded-2xl mt-1"
+        className="w-full max-w-md flex items-center justify-center gap-5 py-3 px-4 rounded-2xl mt-1 animate-fade-in"
         style={{
+          animationDelay: "500ms",
           background: "hsl(var(--hud-surface) / 0.6)",
           border: "1px solid hsl(var(--hud-border) / 0.08)",
         }}
