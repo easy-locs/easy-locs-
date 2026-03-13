@@ -136,7 +136,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     haptic("medium");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 640 } },
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -159,17 +159,32 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
           } catch {}
         }, 300);
       } else {
-        // No BarcodeDetector — show manual link input after 3 seconds
-        setTimeout(() => {
-          setShowManualInput(true);
-        }, 2000);
-        toast.info("Auto-scan not available on this browser. Use 'Paste Link' below.");
+        const { default: jsQR } = await import("jsqr");
+        scanIntervalRef.current = setInterval(() => {
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+          if (!video || !canvas || video.readyState < 2) return;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (!ctx) return;
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 640;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const result = jsQR(image.data, image.width, image.height, { inversionAttempts: "dontInvert" });
+          if (result?.data) {
+            haptic("success");
+            stopScanner();
+            handleScannedData(result.data);
+          }
+        }, 350);
       }
+
+      setTimeout(() => setShowManualInput(true), 2200);
     } catch {
       toast.error("Camera access required to scan QR codes");
       setMode("show");
     }
-  }, [stopScanner]);
+  }, [stopScanner, handleScannedData]);
 
   const handleScannedData = useCallback(async (raw: string) => {
     if (!user?.id) return;

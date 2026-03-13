@@ -64,7 +64,7 @@ export default function HudConversationList({ threads, loading, selectedThread, 
     >
       {/* Search + stats */}
       <div className="px-4 pt-4 pb-2 space-y-3">
-        <div className="flex items-baseline justify-between">
+        <div className="hidden md:flex items-baseline justify-between">
           <h2 className="text-base font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
             Messages
           </h2>

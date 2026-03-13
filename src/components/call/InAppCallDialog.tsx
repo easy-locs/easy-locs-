@@ -51,11 +51,10 @@ export default function InAppCallDialog({
     // Always attach audio to dedicated audio element
     if (hasAudio && remoteAudioRef.current) {
       const audioEl = remoteAudioRef.current;
-      // Create audio-only stream to avoid video interference
       const audioStream = new MediaStream(remoteStream.getAudioTracks());
       audioEl.srcObject = audioStream;
-      audioEl.volume = speakerOn ? 1.0 : 0.0;
-      audioEl.muted = !speakerOn;
+      audioEl.volume = 1;
+      audioEl.muted = false;
       const p = audioEl.play();
       if (p) p.catch(() => {
         const retry = () => { audioEl.play().catch(() => {}); document.removeEventListener("touchstart", retry); document.removeEventListener("click", retry); };
@@ -69,7 +68,7 @@ export default function InAppCallDialog({
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play().catch(() => {});
     }
-  }, [remoteStream, speakerOn]);
+  }, [remoteStream]);
 
   // Attach local stream for self-view
   useEffect(() => {
