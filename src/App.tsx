@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import RealtimeMessageToast from "@/components/communication/RealtimeMessageToast";
 import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
+import { usePresence } from "@/hooks/usePresence";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
@@ -199,6 +200,7 @@ const RouteAwareAssistant = () => {
 
 /** Registers device session + suspicious login detection */
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
+const OrbitPresenceGuard = () => { usePresence(); return null; };
 
 const App = () => (
   <ErrorBoundary>
@@ -212,6 +214,7 @@ const App = () => (
         <AuthProvider>
           <CallProvider>
            <OrbitSessionGuard />
+           <OrbitPresenceGuard />
            <RealtimeMessageToast />
            <UpdateNotification />
           <RouteAwareAssistant />
