@@ -324,11 +324,11 @@ export default function CommContactsSection() {
 
 function presenceColor(status: string): string {
   const colors: Record<string, string> = {
-    online: "hsl(142, 70%, 50%)",
-    away: "hsl(45, 90%, 55%)",
-    busy: "hsl(0, 70%, 60%)",
-    in_call: "hsl(270, 80%, 65%)",
-    dnd: "hsl(0, 70%, 50%)",
+    online: "hsl(var(--hud-success))",
+    away: "hsl(var(--hud-warning))",
+    busy: "hsl(var(--hud-danger))",
+    in_call: "hsl(var(--hud-purple))",
+    dnd: "hsl(var(--hud-danger))",
   };
   return colors[status] || "hsl(var(--hud-text-dim) / 0.4)";
 }
