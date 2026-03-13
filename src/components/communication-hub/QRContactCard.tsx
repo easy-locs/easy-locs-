@@ -159,24 +159,34 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
           } catch {}
         }, 300);
       } else {
-        const { default: jsQR } = await import("jsqr");
+        // jsQR fallback for Safari/iOS — actively scans camera frames
+        const jsQRModule = await import("jsqr");
+        const jsQR = jsQRModule.default;
+        if (!jsQR) {
+          toast.error("QR scanner unavailable on this browser");
+          setMode("show");
+          return;
+        }
         scanIntervalRef.current = setInterval(() => {
           const video = videoRef.current;
           const canvas = canvasRef.current;
           if (!video || !canvas || video.readyState < 2) return;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
           if (!ctx) return;
-          canvas.width = video.videoWidth || 640;
-          canvas.height = video.videoHeight || 640;
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const result = jsQR(image.data, image.width, image.height, { inversionAttempts: "dontInvert" });
+          // Use actual video dimensions for accuracy
+          const w = video.videoWidth || 640;
+          const h = video.videoHeight || 640;
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(video, 0, 0, w, h);
+          const image = ctx.getImageData(0, 0, w, h);
+          const result = jsQR(image.data, image.width, image.height, { inversionAttempts: "attemptBoth" });
           if (result?.data) {
             haptic("success");
             stopScanner();
             handleScannedData(result.data);
           }
-        }, 350);
+        }, 250); // Faster scan interval for responsiveness
       }
 
       setTimeout(() => setShowManualInput(true), 2200);
