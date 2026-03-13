@@ -5402,40 +5402,64 @@ export type Database = {
       }
       user_presence: {
         Row: {
+          avatar_url: string | null
           custom_status: string | null
           device_type: string | null
+          display_name: string | null
           last_seen_at: string
           lat: number | null
           lng: number | null
           location_label: string | null
           location_shared: boolean
+          location_sharing: boolean
+          professional_category: string | null
+          sharing_expires_at: string | null
           status: string
           updated_at: string
           user_id: string
+          verified: boolean
+          visible_on_nearby: boolean
+          who_can_see: string
         }
         Insert: {
+          avatar_url?: string | null
           custom_status?: string | null
           device_type?: string | null
+          display_name?: string | null
           last_seen_at?: string
           lat?: number | null
           lng?: number | null
           location_label?: string | null
           location_shared?: boolean
+          location_sharing?: boolean
+          professional_category?: string | null
+          sharing_expires_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          verified?: boolean
+          visible_on_nearby?: boolean
+          who_can_see?: string
         }
         Update: {
+          avatar_url?: string | null
           custom_status?: string | null
           device_type?: string | null
+          display_name?: string | null
           last_seen_at?: string
           lat?: number | null
           lng?: number | null
           location_label?: string | null
           location_shared?: boolean
+          location_sharing?: boolean
+          professional_category?: string | null
+          sharing_expires_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          verified?: boolean
+          visible_on_nearby?: boolean
+          who_can_see?: string
         }
         Relationships: []
       }
