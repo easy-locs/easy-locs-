@@ -1,6 +1,7 @@
 /**
  * VoiceMessageBubble — Premium voice message player with animated waveform.
  * Signal/WhatsApp-grade design with smooth progress, play/pause, seek.
+ * Supports global audio isolation (only one voice plays at a time).
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Mic } from "lucide-react";
@@ -10,6 +11,24 @@ interface Props {
   durationSeconds: number;
   isMe?: boolean;
   status?: "sending" | "sent" | "failed";
+}
+
+// Global audio manager — ensures only one voice message plays at a time
+let globalPlayingAudio: HTMLAudioElement | null = null;
+const globalListeners = new Set<() => void>();
+
+function registerAudio(audio: HTMLAudioElement, onPaused: () => void) {
+  globalListeners.add(onPaused);
+  return () => { globalListeners.delete(onPaused); };
+}
+
+function setGlobalPlaying(audio: HTMLAudioElement) {
+  if (globalPlayingAudio && globalPlayingAudio !== audio) {
+    globalPlayingAudio.pause();
+    // Notify the previous player it was paused
+    globalListeners.forEach(cb => cb());
+  }
+  globalPlayingAudio = audio;
 }
 
 // Generate deterministic waveform from url hash
@@ -28,10 +47,10 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [loaded, setLoaded] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animRef = useRef<number>();
   const waveContainerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
 
   const bars = 36;
   const waveform = generateWaveform(url, bars);
@@ -46,8 +65,18 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
     }
   }, []);
 
+  // Register for global audio isolation
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const cleanup = registerAudio(audio, () => {
+      if (audio !== globalPlayingAudio) {
+        setPlaying(false);
+        if (animRef.current) cancelAnimationFrame(animRef.current);
+      }
+    });
     return () => {
+      cleanup();
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
   }, []);
@@ -60,6 +89,7 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
       setPlaying(false);
       if (animRef.current) cancelAnimationFrame(animRef.current);
     } else {
+      setGlobalPlaying(audio);
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
@@ -91,9 +121,20 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => seekFromPosition(e.clientX);
-  const handleTouchSeek = (e: React.TouchEvent<HTMLDivElement>) => {
+
+  // Touch: tap to seek + drag to scrub
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    seekFromPosition(e.touches[0].clientX);
+  };
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
     e.preventDefault();
     seekFromPosition(e.touches[0].clientX);
+  };
+  const handleTouchEnd = () => {
+    isDraggingRef.current = false;
   };
 
   const formatDur = (s: number) => {
@@ -106,17 +147,16 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
   const isSending = status === "sending";
 
   return (
-    <div className="flex items-center gap-3 py-1 min-w-[220px] max-w-[320px] animate-scale-in">
+    <div className="flex items-center gap-3 py-1 min-w-[220px] max-w-[320px]">
       <audio
         ref={audioRef}
         src={url}
         preload="metadata"
         onEnded={handleEnded}
-        onLoadedMetadata={() => setLoaded(true)}
         playsInline
       />
 
-      {/* Play/Pause button */}
+      {/* Play/Pause button — 40px touch target */}
       <button
         onClick={toggle}
         disabled={isSending || isFailed}
@@ -146,9 +186,11 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
       <div className="flex-1 flex flex-col gap-1.5 min-w-0">
         <div
           ref={waveContainerRef}
-          className="flex items-end gap-[2px] h-7 cursor-pointer"
+          className="flex items-end gap-[2px] h-7 cursor-pointer select-none"
           onClick={handleSeek}
-          onTouchStart={handleTouchSeek}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {waveform.map((h, i) => {
             const barProgress = (i / bars) * 100;
