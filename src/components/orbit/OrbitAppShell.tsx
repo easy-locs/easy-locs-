@@ -20,11 +20,11 @@ import { useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Orbit", path: "/app/orbit" },
-  { icon: MessageCircle, label: "Messages", path: "/dashboard/communication" },
-  { icon: Phone, label: "Calls", path: "/dashboard/communication" },
-  { icon: Store, label: "Listings", path: "/dashboard/marketplace" },
-  { icon: User, label: "Profile", path: "/dashboard/settings" },
+  { icon: Home, label: "Orbit", path: "/app/orbit", badge: null as string | null },
+  { icon: MessageCircle, label: "Messages", path: "/dashboard/communication", badge: "messages" },
+  { icon: Phone, label: "Appels", path: "/dashboard/communication?tab=calls", badge: "calls" },
+  { icon: Store, label: "Annonces", path: "/dashboard/marketplace", badge: null },
+  { icon: User, label: "Profil", path: "/dashboard/settings", badge: null },
 ] as const;
 
 function OrbitHeader() {
@@ -110,9 +110,9 @@ function OrbitBottomNav() {
   const location = useLocation();
   const { unreadMessages, missedCalls } = useOrbitEngine();
 
-  const getCounter = (label: string) => {
-    if (label === "Messages") return unreadMessages;
-    if (label === "Calls") return missedCalls;
+  const getCounter = (badge: string | null) => {
+    if (badge === "messages") return unreadMessages;
+    if (badge === "calls") return missedCalls;
     return 0;
   };
 
@@ -126,9 +126,9 @@ function OrbitBottomNav() {
         height: "calc(56px + env(safe-area-inset-bottom, 8px))",
       }}
     >
-      {NAV_ITEMS.map(({ icon: Icon, label, path }) => {
+      {NAV_ITEMS.map(({ icon: Icon, label, path, badge }) => {
         const isActive = location.pathname === path || (label === "Orbit" && location.pathname.startsWith("/app"));
-        const counter = getCounter(label);
+        const counter = getCounter(badge);
         return (
           <button
             key={label}
