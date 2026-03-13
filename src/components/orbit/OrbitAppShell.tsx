@@ -20,11 +20,11 @@ import { useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Orbit", path: "/app/orbit" },
-  { icon: MessageCircle, label: "Messages", path: "/dashboard/communication" },
-  { icon: Phone, label: "Calls", path: "/dashboard/communication" },
-  { icon: Store, label: "Listings", path: "/dashboard/marketplace" },
-  { icon: User, label: "Profile", path: "/dashboard/settings" },
+  { icon: Home, label: "Orbit", path: "/app/orbit", badge: null as string | null },
+  { icon: MessageCircle, label: "Messages", path: "/dashboard/communication", badge: "messages" },
+  { icon: Phone, label: "Appels", path: "/dashboard/communication?tab=calls", badge: "calls" },
+  { icon: Store, label: "Annonces", path: "/dashboard/marketplace", badge: null },
+  { icon: User, label: "Profil", path: "/dashboard/settings", badge: null },
 ] as const;
 
 function OrbitHeader() {
