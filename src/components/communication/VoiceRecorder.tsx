@@ -4,7 +4,7 @@
  * Signal-grade UX with animated waveform during recording.
  */
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Mic, X, Send, Loader2, Square } from "lucide-react";
+import { Mic, X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
