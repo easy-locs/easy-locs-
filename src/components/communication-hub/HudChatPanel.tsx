@@ -42,6 +42,8 @@ import { buildAppUrl } from "@/lib/app-domain";
 import { motion } from "framer-motion";
 import type { ConversationThread, ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES, CONV_STATUSES, CONV_TYPE_CONFIG, SOURCE_MODULE_CONFIG, STATUS_COLORS, STATUS_LABELS } from "./types";
+import ChatMessageBubble, { DateSeparator } from "./ChatMessageBubble";
+import { format, isToday, isYesterday } from "date-fns";
 
 const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
 const escapeEmailHtml = (v: string) =>
