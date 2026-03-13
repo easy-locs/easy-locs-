@@ -674,6 +674,39 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         </div>
 
+        {/* ══ Offline Banner ══ */}
+        {!offline.isOnline && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            className="flex items-center gap-2 px-4 py-2"
+            style={{ background: "hsl(var(--hud-warning) / 0.15)", borderBottom: "1px solid hsl(var(--hud-warning) / 0.3)" }}
+          >
+            <WifiOff className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
+            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
+              Offline — messages will be sent when you reconnect
+            </span>
+            {offline.queueCount > 0 && (
+              <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>
+                {offline.queueCount} queued
+              </Badge>
+            )}
+          </motion.div>
+        )}
+        {offline.isSyncing && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            className="flex items-center gap-2 px-4 py-1.5"
+            style={{ background: "hsl(var(--hud-success) / 0.1)", borderBottom: "1px solid hsl(var(--hud-success) / 0.2)" }}
+          >
+            <CloudUpload className="h-3.5 w-3.5 animate-pulse shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
+            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>
+              Syncing queued messages...
+            </span>
+          </motion.div>
+        )}
+
         {/* ══ Messages ══ */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-4 space-y-3" style={{ background: "hsl(var(--hud-bg))" }}>
           {messages.length === 0 ? (
