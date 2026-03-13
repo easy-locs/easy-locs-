@@ -463,7 +463,7 @@ export default function InAppCallDialog({
                     </div>
                     <CtrlBtn
                       onClick={handleToggleSpeaker}
-                      disabled={status !== "active" || isEnding}
+                      disabled={isTerminal || isEnding || status === "idle"}
                       active={speakerOn}
                       icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
                       text={speakerOn ? "Speaker" : "Earpiece"}
