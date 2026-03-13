@@ -464,7 +464,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 <Video className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
               </Button>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Disappearing messages */}
+              <DisappearingMessagesToggle
+                threadId={thread?.id || ""}
+                currentTTL={disappearTTL}
+                onChange={setDisappearTTL}
+              />
               <Select value={convStatus} onValueChange={updateConversationStatus}>
                 <SelectTrigger className="h-8 w-auto text-xs gap-1" style={{
                   background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)",
