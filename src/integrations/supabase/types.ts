@@ -6128,6 +6128,13 @@ export type Database = {
         }
         Returns: string
       }
+      geocode_city_approx: {
+        Args: { _city: string }
+        Returns: {
+          lat: number
+          lng: number
+        }[]
+      }
       get_listing_property: { Args: { p_listing_id: string }; Returns: Json }
       get_order_by_session: { Args: { _session_id: string }; Returns: Json }
       get_org_role: {
