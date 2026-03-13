@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
-import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock } from "lucide-react";
+import { Search, UserPlus, MessageCircle, Phone, Star, Users, Briefcase, Heart, Clock, QrCode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
