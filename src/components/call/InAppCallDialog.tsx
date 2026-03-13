@@ -327,7 +327,7 @@ export default function InAppCallDialog({
 
             {/* Video controls */}
             <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-4">
-              <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
+              <button onClick={handleToggleMute} disabled={isTerminal || isEnding || status === "idle"}
                 className="w-12 h-12 rounded-full flex items-center justify-center disabled:opacity-40"
                 style={{
                   background: muted ? "hsl(var(--destructive) / 0.8)" : "hsl(var(--background) / 0.6)",
