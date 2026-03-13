@@ -2989,6 +2989,9 @@ export type Database = {
           deleted_for_all: boolean | null
           deleted_for_sender: boolean | null
           delivered: boolean | null
+          disappear_at: string | null
+          edit_history: Json | null
+          edited_at: string | null
           encrypted: boolean | null
           forwarded_from: string | null
           guest_session_id: string | null
@@ -3028,6 +3031,9 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          disappear_at?: string | null
+          edit_history?: Json | null
+          edited_at?: string | null
           encrypted?: boolean | null
           forwarded_from?: string | null
           guest_session_id?: string | null
@@ -3067,6 +3073,9 @@ export type Database = {
           deleted_for_all?: boolean | null
           deleted_for_sender?: boolean | null
           delivered?: boolean | null
+          disappear_at?: string | null
+          edit_history?: Json | null
+          edited_at?: string | null
           encrypted?: boolean | null
           forwarded_from?: string | null
           guest_session_id?: string | null
