@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import IntelligenceOrb from "@/components/dashboard/IntelligenceOrb";
 import { StatCard } from "@/components/ui/stat-card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
@@ -149,26 +150,29 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
+        {/* Intelligence Orb — Central Brain */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, type: "spring" }}
+          className="flex justify-center mb-6"
+        >
+          <IntelligenceOrb hasActivity={!loading && stats.totalProperties > 0} />
+        </motion.div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mb-8"
+          className="mb-6 text-center"
         >
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-              <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("page.dashboard.world_map") || "My World Portfolio"}
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                {t("page.dashboard.global_overview") || "Global overview — real estate, services & bookings"}
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            {t("page.dashboard.world_map") || "My World Portfolio"}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {t("page.dashboard.global_overview") || "Global overview — real estate, services & bookings"}
+          </p>
         </motion.div>
 
         {/* Global KPIs */}
