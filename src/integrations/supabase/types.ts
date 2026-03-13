@@ -2386,6 +2386,36 @@ export type Database = {
           },
         ]
       }
+      login_events: {
+        Row: {
+          created_at: string
+          device_fingerprint: string
+          device_label: string
+          event_type: string
+          id: string
+          is_new_device: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint: string
+          device_label?: string
+          event_type?: string
+          id?: string
+          is_new_device?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string
+          device_label?: string
+          event_type?: string
+          id?: string
+          is_new_device?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_bookings: {
         Row: {
           booker_email: string
@@ -5400,6 +5430,36 @@ export type Database = {
           },
         ]
       }
+      user_key_bundles: {
+        Row: {
+          created_at: string
+          id: string
+          identity_public_key: string
+          one_time_pre_keys: Json | null
+          signed_pre_key: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identity_public_key: string
+          one_time_pre_keys?: Json | null
+          signed_pre_key?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identity_public_key?: string
+          one_time_pre_keys?: Json | null
+          signed_pre_key?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           avatar_url: string | null
@@ -5518,6 +5578,42 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_fingerprint: string
+          device_label: string
+          id: string
+          is_current: boolean | null
+          last_active_at: string
+          os: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint: string
+          device_label?: string
+          id?: string
+          is_current?: boolean | null
+          last_active_at?: string
+          os?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string
+          device_label?: string
+          id?: string
+          is_current?: boolean | null
+          last_active_at?: string
+          os?: string | null
           user_id?: string
         }
         Relationships: []

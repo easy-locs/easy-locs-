@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Plus, Zap } from "lucide-react";
+import { Plus, Zap, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -23,6 +23,7 @@ import HudConversationList from "@/components/communication-hub/HudConversationL
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
+import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,7 +31,8 @@ import { useAuth } from "@/contexts/AuthContext";
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings"];
 
 const CommunicationCenter = () => {
-  const { orgId } = useAuth();
+  const { orgId, user } = useAuth();
+  const userId = user?.id;
   const { t } = useI18n();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -127,11 +129,14 @@ const CommunicationCenter = () => {
       case "nearby": return <CommNearbySection />;
       case "meetings":
       case "files":
-      case "settings":
         return <CommPlaceholderSection section={activeSection} />;
+      case "settings":
+        return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
       default: return null;
     }
   };
+
+
 
   return (
     <DashboardLayout>
@@ -157,9 +162,15 @@ const CommunicationCenter = () => {
               {selectedThread.name}
             </h1>
           ) : (
-            <h1 className="text-xl font-bold flex-1" style={{ color: "hsl(var(--foreground))" }}>
-              Orbit
-            </h1>
+            <div className="flex items-center gap-2 flex-1">
+              <h1 className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                Orbit
+              </h1>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                <Lock className="h-2.5 w-2.5" /> E2E
+              </span>
+            </div>
           )}
           <div className="flex items-center gap-2">
             {showChatArea && !selectedThread && (
