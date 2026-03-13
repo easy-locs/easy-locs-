@@ -65,8 +65,6 @@ function ChatMessageBubble({
       style={{ marginTop: isConsecutive ? 2 : 8 }}
       onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
     >
-      onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
-    >
       <div
         className="relative max-w-[78%] sm:max-w-[60%]"
         style={{
