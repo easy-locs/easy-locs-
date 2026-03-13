@@ -23,6 +23,7 @@ import { haptic } from "@/lib/haptics";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 
 interface NearbyItem {
   item_id: string;
