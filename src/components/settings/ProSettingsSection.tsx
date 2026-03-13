@@ -315,7 +315,7 @@ export default function ProSettingsSection() {
           <ToggleRow
             icon={<MessageCircle className="h-4 w-4" />}
             label="Indicateurs de saisie"
-            description='Afficher "en train d\'écrire..." à vos contacts'
+            description={"Afficher \"en train d'écrire...\" à vos contacts"}
             checked={settings.typingIndicators}
             onChange={(v) => update("typingIndicators", v)}
           />
