@@ -213,11 +213,9 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
 
           {/* Recording indicator with live amplitude */}
           <div className="flex-1 flex items-center gap-2.5 min-w-0">
-            <motion.div
-              className="h-3 w-3 rounded-full shrink-0"
+            <div
+              className="h-3 w-3 rounded-full shrink-0 animate-pulse"
               style={{ background: "hsl(var(--hud-danger))" }}
-              animate={{ opacity: [1, 0.3, 1], scale: [1, 1 + waveAmplitude * 0.5, 1] }}
-              transition={{ duration: 1.2, repeat: Infinity }}
             />
             <span
               className="text-sm font-mono tabular-nums font-semibold"
@@ -226,22 +224,22 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
               {formatDur(duration)}
             </span>
 
-            {/* Mini waveform visualization */}
+            {/* Mini waveform — CSS-only for performance */}
             <div className="flex items-center gap-[2px] flex-1 h-5">
-              {Array.from({ length: 20 }, (_, i) => (
-                <motion.div
-                  key={i}
-                  className="rounded-full"
-                  style={{
-                    width: 2,
-                    background: "hsl(var(--hud-danger) / 0.5)",
-                  }}
-                  animate={{
-                    height: [3, 3 + waveAmplitude * 16 * Math.abs(Math.sin(i * 0.8 + Date.now() * 0.003)), 3],
-                  }}
-                  transition={{ duration: 0.3, delay: i * 0.02 }}
-                />
-              ))}
+              {Array.from({ length: 16 }, (_, i) => {
+                const h = Math.max(3, 3 + waveAmplitude * 16 * Math.abs(Math.sin(i * 0.8)));
+                return (
+                  <div
+                    key={i}
+                    className="rounded-full transition-all duration-150"
+                    style={{
+                      width: 2,
+                      height: h,
+                      background: "hsl(var(--hud-danger) / 0.5)",
+                    }}
+                  />
+                );
+              })}
             </div>
 
             <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>
