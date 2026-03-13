@@ -7,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
 import {
-  Phone, PhoneIncoming, PhoneMissed, PhoneOutgoing,
-  Video, Search, ArrowDownLeft, ArrowUpRight,
+  Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
