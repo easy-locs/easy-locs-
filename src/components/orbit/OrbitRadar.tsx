@@ -235,13 +235,22 @@ export default function OrbitRadar() {
           <>
             <p className="text-sm font-semibold mb-1" style={{ color: "hsl(var(--hud-text))" }}>Location Required</p>
             <p className="text-[11px] text-center mb-4 max-w-[240px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{geoError}</p>
-            <Button size="sm" onClick={requestLocation} className="gap-1.5"
+            <Button size="sm" onClick={() => { requestLocation(); haptic("medium"); }} className="gap-1.5"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
               <Navigation className="h-3.5 w-3.5" /> Enable Location
             </Button>
           </>
         ) : (
-          <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Acquiring position…</p>
+          <>
+            <div className="relative w-12 h-12 mb-3">
+              <div className="absolute inset-0 rounded-full" style={{ border: "2px solid hsl(var(--hud-cyan) / 0.15)", borderTopColor: "hsl(var(--hud-cyan))" }}>
+                <svg className="w-full h-full animate-spin" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="transparent" /></svg>
+              </div>
+              <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "2px solid hsl(var(--hud-cyan) / 0.15)", borderTopColor: "hsl(var(--hud-cyan))", animationDuration: "1.2s" }} />
+              <div className="absolute rounded-full animate-spin" style={{ top: 10, left: 10, width: 28, height: 28, border: "2px solid hsl(var(--hud-cyan) / 0.08)", borderBottomColor: "hsl(var(--hud-cyan) / 0.5)", animationDirection: "reverse", animationDuration: "0.9s" }} />
+            </div>
+            <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Acquiring position…</p>
+          </>
         )}
       </div>
     );
