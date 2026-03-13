@@ -234,7 +234,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       try {
         const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: msg.content, from_locale: msg.sender_locale || "en", to_locale: locale } });
         if (transData?.translated) {
-          setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
+          setRawMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
           await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
         }
       } catch (e) { toast.error("Translation failed"); }
