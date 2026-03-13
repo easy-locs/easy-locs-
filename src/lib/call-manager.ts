@@ -85,6 +85,7 @@ export class CallManager {
   private _ending = false;
   private _endFlowInvocations = 0;
   private _cleanupInvocations = 0;
+  private _reconnectAttempts = 0;
 
   onStateChange: (state: Partial<CallState>) => void = () => {};
 
