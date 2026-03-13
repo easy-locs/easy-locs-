@@ -53,7 +53,7 @@ export default function OrbitHome() {
   const totalUrgent = engine.unreadMessages + engine.missedCalls + engine.pendingBookings + engine.newLeads;
 
   return (
-    <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 animate-fade-in min-h-full">
+    <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 min-h-full">
       {/* ── Orb Section ── */}
       <OrbitOrb contextMessage={orbMessage} />
 
