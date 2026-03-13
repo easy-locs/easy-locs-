@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import type { ConversationThread } from "./types";
 import HudConversationCard from "./HudConversationCard";
+import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 
 interface Props {
   threads: ConversationThread[];
