@@ -101,7 +101,11 @@ export default function InAppCallDialog({
     } finally { setIsEnding(false); }
   };
 
-  const handleToggleMute = () => { const isMuted = callManager?.toggleMute(); setMuted(!!isMuted); };
+  const handleToggleMute = useCallback(() => {
+    if (!callManager) return;
+    const isMuted = callManager.toggleMute();
+    setMuted(isMuted);
+  }, [callManager]);
 
   const handleToggleVideo = async () => {
     if (!localStream || !callManager) return;
