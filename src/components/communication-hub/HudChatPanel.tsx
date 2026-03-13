@@ -56,7 +56,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
+  const { messages: messages, isDecrypting } = useDecryptedMessages(rawMessages, decrypt, user?.id);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("general");
