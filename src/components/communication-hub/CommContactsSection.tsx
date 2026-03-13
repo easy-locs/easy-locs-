@@ -92,35 +92,84 @@ export default function CommContactsSection() {
   const presenceMap = usePresenceStatus(contactUserIds);
 
   // ── Batch auto-link: resolve all unlinked contacts on load ──
+  // ── Batch auto-link: resolve by email AND phone ──
   const batchAutoLink = useCallback(async (rawContacts: Contact[]) => {
-    const unlinked = rawContacts.filter(c => !c.contact_user_id && c.email?.trim());
+    const unlinked = rawContacts.filter(c => !c.contact_user_id && (c.email?.trim() || c.phone?.trim()));
     if (unlinked.length === 0) return rawContacts;
 
-    const emails = unlinked.map(c => c.email!.trim().toLowerCase());
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, email")
-      .in("email", emails);
-
-    if (!profiles || profiles.length === 0) return rawContacts;
-
+    // Step 1: Match by email
+    const emails = unlinked.filter(c => c.email?.trim()).map(c => c.email!.trim().toLowerCase());
     const emailToProfileId = new Map<string, string>();
-    profiles.forEach(p => {
-      if (p.email) emailToProfileId.set(p.email.toLowerCase(), p.id);
-    });
+    if (emails.length > 0) {
+      const { data: emailProfiles } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("email", emails);
+      emailProfiles?.forEach(p => {
+        if (p.email) emailToProfileId.set(p.email.toLowerCase(), p.id);
+      });
+    }
+
+    // Step 2: Match by phone (normalize: strip spaces, dashes, dots)
+    const normalizePhone = (p: string) => p.replace(/[\s\-\.\(\)]/g, "");
+    const phonesToMatch = unlinked
+      .filter(c => c.phone?.trim() && !emailToProfileId.has(c.email?.trim().toLowerCase() || ""))
+      .map(c => normalizePhone(c.phone!.trim()));
+
+    const phoneToProfileId = new Map<string, string>();
+    if (phonesToMatch.length > 0) {
+      // Query profiles with phone numbers
+      const { data: phoneProfiles } = await supabase
+        .from("profiles")
+        .select("id, phone, whatsapp_number")
+        .not("phone", "is", null);
+
+      phoneProfiles?.forEach(p => {
+        if (p.phone) {
+          const normalized = normalizePhone(p.phone);
+          phoneToProfileId.set(normalized, p.id);
+          // Also check without country code prefix variations
+          if (normalized.startsWith("+")) {
+            phoneToProfileId.set(normalized.slice(1), p.id);
+          }
+        }
+        if (p.whatsapp_number) {
+          const normalized = normalizePhone(p.whatsapp_number);
+          phoneToProfileId.set(normalized, p.id);
+        }
+      });
+    }
 
     const updates: { contactId: string; profileId: string }[] = [];
     const updated = rawContacts.map(c => {
       if (c.contact_user_id) return c;
+
+      // Try email match first
       const email = c.email?.trim().toLowerCase();
-      if (!email) return c;
-      const profileId = emailToProfileId.get(email);
-      if (!profileId) return c;
-      updates.push({ contactId: c.id, profileId });
-      return { ...c, contact_user_id: profileId };
+      if (email && emailToProfileId.has(email)) {
+        const profileId = emailToProfileId.get(email)!;
+        updates.push({ contactId: c.id, profileId });
+        return { ...c, contact_user_id: profileId };
+      }
+
+      // Then try phone match
+      const phone = c.phone?.trim();
+      if (phone) {
+        const normalized = normalizePhone(phone);
+        // Try exact, without +, and common variants
+        const profileId = phoneToProfileId.get(normalized)
+          || phoneToProfileId.get(normalized.replace(/^0/, ""))
+          || (normalized.startsWith("+") ? phoneToProfileId.get(normalized.slice(1)) : undefined);
+        if (profileId) {
+          updates.push({ contactId: c.id, profileId });
+          return { ...c, contact_user_id: profileId };
+        }
+      }
+
+      return c;
     });
 
-    // Persist links in background (don't await)
+    // Persist links in background
     for (const u of updates) {
       supabase.from("contacts").update({ contact_user_id: u.profileId } as any).eq("id", u.contactId).then(() => {});
     }
