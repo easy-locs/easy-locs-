@@ -19,17 +19,25 @@ export async function getOrCreateDirectThread(opts: {
 }): Promise<{ contextId: string; orgId: string } | null> {
   const contextId = getDirectContextId(opts.currentUserId, opts.targetUserId);
 
-  // Check if thread already exists by looking for messages with this context_id
-  const { data: existing } = await supabase
+  // Check if a conversation_threads row already exists for this context
+  const { data: existingThread } = await supabase
+    .from("conversation_threads")
+    .select("id, org_id, context_id")
+    .eq("context_id", contextId)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingThread) {
+    return { contextId: existingThread.context_id!, orgId: existingThread.org_id };
+  }
+
+  // Also check by messages (legacy fallback)
+  const { data: existingMsg } = await supabase
     .from("messages")
     .select("context_id, org_id")
     .eq("context_id", contextId)
     .limit(1)
-    .single();
-
-  if (existing) {
-    return { contextId: existing.context_id!, orgId: existing.org_id };
-  }
+    .maybeSingle();
 
   // Get the current user's org (or target user's org) as the org_id anchor
   const { data: membership } = await supabase
@@ -37,7 +45,7 @@ export async function getOrCreateDirectThread(opts: {
     .select("org_id")
     .eq("user_id", opts.currentUserId)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   // Fallback: try target user's org
   let orgId = membership?.org_id;
@@ -47,20 +55,29 @@ export async function getOrCreateDirectThread(opts: {
       .select("org_id")
       .eq("user_id", opts.targetUserId)
       .limit(1)
-      .single();
+      .maybeSingle();
     orgId = targetMembership?.org_id;
   }
 
   if (!orgId) return null;
 
-  // Create the thread by inserting a system message
+  // If we found existing messages but no thread row, create the thread row
+  if (existingMsg) {
+    await ensureConversationThread(orgId, contextId, opts);
+    return { contextId, orgId };
+  }
+
+  // Create conversation_threads row first
+  await ensureConversationThread(orgId, contextId, opts);
+
+  // Then create a system message to seed the conversation
   const { data: profile } = await supabase
     .from("profiles")
     .select("name, email")
     .eq("id", opts.currentUserId)
-    .single();
+    .maybeSingle();
 
-  const { data: inserted } = await supabase
+  await supabase
     .from("messages")
     .insert({
       org_id: orgId,
@@ -72,10 +89,30 @@ export async function getOrCreateDirectThread(opts: {
       contact_email: profile?.email || "",
       contact_name: profile?.name || "User",
       conversation_status: "active",
-    } as any)
-    .select("context_id, org_id")
-    .single();
+    } as any);
 
-  if (!inserted) return null;
-  return { contextId: inserted.context_id!, orgId: inserted.org_id };
+  return { contextId, orgId };
+}
+
+/** Ensure a conversation_threads row exists for a direct thread */
+async function ensureConversationThread(
+  orgId: string,
+  contextId: string,
+  opts: { currentUserId: string; targetUserId: string; targetName: string }
+) {
+  try {
+    await supabase.from("conversation_threads").insert({
+      org_id: orgId,
+      context_type: "direct",
+      context_id: contextId,
+      initiator_id: opts.currentUserId,
+      participant_ids: [opts.currentUserId, opts.targetUserId],
+      provider_name: opts.targetName,
+      status: "active",
+      last_message_at: new Date().toISOString(),
+    }).select("id").maybeSingle();
+  } catch (e) {
+    // May already exist (race condition) — that's fine
+    console.warn("[direct-thread] conversation_threads insert:", e);
+  }
 }
