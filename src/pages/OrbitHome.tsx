@@ -6,11 +6,12 @@ import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
-  Bell, Shield, Smartphone, CloudUpload, BarChart3, Palette,
-  ChevronRight,
+  Bell, Shield, Lock, FileDown, BarChart3, Palette,
+  ChevronRight, Home, CalendarCheck, ShoppingBag, Building2,
+  TrendingUp, ClipboardList,
 } from "lucide-react";
 
-/* ── Priority modules (top row, larger) ── */
+/* ── Priority modules (top row) ── */
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
   { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
@@ -18,16 +19,23 @@ const PRIORITY_CARDS = [
   { icon: Store, label: "Annonces", desc: "Marketplace", key: "activeListings" as const, to: "/dashboard/marketplace" },
 ];
 
-/* ── Secondary modules ── */
+/* ── Module shortcuts — role-aware links to core pillars ── */
+const MODULE_CARDS = [
+  { icon: Building2, label: "Gestion", desc: "Immobilier", key: null, to: "/dashboard/rental", roles: ["landlord"] },
+  { icon: CalendarCheck, label: "Saisonnier", desc: "Réservations", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
+  { icon: ShoppingBag, label: "Marketplace", desc: "Services", key: "pendingOrders" as const, to: "/dashboard/marketplace", roles: ["landlord", "client"] },
+  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication", roles: ["landlord"] },
+];
+
+/* ── Secondary modules (utilities) ── */
 const SECONDARY_CARDS = [
   { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
   { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?section=privacy" },
-  { icon: Smartphone, label: "Appareils", desc: null, key: null, to: "/dashboard/settings?section=security" },
-  { icon: CloudUpload, label: "Sauvegarde", desc: null, key: null, to: "/dashboard/settings?section=data" },
-  { icon: BarChart3, label: "Données", desc: null, key: null, to: "/dashboard/settings?section=data" },
-  { icon: Palette, label: "Apparence", desc: null, key: null, to: "/dashboard/settings?section=branding" },
+  { icon: Lock, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
+  { icon: FileDown, label: "Import/Export", desc: "Données", key: null, to: "/dashboard/settings?section=data" },
+  { icon: Palette, label: "Apparence", desc: "Branding", key: null, to: "/dashboard/settings?section=branding" },
 ];
 
 export default function OrbitHome() {
@@ -51,6 +59,16 @@ export default function OrbitHome() {
   }, [engine.alerts, engine.syncStatus, engine.networkStatus, engine.activeListings]);
 
   const totalUrgent = engine.unreadMessages + engine.missedCalls + engine.pendingBookings + engine.newLeads;
+
+  // Activity summary for smart widget
+  const activityItems = useMemo(() => {
+    const items: { icon: string; label: string; value: number; link: string }[] = [];
+    if (engine.pendingBookings > 0) items.push({ icon: "📩", label: "Réservations en attente", value: engine.pendingBookings, link: "/dashboard/seasonal" });
+    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: "Commandes conciergerie", value: engine.pendingOrders, link: "/dashboard/concierge" });
+    if (engine.newLeads > 0) items.push({ icon: "🔥", label: "Nouveaux prospects", value: engine.newLeads, link: "/dashboard/communication" });
+    if (engine.activeListings > 0) items.push({ icon: "📊", label: "Annonces actives", value: engine.activeListings, link: "/dashboard/marketplace" });
+    return items;
+  }, [engine.pendingBookings, engine.pendingOrders, engine.newLeads, engine.activeListings]);
 
   return (
     <div className="flex flex-col items-center px-4 pt-4 pb-8 gap-5 min-h-full">
@@ -121,17 +139,84 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Secondary Section ── */}
+      {/* ── Activity Widget (contextual smart summary) ── */}
+      {activityItems.length > 0 && (
+        <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "250ms" }}>
+          <h2
+            className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
+            style={{ color: "hsl(var(--hud-text-dim))" }}
+          >
+            Activité
+          </h2>
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: "hsl(var(--hud-surface))",
+              border: "1px solid hsl(var(--hud-border) / 0.12)",
+            }}
+          >
+            {activityItems.slice(0, 4).map((item) => (
+              <button
+                key={item.label}
+                onClick={() => navigate(item.link)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 transition-all active:scale-[0.98]"
+                style={{ borderColor: "hsl(var(--hud-border) / 0.08)" }}
+              >
+                <span className="text-base shrink-0">{item.icon}</span>
+                <span className="flex-1 text-left text-[12px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>
+                  {item.label}
+                </span>
+                <span
+                  className="text-[12px] font-bold px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "hsl(var(--hud-cyan) / 0.1)",
+                    color: "hsl(var(--hud-cyan))",
+                  }}
+                >
+                  {item.value}
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Module Shortcuts (contextual links to core pillars) ── */}
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "300ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
-          Modules
+          Mes modules
+        </h2>
+        <div className="grid grid-cols-4 gap-2.5">
+          {MODULE_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${320 + i * 40}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Utilities Section ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "420ms" }}>
+        <h2
+          className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
+          style={{ color: "hsl(var(--hud-text-dim))" }}
+        >
+          Outils
         </h2>
         <div className="grid grid-cols-4 gap-2.5">
           {SECONDARY_CARDS.map((card, i) => (
-            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${350 + i * 40}ms` }}>
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${450 + i * 35}ms` }}>
               <OrbitQuickCard
                 icon={card.icon}
                 label={card.label}
@@ -149,7 +234,7 @@ export default function OrbitHome() {
       <div
         className="w-full max-w-md flex items-center justify-center gap-5 py-3 px-4 rounded-2xl mt-1 animate-fade-in"
         style={{
-          animationDelay: "500ms",
+          animationDelay: "550ms",
           background: "hsl(var(--hud-surface) / 0.6)",
           border: "1px solid hsl(var(--hud-border) / 0.08)",
         }}
