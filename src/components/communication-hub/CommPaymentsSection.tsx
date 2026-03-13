@@ -33,10 +33,10 @@ interface PaymentRequest {
 }
 
 const STATUS_CONFIG: Record<string, { icon: typeof Clock; color: string; label: string }> = {
-  pending: { icon: Clock, color: "hsl(45, 90%, 55%)", label: "Pending" },
-  paid: { icon: CheckCircle2, color: "hsl(142, 70%, 50%)", label: "Paid" },
-  failed: { icon: XCircle, color: "hsl(0, 70%, 60%)", label: "Failed" },
-  refunded: { icon: RefreshCw, color: "hsl(220, 70%, 60%)", label: "Refunded" },
+  pending: { icon: Clock, color: "hsl(var(--hud-warning))", label: "Pending" },
+  paid: { icon: CheckCircle2, color: "hsl(var(--hud-success))", label: "Paid" },
+  failed: { icon: XCircle, color: "hsl(var(--hud-danger))", label: "Failed" },
+  refunded: { icon: RefreshCw, color: "hsl(var(--hud-cyan))", label: "Refunded" },
   cancelled: { icon: XCircle, color: "hsl(var(--hud-text-dim) / 0.4)", label: "Cancelled" },
 };
 
