@@ -625,7 +625,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       <span className="text-[10px] opacity-70 mb-1 block">{getCategoryIcon(msg.category)}</span>
                     )}
                     {msg.attachment_url && <ChatMediaPreview url={msg.attachment_url} />}
-                    <p className="text-[14px] leading-[1.55] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                    <p className="text-[13.5px] leading-[1.5] whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
                       {isMe ? msg.content : (showOriginal[msg.id] ? msg.content : (msg.translated_content || msg.content))}
                     </p>
                     {!isMe && msg.translated_content && !showOriginal[msg.id] && (
