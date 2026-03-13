@@ -81,7 +81,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
-  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string } | null>(null);
+  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -787,7 +787,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       translatingMsgId={translatingMsgId}
                       isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
                       onTranslate={handleTranslateMessage}
-                      onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at })}
+                      onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false })}
                       getCategoryIcon={getCategoryIcon}
                     />
                   </div>
@@ -1063,7 +1063,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system" } : m));
+            // For "everyone" and "moderation" — update in-memory state to show deleted bubble
+            setRawMessages(prev => prev.map(m => m.id === msgId ? { 
+              ...m, 
+              content: "🚫 This message was deleted", 
+              message_type: "system",
+              attachment_url: null,
+              audio_url: undefined,
+              audio_duration_seconds: undefined,
+              deleted_for_all: true,
+            } as any : m));
           }
         }}
         onCopy={() => {}}

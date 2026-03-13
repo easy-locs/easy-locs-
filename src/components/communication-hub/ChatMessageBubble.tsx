@@ -5,7 +5,7 @@
 import { memo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
-  ShieldCheck, CreditCard,
+  ShieldCheck, CreditCard, EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
@@ -37,9 +37,38 @@ function ChatMessageBubble({
   onTranslate, onContextMenu, getCategoryIcon,
 }: Props) {
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
+  const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
-  const isPayment = msg.content?.startsWith("💳");
-  const isVoice = !!(msg as any).audio_url;
+  const isPayment = !isDeleted && msg.content?.startsWith("💳");
+  const isVoice = !isDeleted && !!(msg as any).audio_url;
+
+  // Deleted message bubble — shows inline in conversation flow
+  if (isDeleted && !isSystem) {
+    return (
+      <div
+        className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
+        style={{ marginTop: isConsecutive ? 2 : 8 }}
+      >
+        <div
+          className="relative max-w-[78%] sm:max-w-[60%] flex items-center gap-1.5"
+          style={{
+            padding: "8px 14px",
+            borderRadius: isMe
+              ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
+              : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
+            background: "hsl(var(--hud-surface) / 0.3)",
+            border: "1px solid hsl(var(--hud-border) / 0.04)",
+          }}
+        >
+          <EyeOff className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+          <span className="text-[12.5px] italic" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            This message was deleted
+          </span>
+          <span className="text-[10px] opacity-35 font-medium tabular-nums ml-2">{format(new Date(msg.created_at), "HH:mm")}</span>
+        </div>
+      </div>
+    );
+  }
 
   if (isSystem) {
     return (
