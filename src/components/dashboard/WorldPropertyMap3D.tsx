@@ -100,7 +100,7 @@ function GlobeScene({ countries, hoveredCountry, onHover, onSelect }: {
       <group ref={groupRef}>
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
-          <meshStandardMaterial map={texture ?? undefined} color={texture ? undefined : "#1e3a5f"} roughness={0.45} metalness={0.15} />
+          <meshStandardMaterial map={texture} roughness={0.45} metalness={0.15} />
         </mesh>
         {countries.map(c => (
           <PropertyMarker
