@@ -302,7 +302,7 @@ export class CallManager {
         this.startElapsedTimer();
       } else if (signal.type === "offer") {
         // Caller receives the offer from callee
-        if (!this.pc) this.createPeerConnection();
+        if (!this.pc) await this.createPeerConnection();
         const offer = JSON.parse(signal.data);
         await this.pc!.setRemoteDescription(new RTCSessionDescription(offer));
 
