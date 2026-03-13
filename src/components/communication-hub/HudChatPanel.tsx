@@ -96,6 +96,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
     if (!orgId || !thread) return;
+
+    // If offline, load from cache
+    if (!offline.isOnline) {
+      const cached = await offline.getCachedMessages();
+      if (cached.length > 0) setRawMessages(cached as ChatMessage[]);
+      // Also load pending offline messages for display
+      const pending = await offline.getThreadPending();
+      setPendingOffline(pending);
+      return;
+    }
+
     let query = supabase.from("messages").select("*").eq("org_id", orgId).order("created_at", { ascending: true });
     if (thread.contextType === "guest_session" && thread.contextId) query = query.eq("guest_session_id", thread.contextId);
     else if (thread.conversationType === "listing" && thread.leadId) query = query.eq("context_type", "real_estate_lead").eq("context_id", thread.leadId);
@@ -105,6 +116,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     const { data } = await query;
     if (data) {
       setRawMessages(data as ChatMessage[]);
+      // Cache for offline reading
+      offline.cacheMessages(data);
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
@@ -113,9 +126,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         onThreadUpdate(thread.id, { unreadCount: 0 });
       }
     }
-  }, [orgId, thread, user, onThreadUpdate]);
+    // Clear pending display
+    setPendingOffline([]);
+  }, [orgId, thread, user, onThreadUpdate, offline]);
 
   useEffect(() => { loadMessages(); }, [loadMessages]);
+  // Re-load when coming back online
+  useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
   useEffect(() => {
