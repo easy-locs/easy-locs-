@@ -62,8 +62,33 @@ export default function CommContactsSection() {
   const [saving, setSaving] = useState(false);
 
   // Get presence for contacts that have user IDs
-  const contactUserIds = contacts.filter(c => c.contact_user_id).map(c => c.contact_user_id!);
+  const contactUserIds = contacts.filter((c) => c.contact_user_id).map((c) => c.contact_user_id!);
   const presenceMap = usePresenceStatus(contactUserIds);
+
+  const ensureLinkedContactUserId = useCallback(async (contact: Contact): Promise<string | null> => {
+    if (contact.contact_user_id) return contact.contact_user_id;
+    const email = contact.email?.trim();
+    if (!email) return null;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (!profile?.id) return null;
+
+    await supabase
+      .from("contacts")
+      .update({ contact_user_id: profile.id } as any)
+      .eq("id", contact.id);
+
+    setContacts((prev) =>
+      prev.map((c) => (c.id === contact.id ? { ...c, contact_user_id: profile.id } : c))
+    );
+
+    return profile.id;
+  }, []);
 
   const loadContacts = useCallback(async () => {
     if (!user?.id) return;
@@ -77,7 +102,28 @@ export default function CommContactsSection() {
     setLoading(false);
   }, [user?.id]);
 
-  useEffect(() => { loadContacts(); }, [loadContacts]);
+  useEffect(() => {
+    loadContacts();
+  }, [loadContacts]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`contacts-sync-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "contacts", filter: `owner_id=eq.${user.id}` },
+        () => {
+          loadContacts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, loadContacts]);
 
   const filtered = contacts.filter(c => {
     if (category === "favorite" && !c.is_favorite) return false;
@@ -135,7 +181,7 @@ export default function CommContactsSection() {
     if (!user) return;
     setActionLoading(`msg-${contact.id}`);
     try {
-      const targetUserId = contact.contact_user_id;
+      const targetUserId = await ensureLinkedContactUserId(contact);
       if (targetUserId) {
         const thread = await getOrCreateDirectThread({
           currentUserId: user.id,
@@ -160,21 +206,7 @@ export default function CommContactsSection() {
     haptic("medium");
     if (!user) return;
 
-    // If contact has no linked user, try to auto-link by email
-    let contactUserId = contact.contact_user_id;
-    if (!contactUserId && contact.email) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", contact.email)
-        .maybeSingle();
-      if (profile?.id) {
-        contactUserId = profile.id;
-        // Auto-link for future use
-        await supabase.from("contacts").update({ contact_user_id: profile.id } as any).eq("id", contact.id);
-        setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, contact_user_id: profile.id } : c));
-      }
-    }
+    const contactUserId = await ensureLinkedContactUserId(contact);
 
     if (!contactUserId) {
       toast.error("Ce contact n'est pas lié à un compte utilisateur. Ajoutez son email pour le synchroniser.");
@@ -190,12 +222,12 @@ export default function CommContactsSection() {
         .eq("user_id", contactUserId)
         .limit(1)
         .single();
-      
+
       if (!targetMembership?.org_id) {
         toast.error("Utilisateur non joignable");
         return;
       }
-      
+
       await initiateCall({
         orgId: targetMembership.org_id,
         contextType: "direct",

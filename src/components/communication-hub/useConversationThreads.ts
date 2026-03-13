@@ -444,16 +444,16 @@ export function useConversationThreads() {
   const debouncedReload = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      loadThreads();
+      void Promise.all([loadThreads(), loadStats()]);
     }, 800);
-  }, [loadThreads]);
+  }, [loadThreads, loadStats]);
 
-  // Realtime: refresh threads on new messages, booking changes, deal changes, call logs
+  // Realtime: refresh threads on messages/threads/deals/bookings/calls (+ caller + callee)
   useEffect(() => {
-    if (!orgId) return;
+    if (!orgId || !user?.id) return;
     const channel = supabase
       .channel("hub-live")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}` }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "marketplace_bookings", filter: `org_id=eq.${orgId}` }, () => {
@@ -468,6 +468,9 @@ export function useConversationThreads() {
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs", filter: `callee_org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs", filter: `caller_id=eq.${user.id}` }, () => {
+        debouncedReload();
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_threads", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
@@ -477,7 +480,7 @@ export function useConversationThreads() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       supabase.removeChannel(channel);
     };
-  }, [orgId, debouncedReload]);
+  }, [orgId, user?.id, debouncedReload]);
 
   const updateThreadLocally = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
     setThreads(prev => prev.map(t => t.id === threadId ? { ...t, ...updates } : t));
