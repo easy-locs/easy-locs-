@@ -19,6 +19,8 @@ const Settings = () => {
   const { user, orgId } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const [searchParams] = useSearchParams();
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
   const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "", brand_name: "", brand_primary_color: "", brand_accent_color: "" });
   const [saving, setSaving] = useState(false);
