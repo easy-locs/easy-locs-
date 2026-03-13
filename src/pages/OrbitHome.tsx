@@ -148,8 +148,8 @@ export default function OrbitHome() {
       {/* ── System Status Bar ── */}
       <div
         className="w-full max-w-md flex items-center justify-center gap-5 py-3 px-4 rounded-2xl mt-1 animate-fade-in"
-        style={{ animationDelay: "500ms" }}>
         style={{
+          animationDelay: "500ms",
           background: "hsl(var(--hud-surface) / 0.6)",
           border: "1px solid hsl(var(--hud-border) / 0.08)",
         }}
