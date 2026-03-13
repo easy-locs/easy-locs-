@@ -99,6 +99,7 @@ export default function CommNearbySection() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   // Privacy settings
   const [myVisibility, setMyVisibility] = useState(false);
