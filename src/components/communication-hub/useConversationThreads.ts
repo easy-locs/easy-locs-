@@ -448,7 +448,7 @@ export function useConversationThreads() {
     }, 800);
   }, [loadThreads]);
 
-  // Realtime: refresh threads on new messages, booking changes, deal changes
+  // Realtime: refresh threads on new messages, booking changes, deal changes, call logs
   useEffect(() => {
     if (!orgId) return;
     const channel = supabase
@@ -463,6 +463,12 @@ export function useConversationThreads() {
         debouncedReload();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => {
+        debouncedReload();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs", filter: `callee_org_id=eq.${orgId}` }, () => {
+        debouncedReload();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_threads", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
       .subscribe();
