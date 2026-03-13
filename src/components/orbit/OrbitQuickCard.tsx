@@ -1,8 +1,9 @@
 /**
  * OrbitQuickCard — Premium quick-access card for Orbit Home.
- * Phase 2: richer layout, description line, subtle glass effect.
+ * Unified HUD design with glass morphism, consistent icon styling.
  */
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
 interface OrbitQuickCardProps {
@@ -25,19 +26,26 @@ export default function OrbitQuickCard({
   const navigate = useNavigate();
 
   const hasActivity = status === "active" || (counter != null && counter > 0);
+  const isWarning = status === "warning";
 
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.94 }}
+      whileHover={{ scale: 1.03 }}
       onClick={() => navigate(to)}
-      className="relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-200 active:scale-[0.94] hover:scale-[1.03] min-w-0 text-center overflow-hidden"
+      className="relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-200 min-w-0 text-center overflow-hidden"
       style={{
         background: hasActivity
           ? "linear-gradient(145deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))"
           : "hsl(var(--hud-surface))",
-        borderColor: hasActivity
-          ? "hsl(var(--hud-cyan) / 0.25)"
-          : "hsl(var(--hud-border) / 0.12)",
-        boxShadow: hasActivity ? "0 2px 12px hsl(var(--hud-cyan) / 0.08)" : "none",
+        borderColor: isWarning
+          ? "hsl(var(--hud-warning) / 0.3)"
+          : hasActivity
+            ? "hsl(var(--hud-cyan) / 0.2)"
+            : "hsl(var(--hud-border) / 0.08)",
+        boxShadow: hasActivity
+          ? "0 2px 12px hsl(var(--hud-cyan) / 0.08)"
+          : "none",
       }}
     >
       {/* Counter badge */}
@@ -47,25 +55,32 @@ export default function OrbitQuickCard({
           style={{
             background: "hsl(var(--hud-danger))",
             color: "#fff",
-            boxShadow: "0 1px 4px hsl(var(--hud-danger) / 0.4)",
+            boxShadow: "0 1px 6px hsl(var(--hud-danger) / 0.4)",
           }}
         >
           {counter > 99 ? "99+" : counter}
         </span>
       )}
 
-      {/* Icon */}
-      <div className="relative w-9 h-9 flex items-center justify-center rounded-xl"
+      {/* Icon container */}
+      <div
+        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors"
         style={{
-          background: hasActivity
-            ? "hsl(var(--hud-cyan) / 0.12)"
-            : "hsl(var(--hud-surface-2) / 0.6)",
+          background: isWarning
+            ? "hsl(var(--hud-warning) / 0.12)"
+            : hasActivity
+              ? "hsl(var(--hud-cyan) / 0.12)"
+              : "hsl(var(--hud-surface-2) / 0.6)",
         }}
       >
         <Icon
           className="w-[18px] h-[18px]"
           style={{
-            color: hasActivity ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+            color: isWarning
+              ? "hsl(var(--hud-warning))"
+              : hasActivity
+                ? "hsl(var(--hud-cyan))"
+                : "hsl(var(--hud-text-dim))",
           }}
         />
       </div>
@@ -87,6 +102,6 @@ export default function OrbitQuickCard({
           {description}
         </span>
       )}
-    </button>
+    </motion.button>
   );
 }
