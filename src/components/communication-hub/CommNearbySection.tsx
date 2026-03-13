@@ -563,6 +563,8 @@ export default function CommNearbySection() {
             ))}
           </div>
         )}
+          </>
+        ) : null}
       </div>
 
       {/* Privacy Settings Dialog */}
