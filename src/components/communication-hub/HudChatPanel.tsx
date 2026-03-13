@@ -17,6 +17,8 @@ import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
+import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
