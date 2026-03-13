@@ -183,7 +183,7 @@ export default function CommCallsSection() {
             >
               {f.label}
               {f.id === "missed" && missedCount > 0 && (
-                <span className="ml-1 text-[10px] font-bold" style={{ color: "hsl(0, 70%, 60%)" }}>
+                <span className="ml-1 text-[10px] font-bold" style={{ color: "hsl(var(--hud-danger))" }}>
                   {missedCount}
                 </span>
               )}
