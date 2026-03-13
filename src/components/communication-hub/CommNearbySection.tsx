@@ -441,14 +441,14 @@ export default function CommNearbySection() {
                 })}
                 {filteredItems.slice(0, 8).map((item, idx) => {
                   const angle = (idx / Math.max(filteredItems.length, 1)) * Math.PI * 2 + Math.PI / 4;
-                  const dist = 15 + Math.random() * 30;
+                  const dist = 15 + (item.distance_km / radius) * 25;
                   return (
                     <motion.div
-                      key={item.id}
+                      key={item.item_id}
                       className="absolute w-1.5 h-1.5 rounded-full"
                       style={{
-                        background: getCategoryColor(item.category),
-                        boxShadow: `0 0 4px ${getCategoryColor(item.category)}`,
+                        background: getTypeColor(item.item_type),
+                        boxShadow: `0 0 4px ${getTypeColor(item.item_type)}`,
                         top: `${50 - Math.cos(angle) * dist}%`,
                         left: `${50 + Math.sin(angle) * dist}%`,
                       }}
