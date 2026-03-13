@@ -33,6 +33,9 @@ export interface ServiceFormData {
   source_contact_phone?: string;
   source_contact_email?: string;
   source_contact_notes?: string;
+  time_slots?: Record<string, string[]>;
+  blocked_dates?: string[];
+  contact_method?: string;
 }
 
 const CURRENCIES = [
