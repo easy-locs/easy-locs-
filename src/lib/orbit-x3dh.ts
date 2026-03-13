@@ -91,7 +91,7 @@ async function verifySignature(publicKey: CryptoKey, signature: string, data: Ar
   return crypto.subtle.verify(
     { name: "ECDSA", hash: "SHA-512" },
     publicKey,
-    sigBytes,
+    sigBytes.buffer as ArrayBuffer,
     data
   );
 }
