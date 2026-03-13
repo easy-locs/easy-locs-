@@ -297,7 +297,7 @@ export class CallManager {
       if (signal.type === "accepted") {
         // Caller received acceptance — prepare PC and wait for callee's offer
         this.onStateChange({ status: "connecting" });
-        this.createPeerConnection();
+        await this.createPeerConnection();
         this.startIceTimeout();
         this.startElapsedTimer();
       } else if (signal.type === "offer") {
