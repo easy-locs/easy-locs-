@@ -315,68 +315,88 @@ export default function InAppCallDialog({
           </div>
         ) : (
           /* ═══ AUDIO CALL LAYOUT ═══ */
-          <>
-            <div className="pt-8 pb-4 px-6 text-center">
-              <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <User className="h-10 w-10 text-primary/60" />
+          <div className="flex flex-col items-center">
+            <div className="pt-10 pb-6 px-6 text-center w-full">
+              <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-5" style={{
+                background: "hsl(var(--primary) / 0.08)",
+                border: "2px solid hsl(var(--primary) / 0.15)",
+              }}>
+                <span className="text-3xl font-bold" style={{ color: "hsl(var(--primary) / 0.6)" }}>
+                  {(peerName || "?")[0].toUpperCase()}
+                </span>
               </div>
-              <p className="text-lg font-semibold text-foreground">{peerName}</p>
-              {contextLabel && <p className="text-xs text-muted-foreground mt-0.5 truncate">{contextLabel}</p>}
+              <p className="text-xl font-semibold text-foreground">{peerName}</p>
+              {contextLabel && <p className="text-xs text-muted-foreground mt-1 truncate">{contextLabel}</p>}
               <div className="flex items-center justify-center gap-2 mt-3">
                 {usingRelay && status === "active" && (
                   <Badge variant="outline" className="gap-1 text-[10px] text-amber-600 border-amber-300">Relay</Badge>
                 )}
                 <Badge variant="outline" className="gap-1 text-[10px]">
-                  <Shield className="h-2.5 w-2.5 text-green-500" /> Encrypted
+                  <Shield className="h-2.5 w-2.5" style={{ color: "hsl(142 80% 50%)" }} /> Encrypted
                 </Badge>
               </div>
-              <div className="mt-3 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+              <div className="mt-4 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
                 {current.icon}
-                <span className={status === "active" ? "font-mono text-foreground font-medium" : ""}>{current.label}</span>
+                <span className={status === "active" ? "font-mono text-foreground font-semibold text-lg" : ""}>{current.label}</span>
               </div>
             </div>
 
             {isNetworkBlocked && (
-              <div className="px-6 pb-6 text-center space-y-3">
+              <div className="px-6 pb-8 text-center space-y-3 w-full">
                 <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
                   <WifiOff className="h-6 w-6 text-destructive" />
                 </div>
                 <p className="text-xs text-muted-foreground">{error || "Your network may restrict internet calls."}</p>
                 {onFallbackChat && (
-                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                     onClick={() => { handleEndCall(); onFallbackChat(); }} disabled={isEnding}>
                     <MessageSquare className="h-4 w-4" /> Switch to chat
                   </button>
                 )}
-                <button className="w-full inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                <button className="w-full inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                   onClick={handleEndCall} disabled={isEnding}>Close</button>
               </div>
             )}
 
             {!isNetworkBlocked && (
-              <div className="px-6 pb-8 pt-4">
-                <div className="flex items-center justify-center gap-6">
-                  <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${muted ? "bg-destructive/10 text-destructive" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
-                    {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                  </button>
-                  <button onClick={handleEndCall} disabled={isEnding}
-                    className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg disabled:opacity-60">
-                    {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
-                  </button>
-                  <button onClick={handleToggleSpeaker} disabled={status !== "active" || isEnding}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${!speakerOn ? "bg-destructive/10 text-destructive" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
-                    {speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                  </button>
-                </div>
-                <div className="flex items-center justify-center mt-2 gap-6">
-                  <span className="text-[10px] text-muted-foreground w-14 text-center">{muted ? "Unmute" : "Mute"}</span>
-                  <span className="text-[10px] text-destructive w-16 text-center font-medium">End</span>
-                  <span className="text-[10px] text-muted-foreground w-14 text-center">{speakerOn ? "Speaker" : "Earpiece"}</span>
+              <div className="px-6 pb-10 pt-4 w-full">
+                <div className="flex items-center justify-center gap-5">
+                  {/* Mute */}
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button onClick={handleToggleMute} disabled={status !== "active" || isEnding}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${muted ? "bg-destructive/15 text-destructive" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
+                      {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                    </button>
+                    <span className="text-[10px] text-muted-foreground">{muted ? "Unmute" : "Mute"}</span>
+                  </div>
+                  {/* Video */}
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button onClick={handleToggleVideo} disabled={status !== "active" || isEnding}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all bg-muted text-foreground hover:bg-muted/80 disabled:opacity-40`}>
+                      {videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                    </button>
+                    <span className="text-[10px] text-muted-foreground">Video</span>
+                  </div>
+                  {/* End */}
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button onClick={handleEndCall} disabled={isEnding}
+                      className="w-16 h-16 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg disabled:opacity-60">
+                      {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
+                    </button>
+                    <span className="text-[10px] text-destructive font-medium">End</span>
+                  </div>
+                  {/* Speaker/Earpiece */}
+                  <div className="flex flex-col items-center gap-1.5">
+                    <button onClick={handleToggleSpeaker} disabled={status !== "active" || isEnding}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${speakerOn ? "bg-primary/15 text-primary" : "bg-muted text-foreground hover:bg-muted/80"} disabled:opacity-40`}>
+                      {speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                    </button>
+                    <span className="text-[10px] text-muted-foreground">{speakerOn ? "Speaker" : "Earpiece"}</span>
+                  </div>
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>
