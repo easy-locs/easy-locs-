@@ -64,18 +64,29 @@ export function clearEvents() {
   notify();
 }
 
+// Flag to prevent recursive error logging (audit_logs insert → network fail → pushEvent → insert → ...)
+let _persistingAudit = false;
+
 async function persistToAuditLog(evt: MonitoringEvent) {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
-  await supabase.from("audit_logs").insert([{
-    action: `monitoring:${evt.type}`,
-    user_id: session.user.id,
-    metadata_json: {
-      source: evt.source,
-      message: evt.message,
-      metadata: evt.metadata,
-    } as any,
-  }]);
+  if (_persistingAudit) return; // break recursion
+  _persistingAudit = true;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await supabase.from("audit_logs").insert([{
+      action: `monitoring:${evt.type}`,
+      user_id: session.user.id,
+      metadata_json: {
+        source: evt.source,
+        message: evt.message,
+        metadata: evt.metadata,
+      } as any,
+    }]);
+  } catch {
+    // Silent fail — never re-trigger monitoring for audit persistence
+  } finally {
+    _persistingAudit = false;
+  }
 }
 
 // ── Global Error Handlers ──────────────────────────────────────────
