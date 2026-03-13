@@ -150,7 +150,7 @@ export default function MessageContextMenu({ message, onClose, onDeleted, onCopy
               style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
               Cancel
             </Button>
-            <Button size="sm" disabled financial={saving} onClick={handleSaveEdit}
+            <Button size="sm" disabled={saving} onClick={handleSaveEdit}
               style={{ background: "hsl(var(--hud-cyan))", color: "white" }}>
               {saving ? "Saving..." : "Save"}
             </Button>
