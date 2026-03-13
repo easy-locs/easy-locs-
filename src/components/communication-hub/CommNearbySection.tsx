@@ -459,7 +459,7 @@ export default function CommNearbySection() {
                       {/* Online pulse */}
                       {u.status === "online" && (
                         <motion.div className="absolute -inset-1 rounded-full"
-                          style={{ border: "1.5px solid hsl(142, 70%, 50%, 0.4)" }}
+                          style={{ border: "1.5px solid hsl(var(--hud-success) / 0.4)" }}
                           animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
                           transition={{ duration: 2, repeat: Infinity }}
                         />
