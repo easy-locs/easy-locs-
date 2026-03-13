@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import RealtimeMessageToast from "@/components/communication/RealtimeMessageToast";
+import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
@@ -195,6 +196,9 @@ const RouteAwareAssistant = () => {
   );
 };
 
+/** Registers device session + suspicious login detection */
+const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
+
 const App = () => (
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
@@ -206,7 +210,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CallProvider>
-          <RealtimeMessageToast />
+           <OrbitSessionGuard />
+           <RealtimeMessageToast />
           <RouteAwareAssistant />
           <Suspense fallback={<PageLoader />}>
             <Routes>

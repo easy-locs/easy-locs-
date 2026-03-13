@@ -17,6 +17,8 @@ import { haptic } from "@/lib/haptics";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
+import OrbitPrivacyBadge from "@/components/orbit/OrbitPrivacyBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +52,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { user, orgId } = useAuth();
   const { t, locale } = useI18n();
   const { startCall, isInCall, isStartingCall } = useCall();
+  const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -407,7 +410,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
                   {thread.propertyCountry && <span className="text-sm shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
-                  <Shield className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                  <OrbitPrivacyBadge compact />
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{
