@@ -87,7 +87,7 @@ const TenantMessages = () => {
       contextType: "tenant",
       contextId: tenantId || undefined,
       contextLabel: L.tenantSpace || "Tenant",
-      peerName: L.landlord || "Landlord",
+      peerName: L.tenantSpace || "Landlord",
       isVideo: true,
     });
   }, [orgId, tenantId, isInCall, isStartingCall, startCall, resolveAuthUserId, L]);
