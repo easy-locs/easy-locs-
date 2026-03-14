@@ -824,11 +824,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             selectedIds={selectedMsgIds}
             messages={messages as any[]}
             currentUserId={user?.id}
+            currentContextId={thread?.contextId}
+            userEmail={user?.email}
+            userName={user?.user_metadata?.full_name || user?.email || "User"}
             onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }}
             onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
             onDeletedForAll={(ids) => {
               setRawMessages(prev => prev.map(m => ids.includes(m.id) ? {
                 ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null,
+                audio_url: null, audio_duration_seconds: null,
               } as any : m));
             }}
           />
