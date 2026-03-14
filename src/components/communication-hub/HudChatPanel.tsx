@@ -317,7 +317,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         });
       }
 
-      const { error: insertError } = await supabase.from("messages").insert({
+      const fileInsertPayload: any = {
         org_id: orgId,
         sender_id: authUserId,
         tenant_id: thread.tenantId || null,
@@ -333,7 +333,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         context_type: thread.contextType,
         context_id: thread.contextId,
         encrypted: !!fileMetaJson,
-      } as any);
+      };
+      if (thread.threadId) fileInsertPayload.thread_id = thread.threadId;
+
+      const { error: insertError } = await supabase.from("messages").insert(fileInsertPayload);
 
       if (insertError) throw insertError;
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
