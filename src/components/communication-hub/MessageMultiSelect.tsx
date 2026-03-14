@@ -102,6 +102,9 @@ export default function MessageMultiSelectToolbar({
           <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-8 w-8 rounded-full" title="Copy">
             <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
+          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-8 w-8 rounded-full" title="Forward">
+            <Forward className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-8 w-8 rounded-full" title="Delete for me">
             <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />
           </Button>
@@ -137,6 +140,20 @@ export default function MessageMultiSelectToolbar({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Forward Dialog */}
+      {showForward && currentUserId && (
+        <ForwardMessageDialog
+          open={showForward}
+          onClose={() => { setShowForward(false); onClearSelection(); }}
+          messageContent={selectedMessages.map(m => m.content).join("\n\n")}
+          messageId={selectedMessages[0]?.id || ""}
+          userId={currentUserId}
+          userEmail={userEmail || ""}
+          userName={userName || "User"}
+          currentContextId={currentContextId || ""}
+        />
+      )}
     </>
   );
 }
