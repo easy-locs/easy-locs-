@@ -218,6 +218,55 @@ export async function getSuspiciousLogins(userId: string, limit = 10): Promise<L
   return (data || []) as unknown as LoginEvent[];
 }
 
+/**
+ * Clean up stale sessions — removes sessions inactive for more than `maxAgeDays`.
+ * Call this on login or periodically to keep the session list accurate.
+ */
+export async function cleanupStaleSessions(userId: string, maxAgeDays = 30): Promise<number> {
+  const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from("user_sessions")
+    .delete()
+    .eq("user_id", userId)
+    .lt("last_active_at", cutoff)
+    .select("id");
+
+  return data?.length || 0;
+}
+
+/**
+ * Enforce maximum active sessions.
+ * If sessionCount > maxSessions, revokes the oldest sessions beyond the limit.
+ */
+export async function enforceMaxSessions(userId: string, maxSessions = 5): Promise<number> {
+  const fingerprint = await getDeviceFingerprint();
+
+  const { data: sessions } = await supabase
+    .from("user_sessions")
+    .select("id, device_fingerprint, last_active_at")
+    .eq("user_id", userId)
+    .order("last_active_at", { ascending: false });
+
+  if (!sessions || sessions.length <= maxSessions) return 0;
+
+  // Keep current device + most recent sessions up to maxSessions
+  const toKeep = new Set<string>();
+  for (const s of sessions) {
+    if (s.device_fingerprint === fingerprint) { toKeep.add(s.id); continue; }
+    if (toKeep.size < maxSessions) toKeep.add(s.id);
+  }
+
+  const toRevoke = sessions.filter(s => !toKeep.has(s.id));
+  if (toRevoke.length === 0) return 0;
+
+  await supabase
+    .from("user_sessions")
+    .delete()
+    .in("id", toRevoke.map(s => s.id));
+
+  return toRevoke.length;
+}
+
 export async function checkSuspiciousLogin(userId: string): Promise<{
   isSuspicious: boolean;
   reason?: string;
