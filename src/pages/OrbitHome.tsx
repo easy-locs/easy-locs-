@@ -276,7 +276,7 @@ export default function OrbitHome() {
         >
           Modules
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {MODULE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${540 + i * 35}ms` }}>
               <OrbitQuickCard
