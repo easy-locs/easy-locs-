@@ -473,6 +473,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
         disappear_at: disappearAt,
+        reply_to_id: currentReplyTo?.msgId || null,
       } as any);
 
       if (insertErr) {
