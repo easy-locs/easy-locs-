@@ -152,7 +152,30 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     }
   }, [userId, updateThreadLocally, upsertPref]);
 
-  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread };
+  /**
+   * changeStatus — Update conversation status (Active, Waiting client, etc.)
+   * Persists via the last message's conversation_status field.
+   */
+  const changeStatus = useCallback(async (thread: ConversationThread, status: string) => {
+    if (!userId) return;
+    updateThreadLocally(thread.id, { conversationStatus: status });
+    try {
+      // Update the conversation_threads table status if thread has a DB thread
+      if (thread.threadId) {
+        await supabase.from("conversation_threads").update({ status } as any).eq("id", thread.threadId);
+      }
+      const statusLabels: Record<string, string> = {
+        active: "🟢 Active", waiting_tenant: "🟡 Waiting client", waiting_landlord: "🟠 Waiting owner",
+        waiting_payment: "💰 Waiting payment", resolved: "✅ Resolved", archived: "📦 Archived",
+      };
+      toast.success(`Status: ${statusLabels[status] || status}`);
+    } catch (e: any) {
+      console.error("[changeStatus] Failed:", e);
+      toast.error("Failed to update status");
+    }
+  }, [userId, updateThreadLocally]);
+
+  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus };
 }
 
 /** Resolve the other participant's user ID from the thread */
