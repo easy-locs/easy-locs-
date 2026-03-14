@@ -655,8 +655,23 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       };
       if (thread.threadId) paymentMsgPayload.thread_id = thread.threadId;
       await supabase.from("messages").insert(paymentMsgPayload);
+      // Record wallet transaction for tracking (non-blocking)
+      try {
+        await supabase.from("wallet_transactions").insert({
+          user_id: authUserId,
+          type: "request",
+          direction: "in",
+          amount,
+          currency: (thread.currency || "EUR").toUpperCase(),
+          description: paymentDescription || `Payment request to ${thread.name}`,
+          status: "pending",
+          reference_type: thread.contextType,
+          reference_id: thread.bookingId || thread.contextId,
+          thread_id: thread.threadId || null,
+        } as any);
+      } catch {}
       setPaymentLinkDialog(false); setPaymentAmount(""); setPaymentDescription("");
-      toast.success("Payment link sent");
+      toast.success("Payment request sent");
     } catch (e: any) { toast.error(e.message); }
     setSendingPaymentLink(false);
   };

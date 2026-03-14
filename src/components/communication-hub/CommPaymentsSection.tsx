@@ -1,277 +1,281 @@
 /**
- * CommPaymentsSection — Real payment requests module.
- * Manages payment requests, statuses, and history within the communication hub.
+ * CommPaymentsSection — Orbit Wallet.
+ * Full wallet experience: balance, send, request, transaction history.
+ * Native to Orbit's communication-first architecture.
  */
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Plus, Search, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Wallet, Plus, Search, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, XCircle, Send, Download, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useWallet, type WalletTransaction } from "@/hooks/useWallet";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
-type PaymentFilter = "all" | "pending" | "paid" | "failed";
+type TxFilter = "all" | "in" | "out" | "pending";
+type ModalMode = null | "send" | "request";
 
-interface PaymentRequest {
-  id: string;
-  org_id: string;
-  sender_id: string;
-  recipient_email: string | null;
-  recipient_name: string | null;
-  amount: number;
-  currency: string;
-  description: string | null;
-  status: string;
-  context_type: string;
-  stripe_payment_link: string | null;
-  paid_at: string | null;
-  created_at: string;
-}
-
-const STATUS_CONFIG: Record<string, { icon: typeof Clock; color: string; label: string }> = {
-  pending: { icon: Clock, color: "hsl(var(--hud-warning))", label: "Pending" },
-  paid: { icon: CheckCircle2, color: "hsl(var(--hud-success))", label: "Paid" },
-  failed: { icon: XCircle, color: "hsl(var(--hud-danger))", label: "Failed" },
-  refunded: { icon: RefreshCw, color: "hsl(var(--hud-cyan))", label: "Refunded" },
-  cancelled: { icon: XCircle, color: "hsl(var(--hud-text-dim) / 0.4)", label: "Cancelled" },
+const STATUS_STYLE: Record<string, { color: string; label: string }> = {
+  completed: { color: "hsl(var(--hud-success))", label: "Completed" },
+  pending:   { color: "hsl(var(--hud-warning))", label: "Pending" },
+  failed:    { color: "hsl(var(--hud-danger))", label: "Failed" },
+  cancelled: { color: "hsl(var(--hud-text-dim) / 0.4)", label: "Cancelled" },
 };
 
 export default function CommPaymentsSection() {
-  const { user, orgId } = useAuth();
-  const [payments, setPayments] = useState<PaymentRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<PaymentFilter>("all");
+  const { user } = useAuth();
+  const { balance, transactions, loading, requestMoney } = useWallet();
+  const [filter, setFilter] = useState<TxFilter>("all");
   const [search, setSearch] = useState("");
-  const [showCreate, setShowCreate] = useState(false);
-  const [newPayment, setNewPayment] = useState({ recipientName: "", recipientEmail: "", amount: "", currency: "EUR", description: "" });
-  const [creating, setCreating] = useState(false);
+  const [modal, setModal] = useState<ModalMode>(null);
+  const [form, setForm] = useState({ name: "", email: "", amount: "", currency: "EUR", description: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const loadPayments = useCallback(async () => {
-    if (!orgId) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from("payment_requests")
-      .select("*")
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false })
-      .limit(100);
-    setPayments((data as PaymentRequest[]) || []);
-    setLoading(false);
-  }, [orgId]);
+  const filtered = useMemo(() => {
+    return transactions.filter(tx => {
+      if (filter === "in" && tx.direction !== "in") return false;
+      if (filter === "out" && tx.direction !== "out") return false;
+      if (filter === "pending" && tx.status !== "pending") return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return (tx.description || "").toLowerCase().includes(q) ||
+          tx.amount.toString().includes(q);
+      }
+      return true;
+    });
+  }, [transactions, filter, search]);
 
-  useEffect(() => { loadPayments(); }, [loadPayments]);
+  const totalIn = useMemo(() =>
+    transactions.filter(t => t.direction === "in" && t.status === "completed").reduce((s, t) => s + t.amount, 0),
+    [transactions]
+  );
+  const totalOut = useMemo(() =>
+    transactions.filter(t => t.direction === "out" && t.status === "completed").reduce((s, t) => s + t.amount, 0),
+    [transactions]
+  );
+  const pendingCount = transactions.filter(t => t.status === "pending").length;
 
-  const filtered = payments.filter(p => {
-    if (filter !== "all" && p.status !== filter) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return (p.recipient_name || "").toLowerCase().includes(q) ||
-        (p.recipient_email || "").toLowerCase().includes(q) ||
-        (p.description || "").toLowerCase().includes(q);
+  const handleSubmit = async () => {
+    if (!form.amount || !form.name) return;
+    setSubmitting(true);
+
+    if (modal === "request") {
+      const res = await requestMoney({
+        fromEmail: form.email || undefined,
+        amount: parseFloat(form.amount),
+        currency: form.currency,
+        description: form.description || `Request from ${form.name}`,
+      });
+      if (res.success) {
+        toast.success("Payment request sent");
+        haptic("success");
+      } else {
+        toast.error(res.error || "Failed");
+      }
+    } else if (modal === "send") {
+      // Send money — for now creates a pending outgoing transaction
+      // Full P2P transfer requires recipient wallet resolution
+      toast.info("P2P transfers will be available when wallet funding is enabled");
+      haptic("selection");
     }
-    return true;
-  });
 
-  const totalPending = payments.filter(p => p.status === "pending").reduce((s, p) => s + p.amount, 0);
-  const totalReceived = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
-
-  const handleCreate = async () => {
-    if (!user?.id || !orgId || !newPayment.amount || !newPayment.recipientName) return;
-    setCreating(true);
-    const { error } = await supabase.from("payment_requests").insert({
-      org_id: orgId,
-      sender_id: user.id,
-      recipient_name: newPayment.recipientName.trim(),
-      recipient_email: newPayment.recipientEmail.trim() || null,
-      amount: parseFloat(newPayment.amount),
-      currency: newPayment.currency,
-      description: newPayment.description.trim() || null,
-    } as any);
-    setCreating(false);
-    if (error) { toast.error("Failed to create payment request"); return; }
-    toast.success("Payment request created");
-    haptic("success");
-    setShowCreate(false);
-    setNewPayment({ recipientName: "", recipientEmail: "", amount: "", currency: "EUR", description: "" });
-    loadPayments();
+    setSubmitting(false);
+    setModal(null);
+    setForm({ name: "", email: "", amount: "", currency: "EUR", description: "" });
   };
 
-  const filters: { id: PaymentFilter; label: string }[] = [
-    { id: "all", label: "All" },
-    { id: "pending", label: "Pending" },
-    { id: "paid", label: "Paid" },
-    { id: "failed", label: "Failed" },
-  ];
+  const renderTxIcon = (tx: WalletTransaction) => {
+    if (tx.status === "pending") return <Clock className="h-4 w-4" style={{ color: STATUS_STYLE.pending.color }} />;
+    if (tx.direction === "in") return <ArrowDownLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />;
+    return <ArrowUpRight className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />;
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
-      {/* Header */}
+      {/* ── Wallet Balance Card ── */}
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Payments</h2>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 gap-1.5 text-xs"
-            style={{ color: "hsl(var(--hud-cyan))" }}
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus className="h-4 w-4" />
-            Request
-          </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-5 mb-4 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.7) 100%)",
+          }}
+        >
+          {/* Decorative circle */}
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+            style={{ background: "hsl(var(--primary-foreground))" }} />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="h-4 w-4" style={{ color: "hsl(var(--primary-foreground) / 0.7)" }} />
+              <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}>
+                Orbit Wallet
+              </span>
+            </div>
+            <div className="text-3xl font-bold tracking-tight" style={{ color: "hsl(var(--primary-foreground))" }}>
+              {loading ? "—" : `${(balance?.balance ?? 0).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
+            </div>
+            {(balance?.frozen_balance ?? 0) > 0 && (
+              <div className="text-xs mt-1" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>
+                {balance!.frozen_balance.toLocaleString()} € frozen
+              </div>
+            )}
+
+            {/* Quick actions */}
+            <div className="flex gap-2 mt-4">
+              <Button
+                size="sm"
+                className="flex-1 gap-1.5 h-9 text-xs font-semibold rounded-xl"
+                style={{ background: "hsl(var(--primary-foreground) / 0.15)", color: "hsl(var(--primary-foreground))" }}
+                onClick={() => { haptic("selection"); setModal("send"); }}
+              >
+                <Send className="h-3.5 w-3.5" />
+                Send
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 gap-1.5 h-9 text-xs font-semibold rounded-xl"
+                style={{ background: "hsl(var(--primary-foreground) / 0.15)", color: "hsl(var(--primary-foreground))" }}
+                onClick={() => { haptic("selection"); setModal("request"); }}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Request
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Mini stats */}
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {[
+            { label: "Received", value: totalIn, color: "hsl(var(--hud-success))", icon: ArrowDownLeft },
+            { label: "Sent", value: totalOut, color: "hsl(var(--hud-danger))", icon: ArrowUpRight },
+            { label: "Pending", value: pendingCount, color: "hsl(var(--hud-warning))", icon: Clock, isCount: true },
+          ].map(stat => (
+            <div key={stat.label} className="rounded-xl p-2.5" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+              <div className="flex items-center gap-1 mb-0.5">
+                <stat.icon className="h-3 w-3" style={{ color: stat.color }} />
+                <span className="text-[9px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{stat.label}</span>
+              </div>
+              <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+                {stat.isCount ? stat.value : `${stat.value.toLocaleString()} €`}
+              </span>
+            </div>
+          ))}
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="h-3 w-3" style={{ color: "hsl(var(--hud-warning))" }} />
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Pending</span>
-            </div>
-            <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-              {totalPending.toLocaleString()} €
-            </span>
-          </div>
-          <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(var(--hud-success))" }} />
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Received</span>
-            </div>
-            <span className="text-base font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-              {totalReceived.toLocaleString()} €
-            </span>
-          </div>
-        </div>
-
-        {/* Search */}
+        {/* Search + Filters */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search payments..."
+            placeholder="Search transactions..."
             className="pl-9 h-9 text-sm border-0"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
           />
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2">
-          {filters.map(f => (
-            <button
-              key={f.id}
-              onClick={() => { haptic("selection"); setFilter(f.id); }}
-              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-              style={{
-                background: filter === f.id ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.5)",
-                color: filter === f.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.6)",
-                border: `1px solid ${filter === f.id ? "hsl(var(--hud-cyan) / 0.2)" : "transparent"}`,
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <Tabs value={filter} onValueChange={v => setFilter(v as TxFilter)}>
+          <TabsList className="w-full h-8 p-0.5" style={{ background: "hsl(var(--hud-surface) / 0.5)" }}>
+            {(["all", "in", "out", "pending"] as TxFilter[]).map(f => (
+              <TabsTrigger key={f} value={f} className="flex-1 h-7 text-xs data-[state=active]:shadow-sm capitalize">
+                {f === "in" ? "Received" : f === "out" ? "Sent" : f}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
-      {/* Payment list */}
+      {/* ── Transaction History ── */}
       <div className="flex-1 overflow-y-auto px-2">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", borderTopColor: "hsl(var(--hud-cyan))" }} />
+            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--primary) / 0.3)", borderTopColor: "hsl(var(--primary))" }} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-            <CreditCard className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
-            <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {filter !== "all" ? `No ${filter} payments` : "No payment requests yet"}
+            <Wallet className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
+            <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {filter !== "all" ? `No ${filter} transactions` : "No transactions yet"}
             </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3 gap-1.5"
-              style={{ color: "hsl(var(--hud-cyan))" }}
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="h-4 w-4" />
-              Create first request
-            </Button>
+            <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              Send or request money to get started
+            </p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-            {filtered.map(payment => {
-              const statusConf = STATUS_CONFIG[payment.status] || STATUS_CONFIG.pending;
-              const StatusIcon = statusConf.icon;
-              const isSender = payment.sender_id === user?.id;
-              return (
-                <div
-                  key={payment.id}
-                  className="flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors"
-                >
-                  {/* Direction icon */}
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: `${statusConf.color}15` }}
+          <AnimatePresence>
+            <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
+              {filtered.map((tx, i) => {
+                const style = STATUS_STYLE[tx.status] || STATUS_STYLE.completed;
+                const isIncoming = tx.direction === "in";
+                return (
+                  <motion.div
+                    key={tx.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.02 }}
+                    className="flex items-center gap-3 px-3 py-3 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors"
                   >
-                    {isSender ? (
-                      <ArrowUpRight className="h-4 w-4" style={{ color: statusConf.color }} />
-                    ) : (
-                      <ArrowDownLeft className="h-4 w-4" style={{ color: statusConf.color }} />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                        {payment.recipient_name || payment.recipient_email || "Payment"}
-                      </span>
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: isIncoming ? "hsl(var(--hud-success) / 0.1)" : "hsl(var(--hud-danger) / 0.08)" }}
+                    >
+                      {renderTxIcon(tx)}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <StatusIcon className="h-3 w-3" style={{ color: statusConf.color }} />
-                      <span className="text-[11px]" style={{ color: statusConf.color }}>
-                        {statusConf.label}
+
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium truncate block" style={{ color: "hsl(var(--hud-text))" }}>
+                        {tx.type === "request" ? "Payment Request" : tx.description || "Transfer"}
                       </span>
-                      {payment.description && (
-                        <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                          · {payment.description}
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: `${style.color}15`, color: style.color }}>
+                          {style.label}
                         </span>
-                      )}
+                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                          {format(new Date(tx.created_at), "dd MMM HH:mm")}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Amount + time */}
-                  <div className="text-right shrink-0">
-                    <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-                      {payment.amount.toLocaleString()} {payment.currency}
-                    </span>
-                    <div className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                      {format(new Date(payment.created_at), "dd/MM HH:mm")}
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-bold" style={{
+                        color: isIncoming ? "hsl(var(--hud-success))" : "hsl(var(--hud-text))"
+                      }}>
+                        {isIncoming ? "+" : "−"}{tx.amount.toLocaleString()} {tx.currency}
+                      </span>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatePresence>
         )}
       </div>
 
-      {/* Create Payment Request Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      {/* ── Send / Request Dialog ── */}
+      <Dialog open={modal !== null} onOpenChange={open => !open && setModal(null)}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>New Payment Request</DialogTitle>
+            <DialogTitle className="flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
+              {modal === "send" ? <Send className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+              {modal === "send" ? "Send Money" : "Request Payment"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Recipient Name *</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {modal === "send" ? "Recipient Name" : "From (Name)"} *
+              </Label>
               <Input
-                value={newPayment.recipientName}
-                onChange={e => setNewPayment(p => ({ ...p, recipientName: e.target.value }))}
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
@@ -279,8 +283,9 @@ export default function CommPaymentsSection() {
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Email</Label>
               <Input
-                value={newPayment.recipientEmail}
-                onChange={e => setNewPayment(p => ({ ...p, recipientEmail: e.target.value }))}
+                type="email"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
@@ -290,8 +295,10 @@ export default function CommPaymentsSection() {
                 <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Amount *</Label>
                 <Input
                   type="number"
-                  value={newPayment.amount}
-                  onChange={e => setNewPayment(p => ({ ...p, amount: e.target.value }))}
+                  min="0.01"
+                  step="0.01"
+                  value={form.amount}
+                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
                   className="mt-1 border-0"
                   style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
                 />
@@ -299,8 +306,8 @@ export default function CommPaymentsSection() {
               <div>
                 <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Currency</Label>
                 <Input
-                  value={newPayment.currency}
-                  onChange={e => setNewPayment(p => ({ ...p, currency: e.target.value }))}
+                  value={form.currency}
+                  onChange={e => setForm(f => ({ ...f, currency: e.target.value.toUpperCase() }))}
                   className="mt-1 border-0"
                   style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
                 />
@@ -309,20 +316,20 @@ export default function CommPaymentsSection() {
             <div>
               <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
               <Input
-                value={newPayment.description}
-                onChange={e => setNewPayment(p => ({ ...p, description: e.target.value }))}
+                value={form.description}
+                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 className="mt-1 border-0"
-                placeholder="e.g. Deposit for apartment rental"
+                placeholder={modal === "send" ? "e.g. Split dinner" : "e.g. Rent deposit"}
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
             </div>
             <Button
-              className="w-full"
-              disabled={!newPayment.recipientName.trim() || !newPayment.amount || creating}
-              onClick={handleCreate}
-              style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
+              className="w-full h-11 font-semibold"
+              disabled={!form.name.trim() || !form.amount || submitting}
+              onClick={handleSubmit}
+              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
             >
-              {creating ? "Creating..." : "Send Payment Request"}
+              {submitting ? "Processing..." : modal === "send" ? "Send Money" : "Send Request"}
             </Button>
           </div>
         </DialogContent>
