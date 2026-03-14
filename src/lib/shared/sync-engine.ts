@@ -253,6 +253,8 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
   deal_created:         { targetType: "deal",                module: "marketplace",  notifType: "info" },
   deal_accepted:        { targetType: "deal",                module: "marketplace",  notifType: "payment" },
+  wallet_payment_completed: { targetType: "payment",         module: "marketplace",  notifType: "payment" },
+  wallet_payment_failed:    { targetType: "payment",         module: "marketplace",  notifType: "info" },
 };
 
 // Context-aware config resolution — certain events adapt based on context IDs
