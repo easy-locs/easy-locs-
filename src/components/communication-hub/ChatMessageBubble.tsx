@@ -190,6 +190,19 @@ function ChatMessageBubble({
           overflowWrap: "anywhere",
         }}
       >
+        {/* Reply quote */}
+        {(msg as any).reply_to_id && (msg as any).reply_to_content && (
+          <div className="mb-1.5 px-2 py-1.5 rounded-lg" style={{
+            background: "hsl(var(--hud-surface) / 0.5)",
+            borderLeft: "2px solid hsl(var(--hud-cyan) / 0.5)",
+          }}>
+            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>Reply</p>
+            <p className="text-[11px] line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+              {((msg as any).reply_to_content || "").slice(0, 100)}
+            </p>
+          </div>
+        )}
+
         {/* Sender name for received messages (first in group only) */}
         {!isMe && !isConsecutive && (
           <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
