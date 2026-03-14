@@ -604,11 +604,17 @@ export default function OrbitAccountSection() {
 
         <Separator className="my-2 mx-3" />
 
+        <MenuItem icon={Store} label="Business Tools" desc="Marketplace, services, catalog" onClick={() => navigate("/dashboard/marketplace")} color="hsl(var(--primary))" />
+        <MenuItem icon={Star} label="Starred" desc="Starred messages and contacts" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+
+        <Separator className="my-2 mx-3" />
+
         <MenuItem icon={Eye} label="Privacy" desc="Last seen, read receipts, typing" onClick={() => setSubPage("privacy")} color="hsl(var(--primary))" />
         <MenuItem icon={Shield} label="Security" desc="E2E encryption, 2FA, screen lock" onClick={() => setSubPage("security")} color="hsl(var(--accent))" />
-        <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--primary))" />
-        <MenuItem icon={Database} label="Storage & Data" desc="Media, disappearing messages" onClick={() => setSubPage("storage")} color="hsl(var(--accent))" />
-        <MenuItem icon={Smartphone} label="Connected Devices" desc="Manage active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--primary))" />
+        <MenuItem icon={MessageSquare} label="Chats" desc="Theme, animations, export" onClick={() => setSubPage("chats")} color="hsl(var(--primary))" />
+        <MenuItem icon={Bell} label="Notifications" desc="Messages, calls, sounds" onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
+        <MenuItem icon={Database} label="Storage & Data" desc="Media, disappearing messages" onClick={() => setSubPage("storage")} color="hsl(var(--primary))" />
+        <MenuItem icon={Smartphone} label="Connected Devices" desc="Manage active sessions" onClick={() => setSubPage("devices")} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />
 
