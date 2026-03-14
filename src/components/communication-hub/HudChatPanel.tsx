@@ -84,7 +84,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
-  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean } | null>(null);
+  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean; isStarred?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -95,6 +95,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [selectMode, setSelectMode] = useState(false);
   const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
   const [viewOnceNext, setViewOnceNext] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
