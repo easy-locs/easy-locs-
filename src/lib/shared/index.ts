@@ -8,3 +8,4 @@ export * from "./communication-pipeline";
 export * from "./deep-link";
 export * from "./payment-request";
 export * from "./sync-engine";
+export { platformBus, installPlatformReactions } from "./platform-bus";
