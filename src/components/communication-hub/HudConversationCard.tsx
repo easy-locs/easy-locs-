@@ -67,16 +67,21 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
             {thread.name}
           </span>
           {thread.lastMessageTime && (
-            <span
-              className="text-[12px] tabular-nums shrink-0"
-              style={{
-                color: hasUnread
-                  ? "hsl(var(--primary))"
-                  : "hsl(var(--muted-foreground))",
-              }}
-            >
-              {formatTime(thread.lastMessageTime)}
-            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              {statusConfig && statusConfig.value !== "active" && (
+                <span className="text-[10px] leading-none" title={statusConfig.label}>{statusConfig.icon}</span>
+              )}
+              <span
+                className="text-[12px] tabular-nums"
+                style={{
+                  color: hasUnread
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {formatTime(thread.lastMessageTime)}
+              </span>
+            </div>
           )}
         </div>
 
