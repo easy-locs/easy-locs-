@@ -70,11 +70,28 @@ export default function MessageActionsMenu({
   };
 
   const handleDeleteForMe = async () => {
-    const { error } = await supabase.from("messages").update({ deleted_for_sender: true } as any).eq("id", messageId);
-    if (error) {
-      toast.error(t("chat.delete_failed") || "Delete failed");
-      close();
-      return;
+    if (isMe) {
+      const { error } = await supabase.from("messages").update({ 
+        deleted_for_sender: true,
+        deleted_at: new Date().toISOString(),
+        deletion_reason: "self_hide",
+      } as any).eq("id", messageId);
+      if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
+    } else {
+      // Recipient: append to deleted_for_user_ids
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = user?.id;
+      if (uid) {
+        const { data: existing } = await supabase
+          .from("messages").select("deleted_for_user_ids").eq("id", messageId).single();
+        const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+        if (!currentIds.includes(uid)) {
+          const { error } = await supabase.from("messages").update({
+            deleted_for_user_ids: [...currentIds, uid],
+          } as any).eq("id", messageId);
+          if (error) { toast.error(t("chat.delete_failed") || "Delete failed"); close(); return; }
+        }
+      }
     }
     onDeleted("for_me");
     toast.success(t("chat.deleted_for_you") || "Deleted for you");
