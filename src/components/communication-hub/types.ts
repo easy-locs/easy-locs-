@@ -63,6 +63,7 @@ export interface ConversationThread {
   pinned?: boolean;
   muted?: boolean;
   archived?: boolean;
+  clearedAt?: string;
 }
 
 /** Chat message */

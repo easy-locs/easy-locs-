@@ -456,11 +456,15 @@ export function useConversationThreads() {
             if (pref) {
               thread.archived = !!pref.archived;
               thread.muted = !!pref.muted;
-              if (pref.favorited) thread.pinned = true;
-              // Hide messages before cleared_at
-              if (pref.cleared_at && thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {
-                thread.lastMessage = undefined;
-                thread.unreadCount = 0;
+              thread.pinned = !!pref.favorited;
+              // Store cleared_at for chat panel filtering
+              if (pref.cleared_at) {
+                thread.clearedAt = pref.cleared_at;
+                // Hide messages before cleared_at in thread list preview
+                if (thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {
+                  thread.lastMessage = undefined;
+                  thread.unreadCount = 0;
+                }
               }
             }
           }

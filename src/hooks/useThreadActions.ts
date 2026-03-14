@@ -121,13 +121,15 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     if (!userId) return;
     const prevLastMessage = thread.lastMessage;
     const prevUnread = thread.unreadCount;
-    updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0 });
+    const prevClearedAt = thread.clearedAt;
+    const newClearedAt = new Date().toISOString();
+    updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0, clearedAt: newClearedAt });
     try {
-      await upsertPref(thread, { cleared_at: new Date().toISOString() });
+      await upsertPref(thread, { cleared_at: newClearedAt });
       toast.success(`Chat with ${thread.name} cleared`);
     } catch (e: any) {
       console.error("[clear] Failed:", e);
-      updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread });
+      updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread, clearedAt: prevClearedAt });
       toast.error("Failed to clear chat");
     }
   }, [userId, updateThreadLocally, upsertPref]);
@@ -137,15 +139,15 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
    */
   const favoriteThread = useCallback(async (thread: ConversationThread) => {
     if (!userId) return;
-    const wasFavorited = !!(thread as any).favorited;
+    const wasFavorited = !!thread.pinned;
     const newFavorited = !wasFavorited;
-    updateThreadLocally(thread.id, { pinned: newFavorited } as any);
+    updateThreadLocally(thread.id, { pinned: newFavorited });
     try {
       await upsertPref(thread, { favorited: newFavorited });
       toast.success(newFavorited ? `"${thread.name}" added to favourites` : `"${thread.name}" removed from favourites`);
     } catch (e: any) {
       console.error("[favorite] Failed:", e);
-      updateThreadLocally(thread.id, { pinned: wasFavorited } as any);
+      updateThreadLocally(thread.id, { pinned: wasFavorited });
       toast.error("Failed to update favourite");
     }
   }, [userId, updateThreadLocally, upsertPref]);
@@ -155,6 +157,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
 
 /** Resolve the other participant's user ID from the thread */
 function resolveOtherUserId(thread: ConversationThread, currentUserId: string): string | null {
+  // Direct threads: context_id format is "direct:uuid1:uuid2"
   if (thread.contextId?.startsWith("direct:")) {
     const parts = thread.contextId.split(":");
     const id1 = parts[1];
@@ -163,5 +166,11 @@ function resolveOtherUserId(thread: ConversationThread, currentUserId: string): 
       return id1 === currentUserId ? id2 : id1;
     }
   }
+  // Tenant threads: the tenant may have a linked user
+  if (thread.tenantId) {
+    return thread.tenantId; // Will be resolved by backend
+  }
+  // For any thread type, if email is available we can't resolve a UUID
+  // Return contextId as fallback for non-direct threads (booking contacts, etc.)
   return null;
 }
