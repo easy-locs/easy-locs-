@@ -281,6 +281,16 @@ function ChatMessageBubble({
           </span>
         )}
 
+        {/* Security badge */}
+        {hasSecurityLevel && (
+          <span className="inline-flex items-center gap-1 text-[9px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+            color: "hsl(var(--hud-warning))",
+            background: "hsl(var(--hud-warning) / 0.1)",
+          }}>
+            {securityPolicy.emoji} {securityPolicy.label}
+          </span>
+        )}
+
         {/* Category badge */}
         {msg.category !== "general" && !isInboundEmail && !isPayment && (
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
@@ -299,23 +309,67 @@ function ChatMessageBubble({
             />
           </div>
         ) : msg.attachment_url ? (
-          <div className="mb-1 -mx-1 rounded-lg overflow-hidden">
+          <div className={`mb-1 -mx-1 rounded-lg overflow-hidden ${blurred ? "blur-lg transition-all" : ""}`}>
             <ChatMediaPreview url={msg.attachment_url} />
           </div>
         ) : null}
 
         {/* Voice message */}
         {isVoice ? (
-          <VoiceMessageBubble
-            url={(msg as any).audio_url}
-            durationSeconds={(msg as any).audio_duration_seconds || 0}
-            isMe={isMe}
-          />
+          <div>
+            <VoiceMessageBubble
+              url={(msg as any).audio_url}
+              durationSeconds={(msg as any).audio_duration_seconds || 0}
+              isMe={isMe}
+            />
+            {/* Transcript display */}
+            {transcriptStatus === "processing" && (
+              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <Loader2 className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
+                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Transcribing...</span>
+              </div>
+            )}
+            {transcriptStatus === "error" && (
+              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <span className="text-[10px]" style={{ color: "hsl(var(--hud-danger) / 0.6)" }}>⚠️ Transcription failed</span>
+              </div>
+            )}
+            {transcriptText && transcriptStatus === "completed" && (
+              <div className="mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <button
+                  onClick={() => setShowTranscript(!showTranscript)}
+                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80"
+                  style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}
+                >
+                  <FileText className="h-2.5 w-2.5" />
+                  {showTranscript ? "Hide transcript" : "Show transcript"}
+                </button>
+                {showTranscript && (
+                  <p className={`text-[12px] leading-[1.4] whitespace-pre-wrap ${blurred ? "blur-lg" : ""}`} style={{
+                    color: "hsl(var(--hud-text) / 0.8)",
+                  }}>
+                    {showTranslatedTranscript && translatedTranscript ? translatedTranscript : transcriptText}
+                  </p>
+                )}
+                {showTranscript && translatedTranscript && (
+                  <button
+                    onClick={() => setShowTranslatedTranscript(!showTranslatedTranscript)}
+                    className="mt-0.5 inline-flex items-center gap-1 text-[9px] hover:opacity-80"
+                    style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
+                  >
+                    <Globe className="h-2 w-2" />
+                    {showTranslatedTranscript ? "Original" : "Translated"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         ) : (
           /* Message content */
-          <p className="text-[13.5px] leading-[1.45] whitespace-pre-wrap" style={{
+          <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
             color: "hsl(var(--foreground))",
             overflowWrap: "anywhere",
+            ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
           }}>
             {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
           </p>
@@ -336,10 +390,13 @@ function ChatMessageBubble({
           </button>
         )}
 
-        {/* Footer: time + status */}
+        {/* Footer: time + status + security */}
         <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
           {(msg as any).edited_at && (
             <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
+          )}
+          {hasSecurityLevel && (
+            <span className="text-[9px] mr-0.5" title={securityPolicy.label}>{securityPolicy.emoji}</span>
           )}
           <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
           {isMe && isPendingOffline ? (
