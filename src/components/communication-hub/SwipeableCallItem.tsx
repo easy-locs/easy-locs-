@@ -19,6 +19,7 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
   const [offsetX, setOffsetX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const startX = useRef(0);
+  const startY = useRef(0);
   const isTracking = useRef(false);
   const locked = useRef<"h" | "v" | null>(null);
   const wasDragging = useRef(false);
@@ -27,6 +28,7 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const t = e.touches[0];
     startX.current = t.clientX;
+    startY.current = t.clientY;
     isTracking.current = true;
     locked.current = null;
     wasDragging.current = false;
@@ -37,9 +39,10 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
     if (!isTracking.current) return;
     const t = e.touches[0];
     const dx = t.clientX - startX.current;
-    const dy = e.touches[0].clientY - (e as any)._startY || 0;
+    const dy = t.clientY - startY.current;
 
     if (!locked.current) {
+      if (Math.abs(dy) > 8) { locked.current = "v"; return; }
       if (Math.abs(dx) > 8) locked.current = "h";
       else return;
     }

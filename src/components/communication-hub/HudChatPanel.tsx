@@ -317,7 +317,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         });
       }
 
-      const { error: insertError } = await supabase.from("messages").insert({
+      const fileInsertPayload: any = {
         org_id: orgId,
         sender_id: authUserId,
         tenant_id: thread.tenantId || null,
@@ -333,7 +333,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         context_type: thread.contextType,
         context_id: thread.contextId,
         encrypted: !!fileMetaJson,
-      } as any);
+      };
+      if (thread.threadId) fileInsertPayload.thread_id = thread.threadId;
+
+      const { error: insertError } = await supabase.from("messages").insert(fileInsertPayload);
 
       if (insertError) throw insertError;
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
@@ -478,7 +481,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       const secPayload = buildSecurityPayload(securityLevel);
 
-      const { error: insertErr } = await supabase.from("messages").insert({
+      const insertPayload: any = {
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
@@ -493,7 +496,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         reply_to_id: currentReplyTo?.msgId || null,
         reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
         ...secPayload,
-      } as any);
+      };
+      // Include thread_id for proper thread matching on forward/search
+      if (thread.threadId) insertPayload.thread_id = thread.threadId;
+
+      const { error: insertErr } = await supabase.from("messages").insert(insertPayload);
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
@@ -645,8 +652,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const updateConversationStatus = async (status: string) => {
     if (!thread || !orgId) return;
     setConvStatus(status);
+    onThreadUpdate(thread.id, { conversationStatus: status });
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg) await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
+    if (lastMsg) {
+      const { error } = await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
+      if (error) {
+        console.error("[Status] Update failed:", error);
+        toast.error("Failed to update status");
+        return;
+      }
+    }
     toast.success(`Status: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
   };
 
@@ -1089,7 +1104,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
                   const voiceSecPayload = buildSecurityPayload(securityLevel);
 
-                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert({
+                  const voiceInsertPayload: any = {
                     org_id: orgId,
                     sender_id: authUserId,
                     tenant_id: thread.tenantId || null,
@@ -1107,7 +1122,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     context_id: thread.contextId,
                     transcript_status: "pending",
                     ...voiceSecPayload,
-                  } as any).select("id").single();
+                  };
+                  if (thread.threadId) voiceInsertPayload.thread_id = thread.threadId;
+
+                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert(voiceInsertPayload).select("id").single();
 
                   // Trigger voice transcription in background
                   if (insertedMsg?.id) {
