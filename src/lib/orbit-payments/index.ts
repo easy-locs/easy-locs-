@@ -4,3 +4,4 @@
 export * from "./types";
 export { encodeQRPayload, decodeQRPayload, isPayloadExpired } from "./qr-security";
 export { detectLocalCurrency, detectFromCountry, formatCurrency, formatLocs } from "./currency-detect";
+export { default as OrbitCurrencySelector } from "@/components/orbit/payments/OrbitCurrencySelector";
