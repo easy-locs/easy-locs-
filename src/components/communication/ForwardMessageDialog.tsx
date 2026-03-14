@@ -1,11 +1,13 @@
 /**
  * ForwardMessageDialog — Pick a thread to forward a message to.
+ * Two-step flow: select conversation → confirm & send.
  */
 import { useState, useEffect } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { MessageCircle, Loader2, Forward } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Loader2, Forward, Send, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -32,12 +34,12 @@ export default function ForwardMessageDialog({
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(false);
   const [forwarding, setForwarding] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) { setSelectedThread(null); return; }
     setLoading(true);
 
-    // Fetch threads where user is contact_email OR sender_id (covers direct threads)
     Promise.all([
       supabase
         .from("messages")
@@ -68,24 +70,31 @@ export default function ForwardMessageDialog({
     });
   }, [open, userEmail, userId, currentContextId]);
 
-  const handleForward = async (thread: Thread) => {
+  const handleForward = async () => {
+    if (!selectedThread) return;
     setForwarding(true);
-    const contextType = thread.context_id.startsWith("direct:") ? "direct" : "booking";
-    await supabase.from("messages").insert({
-      org_id: thread.org_id,
-      sender_id: userId,
-      content: messageContent,
-      context_id: thread.context_id,
-      context_type: contextType,
-      contact_email: userEmail,
-      contact_name: userName,
-      message_type: "user",
-      conversation_status: "waiting_provider",
-      forwarded_from: messageId,
-    } as any);
+    try {
+      const contextType = selectedThread.context_id.startsWith("direct:") ? "direct" : "booking";
+      const { error } = await supabase.from("messages").insert({
+        org_id: selectedThread.org_id,
+        sender_id: userId,
+        content: messageContent,
+        context_id: selectedThread.context_id,
+        context_type: contextType,
+        contact_email: userEmail,
+        contact_name: userName,
+        message_type: "user",
+        conversation_status: "waiting_provider",
+        forwarded_from: messageId,
+      } as any);
+      if (error) throw error;
+      toast.success(`Forwarded to ${selectedThread.contact_name || "conversation"}`);
+      onClose();
+    } catch (e: any) {
+      console.error("[Forward] Insert failed:", e);
+      toast.error("Failed to forward message");
+    }
     setForwarding(false);
-    toast.success(`Forwarded to ${thread.contact_name || "conversation"}`);
-    onClose();
   };
 
   return (
@@ -95,28 +104,66 @@ export default function ForwardMessageDialog({
           <DialogTitle className="text-base flex items-center gap-2">
             <Forward className="h-4 w-4" /> Forward message
           </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            {selectedThread ? "Confirm forwarding to this conversation" : "Select a conversation to forward to"}
+          </DialogDescription>
         </DialogHeader>
+        
+        {/* Message preview */}
+        <div className="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+          <p className="text-xs text-muted-foreground mb-0.5">Message:</p>
+          <p className="text-sm line-clamp-3">{messageContent}</p>
+        </div>
+
         <div className="max-h-[300px] overflow-y-auto space-y-1">
           {loading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
           ) : threads.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground py-8">No other conversations</p>
           ) : (
-            threads.map(t => (
-              <button
-                key={t.context_id}
-                onClick={() => handleForward(t)}
-                disabled={forwarding}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-left disabled:opacity-50"
-              >
-                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                  <MessageCircle className="h-4 w-4 text-accent" />
-                </div>
-                <span className="text-sm font-medium text-foreground truncate">{t.contact_name || "Conversation"}</span>
-              </button>
-            ))
+            threads.map(t => {
+              const isSelected = selectedThread?.context_id === t.context_id;
+              return (
+                <button
+                  key={t.context_id}
+                  onClick={() => setSelectedThread(isSelected ? null : t)}
+                  disabled={forwarding}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left disabled:opacity-50 ${
+                    isSelected ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    isSelected ? "bg-primary/20" : "bg-accent/10"
+                  }`}>
+                    {isSelected ? (
+                      <Check className="h-4 w-4 text-primary" />
+                    ) : (
+                      <MessageCircle className="h-4 w-4 text-accent" />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-foreground truncate">{t.contact_name || "Conversation"}</span>
+                </button>
+              );
+            })
           )}
         </div>
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} disabled={forwarding}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleForward}
+            disabled={!selectedThread || forwarding}
+            className="gap-2"
+          >
+            {forwarding ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</>
+            ) : (
+              <><Send className="h-4 w-4" /> Forward</>
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
