@@ -66,6 +66,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
   const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
+  const { settings: privacySettings } = usePrivacySettings();
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
 
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
