@@ -1,7 +1,6 @@
 /**
  * WalletHub — Full-screen Orbit Wallet experience
- * Balance, Send, Receive, QR, History, Settings — all in one visible page
- * Toggle between LOCS and local currency display
+ * Uses usePlatformCurrency for consistent currency display.
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,10 +11,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useWallet } from "@/hooks/useWallet";
-import { formatLocs, detectLocalCurrency } from "@/lib/orbit-payments";
-import { SUPPORTED_CURRENCIES } from "@/lib/orbit-payments/types";
-import { useAuth } from "@/contexts/AuthContext";
-import { RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { formatLocs } from "@/lib/orbit-payments";
+import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { useI18n } from "@/lib/i18n";
 import OrbitSmartPayment from "@/components/orbit/payments/OrbitSmartPayment";
 import OrbitPaymentRequest from "@/components/orbit/payments/OrbitPaymentRequest";
@@ -32,10 +29,8 @@ export default function WalletHub() {
   const initialView = (searchParams.get("action") as WalletView) || "home";
   const [view, setView] = useState<WalletView>(initialView);
   const { balance, loading } = useWallet();
-  const { userCurrency } = useAuth();
+  const { code, symbol, fmtLocal } = usePlatformCurrency();
   const { t } = useI18n();
-  const detected = detectLocalCurrency({ preferredCurrency: userCurrency || null, accountCountry: null });
-  const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
 
   const recipientUserId = searchParams.get("recipientId") || searchParams.get("recipientUserId") || "";
@@ -44,37 +39,21 @@ export default function WalletHub() {
   // --- Display currency toggle ---
   const [showLocs, setShowLocs] = useState(true);
 
-  const locsToLocal = (locs: number): number => {
-    const rate = RATES_TO_EUR[detected.code];
-    if (!rate || rate === 0) return locs;
-    return Math.round((locs / rate) * 100) / 100;
-  };
-
-  const formatLocal = (amount: number): string => {
-    try {
-      return new Intl.NumberFormat(navigator.language || "fr-FR", {
-        style: "currency", currency: detected.code, minimumFractionDigits: 2, maximumFractionDigits: 2,
-      }).format(amount);
-    } catch {
-      return `${currencyInfo?.symbol || detected.code} ${amount.toFixed(2)}`;
-    }
-  };
-
   const displayBalance = showLocs
     ? formatLocs(balance?.balance || 0)
-    : formatLocal(locsToLocal(balance?.balance || 0));
+    : fmtLocal(balance?.balance || 0);
 
   const displayPurchased = showLocs
     ? (balance?.total_purchased || 0).toFixed(0) + " LOCS"
-    : formatLocal(locsToLocal(balance?.total_purchased || 0));
+    : fmtLocal(balance?.total_purchased || 0);
 
   const displaySpent = showLocs
     ? (balance?.total_spent || 0).toFixed(0) + " LOCS"
-    : formatLocal(locsToLocal(balance?.total_spent || 0));
+    : fmtLocal(balance?.total_spent || 0);
 
   const displayFrozen = showLocs
     ? formatLocs(balance?.frozen_balance || 0)
-    : formatLocal(locsToLocal(balance?.frozen_balance || 0));
+    : fmtLocal(balance?.frozen_balance || 0);
 
   const VIEW_LABELS: Record<WalletView, string> = {
     home: t("orbit.wallet") || "Wallet",
@@ -161,7 +140,7 @@ export default function WalletHub() {
               {t("orbit.preferred_currency") || "Preferred currency"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("orbit.current_detection") || "Current detection"}: {currencyInfo?.symbol} {detected.code}
+              {t("orbit.current_detection") || "Current detection"}: {symbol} {code}
             </p>
             <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>
               {t("orbit.open_currency_settings") || "Open currency settings"}
@@ -220,8 +199,8 @@ export default function WalletHub() {
                 displayBalance={displayBalance}
                 showLocs={showLocs}
                 onToggle={() => setShowLocs((v) => !v)}
-                currencyCode={detected.code}
-                currencySymbol={currencyInfo?.symbol || "€"}
+                currencyCode={code}
+                currencySymbol={symbol}
                 displayPurchased={displayPurchased}
                 displaySpent={displaySpent}
                 frozenBalance={balance?.frozen_balance || 0}
