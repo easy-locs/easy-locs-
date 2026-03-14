@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile,
+  Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile, Eye,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
