@@ -4199,6 +4199,7 @@ export type Database = {
           updated_at: string
           user_type: string
           username: string | null
+          wallet_pin_hash: string | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -4243,6 +4244,7 @@ export type Database = {
           updated_at?: string
           user_type?: string
           username?: string | null
+          wallet_pin_hash?: string | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -4287,6 +4289,7 @@ export type Database = {
           updated_at?: string
           user_type?: string
           username?: string | null
+          wallet_pin_hash?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
