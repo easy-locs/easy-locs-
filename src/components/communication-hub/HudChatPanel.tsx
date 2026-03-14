@@ -1190,21 +1190,29 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            // For "everyone" and "moderation" — update in-memory state to show deleted bubble
             setRawMessages(prev => prev.map(m => m.id === msgId ? { 
-              ...m, 
-              content: "🚫 This message was deleted", 
-              message_type: "system",
-              attachment_url: null,
-              audio_url: undefined,
-              audio_duration_seconds: undefined,
-              deleted_for_all: true,
+              ...m, content: "🚫 This message was deleted", message_type: "system",
+              attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true,
             } as any : m));
           }
         }}
         onCopy={() => {}}
         onEdited={(msgId, newContent) => {
           setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m));
+        }}
+        onReply={(msgId, content, senderName) => {
+          setReplyTo({ msgId, content, senderName });
+        }}
+        onForward={(msgId, content) => {
+          navigator.clipboard.writeText(content);
+          toast.success("Message copied — paste in another conversation");
+        }}
+        onStarToggle={(msgId, starred) => {
+          setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m));
+        }}
+        onEnterSelectMode={(msgId) => {
+          setSelectMode(true);
+          setSelectedMsgIds(new Set([msgId]));
         }}
       />
 
