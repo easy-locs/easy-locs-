@@ -427,6 +427,8 @@ function resolveTargetId(event: SyncEvent): string {
     case "intervention_created": return ctx.propertyId || "";
     case "deal_created":         return event.dealId;
     case "deal_accepted":        return event.dealId;
+    case "wallet_payment_completed": return event.txnId;
+    case "wallet_payment_failed":    return ctx.bookingId || ctx.paymentRequestId || "";
     default:                     return "";
   }
 }
