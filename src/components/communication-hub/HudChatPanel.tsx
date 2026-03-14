@@ -17,6 +17,7 @@ import { haptic } from "@/lib/haptics";
 import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
+import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
