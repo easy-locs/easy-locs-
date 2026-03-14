@@ -84,6 +84,56 @@ function ChatMessageBubble({
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
+  const securityPolicy = getMessagePolicy(msg);
+  const hasSecurityLevel = securityPolicy.level !== "normal";
+  const transcriptText = (msg as any).transcript_text;
+  const transcriptStatus = (msg as any).transcript_status;
+  const translatedTranscript = (msg as any).translated_transcript_text;
+  const [showTranscript, setShowTranscript] = useState(true);
+  const [showTranslatedTranscript, setShowTranslatedTranscript] = useState(false);
+
+  // Client-side expiration masking
+  const [expired, setExpired] = useState(false);
+  useEffect(() => {
+    if (shouldHideMessage(msg)) { setExpired(true); return; }
+    if ((msg as any).disappear_at) {
+      const ms = new Date((msg as any).disappear_at).getTime() - Date.now();
+      if (ms > 0) {
+        const timer = setTimeout(() => setExpired(true), ms);
+        return () => clearTimeout(timer);
+      } else {
+        setExpired(true);
+      }
+    }
+  }, [(msg as any).disappear_at, (msg as any).destroyed_at]);
+
+  // Anti-screenshot: blur on visibility change
+  const [blurred, setBlurred] = useState(false);
+  useEffect(() => {
+    if (!securityPolicy.antiScreenshot) return;
+    const handler = () => {
+      if (document.hidden) setBlurred(true);
+      else setTimeout(() => setBlurred(false), 500);
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, [securityPolicy.antiScreenshot]);
+
+  if (expired) {
+    return (
+      <div className={`flex ${isMe ? "justify-end" : "justify-start"}`} style={{ marginTop: isConsecutive ? 2 : 8 }}>
+        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl" style={{
+          background: "hsl(var(--hud-surface) / 0.2)",
+          border: "1px solid hsl(var(--hud-border) / 0.04)",
+        }}>
+          <Timer className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+          <span className="text-[11px] italic" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            Message expired
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // Deleted message bubble — shows inline in conversation flow
   if (isDeleted && !isSystem) {
