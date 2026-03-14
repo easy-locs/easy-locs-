@@ -62,6 +62,10 @@ export default function MessageContextMenu({
 
   if (!message) return null;
 
+  const policy = getMessagePolicy(message);
+  const canCopy = isActionAllowed(message, "copy");
+  const canForward = isActionAllowed(message, "forward");
+
   const canDeleteForEveryone = message.isMe &&
     (Date.now() - new Date(message.createdAt).getTime()) < 60 * 60 * 1000;
 
