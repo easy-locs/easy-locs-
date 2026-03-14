@@ -51,7 +51,11 @@ export default function ConversationList({ threads, loading, selectedThread, onS
     threads
       .filter(t => {
         if (activeFilter === "all") return true;
-        return t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
+        // Primary match on conversationType
+        if (t.conversationType === activeFilter) return true;
+        // "team" threads also show under "direct" since there's no dedicated team tab
+        if (activeFilter === "direct" && t.conversationType === "team") return true;
+        return false;
       })
       .filter(t => filterProperty === "all" || t.propertyId === filterProperty)
       .filter(t => !searchQuery ||
