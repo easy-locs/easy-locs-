@@ -94,7 +94,8 @@ const TenantReviews = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("reviews").delete().eq("id", id);
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) { toast({ title: t("page.common.error") || "Error", description: error.message, variant: "destructive" }); return; }
     setReviews(reviews.filter((r) => r.id !== id));
     toast({ title: t("reviews.delete") });
   };
