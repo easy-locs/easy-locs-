@@ -85,6 +85,10 @@ export default function HudConversationList({
       if (t.archived) continue;
       counts.all++;
       counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+      // Team threads also count under "direct"
+      if (t.conversationType === "team") {
+        counts["direct"] = (counts["direct"] || 0) + 1;
+      }
     }
     return counts;
   }, [threads]);
