@@ -161,7 +161,7 @@ export default function OrbitHome() {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {PRIORITY_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${150 + i * 50}ms` }}>
               <OrbitQuickCard
