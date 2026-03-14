@@ -132,7 +132,7 @@ function DesktopUserMenu() {
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/marketplace")}>
                 <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My listings
               </DropdownMenuItem>
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/concierge")}>
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/seasonal")}>
                 <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Bookings
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/rental")}>
