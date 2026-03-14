@@ -5,7 +5,7 @@
 import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
-import { CONV_TYPE_CONFIG } from "./types";
+import { CONV_TYPE_CONFIG, CONV_STATUSES } from "./types";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
