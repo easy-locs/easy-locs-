@@ -84,7 +84,6 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      payment_method_types: ["card"],
       payment_method_options: {
         card: {
           request_three_d_secure: "any",
