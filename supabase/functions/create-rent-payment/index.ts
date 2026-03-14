@@ -32,41 +32,63 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
+    if (userError || !userData?.user?.email) {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
-    // Accept both naming conventions from frontend
     const body = await req.json();
     const rentCallId = body.rentCallId || body.rent_call_id;
     const paymentMethod = body.payment_method || "card";
 
-    if (!rentCallId) throw new Error("Missing rent_call_id");
+    if (!rentCallId) {
+      return new Response(JSON.stringify({ error: "Missing rent call ID" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
     if (!["card", "sepa"].includes(paymentMethod)) {
-      throw new Error("Invalid payment method");
+      return new Response(JSON.stringify({ error: "Invalid payment method" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
     }
 
     logStep("Payment request", { rentCallId, paymentMethod });
 
-    // Fetch rent call details from DB (no need for client to pass them)
     const { data: rentCall, error: rcError } = await supabaseClient
       .from("rent_calls")
       .select("id, paid, total_amount, rent_amount, charges_amount, month, tenant_id, org_id, property_id")
       .eq("id", rentCallId)
       .single();
 
-    if (rcError || !rentCall) throw new Error("Appel de loyer introuvable");
-    if (rentCall.paid) throw new Error("Ce loyer est déjà payé");
+    if (rcError || !rentCall) {
+      return new Response(JSON.stringify({ error: "Appel de loyer introuvable" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
+    if (rentCall.paid) {
+      return new Response(JSON.stringify({ error: "Ce loyer est déjà payé" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409,
+      });
+    }
 
     const amount = Number(rentCall.total_amount);
-    if (!amount || amount <= 0) throw new Error("Montant invalide");
+    if (!amount || amount <= 0) {
+      return new Response(JSON.stringify({ error: "Montant invalide" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
 
-    // Fetch tenant info
     const { data: tenant } = await supabaseClient
       .from("tenants")
       .select("name, tenant_user_id")
@@ -75,7 +97,6 @@ serve(async (req) => {
 
     const tenantName = tenant?.name || "Locataire";
 
-    // Authorization: tenant concerned OR org member
     const isTenantPayer = !!tenant?.tenant_user_id && tenant.tenant_user_id === user.id;
     const { data: orgMembership } = await supabaseClient
       .from("org_members")
@@ -85,10 +106,11 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!isTenantPayer && !orgMembership) {
-      throw new Error("Unauthorized for this rent call");
+      return new Response(JSON.stringify({ error: "Unauthorized for this rent call" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+      });
     }
 
-    // Get the landlord's connected Stripe account and country
     const { data: org } = await supabaseClient
       .from("orgs")
       .select("stripe_account_id, stripe_onboarding_complete, country")
@@ -99,11 +121,17 @@ serve(async (req) => {
     logStep("Stripe Connect status", { hasConnect, accountId: org?.stripe_account_id || "none" });
 
     if (!hasConnect) {
-      throw new Error("Le bailleur n'a pas encore configuré son compte de paiement Stripe Connect. Les loyers ne peuvent pas être encaissés tant que le bailleur n'a pas finalisé son onboarding Stripe.");
+      return new Response(JSON.stringify({ error: "Le bailleur n'a pas encore configuré son compte de paiement Stripe Connect." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 422,
+      });
     }
 
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const origin = "https://www.easy-locs.com";
@@ -111,13 +139,11 @@ serve(async (req) => {
     const currency = COUNTRY_CURRENCY[org?.country || "FR"] || "eur";
     const amountCents = Math.round(amount * 100);
 
-    // Use automatic_payment_methods to enable card, Apple Pay, Google Pay, and SEPA when applicable
     const useSepa = paymentMethod === "sepa" && currency === "eur";
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customerId = customers.data[0]?.id;
 
-    // Build session config - with or without Connect transfer
     const sessionConfig: any = {
       mode: "payment",
       customer: customerId,
@@ -136,8 +162,6 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      // Let Stripe auto-enable card, Apple Pay, Google Pay, and wallets
-      // For SEPA, explicitly set payment methods
       ...(useSepa
         ? { payment_method_types: ["sepa_debit"] }
         : { payment_method_types: ["card", "link"] }
@@ -152,7 +176,6 @@ serve(async (req) => {
       },
     };
 
-    // Always route rent payments to landlord via Stripe Connect
     sessionConfig.payment_intent_data = {
       transfer_data: {
         destination: org.stripe_account_id,
@@ -164,7 +187,6 @@ serve(async (req) => {
       },
     };
 
-    // Save mandate/payment method for future off-session SEPA debits
     if (paymentMethod === "sepa" && currency === "eur") {
       sessionConfig.payment_intent_data = {
         ...sessionConfig.payment_intent_data,
@@ -174,7 +196,6 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    // Update rent_call with payment_status and stripe reference
     const paymentRef = `LOYER-${(rentCall.month || "").replace(/[^a-zA-Z0-9]/g, "")}-${rentCallId.slice(0, 8).toUpperCase()}`;
     await supabaseClient.from("rent_calls").update({
       payment_status: "processing",
@@ -192,7 +213,7 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Payment error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

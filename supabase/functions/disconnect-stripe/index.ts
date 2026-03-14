@@ -19,13 +19,20 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
+    if (userError || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user) throw new Error("User not authenticated");
 
     const { data: orgMember } = await supabaseClient
       .from("org_members")
@@ -34,7 +41,11 @@ serve(async (req) => {
       .limit(1)
       .single();
 
-    if (!orgMember) throw new Error("No organization found");
+    if (!orgMember) {
+      return new Response(JSON.stringify({ error: "No organization found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
 
     const { data: org } = await supabaseClient
       .from("orgs")
@@ -48,13 +59,11 @@ serve(async (req) => {
       });
     }
 
-    // Clear the Stripe account from this org (does NOT delete the Stripe account itself)
     await supabaseClient
       .from("orgs")
       .update({ stripe_account_id: null, stripe_onboarding_complete: false } as any)
       .eq("id", orgMember.org_id);
 
-    // Log the action
     await supabaseClient.from("audit_logs").insert({
       action: "stripe_disconnect",
       user_id: user.id,
@@ -67,7 +76,8 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: msg }), {
+    console.error("[disconnect-stripe] Error:", msg);
+    return new Response(JSON.stringify({ error: "Failed to disconnect" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

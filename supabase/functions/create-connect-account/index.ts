@@ -24,13 +24,20 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
+    if (userError || !userData?.user?.email) {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
     const { data: orgMember } = await supabaseClient
@@ -40,7 +47,11 @@ serve(async (req) => {
       .limit(1)
       .single();
 
-    if (!orgMember) throw new Error("No organization found");
+    if (!orgMember) {
+      return new Response(JSON.stringify({ error: "No organization found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
     const orgId = orgMember.org_id;
 
     const { data: org } = await supabaseClient
@@ -50,11 +61,16 @@ serve(async (req) => {
       .single();
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
     
-    // Validate the key format
     if (stripeKey.startsWith("rk_")) {
-      throw new Error("La clé Stripe configurée est une clé restreinte (rk_*). Stripe Connect nécessite une clé secrète complète (sk_live_* ou sk_test_*). Veuillez mettre à jour votre clé Stripe dans les paramètres.");
+      return new Response(JSON.stringify({ error: "Invalid Stripe key configuration. A full secret key (sk_*) is required for Stripe Connect." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -101,7 +117,7 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Failed to setup payment account" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

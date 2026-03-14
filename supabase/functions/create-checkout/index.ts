@@ -11,11 +11,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-// Valid price IDs — single unlimited plan
 const VALID_PRICES = [
-  "price_1T50xQKcrlZX0EnnpjDZb41W", // unlimited monthly 9.99€
-  "price_1T50xgKcrlZX0EnntbHkjEsC", // unlimited annual 99€
-  // Legacy prices (still valid for existing subscribers)
+  "price_1T50xQKcrlZX0EnnpjDZb41W",
+  "price_1T50xgKcrlZX0EnntbHkjEsC",
   "price_1T4yukKcrlZX0EnnBHZvH0kN",
   "price_1T4yuyKcrlZX0EnnLJIFwgnQ",
   "price_1T4yvUKcrlZX0Enn8RaH9jGK",
@@ -37,22 +35,38 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
+    if (userError || !userData?.user?.email) {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { email: user.email });
 
     const { priceId } = await req.json();
     if (!priceId || !VALID_PRICES.includes(priceId)) {
-      throw new Error(`Invalid priceId: ${priceId}`);
+      return new Response(JSON.stringify({ error: "Invalid price selected" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
     }
     logStep("Price ID", { priceId });
 
-    const stripe = new Stripe((Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim(), { apiVersion: "2024-12-18.acacia" });
+    const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
     
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId: string | undefined;
@@ -89,7 +103,7 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Payment error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
