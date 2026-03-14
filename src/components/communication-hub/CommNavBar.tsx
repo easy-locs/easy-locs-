@@ -1,19 +1,21 @@
 /**
  * CommNavBar — Orbit navigation system.
  * Clean bottom tabs (mobile) / slim sidebar (desktop).
+ * Fully i18n'd.
  */
 import { MessageCircle, Phone, Users, Radar, UserCircle, Settings, BookUser } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 export type CommSection = "chats" | "calls" | "contacts" | "payments" | "groups" | "nearby" | "meetings" | "files" | "settings" | "you";
 
-const TABS: { id: CommSection; icon: typeof MessageCircle; label: string }[] = [
-  { id: "chats", icon: MessageCircle, label: "Chats" },
-  { id: "calls", icon: Phone, label: "Calls" },
-  { id: "contacts", icon: BookUser, label: "Contacts" },
-  { id: "nearby", icon: Radar, label: "Nearby" },
-  { id: "settings", icon: Settings, label: "Settings" },
-  { id: "you", icon: UserCircle, label: "You" },
+const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; fallback: string }[] = [
+  { id: "chats", icon: MessageCircle, labelKey: "orbit.nav.chats", fallback: "Chats" },
+  { id: "calls", icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls" },
+  { id: "contacts", icon: BookUser, labelKey: "orbit.nav.contacts", fallback: "Contacts" },
+  { id: "nearby", icon: Radar, labelKey: "orbit.nav.nearby", fallback: "Nearby" },
+  { id: "settings", icon: Settings, labelKey: "orbit.nav.settings", fallback: "Settings" },
+  { id: "you", icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You" },
 ];
 
 interface Props {
@@ -24,6 +26,8 @@ interface Props {
 }
 
 export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0 }: Props) {
+  const { t } = useI18n();
+
   if (isMobile) {
     return (
       <nav
@@ -35,9 +39,10 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
           paddingTop: 6,
         }}
       >
-        {TABS.map((tab) => {
+        {TAB_IDS.map((tab) => {
           const isActive = active === tab.id;
           const Icon = tab.icon;
+          const label = t(tab.labelKey) || tab.fallback;
           return (
             <button
               key={tab.id}
@@ -83,7 +88,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                   fontWeight: isActive ? 600 : 400,
                 }}
               >
-                {tab.label}
+                {label}
               </span>
             </button>
           );
@@ -102,9 +107,10 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
         borderRight: "1px solid hsl(var(--border) / 0.15)",
       }}
     >
-      {TABS.map((tab) => {
+      {TAB_IDS.map((tab) => {
         const isActive = active === tab.id;
         const Icon = tab.icon;
+        const label = t(tab.labelKey) || tab.fallback;
         return (
           <button
             key={tab.id}
@@ -113,7 +119,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             style={{
               background: isActive ? "hsl(var(--primary) / 0.08)" : "transparent",
             }}
-            title={tab.label}
+            title={label}
           >
             {isActive && (
               <motion.div
