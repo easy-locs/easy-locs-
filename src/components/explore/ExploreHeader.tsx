@@ -282,7 +282,7 @@ function MobileUserSheet() {
               <Separator className="my-2" />
               <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
               <MobileNavItem icon={Store} label="My listings" onClick={() => go("/dashboard/marketplace")} />
-              <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/concierge")} />
+              <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/seasonal")} />
               <MobileNavItem icon={Building2} label="Properties" onClick={() => go("/dashboard/rental")} />
               <MobileNavItem icon={FileText} label="Documents" onClick={() => go("/dashboard/documents")} />
               <MobileNavItem icon={Receipt} label="Finances" onClick={() => go("/dashboard/finances")} />
