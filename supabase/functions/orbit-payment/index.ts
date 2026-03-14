@@ -189,7 +189,7 @@ serve(async (req) => {
       });
     }
 
-    // ─── ACTION: pay_locs ─── Uses atomic DB RPC
+    // ─── ACTION: pay_locs ─── Uses atomic DB RPC with integrity checks
     if (action === "pay_locs") {
       const { recipient_user_id, amount, description, thread_id, context, qr_nonce } = body;
 
@@ -199,14 +199,44 @@ serve(async (req) => {
         });
       }
 
-      // Build metadata
-      const metadata: Record<string, any> = {};
+      // Anti-tampering: validate amount is a safe number
+      if (!Number.isFinite(amount) || amount > 1_000_000) {
+        return new Response(JSON.stringify({ error: "Amount out of bounds" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Validate recipient exists before transfer
+      const { data: recipientProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", recipient_user_id)
+        .maybeSingle();
+      if (!recipientProfile) {
+        return new Response(JSON.stringify({ error: "Recipient not found" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Build metadata with integrity hash
+      const metadata: Record<string, any> = {
+        initiated_at: new Date().toISOString(),
+        client_fingerprint: req.headers.get("user-agent")?.slice(0, 64) || "unknown",
+      };
       if (qr_nonce) metadata.qr_nonce = qr_nonce;
       if (context) {
         metadata.context_type = context.type;
         metadata.context_id = context.id;
         metadata.context_label = context.label;
       }
+
+      // Sign transaction metadata for audit integrity
+      const txIntegrityData = `${user.id}|${recipient_user_id}|${amount}|LOCS|${Date.now()}`;
+      const encoder = new TextEncoder();
+      const keyData = encoder.encode(getSigningKey());
+      const integrityKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+      const integritySignature = await crypto.subtle.sign("HMAC", integrityKey, encoder.encode(txIntegrityData));
+      metadata.integrity_hash = Array.from(new Uint8Array(integritySignature), (b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
 
       // Call atomic RPC — handles locking, balance check, debit, credit, nonce, audit
       const { data: result, error: rpcError } = await supabase.rpc("transfer_locs", {
