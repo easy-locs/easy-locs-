@@ -901,7 +901,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       onTranslate={handleTranslateMessage}
                       onContextMenu={(e, m, me) => {
                         if (selectMode) { toggleMsgSelect(m.id); return; }
-                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false });
+                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false, isStarred: !!(m as any).starred });
                       }}
                       onToggleSelect={toggleMsgSelect}
                       getCategoryIcon={getCategoryIcon}
