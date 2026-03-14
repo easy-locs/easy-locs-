@@ -42,7 +42,7 @@ const CommunicationCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
-  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread } = useThreadActions({ updateThreadLocally, loadThreads });
+  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus } = useThreadActions({ updateThreadLocally, loadThreads });
   useOrbitCallSync();
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
@@ -279,6 +279,12 @@ const CommunicationCenter = () => {
                 onClearThread={handleClearThread}
                 onFavoriteThread={favoriteThread}
                 onContactInfo={(thread) => {
+                  handleSelectThread(thread);
+                  if (isMobile) setMobileContextOpen(true);
+                  else setShowContext(true);
+                }}
+                onStatusChange={(thread, status) => changeStatus(thread, status)}
+                onDetails={(thread) => {
                   handleSelectThread(thread);
                   if (isMobile) setMobileContextOpen(true);
                   else setShowContext(true);
