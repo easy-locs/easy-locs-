@@ -157,7 +157,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
       const url = signedData?.signedUrl || path;
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
 
-      await supabase.from("messages").insert({
+      const filePayload: any = {
         org_id: orgId, sender_id: user.id,
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
@@ -167,7 +167,9 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) filePayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(filePayload);
       toast.success("File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
@@ -198,7 +200,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         } catch (e) { console.error("Translation failed:", e); }
       }
 
-      await supabase.from("messages").insert({
+      const msgPayload: any = {
         org_id: orgId, sender_id: user.id,
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
@@ -211,7 +213,9 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         property_id: thread.propertyId || null,
         conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) msgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(msgPayload);
 
       setNewMessage("");
       setConvStatus("waiting_tenant");
@@ -300,13 +304,15 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
       }
 
       const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-      await supabase.from("messages").insert({
+      const sysMsgPayload: any = {
         org_id: orgId, sender_id: SYSTEM_SENDER_ID,
         tenant_id: thread.tenantId || null, booking_id: thread.bookingId,
         booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) sysMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(sysMsgPayload);
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
@@ -358,12 +364,14 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
 
-      await supabase.from("messages").insert({
+      const payMsgPayload: any = {
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) payMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(payMsgPayload);
 
       setPaymentLinkDialog(false);
       setPaymentAmount("");

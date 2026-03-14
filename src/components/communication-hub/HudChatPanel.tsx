@@ -374,14 +374,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
-      await supabase.from("messages").insert({
+      const viewOncePayload: any = {
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: "📷 View-once photo", attachment_url: finalUrl,
         category: "general", message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
         view_once: true, disappear_at: disappearAt,
-      } as any);
+      };
+      if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(viewOncePayload);
       toast.success("📷 View-once photo sent");
     } catch (e: any) { toast.error(e?.message || "Upload failed"); }
     setUploading(false);
@@ -600,12 +602,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
 
       const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-      await supabase.from("messages").insert({
+      const bookingMsgPayload: any = {
         org_id: orgId, sender_id: SYSTEM_SENDER_ID, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId, booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) bookingMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(bookingMsgPayload);
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
 
@@ -643,12 +647,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const msgContent = paymentUrl
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
-      await supabase.from("messages").insert({
+      const paymentMsgPayload: any = {
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) paymentMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(paymentMsgPayload);
       setPaymentLinkDialog(false); setPaymentAmount(""); setPaymentDescription("");
       toast.success("Payment link sent");
     } catch (e: any) { toast.error(e.message); }
