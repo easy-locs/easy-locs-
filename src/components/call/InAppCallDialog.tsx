@@ -10,6 +10,7 @@ import {
   Loader2, Shield, MessageSquare, WifiOff, User, RotateCcw,
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
+import { playSecureCallAnnouncement, resetSecureAudioState } from "@/lib/orbit-secure-audio";
 
 interface InAppCallDialogProps {
   open: boolean;
