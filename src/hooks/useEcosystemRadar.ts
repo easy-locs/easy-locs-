@@ -170,15 +170,18 @@ export function useEcosystemRadar({
       const wantTracking = filter === "all" || ["visit", "intervention", "delivery"].includes(filter);
       if (wantTracking) {
         const { data: trackings } = await supabase
-          .from("live_trackings" as any)
-          .select("id, context_type, context_id, label, lat, lng, status, user_id, heading")
+          .from("live_trackings")
+          .select("id, context_type, context_id, context_label, current_lat, current_lng, status, tracker_user_id, heading")
           .in("status", ["active", "en_route", "nearby"])
-          .not("lat", "is", null)
-          .not("lng", "is", null);
+          .not("current_lat", "is", null)
+          .not("current_lng", "is", null);
 
         if (trackings) {
           (trackings as any[]).forEach(t => {
-            const dist = haversineKm(lat, lng, t.lat, t.lng);
+            const tLat = t.current_lat;
+            const tLng = t.current_lng;
+            if (!tLat || !tLng) return;
+            const dist = haversineKm(lat, lng, tLat, tLng);
             if (dist > radius) return;
             let cat: EcosystemCategory =
               t.context_type === "visit" ? "visit" :
@@ -187,9 +190,9 @@ export function useEcosystemRadar({
             all.push({
               id: t.id,
               category: cat,
-              title: t.label || `${t.context_type} in progress`,
+              title: t.context_label || `${t.context_type} in progress`,
               subtitle: `${t.status}`,
-              lat: t.lat, lng: t.lng,
+              lat: tLat, lng: tLng,
               distance_km: dist,
               status: t.status,
               meta: { context_type: t.context_type, context_id: t.context_id, heading: t.heading },
