@@ -327,7 +327,42 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     setUploading(false);
   };
 
-  const handleSend = async () => {
+  const handleViewOnceUpload = async (file: File) => {
+    if (!thread || !orgId) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+    if (!file.type.startsWith("image/")) { toast.error("View-once only supports photos"); return; }
+    setUploading(true);
+    try {
+      const path = `${orgId}/${thread.id}/viewonce-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
+      const buckets = ["chat-media", "property-photos"];
+      let finalUrl: string | null = null;
+      for (const bucket of buckets) {
+        const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+        if (error) continue;
+        const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+        finalUrl = signed?.signedUrl || null;
+        break;
+      }
+      if (!finalUrl) throw new Error("Upload failed");
+
+      const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
+      const disappearAt = computeDisappearAt(effectiveTTL);
+
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        content: "📷 View-once photo", attachment_url: finalUrl,
+        category: "general", message_type: "user", sender_locale: locale,
+        context_type: thread.contextType, context_id: thread.contextId,
+        view_once: true, disappear_at: disappearAt,
+      } as any);
+      toast.success("📷 View-once photo sent");
+    } catch (e: any) { toast.error(e?.message || "Upload failed"); }
+    setUploading(false);
+    setViewOnceNext(false);
+  };
+
     if (!newMessage.trim() || !thread) return;
     const msgText = newMessage.trim();
 
