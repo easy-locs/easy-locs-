@@ -75,7 +75,8 @@ const Buildings = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("page.buildings.delete_confirm"))) return;
-    await supabase.from("buildings").delete().eq("id", id);
+    const { error } = await supabase.from("buildings").delete().eq("id", id);
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("page.buildings.deleted") });
     load();
   };

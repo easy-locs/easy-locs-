@@ -211,7 +211,8 @@ export default function RealEstateListings() {
   };
 
   const handleUpdateLeadStatus = async (id: string, status: string) => {
-    await supabase.from("real_estate_leads").update({ status }).eq("id", id);
+    const { error } = await supabase.from("real_estate_leads").update({ status }).eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     toast({ title: `Lead marked as ${status}` });
   };
