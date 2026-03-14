@@ -107,7 +107,7 @@ function DesktopUserMenu() {
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(dash)}>
             <LayoutDashboard className="h-4 w-4 mr-3 text-muted-foreground" /> Dashboard
           </DropdownMenuItem>
-          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(`${dash}/messages`)}>
+          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/communication")}>
             <MessageSquare className="h-4 w-4 mr-3 text-muted-foreground" /> Messages
           </DropdownMenuItem>
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/saved")}>
