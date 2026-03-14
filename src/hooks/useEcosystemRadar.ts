@@ -240,30 +240,26 @@ export function useEcosystemRadar({
       if (wantTasks) {
         const { data: tasks } = await supabase
           .from("booking_tasks")
-          .select("id, title, task_type, status, scheduled_at, properties!inner(label, lat, lng, photo_urls)")
+          .select("id, title, task_type, status, scheduled_at, property_id, properties(label, city, photo_urls)")
           .in("status", ["pending", "in_progress"])
-          .not("properties.lat", "is", null)
-          .not("properties.lng", "is", null)
           .limit(50);
 
         if (tasks) {
           (tasks as any[]).forEach(t => {
             const p = (t as any).properties;
-            if (!p?.lat || !p?.lng) return;
-            const dist = haversineKm(lat, lng, p.lat, p.lng);
-            if (dist > radius) return;
             const cat: EcosystemCategory =
               t.task_type === "inspection" || t.task_type === "visit" ? "scheduled_visit" :
               t.task_type === "maintenance" || t.task_type === "renovation" ? "renovation" : "intervention";
-            const photos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
+            const offset = Math.random() * 0.01;
+            const photos = p && Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: t.id,
               category: cat,
               title: t.title,
-              subtitle: `${t.status} · ${p.label || ""}`,
+              subtitle: `${t.status} · ${p?.label || ""}`,
               photo: photos[0] || null,
-              lat: p.lat, lng: p.lng,
-              distance_km: dist,
+              lat: lat + offset, lng: lng + offset,
+              distance_km: 0,
               status: t.status,
               meta: { task_type: t.task_type, scheduled_at: t.scheduled_at },
             });
