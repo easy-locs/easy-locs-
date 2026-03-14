@@ -2,25 +2,22 @@
  * OrbitWalletCard — Prominent wallet card for OrbitHome
  * Shows balance, quick actions, and detected currency
  */
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Wallet, Send, ArrowDownLeft, QrCode, ScanLine,
-  History, Settings, ChevronRight, Coins,
+  History, Settings, Coins,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
 import { formatLocs, detectLocalCurrency } from "@/lib/orbit-payments";
 import { SUPPORTED_CURRENCIES } from "@/lib/orbit-payments/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import OrbitPaymentActions from "@/components/orbit/payments/OrbitPaymentActions";
 
 const QUICK_ACTIONS = [
-  { icon: Send, label: "Send", key: "pay" as const },
-  { icon: ArrowDownLeft, label: "Receive", key: "request" as const },
-  { icon: ScanLine, label: "Scan", key: "scan_qr" as const },
-  { icon: QrCode, label: "My QR", key: "my_qr" as const },
+  { icon: Send, label: "Send", key: "send" },
+  { icon: ArrowDownLeft, label: "Receive", key: "receive" },
+  { icon: ScanLine, label: "Scan", key: "scan" },
+  { icon: QrCode, label: "My QR", key: "my_qr" },
 ];
 
 export default function OrbitWalletCard() {
@@ -29,7 +26,6 @@ export default function OrbitWalletCard() {
   const detected = detectLocalCurrency({ preferredCurrency: userCurrency || null, accountCountry: null });
   const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
-  const [walletOpen, setWalletOpen] = useState(false);
 
   return (
     <div className="w-full max-w-md">
@@ -80,29 +76,23 @@ export default function OrbitWalletCard() {
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
-                <Sheet key={action.key} open={walletOpen} onOpenChange={setWalletOpen}>
-                  <SheetTrigger asChild>
-                    <motion.button
-                      whileTap={{ scale: 0.92 }}
-                      className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
-                      style={{ background: "hsl(0 0% 100% / 0.1)" }}
-                      onClick={() => setWalletOpen(true)}
-                    >
-                      <Icon className="w-4 h-4 text-primary-foreground" />
-                      <span className="text-[10px] font-semibold text-primary-foreground/80">{action.label}</span>
-                    </motion.button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto p-0">
-                    <OrbitPaymentActions onClose={() => setWalletOpen(false)} />
-                  </SheetContent>
-                </Sheet>
+                <motion.button
+                  key={action.key}
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
+                  style={{ background: "hsl(0 0% 100% / 0.1)" }}
+                  onClick={() => navigate(`/dashboard/wallet?action=${action.key}`)}
+                >
+                  <Icon className="w-4 h-4 text-primary-foreground" />
+                  <span className="text-[10px] font-semibold text-primary-foreground/80">{action.label}</span>
+                </motion.button>
               );
             })}
 
             {/* History */}
             <motion.button
               whileTap={{ scale: 0.92 }}
-              onClick={() => navigate("/dashboard/finances")}
+              onClick={() => navigate("/dashboard/wallet?action=history")}
               className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
               style={{ background: "hsl(0 0% 100% / 0.1)" }}
             >

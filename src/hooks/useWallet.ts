@@ -112,74 +112,31 @@ export function useWallet() {
     }
   }, []);
 
-  /** Send LOCS to another user */
+  /** Send LOCS to another user via secure server-side RPC */
   const sendMoney = useCallback(async (opts: {
     recipientUserId: string;
     amount: number;
     description?: string;
     threadId?: string;
   }) => {
-    if (!user?.id || !balance) return { success: false, error: "No wallet" };
-    if (balance.balance < opts.amount) return { success: false, error: "Insufficient LOCS balance" };
+    if (!user?.id) return { success: false, error: "Not authenticated" };
 
-    // Outgoing transaction
-    const { error: txErr } = await supabase.from("wallet_transactions").insert({
-      user_id: user.id,
-      counterpart_user_id: opts.recipientUserId,
-      type: "transfer",
-      direction: "out",
-      amount: opts.amount,
-      currency: "LOCS",
-      description: opts.description || "LOCS Transfer",
-      status: "completed",
-      thread_id: opts.threadId || null,
-    } as any);
+    const { data, error } = await supabase.rpc("transfer_locs", {
+      _sender_id: user.id,
+      _recipient_id: opts.recipientUserId,
+      _amount: opts.amount,
+      _description: opts.description || "LOCS Transfer",
+      _thread_id: opts.threadId || null,
+    });
 
-    if (txErr) return { success: false, error: txErr.message };
-
-    // Incoming for recipient
-    await supabase.from("wallet_transactions").insert({
-      user_id: opts.recipientUserId,
-      counterpart_user_id: user.id,
-      type: "transfer",
-      direction: "in",
-      amount: opts.amount,
-      currency: "LOCS",
-      description: opts.description || "LOCS received",
-      status: "completed",
-      thread_id: opts.threadId || null,
-    } as any);
-
-    // Update balances
-    await supabase
-      .from("wallet_balances")
-      .update({
-        balance: balance.balance - opts.amount,
-        total_spent: (balance.total_spent || 0) + opts.amount,
-        updated_at: new Date().toISOString(),
-      } as any)
-      .eq("user_id", user.id)
-      .eq("currency", "LOCS");
-
-    // Upsert recipient
-    const { data: recipientBal } = await supabase
-      .from("wallet_balances")
-      .select("balance")
-      .eq("user_id", opts.recipientUserId)
-      .eq("currency", "LOCS")
-      .maybeSingle();
-
-    if (recipientBal) {
-      await supabase
-        .from("wallet_balances")
-        .update({ balance: (recipientBal.balance as number) + opts.amount, updated_at: new Date().toISOString() } as any)
-        .eq("user_id", opts.recipientUserId)
-        .eq("currency", "LOCS");
+    if (error) return { success: false, error: error.message };
+    if (data && typeof data === "object" && "error" in (data as any)) {
+      return { success: false, error: (data as any).error };
     }
 
     await loadWallet();
-    return { success: true };
-  }, [user?.id, balance, loadWallet]);
+    return { success: true, data };
+  }, [user?.id, loadWallet]);
 
   /** Request LOCS from another user */
   const requestMoney = useCallback(async (opts: {

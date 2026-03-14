@@ -100,6 +100,7 @@ const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
 // Orbit App Shell & Home
 const OrbitAppShell = lazy(() => import("./components/orbit/OrbitAppShell"));
 const OrbitHome = lazy(() => import("./pages/OrbitHome"));
+const WalletHub = lazy(() => import("./pages/WalletHub"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
 const PropertyDetailHub = lazy(() => import("./pages/PropertyDetailHub"));
 const CreateListing = lazy(() => import("./pages/CreateListing"));
@@ -301,7 +302,7 @@ const App = () => (
               <Route path="/dashboard/rental" element={<ProtectedRoute><CountryGuard><RentalManagement /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/property/:propertyId" element={<ProtectedRoute><PropertyDetailHub /></ProtectedRoute>} />
               <Route path="/dashboard/finances" element={<ProtectedRoute><CountryGuard><Finances /></CountryGuard></ProtectedRoute>} />
-              
+              <Route path="/dashboard/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
               <Route path="/dashboard/tasks" element={<ProtectedRoute><CountryGuard><Tasks /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/interventions" element={<ProtectedRoute><CountryGuard><Interventions /></CountryGuard></ProtectedRoute>} />
               <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
