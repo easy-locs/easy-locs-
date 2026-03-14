@@ -2,6 +2,7 @@
  * MessageContextMenu — Full action sheet for messages.
  * Long-press on mobile, right-click on desktop.
  * Actions: Reply, Forward, Copy, Star, Edit, Delete (me/all/moderation), Select.
+ * Fully i18n-aware.
  */
 import { useState } from "react";
 import {
@@ -15,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
+import { useI18n } from "@/lib/i18n";
 
 interface MessageAction {
   msgId: string;
@@ -54,6 +56,7 @@ export default function MessageContextMenu({
   message, onClose, onDeleted, onCopy, onEdited,
   onReply, onForward, onStarToggle, onEnterSelectMode,
 }: Props) {
+  const { t } = useI18n();
   const [confirmDelete, setConfirmDelete] = useState<"self" | "everyone" | "moderation" | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -98,17 +101,17 @@ export default function MessageContextMenu({
         };
         const { error } = await supabase.from("messages").update(updatePayload as any).eq("id", message.msgId);
         if (error) { toast.error("Failed to delete message"); setDeleting(false); return; }
-        toast.success(type === "moderation" ? "Message removed by moderation" : "Message deleted for everyone");
+        toast.success(type === "moderation"
+          ? (t("orbit.message_deleted_mod") || "Message removed by moderation")
+          : (t("orbit.message_deleted_all") || "Message deleted for everyone"));
       } else {
         if (message.isMe) {
-          // Sender: use deleted_for_sender flag
           const { error } = await supabase.from("messages").update({
             deleted_for_sender: true, deleted_at: new Date().toISOString(),
             deleted_by: currentUserId, deletion_reason: "self_hide",
           } as any).eq("id", message.msgId);
           if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
         } else {
-          // Recipient: append user to deleted_for_user_ids array
           const { data: existing } = await supabase
             .from("messages")
             .select("deleted_for_user_ids")
@@ -122,7 +125,7 @@ export default function MessageContextMenu({
             if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
           }
         }
-        toast.success("Message hidden from your view");
+        toast.success(t("orbit.message_hidden") || "Message hidden from your view");
       }
       onDeleted(message.msgId, type);
     } catch {
@@ -136,7 +139,7 @@ export default function MessageContextMenu({
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
     haptic("light");
-    toast.success("Copied");
+    toast.success(t("orbit.copied") || "Copied");
     onCopy(message.content);
     onClose();
   };
@@ -158,7 +161,9 @@ export default function MessageContextMenu({
     const newStarred = !message.isStarred;
     await supabase.from("messages").update({ starred: newStarred } as any).eq("id", message.msgId);
     onStarToggle?.(message.msgId, newStarred);
-    toast.success(newStarred ? "Message starred" : "Message unstarred");
+    toast.success(newStarred
+      ? (t("orbit.message_starred") || "Message starred")
+      : (t("orbit.message_unstarred") || "Message unstarred"));
     onClose();
   };
 
@@ -183,21 +188,24 @@ export default function MessageContextMenu({
       edit_history: [{ content: message.content, edited_at: new Date().toISOString() }],
     } as any).eq("id", message.msgId);
     if (error) { toast.error("Failed to edit message"); setSaving(false); return; }
-    toast.success("Message edited");
+    toast.success(t("orbit.message_edited") || "Message edited");
     onEdited?.(message.msgId, editText.trim());
     setSaving(false);
     setEditMode(false);
     onClose();
   };
 
-  const deleteTypeLabel = { self: "Delete for you?", everyone: "Delete for everyone?", moderation: "Remove as moderator?" };
+  const deleteTypeLabel = {
+    self: t("orbit.delete_for_me_q") || "Delete for you?",
+    everyone: t("orbit.delete_for_all_q") || "Delete for everyone?",
+    moderation: t("orbit.remove_mod_q") || "Remove as moderator?",
+  };
   const deleteTypeDesc = {
-    self: "This message will only be hidden from your view.",
-    everyone: "This message will be removed for all participants. This cannot be undone.",
-    moderation: "This message will be removed for all participants as a moderation action.",
+    self: t("orbit.delete_for_me_desc") || "This message will only be hidden from your view.",
+    everyone: t("orbit.delete_for_all_desc") || "This message will be removed for all participants. This cannot be undone.",
+    moderation: t("orbit.remove_mod_desc") || "This message will be removed for all participants as a moderation action.",
   };
 
-  // Action item component
   const ActionItem = ({ icon, label, onClick, color, danger }: {
     icon: React.ReactNode; label: string; onClick: () => void; color?: string; danger?: boolean;
   }) => (
@@ -220,9 +228,9 @@ export default function MessageContextMenu({
       <Dialog open={editMode} onOpenChange={(v) => { if (!v) setEditMode(false); }}>
         <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>Edit message</DialogTitle>
+            <DialogTitle className="text-sm" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.edit_dialog_title") || "Edit message"}</DialogTitle>
             <DialogDescription className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
-              You can edit within 15 minutes of sending.
+              {t("orbit.edit_dialog_desc") || "You can edit within 15 minutes of sending."}
             </DialogDescription>
           </DialogHeader>
           <textarea
@@ -234,9 +242,11 @@ export default function MessageContextMenu({
           />
           <DialogFooter className="gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditMode(false)}
-              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>Cancel</Button>
+              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>{t("orbit.cancel") || "Cancel"}</Button>
             <Button size="sm" disabled={saving} onClick={handleSaveEdit}
-              style={{ background: "hsl(var(--hud-cyan))", color: "white" }}>{saving ? "Saving..." : "Save"}</Button>
+              style={{ background: "hsl(var(--hud-cyan))", color: "white" }}>
+              {saving ? (t("orbit.saving") || "Saving…") : (t("orbit.save") || "Save")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -254,22 +264,24 @@ export default function MessageContextMenu({
             background: "hsl(var(--hud-surface) / 0.3)",
           }}>
             <p className="text-xs line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>
-              {message.hasAudio ? "🎤 Voice message" : message.hasAttachment ? "📎 Attachment" : message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content}
+              {message.hasAudio
+                ? `🎤 ${t("orbit.voice_message") || "Voice message"}`
+                : message.hasAttachment
+                  ? `📎 ${t("orbit.attachment") || "Attachment"}`
+                  : message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content}
             </p>
           </div>
 
           {/* Actions */}
           <div className="py-1 max-h-[50vh] overflow-y-auto">
-            <ActionItem icon={<Reply className="h-4 w-4" />} label="Reply" onClick={handleReply} />
+            <ActionItem icon={<Reply className="h-4 w-4" />} label={t("orbit.reply") || "Reply"} onClick={handleReply} />
             {canForward && (
-              <ActionItem icon={<Forward className="h-4 w-4" />} label="Forward" onClick={handleForward} />
+              <ActionItem icon={<Forward className="h-4 w-4" />} label={t("orbit.forward") || "Forward"} onClick={handleForward} />
             )}
-
             {!message.hasAudio && canCopy && (
-              <ActionItem icon={<Copy className="h-4 w-4" />} label="Copy text" onClick={handleCopy} />
+              <ActionItem icon={<Copy className="h-4 w-4" />} label={t("orbit.copy_text") || "Copy text"} onClick={handleCopy} />
             )}
 
-            {/* Security level badge */}
             {policy.level !== "normal" && (
               <div className="px-4 py-2 flex items-center gap-2" style={{ color: "hsl(var(--hud-warning) / 0.7)" }}>
                 <Shield className="h-3.5 w-3.5" />
@@ -279,27 +291,27 @@ export default function MessageContextMenu({
 
             <ActionItem
               icon={message.isStarred ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
-              label={message.isStarred ? "Unstar" : "Star"}
+              label={message.isStarred ? (t("orbit.unstar") || "Unstar") : (t("orbit.star") || "Star")}
               onClick={handleStar}
               color="hsl(var(--hud-warning))"
             />
 
             {canEdit && (
-              <ActionItem icon={<Edit3 className="h-4 w-4" />} label="Edit message" onClick={handleStartEdit} color="hsl(var(--hud-cyan))" />
+              <ActionItem icon={<Edit3 className="h-4 w-4" />} label={t("orbit.edit_message") || "Edit message"} onClick={handleStartEdit} color="hsl(var(--hud-cyan))" />
             )}
 
-            <ActionItem icon={<CheckSquare className="h-4 w-4" />} label="Select" onClick={handleSelect} />
+            <ActionItem icon={<CheckSquare className="h-4 w-4" />} label={t("orbit.select") || "Select"} onClick={handleSelect} />
 
             <div className="h-px mx-3 my-1" style={{ background: "hsl(var(--hud-border) / 0.1)" }} />
 
-            <ActionItem icon={<EyeOff className="h-4 w-4" />} label="Delete for me" onClick={() => setConfirmDelete("self")} danger />
+            <ActionItem icon={<EyeOff className="h-4 w-4" />} label={t("orbit.delete_for_me") || "Delete for me"} onClick={() => setConfirmDelete("self")} danger />
 
             {canDeleteForEveryone && (
-              <ActionItem icon={<Trash2 className="h-4 w-4" />} label="Delete for everyone" onClick={() => setConfirmDelete("everyone")} danger />
+              <ActionItem icon={<Trash2 className="h-4 w-4" />} label={t("orbit.delete_for_all") || "Delete for everyone"} onClick={() => setConfirmDelete("everyone")} danger />
             )}
 
             {canModerate && (
-              <ActionItem icon={<ShieldAlert className="h-4 w-4" />} label="Remove (moderation)" onClick={() => setConfirmDelete("moderation")} danger />
+              <ActionItem icon={<ShieldAlert className="h-4 w-4" />} label={t("orbit.remove_moderation") || "Remove (moderation)"} onClick={() => setConfirmDelete("moderation")} danger />
             )}
           </div>
         </DialogContent>
@@ -318,10 +330,12 @@ export default function MessageContextMenu({
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}
-              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>Cancel</Button>
+              style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text))" }}>
+              {t("orbit.cancel") || "Cancel"}
+            </Button>
             <Button size="sm" disabled={deleting} onClick={() => confirmDelete && handleDelete(confirmDelete)}
               style={{ background: confirmDelete === "self" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-danger))", color: "white" }}>
-              {deleting ? "Deleting..." : "Delete"}
+              {deleting ? (t("orbit.deleting") || "Deleting…") : (t("orbit.delete") || "Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
