@@ -3,7 +3,7 @@
  * Clean bottom tabs (mobile) / slim sidebar (desktop).
  * Fully i18n'd.
  */
-import { MessageCircle, Phone, Users, Radar, UserCircle, Settings, BookUser } from "lucide-react";
+import { MessageCircle, Phone, Users, Wallet, UserCircle, Shield, BookUser } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
@@ -13,8 +13,8 @@ const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; 
   { id: "chats", icon: MessageCircle, labelKey: "orbit.nav.chats", fallback: "Chats" },
   { id: "calls", icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls" },
   { id: "contacts", icon: BookUser, labelKey: "orbit.nav.contacts", fallback: "Contacts" },
-  { id: "nearby", icon: Radar, labelKey: "orbit.nav.nearby", fallback: "Nearby" },
-  { id: "settings", icon: Settings, labelKey: "orbit.nav.settings", fallback: "Settings" },
+  { id: "payments", icon: Wallet, labelKey: "orbit.nav.wallet", fallback: "Wallet" },
+  { id: "settings", icon: Shield, labelKey: "orbit.nav.security", fallback: "Security" },
   { id: "you", icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You" },
 ];
 

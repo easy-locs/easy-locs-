@@ -12,34 +12,45 @@ import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
   Bell, Shield, Lock, FileDown, Palette,
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
-  TrendingUp,
+  TrendingUp, CreditCard, Fingerprint, History, Star,
 } from "lucide-react";
 
-/* ── Priority modules (top row) ── */
+/* ══════ ORBIT = Infrastructure layer ══════ */
+
+/* ── Priority modules (top row) — communication core ── */
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
   { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
-  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings" },
-  { icon: Store, label: "Annonces", desc: "Marketplace", key: "activeListings" as const, to: "/dashboard/marketplace" },
+  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
+  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
 ];
 
-/* ── Module shortcuts — role-aware links to core pillars ── */
+/* ── Orbit Infrastructure — Wallet, Payments, Security, Identity ── */
+const ORBIT_INFRA_CARDS = [
+  { icon: Wallet, label: "Wallet", desc: "Solde", key: null, to: "/dashboard/finances" },
+  { icon: CreditCard, label: "Paiements", desc: "Transactions", key: null, to: "/dashboard/communication?section=payments" },
+  { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/finances" },
+  { icon: Shield, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
+  { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
+  { icon: Lock, label: "Confidentialité", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
+];
+
+/* ══════ MARKETPLACE = Commerce layer ══════ */
+
+/* ── Marketplace Commerce — Services, Bookings, Listings ── */
+const MARKETPLACE_CARDS = [
+  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/marketplace" },
+  { icon: ShoppingBag, label: "Réservations", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
+  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/marketplace" },
+  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
+];
+
+/* ── Platform Modules — role-aware shortcuts ── */
 const MODULE_CARDS = [
   { icon: Building2, label: "Gestion", desc: "Immobilier", key: null, to: "/dashboard/rental", roles: ["landlord"] },
   { icon: CalendarCheck, label: "Saisonnier", desc: "Réservations", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
-  { icon: ShoppingBag, label: "Marketplace", desc: "Services", key: "pendingOrders" as const, to: "/dashboard/marketplace", roles: ["landlord", "client"] },
-  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication", roles: ["landlord"] },
-];
-
-/* ── Secondary modules (utilities) ── */
-const SECONDARY_CARDS = [
-  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
-  { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
-  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?section=privacy" },
-  { icon: Lock, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
-  { icon: FileDown, label: "Import/Export", desc: "Données", key: null, to: "/dashboard/settings?section=data" },
-  { icon: Palette, label: "Apparence", desc: "Branding", key: null, to: "/dashboard/settings?section=branding" },
+  { icon: Palette, label: "Réglages", desc: "Global", key: null, to: "/dashboard/settings" },
 ];
 
 export default function OrbitHome() {
