@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog, Smartphone } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog, Smartphone, Wallet } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ import NotificationPreferences from "@/components/communication/NotificationPref
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 import AppSecuritySettings from "@/components/security/AppSecuritySettings";
+import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -316,6 +317,15 @@ const Settings = () => {
             </div>
           </div>
         )}
+
+        {/* Wallet & Currency */}
+        <div ref={el => { sectionRefs.current["wallet"] = el; }} className="ui-card">
+          <div className="flex items-center gap-3 mb-5">
+            <Wallet className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Wallet & Currency</h2>
+          </div>
+          <WalletCurrencySettings />
+        </div>
 
         {/* Payment Providers */}
         <PaymentProvidersSettings />

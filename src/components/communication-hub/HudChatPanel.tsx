@@ -37,6 +37,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import OrbitSmartPayment from "@/components/orbit/payments/OrbitSmartPayment";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 // date-fns format imported below with ChatMessageBubble
 import { toast } from "sonner";
@@ -1273,32 +1275,38 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         </div>
       </div>
 
-      {/* Payment dialog */}
-      <Dialog open={paymentLinkDialog} onOpenChange={setPaymentLinkDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>💳 Send Payment Link</DialogTitle>
-            <DialogDescription>Create and send a payment request to {thread.name}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium text-foreground">Amount ({(thread.currency || "EUR").toUpperCase()})</label>
-              <Input type="number" step="0.01" min="0.50" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} placeholder="100.00" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Description</label>
-              <Input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} placeholder="Service payment..." />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentLinkDialog(false)}>Cancel</Button>
-            <Button onClick={handleSendPaymentLink} disabled={sendingPaymentLink || !paymentAmount}>
-              {sendingPaymentLink ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
-              Send
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* WeChat-style Smart Payment */}
+      <Sheet open={paymentLinkDialog} onOpenChange={setPaymentLinkDialog}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
+          <OrbitSmartPayment
+            recipientUserId={thread.tenantId || thread.contextId || thread.id}
+            recipientName={thread.name || "Recipient"}
+            context={thread.contextType ? { type: thread.contextType as any, id: thread.contextId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
+            threadId={thread.threadId || thread.id}
+            defaultCurrency={thread.currency?.toUpperCase()}
+            onSuccess={(txnId) => {
+              setPaymentLinkDialog(false);
+              // Send payment confirmation message in chat
+              const sendPaymentMessage = async () => {
+                const authUserId = await resolveAuthUserId();
+                if (!authUserId || !orgId) return;
+                const msgPayload: any = {
+                  org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+                  booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+                  content: `💰 Payment sent successfully`,
+                  category: "payment", message_type: "system", read: false,
+                  context_type: thread.contextType, context_id: thread.contextId,
+                };
+                if (thread.threadId) msgPayload.thread_id = thread.threadId;
+                await supabase.from("messages").insert(msgPayload);
+              };
+              sendPaymentMessage();
+              toast.success("Payment sent!");
+            }}
+            onCancel={() => setPaymentLinkDialog(false)}
+          />
+        </SheetContent>
+      </Sheet>
 
       {/* Message Context Menu */}
       <MessageContextMenu
