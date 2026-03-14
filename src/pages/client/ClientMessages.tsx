@@ -500,7 +500,21 @@ const ClientMessages = () => {
                 if (isDeletedForAll) return <div key={m.id}>{bubble}</div>;
 
                 const handleDeleteForMe = async () => {
-                  await supabase.from("messages").update({ deleted_for_sender: true } as any).eq("id", m.id);
+                  const isMe = m.sender_id === user?.id;
+                  if (isMe) {
+                    await supabase.from("messages").update({ 
+                      deleted_for_sender: true, deleted_at: new Date().toISOString(), deletion_reason: "self_hide" 
+                    } as any).eq("id", m.id);
+                  } else if (user?.id) {
+                    const { data: existing } = await supabase
+                      .from("messages").select("deleted_for_user_ids").eq("id", m.id).single();
+                    const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+                    if (!currentIds.includes(user.id)) {
+                      await supabase.from("messages").update({
+                        deleted_for_user_ids: [...currentIds, user.id],
+                      } as any).eq("id", m.id);
+                    }
+                  }
                   setMessages(prev => prev.filter(x => x.id !== m.id));
                   toast.success(t("chat.deleted_for_you") || "Deleted for you");
                 };
