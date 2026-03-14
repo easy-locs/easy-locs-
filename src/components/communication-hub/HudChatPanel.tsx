@@ -1307,6 +1307,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         open={showSecurityPanel}
         onOpenChange={setShowSecurityPanel}
       />
+
+      {/* Forward Message Dialog */}
+      {forwardData && (
+        <ForwardMessageDialog
+          open={!!forwardData}
+          onClose={() => setForwardData(null)}
+          messageContent={forwardData.content}
+          messageId={forwardData.messageId}
+          userId={user?.id || ""}
+          userEmail={user?.email || ""}
+          userName={user?.user_metadata?.full_name || user?.email || "User"}
+          currentContextId={thread?.contextId || ""}
+        />
+      )}
     </>
   );
 }
