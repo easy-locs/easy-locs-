@@ -87,7 +87,7 @@ export default function OrbitHome() {
   const activityItems = useMemo(() => {
     const items: { icon: string; label: string; value: number; link: string }[] = [];
     if (engine.pendingBookings > 0) items.push({ icon: "📩", label: "Réservations en attente", value: engine.pendingBookings, link: "/dashboard/seasonal" });
-    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: "Commandes conciergerie", value: engine.pendingOrders, link: "/dashboard/concierge" });
+    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: "Commandes marketplace", value: engine.pendingOrders, link: "/dashboard/activities" });
     if (engine.newLeads > 0) items.push({ icon: "🔥", label: "Nouveaux prospects", value: engine.newLeads, link: "/dashboard/communication" });
     if (engine.activeListings > 0) items.push({ icon: "📊", label: "Annonces actives", value: engine.activeListings, link: "/dashboard/marketplace" });
     return items;

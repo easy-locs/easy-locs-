@@ -131,7 +131,7 @@ const GuestPortal = () => {
         type: "info",
         title: "🛎️ New service request",
         message: `${booking.guest_name} requested "${service.title}" (${service.price}${service.currency || "€"})`,
-        link: "/dashboard/concierge",
+        link: "/dashboard/activities",
       });
 
       setOrderSuccess(service.id);

@@ -4,7 +4,7 @@ import { Plus, Store, Sun, CalendarCheck, LayoutDashboard, CreditCard, Briefcase
 
 const LINKS = [
   { label: "Add Property", icon: Plus, to: "/dashboard/add-property", accent: true },
-  { label: "Add Service", icon: Briefcase, to: "/dashboard/concierge" },
+  { label: "Add Service", icon: Briefcase, to: "/dashboard/activities" },
   { label: "Marketplace", icon: Store, to: "/explore" },
   { label: "Seasonal Rentals", icon: Sun, to: "/dashboard/seasonal" },
   { label: "Bookings", icon: CalendarCheck, to: "/dashboard/operations" },

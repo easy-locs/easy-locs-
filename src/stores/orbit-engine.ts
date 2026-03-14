@@ -189,7 +189,7 @@ export const useOrbitEngine = create<OrbitModuleState>((set) => ({
         icon: "🎯",
         title: "Commandes conciergerie",
         message: `${pendingOrders} commande${pendingOrders > 1 ? "s" : ""} en attente`,
-        link: "/dashboard/concierge",
+        link: "/dashboard/activities",
         timestamp: Date.now(),
       });
 
