@@ -484,6 +484,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         encrypted: isEncrypted,
         disappear_at: disappearAt,
         reply_to_id: currentReplyTo?.msgId || null,
+        reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
       } as any);
 
       if (insertErr) {
