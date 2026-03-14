@@ -17,6 +17,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 /** Normalized lifecycle statuses */
 export type LeaseStatus = "draft" | "pending_signature" | "signed" | "active" | "archived" | "cancelled";
