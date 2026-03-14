@@ -73,6 +73,10 @@ export default function ConversationList({ threads, loading, selectedThread, onS
     const counts: Record<string, number> = { all: threads.length };
     for (const t of threads) {
       counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+      // Team threads also count under "direct"
+      if (t.conversationType === "team") {
+        counts["direct"] = (counts["direct"] || 0) + 1;
+      }
     }
     return counts;
   }, [threads]);
