@@ -391,8 +391,8 @@ export default function OrbitAccountSection() {
           <p className="text-xs font-medium text-foreground mb-2">Disappearing Messages</p>
           <div className="grid grid-cols-4 gap-2">
             {["off", "24h", "7d", "30d"].map(v => (
-              <button key={v} onClick={() => setAutoDeletePeriod(v)}
-                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${autoDeletePeriod === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+              <button key={v} onClick={() => updatePrivacy({ defaultDisappearTtl: v })}
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${privacy.defaultDisappearTtl === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 {v === "off" ? "Off" : v}
               </button>
             ))}
