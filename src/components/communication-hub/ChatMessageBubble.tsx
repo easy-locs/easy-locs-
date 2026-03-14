@@ -130,39 +130,6 @@ function ChatMessageBubble({
     );
   }
 
-
-  const handleTouchStart = useCallback(() => {
-    if (selectMode) return;
-    longPressTriggeredRef.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      haptic("medium");
-      onContextMenu({ preventDefault: () => {} } as React.MouseEvent, msg, isMe);
-    }, 500);
-  }, [selectMode, msg, isMe, onContextMenu]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    // Cancel long press if finger moves
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
-
-  const handleClick = useCallback(() => {
-    if (longPressTriggeredRef.current) return; // Don't fire click after long-press
-    if (selectMode) {
-      onToggleSelect?.(msg.id);
-    }
-  }, [selectMode, msg.id, onToggleSelect]);
-
   return (
     <div
       className={`flex ${isMe ? "justify-end" : "justify-start"} group transition-colors duration-150`}
