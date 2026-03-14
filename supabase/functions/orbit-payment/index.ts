@@ -349,7 +349,7 @@ serve(async (req) => {
           context_type: context?.type || null,
           context_id: context?.id || null,
         },
-      }).select("id").maybeSingle();
+      }).select("id, reference_code").maybeSingle();
 
       // Audit
       await supabase.from("audit_logs").insert({
