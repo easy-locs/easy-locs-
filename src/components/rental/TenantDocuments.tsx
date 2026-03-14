@@ -149,7 +149,8 @@ const TenantDocuments = ({ tenantId, tenantName }: Props) => {
   };
 
   const handleDelete = async (docId: string) => {
-    await supabase.from("tenant_documents").delete().eq("id", docId);
+    const { error } = await supabase.from("tenant_documents").delete().eq("id", docId);
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("comp.docs.doc_deleted") });
     await loadDocs();
   };
