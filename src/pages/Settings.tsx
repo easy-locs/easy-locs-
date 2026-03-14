@@ -318,6 +318,15 @@ const Settings = () => {
           </div>
         )}
 
+        {/* Wallet & Currency */}
+        <div ref={el => { sectionRefs.current["wallet"] = el; }} className="ui-card">
+          <div className="flex items-center gap-3 mb-5">
+            <Wallet className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Wallet & Currency</h2>
+          </div>
+          <WalletCurrencySettings />
+        </div>
+
         {/* Payment Providers */}
         <PaymentProvidersSettings />
 
