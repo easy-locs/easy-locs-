@@ -228,8 +228,8 @@ export default function HudConversationList({
           onDelete={() => onDeleteThread?.(contextMenuThread)}
           onBlock={() => onBlockThread?.(contextMenuThread)}
           onClearChat={() => onClearThread?.(contextMenuThread)}
-          onFavorite={() => {/* TODO: implement favorite */}}
-          onContactInfo={() => {/* TODO: navigate to contact info */}}
+          onFavorite={() => onFavoriteThread?.(contextMenuThread)}
+          onContactInfo={() => onContactInfo?.(contextMenuThread)}
         />
       )}
     </div>
