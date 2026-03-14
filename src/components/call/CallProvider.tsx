@@ -248,7 +248,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (!user || !incomingCallId) return;
 
     setShowIncoming(false);
-    activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId };
+    activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId, contextId: undefined };
 
     const manager = new CallManager({
       callId: incomingCallId,
