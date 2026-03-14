@@ -52,7 +52,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingOrgId, setIncomingOrgId] = useState("");
   const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
   // Track active call metadata for logging
-  const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string } | null>(null);
+  const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string; contextId?: string } | null>(null);
   const startingCallRef = useRef(false); // Lock to prevent duplicate startCall
 
   // Keep ref in sync for use in realtime closures
@@ -230,7 +230,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         setContextLabel(opts.contextLabel || "");
         setCallManager(manager);
         setShowCallDialog(true);
-        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId };
+        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId, contextId: opts.contextId };
 
         console.log("[CallProvider] call manager initialized", { callId });
         await manager.startCall(opts.isVideo || false);
@@ -248,7 +248,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (!user || !incomingCallId) return;
 
     setShowIncoming(false);
-    activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId };
+    activeCallRef.current = { callId: incomingCallId, threadId: incomingThreadId || undefined, orgId: incomingOrgId, contextId: undefined };
 
     const manager = new CallManager({
       callId: incomingCallId,
@@ -348,6 +348,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           callId: meta.callId, threadId: meta.threadId,
           orgId: meta.orgId, senderId: user.id, event: "ended",
           durationSeconds: (log as any)?.duration_seconds || 0,
+          contextId: meta.contextId,
         });
       }
     }
