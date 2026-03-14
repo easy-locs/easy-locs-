@@ -146,7 +146,11 @@ export default function MessageMultiSelectToolbar({
         <ForwardMessageDialog
           open={showForward}
           onClose={() => { setShowForward(false); onClearSelection(); }}
-          messageContent={selectedMessages.map(m => m.content).join("\n\n")}
+          messageContent={
+            count > 1
+              ? `📨 ${count} forwarded messages:\n\n` + selectedMessages.map((m, i) => `[${i + 1}] ${m.content}`).join("\n\n")
+              : selectedMessages[0]?.content || ""
+          }
           messageId={selectedMessages[0]?.id || ""}
           userId={currentUserId}
           userEmail={userEmail || ""}

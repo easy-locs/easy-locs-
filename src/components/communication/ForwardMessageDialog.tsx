@@ -111,8 +111,15 @@ export default function ForwardMessageDialog({
         
         {/* Message preview */}
         <div className="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
-          <p className="text-xs text-muted-foreground mb-0.5">Message:</p>
-          <p className="text-sm line-clamp-3">{messageContent}</p>
+          <p className="text-xs text-muted-foreground mb-0.5">
+            {messageContent.startsWith("📨") ? "Combined message:" : "Message:"}
+          </p>
+          <p className="text-sm line-clamp-4 whitespace-pre-line">{messageContent}</p>
+          {messageContent.startsWith("📨") && (
+            <p className="text-[10px] text-muted-foreground/70 mt-1.5 italic">
+              Multiple messages will be sent as a single combined message
+            </p>
+          )}
         </div>
 
         <div className="max-h-[300px] overflow-y-auto space-y-1">
