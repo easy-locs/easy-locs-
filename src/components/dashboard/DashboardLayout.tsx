@@ -64,7 +64,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // ═══════════════════════════════════════════════════════
 
   // Sections accessible on free tier (no subscription needed)
-  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "communication", "settings"]);
+  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
 
   const navSections: NavSection[] = [
     // 1. Dashboard
@@ -113,7 +113,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 5. Orbit — no sidebar entry, accessed via Hub button in header + mobile bottom nav
+    // 5. Orbit
+    {
+      key: "orbit",
+      title: "Orbit",
+      icon: MessageCircle,
+      items: [
+        { icon: MessageCircle, label: "Communication", path: "/dashboard/communication" },
+        { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
+      ],
+    },
 
     // 6. Documents
     {
@@ -474,6 +483,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           >
             <Compass className="h-4 w-4" />
             <span className="hidden sm:inline">{t("nav.explore") || "Explore"}</span>
+          </Link>
+
+          <Link
+            to="/dashboard/wallet"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-colors"
+            title="Wallet"
+          >
+            <Wallet className="h-4 w-4" />
+            <span className="hidden sm:inline">Wallet</span>
           </Link>
 
           <div className="flex-1" />

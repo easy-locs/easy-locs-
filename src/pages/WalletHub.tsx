@@ -22,7 +22,7 @@ import OrbitQRCode from "@/components/orbit/payments/OrbitQRCode";
 import OrbitTransactionHistory from "@/components/orbit/payments/OrbitTransactionHistory";
 import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 
-type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy";
+type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
 
 const WALLET_ACTIONS = [
   { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", color: "bg-accent" },
@@ -31,6 +31,8 @@ const WALLET_ACTIONS = [
   { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", color: "bg-success" },
   { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", color: "bg-muted" },
   { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", color: "bg-warning" },
+  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", color: "bg-secondary" },
+  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & wallet config", color: "bg-muted" },
 ];
 
 export default function WalletHub() {
@@ -99,6 +101,22 @@ export default function WalletHub() {
         return <OrbitTransactionHistory />;
       case "buy":
         return <OrbitWalletPanel />;
+      case "currency":
+        return (
+          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-semibold text-foreground">Preferred currency</p>
+            <p className="text-xs text-muted-foreground">Current detection: {currencyInfo?.symbol} {detected.code}</p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>Open currency settings</Button>
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-semibold text-foreground">Wallet security</p>
+            <p className="text-xs text-muted-foreground">Manage PIN, payment protection and wallet preferences.</p>
+            <Button size="sm" onClick={() => navigate("/dashboard/settings?section=wallet")}>Open wallet settings</Button>
+          </div>
+        );
       default:
         return null;
     }

@@ -103,8 +103,17 @@ if (typeof window !== "undefined") {
 void bootApp();
 
 const runDeferredInit = () => {
-  import("./lib/analytics").then(({ initAnalytics }) => initAnalytics());
-  import("./lib/monitoring").then(({ initMonitoring }) => initMonitoring());
+  void import("./lib/analytics")
+    .then((mod) => mod?.initAnalytics?.())
+    .catch((error) => {
+      console.warn("[boot] analytics init skipped:", error);
+    });
+
+  void import("./lib/monitoring")
+    .then((mod) => mod?.initMonitoring?.())
+    .catch((error) => {
+      console.warn("[boot] monitoring init skipped:", error);
+    });
 };
 
 // Defer non-critical init to after first paint
