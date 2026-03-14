@@ -63,6 +63,8 @@ export const PRODUCT_TIER_MAP: Record<string, string> = {
   // Company
   "prod_U7up10rqd4eQhA": "company",
   "prod_U7uqF0RSK8MZBk": "company",
+  // Orbit Ghost
+  "prod_U94pR9V8P0rfbq": "ghost",
   // Legacy — map to solo
   "prod_U37B1NPO4TQTnD": "solo",
   "prod_U37COZzTYiHqG1": "solo",
