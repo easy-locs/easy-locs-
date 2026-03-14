@@ -103,12 +103,12 @@
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[99999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-semibold">Skip to main content</a>
     <div id="root">
       <!-- Inline fallback shown while JS loads — prevents blank page -->
-      <div id="app-loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F1117;color:#94a3b8;font-family:system-ui,sans-serif;">
+      <div id="app-loading" style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;" class="bg-background text-muted-foreground">
         <div style="text-align:center;">
-          <div style="width:40px;height:40px;border:3px solid #D4A853;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+          <div style="width:40px;height:40px;border:3px solid hsl(var(--accent, 43 74% 58%));border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
           <p style="font-size:14px;margin:0;">Loading Easy-Locs…</p>
         </div>
-        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}:root{--accent:43 74% 58%}.dark #app-loading{background:#0F1117;color:#94a3b8}#app-loading{background:#fafafa;color:#64748b}</style>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
