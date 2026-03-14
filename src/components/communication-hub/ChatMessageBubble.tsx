@@ -84,6 +84,14 @@ function ChatMessageBubble({
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
+  
+  // Detect location messages (contain OSM link with coordinates)
+  const osmMatch = !isDeleted && msg.content?.match(/openstreetmap\.org\/\?mlat=([\d.-]+)&mlon=([\d.-]+)/);
+  const isLocation = !!osmMatch;
+  const locLat = osmMatch ? osmMatch[1] : null;
+  const locLng = osmMatch ? osmMatch[2] : null;
+  const locLabel = isLocation ? msg.content.split("\n")[0] : null;
+  
   const securityPolicy = getMessagePolicy(msg);
   const hasSecurityLevel = securityPolicy.level !== "normal";
   const transcriptText = (msg as any).transcript_text;
