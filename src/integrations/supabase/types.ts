@@ -6598,8 +6598,6 @@ export type Database = {
           requires_id_document: boolean | null
           rooms: number | null
           sort_order: number | null
-          source_contact_email: string | null
-          source_contact_phone: string | null
           status: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm: number | null
           time_slots: Json | null
@@ -6643,8 +6641,6 @@ export type Database = {
           requires_id_document?: boolean | null
           rooms?: number | null
           sort_order?: number | null
-          source_contact_email?: string | null
-          source_contact_phone?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm?: number | null
           time_slots?: Json | null
@@ -6688,8 +6684,6 @@ export type Database = {
           requires_id_document?: boolean | null
           rooms?: number | null
           sort_order?: number | null
-          source_contact_email?: string | null
-          source_contact_phone?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm?: number | null
           time_slots?: Json | null
