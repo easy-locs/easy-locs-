@@ -1,6 +1,6 @@
 /**
  * ChatMessageBubble — Premium Signal-grade message bubble.
- * Handles text, voice, media, payment, email, system messages with unified HUD design.
+ * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
 import { memo } from "react";
 import {
@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
+import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import type { ChatMessage } from "./types";
