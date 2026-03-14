@@ -129,6 +129,26 @@ const CommunicationCenter = () => {
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
 
+  const handleDeleteThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    deleteThread(thread);
+  }, [deleteThread, selectedThread?.id]);
+
+  const handleArchiveThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    if (thread.archived) {
+      unarchiveThread(thread);
+    } else {
+      archiveThread(thread);
+    }
+  }, [archiveThread, unarchiveThread, selectedThread?.id]);
+
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
     if (section !== "chats") {
