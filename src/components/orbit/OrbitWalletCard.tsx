@@ -2,19 +2,16 @@
  * OrbitWalletCard — Prominent wallet card for OrbitHome
  * Shows balance, quick actions, and detected currency
  */
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Wallet, Send, ArrowDownLeft, QrCode, ScanLine,
-  History, Settings, ChevronRight, Coins,
+  History, Settings, Coins,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
 import { formatLocs, detectLocalCurrency } from "@/lib/orbit-payments";
 import { SUPPORTED_CURRENCIES } from "@/lib/orbit-payments/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import OrbitPaymentActions from "@/components/orbit/payments/OrbitPaymentActions";
 
 const QUICK_ACTIONS = [
   { icon: Send, label: "Send", key: "send" },
