@@ -364,12 +364,14 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
 
-      await supabase.from("messages").insert({
+      const payMsgPayload: any = {
         org_id: orgId, sender_id: user.id, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) payMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(payMsgPayload);
 
       setPaymentLinkDialog(false);
       setPaymentAmount("");
