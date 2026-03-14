@@ -1,6 +1,7 @@
 /**
  * MessageMultiSelect — Multi-select toolbar for bulk message actions.
  * Supports: bulk delete (for me), bulk delete (for everyone), bulk forward, copy all.
+ * Fully i18n-aware.
  */
 import { useState } from "react";
 import { Trash2, Copy, Forward, X, CheckSquare } from "lucide-react";
@@ -10,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   selectedIds: Set<string>;
@@ -26,6 +28,7 @@ interface Props {
 export default function MessageMultiSelectToolbar({
   selectedIds, messages, currentUserId, currentContextId, userEmail, userName, onClearSelection, onDeletedForMe, onDeletedForAll,
 }: Props) {
+  const { t } = useI18n();
   const [confirmAction, setConfirmAction] = useState<"deleteMe" | "deleteAll" | null>(null);
   const [processing, setProcessing] = useState(false);
   const [showForward, setShowForward] = useState(false);
@@ -40,7 +43,7 @@ export default function MessageMultiSelectToolbar({
     const text = selectedMessages.map(m => m.content).join("\n\n");
     navigator.clipboard.writeText(text);
     haptic("light");
-    toast.success(`${count} messages copied`);
+    toast.success(`${count} ${t("orbit.messages_copied") || "messages copied"}`);
     onClearSelection();
   };
 
@@ -49,11 +52,9 @@ export default function MessageMultiSelectToolbar({
     haptic("medium");
     const ids = Array.from(selectedIds);
     try {
-      // Persist: append current user to deleted_for_user_ids for each message
       for (const id of ids) {
         const msg = messages.find(m => m.id === id);
         if (msg && msg.sender_id === currentUserId) {
-          // Sender: use deleted_for_sender flag
           await supabase.from("messages").update({
             deleted_for_sender: true,
             deleted_at: new Date().toISOString(),
@@ -61,7 +62,6 @@ export default function MessageMultiSelectToolbar({
             deletion_reason: "self_hide",
           } as any).eq("id", id);
         } else {
-          // Recipient: append to deleted_for_user_ids array
           const { data: existing } = await supabase
             .from("messages")
             .select("deleted_for_user_ids")
@@ -76,7 +76,7 @@ export default function MessageMultiSelectToolbar({
         }
       }
       onDeletedForMe(ids);
-      toast.success(`${count} messages hidden`);
+      toast.success(`${count} ${t("orbit.messages_hidden") || "messages hidden"}`);
     } catch (e: any) {
       console.error("[bulk-delete-for-me]", e);
       toast.error("Failed to hide some messages");
@@ -104,7 +104,7 @@ export default function MessageMultiSelectToolbar({
         } as any).eq("id", id);
       }
       onDeletedForAll(ids);
-      toast.success(`${count} messages deleted for everyone`);
+      toast.success(`${count} ${t("orbit.messages_deleted_all") || "messages deleted for everyone"}`);
     } catch (e: any) {
       toast.error("Failed to delete some messages");
     }
@@ -127,20 +127,20 @@ export default function MessageMultiSelectToolbar({
           <X className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
         </Button>
         <span className="text-sm font-semibold flex-1" style={{ color: "hsl(var(--hud-text))" }}>
-          {count} selected
+          {count} {t("orbit.selected") || "selected"}
         </span>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-8 w-8 rounded-full" title="Copy">
+          <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-8 w-8 rounded-full" title={t("orbit.copy_text") || "Copy"}>
             <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-8 w-8 rounded-full" title="Forward">
+          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-8 w-8 rounded-full" title={t("orbit.forward") || "Forward"}>
             <Forward className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-8 w-8 rounded-full" title="Delete for me">
+          <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-8 w-8 rounded-full" title={t("orbit.delete_for_me") || "Delete for me"}>
             <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />
           </Button>
           {allMine && (
-            <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteAll")} className="h-8 w-8 rounded-full" title="Delete for everyone">
+            <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteAll")} className="h-8 w-8 rounded-full" title={t("orbit.delete_for_all") || "Delete for everyone"}>
               <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--destructive))" }} />
             </Button>
           )}
@@ -151,22 +151,24 @@ export default function MessageMultiSelectToolbar({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction === "deleteMe" ? "Delete for me?" : "Delete for everyone?"}
+              {confirmAction === "deleteMe"
+                ? (t("orbit.delete_for_me_q") || "Delete for me?")
+                : (t("orbit.delete_for_all_q") || "Delete for everyone?")}
             </DialogTitle>
             <DialogDescription>
               {confirmAction === "deleteMe"
-                ? `${count} message(s) will be hidden from your view only.`
-                : `${count} message(s) will be deleted for all participants.`}
+                ? `${count} ${t("orbit.delete_for_me_desc") || "message(s) will be hidden from your view only."}`
+                : `${count} ${t("orbit.delete_for_all_desc") || "message(s) will be deleted for all participants."}`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmAction(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setConfirmAction(null)}>{t("orbit.cancel") || "Cancel"}</Button>
             <Button
               variant="destructive"
               disabled={processing}
               onClick={confirmAction === "deleteMe" ? handleDeleteForMe : handleDeleteForAll}
             >
-              {processing ? "Deleting..." : "Delete"}
+              {processing ? (t("orbit.deleting") || "Deleting…") : (t("orbit.delete") || "Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -179,7 +181,7 @@ export default function MessageMultiSelectToolbar({
           onClose={() => { setShowForward(false); onClearSelection(); }}
           messageContent={
             count > 1
-              ? `📨 ${count} forwarded messages:\n\n` + selectedMessages.map((m, i) => `[${i + 1}] ${m.content}`).join("\n\n")
+              ? `📨 ${count} ${t("orbit.forwarded_messages") || "forwarded messages"}:\n\n` + selectedMessages.map((m, i) => `[${i + 1}] ${m.content}`).join("\n\n")
               : selectedMessages[0]?.content || ""
           }
           messageId={selectedMessages[0]?.id || ""}

@@ -2,10 +2,12 @@
  * SwipeableThreadItem — WhatsApp-style swipe actions on conversation threads.
  * Left swipe reveals "More" + "Archive" buttons (like WhatsApp iOS).
  * Touch-optimized with conflict prevention for scroll, click, long-press, and multi-select.
+ * Fully i18n-aware.
  */
 import { useState, useRef, useCallback, type ReactNode } from "react";
 import { Archive, ArchiveRestore, MoreHorizontal } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   children: ReactNode;
@@ -17,12 +19,13 @@ interface Props {
 }
 
 const SWIPE_THRESHOLD = 60;
-const BUTTON_WIDTH = 76; // Width of each action button
-const TOTAL_REVEAL = BUTTON_WIDTH * 2; // Two buttons
+const BUTTON_WIDTH = 76;
+const TOTAL_REVEAL = BUTTON_WIDTH * 2;
 
 export default function SwipeableThreadItem({
   children, onDelete, onArchive, onMore, isArchived = false, disabled = false,
 }: Props) {
+  const { t } = useI18n();
   const [offsetX, setOffsetX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const startX = useRef(0);
@@ -35,9 +38,9 @@ export default function SwipeableThreadItem({
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (disabled) return;
-    const t = e.touches[0];
-    startX.current = t.clientX;
-    startY.current = t.clientY;
+    const touch = e.touches[0];
+    startX.current = touch.clientX;
+    startY.current = touch.clientY;
     startTime.current = Date.now();
     isTracking.current = true;
     locked.current = null;
@@ -47,9 +50,9 @@ export default function SwipeableThreadItem({
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isTracking.current || disabled) return;
-    const t = e.touches[0];
-    const dx = t.clientX - startX.current;
-    const dy = t.clientY - startY.current;
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX.current;
+    const dy = touch.clientY - startY.current;
 
     if (!locked.current) {
       if (Math.abs(dy) > 8) { locked.current = "vertical"; return; }
@@ -62,13 +65,10 @@ export default function SwipeableThreadItem({
     wasDragging.current = true;
 
     const raw = currentOffset.current + dx;
-    // Only allow left swipe (negative), clamp
     const clamped = Math.max(-TOTAL_REVEAL - 20, Math.min(0, raw));
-    // Apply dampening beyond total reveal
     const dampened = clamped < -TOTAL_REVEAL
       ? -TOTAL_REVEAL + (clamped + TOTAL_REVEAL) * 0.3
       : clamped;
-    
     setOffsetX(dampened);
   }, [disabled]);
 
@@ -77,7 +77,6 @@ export default function SwipeableThreadItem({
     isTracking.current = false;
     locked.current = null;
 
-    // Snap logic: if past threshold, open; otherwise close
     if (Math.abs(offsetX) > SWIPE_THRESHOLD) {
       setOffsetX(-TOTAL_REVEAL);
       setIsOpen(true);
@@ -132,33 +131,21 @@ export default function SwipeableThreadItem({
         <button
           onClick={handleMoreClick}
           className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
-          style={{
-            width: `${moreWidth}px`,
-            background: "hsl(var(--muted-foreground) / 0.7)",
-            color: "white",
-          }}
+          style={{ width: `${moreWidth}px`, background: "hsl(var(--muted-foreground) / 0.7)", color: "white" }}
         >
           <MoreHorizontal className="h-5 w-5" />
-          <span className="text-[10px] font-medium">More</span>
+          <span className="text-[10px] font-medium">{t("orbit.more") || "More"}</span>
         </button>
 
         {/* Archive button */}
         <button
           onClick={handleArchiveClick}
           className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
-          style={{
-            width: `${archiveWidth}px`,
-            background: "hsl(var(--primary))",
-            color: "hsl(var(--primary-foreground))",
-          }}
+          style={{ width: `${archiveWidth}px`, background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
         >
-          {isArchived ? (
-            <ArchiveRestore className="h-5 w-5" />
-          ) : (
-            <Archive className="h-5 w-5" />
-          )}
+          {isArchived ? <ArchiveRestore className="h-5 w-5" /> : <Archive className="h-5 w-5" />}
           <span className="text-[10px] font-medium">
-            {isArchived ? "Unarchive" : "Archive"}
+            {isArchived ? (t("orbit.unarchive") || "Unarchive") : (t("orbit.archive") || "Archive")}
           </span>
         </button>
       </div>
