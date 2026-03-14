@@ -181,6 +181,23 @@ interface DealAcceptedEvent extends SyncEventBase {
   currency: string;
 }
 
+interface WalletPaymentCompletedEvent extends SyncEventBase {
+  type: "wallet_payment_completed";
+  amount: number;
+  currency: string;
+  paymentMethod: "locs" | "fiat";
+  txnId: string;
+  recipientName: string;
+}
+
+interface WalletPaymentFailedEvent extends SyncEventBase {
+  type: "wallet_payment_failed";
+  amount: number;
+  currency: string;
+  paymentMethod: "locs" | "fiat";
+  reason: string;
+}
+
 export type SyncEvent =
   | LeaseCreatedEvent
   | RentCallCreatedEvent
