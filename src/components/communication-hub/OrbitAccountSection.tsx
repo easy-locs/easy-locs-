@@ -38,10 +38,11 @@ export default function OrbitAccountSection() {
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Privacy states
-  const [readReceipts, setReadReceipts] = useState(true);
+  // Privacy states — backed by profiles table via usePrivacySettings
+  const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
+  const readReceipts = privacy.readReceipts;
+  const typingIndicators = privacy.typingIndicators;
   const [onlineStatus, setOnlineStatus] = useState(true);
-  const [typingIndicators, setTypingIndicators] = useState(true);
   const [lastSeen, setLastSeen] = useState(true);
   const [profilePhoto, setProfilePhoto] = useState(true);
   const [linkPreviews, setLinkPreviews] = useState(true);
@@ -56,16 +57,11 @@ export default function OrbitAccountSection() {
 
   // Storage states
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
-  const [autoDeletePeriod, setAutoDeletePeriod] = useState("off");
-  
-  // Display name mode
+
+  // Display name mode — from server
   type DisplayNameMode = "real" | "username" | "custom" | "anonymous" | "hidden";
-  const [displayNameMode, setDisplayNameMode] = useState<DisplayNameMode>(
-    (localStorage.getItem("orbit_display_name_mode") as DisplayNameMode) || "real"
-  );
-  const [customDisplayName, setCustomDisplayName] = useState(
-    localStorage.getItem("orbit_custom_display_name") || ""
-  );
+  const displayNameMode = privacy.displayNameMode;
+  const customDisplayName = privacy.customDisplayName;
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
