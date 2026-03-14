@@ -101,6 +101,22 @@ export default function WalletHub() {
         return <OrbitTransactionHistory />;
       case "buy":
         return <OrbitWalletPanel />;
+      case "currency":
+        return (
+          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-semibold text-foreground">Preferred currency</p>
+            <p className="text-xs text-muted-foreground">Current detection: {currencyInfo?.symbol} {detected.code}</p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>Open currency settings</Button>
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-semibold text-foreground">Wallet security</p>
+            <p className="text-xs text-muted-foreground">Manage PIN, payment protection and wallet preferences.</p>
+            <Button size="sm" onClick={() => navigate("/dashboard/settings?section=wallet")}>Open wallet settings</Button>
+          </div>
+        );
       default:
         return null;
     }
