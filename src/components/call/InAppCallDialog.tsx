@@ -10,6 +10,7 @@ import {
   Loader2, Shield, MessageSquare, WifiOff, User, RotateCcw,
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
+import { playSecureCallAnnouncement, resetSecureAudioState } from "@/lib/orbit-secure-audio";
 
 interface InAppCallDialogProps {
   open: boolean;
@@ -76,8 +77,18 @@ export default function InAppCallDialog({
     }
   }, [localStream]);
 
+  const secureAnnouncedRef = useRef(false);
+
   const handleStateChange = useCallback((state: Partial<CallState>) => {
-    if (state.status !== undefined) setStatus(state.status);
+    if (state.status !== undefined) {
+      setStatus(state.status);
+      // Play secure call announcement when call becomes active
+      if (state.status === "active" && callManager && !secureAnnouncedRef.current) {
+        secureAnnouncedRef.current = true;
+        const callId = (callManager as any)?.callId || `call-${Date.now()}`;
+        playSecureCallAnnouncement(callId).catch(() => {});
+      }
+    }
     if (state.elapsed !== undefined) setElapsed(state.elapsed);
     if (state.usingRelay !== undefined) setUsingRelay(state.usingRelay);
     if (state.error !== undefined) setError(state.error);
@@ -88,7 +99,7 @@ export default function InAppCallDialog({
       // Auto-switch to speaker for video calls
       if (state.isVideo) setSpeakerOn(true);
     }
-  }, []);
+  }, [callManager]);
 
   useEffect(() => {
     if (callManager) callManager.onStateChange = handleStateChange;
@@ -99,10 +110,9 @@ export default function InAppCallDialog({
       setStatus("idle"); setMuted(false); setVideoEnabled(false);
       setElapsed(0); setUsingRelay(false); setError(null);
       setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
-      // Audio calls default to earpiece (speakerOn=false), video calls to speaker (speakerOn=true)
-      // isVideo state isn't set yet at open time, so we default to earpiece
-      // and auto-switch to speaker when video is detected
       setSpeakerOn(false);
+      secureAnnouncedRef.current = false;
+      resetSecureAudioState();
     }
   }, [open]);
 
@@ -332,7 +342,7 @@ export default function InAppCallDialog({
                 background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
                 color: "hsl(142 70% 50%)",
               }}>
-                <Shield className="h-2.5 w-2.5" /> Encrypted
+                <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
               </div>
               {status === "active" && (
                 <div className="px-2 py-1 rounded-full text-[10px] font-mono font-semibold" style={{
@@ -407,7 +417,7 @@ export default function InAppCallDialog({
                 <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium" style={{
                   background: "hsl(142 70% 50% / 0.08)", color: "hsl(142 70% 50%)",
                 }}>
-                  <Shield className="h-2.5 w-2.5" /> Encrypted
+                  <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
                 </div>
                 {usingRelay && status === "active" && (
                   <div className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium" style={{
