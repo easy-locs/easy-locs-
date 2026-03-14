@@ -180,6 +180,12 @@ export default function OrbitSmartPayment({
         <p className="text-sm text-muted-foreground">
           {confirmation.method === "locs" ? formatLocs(confirmation.amount) : formatCurrency(confirmation.amount, confirmation.currency)} → {recipientName}
         </p>
+        {confirmation.referenceCode && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50 border border-border">
+            <Shield className="w-3.5 h-3.5 text-accent" />
+            <span className="text-xs font-mono text-foreground">{confirmation.referenceCode}</span>
+          </div>
+        )}
         {confirmation.context && (
           <p className="text-[10px] text-muted-foreground capitalize">
             {confirmation.context.type}: {confirmation.context.label || confirmation.context.id.slice(0, 8)}
