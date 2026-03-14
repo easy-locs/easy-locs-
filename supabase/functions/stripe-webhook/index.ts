@@ -348,9 +348,54 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
     logStep("No pending wallet transaction found for session", { sessionId });
   }
 
+  // ── Cross-module sync: update linked booking/rent if contextId present ──
+  if (contextType && contextId) {
+    if (contextType === "marketplace_booking" || contextType === "marketplace_service") {
+      const { error: mbErr } = await supabase
+        .from("marketplace_bookings")
+        .update({
+          status: "confirmed",
+          payment_confirmed: true,
+          payment_confirmed_at: new Date().toISOString(),
+          payment_method: "stripe_orbit",
+          stripe_payment_intent_id: session.payment_intent as string || sessionId,
+        })
+        .eq("id", contextId);
+      if (!mbErr) logStep("Cross-sync: marketplace_booking updated", { contextId });
+    } else if (contextType === "concierge_service" || contextType === "concierge") {
+      await supabase
+        .from("concierge_orders")
+        .update({
+          status: "confirmed",
+          payment_status: "paid",
+          confirmed_at: new Date().toISOString(),
+          payment_method: "stripe_orbit",
+          stripe_session_id: sessionId,
+        })
+        .eq("id", contextId);
+      logStep("Cross-sync: concierge_order updated", { contextId });
+    } else if (contextType === "rent" || contextType === "rent_call") {
+      await supabase
+        .from("rent_calls")
+        .update({
+          paid: true,
+          paid_date: new Date().toISOString().split("T")[0],
+          payment_method: "stripe_orbit",
+          payment_status: "paid",
+        })
+        .eq("id", contextId);
+      logStep("Cross-sync: rent_call updated", { contextId });
+    } else if (contextType === "booking_request") {
+      await supabase
+        .from("booking_requests")
+        .update({ status: "paid" })
+        .eq("id", contextId);
+      logStep("Cross-sync: booking_request updated", { contextId });
+    }
+  }
+
   // Post confirmation message in Orbit chat thread
   if (threadId && userId) {
-    // Get sender org_id from thread
     const { data: thread } = await supabase
       .from("conversation_threads")
       .select("org_id")
@@ -378,6 +423,39 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
     logStep("Payment confirmation message sent to thread", { threadId });
   }
 
+  // Notify recipient
+  if (recipientUserId) {
+    const { data: senderProfile } = await supabase
+      .from("profiles")
+      .select("name, email")
+      .eq("id", userId)
+      .maybeSingle();
+    const senderName = senderProfile?.name || senderProfile?.email || "Someone";
+
+    // Get org_id from thread or first available org
+    let notifOrgId = null;
+    if (threadId) {
+      const { data: t } = await supabase.from("conversation_threads").select("org_id").eq("id", threadId).maybeSingle();
+      notifOrgId = t?.org_id;
+    }
+
+    await supabase.from("notifications").insert({
+      user_id: recipientUserId,
+      org_id: notifOrgId,
+      type: "payment",
+      title: "💰 Payment received",
+      message: `${senderName} sent you ${amount} ${currency} via Card (Stripe)`,
+      link: "/app/orbit",
+      metadata_json: {
+        target_type: "payment",
+        target_id: updatedTx?.id || sessionId,
+        amount, currency,
+        target_url: "/app/orbit",
+      },
+    });
+    logStep("Recipient notification sent", { recipientUserId });
+  }
+
   // Audit
   await supabase.from("audit_logs").insert({
     user_id: userId,
@@ -388,7 +466,10 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
       currency,
       recipient_user_id: recipientUserId,
       thread_id: threadId,
+      context_type: contextType,
+      context_id: contextId,
       tx_id: updatedTx?.id,
+      cross_module_sync: !!contextType,
     },
   });
 
