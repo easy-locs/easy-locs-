@@ -1291,9 +1291,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 const authUserId = await resolveAuthUserId();
                 if (!authUserId || !orgId) return;
                 const methodLabel = conf.method === "locs" ? "LOCS Wallet" : `Card (${conf.currency})`;
-                const statusLabel = conf.status === "completed" ? "✅ Completed" : "⏳ Processing";
+                // Fiat payments are PENDING until webhook confirms; LOCS are instant
+                const statusLabel = conf.status === "completed" ? "✅ Completed" : "⏳ Pending confirmation";
+                const headerLabel = conf.status === "completed" ? "💰 Payment sent" : "💰 Payment initiated";
                 const contextLine = conf.context ? `\n📎 ${conf.context.type}: ${conf.context.label || conf.context.id.slice(0, 8)}` : "";
-                const richContent = `💰 Payment sent\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}\n🔖 Ref: ${conf.txnId.slice(0, 12)}${contextLine}\n━━━━━━━━━━━━━━━━`;
+                const richContent = `${headerLabel}\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}\n🔖 Ref: ${conf.txnId.slice(0, 12)}${contextLine}\n━━━━━━━━━━━━━━━━`;
                 const msgPayload: any = {
                   org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
                   booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
@@ -1305,7 +1307,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 await supabase.from("messages").insert(msgPayload);
               };
               sendPaymentMessage();
-              toast.success("Payment sent!");
+              toast.success(conf.status === "completed" ? "Payment sent!" : "Payment initiated — awaiting confirmation");
             }}
             onCancel={() => setPaymentLinkDialog(false)}
           />
