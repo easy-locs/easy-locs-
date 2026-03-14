@@ -17,31 +17,44 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate caller
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user from JWT
     const supabaseUser = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
-    if (userError || !user) throw new Error("Unauthorized");
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Authentication failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
+    }
 
     const { booking_id, booking_type, reason } = await req.json();
     logStep("Request received", { booking_id, booking_type, user_id: user.id });
 
-    if (!booking_id) throw new Error("booking_id required");
-    const type = booking_type || "marketplace"; // "marketplace" | "concierge"
+    if (!booking_id) {
+      return new Response(JSON.stringify({ error: "booking_id required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
+    const type = booking_type || "marketplace";
 
-    // Fetch the booking
     const table = type === "concierge" ? "concierge_orders" : "marketplace_bookings";
     const { data: booking, error: fetchError } = await supabaseAdmin
       .from(table)
@@ -49,9 +62,12 @@ serve(async (req) => {
       .eq("id", booking_id)
       .single();
 
-    if (fetchError || !booking) throw new Error("Booking not found");
+    if (fetchError || !booking) {
+      return new Response(JSON.stringify({ error: "Booking not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
 
-    // Verify user has access to this org
     const { data: membership } = await supabaseAdmin
       .from("org_members")
       .select("role")
@@ -59,17 +75,21 @@ serve(async (req) => {
       .eq("org_id", booking.org_id)
       .single();
 
-    if (!membership) throw new Error("Unauthorized: not a member of this organization");
+    if (!membership) {
+      return new Response(JSON.stringify({ error: "Not a member of this organization" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+      });
+    }
 
-    // Check role >= agent
     const roleLevel: Record<string, number> = {
       owner: 100, admin: 80, agent: 60, staff: 40, accountant: 30, member: 20,
     };
     if ((roleLevel[membership.role] || 0) < 60) {
-      throw new Error("Unauthorized: insufficient role for refunds");
+      return new Response(JSON.stringify({ error: "Insufficient role for refunds" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+      });
     }
 
-    // Check if payment was via Stripe
     const paymentIntentId = booking.stripe_payment_intent_id;
     const paymentMethod = booking.payment_method;
 
@@ -77,7 +97,6 @@ serve(async (req) => {
     let refundStatus = "manual";
 
     if (paymentIntentId && paymentMethod === "stripe") {
-      // Get provider's connected Stripe account
       const { data: org } = await supabaseAdmin
         .from("orgs")
         .select("stripe_account_id")
@@ -92,7 +111,6 @@ serve(async (req) => {
           reason: "requested_by_customer",
         };
 
-        // If provider has a connected account, refund on that account
         const stripeOptions: Stripe.RequestOptions = {};
         if (org?.stripe_account_id) {
           stripeOptions.stripeAccount = org.stripe_account_id;
@@ -110,12 +128,10 @@ serve(async (req) => {
       } catch (stripeErr: unknown) {
         const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
         logStep("Stripe refund failed", { error: msg });
-        // Still mark as refunded in DB but flag as manual
         refundStatus = "stripe_failed";
       }
     }
 
-    // Update booking status
     const updateData: Record<string, unknown> = {
       status: "refunded",
       refunded_at: new Date().toISOString(),
@@ -127,9 +143,12 @@ serve(async (req) => {
       .update(updateData)
       .eq("id", booking_id);
 
-    if (updateError) throw new Error(`Failed to update booking: ${updateError.message}`);
+    if (updateError) {
+      return new Response(JSON.stringify({ error: `Failed to update booking: ${updateError.message}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+      });
+    }
 
-    // Audit log
     await supabaseAdmin.from("audit_logs").insert({
       user_id: user.id,
       org_id: booking.org_id,
@@ -158,8 +177,8 @@ serve(async (req) => {
     const message = err instanceof Error ? err.message : String(err);
     logStep("Error", { error: message });
     return new Response(
-      JSON.stringify({ error: message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+      JSON.stringify({ error: "Refund processing failed" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
     );
   }
 });

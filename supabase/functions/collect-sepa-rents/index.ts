@@ -23,7 +23,6 @@ serve(async (req) => {
   );
 
   try {
-    // Verify cron secret or auth
     const cronSecret = req.headers.get("x-cron-secret");
     const authHeader = req.headers.get("Authorization");
 
@@ -34,35 +33,49 @@ serve(async (req) => {
         .eq("key", "x-cron-secret")
         .single();
       if (!config || config.value !== cronSecret) {
-        throw new Error("Invalid cron secret");
+        return new Response(JSON.stringify({ error: "Invalid cron secret" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+        });
       }
     } else if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
       const { error } = await supabase.auth.getUser(token);
-      if (error) throw new Error(`Auth error: ${error.message}`);
+      if (error) {
+        return new Response(JSON.stringify({ error: "Authentication failed" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        });
+      }
     } else {
-      throw new Error("No authorization");
+      return new Response(JSON.stringify({ error: "No authorization" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      });
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not set" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Get current month
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
     logStep("Processing month", { month: currentMonth });
 
-    // Get unpaid rent_calls for this month
     const { data: unpaidCalls, error: fetchError } = await supabase
       .from("rent_calls")
       .select("id, tenant_id, org_id, total_amount, property_id")
       .eq("month", currentMonth)
       .eq("paid", false);
 
-    if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+    if (fetchError) {
+      return new Response(JSON.stringify({ error: `Fetch error: ${fetchError.message}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+      });
+    }
     if (!unpaidCalls || unpaidCalls.length === 0) {
       logStep("No unpaid rent calls for this month");
       return new Response(
@@ -79,7 +92,6 @@ serve(async (req) => {
 
     for (const call of unpaidCalls) {
       try {
-        // Get tenant email
         const { data: tenant } = await supabase
           .from("tenants")
           .select("email, name, stripe_customer_id")
@@ -92,7 +104,6 @@ serve(async (req) => {
           continue;
         }
 
-        // Get org's Stripe Connect account
         const { data: org } = await supabase
           .from("orgs")
           .select("stripe_account_id, stripe_onboarding_complete")
@@ -105,11 +116,9 @@ serve(async (req) => {
           continue;
         }
 
-        // Find existing Stripe customer with saved SEPA mandate
         let customerId = tenant.stripe_customer_id;
 
         if (!customerId) {
-          // Look up by email on the connected account
           const customers = await stripe.customers.list(
             { email: tenant.email, limit: 1 },
             { stripeAccount: org.stripe_account_id }
@@ -125,7 +134,6 @@ serve(async (req) => {
           continue;
         }
 
-        // Get default payment method (SEPA)
         const paymentMethods = await stripe.paymentMethods.list(
           { customer: customerId, type: "sepa_debit", limit: 1 },
           { stripeAccount: org.stripe_account_id }
@@ -140,7 +148,6 @@ serve(async (req) => {
         const pmId = paymentMethods.data[0].id;
         const amountCents = Math.round(call.total_amount * 100);
 
-        // Create off-session payment intent
         const pi = await stripe.paymentIntents.create(
           {
             amount: amountCents,
@@ -162,7 +169,6 @@ serve(async (req) => {
         );
 
         if (pi.status === "succeeded" || pi.status === "processing") {
-          // Mark as paid (SEPA may take a few days to clear)
           await supabase
             .from("rent_calls")
             .update({
@@ -196,7 +202,7 @@ serve(async (req) => {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
     return new Response(
-      JSON.stringify({ error: msg }),
+      JSON.stringify({ error: "Collection failed" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
