@@ -49,7 +49,7 @@ const MARKETPLACE_CARDS = [
 /* ── Platform Modules — role-aware shortcuts ── */
 const MODULE_CARDS = [
   { icon: Building2, label: "Gestion", desc: "Immobilier", key: null, to: "/dashboard/rental", roles: ["landlord"] },
-  { icon: CalendarCheck, label: "Saisonnier", desc: "Réservations", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
+  { icon: CalendarCheck, label: "Saisonnier", desc: "Bookings", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Palette, label: "Réglages", desc: "Global", key: null, to: "/dashboard/settings" },
 ];
