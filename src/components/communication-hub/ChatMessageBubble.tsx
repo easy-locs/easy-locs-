@@ -27,8 +27,12 @@ interface Props {
   translatingMsgId: string | null;
   isPendingOffline: boolean;
   isConsecutive?: boolean;
+  selected?: boolean;
+  selectMode?: boolean;
+  currentUserId?: string;
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: React.MouseEvent, msg: ChatMessage, isMe: boolean) => void;
+  onToggleSelect?: (id: string) => void;
   getCategoryIcon: (cat: string) => string;
 }
 
