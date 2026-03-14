@@ -4138,8 +4138,10 @@ export type Database = {
           postal_code: string | null
           preferred_currency: string | null
           preferred_locale: string | null
+          privacy_last_seen: boolean | null
           privacy_link_previews: boolean | null
           privacy_online_status: boolean | null
+          privacy_profile_photo: boolean | null
           privacy_read_receipts: boolean
           privacy_typing_indicators: boolean
           referral_code: string | null
@@ -4180,8 +4182,10 @@ export type Database = {
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_last_seen?: boolean | null
           privacy_link_previews?: boolean | null
           privacy_online_status?: boolean | null
+          privacy_profile_photo?: boolean | null
           privacy_read_receipts?: boolean
           privacy_typing_indicators?: boolean
           referral_code?: string | null
@@ -4222,8 +4226,10 @@ export type Database = {
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_last_seen?: boolean | null
           privacy_link_previews?: boolean | null
           privacy_online_status?: boolean | null
+          privacy_profile_photo?: boolean | null
           privacy_read_receipts?: boolean
           privacy_typing_indicators?: boolean
           referral_code?: string | null
