@@ -51,7 +51,7 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
         .select("wallet_pin_hash")
         .eq("id", user.id)
         .maybeSingle();
-      const hash = (data as any)?.wallet_pin_hash;
+      const hash = data?.wallet_pin_hash;
       storedHash.current = hash || null;
       setMode(hash ? "verify" : "setup");
 
@@ -106,7 +106,7 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
     const hash = await hashPin(pin);
     await supabase
       .from("profiles")
-      .update({ wallet_pin_hash: hash } as any)
+      .update({ wallet_pin_hash: hash })
       .eq("id", user!.id);
     storedHash.current = hash;
     setProcessing(false);
