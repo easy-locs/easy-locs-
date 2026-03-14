@@ -17,6 +17,7 @@ import { haptic } from "@/lib/haptics";
 import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
+import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
 import { useDecryptedMessages } from "@/hooks/useDecryptedMessages";
@@ -65,6 +66,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
   const offline = useOfflineMessages({ userId: user?.id, orgId: orgId || undefined, threadId: thread?.id });
+  const { settings: privacySettings } = usePrivacySettings();
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
 
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
@@ -132,8 +134,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
-      if (unreadIds.length > 0) {
-        await supabase.from("messages").update({ read: true }).in("id", unreadIds);
+      if (unreadIds.length > 0 && privacySettings.readReceipts) {
+        await supabase.from("messages").update({ read: true } as any).in("id", unreadIds);
+        onThreadUpdate(thread.id, { unreadCount: 0 });
+      } else if (unreadIds.length > 0) {
+        // Still mark locally for UI but don't persist read status to DB
         onThreadUpdate(thread.id, { unreadCount: 0 });
       }
     }
@@ -146,21 +151,46 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
+  // Realtime: INSERT + UPDATE (for live deletion/edit sync)
   useEffect(() => {
     if (!orgId || !thread) return;
-    const channel = supabase.channel(`chat-${thread.id}`).on("postgres_changes", {
-      event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-    }, (payload) => {
-      const newMsg = payload.new as ChatMessage;
-      const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
-      if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
-        setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
-        if (newMsg.sender_id !== user?.id) supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
-      }
-    }).subscribe();
+    const matchThread = (msg: any) => {
+      const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
+      return msgKey === thread.id || msg.context_id === thread.contextId;
+    };
+    const channel = supabase.channel(`chat-${thread.id}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const newMsg = payload.new as ChatMessage;
+        if (matchThread(newMsg)) {
+          setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+          if (newMsg.sender_id !== user?.id && privacySettings.readReceipts) {
+            supabase.from("messages").update({ read: true } as any).eq("id", newMsg.id);
+          }
+        }
+      })
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const updated = payload.new as ChatMessage;
+        if (matchThread(updated)) {
+          setRawMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
+        }
+      })
+      .on("postgres_changes", {
+        event: "DELETE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const deleted = payload.old as any;
+        if (deleted?.id) {
+          setRawMessages(prev => prev.filter(m => m.id !== deleted.id));
+        }
+      })
+      .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [orgId, thread, user]);
+  }, [orgId, thread, user, privacySettings.readReceipts]);
 
+  // Typing presence — only broadcast if user has typing indicators enabled
   useEffect(() => {
     if (!thread || !orgId) return;
     const channel = supabase.channel(`typing-${thread.id}`);
@@ -169,10 +199,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
       setTypingIndicator(others.length > 0);
     }).subscribe(async (status) => {
-      if (status === "SUBSCRIBED") await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
+      // Only track typing if user allows typing indicators
+      if (status === "SUBSCRIBED" && privacySettings.typingIndicators) {
+        await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
+      }
     });
     return () => { supabase.removeChannel(channel); };
-  }, [thread, orgId, user?.id]);
+  }, [thread, orgId, user?.id, privacySettings.typingIndicators]);
 
   const handleFileUpload = async (file: File) => {
     if (!thread) return;
@@ -381,6 +414,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         } catch (e) { console.error("Translation failed:", e); }
       }
 
+      // Compute disappear_at based on thread TTL or global default
+      const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
+      const disappearAt = computeDisappearAt(effectiveTTL);
+
       const { error: insertErr } = await supabase.from("messages").insert({
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
@@ -392,6 +429,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
+        disappear_at: disappearAt,
       } as any);
 
       if (insertErr) {

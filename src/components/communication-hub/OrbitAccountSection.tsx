@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
-
+import { usePrivacySettings } from "@/hooks/usePrivacySettings";
 type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile";
 
 export default function OrbitAccountSection() {
@@ -38,10 +38,11 @@ export default function OrbitAccountSection() {
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Privacy states
-  const [readReceipts, setReadReceipts] = useState(true);
+  // Privacy states — backed by profiles table via usePrivacySettings
+  const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
+  const readReceipts = privacy.readReceipts;
+  const typingIndicators = privacy.typingIndicators;
   const [onlineStatus, setOnlineStatus] = useState(true);
-  const [typingIndicators, setTypingIndicators] = useState(true);
   const [lastSeen, setLastSeen] = useState(true);
   const [profilePhoto, setProfilePhoto] = useState(true);
   const [linkPreviews, setLinkPreviews] = useState(true);
@@ -56,16 +57,11 @@ export default function OrbitAccountSection() {
 
   // Storage states
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
-  const [autoDeletePeriod, setAutoDeletePeriod] = useState("off");
-  
-  // Display name mode
+
+  // Display name mode — from server
   type DisplayNameMode = "real" | "username" | "custom" | "anonymous" | "hidden";
-  const [displayNameMode, setDisplayNameMode] = useState<DisplayNameMode>(
-    (localStorage.getItem("orbit_display_name_mode") as DisplayNameMode) || "real"
-  );
-  const [customDisplayName, setCustomDisplayName] = useState(
-    localStorage.getItem("orbit_custom_display_name") || ""
-  );
+  const displayNameMode = privacy.displayNameMode;
+  const customDisplayName = privacy.customDisplayName;
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
@@ -277,10 +273,8 @@ export default function OrbitAccountSection() {
               <button
                 key={opt.value}
                 onClick={() => {
-                  setDisplayNameMode(opt.value as any);
+                  updatePrivacy({ displayNameMode: opt.value as any });
                   haptic("selection");
-                  // Persist to localStorage
-                  localStorage.setItem("orbit_display_name_mode", opt.value);
                 }}
                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-left transition-colors"
                 style={{
@@ -303,8 +297,7 @@ export default function OrbitAccountSection() {
               <Input
                 value={customDisplayName}
                 onChange={e => {
-                  setCustomDisplayName(e.target.value);
-                  localStorage.setItem("orbit_custom_display_name", e.target.value);
+                  updatePrivacy({ customDisplayName: e.target.value });
                 }}
                 placeholder="Enter custom name..."
                 className="bg-muted/30 text-sm"
@@ -318,8 +311,8 @@ export default function OrbitAccountSection() {
           <Row label="Last Seen" desc="Show when you were last online"><Switch checked={lastSeen} onCheckedChange={setLastSeen} /></Row>
           <Row label="Online Status" desc="Show when you're currently online"><Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} /></Row>
           <Row label="Profile Photo" desc="Who can see your profile photo"><Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} /></Row>
-          <Row label="Read Receipts" desc="Others see when you've read their messages"><Switch checked={readReceipts} onCheckedChange={setReadReceipts} /></Row>
-          <Row label="Typing Indicators" desc="Show when you're typing a message"><Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} /></Row>
+          <Row label="Read Receipts" desc="Others see when you've read their messages"><Switch checked={readReceipts} onCheckedChange={(v) => updatePrivacy({ readReceipts: v })} /></Row>
+          <Row label="Typing Indicators" desc="Show when you're typing a message"><Switch checked={typingIndicators} onCheckedChange={(v) => updatePrivacy({ typingIndicators: v })} /></Row>
           <Row label="Link Previews" desc="Generate previews for sent links"><Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} /></Row>
         </div>
         <Separator className="my-4" />
@@ -398,8 +391,8 @@ export default function OrbitAccountSection() {
           <p className="text-xs font-medium text-foreground mb-2">Disappearing Messages</p>
           <div className="grid grid-cols-4 gap-2">
             {["off", "24h", "7d", "30d"].map(v => (
-              <button key={v} onClick={() => setAutoDeletePeriod(v)}
-                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${autoDeletePeriod === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+              <button key={v} onClick={() => updatePrivacy({ defaultDisappearTtl: v })}
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${privacy.defaultDisappearTtl === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 {v === "off" ? "Off" : v}
               </button>
             ))}
