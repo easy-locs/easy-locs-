@@ -33,7 +33,7 @@ const ORBIT_INFRA_CARDS = [
   { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/wallet?action=history" },
   { icon: Shield, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
   { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
-  { icon: Lock, label: "Confidentialité", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
+  { icon: Lock, label: "Privé", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
 ];
 
 /* ══════ MARKETPLACE = Commerce layer ══════ */
