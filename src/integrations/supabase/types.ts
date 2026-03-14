@@ -1763,6 +1763,33 @@ export type Database = {
           },
         ]
       }
+      fx_rates_cache: {
+        Row: {
+          base_currency: string
+          expires_at: string
+          fetched_at: string
+          id: string
+          rates_json: Json
+          source: string
+        }
+        Insert: {
+          base_currency?: string
+          expires_at?: string
+          fetched_at?: string
+          id?: string
+          rates_json?: Json
+          source?: string
+        }
+        Update: {
+          base_currency?: string
+          expires_at?: string
+          fetched_at?: string
+          id?: string
+          rates_json?: Json
+          source?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -6219,6 +6246,8 @@ export type Database = {
           currency: string
           frozen_balance: number
           id: string
+          total_purchased: number | null
+          total_spent: number | null
           updated_at: string
           user_id: string
         }
@@ -6228,6 +6257,8 @@ export type Database = {
           currency?: string
           frozen_balance?: number
           id?: string
+          total_purchased?: number | null
+          total_spent?: number | null
           updated_at?: string
           user_id: string
         }
@@ -6237,6 +6268,8 @@ export type Database = {
           currency?: string
           frozen_balance?: number
           id?: string
+          total_purchased?: number | null
+          total_spent?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -6250,8 +6283,14 @@ export type Database = {
           currency: string
           description: string | null
           direction: string
+          fx_rate_used: number | null
+          fx_source: string | null
+          fx_timestamp: string | null
           id: string
+          margin_applied: number | null
           metadata_json: Json | null
+          original_amount: number | null
+          original_currency: string | null
           reference_id: string | null
           reference_type: string | null
           status: string
@@ -6266,8 +6305,14 @@ export type Database = {
           currency?: string
           description?: string | null
           direction?: string
+          fx_rate_used?: number | null
+          fx_source?: string | null
+          fx_timestamp?: string | null
           id?: string
+          margin_applied?: number | null
           metadata_json?: Json | null
+          original_amount?: number | null
+          original_currency?: string | null
           reference_id?: string | null
           reference_type?: string | null
           status?: string
@@ -6282,8 +6327,14 @@ export type Database = {
           currency?: string
           description?: string | null
           direction?: string
+          fx_rate_used?: number | null
+          fx_source?: string | null
+          fx_timestamp?: string | null
           id?: string
+          margin_applied?: number | null
           metadata_json?: Json | null
+          original_amount?: number | null
+          original_currency?: string | null
           reference_id?: string | null
           reference_type?: string | null
           status?: string
