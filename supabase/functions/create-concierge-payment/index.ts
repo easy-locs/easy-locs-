@@ -20,15 +20,31 @@ serve(async (req) => {
     const { order_id, service_id, amount, currency, guest_email, guest_name, service_title, origin, booking_slug } = await req.json();
     logStep("Request received", { order_id, service_id, amount });
 
-    if (!order_id) throw new Error("Order ID required");
-    if (!guest_email) throw new Error("Guest email required");
-    if (!service_id) throw new Error("Service ID required");
+    if (!order_id) {
+      return new Response(JSON.stringify({ error: "Order ID required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
+    if (!guest_email) {
+      return new Response(JSON.stringify({ error: "Guest email required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
+    if (!service_id) {
+      return new Response(JSON.stringify({ error: "Service ID required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
 
     const ALLOWED_ORIGINS = ["https://www.easy-locs.com", "https://easy-locs.com"];
     const safeOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
