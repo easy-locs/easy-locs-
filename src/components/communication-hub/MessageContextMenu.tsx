@@ -245,10 +245,20 @@ export default function MessageContextMenu({
           {/* Actions */}
           <div className="py-1 max-h-[50vh] overflow-y-auto">
             <ActionItem icon={<Reply className="h-4 w-4" />} label="Reply" onClick={handleReply} />
-            <ActionItem icon={<Forward className="h-4 w-4" />} label="Forward" onClick={handleForward} />
+            {canForward && (
+              <ActionItem icon={<Forward className="h-4 w-4" />} label="Forward" onClick={handleForward} />
+            )}
 
-            {!message.hasAudio && (
+            {!message.hasAudio && canCopy && (
               <ActionItem icon={<Copy className="h-4 w-4" />} label="Copy text" onClick={handleCopy} />
+            )}
+
+            {/* Security level badge */}
+            {policy.level !== "normal" && (
+              <div className="px-4 py-2 flex items-center gap-2" style={{ color: "hsl(var(--hud-warning) / 0.7)" }}>
+                <Shield className="h-3.5 w-3.5" />
+                <span className="text-[11px]">{policy.emoji} {policy.label}</span>
+              </div>
             )}
 
             <ActionItem
