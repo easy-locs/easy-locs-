@@ -255,15 +255,16 @@ export function useConversationThreads() {
           .limit(200);
 
         if (convThreads?.length) {
-          for (const ct of convThreads) {
+        for (const ct of convThreads) {
             const ctxType = ct.context_type || "direct";
             let convType: "direct" | "business" | "listing" | "team" = "direct";
-            let sourceModule: "direct" | "marketplace" | "team" = "direct";
+            let srcModule: "direct" | "marketplace" | "team" | "concierge" | "real_estate" = "direct";
 
-            if (ctxType === "direct") { convType = "direct"; sourceModule = "direct"; }
-            else if (ctxType === "team") { convType = "team"; sourceModule = "team"; }
-            else if (ctxType === "listing" || ctxType === "marketplace_service" || ctxType === "concierge_service") { convType = "listing"; sourceModule = "marketplace"; }
-            else if (ctxType === "business" || ctxType === "service") { convType = "business"; sourceModule = "marketplace"; }
+            if (ctxType === "direct") { convType = "direct"; srcModule = "direct"; }
+            else if (ctxType === "team") { convType = "team"; srcModule = "team"; }
+            else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
+            else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "concierge"; }
+            else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
 
             const key = `${convType}-${ct.id}`;
             if (!threadMap.has(key)) {
