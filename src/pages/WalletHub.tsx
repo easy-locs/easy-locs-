@@ -235,9 +235,9 @@ export default function WalletHub() {
                         transition={{ delay: i * 0.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setView(action.key)}
-                        className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/30 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/40 hover:shadow-md transition-all"
                       >
-                        <div className={`w-10 h-10 rounded-xl ${action.color} text-primary-foreground flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} text-white flex items-center justify-center shadow-sm`}>
                           <Icon className="w-4.5 h-4.5" />
                         </div>
                         <span className="text-[11px] font-semibold text-foreground">{action.label}</span>
