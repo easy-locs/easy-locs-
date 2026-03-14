@@ -52,10 +52,10 @@ export default function OrbitAccountSection() {
   const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
   const readReceipts = privacy.readReceipts;
   const typingIndicators = privacy.typingIndicators;
-  const [onlineStatus, setOnlineStatus] = useState(true);
-  const [lastSeen, setLastSeen] = useState(true);
-  const [profilePhoto, setProfilePhoto] = useState(true);
-  const [linkPreviews, setLinkPreviews] = useState(true);
+  const onlineStatus = privacy.onlineStatus;
+  const lastSeen = privacy.lastSeen;
+  const profilePhoto = privacy.profilePhoto;
+  const linkPreviews = privacy.linkPreviews;
 
   // Notifications states — synced with notif-alert-prefs
   const [alertPrefs, setAlertPrefsState] = useState<NotifAlertPrefs>(getNotifAlertPrefs());
@@ -488,12 +488,12 @@ export default function OrbitAccountSection() {
         
         <Separator className="my-3" />
         <div className="space-y-1">
-          <Row label={t("orbit.privacy.last_seen") || "Last Seen"} desc={t("orbit.privacy.last_seen_desc") || "Show when you were last online"}><Switch checked={lastSeen} onCheckedChange={setLastSeen} /></Row>
-          <Row label={t("orbit.privacy.online_status") || "Online Status"} desc={t("orbit.privacy.online_status_desc") || "Show when you're currently online"}><Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} /></Row>
-          <Row label={t("orbit.privacy.profile_photo") || "Profile Photo"} desc={t("orbit.privacy.profile_photo_desc") || "Who can see your profile photo"}><Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} /></Row>
+          <Row label={t("orbit.privacy.last_seen") || "Last Seen"} desc={t("orbit.privacy.last_seen_desc") || "Show when you were last online"}><Switch checked={lastSeen} onCheckedChange={(v) => updatePrivacy({ lastSeen: v })} /></Row>
+          <Row label={t("orbit.privacy.online_status") || "Online Status"} desc={t("orbit.privacy.online_status_desc") || "Show when you're currently online"}><Switch checked={onlineStatus} onCheckedChange={(v) => updatePrivacy({ onlineStatus: v })} /></Row>
+          <Row label={t("orbit.privacy.profile_photo") || "Profile Photo"} desc={t("orbit.privacy.profile_photo_desc") || "Who can see your profile photo"}><Switch checked={profilePhoto} onCheckedChange={(v) => updatePrivacy({ profilePhoto: v })} /></Row>
           <Row label={t("orbit.privacy.read_receipts") || "Read Receipts"} desc={t("orbit.privacy.read_receipts_desc") || "Others see when you've read their messages"}><Switch checked={readReceipts} onCheckedChange={(v) => updatePrivacy({ readReceipts: v })} /></Row>
           <Row label={t("orbit.privacy.typing") || "Typing Indicators"} desc={t("orbit.privacy.typing_desc") || "Show when you're typing a message"}><Switch checked={typingIndicators} onCheckedChange={(v) => updatePrivacy({ typingIndicators: v })} /></Row>
-          <Row label={t("orbit.privacy.link_previews") || "Link Previews"} desc={t("orbit.privacy.link_previews_desc") || "Generate previews for sent links"}><Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} /></Row>
+          <Row label={t("orbit.privacy.link_previews") || "Link Previews"} desc={t("orbit.privacy.link_previews_desc") || "Generate previews for sent links"}><Switch checked={linkPreviews} onCheckedChange={(v) => updatePrivacy({ linkPreviews: v })} /></Row>
         </div>
         <Separator className="my-4" />
         <p className="text-[10px] text-muted-foreground/50 text-center">{t("orbit.privacy.changes_apply") || "Changes apply to all conversations"}</p>

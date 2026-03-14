@@ -823,28 +823,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
+                <DropdownMenuContent align="end" className="w-52 max-h-[70vh] overflow-y-auto" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
                   {CONV_STATUSES.map(s => (
                     <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
                       className={convStatus === s.value ? "font-semibold" : ""}>
-                      {s.icon} {s.label}
+                      {s.icon} {t(`orbit.status.${s.value}`) || s.label}
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                    Security
+                    {t("orbit.security") || "Security"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
                     <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    Safety Number
+                    {t("orbit.safety_number") || "Safety Number"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onToggleContext}>
-                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> Details
+                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> {t("orbit.details") || "Details"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setSelectMode(true); setSelectedMsgIds(new Set()); }}>
                     <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    Select Messages
+                    {t("orbit.select_messages") || "Select Messages"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -990,21 +990,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
-                <CreditCard className="h-3 w-3" /> Payment
+                <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
               </Button>
               {thread.bookingStatus === "pending" && (
                 <Button size="sm" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
-                  <CalendarCheck className="h-3 w-3" /> Confirm
+                  <CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}
                 </Button>
               )}
               {thread.bookingStatus === "confirmed" && (
                 <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
-                  <CalendarCheck className="h-3 w-3" /> Complete
+                  <CalendarCheck className="h-3 w-3" /> {t("orbit.complete") || "Complete"}
                 </Button>
               )}
               {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
                 <Button size="sm" variant="ghost" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
-                  <Ban className="h-3 w-3" /> Cancel
+                  <Ban className="h-3 w-3" /> {t("orbit.cancel") || "Cancel"}
                 </Button>
               )}
             </div>
