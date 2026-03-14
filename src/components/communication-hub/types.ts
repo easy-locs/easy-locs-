@@ -130,7 +130,6 @@ export const SOURCE_MODULE_CONFIG: Record<SourceModule, { emoji: string; label: 
   long_term:    { emoji: "🏠", label: "Long-term",    cls: "bg-primary/10 text-primary border-primary/20" },
   seasonal:     { emoji: "🏖️", label: "Seasonal",     cls: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
   marketplace:  { emoji: "🛍️", label: "Marketplace",  cls: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
-  concierge:    { emoji: "🎯", label: "Concierge",    cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
   real_estate:  { emoji: "🏡", label: "Real Estate",  cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
   direct:       { emoji: "💬", label: "Direct",       cls: "bg-accent/10 text-accent border-accent/20" },
   team:         { emoji: "👥", label: "Team",         cls: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" },
