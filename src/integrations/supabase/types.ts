@@ -2971,6 +2971,10 @@ export type Database = {
       }
       messages: {
         Row: {
+          allow_copy: boolean
+          allow_forward: boolean
+          anti_screen_record: boolean
+          anti_screenshot: boolean
           assigned_to: string | null
           attachment_url: string | null
           attachment_urls: Json | null
@@ -2993,34 +2997,56 @@ export type Database = {
           deleted_for_user_ids: string[] | null
           deletion_reason: string | null
           delivered: boolean | null
+          destroyed_at: string | null
+          destroyed_reason: string | null
           disappear_at: string | null
           edit_history: Json | null
           edited_at: string | null
           encrypted: boolean | null
+          forwarded_at: string | null
           forwarded_from: string | null
           guest_session_id: string | null
           id: string
           inbound_message_id: string | null
           language_detected: string | null
           message_type: string | null
+          opened_at: string | null
+          opened_by: string | null
           org_id: string
           property_id: string | null
           read: boolean
           reply_chain_id: string | null
           reply_to_content: string | null
           reply_to_id: string | null
+          security_level: string
+          security_policy_version: number
+          self_destruct_on_forward: boolean
           sender_id: string
           sender_locale: string | null
           starred: boolean | null
           tenant_id: string | null
           thread_id: string | null
+          transcript_error: string | null
+          transcript_generated_at: string | null
+          transcript_language: string | null
+          transcript_status: string | null
+          transcript_text: string | null
           translated_content: string | null
           translated_locale: string | null
+          translated_transcript_language: string | null
+          translated_transcript_text: string | null
+          translation_error: string | null
+          translation_generated_at: string | null
+          translation_status: string | null
           view_once: boolean | null
           view_once_opened_at: string | null
           view_once_opened_by: string | null
         }
         Insert: {
+          allow_copy?: boolean
+          allow_forward?: boolean
+          anti_screen_record?: boolean
+          anti_screenshot?: boolean
           assigned_to?: string | null
           attachment_url?: string | null
           attachment_urls?: Json | null
@@ -3043,34 +3069,56 @@ export type Database = {
           deleted_for_user_ids?: string[] | null
           deletion_reason?: string | null
           delivered?: boolean | null
+          destroyed_at?: string | null
+          destroyed_reason?: string | null
           disappear_at?: string | null
           edit_history?: Json | null
           edited_at?: string | null
           encrypted?: boolean | null
+          forwarded_at?: string | null
           forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
           language_detected?: string | null
           message_type?: string | null
+          opened_at?: string | null
+          opened_by?: string | null
           org_id: string
           property_id?: string | null
           read?: boolean
           reply_chain_id?: string | null
           reply_to_content?: string | null
           reply_to_id?: string | null
+          security_level?: string
+          security_policy_version?: number
+          self_destruct_on_forward?: boolean
           sender_id: string
           sender_locale?: string | null
           starred?: boolean | null
           tenant_id?: string | null
           thread_id?: string | null
+          transcript_error?: string | null
+          transcript_generated_at?: string | null
+          transcript_language?: string | null
+          transcript_status?: string | null
+          transcript_text?: string | null
           translated_content?: string | null
           translated_locale?: string | null
+          translated_transcript_language?: string | null
+          translated_transcript_text?: string | null
+          translation_error?: string | null
+          translation_generated_at?: string | null
+          translation_status?: string | null
           view_once?: boolean | null
           view_once_opened_at?: string | null
           view_once_opened_by?: string | null
         }
         Update: {
+          allow_copy?: boolean
+          allow_forward?: boolean
+          anti_screen_record?: boolean
+          anti_screenshot?: boolean
           assigned_to?: string | null
           attachment_url?: string | null
           attachment_urls?: Json | null
@@ -3093,29 +3141,47 @@ export type Database = {
           deleted_for_user_ids?: string[] | null
           deletion_reason?: string | null
           delivered?: boolean | null
+          destroyed_at?: string | null
+          destroyed_reason?: string | null
           disappear_at?: string | null
           edit_history?: Json | null
           edited_at?: string | null
           encrypted?: boolean | null
+          forwarded_at?: string | null
           forwarded_from?: string | null
           guest_session_id?: string | null
           id?: string
           inbound_message_id?: string | null
           language_detected?: string | null
           message_type?: string | null
+          opened_at?: string | null
+          opened_by?: string | null
           org_id?: string
           property_id?: string | null
           read?: boolean
           reply_chain_id?: string | null
           reply_to_content?: string | null
           reply_to_id?: string | null
+          security_level?: string
+          security_policy_version?: number
+          self_destruct_on_forward?: boolean
           sender_id?: string
           sender_locale?: string | null
           starred?: boolean | null
           tenant_id?: string | null
           thread_id?: string | null
+          transcript_error?: string | null
+          transcript_generated_at?: string | null
+          transcript_language?: string | null
+          transcript_status?: string | null
+          transcript_text?: string | null
           translated_content?: string | null
           translated_locale?: string | null
+          translated_transcript_language?: string | null
+          translated_transcript_text?: string | null
+          translation_error?: string | null
+          translation_generated_at?: string | null
+          translation_status?: string | null
           view_once?: boolean | null
           view_once_opened_at?: string | null
           view_once_opened_by?: string | null

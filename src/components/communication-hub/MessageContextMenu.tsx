@@ -6,7 +6,7 @@
 import { useState } from "react";
 import {
   Trash2, Copy, Edit3, EyeOff, Timer, ShieldAlert,
-  Reply, Forward, Star, StarOff, CheckSquare,
+  Reply, Forward, Star, StarOff, CheckSquare, Shield,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
 
 interface MessageAction {
   msgId: string;
@@ -25,6 +26,7 @@ interface MessageAction {
   hasAttachment?: boolean;
   hasAudio?: boolean;
   isStarred?: boolean;
+  security_level?: string;
 }
 
 interface Props {
@@ -59,6 +61,10 @@ export default function MessageContextMenu({
   const [saving, setSaving] = useState(false);
 
   if (!message) return null;
+
+  const policy = getMessagePolicy(message);
+  const canCopy = isActionAllowed(message, "copy");
+  const canForward = isActionAllowed(message, "forward");
 
   const canDeleteForEveryone = message.isMe &&
     (Date.now() - new Date(message.createdAt).getTime()) < 60 * 60 * 1000;
@@ -239,10 +245,20 @@ export default function MessageContextMenu({
           {/* Actions */}
           <div className="py-1 max-h-[50vh] overflow-y-auto">
             <ActionItem icon={<Reply className="h-4 w-4" />} label="Reply" onClick={handleReply} />
-            <ActionItem icon={<Forward className="h-4 w-4" />} label="Forward" onClick={handleForward} />
+            {canForward && (
+              <ActionItem icon={<Forward className="h-4 w-4" />} label="Forward" onClick={handleForward} />
+            )}
 
-            {!message.hasAudio && (
+            {!message.hasAudio && canCopy && (
               <ActionItem icon={<Copy className="h-4 w-4" />} label="Copy text" onClick={handleCopy} />
+            )}
+
+            {/* Security level badge */}
+            {policy.level !== "normal" && (
+              <div className="px-4 py-2 flex items-center gap-2" style={{ color: "hsl(var(--hud-warning) / 0.7)" }}>
+                <Shield className="h-3.5 w-3.5" />
+                <span className="text-[11px]">{policy.emoji} {policy.label}</span>
+              </div>
             )}
 
             <ActionItem

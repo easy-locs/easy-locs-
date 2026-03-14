@@ -2,10 +2,10 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
-import { memo, useRef, useCallback } from "react";
+import { memo, useRef, useCallback, useEffect, useState } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
-  ShieldCheck, CreditCard, EyeOff,
+  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
@@ -13,6 +13,7 @@ import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
 import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
+import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
@@ -83,6 +84,56 @@ function ChatMessageBubble({
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
+  const securityPolicy = getMessagePolicy(msg);
+  const hasSecurityLevel = securityPolicy.level !== "normal";
+  const transcriptText = (msg as any).transcript_text;
+  const transcriptStatus = (msg as any).transcript_status;
+  const translatedTranscript = (msg as any).translated_transcript_text;
+  const [showTranscript, setShowTranscript] = useState(true);
+  const [showTranslatedTranscript, setShowTranslatedTranscript] = useState(false);
+
+  // Client-side expiration masking
+  const [expired, setExpired] = useState(false);
+  useEffect(() => {
+    if (shouldHideMessage(msg)) { setExpired(true); return; }
+    if ((msg as any).disappear_at) {
+      const ms = new Date((msg as any).disappear_at).getTime() - Date.now();
+      if (ms > 0) {
+        const timer = setTimeout(() => setExpired(true), ms);
+        return () => clearTimeout(timer);
+      } else {
+        setExpired(true);
+      }
+    }
+  }, [(msg as any).disappear_at, (msg as any).destroyed_at]);
+
+  // Anti-screenshot: blur on visibility change
+  const [blurred, setBlurred] = useState(false);
+  useEffect(() => {
+    if (!securityPolicy.antiScreenshot) return;
+    const handler = () => {
+      if (document.hidden) setBlurred(true);
+      else setTimeout(() => setBlurred(false), 500);
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, [securityPolicy.antiScreenshot]);
+
+  if (expired) {
+    return (
+      <div className={`flex ${isMe ? "justify-end" : "justify-start"}`} style={{ marginTop: isConsecutive ? 2 : 8 }}>
+        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl" style={{
+          background: "hsl(var(--hud-surface) / 0.2)",
+          border: "1px solid hsl(var(--hud-border) / 0.04)",
+        }}>
+          <Timer className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+          <span className="text-[11px] italic" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            Message expired
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // Deleted message bubble — shows inline in conversation flow
   if (isDeleted && !isSystem) {
@@ -230,6 +281,16 @@ function ChatMessageBubble({
           </span>
         )}
 
+        {/* Security badge */}
+        {hasSecurityLevel && (
+          <span className="inline-flex items-center gap-1 text-[9px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+            color: "hsl(var(--hud-warning))",
+            background: "hsl(var(--hud-warning) / 0.1)",
+          }}>
+            {securityPolicy.emoji} {securityPolicy.label}
+          </span>
+        )}
+
         {/* Category badge */}
         {msg.category !== "general" && !isInboundEmail && !isPayment && (
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
@@ -248,23 +309,67 @@ function ChatMessageBubble({
             />
           </div>
         ) : msg.attachment_url ? (
-          <div className="mb-1 -mx-1 rounded-lg overflow-hidden">
+          <div className={`mb-1 -mx-1 rounded-lg overflow-hidden ${blurred ? "blur-lg transition-all" : ""}`}>
             <ChatMediaPreview url={msg.attachment_url} />
           </div>
         ) : null}
 
         {/* Voice message */}
         {isVoice ? (
-          <VoiceMessageBubble
-            url={(msg as any).audio_url}
-            durationSeconds={(msg as any).audio_duration_seconds || 0}
-            isMe={isMe}
-          />
+          <div>
+            <VoiceMessageBubble
+              url={(msg as any).audio_url}
+              durationSeconds={(msg as any).audio_duration_seconds || 0}
+              isMe={isMe}
+            />
+            {/* Transcript display */}
+            {transcriptStatus === "processing" && (
+              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <Loader2 className="h-2.5 w-2.5 animate-spin" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
+                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Transcribing...</span>
+              </div>
+            )}
+            {transcriptStatus === "error" && (
+              <div className="flex items-center gap-1 mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <span className="text-[10px]" style={{ color: "hsl(var(--hud-danger) / 0.6)" }}>⚠️ Transcription failed</span>
+              </div>
+            )}
+            {transcriptText && transcriptStatus === "completed" && (
+              <div className="mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+                <button
+                  onClick={() => setShowTranscript(!showTranscript)}
+                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80"
+                  style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}
+                >
+                  <FileText className="h-2.5 w-2.5" />
+                  {showTranscript ? "Hide transcript" : "Show transcript"}
+                </button>
+                {showTranscript && (
+                  <p className={`text-[12px] leading-[1.4] whitespace-pre-wrap ${blurred ? "blur-lg" : ""}`} style={{
+                    color: "hsl(var(--hud-text) / 0.8)",
+                  }}>
+                    {showTranslatedTranscript && translatedTranscript ? translatedTranscript : transcriptText}
+                  </p>
+                )}
+                {showTranscript && translatedTranscript && (
+                  <button
+                    onClick={() => setShowTranslatedTranscript(!showTranslatedTranscript)}
+                    className="mt-0.5 inline-flex items-center gap-1 text-[9px] hover:opacity-80"
+                    style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
+                  >
+                    <Globe className="h-2 w-2" />
+                    {showTranslatedTranscript ? "Original" : "Translated"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         ) : (
           /* Message content */
-          <p className="text-[13.5px] leading-[1.45] whitespace-pre-wrap" style={{
+          <p className={`text-[13.5px] leading-[1.45] whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
             color: "hsl(var(--foreground))",
             overflowWrap: "anywhere",
+            ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
           }}>
             {isMe ? msg.content : (showOriginal ? msg.content : (msg.translated_content || msg.content))}
           </p>
@@ -285,10 +390,13 @@ function ChatMessageBubble({
           </button>
         )}
 
-        {/* Footer: time + status */}
+        {/* Footer: time + status + security */}
         <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
           {(msg as any).edited_at && (
             <span className="text-[9px] italic opacity-30 mr-0.5">edited</span>
+          )}
+          {hasSecurityLevel && (
+            <span className="text-[9px] mr-0.5" title={securityPolicy.label}>{securityPolicy.emoji}</span>
           )}
           <span className="text-[10px] opacity-35 font-medium tabular-nums">{format(new Date(msg.created_at), "HH:mm")}</span>
           {isMe && isPendingOffline ? (

@@ -9,6 +9,8 @@ import {
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
   Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile, Eye,
 } from "lucide-react";
+import SecurityLevelPicker from "./SecurityLevelPicker";
+import { type SecurityLevel, buildSecurityPayload, isActionAllowed } from "@/lib/message-security";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
@@ -98,6 +100,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [viewOnceNext, setViewOnceNext] = useState(false);
   const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
   const [forwardData, setForwardData] = useState<{ messageId: string; content: string } | null>(null);
+  const [securityLevel, setSecurityLevel] = useState<SecurityLevel>("normal");
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -473,6 +476,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
+      const secPayload = buildSecurityPayload(securityLevel);
+
       const { error: insertErr } = await supabase.from("messages").insert({
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
@@ -484,9 +489,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
-        disappear_at: disappearAt,
+        disappear_at: secPayload.disappear_at || disappearAt,
         reply_to_id: currentReplyTo?.msgId || null,
         reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
+        ...secPayload,
       } as any);
 
       if (insertErr) {
@@ -1073,7 +1079,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
                   const audioUrl = signed?.signedUrl || path;
 
-                  await supabase.from("messages").insert({
+                  const voiceSecPayload = buildSecurityPayload(securityLevel);
+
+                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert({
                     org_id: orgId,
                     sender_id: authUserId,
                     tenant_id: thread.tenantId || null,
@@ -1089,7 +1097,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     sender_locale: locale,
                     context_type: thread.contextType,
                     context_id: thread.contextId,
-                  } as any);
+                    transcript_status: "pending",
+                    ...voiceSecPayload,
+                  } as any).select("id").single();
+
+                  // Trigger voice transcription in background
+                  if (insertedMsg?.id) {
+                    supabase.functions.invoke("voice-transcribe", {
+                      body: {
+                        message_id: insertedMsg.id,
+                        audio_url: audioUrl,
+                        target_locale: locale,
+                      },
+                    }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
+                  }
 
                   toast.success("Voice message sent");
                 } catch (e: any) {
@@ -1111,6 +1132,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 background: "hsl(var(--hud-surface))",
                 border: "1px solid hsl(var(--hud-border) / 0.12)",
               }}>
+                {/* Security level picker */}
+                <SecurityLevelPicker value={securityLevel} onChange={setSecurityLevel} />
                 {/* Attach button (opens dropdown) */}
                 <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                   <DropdownMenuTrigger asChild>
