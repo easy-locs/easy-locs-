@@ -55,6 +55,12 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: LEGAL_NOTICE_PRICE_ID, quantity: 1 }],
       mode: "payment",
+      payment_method_types: ["card"],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: "any",
+        },
+      },
       metadata: { jal_name: jalName || "Non spécifié", user_id: user.id },
       success_url: `https://www.easy-locs.com/dashboard/company?payment=success`,
       cancel_url: `https://www.easy-locs.com/dashboard/company?payment=cancel`,
