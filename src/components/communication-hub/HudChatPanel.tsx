@@ -858,8 +858,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       showOriginal={!!showOriginal[msg.id]}
                       translatingMsgId={translatingMsgId}
                       isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
+                      selected={selectedMsgIds.has(msg.id)}
+                      selectMode={selectMode}
+                      currentUserId={user?.id}
                       onTranslate={handleTranslateMessage}
-                      onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false })}
+                      onContextMenu={(e, m, me) => {
+                        if (selectMode) { toggleMsgSelect(m.id); return; }
+                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false });
+                      }}
+                      onToggleSelect={toggleMsgSelect}
                       getCategoryIcon={getCategoryIcon}
                     />
                   </div>
