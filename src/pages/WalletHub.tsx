@@ -43,20 +43,40 @@ export default function WalletHub() {
   const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
 
+  const recipientUserId = searchParams.get("recipientId") || searchParams.get("recipientUserId") || "";
+  const recipientName = searchParams.get("recipientName") || "Recipient";
+
+  const renderRecipientHint = (mode: "send" | "receive") => (
+    <div className="rounded-2xl border border-border bg-card p-5 text-center space-y-3">
+      <MessageCircle className="w-10 h-10 mx-auto text-muted-foreground/40" />
+      <p className="text-sm font-medium text-foreground">
+        {mode === "send" ? "Select a recipient from Orbit chat to send payment." : "Open a conversation to request payment."}
+      </p>
+      <div className="flex gap-2 justify-center">
+        <Button size="sm" onClick={() => navigate("/dashboard/communication")}>Open Orbit</Button>
+        <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>Use My QR</Button>
+      </div>
+    </div>
+  );
+
   const renderSubView = () => {
     switch (view) {
       case "send":
+        if (!recipientUserId) return renderRecipientHint("send");
         return (
           <OrbitSmartPayment
-            recipientUserId=""
-            recipientName="Recipient"
+            recipientUserId={recipientUserId}
+            recipientName={recipientName}
             onSuccess={() => setView("home")}
             onCancel={() => setView("home")}
           />
         );
       case "receive":
+        if (!recipientUserId) return renderRecipientHint("receive");
         return (
           <OrbitPaymentRequest
+            recipientUserId={recipientUserId}
+            recipientName={recipientName}
             onSuccess={() => setView("home")}
             onCancel={() => setView("home")}
           />
