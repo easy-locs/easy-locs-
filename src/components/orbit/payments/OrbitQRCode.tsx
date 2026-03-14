@@ -55,27 +55,27 @@ export default function OrbitQRCode({
       const { supabase } = await import("@/integrations/supabase/client");
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("name, first_name, last_name, email")
         .eq("id", user.id)
         .maybeSingle();
-      if (data?.full_name) setUserName(data.full_name);
+      if (data?.name) setUserName(data.name);
+      else if (data?.first_name) setUserName(`${data.first_name} ${data.last_name || ""}`.trim());
+      else if (data?.email) setUserName(data.email);
       else if (user.email) setUserName(user.email);
     };
     loadName();
   }, [user]);
-  const [copied, setCopied] = useState(false);
 
   const generateQR = useCallback(async () => {
     if (!user?.id) return;
-    const name = (profile as any)?.full_name || user.email || "User";
 
     let qrPayload: QRPayload;
     if (type === "static") {
-      qrPayload = createStaticQR({ userId: user.id, name, type: recipientType, orgId });
+      qrPayload = createStaticQR({ userId: user.id, name: userName, type: recipientType, orgId });
     } else {
       qrPayload = await createDynamicQR({
         userId: user.id,
-        name,
+        name: userName,
         amount: amount || 0,
         currency,
         locsEquivalent,
@@ -88,7 +88,7 @@ export default function OrbitQRCode({
 
     setPayload(qrPayload);
     setQrData(encodeQRPayload(qrPayload));
-  }, [user, profile, type, recipientType, amount, currency, locsEquivalent, referenceType, referenceId, description, expiresInMinutes, orgId]);
+  }, [user, userName, type, recipientType, amount, currency, locsEquivalent, referenceType, referenceId, description, expiresInMinutes, orgId]);
 
   useEffect(() => {
     generateQR();
