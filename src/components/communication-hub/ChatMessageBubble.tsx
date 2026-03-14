@@ -2,7 +2,7 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
-import { memo } from "react";
+import { memo, useRef, useCallback } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
   ShieldCheck, CreditCard, EyeOff,
