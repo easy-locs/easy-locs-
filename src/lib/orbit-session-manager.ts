@@ -102,6 +102,10 @@ export async function registerDeviceSession(userId: string): Promise<{
     await logLoginEvent(userId, fingerprint, label, true);
   }
 
+  // Auto-cleanup: remove stale sessions (>30 days) and enforce max 5
+  await cleanupStaleSessions(userId, 30);
+  await enforceMaxSessions(userId, 5);
+
   return { isNewDevice, sessionInfo };
 }
 
