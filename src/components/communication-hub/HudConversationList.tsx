@@ -1,13 +1,14 @@
 /**
  * HudConversationList — WhatsApp-style conversation sidebar.
- * Large "Orbit" title, search bar, dense thread list, maximum screen usage.
+ * Supports swipe-to-delete and swipe-to-archive on each thread card.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Search, Loader2, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ConversationThread } from "./types";
 import HudConversationCard from "./HudConversationCard";
+import SwipeableThreadItem from "./SwipeableThreadItem";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 
 interface Props {
@@ -15,7 +16,10 @@ interface Props {
   loading: boolean;
   selectedThread: ConversationThread | null;
   onSelectThread: (thread: ConversationThread) => void;
+  onDeleteThread?: (thread: ConversationThread) => void;
+  onArchiveThread?: (thread: ConversationThread) => void;
   visible: boolean;
+  multiSelectActive?: boolean;
 }
 
 const FILTERS = [
@@ -28,15 +32,17 @@ const FILTERS = [
   { value: "archived", label: "Archived" },
 ];
 
-export default function HudConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
+export default function HudConversationList({
+  threads, loading, selectedThread, onSelectThread,
+  onDeleteThread, onArchiveThread, visible, multiSelectActive,
+}: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const filteredThreads = useMemo(() =>
     threads
       .filter(t => {
-        // Archive filter: show archived only when "archived" filter selected, hide from all other views
-        const isArchived = !!(t as any).archived;
+        const isArchived = !!t.archived;
         if (activeFilter === "archived") return isArchived;
         if (isArchived) return false;
         return activeFilter === "all" || t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
@@ -53,10 +59,22 @@ export default function HudConversationList({ threads, loading, selectedThread, 
   );
 
   const filterCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: threads.length };
-    for (const t of threads) counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+    const counts: Record<string, number> = { all: 0, archived: 0 };
+    for (const t of threads) {
+      if (t.archived) { counts.archived++; continue; }
+      counts.all++;
+      counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+    }
     return counts;
   }, [threads]);
+
+  const handleDelete = useCallback((thread: ConversationThread) => {
+    onDeleteThread?.(thread);
+  }, [onDeleteThread]);
+
+  const handleArchive = useCallback((thread: ConversationThread) => {
+    onArchiveThread?.(thread);
+  }, [onArchiveThread]);
 
   if (!visible) return null;
 
@@ -70,7 +88,6 @@ export default function HudConversationList({ threads, loading, selectedThread, 
     >
       {/* Header + Search */}
       <div className="px-4 pt-4 pb-2 space-y-2.5">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
           <Input
@@ -85,7 +102,6 @@ export default function HudConversationList({ threads, loading, selectedThread, 
           />
         </div>
 
-        {/* Filter pills */}
         <ScrollableFilterBar
           options={FILTERS.map(f => ({
             id: f.value,
@@ -108,21 +124,32 @@ export default function HudConversationList({ threads, loading, selectedThread, 
         ) : filteredThreads.length === 0 ? (
           <div className="py-16 text-center px-6">
             <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.15)" }} />
-            <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>No conversations</p>
+            <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+              {activeFilter === "archived" ? "No archived conversations" : "No conversations"}
+            </p>
             <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
-              Messages will appear here
+              {activeFilter === "archived"
+                ? "Swipe right on a conversation to archive it"
+                : "Messages will appear here"}
             </p>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: "hsl(var(--border) / 0.06)" }}>
             {filteredThreads.map((thread, i) => (
-              <HudConversationCard
+              <SwipeableThreadItem
                 key={thread.id}
-                thread={thread}
-                isActive={selectedThread?.id === thread.id}
-                index={i}
-                onClick={() => onSelectThread(thread)}
-              />
+                onDelete={() => handleDelete(thread)}
+                onArchive={() => handleArchive(thread)}
+                isArchived={!!thread.archived}
+                disabled={!!multiSelectActive}
+              >
+                <HudConversationCard
+                  thread={thread}
+                  isActive={selectedThread?.id === thread.id}
+                  index={i}
+                  onClick={() => onSelectThread(thread)}
+                />
+              </SwipeableThreadItem>
             ))}
           </div>
         )}
