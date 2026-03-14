@@ -649,8 +649,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const updateConversationStatus = async (status: string) => {
     if (!thread || !orgId) return;
     setConvStatus(status);
+    onThreadUpdate(thread.id, { conversationStatus: status });
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg) await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
+    if (lastMsg) {
+      const { error } = await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
+      if (error) {
+        console.error("[Status] Update failed:", error);
+        toast.error("Failed to update status");
+        return;
+      }
+    }
     toast.success(`Status: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
   };
 
