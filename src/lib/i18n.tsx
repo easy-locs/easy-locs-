@@ -5035,6 +5035,28 @@ const pagePt: Record<string, string> = {
   "landing.legal.title": "Informação legal", "landing.legal.text": "Este aplicativo fornece apenas assistência administrativa. Os documentos gerados são informativos e não substituem um advogado, tabelião ou contador.",
   "newsletter.badge": "Newsletter", "newsletter.title": "Fique atualizado", "newsletter.subtitle": "Dicas de gestão de aluguéis e atualizações.", "newsletter.placeholder": "Seu endereço de email", "newsletter.cta": "Inscrever-se", "newsletter.success": "Obrigado! Você está inscrito.", "newsletter.already_subscribed": "Já inscrito.", "newsletter.error": "Erro. Tente novamente.", "embed.title": "Incorporar este anúncio", "embed.iframe_label": "Código iframe", "embed.button_label": "Botão de link", "embed.copied": "Código copiado!",
   "pagination.results": "resultados", "pagination.page": "Página",
+
+  // ─── Orbit / Communication Hub ───
+  "orbit.more": "Mais", "orbit.archive": "Arquivar", "orbit.unarchive": "Desarquivar",
+  "orbit.mute": "Silenciar", "orbit.unmute": "Reativar", "orbit.contact_info": "Info do contato",
+  "orbit.add_favorite": "Adicionar aos favoritos", "orbit.clear_chat": "Limpar conversa",
+  "orbit.security": "Segurança", "orbit.safety_number": "Número de segurança", "orbit.details": "Detalhes",
+  "orbit.select_messages": "Selecionar mensagens", "orbit.block": "Bloquear", "orbit.delete_chat": "Excluir conversa",
+  "orbit.status": "Status", "orbit.current": "Atual",
+  "orbit.status.active": "Ativo", "orbit.status.waiting_tenant": "Aguardando cliente",
+  "orbit.status.waiting_landlord": "Aguardando proprietário", "orbit.status.waiting_payment": "Aguardando pagamento",
+  "orbit.status.resolved": "Resolvido", "orbit.status.archived": "Arquivado",
+  "orbit.reply": "Responder", "orbit.forward": "Encaminhar", "orbit.copy_text": "Copiar texto",
+  "orbit.star": "Favoritar", "orbit.unstar": "Remover favorito", "orbit.edit_message": "Editar mensagem",
+  "orbit.select": "Selecionar", "orbit.delete_for_me": "Excluir para mim", "orbit.delete_for_all": "Excluir para todos",
+  "orbit.cancel": "Cancelar", "orbit.delete": "Excluir", "orbit.deleting": "Excluindo…",
+  "orbit.save": "Salvar", "orbit.saving": "Salvando…",
+  "orbit.selected": "selecionado(s)", "orbit.copied": "Copiado",
+  "orbit.archived": "Arquivado", "orbit.back_to_chats": "← Voltar aos chats",
+  "orbit.no_archived": "Sem conversas arquivadas", "orbit.no_conversations": "Sem conversas",
+  "orbit.search_conversations": "Buscar conversas…", "orbit.loading": "Carregando…",
+  "filter.all": "Todos", "filter.direct": "Direto", "filter.bookings": "Reservas",
+  "filter.property": "Imóvel", "filter.listings": "Anúncios", "filter.deals": "Negócios",
 };
 
 const translations: Record<Locale, Record<string, string>> = {
