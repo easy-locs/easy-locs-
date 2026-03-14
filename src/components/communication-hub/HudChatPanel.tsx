@@ -476,6 +476,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
+      const secPayload = buildSecurityPayload(securityLevel);
+
       const { error: insertErr } = await supabase.from("messages").insert({
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
@@ -487,9 +489,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
-        disappear_at: disappearAt,
+        disappear_at: secPayload.disappear_at || disappearAt,
         reply_to_id: currentReplyTo?.msgId || null,
         reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
+        ...secPayload,
       } as any);
 
       if (insertErr) {
