@@ -200,7 +200,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         } catch (e) { console.error("Translation failed:", e); }
       }
 
-      await supabase.from("messages").insert({
+      const msgPayload: any = {
         org_id: orgId, sender_id: user.id,
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
@@ -213,7 +213,9 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         property_id: thread.propertyId || null,
         conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) msgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(msgPayload);
 
       setNewMessage("");
       setConvStatus("waiting_tenant");
