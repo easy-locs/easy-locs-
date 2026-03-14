@@ -12,6 +12,10 @@ export interface PrivacySettings {
   displayNameMode: "real" | "username" | "custom" | "anonymous" | "hidden";
   customDisplayName: string;
   defaultDisappearTtl: string; // "off" | "24h" | "7d" | "30d"
+  lastSeen: boolean;
+  onlineStatus: boolean;
+  profilePhoto: boolean;
+  linkPreviews: boolean;
 }
 
 const DEFAULTS: PrivacySettings = {
@@ -20,6 +24,10 @@ const DEFAULTS: PrivacySettings = {
   displayNameMode: "real",
   customDisplayName: "",
   defaultDisappearTtl: "off",
+  lastSeen: true,
+  onlineStatus: true,
+  profilePhoto: true,
+  linkPreviews: true,
 };
 
 export function usePrivacySettings() {
@@ -32,7 +40,7 @@ export function usePrivacySettings() {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("privacy_read_receipts, privacy_typing_indicators, display_name_mode, custom_display_name, default_disappear_ttl")
+        .select("privacy_read_receipts, privacy_typing_indicators, display_name_mode, custom_display_name, default_disappear_ttl, privacy_last_seen, privacy_online_status, privacy_profile_photo, privacy_link_previews")
         .eq("id", user.id)
         .maybeSingle();
       if (data) {
@@ -42,6 +50,10 @@ export function usePrivacySettings() {
           displayNameMode: (data as any).display_name_mode || "real",
           customDisplayName: (data as any).custom_display_name || "",
           defaultDisappearTtl: (data as any).default_disappear_ttl || "off",
+          lastSeen: (data as any).privacy_last_seen ?? true,
+          onlineStatus: (data as any).privacy_online_status ?? true,
+          profilePhoto: (data as any).privacy_profile_photo ?? true,
+          linkPreviews: (data as any).privacy_link_previews ?? true,
         });
       }
       setLoaded(true);
@@ -59,6 +71,10 @@ export function usePrivacySettings() {
     if (patch.displayNameMode !== undefined) dbPatch.display_name_mode = patch.displayNameMode;
     if (patch.customDisplayName !== undefined) dbPatch.custom_display_name = patch.customDisplayName;
     if (patch.defaultDisappearTtl !== undefined) dbPatch.default_disappear_ttl = patch.defaultDisappearTtl;
+    if (patch.lastSeen !== undefined) dbPatch.privacy_last_seen = patch.lastSeen;
+    if (patch.onlineStatus !== undefined) dbPatch.privacy_online_status = patch.onlineStatus;
+    if (patch.profilePhoto !== undefined) dbPatch.privacy_profile_photo = patch.profilePhoto;
+    if (patch.linkPreviews !== undefined) dbPatch.privacy_link_previews = patch.linkPreviews;
 
     await supabase.from("profiles").update(dbPatch as any).eq("id", user.id);
   }, [user?.id, settings]);

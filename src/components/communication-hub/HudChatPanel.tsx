@@ -823,28 +823,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
+                <DropdownMenuContent align="end" className="w-52 max-h-[70vh] overflow-y-auto" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
                   {CONV_STATUSES.map(s => (
                     <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
                       className={convStatus === s.value ? "font-semibold" : ""}>
-                      {s.icon} {s.label}
+                      {s.icon} {t(`orbit.status.${s.value}`) || s.label}
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
                     <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                    Security
+                    {t("orbit.security") || "Security"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
                     <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    Safety Number
+                    {t("orbit.safety_number") || "Safety Number"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onToggleContext}>
-                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> Details
+                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> {t("orbit.details") || "Details"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setSelectMode(true); setSelectedMsgIds(new Set()); }}>
                     <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    Select Messages
+                    {t("orbit.select_messages") || "Select Messages"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

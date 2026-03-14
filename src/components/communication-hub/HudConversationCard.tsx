@@ -32,7 +32,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-4 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995] overflow-hidden"
+      className="w-full text-left flex items-center gap-3 px-3 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995]"
       style={{
         background: isActive ? "hsl(var(--primary) / 0.04)" : "transparent",
         borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent",
@@ -56,12 +56,12 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
         </div>
       )}
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
+      {/* Content — constrained to prevent overflow */}
+      <div className="flex-1 min-w-0 overflow-hidden">
         {/* Row 1: Name + timestamp */}
         <div className="flex items-baseline justify-between gap-2">
           <span
-            className={`text-[15px] truncate ${hasUnread ? "font-bold" : "font-medium"}`}
+            className={`text-[15px] truncate flex-1 min-w-0 ${hasUnread ? "font-bold" : "font-medium"}`}
             style={{ color: "hsl(var(--foreground))" }}
           >
             {thread.name}
@@ -72,7 +72,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                 <span className="text-[10px] leading-none" title={statusConfig.label}>{statusConfig.icon}</span>
               )}
               <span
-                className="text-[12px] tabular-nums"
+                className="text-[12px] tabular-nums whitespace-nowrap"
                 style={{
                   color: hasUnread
                     ? "hsl(var(--primary))"
@@ -87,47 +87,38 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
 
         {/* Row 2: Context tag (if applicable) */}
         {contextLabel && (
-          <span
-            className="text-[12px] font-medium block"
+          <p
+            className="text-[12px] font-medium truncate"
             title={contextLabel}
             style={{
               color: typeConfig?.color ? undefined : "hsl(var(--muted-foreground))",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
             }}
           >
             <span className="mr-1">{typeConfig?.emoji}</span>
             {contextLabel}
-          </span>
+          </p>
         )}
 
         {/* Row 3: Message preview + badge */}
-        <div className="flex items-center justify-between gap-2 mt-px">
+        <div className="flex items-center gap-2 mt-px">
           {thread.lastMessage ? (
             <p
-              className="text-[13px] flex-1 min-w-0"
+              className="text-[13px] flex-1 min-w-0 truncate"
               title={thread.lastMessage}
               style={{
                 color: hasUnread
                   ? "hsl(var(--foreground) / 0.7)"
                   : "hsl(var(--muted-foreground) / 0.7)",
                 fontWeight: hasUnread ? 500 : 400,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
               }}
             >
               {thread.lastMessage}
             </p>
           ) : (
             <p
-              className="text-[13px] italic flex-1"
+              className="text-[13px] italic flex-1 min-w-0 truncate"
               style={{
                 color: "hsl(var(--muted-foreground) / 0.4)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
               }}
             >
               {t("orbit.no_messages_yet") || "No messages yet"}

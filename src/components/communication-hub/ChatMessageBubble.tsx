@@ -227,7 +227,7 @@ function ChatMessageBubble({
         </div>
       )}
       <div
-        className="relative max-w-[78%] sm:max-w-[60%]"
+        className="relative max-w-[75%] sm:max-w-[60%]"
         style={{
           padding: isVoice ? "6px 10px 4px" : "8px 12px 4px",
           borderRadius: isMe
