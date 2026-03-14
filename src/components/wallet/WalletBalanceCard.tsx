@@ -3,6 +3,7 @@
  */
 import { motion } from "framer-motion";
 import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface WalletBalanceCardProps {
   loading: boolean;
@@ -23,6 +24,8 @@ export default function WalletBalanceCard({
   currencyCode, currencySymbol, displayPurchased, displaySpent,
   frozenBalance, displayFrozen, onOpenSettings,
 }: WalletBalanceCardProps) {
+  const { t } = useI18n();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -39,7 +42,9 @@ export default function WalletBalanceCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Wallet className="w-5 h-5" style={{ color: "hsl(var(--accent))" }} />
-            <span className="text-sm font-semibold text-primary-foreground/80">Orbit Wallet</span>
+            <span className="text-sm font-semibold text-primary-foreground/80">
+              {t("orbit.wallet_title") || "Orbit Wallet"}
+            </span>
           </div>
           <button
             onClick={onOpenSettings}
@@ -47,7 +52,7 @@ export default function WalletBalanceCard({
             style={{ background: "hsl(0 0% 100% / 0.08)" }}
           >
             <Settings className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-medium">Settings</span>
+            <span className="text-[10px] font-medium">{t("orbit.settings_label") || "Settings"}</span>
           </button>
         </div>
 
@@ -60,7 +65,7 @@ export default function WalletBalanceCard({
             onClick={onToggle}
             className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full text-primary-foreground/70 hover:text-primary-foreground transition-colors"
             style={{ background: "hsl(0 0% 100% / 0.12)" }}
-            title={showLocs ? `Show in ${currencyCode}` : "Show in LOCS"}
+            title={showLocs ? `${t("orbit.show_in") || "Show in"} ${currencyCode}` : `${t("orbit.show_in") || "Show in"} LOCS`}
           >
             <RefreshCw className="w-3 h-3" />
             <span className="text-[10px] font-semibold">
@@ -76,7 +81,7 @@ export default function WalletBalanceCard({
             className="text-[10px] px-2 py-0.5 rounded-full text-primary-foreground/70"
             style={{ background: "hsl(var(--accent) / 0.15)" }}
           >
-            {showLocs ? "LOCS" : `${currencySymbol} ${currencyCode}`} mode
+            {showLocs ? "LOCS" : `${currencySymbol} ${currencyCode}`} {t("orbit.mode") || "mode"}
           </span>
         </div>
 
@@ -84,17 +89,17 @@ export default function WalletBalanceCard({
         <div className="flex items-center gap-4 mt-4 text-xs text-primary-foreground/60">
           <span className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            Purchased: {displayPurchased}
+            {t("orbit.purchased") || "Purchased"}: {displayPurchased}
           </span>
           <span className="flex items-center gap-1">
             <TrendingDown className="w-3 h-3" />
-            Spent: {displaySpent}
+            {t("orbit.spent") || "Spent"}: {displaySpent}
           </span>
         </div>
 
         {frozenBalance > 0 && (
           <p className="mt-2 text-xs text-primary-foreground/40">
-            🔒 Frozen: {displayFrozen}
+            🔒 {t("orbit.frozen") || "Frozen"}: {displayFrozen}
           </p>
         )}
       </div>
