@@ -133,10 +133,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
-      setRawMessages(data as ChatMessage[]);
+      // Enrich reply_to_content for messages that have reply_to_id
+      const enriched = data.map((msg: any) => {
+        if (msg.reply_to_id && !msg.reply_to_content) {
+          const parent = data.find((m: any) => m.id === msg.reply_to_id);
+          if (parent) {
+            return { ...msg, reply_to_content: (parent as any).content?.slice(0, 120) || "Message" };
+          }
+        }
+        return msg;
+      });
+      setRawMessages(enriched as ChatMessage[]);
       // Cache for offline reading
-      offline.cacheMessages(data);
-      const lastMsg = data[data.length - 1] as any;
+      offline.cacheMessages(enriched);
+      const lastMsg = enriched[enriched.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
       if (unreadIds.length > 0 && privacySettings.readReceipts) {
