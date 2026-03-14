@@ -26,6 +26,7 @@ export async function logCallEventToThread(opts: {
   senderId: string;
   event: CallEvent;
   durationSeconds?: number;
+  contextId?: string;
 }) {
   const content = EVENT_CONTENT[opts.event](opts.durationSeconds);
 
@@ -33,13 +34,16 @@ export async function logCallEventToThread(opts: {
   // Embed call metadata in the content tag for parsing
   const taggedContent = `${content} [call:${opts.event}:${opts.durationSeconds ?? 0}]`;
 
+  // Use the thread's context_id (e.g. "direct:uuid:uuid") for proper matching
+  // Also set thread_id FK for direct lookups
   await supabase.from("messages").insert({
     org_id: opts.orgId,
     sender_id: opts.senderId,
     content: taggedContent,
-    context_id: opts.threadId,
+    context_id: opts.contextId || opts.threadId,
     context_type: "call",
     message_type: "system",
+    thread_id: opts.threadId,
     read: false,
   } as any);
 }
