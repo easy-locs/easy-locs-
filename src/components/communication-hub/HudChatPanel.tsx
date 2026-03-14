@@ -483,6 +483,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  const toggleMsgSelect = useCallback((id: string) => {
+    setSelectedMsgIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      if (next.size === 0) setSelectMode(false);
+      return next;
+    });
+  }, []);
+
   const handleTranslateMessage = async (msg: ChatMessage) => {
     if (translatingMsgId) return;
     if (showOriginal[msg.id]) { setShowOriginal(prev => ({ ...prev, [msg.id]: false })); return; }
