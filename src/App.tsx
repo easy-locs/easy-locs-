@@ -100,6 +100,7 @@ const CountryWorkspace = lazy(() => import("./pages/CountryWorkspace"));
 // Orbit App Shell & Home
 const OrbitAppShell = lazy(() => import("./components/orbit/OrbitAppShell"));
 const OrbitHome = lazy(() => import("./pages/OrbitHome"));
+const WalletHub = lazy(() => import("./pages/WalletHub"));
 const AddProperty = lazy(() => import("./pages/AddProperty"));
 const PropertyDetailHub = lazy(() => import("./pages/PropertyDetailHub"));
 const CreateListing = lazy(() => import("./pages/CreateListing"));
