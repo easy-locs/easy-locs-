@@ -113,6 +113,7 @@ export default function OrbitSmartPayment({
         if (data?.error) throw new Error(data.error);
         const conf: PaymentConfirmation = {
           txnId: data?.tx_out_id || "locs-transfer",
+          referenceCode: data?.reference_code || null,
           amount: numericAmount,
           currency: "LOCS",
           method: "locs",
