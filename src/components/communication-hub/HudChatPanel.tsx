@@ -1284,16 +1284,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             context={thread.contextType ? { type: thread.contextType as any, id: thread.contextId, label: thread.serviceTitle || thread.propertyLabel || thread.listingTitle } : undefined}
             threadId={thread.threadId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
-            onSuccess={(txnId) => {
+            onSuccess={(conf: PaymentConfirmation) => {
               setPaymentLinkDialog(false);
-              // Send payment confirmation message in chat
+              // Send rich payment confirmation message in chat
               const sendPaymentMessage = async () => {
                 const authUserId = await resolveAuthUserId();
                 if (!authUserId || !orgId) return;
+                const methodLabel = conf.method === "locs" ? "LOCS Wallet" : `Card (${conf.currency})`;
+                const statusLabel = conf.status === "completed" ? "✅ Completed" : "⏳ Processing";
+                const contextLine = conf.context ? `\n📎 ${conf.context.type}: ${conf.context.label || conf.context.id.slice(0, 8)}` : "";
+                const richContent = `💰 Payment sent\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}\n🔖 Ref: ${conf.txnId.slice(0, 12)}${contextLine}\n━━━━━━━━━━━━━━━━`;
                 const msgPayload: any = {
                   org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
                   booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-                  content: `💰 Payment sent successfully`,
+                  content: richContent,
                   category: "payment", message_type: "system", read: false,
                   context_type: thread.contextType, context_id: thread.contextId,
                 };
