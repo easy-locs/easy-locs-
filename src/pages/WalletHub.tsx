@@ -85,14 +85,21 @@ export default function WalletHub() {
         );
       case "scan":
         return (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-center px-6">
-            <ScanLine className="w-16 h-16 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">
-              Point your camera at a QR code to initiate payment.
-            </p>
-            <p className="text-xs text-muted-foreground/60">
-              Camera scanner available on mobile devices.
-            </p>
+          <div className="flex flex-col items-center justify-center py-12 gap-5 text-center px-6">
+            <div className="w-48 h-48 rounded-2xl border-2 border-dashed border-accent/40 flex items-center justify-center bg-muted/30">
+              <ScanLine className="w-16 h-16 text-accent/50 animate-pulse" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">
+                Scan QR Code to Pay
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Point your camera at a recipient's QR code to initiate an instant LOCS transfer.
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
+              Show My QR Instead
+            </Button>
           </div>
         );
       case "my_qr":
