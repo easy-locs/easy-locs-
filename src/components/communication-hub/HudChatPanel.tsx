@@ -755,11 +755,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <DropdownMenuItem onClick={onToggleContext}>
                     <ChevronRight className="h-3.5 w-3.5 mr-2" /> Details
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setSelectMode(true); setSelectedMsgIds(new Set()); }}>
+                    <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
+                    Select Messages
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
         </div>
+
+        {/* ══ Multi-select toolbar ══ */}
+        {selectMode && (
+          <MessageMultiSelectToolbar
+            selectedIds={selectedMsgIds}
+            messages={messages as any[]}
+            currentUserId={user?.id}
+            onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }}
+            onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
+            onDeletedForAll={(ids) => {
+              setRawMessages(prev => prev.map(m => ids.includes(m.id) ? {
+                ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null,
+              } as any : m));
+            }}
+          />
+        )}
 
         {/* ══ Offline Banner ══ */}
         {!offline.isOnline && (
