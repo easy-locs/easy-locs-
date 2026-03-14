@@ -1285,11 +1285,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         onClose={() => setShowLocationPicker(false)}
         onSend={async (loc) => {
           if (!orgId || !thread) return;
+          const authUserId = await resolveAuthUserId();
+          if (!authUserId) return;
+
+          const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
           const locationMsg = loc.type === "live"
-            ? `📡 Live location shared for ${loc.duration}min\n📍 https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
+            ? `📡 Live location shared for ${loc.duration}min\n📍 ${mapUrl}`
             : loc.type === "place"
-              ? `📍 ${loc.label}\n${loc.address || ""}\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`
-              : `📍 My location\nhttps://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
+              ? `📍 ${loc.label}\n${loc.address || ""}\n${mapUrl}`
+              : `📍 My location\n${mapUrl}`;
           
           // Encrypt location payload
           let storedContent = locationMsg;
@@ -1302,19 +1306,28 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
           const insertData: any = {
             org_id: orgId,
-            sender_id: user?.id,
+            sender_id: authUserId,
             content: storedContent,
             category: "general",
-            message_type: "text",
+            message_type: "user",
             sender_locale: locale,
             encrypted: isLocEncrypted,
+            contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+            contact_email: thread.conversationType !== "property" ? thread.email : undefined,
           };
           if (thread.bookingId) insertData.booking_id = thread.bookingId;
           if (thread.tenantId) insertData.tenant_id = thread.tenantId;
           if (thread.contextType) insertData.context_type = thread.contextType;
           if (thread.contextId) insertData.context_id = thread.contextId;
+          if (thread.threadId) insertData.thread_id = thread.threadId;
           
-          await supabase.from("messages").insert(insertData);
+          const { error } = await supabase.from("messages").insert(insertData);
+          if (error) {
+            console.error("[Location] Insert failed:", error);
+            toast.error("Failed to send location");
+          } else {
+            toast.success("📍 Location shared");
+          }
           loadMessages();
         }}
       />

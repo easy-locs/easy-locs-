@@ -15,6 +15,7 @@ import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSett
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
+import AppSecuritySettings from "@/components/security/AppSecuritySettings";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
@@ -339,6 +340,11 @@ const Settings = () => {
           {user && (
             <OrbitSessionManager userId={user.id} />
           )}
+        </div>
+
+        {/* App Security — PIN, Ghost, Panic */}
+        <div className="ui-card">
+          <AppSecuritySettings />
         </div>
 
         {/* Pro Settings — Signal/WhatsApp style */}

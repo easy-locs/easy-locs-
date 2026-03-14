@@ -60,8 +60,17 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
       const pos = currentPos || await getCurrentPosition();
       onSend({ type: "current", lat: pos.lat, lng: pos.lng, label: "📍 My location" });
       onClose();
-    } catch {
-      // fallback
+    } catch (err: any) {
+      const code = err?.code;
+      if (code === 1) {
+        import("sonner").then(({ toast }) => toast.error("Location permission denied. Please enable it in your browser settings."));
+      } else if (code === 2) {
+        import("sonner").then(({ toast }) => toast.error("Could not determine your position. Please try again."));
+      } else if (code === 3) {
+        import("sonner").then(({ toast }) => toast.error("Location request timed out. Check your GPS signal."));
+      } else {
+        import("sonner").then(({ toast }) => toast.error("Failed to get location."));
+      }
     }
     setLoading(false);
   }, [currentPos, getCurrentPosition, onSend, onClose]);
@@ -73,8 +82,13 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
       const pos = currentPos || await getCurrentPosition();
       onSend({ type: "live", lat: pos.lat, lng: pos.lng, label: "📡 Live location", duration: liveDuration });
       onClose();
-    } catch {
-      // fallback
+    } catch (err: any) {
+      const code = err?.code;
+      if (code === 1) {
+        import("sonner").then(({ toast }) => toast.error("Location permission denied."));
+      } else {
+        import("sonner").then(({ toast }) => toast.error("Failed to get location. Please try again."));
+      }
     }
     setLoading(false);
   }, [currentPos, getCurrentPosition, liveDuration, onSend, onClose]);
