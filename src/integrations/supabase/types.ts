@@ -6055,6 +6055,86 @@ export type Database = {
           },
         ]
       }
+      marketplace_reviews_public: {
+        Row: {
+          booking_id: string | null
+          comment: string | null
+          created_at: string | null
+          id: string | null
+          provider_id: string | null
+          rating: number | null
+          responded_at: string | null
+          response: string | null
+          reviewer_name: string | null
+          reviewer_user_id: string | null
+          service_id: string | null
+          status: string | null
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          responded_at?: string | null
+          response?: string | null
+          reviewer_name?: string | null
+          reviewer_user_id?: string | null
+          service_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          responded_at?: string | null
+          response?: string | null
+          reviewer_name?: string | null
+          reviewer_user_id?: string | null
+          service_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "marketplace_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_services_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_services_public: {
         Row: {
           active: boolean | null
