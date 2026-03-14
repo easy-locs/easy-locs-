@@ -25,6 +25,11 @@ interface Props {
   onClearThread?: (thread: ConversationThread) => void;
   onFavoriteThread?: (thread: ConversationThread) => void;
   onContactInfo?: (thread: ConversationThread) => void;
+  onStatusChange?: (thread: ConversationThread, status: string) => void;
+  onSecurity?: (thread: ConversationThread) => void;
+  onSafetyNumber?: (thread: ConversationThread) => void;
+  onDetails?: (thread: ConversationThread) => void;
+  onSelectMessages?: (thread: ConversationThread) => void;
   visible: boolean;
   multiSelectActive?: boolean;
 }
@@ -41,7 +46,8 @@ const FILTERS = [
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
-  onFavoriteThread, onContactInfo,
+  onFavoriteThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
+  onDetails, onSelectMessages,
   visible, multiSelectActive,
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -238,6 +244,11 @@ export default function HudConversationList({
           onClearChat={() => onClearThread?.(contextMenuThread)}
           onFavorite={() => onFavoriteThread?.(contextMenuThread)}
           onContactInfo={() => onContactInfo?.(contextMenuThread)}
+          onStatusChange={onStatusChange ? (status) => onStatusChange(contextMenuThread, status) : undefined}
+          onSecurity={onSecurity ? () => onSecurity(contextMenuThread) : undefined}
+          onSafetyNumber={onSafetyNumber ? () => onSafetyNumber(contextMenuThread) : undefined}
+          onDetails={onDetails ? () => onDetails(contextMenuThread) : undefined}
+          onSelectMessages={onSelectMessages ? () => onSelectMessages(contextMenuThread) : undefined}
         />
       )}
     </div>

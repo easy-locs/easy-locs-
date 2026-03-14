@@ -140,9 +140,14 @@ const Dashboard = () => {
           transition={{ duration: 0.4 }}
           className="mb-6 text-center"
         >
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {t("page.dashboard.world_map") || "My World Portfolio"}
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.12)", boxShadow: "0 0 12px hsl(var(--primary) / 0.15)" }}>
+              <span className="text-xs font-black tracking-tighter" style={{ color: "hsl(var(--primary))" }}>O</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {t("page.dashboard.world_map") || "My World Portfolio"}
+            </h1>
+          </div>
           <p className="text-muted-foreground text-sm">
             {t("page.dashboard.global_overview") || "Global overview — real estate, services & bookings"}
           </p>

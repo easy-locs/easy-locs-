@@ -5,7 +5,7 @@
 import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
-import { CONV_TYPE_CONFIG } from "./types";
+import { CONV_TYPE_CONFIG, CONV_STATUSES } from "./types";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -27,6 +27,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   const hasUnread = thread.unreadCount > 0;
   const typeConfig = CONV_TYPE_CONFIG[thread.conversationType];
   const contextLabel = thread.propertyLabel || thread.listingTitle || thread.serviceTitle || null;
+  const statusConfig = thread.conversationStatus ? CONV_STATUSES.find(s => s.value === thread.conversationStatus) : null;
 
   return (
     <button
@@ -66,16 +67,21 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
             {thread.name}
           </span>
           {thread.lastMessageTime && (
-            <span
-              className="text-[12px] tabular-nums shrink-0"
-              style={{
-                color: hasUnread
-                  ? "hsl(var(--primary))"
-                  : "hsl(var(--muted-foreground))",
-              }}
-            >
-              {formatTime(thread.lastMessageTime)}
-            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              {statusConfig && statusConfig.value !== "active" && (
+                <span className="text-[10px] leading-none" title={statusConfig.label}>{statusConfig.icon}</span>
+              )}
+              <span
+                className="text-[12px] tabular-nums"
+                style={{
+                  color: hasUnread
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {formatTime(thread.lastMessageTime)}
+              </span>
+            </div>
           )}
         </div>
 
