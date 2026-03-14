@@ -134,8 +134,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const lastMsg = data[data.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
-      if (unreadIds.length > 0) {
-        await supabase.from("messages").update({ read: true }).in("id", unreadIds);
+      if (unreadIds.length > 0 && privacySettings.readReceipts) {
+        await supabase.from("messages").update({ read: true } as any).in("id", unreadIds);
+        onThreadUpdate(thread.id, { unreadCount: 0 });
+      } else if (unreadIds.length > 0) {
+        // Still mark locally for UI but don't persist read status to DB
         onThreadUpdate(thread.id, { unreadCount: 0 });
       }
     }
