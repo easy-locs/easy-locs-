@@ -6,9 +6,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Wallet, Send, ArrowDownLeft, ScanLine, QrCode,
-  History, Settings, ArrowLeft, TrendingUp, TrendingDown,
-  Plus, Shield, ChevronRight, MessageCircle, RefreshCw,
+  ScanLine, Shield, ChevronRight, MessageCircle, ArrowLeft,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +16,7 @@ import { formatLocs, detectLocalCurrency } from "@/lib/orbit-payments";
 import { SUPPORTED_CURRENCIES } from "@/lib/orbit-payments/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
+import { useI18n } from "@/lib/i18n";
 import OrbitSmartPayment from "@/components/orbit/payments/OrbitSmartPayment";
 import OrbitPaymentRequest from "@/components/orbit/payments/OrbitPaymentRequest";
 import OrbitQRCode from "@/components/orbit/payments/OrbitQRCode";
@@ -28,17 +27,13 @@ import WalletActionGrid from "@/components/wallet/WalletActionGrid";
 
 export type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
 
-const VIEW_LABELS: Record<WalletView, string> = {
-  home: "Wallet", send: "Send", receive: "Receive", scan: "Scan QR",
-  my_qr: "My QR", history: "History", buy: "Buy LOCS", currency: "Currency", settings: "Settings",
-};
-
 export default function WalletHub() {
   const [searchParams] = useSearchParams();
   const initialView = (searchParams.get("action") as WalletView) || "home";
   const [view, setView] = useState<WalletView>(initialView);
   const { balance, loading } = useWallet();
   const { userCurrency } = useAuth();
+  const { t } = useI18n();
   const detected = detectLocalCurrency({ preferredCurrency: userCurrency || null, accountCountry: null });
   const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
@@ -50,7 +45,6 @@ export default function WalletHub() {
   const [showLocs, setShowLocs] = useState(true);
 
   const locsToLocal = (locs: number): number => {
-    // 1 LOCS = 1 EUR, convert EUR to local
     const rate = RATES_TO_EUR[detected.code];
     if (!rate || rate === 0) return locs;
     return Math.round((locs / rate) * 100) / 100;
@@ -82,15 +76,33 @@ export default function WalletHub() {
     ? formatLocs(balance?.frozen_balance || 0)
     : formatLocal(locsToLocal(balance?.frozen_balance || 0));
 
+  const VIEW_LABELS: Record<WalletView, string> = {
+    home: t("orbit.wallet") || "Wallet",
+    send: t("orbit.send") || "Send",
+    receive: t("orbit.receive") || "Receive",
+    scan: t("orbit.scan_qr") || "Scan QR",
+    my_qr: t("orbit.my_qr") || "My QR",
+    history: t("orbit.history") || "History",
+    buy: t("orbit.buy_locs") || "Buy LOCS",
+    currency: t("orbit.currency") || "Currency",
+    settings: t("orbit.settings_label") || "Settings",
+  };
+
   const renderRecipientHint = (mode: "send" | "receive") => (
     <div className="rounded-2xl border border-border bg-card p-5 text-center space-y-3">
       <MessageCircle className="w-10 h-10 mx-auto text-muted-foreground/40" />
       <p className="text-sm font-medium text-foreground">
-        {mode === "send" ? "Select a recipient from Orbit chat to send payment." : "Open a conversation to request payment."}
+        {mode === "send"
+          ? (t("orbit.select_recipient_send") || "Select a recipient from Orbit chat to send payment.")
+          : (t("orbit.select_recipient_receive") || "Open a conversation to request payment.")}
       </p>
       <div className="flex gap-2 justify-center">
-        <Button size="sm" onClick={() => navigate("/dashboard/communication")}>Open Orbit</Button>
-        <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>Use My QR</Button>
+        <Button size="sm" onClick={() => navigate("/dashboard/communication")}>
+          {t("orbit.open_orbit") || "Open Orbit"}
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
+          {t("orbit.use_qr") || "Use My QR"}
+        </Button>
       </div>
     </div>
   );
@@ -124,10 +136,16 @@ export default function WalletHub() {
               <ScanLine className="w-16 h-16 text-accent/50 animate-pulse" />
             </div>
             <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">Scan QR Code to Pay</p>
-              <p className="text-xs text-muted-foreground">Point your camera at a recipient's QR code to initiate an instant LOCS transfer.</p>
+              <p className="text-sm font-medium text-foreground">
+                {t("orbit.scan_qr_pay") || "Scan QR Code to Pay"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("orbit.scan_qr_desc") || "Point your camera at a recipient's QR code to initiate an instant LOCS transfer."}
+              </p>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>Show My QR Instead</Button>
+            <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
+              {t("orbit.show_my_qr") || "Show My QR Instead"}
+            </Button>
           </div>
         );
       case "my_qr":
@@ -139,17 +157,29 @@ export default function WalletHub() {
       case "currency":
         return (
           <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
-            <p className="text-sm font-semibold text-foreground">Preferred currency</p>
-            <p className="text-xs text-muted-foreground">Current detection: {currencyInfo?.symbol} {detected.code}</p>
-            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>Open currency settings</Button>
+            <p className="text-sm font-semibold text-foreground">
+              {t("orbit.preferred_currency") || "Preferred currency"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("orbit.current_detection") || "Current detection"}: {currencyInfo?.symbol} {detected.code}
+            </p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>
+              {t("orbit.open_currency_settings") || "Open currency settings"}
+            </Button>
           </div>
         );
       case "settings":
         return (
           <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
-            <p className="text-sm font-semibold text-foreground">Wallet security</p>
-            <p className="text-xs text-muted-foreground">Manage PIN, payment protection and wallet preferences.</p>
-            <Button size="sm" onClick={() => navigate("/dashboard/settings?section=wallet")}>Open wallet settings</Button>
+            <p className="text-sm font-semibold text-foreground">
+              {t("orbit.wallet_security") || "Wallet security"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("orbit.wallet_security_desc") || "Manage PIN, payment protection and wallet preferences."}
+            </p>
+            <Button size="sm" onClick={() => navigate("/dashboard/settings?section=wallet")}>
+              {t("orbit.open_wallet_settings") || "Open wallet settings"}
+            </Button>
           </div>
         );
       default:
@@ -205,12 +235,14 @@ export default function WalletHub() {
               {/* Recent Transactions Preview */}
               <div>
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Recent Transactions</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {t("orbit.recent_transactions") || "Recent Transactions"}
+                  </h3>
                   <button
                     onClick={() => setView("history")}
                     className="flex items-center gap-1 text-xs text-accent font-medium hover:text-accent/80 transition-colors"
                   >
-                    View all <ChevronRight className="w-3.5 h-3.5" />
+                    {t("orbit.view_all") || "View all"} <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
