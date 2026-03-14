@@ -190,6 +190,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     return () => { supabase.removeChannel(channel); };
   }, [orgId, thread, user, privacySettings.readReceipts]);
 
+  // Typing presence — only broadcast if user has typing indicators enabled
   useEffect(() => {
     if (!thread || !orgId) return;
     const channel = supabase.channel(`typing-${thread.id}`);
@@ -198,10 +199,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
       setTypingIndicator(others.length > 0);
     }).subscribe(async (status) => {
-      if (status === "SUBSCRIBED") await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
+      // Only track typing if user allows typing indicators
+      if (status === "SUBSCRIBED" && privacySettings.typingIndicators) {
+        await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
+      }
     });
     return () => { supabase.removeChannel(channel); };
-  }, [thread, orgId, user?.id]);
+  }, [thread, orgId, user?.id, privacySettings.typingIndicators]);
 
   const handleFileUpload = async (file: File) => {
     if (!thread) return;
