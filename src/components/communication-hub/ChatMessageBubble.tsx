@@ -97,10 +97,18 @@ function ChatMessageBubble({
 
   return (
     <div
-      className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
+      className={`flex ${isMe ? "justify-end" : "justify-start"} group ${selected ? "bg-primary/5 rounded-lg" : ""}`}
       style={{ marginTop: isConsecutive ? 2 : 8 }}
+      onClick={selectMode ? () => onToggleSelect?.(msg.id) : undefined}
       onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
     >
+      {selectMode && (
+        <div className="flex items-center px-1 shrink-0">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+            {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+          </div>
+        </div>
+      )}
       <div
         className="relative max-w-[78%] sm:max-w-[60%]"
         style={{
