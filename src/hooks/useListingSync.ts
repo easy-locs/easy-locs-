@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 /* ─── Types ─── */
 export type ListingStatus =
