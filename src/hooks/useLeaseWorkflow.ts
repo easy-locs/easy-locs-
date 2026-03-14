@@ -55,6 +55,7 @@ export function useLeaseWorkflow() {
         toast.info("A lease already exists for this tenant");
       } else if (data?.success) {
         toast.success("Lease generated — awaiting signatures");
+        platformBus.emit("pm:lease_created", { leaseId: data.lease_id, tenantId: tenantId, propertyId: propertyId }, "pm", { orgId });
       }
 
       return data;
