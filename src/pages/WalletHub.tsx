@@ -31,6 +31,8 @@ const WALLET_ACTIONS = [
   { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", color: "bg-success" },
   { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", color: "bg-muted" },
   { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", color: "bg-warning" },
+  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", color: "bg-secondary" },
+  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & wallet config", color: "bg-muted" },
 ];
 
 export default function WalletHub() {
