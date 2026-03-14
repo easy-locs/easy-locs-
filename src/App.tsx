@@ -11,6 +11,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
+import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -193,12 +194,13 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CallProvider>
+           <AppLockGuard>
            <OrbitSessionGuard />
            <OrbitPresenceGuard />
            <RealtimeMessageToast />
            <UpdateNotification />
           
-          <Suspense fallback={<PageLoader />}>
+           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
@@ -359,6 +361,7 @@ const App = () => (
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
           </Suspense>
+           </AppLockGuard>
           </CallProvider>
         </AuthProvider>
       </BrowserRouter>
