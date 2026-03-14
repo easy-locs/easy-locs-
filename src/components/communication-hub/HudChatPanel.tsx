@@ -414,6 +414,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         } catch (e) { console.error("Translation failed:", e); }
       }
 
+      // Compute disappear_at based on thread TTL or global default
+      const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
+      const disappearAt = computeDisappearAt(effectiveTTL);
+
       const { error: insertErr } = await supabase.from("messages").insert({
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
@@ -425,6 +429,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
         context_type: thread.contextType, context_id: thread.contextId,
         encrypted: isEncrypted,
+        disappear_at: disappearAt,
       } as any);
 
       if (insertErr) {
