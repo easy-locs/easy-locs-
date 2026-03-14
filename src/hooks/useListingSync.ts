@@ -155,11 +155,18 @@ export function useListingStatusMutation() {
 
       if (error) throw error;
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: (_, { listingId, status }) => {
       LISTING_QUERY_KEYS.forEach((key) =>
         queryClient.invalidateQueries({ queryKey: key })
       );
       toast.success(`Listing ${LISTING_STATUS_LABELS[status].toLowerCase()}`);
+
+      // Emit platform bus event
+      if (status === "published") {
+        platformBus.emit("marketplace:listing_published", { listingId }, "marketplace");
+      } else if (status === "paused") {
+        platformBus.emit("marketplace:listing_paused", { listingId }, "marketplace");
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to update listing status");
