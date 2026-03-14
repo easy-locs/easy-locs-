@@ -894,7 +894,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             </div>
           ) : (
             (() => {
-              const filtered = (messages as ChatMessage[]).filter(msg => !hiddenMsgIds.has(msg.id));
+              const filtered = (messages as ChatMessage[]).filter(msg => {
+                if (hiddenMsgIds.has(msg.id)) return false;
+                // Filter sender's own deleted messages
+                if ((msg as any).deleted_for_sender && msg.sender_id === user?.id) return false;
+                // Filter recipient deleted messages
+                if (user?.id && ((msg as any).deleted_for_user_ids as string[] | null)?.includes(user.id)) return false;
+                return true;
+              });
               let lastDateStr = "";
               return filtered.map((msg, idx) => {
                 const msgDate = new Date(msg.created_at);
