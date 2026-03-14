@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { syncPaymentRequest } from "@/lib/shared/sync-engine";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export type BookingStatus =
   | "pending" | "new" | "awaiting_payment"
