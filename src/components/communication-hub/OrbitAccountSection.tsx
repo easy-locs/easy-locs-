@@ -496,6 +496,9 @@ export default function OrbitAccountSection() {
         <p className="text-base font-semibold text-foreground mt-3">
           {displayName || displayEmail}
         </p>
+        {username && (
+          <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>@{username}</p>
+        )}
         {displayName && <p className="text-xs text-muted-foreground">{displayEmail}</p>}
         <div className="flex items-center gap-1.5 mt-1">
           <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full"
