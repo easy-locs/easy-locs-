@@ -304,13 +304,15 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
       }
 
       const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-      await supabase.from("messages").insert({
+      const sysMsgPayload: any = {
         org_id: orgId, sender_id: SYSTEM_SENDER_ID,
         tenant_id: thread.tenantId || null, booking_id: thread.bookingId,
         booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) sysMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(sysMsgPayload);
 
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
