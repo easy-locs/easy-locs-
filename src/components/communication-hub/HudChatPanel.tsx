@@ -9,6 +9,8 @@ import {
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
   Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile, Eye,
 } from "lucide-react";
+import SecurityLevelPicker from "./SecurityLevelPicker";
+import { type SecurityLevel, buildSecurityPayload, isActionAllowed } from "@/lib/message-security";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
