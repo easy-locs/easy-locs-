@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Globe, Building, Users, MapPin, Plus, TrendingUp,
+  Globe, Building, Users, MapPin, Plus, TrendingUp, Wallet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -11,8 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { formatCurrency } from "@/lib/country-config";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
+import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
+import { useWallet } from "@/hooks/useWallet";
 
 type CountryStat = {
   code: string;
@@ -24,9 +25,11 @@ type CountryStat = {
 
 
 const Dashboard = () => {
-  const { orgId, userCountry } = useAuth();
+  const { orgId } = useAuth();
   const { t } = useI18n();
-  const fmt = (n: number) => formatCurrency(n, userCountry || "FR");
+  const { fmtLocal, fmtCurrency, code: userCurrencyCode } = usePlatformCurrency();
+  const { balance } = useWallet();
+  const fmt = (n: number) => fmtLocal(n);
 
   const [stats, setStats] = useState({
     totalProperties: 0,
@@ -128,6 +131,13 @@ const Dashboard = () => {
       path: "/dashboard/receipts",
       sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
+    {
+      icon: Wallet,
+      label: `Wallet (${userCurrencyCode})`,
+      value: fmtLocal(balance?.balance || 0),
+      path: "/dashboard/wallet",
+      sub: t("page.dashboard.view_wallet") || "Open wallet →",
+    },
   ];
 
   return (
@@ -154,7 +164,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Global KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
           {kpis.map((kpi, i) => (
             <motion.div
               key={kpi.label}

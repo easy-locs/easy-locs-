@@ -1,5 +1,6 @@
 /**
  * WalletBalanceCard — Shows LOCS or local currency balance with toggle
+ * Uses usePlatformCurrency for consistent display across the entire app.
  */
 import { motion } from "framer-motion";
 import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";

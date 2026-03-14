@@ -105,6 +105,13 @@ if (typeof window !== "undefined") {
 void bootApp();
 
 const runDeferredInit = () => {
+  // Install platform-wide cross-module reactions
+  void import("./lib/shared/platform-bus")
+    .then((mod) => mod?.installPlatformReactions?.())
+    .catch((error) => {
+      console.warn("[boot] platform-bus init skipped:", error);
+    });
+
   void import("./lib/analytics")
     .then((mod) => mod?.initAnalytics?.())
     .catch((error) => {
