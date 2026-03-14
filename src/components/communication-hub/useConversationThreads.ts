@@ -122,7 +122,7 @@ export function useConversationThreads() {
           threadMap.set(`booking-${o.id}`, {
             id: `booking-${o.id}`,
             conversationType: "booking",
-            sourceModule: "concierge",
+            sourceModule: "marketplace",
             contextType: "concierge_booking",
             contextId: o.id,
             name: o.guest_name || "Client",
