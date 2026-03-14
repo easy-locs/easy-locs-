@@ -48,11 +48,42 @@ export default function MessageMultiSelectToolbar({
     setProcessing(true);
     haptic("medium");
     const ids = Array.from(selectedIds);
-    onDeletedForMe(ids);
+    try {
+      // Persist: append current user to deleted_for_user_ids for each message
+      for (const id of ids) {
+        const msg = messages.find(m => m.id === id);
+        if (msg && msg.sender_id === currentUserId) {
+          // Sender: use deleted_for_sender flag
+          await supabase.from("messages").update({
+            deleted_for_sender: true,
+            deleted_at: new Date().toISOString(),
+            deleted_by: currentUserId,
+            deletion_reason: "self_hide",
+          } as any).eq("id", id);
+        } else {
+          // Recipient: append to deleted_for_user_ids array
+          const { data: existing } = await supabase
+            .from("messages")
+            .select("deleted_for_user_ids")
+            .eq("id", id)
+            .single();
+          const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+          if (currentUserId && !currentIds.includes(currentUserId)) {
+            await supabase.from("messages").update({
+              deleted_for_user_ids: [...currentIds, currentUserId],
+            } as any).eq("id", id);
+          }
+        }
+      }
+      onDeletedForMe(ids);
+      toast.success(`${count} messages hidden`);
+    } catch (e: any) {
+      console.error("[bulk-delete-for-me]", e);
+      toast.error("Failed to hide some messages");
+    }
     setConfirmAction(null);
     onClearSelection();
     setProcessing(false);
-    toast.success(`${count} messages hidden`);
   };
 
   const handleDeleteForAll = async () => {
