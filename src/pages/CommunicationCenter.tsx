@@ -256,6 +256,8 @@ const CommunicationCenter = () => {
                 loading={loading}
                 selectedThread={selectedThread}
                 onSelectThread={handleSelectThread}
+                onDeleteThread={handleDeleteThread}
+                onArchiveThread={handleArchiveThread}
                 visible={!selectedThread || !isMobile}
               />
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
