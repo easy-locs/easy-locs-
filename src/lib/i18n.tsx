@@ -4538,6 +4538,8 @@ const pageEn: Record<string, string> = {
   "orbit.nav.calls": "Calls",
   "orbit.nav.contacts": "Contacts",
   "orbit.nav.nearby": "Nearby",
+  "orbit.nav.wallet": "Wallet",
+  "orbit.nav.security": "Security",
   "orbit.nav.settings": "Settings",
   "orbit.nav.you": "You",
 
