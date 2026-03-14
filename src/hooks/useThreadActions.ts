@@ -121,13 +121,15 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     if (!userId) return;
     const prevLastMessage = thread.lastMessage;
     const prevUnread = thread.unreadCount;
-    updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0 });
+    const prevClearedAt = thread.clearedAt;
+    const newClearedAt = new Date().toISOString();
+    updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0, clearedAt: newClearedAt });
     try {
-      await upsertPref(thread, { cleared_at: new Date().toISOString() });
+      await upsertPref(thread, { cleared_at: newClearedAt });
       toast.success(`Chat with ${thread.name} cleared`);
     } catch (e: any) {
       console.error("[clear] Failed:", e);
-      updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread });
+      updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread, clearedAt: prevClearedAt });
       toast.error("Failed to clear chat");
     }
   }, [userId, updateThreadLocally, upsertPref]);
