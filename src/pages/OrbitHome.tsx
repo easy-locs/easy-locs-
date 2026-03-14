@@ -12,34 +12,45 @@ import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
   Bell, Shield, Lock, FileDown, Palette,
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
-  TrendingUp,
+  TrendingUp, CreditCard, Fingerprint, History, Star,
 } from "lucide-react";
 
-/* ── Priority modules (top row) ── */
+/* ══════ ORBIT = Infrastructure layer ══════ */
+
+/* ── Priority modules (top row) — communication core ── */
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
   { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
-  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings" },
-  { icon: Store, label: "Annonces", desc: "Marketplace", key: "activeListings" as const, to: "/dashboard/marketplace" },
+  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
+  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
 ];
 
-/* ── Module shortcuts — role-aware links to core pillars ── */
+/* ── Orbit Infrastructure — Wallet, Payments, Security, Identity ── */
+const ORBIT_INFRA_CARDS = [
+  { icon: Wallet, label: "Wallet", desc: "Solde", key: null, to: "/dashboard/finances" },
+  { icon: CreditCard, label: "Paiements", desc: "Transactions", key: null, to: "/dashboard/communication?section=payments" },
+  { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/finances" },
+  { icon: Shield, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
+  { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
+  { icon: Lock, label: "Confidentialité", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
+];
+
+/* ══════ MARKETPLACE = Commerce layer ══════ */
+
+/* ── Marketplace Commerce — Services, Bookings, Listings ── */
+const MARKETPLACE_CARDS = [
+  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/marketplace" },
+  { icon: ShoppingBag, label: "Réservations", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
+  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/marketplace" },
+  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
+];
+
+/* ── Platform Modules — role-aware shortcuts ── */
 const MODULE_CARDS = [
   { icon: Building2, label: "Gestion", desc: "Immobilier", key: null, to: "/dashboard/rental", roles: ["landlord"] },
   { icon: CalendarCheck, label: "Saisonnier", desc: "Réservations", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
-  { icon: ShoppingBag, label: "Marketplace", desc: "Services", key: "pendingOrders" as const, to: "/dashboard/marketplace", roles: ["landlord", "client"] },
-  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication", roles: ["landlord"] },
-];
-
-/* ── Secondary modules (utilities) ── */
-const SECONDARY_CARDS = [
-  { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
-  { icon: Wallet, label: "Paiements", desc: "Finances", key: null, to: "/dashboard/finances" },
-  { icon: Shield, label: "Confidentialité", desc: null, key: null, to: "/dashboard/settings?section=privacy" },
-  { icon: Lock, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
-  { icon: FileDown, label: "Import/Export", desc: "Données", key: null, to: "/dashboard/settings?section=data" },
-  { icon: Palette, label: "Apparence", desc: "Branding", key: null, to: "/dashboard/settings?section=branding" },
+  { icon: Palette, label: "Réglages", desc: "Global", key: null, to: "/dashboard/settings" },
 ];
 
 export default function OrbitHome() {
@@ -199,16 +210,16 @@ export default function OrbitHome() {
         </div>
       )}
 
-      {/* ── Module Shortcuts (contextual links to core pillars) ── */}
+      {/* ── Orbit Infrastructure (Wallet, Payments, Security) ── */}
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "300ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
-          Mes modules
+          Orbit — Infrastructure
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
-          {MODULE_CARDS.map((card, i) => (
+        <div className="grid grid-cols-3 gap-2.5">
+          {ORBIT_INFRA_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${320 + i * 40}ms` }}>
               <OrbitQuickCard
                 icon={card.icon}
@@ -223,21 +234,45 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Utilities Section ── */}
+      {/* ── Marketplace Commerce (Services, Bookings, Reviews) ── */}
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "420ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
-          Outils
+          Marketplace — Commerce
         </h2>
         <div className="grid grid-cols-4 gap-2.5">
-          {SECONDARY_CARDS.map((card, i) => (
+          {MARKETPLACE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${450 + i * 35}ms` }}>
               <OrbitQuickCard
                 icon={card.icon}
                 label={card.label}
                 description={card.desc ?? undefined}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Platform Modules ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "520ms" }}>
+        <h2
+          className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
+          style={{ color: "hsl(var(--hud-text-dim))" }}
+        >
+          Modules
+        </h2>
+        <div className="grid grid-cols-4 gap-2.5">
+          {MODULE_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${540 + i * 35}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc}
                 counter={card.key ? (engine[card.key] as number) : undefined}
                 status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
                 to={card.to}
