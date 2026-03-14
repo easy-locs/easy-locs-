@@ -149,6 +149,22 @@ const CommunicationCenter = () => {
     }
   }, [archiveThread, unarchiveThread, selectedThread?.id]);
 
+  const handleMuteThread = useCallback((thread: ConversationThread) => {
+    muteThread(thread);
+  }, [muteThread]);
+
+  const handleBlockThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    blockThread(thread);
+  }, [blockThread, selectedThread?.id]);
+
+  const handleClearThread = useCallback((thread: ConversationThread) => {
+    clearThread(thread);
+  }, [clearThread]);
+
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
     if (section !== "chats") {
